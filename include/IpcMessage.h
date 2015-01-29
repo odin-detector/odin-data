@@ -17,6 +17,7 @@
 #include <time.h>
 
 #include "boost/date_time/posix_time/posix_time.hpp"
+#include "boost/bimap.hpp"
 
 namespace FrameReceiver
 {
@@ -49,11 +50,12 @@ namespace FrameReceiver
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/error/en.h"
 
+
 namespace FrameReceiver
 {
-
 	class IpcMessage
 	{
+
 	public:
 
 		enum MsgType {
@@ -72,15 +74,26 @@ namespace FrameReceiver
 			MsgValNotifyFrameRelease,
 		};
 
-		// Default constructor leaving all attributes unset (but initialised)
-		IpcMessage(bool strict_validation=true) :
+		typedef boost::bimap<std::string, MsgType> MsgTypeMap;
+		typedef MsgTypeMap::value_type MsgTypeMapEntry;
+		typedef boost::bimap<std::string, MsgVal> MsgValMap;
+		typedef MsgValMap::value_type MsgValMapEntry;
+
+		// Default constructor - initialises all attributes
+		IpcMessage(MsgType msg_type=MsgTypeIllegal, MsgVal msg_val=MsgValIllegal, bool strict_validation=true) :
 			strict_validation_(strict_validation),
-			msg_type_(MsgTypeIllegal),
-			msg_val_(MsgValIllegal),
+			msg_type_(msg_type),
+			msg_val_(msg_val),
 			msg_timestamp_(boost::posix_time::microsec_clock::local_time())
 			{
 				// Intialise empty JSON document
 				doc_.SetObject();
+
+				// Create the required params block
+				rapidjson::Value params;
+				params.SetObject();
+				doc_.AddMember("params", params, doc_.GetAllocator());
+
 			};
 
 		// Constructor taking JSON-formatted text message as argument
@@ -137,19 +150,12 @@ namespace FrameReceiver
 		template<typename T> T get_attribute(std::string const& attr_name);
 		template<typename T> T get_attribute(std::string const& attr_name, T const& default_value);
 
+		template<typename T> void set_attribute(std::string const& attr_name, T const& attr_value);
+
 		template<typename T> T get_param(std::string const& param_name);
 		template<typename T> T get_param(std::string const& param_name, T const& default_value);
 
-		void dumpTypes(void)
-		{
-			static const char* kTypeNames[] =
-				{ "Null", "False", "True", "Object", "Array", "String", "Number" };
-			for (rapidjson::Value::ConstMemberIterator itr = doc_.MemberBegin();
-					itr != doc_.MemberEnd(); ++itr)
-			{
-				std::cout << "Type of member " << itr->name.GetString() << " is " << kTypeNames[itr->value.GetType()] << std::endl;
-			}
-		}
+		template<typename T> void set_param(std::string const& param_name, T const& param_value);
 
 		bool is_valid(void)
 		{
@@ -179,49 +185,122 @@ namespace FrameReceiver
 			return boost::posix_time::to_tm(msg_timestamp_);
 		}
 
+		void set_msg_type(MsgType const msg_type)
+		{
+			// TODO validation check
+			msg_type_ = msg_type;
+		}
+
+		void set_msg_val(MsgVal const msg_val)
+		{
+			// TODO validation check
+			msg_val_ = msg_val;
+
+		}
+		const char* encode(void)
+		{
+
+			// Copy the validated attributes into the JSON document ready for encoding
+			set_attribute("msg_type", valid_msg_type(msg_type_));
+			set_attribute("msg_val", valid_msg_val(msg_val_));
+			set_attribute("timestamp", valid_msg_timestamp(msg_timestamp_));
+
+			// Clear the encoded output buffer otherwise successive encode() calls append
+			// the message to the buffer
+			encode_buffer_.Clear();
+
+			// Create a writer and associate with the document
+			rapidjson::Writer<rapidjson::StringBuffer, rapidjson::UTF8<> > writer(encode_buffer_);
+			doc_.Accept(writer);
+
+			// Return the encoded buffer string
+			return encode_buffer_.GetString();
+		}
+
 	private:
 
 		template<typename T> T get_value(rapidjson::Value::ConstMemberIterator& itr);
+		template<typename T> void set_value(rapidjson::Value& value_obj, T const& value);
+
+		void msg_type_map_init()
+		{
+			msg_type_map_.insert(MsgTypeMapEntry("cmd",    MsgTypeCmd));
+			msg_type_map_.insert(MsgTypeMapEntry("ack",    MsgTypeAck));
+			msg_type_map_.insert(MsgTypeMapEntry("nack",   MsgTypeNack));
+			msg_type_map_.insert(MsgTypeMapEntry("notify", MsgTypeNotify));
+		}
 
 		MsgType valid_msg_type(std::string msg_type_name)
 		{
+
 			MsgType msg_type = MsgTypeIllegal;
-			static std::map<std::string, MsgType> msg_type_map;
-
-			if (msg_type_map.empty())
+			if (msg_type_map_.size() == 0)
 			{
-				msg_type_map["cmd"]    = MsgTypeCmd;
-				msg_type_map["ack"]    = MsgTypeAck;
-				msg_type_map["nack"]   = MsgTypeNack;
-				msg_type_map["notify"] = MsgTypeNotify;
+				msg_type_map_init();
 			}
 
-			if (msg_type_map.count(msg_type_name))
+			if (msg_type_map_.left.count(msg_type_name))
 			{
-				msg_type = msg_type_map[msg_type_name];
+				msg_type = msg_type_map_.left.at(msg_type_name);
 			}
+
 			return msg_type;
+		}
 
+		std::string valid_msg_type(MsgType msg_type)
+		{
+			std::string msg_type_name = "illegal";
+			if (msg_type_map_.size() == 0)
+			{
+				msg_type_map_init();
+			}
+
+			if (msg_type_map_.right.count(msg_type))
+			{
+				msg_type_name = msg_type_map_.right.at(msg_type);
+			}
+
+			return msg_type_name;
+		}
+
+		void msg_val_map_init()
+		{
+			msg_val_map_.insert(MsgValMapEntry("reset",         MsgValCmdReset));
+			msg_val_map_.insert(MsgValMapEntry("status",        MsgValCmdStatus));
+			msg_val_map_.insert(MsgValMapEntry("frame_ready",   MsgValNotifyFrameReady));
+			msg_val_map_.insert(MsgValMapEntry("frame_release", MsgValNotifyFrameRelease));
 		}
 
 		MsgVal valid_msg_val(std::string msg_val_name)
 		{
 			MsgVal msg_val = MsgValIllegal;
-			static std::map<std::string, MsgVal> msg_val_map;
 
-			if (msg_val_map.empty())
+			if (msg_val_map_.size() == 0)
 			{
-				msg_val_map["reset"]        = MsgValCmdReset;
-				msg_val_map["status"]       = MsgValCmdStatus;
-				msg_val_map["frame_ready"]  = MsgValNotifyFrameReady;
-				msg_val_map["frame_release"] = MsgValNotifyFrameRelease;
+				msg_val_map_init();
 			}
 
-			if (msg_val_map.count(msg_val_name))
+			if (msg_val_map_.left.count(msg_val_name))
 			{
-				msg_val = msg_val_map[msg_val_name];
+				msg_val = msg_val_map_.left.at(msg_val_name);
 			}
 			return msg_val;
+		}
+
+		std::string valid_msg_val(MsgVal msg_val)
+		{
+			std::string msg_val_name = "illegal";
+			if (msg_val_map_.size() == 0)
+			{
+				msg_val_map_init();
+			}
+
+			if (msg_val_map_.right.count(msg_val))
+			{
+				msg_val_name = msg_val_map_.right.at(msg_val);
+			}
+
+			return msg_val_name;
 		}
 
 		boost::posix_time::ptime valid_msg_timestamp(std::string msg_timestamp_text)
@@ -239,6 +318,12 @@ namespace FrameReceiver
 			ss >> pt;
 
 			return pt;
+		}
+
+		std::string valid_msg_timestamp(boost::posix_time::ptime msg_timestamp)
+		{
+			// Return message timestamp as string in ISO8601 extended format
+			return boost::posix_time::to_iso_extended_string(msg_timestamp_);
 		}
 
 		bool has_params(void)
@@ -259,8 +344,9 @@ namespace FrameReceiver
 		MsgVal msg_val_;
 		boost::posix_time::ptime msg_timestamp_;
 
-		std::vector<rapidjson::Value> msg_params_;
-
+		rapidjson::StringBuffer encode_buffer_;
+		static MsgTypeMap msg_type_map_;
+		static MsgValMap msg_val_map_;
 	};
 
 	template<> int IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr)
@@ -295,7 +381,6 @@ namespace FrameReceiver
 
 	template<typename T> T IpcMessage::get_attribute(std::string const& attr_name)
 	{
-
 		rapidjson::Value::ConstMemberIterator itr = doc_.FindMember(attr_name.c_str());
 
 		if (itr == doc_.MemberEnd())
@@ -311,7 +396,26 @@ namespace FrameReceiver
 	{
 		rapidjson::Value::ConstMemberIterator itr = doc_.FindMember(attr_name.c_str());
 		return itr == doc_.MemberEnd() ? default_value : this->get_value<T>(itr);
+	}
 
+	template<typename T> void IpcMessage::set_attribute(std::string const& attr_name, T const& attr_value)
+	{
+		rapidjson::Document::AllocatorType& allocator = doc_.GetAllocator();
+
+		// Search through the document for the attribute, creating it if missing, and set
+		// the value appropriately
+		rapidjson::Value::MemberIterator itr = doc_.FindMember(attr_name.c_str());
+		if (itr == doc_.MemberEnd())
+		{
+			rapidjson::Value attr_name_val(attr_name.c_str(), allocator);
+			rapidjson::Value attr_value_val;
+			set_value(attr_value_val, attr_value);
+			doc_.AddMember(attr_name_val, attr_value_val, allocator);
+		}
+		else
+		{
+			set_value(const_cast<rapidjson::Value&>(itr->value), attr_value);
+		}
 	}
 
 	template<typename T> T IpcMessage::get_param(std::string const& param_name)
@@ -323,10 +427,9 @@ namespace FrameReceiver
 			throw IpcMessageException("Missing params block in message");
 		}
 
-		// Locate parameter withing block and throw execption if absent, otherwise return value
-		const rapidjson::Value& params = doc_["params"];
-		rapidjson::Value::ConstMemberIterator param_itr = params.FindMember(param_name.c_str());
-		if (param_itr == params.MemberEnd())
+		// Locate parameter within block and throw exception if absent, otherwise return value
+		rapidjson::Value::ConstMemberIterator param_itr = itr->value.FindMember(param_name.c_str());
+		if (param_itr == itr->value.MemberEnd())
 		{
 			std::stringstream ss;
 			ss << "Missing parameter " << param_name;
@@ -335,9 +438,88 @@ namespace FrameReceiver
 		return get_value<T>(param_itr);
 	}
 
+	template<typename T> T IpcMessage::get_param(std::string const& param_name, T const& default_value)
+	{
+		T the_value = default_value;
+
+		// Locate the params block and find parameter within in if present
+		rapidjson::Value::ConstMemberIterator itr = doc_.FindMember("params");
+		if (itr != doc_.MemberEnd())
+		{
+			rapidjson::Value::ConstMemberIterator param_itr = itr->value.FindMember(param_name.c_str());
+			if (param_itr != itr->value.MemberEnd())
+			{
+				the_value = get_value<T>(param_itr);
+			}
+		}
+
+		return the_value;
+	}
+
+	template<typename T> void IpcMessage::set_param(std::string const& param_name, T const& param_value)
+	{
+
+		rapidjson::Document::AllocatorType& allocator = doc_.GetAllocator();
+
+		// Create the params block if it doesn't exist
+		rapidjson::Value::ConstMemberIterator itr = doc_.FindMember("params");
+		if (itr == doc_.MemberEnd())
+		{
+			rapidjson::Value params;
+			params.SetObject();
+			doc_.AddMember("params", params, allocator);
+		}
+		rapidjson::Value& params = doc_["params"];
+
+		// Now search through the params block for the parameter, creating it if missing, and set
+		// the value appropriately
+		rapidjson::Value::MemberIterator param_itr = params.FindMember(param_name.c_str());
+		if (param_itr == params.MemberEnd())
+		{
+			rapidjson::Value param_name_val(param_name.c_str(), allocator);
+			rapidjson::Value param_value_val;
+			set_value(param_value_val, param_value);
+			params.AddMember(param_name_val, param_value_val, allocator);
+		}
+		else
+		{
+			set_value(const_cast<rapidjson::Value&>(param_itr->value), param_value);
+		}
+	}
+
+	template<> void IpcMessage::set_value(rapidjson::Value& value_obj, int const& value)
+	{
+		value_obj.SetInt(value);
+	}
+
+	template<> void IpcMessage::set_value(rapidjson::Value& value_obj, unsigned int const& value)
+	{
+		value_obj.SetUint(value);
+	}
+
+	template<> void IpcMessage::set_value(rapidjson::Value& value_obj, int64_t const& value)
+	{
+		value_obj.SetInt64(value);
+	}
+
+	template<> void IpcMessage::set_value(rapidjson::Value& value_obj, uint64_t const& value)
+	{
+		value_obj.SetUint64(value);
+	}
+
+	template<> void IpcMessage::set_value(rapidjson::Value& value_obj, double const& value)
+	{
+		value_obj.SetDouble(value);
+	}
+
+	template<> void IpcMessage::set_value(rapidjson::Value& value_obj, std::string const& value)
+	{
+		value_obj.SetString(value.c_str(), doc_.GetAllocator());
+	}
 
 } // namespace frameReceiver
 
-
+FrameReceiver::IpcMessage::MsgTypeMap FrameReceiver::IpcMessage::msg_type_map_;
+FrameReceiver::IpcMessage::MsgValMap FrameReceiver::IpcMessage::msg_val_map_;
 
 #endif /* IPCMESSAGE_H_ */

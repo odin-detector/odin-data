@@ -35,17 +35,24 @@ BOOST_AUTO_TEST_CASE( ValidIpcMessageFromString )
     struct tm timestamp_tm = validMsgFromString.get_msg_datetime();
     BOOST_CHECK_EQUAL(asctime(&timestamp_tm), "Tue Jan 27 15:26:01 2015\n");
 
+    // Check valid message throws exception on missing attribute
+    BOOST_CHECK_THROW(validMsgFromString.get_attribute<int>("missing"), FrameReceiver::IpcMessageException);
+
+    // Check valid message can fall back to default value if attribute missing
+    int defaultAttrValue = 47632;
+    BOOST_CHECK_EQUAL(validMsgFromString.get_attribute<int>("missing", defaultAttrValue), defaultAttrValue );
+
     // Check that all parameters are as expected
     BOOST_CHECK_EQUAL(validMsgFromString.get_param<int>("paramInt"), 1234);
     BOOST_CHECK_EQUAL(validMsgFromString.get_param<std::string>("paramStr"), "testParam");
     BOOST_CHECK_EQUAL(validMsgFromString.get_param<double>("paramDouble"), 3.1415);
 
-    // Check valid message throws exception on missing member
-    BOOST_CHECK_THROW(validMsgFromString.get_attribute<int>("missing"), FrameReceiver::IpcMessageException );
+    // Check valid message throws exception on missing parameter
+    BOOST_CHECK_THROW(validMsgFromString.get_param<int>("missingParam"), FrameReceiver::IpcMessageException);
 
-    // Check valid message can fall back to default value if member missing
-    int defaultValue = 47632;
-    BOOST_CHECK_EQUAL(validMsgFromString.get_attribute<int>("missing", defaultValue), defaultValue );
+    // Check valid message can fall back to default value if parameter missing
+    int defaultParamValue = 90210;
+    BOOST_CHECK_EQUAL(validMsgFromString.get_param<int>("missingParam", defaultParamValue), defaultParamValue);
 
 }
 
@@ -56,6 +63,64 @@ BOOST_AUTO_TEST_CASE( EmptyIpcMessage )
 
 	// Check the message isn't valid
 	BOOST_CHECK_EQUAL(emptyMsg.is_valid(), false);
+}
+
+BOOST_AUTO_TEST_CASE( CreateValidIpcMessageFromEmpty)
+{
+	// Instantiate an empty message, which will be invalid by default since no attributes have been set
+	FrameReceiver::IpcMessage theMsg;
+
+	// Empty message isn't valid
+	BOOST_CHECK_EQUAL(theMsg.is_valid(), false);
+
+	// Set message type and value
+	FrameReceiver::IpcMessage::MsgType msg_type = FrameReceiver::IpcMessage::MsgTypeCmd;
+	theMsg.set_msg_type(msg_type);
+	FrameReceiver::IpcMessage::MsgVal msg_val = FrameReceiver::IpcMessage::MsgValCmdReset;
+	theMsg.set_msg_val(msg_val);
+
+	// Check the message is now valid
+	BOOST_CHECK_EQUAL(theMsg.is_valid(), true);
+
+	std::cout << theMsg.encode() << std::endl;
+
+}
+BOOST_AUTO_TEST_CASE( CreateAndModifyParametersInEmptyIpcMessage )
+{
+	// Create an emprty message
+	FrameReceiver::IpcMessage emptyMsg;
+
+	// Define and set some parameters
+	int paramIntVal = 1234;
+	int paramIntVal2 = 90210;
+	int paramIntVal3 = 4567;
+	std::string paramStringVal("paramString");
+
+	emptyMsg.set_param("paramInt", paramIntVal);
+	emptyMsg.set_param("paramInt2", paramIntVal2);
+	emptyMsg.set_param("paramInt3", paramIntVal3);
+	emptyMsg.set_param("paramStr", paramStringVal);
+
+	// Read them back and check they have correct values
+	BOOST_CHECK_EQUAL(emptyMsg.get_param<int>("paramInt"), paramIntVal);
+	BOOST_CHECK_EQUAL(emptyMsg.get_param<int>("paramInt2"), paramIntVal2);
+	BOOST_CHECK_EQUAL(emptyMsg.get_param<int>("paramInt3"), paramIntVal3);
+	BOOST_CHECK_EQUAL(emptyMsg.get_param<std::string>("paramStr"), paramStringVal);
+
+	const char* encoded = emptyMsg.encode();
+	std::cout << encoded << std::endl;
+
+	// Modify several parameters and check they are still correct
+	paramIntVal2 = 228724;
+	emptyMsg.set_param("paramInt2", paramIntVal2);
+	std::string paramStringValNew("another string");
+	emptyMsg.set_param("paramStr", paramStringValNew);
+
+	BOOST_CHECK_EQUAL(emptyMsg.get_param<int>("paramInt2"), paramIntVal2);
+	BOOST_CHECK_EQUAL(emptyMsg.get_param<std::string>("paramStr"), paramStringValNew);
+
+	std::cout << emptyMsg.encode() << std::endl;
+
 }
 
 BOOST_AUTO_TEST_CASE( InvalidIpcMessageFromString )
