@@ -35,13 +35,6 @@ BOOST_AUTO_TEST_CASE( ValidIpcMessageFromString )
     struct tm timestamp_tm = validMsgFromString.get_msg_datetime();
     BOOST_CHECK_EQUAL(asctime(&timestamp_tm), "Tue Jan 27 15:26:01 2015\n");
 
-    // Check valid message throws exception on missing attribute
-    BOOST_CHECK_THROW(validMsgFromString.get_attribute<int>("missing"), FrameReceiver::IpcMessageException);
-
-    // Check valid message can fall back to default value if attribute missing
-    int defaultAttrValue = 47632;
-    BOOST_CHECK_EQUAL(validMsgFromString.get_attribute<int>("missing", defaultAttrValue), defaultAttrValue );
-
     // Check that all parameters are as expected
     BOOST_CHECK_EQUAL(validMsgFromString.get_param<int>("paramInt"), 1234);
     BOOST_CHECK_EQUAL(validMsgFromString.get_param<std::string>("paramStr"), "testParam");
@@ -82,9 +75,8 @@ BOOST_AUTO_TEST_CASE( CreateValidIpcMessageFromEmpty)
 	// Check the message is now valid
 	BOOST_CHECK_EQUAL(theMsg.is_valid(), true);
 
-	std::cout << theMsg.encode() << std::endl;
-
 }
+
 BOOST_AUTO_TEST_CASE( CreateAndModifyParametersInEmptyIpcMessage )
 {
 	// Create an emprty message
@@ -107,9 +99,6 @@ BOOST_AUTO_TEST_CASE( CreateAndModifyParametersInEmptyIpcMessage )
 	BOOST_CHECK_EQUAL(emptyMsg.get_param<int>("paramInt3"), paramIntVal3);
 	BOOST_CHECK_EQUAL(emptyMsg.get_param<std::string>("paramStr"), paramStringVal);
 
-	const char* encoded = emptyMsg.encode();
-	std::cout << encoded << std::endl;
-
 	// Modify several parameters and check they are still correct
 	paramIntVal2 = 228724;
 	emptyMsg.set_param("paramInt2", paramIntVal2);
@@ -119,7 +108,80 @@ BOOST_AUTO_TEST_CASE( CreateAndModifyParametersInEmptyIpcMessage )
 	BOOST_CHECK_EQUAL(emptyMsg.get_param<int>("paramInt2"), paramIntVal2);
 	BOOST_CHECK_EQUAL(emptyMsg.get_param<std::string>("paramStr"), paramStringValNew);
 
-	std::cout << emptyMsg.encode() << std::endl;
+}
+
+BOOST_AUTO_TEST_CASE( RoundTripFromEmptyIpcMessage )
+{
+
+	// Create an empty message
+	FrameReceiver::IpcMessage theMsg;
+
+	// Set message type and value
+	FrameReceiver::IpcMessage::MsgType msg_type = FrameReceiver::IpcMessage::MsgTypeCmd;
+	theMsg.set_msg_type(msg_type);
+	FrameReceiver::IpcMessage::MsgVal msg_val = FrameReceiver::IpcMessage::MsgValCmdReset;
+	theMsg.set_msg_val(msg_val);
+
+	// Define and set some parameters
+	int paramIntVal = 1234;
+	int paramIntVal2 = 90210;
+	int paramIntVal3 = 4567;
+	std::string paramStringVal("paramString");
+
+	theMsg.set_param("paramInt", paramIntVal);
+	theMsg.set_param("paramInt2", paramIntVal2);
+	theMsg.set_param("paramInt3", paramIntVal3);
+	theMsg.set_param("paramStr", paramStringVal);
+
+	// Retrieve the encoded version
+	const char* theMsgEncoded = theMsg.encode();
+
+	// Create another message from the encoded version
+	FrameReceiver::IpcMessage msgFromEncoded(theMsgEncoded);
+
+	// Validate the contents of all attributes and parameters of the new message
+	BOOST_CHECK_EQUAL(msgFromEncoded.get_msg_type(), msg_type);
+	BOOST_CHECK_EQUAL(msgFromEncoded.get_msg_val(), msg_val);
+	BOOST_CHECK_EQUAL(msgFromEncoded.get_msg_timestamp(), theMsg.get_msg_timestamp());
+	BOOST_CHECK_EQUAL(msgFromEncoded.get_param<int>("paramInt"), paramIntVal);
+	BOOST_CHECK_EQUAL(msgFromEncoded.get_param<int>("paramInt2"), paramIntVal2);
+	BOOST_CHECK_EQUAL(msgFromEncoded.get_param<int>("paramInt3"), paramIntVal3);
+	BOOST_CHECK_EQUAL(msgFromEncoded.get_param<std::string>("paramStr"), paramStringVal);
+
+}
+
+BOOST_AUTO_TEST_CASE( RoundTripFromEmptyIpcMessageComparison )
+{
+
+	// Create an empty message
+	FrameReceiver::IpcMessage theMsg;
+
+	// Set message type and value
+	FrameReceiver::IpcMessage::MsgType msg_type = FrameReceiver::IpcMessage::MsgTypeCmd;
+	theMsg.set_msg_type(msg_type);
+	FrameReceiver::IpcMessage::MsgVal msg_val = FrameReceiver::IpcMessage::MsgValCmdReset;
+	theMsg.set_msg_val(msg_val);
+
+	// Define and set some parameters
+	int paramIntVal = 1234;
+	int paramIntVal2 = 90210;
+	int paramIntVal3 = 4567;
+	std::string paramStringVal("paramString");
+
+	theMsg.set_param("paramInt", paramIntVal);
+	theMsg.set_param("paramInt2", paramIntVal2);
+	theMsg.set_param("paramInt3", paramIntVal3);
+	theMsg.set_param("paramStr", paramStringVal);
+
+	// Retrieve the encoded version
+	const char* theMsgEncoded = theMsg.encode();
+
+	// Create another message from the encoded version
+	FrameReceiver::IpcMessage msgFromEncoded(theMsgEncoded);
+
+	// Test that the relational (in)equality operators work correctly for the IpcMessage class
+	BOOST_CHECK_EQUAL((msgFromEncoded == theMsg), true);
+	BOOST_CHECK_EQUAL((msgFromEncoded != theMsg), false);
 
 }
 

@@ -217,6 +217,10 @@ namespace FrameReceiver
 			return encode_buffer_.GetString();
 		}
 
+		friend bool operator ==(IpcMessage const& lhs_msg, IpcMessage const& rhs_msg);
+		friend bool operator !=(IpcMessage const& lhs_msg, IpcMessage const& rhs_msg);
+		friend std::ostream& operator <<(std::ostream& os, IpcMessage& the_msg);
+
 	private:
 
 		template<typename T> T get_value(rapidjson::Value::ConstMemberIterator& itr);
@@ -326,7 +330,7 @@ namespace FrameReceiver
 			return boost::posix_time::to_iso_extended_string(msg_timestamp_);
 		}
 
-		bool has_params(void)
+		bool has_params(void) const
 		{
 			bool has_params = false;
 			rapidjson::Value::ConstMemberIterator itr = doc_.FindMember("params");
@@ -515,6 +519,57 @@ namespace FrameReceiver
 	template<> void IpcMessage::set_value(rapidjson::Value& value_obj, std::string const& value)
 	{
 		value_obj.SetString(value.c_str(), doc_.GetAllocator());
+	}
+
+	bool operator ==(IpcMessage const& lhs_msg, IpcMessage const& rhs_msg)
+	{
+		bool areEqual = true;
+
+		// Test equality of message attributes
+		areEqual &= (lhs_msg.msg_type_ == rhs_msg.msg_type_);
+		areEqual &= (lhs_msg.msg_val_  == rhs_msg.msg_val_);
+		areEqual &= (lhs_msg.msg_timestamp_ == rhs_msg.msg_timestamp_);
+
+		// Check both messages have a params block
+		areEqual &= (lhs_msg.has_params() == rhs_msg.has_params());
+
+		// Only continue to test equality if true at this point
+		if (areEqual)
+		{
+			// Iterate over params block if present and test equality of all members
+			if (lhs_msg.has_params() && rhs_msg.has_params())
+			{
+				rapidjson::Value const& lhs_params = lhs_msg.doc_["params"];
+				rapidjson::Value const& rhs_params = rhs_msg.doc_["params"];
+
+				areEqual &= (lhs_params.MemberCount() == rhs_params.MemberCount());
+
+				for (rapidjson::Value::ConstMemberIterator lhs_itr = lhs_params.MemberBegin();
+						areEqual && (lhs_itr != lhs_params.MemberEnd()); lhs_itr++)
+				{
+					rapidjson::Value::ConstMemberIterator rhs_itr = rhs_params.FindMember(lhs_itr->name.GetString());
+					if (rhs_itr != rhs_params.MemberEnd())
+					{
+						areEqual &= (lhs_itr->value == rhs_itr->value);
+					}
+					else
+					{
+						areEqual = false;
+					}
+				}
+			}
+		}
+		return areEqual;
+	}
+
+	bool operator !=(IpcMessage const& lhs_msg, IpcMessage const& rhs_msg)
+	{
+		return !(lhs_msg == rhs_msg);
+	}
+
+	std::ostream& operator<<(std::ostream& os, IpcMessage& the_msg)	{
+		os << the_msg.encode();
+		return os;
 	}
 
 } // namespace frameReceiver
