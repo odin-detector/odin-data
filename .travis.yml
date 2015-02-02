@@ -11,4 +11,6 @@ install:
   - make VERBOSE=1 
 script:
   - pwd
-  - ls
+  - ls *
+  - bin/frameReceiverTest --log_level=all
+  
