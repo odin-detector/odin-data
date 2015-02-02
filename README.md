@@ -3,6 +3,8 @@ FrameReceiver
 
 FrameReceiver is an application to enable reception of frames of detector data transmitted over a network connection as a UDP stream. FrameReceiver constructs data frames in shared memory buffers and communicates with external applications to allow processing and storage.
 
+[![Build Status](https://travis-ci.org/percival-detector/framereceiver.svg)](https://travis-ci.org/percival-detector/framereceiver)
+
 Building
 ========
 

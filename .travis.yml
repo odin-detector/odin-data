@@ -1,0 +1,14 @@
+language: cpp
+compiler: gcc
+install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq liblog4cxx10-dev libboost-program-options-dev libboost-filesystem-dev libboost-date-time-dev libboost-system-dev libvboost-test-dev libzmq3-dev
+  - pwd
+  - ls *
+  - mkdir -p build
+  - cd build
+  - cmake -D ..
+  - make VERBOSE=1 
+script:
+  - pwd
+  - ls
