@@ -26,3 +26,8 @@ add_subdirectory(src)
 
 # Add the test subdirectory
 add_subdirectory(test)
+
+# Add the doc subdirectory
+add_subdirectory(doc)
+
+
