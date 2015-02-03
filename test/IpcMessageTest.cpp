@@ -8,6 +8,7 @@
 #define BOOST_TEST_MODULE IpcMessage test
 #include <boost/test/unit_test.hpp>
 
+#include <time.h>
 #include <exception>
 
 #include "IpcMessage.h"
@@ -251,4 +252,63 @@ BOOST_AUTO_TEST_CASE( MissingParamsIpcMessageFromStringStrictValidation )
 	BOOST_CHECK_THROW(
 			FrameReceiver::IpcMessage missingParamsMsgFromString("{\"msg_type\":\"cmd\", \"msg_val\":\"status\", \"timestamp\" : \"2015-01-27T15:26:01.123456\" }", true),
 			FrameReceiver::IpcMessageException);
+}
+
+// Calculate the difference, in seconds, between two timespecs
+#define NANOSECONDS_PER_SECOND 1000000000
+double timeDiff(struct timespec* start, struct timespec* end)
+{
+
+	double startNs = ((double)start->tv_sec * NANOSECONDS_PER_SECOND) + start->tv_nsec;
+	double endNs   = ((double)  end->tv_sec * NANOSECONDS_PER_SECOND) +   end->tv_nsec;
+
+	return (endNs - startNs) / NANOSECONDS_PER_SECOND;
+}
+
+BOOST_AUTO_TEST_CASE( TestIpcMessageCreationSpeed )
+{
+	int numLoops = 10000;
+	struct timespec start, end;
+	double deltaT, rate;
+
+	clock_gettime(CLOCK_REALTIME, &start);
+
+	BOOST_CHECK_NO_THROW(
+		for (int i = 0; i < numLoops; i++)
+		{
+			FrameReceiver::IpcMessage simpleMessage(FrameReceiver::IpcMessage::MsgTypeCmd, FrameReceiver::IpcMessage::MsgValCmdStatus);
+			simpleMessage.set_param<int>("loopParam", i);
+			const char *encodedMsg = simpleMessage.encode();
+		}
+	);
+
+	clock_gettime(CLOCK_REALTIME, &end);
+	deltaT = timeDiff(&start, &end);
+	rate = (double)numLoops / deltaT;
+	BOOST_TEST_MESSAGE("Created and encoded " << numLoops << " IPC messages in " << timeDiff(&start, &end) << " secs, rate " << rate << " Hz" );
+
+	clock_gettime(CLOCK_REALTIME, &start);
+
+
+	BOOST_CHECK_NO_THROW(
+		for (int i = 0 ; i < numLoops; i++)
+		{
+			FrameReceiver::IpcMessage validMsgFromString("{\"msg_type\":\"cmd\", "
+					"\"msg_val\":\"status\", "
+					"\"timestamp\" : \"2015-01-27T15:26:01.123456\", "
+					"\"params\" : {"
+					"    \"paramInt\" : 1234, "
+					"    \"paramStr\" : \"testParam\", "
+					"    \"paramDouble\" : 3.1415 "
+					"  } "
+					"}");
+			validMsgFromString.set_param<int>("loopParam", i);
+		}
+	);
+
+	clock_gettime(CLOCK_REALTIME, &end);
+	deltaT = timeDiff(&start, &end);
+	rate = (double)numLoops / deltaT;
+	BOOST_TEST_MESSAGE("Created and parsed " << numLoops << " IPC messages from string in " << timeDiff(&start, &end) << " secs, rate " << rate << " Hz");
+
 }
