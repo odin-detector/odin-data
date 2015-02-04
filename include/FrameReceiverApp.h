@@ -20,8 +20,17 @@ using namespace std;
 using namespace log4cxx;
 using namespace log4cxx::helpers;
 
+#include "FrameReceiverConfig.h"
+
 namespace FrameReceiver
 {
+	//! Frame receiver application class/
+	//!
+	//! This class implements the main functionality of the FrameReceiver application, providing
+	//! the overall framework for running the frame receiver, capturing frames of incoming data and
+    //! handing them off to a processing appplication via shared memory. The application communicates
+	//! with the downstream processing (and internally) via ZeroMQ inter-process channels.
+
 	class FrameReceiverApp
 	{
 	public:
@@ -35,7 +44,8 @@ namespace FrameReceiver
 
 	private:
 
-		LoggerPtr    mLogger;
+		LoggerPtr           mLogger;  //!< Log4CXX logger instance pointer
+		FrameReceiverConfig mConfig; //!< Configuration storage object
 
 	};
 }
