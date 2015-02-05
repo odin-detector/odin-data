@@ -64,6 +64,7 @@ namespace FrameReceiver
 
 namespace FrameReceiver
 {
+
 	//! IpcMessage - inter-process communication JSON message format class
 	class IpcMessage
 	{
@@ -121,7 +122,6 @@ namespace FrameReceiver
 				rapidjson::Value params;
 				params.SetObject();
 				doc_.AddMember("params", params, doc_.GetAllocator());
-
 			};
 
 		//! Constructor taking JSON-formatted text message as argument.
@@ -138,6 +138,7 @@ namespace FrameReceiver
 		IpcMessage(const char* json_msg, bool strict_validation=true) :
 			strict_validation_(strict_validation)
 		{
+
 			// Parse the message, catching any unexpected exceptions from rapidjson
 			try {
 				doc_.Parse(json_msg);
@@ -173,7 +174,7 @@ namespace FrameReceiver
 			msg_timestamp_ = valid_msg_timestamp(get_attribute<std::string>("timestamp", "none"));
 			if (strict_validation_ && (msg_timestamp_ == boost::posix_time::not_a_date_time))
 			{
-				throw FrameReceiver::IpcMessageException("Illegal or missing timetamp attribute in message");
+				throw FrameReceiver::IpcMessageException("Illegal or missing timestamp attribute in message");
 			}
 
 			// Check if a params block is present. If strict validation is enabled, thrown an exception if
@@ -182,6 +183,7 @@ namespace FrameReceiver
 			{
 				throw FrameReceiver::IpcMessageException("Missing params block in message");
 			}
+
 		}
 
 		//! Gets the value of a named parameter in the message.
@@ -631,16 +633,14 @@ namespace FrameReceiver
 
 			boost::posix_time::ptime pt(boost::posix_time::not_a_date_time);
 
-			// Use Boost posix_time with input facet to support ISO8601 extended format
-			boost::posix_time::time_input_facet* input_facet = new boost::posix_time::time_input_facet;
-			input_facet->set_iso_extended_format();
-
-			std::stringstream ss;
-			ss.imbue(std::locale(ss.getloc(), input_facet));
-			ss.str(msg_timestamp_text);
-			ss >> pt;
-
-			return pt;
+			try {
+			    pt = boost::date_time::parse_delimited_time<boost::posix_time::ptime>(msg_timestamp_text, 'T');
+			}
+			catch (...)
+			{
+			    // Do nothing if parse exception occurred - return value of not_a_date_time indicates error
+			}
+		    return pt;
 		}
 
 		//! Maps an internal message timestamp representation to an ISO8601 extended format string.
