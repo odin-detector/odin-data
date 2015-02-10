@@ -1,4 +1,4 @@
-/*
+/*!
  * FrameReceiver.cpp
  *
  *  Created on: Jan 28, 2015
@@ -22,21 +22,36 @@ namespace po = boost::program_options;
 
 using namespace FrameReceiver;
 
+bool FrameReceiverApp::run_frame_receiver_ = true;
+
 //! Constructor for FrameReceiverApp class.
 //!
 //! This constructor initialises the FrameRecevierApp instance
 
-FrameReceiverApp::FrameReceiverApp(void)
+FrameReceiverApp::FrameReceiverApp(void) :
+    //zmq_context_(1),
+    //rx_thread_chan_(zmq_context_, ZMQ_PAIR),
+    rx_channel_(ZMQ_PAIR)
 {
 
 	// Retrieve a logger instance
-	mLogger = Logger::getLogger("FrameReceiver");
+	logger_ = Logger::getLogger("FrameReceiver");
+
+	// Bind the RX thread channel
+	//rx_thread_chan_.bind("inproc://rx_thread");
+	rx_channel_.bind("inproc://rx_channel");
+
 }
 
 //! Destructor for FrameRecveiverApp class
 FrameReceiverApp::~FrameReceiverApp()
 {
 
+    // Delete the RX thread object by resetting the scoped pointer, allowing the IPC channel
+    // to be closed cleanly
+    rx_thread_.reset();
+
+    //rx_thread_chan_.close();
 }
 
 //! Parse command-line arguments and configuration file options.
@@ -44,7 +59,7 @@ FrameReceiverApp::~FrameReceiverApp()
 //! This method parses command-line arguments and configuration file options
 //! to configure the application for operation. Most options can either be
 //! given at the command line or stored in an INI-formatted configuration file.
-//! The configuration options are stored in the TODO XXXXXXX helper object for
+//! The configuration options are stored in the FrameReceiverConfig helper object for
 //! retrieval throughout the application.
 //!
 //! \param argc - standard command-line argument count
@@ -122,13 +137,13 @@ int FrameReceiverApp::parseArguments(int argc, char** argv)
 			std::ifstream config_ifs(config_file.c_str());
 			if (config_ifs)
 			{
-				LOG4CXX_DEBUG(mLogger, "Parsing configuration file " << config_file);
+				LOG4CXX_DEBUG(logger_, "Parsing configuration file " << config_file);
 				po::store(po::parse_config_file(config_ifs, config_file_options, true), vm);
 				po::notify(vm);
 			}
 			else
 			{
-				LOG4CXX_ERROR(mLogger, "Unable to open configuration file " << config_file << " for parsing");
+				LOG4CXX_ERROR(logger_, "Unable to open configuration file " << config_file << " for parsing");
 				exit(1);
 			}
 		}
@@ -136,47 +151,47 @@ int FrameReceiverApp::parseArguments(int argc, char** argv)
 		if (vm.count("logconfig"))
 		{
 			PropertyConfigurator::configure(vm["logconfig"].as<string>());
-			LOG4CXX_DEBUG(mLogger, "log4cxx config file is set to " << vm["logconfig"].as<string>());
+			LOG4CXX_DEBUG(logger_, "log4cxx config file is set to " << vm["logconfig"].as<string>());
 		}
 
 		if (vm.count("maxmem"))
 		{
-		    mConfig.max_buffer_mem_ = vm["maxmem"].as<std::size_t>();
-            LOG4CXX_DEBUG(mLogger, "Setting maxmem to " << mConfig.max_buffer_mem_);
+		    config_.max_buffer_mem_ = vm["maxmem"].as<std::size_t>();
+            LOG4CXX_DEBUG(logger_, "Setting maxmem to " << config_.max_buffer_mem_);
 		}
 
 		if (vm.count("sensortype"))
 		{
 		    std::string sensor_name = vm["sensortype"].as<std::string>();
-		    mConfig.sensor_type_ = mConfig.map_sensor_name_to_type(sensor_name);
-		    LOG4CXX_DEBUG(mLogger, "Setting sensor type to " << sensor_name << " (" << mConfig.sensor_type_ << ")");
+		    config_.sensor_type_ = config_.map_sensor_name_to_type(sensor_name);
+		    LOG4CXX_DEBUG(logger_, "Setting sensor type to " << sensor_name << " (" << config_.sensor_type_ << ")");
 		}
 
 		if (vm.count("port"))
 		{
-		    mConfig.rx_port_ = vm["port"].as<uint16_t>();
-		    LOG4CXX_DEBUG(mLogger, "Setting RX port to " << mConfig.rx_port_);
+		    config_.rx_port_ = vm["port"].as<uint16_t>();
+		    LOG4CXX_DEBUG(logger_, "Setting RX port to " << config_.rx_port_);
 		}
 
 		if (vm.count("ipaddress"))
 		{
-		    mConfig.rx_address_ = vm["ipaddress"].as<std::string>();
-		    LOG4CXX_DEBUG(mLogger, "Setting RX interface address to " << mConfig.rx_address_);
+		    config_.rx_address_ = vm["ipaddress"].as<std::string>();
+		    LOG4CXX_DEBUG(logger_, "Setting RX interface address to " << config_.rx_address_);
 		}
 	}
 	catch (Exception &e)
 	{
-		LOG4CXX_ERROR(mLogger, "Got Log4CXX exception: " << e.what());
+		LOG4CXX_ERROR(logger_, "Got Log4CXX exception: " << e.what());
 		rc = 1;
 	}
 	catch (exception &e)
 	{
-		LOG4CXX_ERROR(mLogger, "Got exception:" << e.what());
+		LOG4CXX_ERROR(logger_, "Got exception:" << e.what());
 		rc = 1;
 	}
 	catch (...)
 	{
-		LOG4CXX_ERROR(mLogger, "Exception of unknown type!");
+		LOG4CXX_ERROR(logger_, "Exception of unknown type!");
 		rc = 1;
 	}
 
@@ -188,13 +203,59 @@ int FrameReceiverApp::parseArguments(int argc, char** argv)
 void FrameReceiverApp::run(void)
 {
 
-	LOG4CXX_INFO(mLogger,  "Running frame receiver");
+    // Create the RX thread object
+    rx_thread_.reset(new FrameReceiverRxThread( config_, logger_));
+
+    run_frame_receiver_ = true;
+	LOG4CXX_INFO(logger_,  "Running frame receiver");
+
+	// Start the RX thread
+	rx_thread_->start();
+
+//    zmq::pollitem_t pollitems[] = {{rx_thread_chan_, 0, ZMQ_POLLIN, 0}};
+
+	while (run_frame_receiver_)
+	{
+	    int loopCount = 0;
+	    const int maxCount = 5;
+	    while (++loopCount <= maxCount)
+	    {
+            std::stringstream message_ss;
+            message_ss << "Hello " << loopCount;
+            std::string message = message_ss.str();
+//            zmq::message_t message(message_str.size()+1);
+//            memcpy(message.data(), message_str.data(), message_str.size()+1);
+//            rx_thread_chan_.send(message);
+            rx_channel_.send(message);
+	    }
+
+	    loopCount = 0;
+	    while (++loopCount <= maxCount)
+	    {
+//            zmq::poll(pollitems, 1, -1);
+//            if (pollitems[0].revents & ZMQ_POLLIN)
+//            {
+//                zmq::message_t reply;
+//                rx_thread_chan_.recv(&reply);
+//                LOG4CXX_DEBUG(logger_, "Main Thread got reply : " << (char*)reply.data());
+//            }
+	        if (rx_channel_.poll(-1))
+	        {
+	            std::string reply = rx_channel_.recv();
+	            LOG4CXX_DEBUG(logger_, "Main Thread got reply : " << reply);
+	        }
+	    }
+        run_frame_receiver_ = false;
+	}
+
+	// Stop the RX thread
+	rx_thread_->stop();
 
 }
 
 void FrameReceiverApp::stop(void)
 {
-
+    run_frame_receiver_ = false;
 }
 
 

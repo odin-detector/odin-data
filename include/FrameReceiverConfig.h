@@ -21,12 +21,12 @@ namespace FrameReceiver
 	{
 	public:
 
-		FrameReceiverConfig()
+		FrameReceiverConfig() :
+		    max_buffer_mem_(Defaults::default_max_buffer_mem),
+		    sensor_type_(Defaults::SensorTypeIllegal),
+		    rx_port_(Defaults::default_rx_port),
+		    rx_address_(Defaults::default_rx_address)
 		{
-			max_buffer_mem_ = Defaults::default_max_buffer_mem;
-			sensor_type_    = Defaults::SensorTypeIllegal;
-			rx_port_        = Defaults::default_rx_port;
-			rx_address_     = Defaults::default_rx_address;
 		};
 
 		Defaults::SensorType map_sensor_name_to_type(std::string& sensor_name)
@@ -59,9 +59,11 @@ namespace FrameReceiver
 		std::string          rx_address_;     //!< IP address to receive frame data on
 
 		friend class FrameReceiverApp;
+		friend class FrameReceiverRxThread;
+		friend class FrameReceiverConfigTestProxy;
 	};
 
-} // namespace FrameReceier
+} // namespace FrameReceiver
 
 
 #endif /* FRAMERECEIVERCONFIG_H_ */

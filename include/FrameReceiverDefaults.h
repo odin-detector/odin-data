@@ -2,7 +2,7 @@
  * FrameReceiverDefaults.h
  *
  *  Created on: Feb 4, 2015
- *      Author: tcn45
+ *      Author: Tim Nicholls, STFC Application Engineering Group
  */
 
 #ifndef FRAMERECEIVERDEFAULTS_H_
@@ -10,6 +10,7 @@
 
 #include <cstddef>
 #include <stdint.h>
+#include <string>
 
 namespace FrameReceiver
 {

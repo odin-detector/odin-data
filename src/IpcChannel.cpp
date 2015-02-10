@@ -1,0 +1,85 @@
+/*!
+ * IpcChannel.cpp
+ *
+ *  Created on: Feb 6, 2015
+ *      Author: Tim Nicholls, STFC Application Engineering
+ */
+
+#include "IpcChannel.h"
+
+using namespace FrameReceiver;
+
+IpcContext& IpcContext::Instance(void)
+{
+    static IpcContext ipcContext;
+    return ipcContext;
+}
+
+zmq::context_t& IpcContext::get(void)
+{
+    return zmq_context_;
+}
+
+IpcContext::IpcContext(int io_threads) :
+    zmq_context_(io_threads)
+{
+    // std::cout << "IpcContext constructor" << std::endl;
+}
+
+IpcChannel::IpcChannel(int type) :
+    context_(IpcContext::Instance()),
+    socket_(context_.get(), type)
+{
+    //std::cout << "IpcChannel constructor" << std::endl;
+}
+
+IpcChannel::~IpcChannel()
+{
+    //td::cout << "IpcChannel destructor" << std::endl;
+}
+
+void IpcChannel::bind(const char* endpoint)
+{
+    socket_.bind(endpoint);
+}
+
+void IpcChannel::connect(const char* endpoint)
+{
+    socket_.connect(endpoint);
+}
+
+void IpcChannel::send(std::string& message_str)
+{
+    size_t msg_size = message_str.size() + 1;
+    zmq::message_t msg(msg_size);
+    memcpy(msg.data(), message_str.data(), msg_size);
+    socket_.send(msg);
+}
+
+void IpcChannel::send(const char* message)
+{
+    size_t msg_size = strlen(message) + 1;
+    zmq::message_t msg(msg_size);
+    memcpy(msg.data(), message, msg_size);
+    socket_.send(msg);
+
+}
+
+std::string IpcChannel::recv(void)
+{
+    zmq::message_t msg;
+    socket_.recv(&msg);
+
+    return std::string(reinterpret_cast<const char*>(msg.data()));
+}
+
+bool IpcChannel::poll(long timeout_ms)
+{
+    zmq::pollitem_t pollitems[] = {{socket_, 0, ZMQ_POLLIN, 0}};
+
+    zmq::poll(pollitems, 1, timeout_ms);
+
+    return (pollitems[0].revents & ZMQ_POLLIN);
+
+}
+

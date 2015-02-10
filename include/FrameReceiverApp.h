@@ -20,7 +20,13 @@ using namespace std;
 using namespace log4cxx;
 using namespace log4cxx::helpers;
 
+#include "zmq/zmq.hpp"
+
+#include <boost/scoped_ptr.hpp>
+
+#include "IpcChannel.h"
 #include "FrameReceiverConfig.h"
+#include "FrameReceiverRxThread.h"
 
 namespace FrameReceiver
 {
@@ -44,8 +50,16 @@ namespace FrameReceiver
 
 	private:
 
-		LoggerPtr           mLogger;  //!< Log4CXX logger instance pointer
-		FrameReceiverConfig mConfig; //!< Configuration storage object
+		LoggerPtr             logger_;    //!< Log4CXX logger instance pointer
+		FrameReceiverConfig   config_;    //!< Configuration storage object
+		boost::scoped_ptr<FrameReceiverRxThread> rx_thread_; //!< Receiver thread object
+
+		static bool run_frame_receiver_;
+
+		//zmq::context_t zmq_context_;
+		//zmq::socket_t  rx_thread_chan_;
+
+		IpcChannel rx_channel_;
 
 	};
 }
