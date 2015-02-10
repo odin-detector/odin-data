@@ -5,13 +5,14 @@
  *      Author: Tim Nicholls, STFC Application Engineering Group
  */
 
-#define BOOST_TEST_MODULE IpcMessage test
 #include <boost/test/unit_test.hpp>
 
 #include <time.h>
 #include <exception>
 
 #include "IpcMessage.h"
+
+BOOST_AUTO_TEST_SUITE(IpcMessageUnitTest);
 
 BOOST_AUTO_TEST_CASE( ValidIpcMessageFromString )
 {
@@ -312,3 +313,5 @@ BOOST_AUTO_TEST_CASE( TestIpcMessageCreationSpeed )
 	BOOST_TEST_MESSAGE("Created and parsed " << numLoops << " IPC messages from string in " << timeDiff(&start, &end) << " secs, rate " << rate << " Hz");
 
 }
+
+BOOST_AUTO_TEST_SUITE_END();
