@@ -124,7 +124,7 @@ namespace FrameReceiver {
         return msg_type_;
     }
 
-    //! Returns type attribute of message.
+    //! Returns value attribute of message.
     //!
     //! This method returns the "msg_val" value attribute of the message.
     //!
@@ -148,7 +148,7 @@ namespace FrameReceiver {
         return boost::posix_time::to_iso_extended_string(msg_timestamp_);
     }
 
-    //! Returns message timstamp as tm structure
+    //! Returns message timstamp as tm structure.
     //!
     //! This method returns a standard tm struture derived from the message timestamp.
     //!
@@ -159,7 +159,7 @@ namespace FrameReceiver {
     }
 
 
-    //! Sets the message type attribute
+    //! Sets the message type attribute.
     //!
     //! This method sets the type attribute of the message. If strict validation is enabled
     //! an IpcMessageException will be thrown if the type is illegal.
@@ -172,7 +172,7 @@ namespace FrameReceiver {
         msg_type_ = msg_type;
     }
 
-    //! Sets the message type attribute
+    //! Sets the message type attribute.
     //!
     //! This method sets the value attribute of the message. If strict validation is enabled
     //! an IpcMessageException will be thrown if the value is illegal.
@@ -186,7 +186,7 @@ namespace FrameReceiver {
 
     }
 
-    //! Returns a JSON-encoded string of the message
+    //! Returns a JSON-encoded string of the message.
     //!
     //! This method returns a JSON-encoded string version of the message, intended for
     //! transmission across an IPC message channel.
@@ -212,6 +212,87 @@ namespace FrameReceiver {
         // Return the encoded buffer string
         return encode_buffer_.GetString();
     }
+
+    //! Overloaded equality relational operator.
+    //!
+    //! This function overloads the equality relational operator, allowing two
+    //! messages to be compared for the same content. All fields in the messages
+    //! are compared and tested for equality
+    //!
+    //! \param lhs_msg - left-hand side message for comparison
+    //! \param rhs_msg - right-hand side message for comparison
+    //! \return boolean indicating equality
+
+    bool operator ==(IpcMessage const& lhs_msg, IpcMessage const& rhs_msg)
+    {
+        bool areEqual = true;
+
+        // Test equality of message attributes
+        areEqual &= (lhs_msg.msg_type_ == rhs_msg.msg_type_);
+        areEqual &= (lhs_msg.msg_val_  == rhs_msg.msg_val_);
+        areEqual &= (lhs_msg.msg_timestamp_ == rhs_msg.msg_timestamp_);
+
+        // Check both messages have a params block
+        areEqual &= (lhs_msg.has_params() == rhs_msg.has_params());
+
+        // Only continue to test equality if true at this point
+        if (areEqual)
+        {
+            // Iterate over params block if present and test equality of all members
+            if (lhs_msg.has_params() && rhs_msg.has_params())
+            {
+                rapidjson::Value const& lhs_params = lhs_msg.doc_["params"];
+                rapidjson::Value const& rhs_params = rhs_msg.doc_["params"];
+
+                areEqual &= (lhs_params.MemberCount() == rhs_params.MemberCount());
+
+                for (rapidjson::Value::ConstMemberIterator lhs_itr = lhs_params.MemberBegin();
+                        areEqual && (lhs_itr != lhs_params.MemberEnd()); lhs_itr++)
+                {
+                    rapidjson::Value::ConstMemberIterator rhs_itr = rhs_params.FindMember(lhs_itr->name.GetString());
+                    if (rhs_itr != rhs_params.MemberEnd())
+                    {
+                        areEqual &= (lhs_itr->value == rhs_itr->value);
+                    }
+                    else
+                    {
+                        areEqual = false;
+                    }
+                }
+            }
+        }
+        return areEqual;
+    }
+
+    //! Overloaded inequality relational operator.
+    //!
+    //! This function overloads the inequality relational operator, allowing two
+    //! messages to be compared for the different content. All fields in the messages
+    //! are compared and tested for inequality.
+    //!
+    //! \param lhs_msg - left-hand side message for comparison
+    //! \param rhs_msg - righ-hand side message for comparison
+    //! \return boolean indicating inequality
+
+    bool operator !=(IpcMessage const& lhs_msg, IpcMessage const& rhs_msg)
+    {
+        return !(lhs_msg == rhs_msg);
+    }
+
+    //! Overloaded stream insertion operator.
+    //!
+    //! This function overloads the ostream insertion operator, allowing a message
+    //! to be inserted into a ostream as a JSON-formatted string.
+    //!
+    //! \param os      - std::ostream to insert string into
+    //! \param the_msg - reference to the IpcMessage object to insert
+
+    std::ostream& operator <<(std::ostream& os, IpcMessage& the_msg)    {
+        os << the_msg.encode();
+        return os;
+    }
+
+    //! \privatesection
 
     //! Initialise the internal message type bidirectional map.
     //!
@@ -428,113 +509,83 @@ namespace FrameReceiver {
     // Explicit specialisations of the the set_value method, mapping  RapidJSON storage types
     // to the appropriate native type.
 
+    //! Sets the value of a message attribute.
+    //!
+    //! This explicit specialisation of the private template method sets the value of a
+    //! message attribute referenced by the RapidJSON value object passed as an argument.
+    //!
+    //! \param value_obj - RapidJSON value object to set value of
+    //! \param value - integer value to set
+
     template<> void IpcMessage::set_value(rapidjson::Value& value_obj, int const& value)
     {
         value_obj.SetInt(value);
     }
+
+    //! Sets the value of a message attribute.
+    //!
+    //! This explicit specialisation of the private template method sets the value of a
+    //! message attribute referenced by the RapidJSON value object passed as an argument.
+    //!
+    //! \param value_obj - RapidJSON value object to set value of
+    //! \param value - unsigned integer value to set
 
     template<> void IpcMessage::set_value(rapidjson::Value& value_obj, unsigned int const& value)
     {
         value_obj.SetUint(value);
     }
 
+    //! Sets the value of a message attribute.
+    //!
+    //! This explicit specialisation of the private template method sets the value of a
+    //! message attribute referenced by the RapidJSON value object passed as an argument.
+    //!
+    //! \param value_obj - RapidJSON value object to set value of
+    //! \param value - int64_t value to set
+
+
     template<> void IpcMessage::set_value(rapidjson::Value& value_obj, int64_t const& value)
     {
         value_obj.SetInt64(value);
     }
+
+    //! Sets the value of a message attribute.
+    //!
+    //! This explicit specialisation of the private template method sets the value of a
+    //! message attribute referenced by the RapidJSON value object passed as an argument.
+    //!
+    //! \param value_obj - RapidJSON value object to set value of
+    //! \param value - uint64_t value to set
 
     template<> void IpcMessage::set_value(rapidjson::Value& value_obj, uint64_t const& value)
     {
         value_obj.SetUint64(value);
     }
 
+    //! Sets the value of a message attribute.
+    //!
+    //! This explicit specialisation of the private template method sets the value of a
+    //! message attribute referenced by the RapidJSON value object passed as an argument.
+    //!
+    //! \param value_obj - RapidJSON value object to set value of
+    //! \param value - double value to set
+
     template<> void IpcMessage::set_value(rapidjson::Value& value_obj, double const& value)
     {
         value_obj.SetDouble(value);
     }
 
+    //! Sets the value of a message attribute.
+    //!
+    //! This explicit specialisation of the private template method sets the value of a
+    //! message attribute referenced by the RapidJSON value object passed as an argument.
+    //!
+    //! \param value_obj - RapidJSON value object to set value of
+    //! \param value - string value to set
+
     template<> void IpcMessage::set_value(rapidjson::Value& value_obj, std::string const& value)
     {
         value_obj.SetString(value.c_str(), doc_.GetAllocator());
-    }
-
-    //! Overloaded equality relational operator.
-    //!
-    //! This function overloads the equality relational operator, allowing two
-    //! messages to be compared for the same content. All fields in the messages
-    //! are compared and tested for equality
-    //!
-    //! \param lhs_msg - left-hand side message for comparison
-    //! \param rhs_msg - right-hand side message for comparison
-    //! \return boolean indicating equality
-
-    bool operator ==(IpcMessage const& lhs_msg, IpcMessage const& rhs_msg)
-    {
-        bool areEqual = true;
-
-        // Test equality of message attributes
-        areEqual &= (lhs_msg.msg_type_ == rhs_msg.msg_type_);
-        areEqual &= (lhs_msg.msg_val_  == rhs_msg.msg_val_);
-        areEqual &= (lhs_msg.msg_timestamp_ == rhs_msg.msg_timestamp_);
-
-        // Check both messages have a params block
-        areEqual &= (lhs_msg.has_params() == rhs_msg.has_params());
-
-        // Only continue to test equality if true at this point
-        if (areEqual)
-        {
-            // Iterate over params block if present and test equality of all members
-            if (lhs_msg.has_params() && rhs_msg.has_params())
-            {
-                rapidjson::Value const& lhs_params = lhs_msg.doc_["params"];
-                rapidjson::Value const& rhs_params = rhs_msg.doc_["params"];
-
-                areEqual &= (lhs_params.MemberCount() == rhs_params.MemberCount());
-
-                for (rapidjson::Value::ConstMemberIterator lhs_itr = lhs_params.MemberBegin();
-                        areEqual && (lhs_itr != lhs_params.MemberEnd()); lhs_itr++)
-                {
-                    rapidjson::Value::ConstMemberIterator rhs_itr = rhs_params.FindMember(lhs_itr->name.GetString());
-                    if (rhs_itr != rhs_params.MemberEnd())
-                    {
-                        areEqual &= (lhs_itr->value == rhs_itr->value);
-                    }
-                    else
-                    {
-                        areEqual = false;
-                    }
-                }
-            }
-        }
-        return areEqual;
-    }
-
-    //! Overloaded inequality relational operator.
-    //!
-    //! This function overloads the inequality relational operator, allowing two
-    //! messages to be compared for the different content. All fields in the messages
-    //! are compared and tested for inequality.
-    //!
-    //! \param lhs_msg - left-hand side message for comparison
-    //! \param rhs_msg - righ-hand side message for comparison
-    //! \return boolean indicating inequality
-
-    bool operator !=(IpcMessage const& lhs_msg, IpcMessage const& rhs_msg)
-    {
-        return !(lhs_msg == rhs_msg);
-    }
-
-    //! Overloaded stream insertion operator.
-    //!
-    //! This function overloads the ostream insertion operator, allowing a message
-    //! to be inserted into a ostream as a JSON-formatted string.
-    //!
-    //! \param os      - std::ostream to insert string into
-    //! \param the_msg - reference to the IpcMessage object to insert
-
-    std::ostream& operator <<(std::ostream& os, IpcMessage& the_msg)    {
-        os << the_msg.encode();
-        return os;
     }
 
     // Definition of static member variables used for type and value mapping

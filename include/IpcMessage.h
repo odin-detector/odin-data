@@ -198,15 +198,28 @@ namespace FrameReceiver
 			}
 		}
 
+	    //! Indicates if message has necessary attributes with legal values
 		bool is_valid(void);
 
+	    //! Returns type attribute of message
 		const MsgType get_msg_type(void) const;
+
+		 //! Returns value attribute of message
 		const MsgVal get_msg_val(void) const;
+
+	    //! Returns message timestamp as a string in ISO8601 extended format
 		const std::string get_msg_timestamp(void) const;
+
+	    //! Returns message timstamp as tm structure
 		const struct tm get_msg_datetime(void) const;
 
+	    //! Sets the message type attribute
 		void set_msg_type(MsgType const msg_type);
+
+	    //! Sets the message value attribute
 		void set_msg_val(MsgVal const msg_val);
+
+	    //! Returns a JSON-encoded string of the message
 		const char* encode(void);
 
 		//! Overloaded equality relational operator
@@ -309,14 +322,31 @@ namespace FrameReceiver
 
 		template<typename T> void set_value(rapidjson::Value& value_obj, T const& value);
 
+	    //! Initialise the internal message type bidirectional map
 		void msg_type_map_init();
+
+	    //! Maps a message type string to a valid enumerated MsgType
 		MsgType valid_msg_type(std::string msg_type_name);
+
+	    //! Maps an enumerated MsgType message type to the equivalent string
 		std::string valid_msg_type(MsgType msg_type);
+
+	    //! Initialise the internal message value bidirectional map
 		void msg_val_map_init();
+
+	    //! Maps a message value string to a valid enumerated MsgVal
 		MsgVal valid_msg_val(std::string msg_val_name);
+
+	    //! Maps an enumerated MsgVal message value to the equivalent string
 		std::string valid_msg_val(MsgVal msg_val);
+
+	    //! Maps a message timestamp onto a the internal timestamp representation
 		boost::posix_time::ptime valid_msg_timestamp(std::string msg_timestamp_text);
+
+	    //! Maps an internal message timestamp representation to an ISO8601 extended format string
 		std::string valid_msg_timestamp(boost::posix_time::ptime msg_timestamp);
+
+	    //! Indicates if the message has a params block
 		bool has_params(void) const;
 
 		// Private member variables
