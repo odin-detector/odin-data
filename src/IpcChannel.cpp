@@ -43,9 +43,19 @@ void IpcChannel::bind(const char* endpoint)
     socket_.bind(endpoint);
 }
 
+void IpcChannel::bind(std::string& endpoint)
+{
+    this->bind(endpoint.c_str());
+}
+
 void IpcChannel::connect(const char* endpoint)
 {
     socket_.connect(endpoint);
+}
+
+void IpcChannel::connect(std::string& endpoint)
+{
+    this->connect(endpoint.c_str());
 }
 
 void IpcChannel::send(std::string& message_str)

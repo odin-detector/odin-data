@@ -15,16 +15,34 @@
 #include <log4cxx/basicconfigurator.h>
 #include <log4cxx/simplelayout.h>
 
-struct RxThreadTestFixture
+namespace FrameReceiver
 {
-    RxThreadTestFixture() :
-        rx_channel(ZMQ_PAIR),
-        logger(log4cxx::Logger::getLogger("FrameReceiverRxThreadUnitTest"))
+    class FrameReceiverRxThreadTestProxy
     {
-        BOOST_TEST_MESSAGE("Setup test fixture");
+    public:
+        FrameReceiverRxThreadTestProxy(FrameReceiver::FrameReceiverConfig& config) :
+            config_(config)
+        {  }
 
-        // Bind the tester end of the RX channel to communicate with a thread
-        rx_channel.bind("inproc://rx_channel");
+        std::string& get_rx_channel_endpoint(void)
+        {
+            return config_.rx_channel_endpoint_;
+        }
+    private:
+        FrameReceiver::FrameReceiverConfig& config_;
+    };
+}
+class FrameReceiverRxThreadTestFixture
+{
+public:
+    FrameReceiverRxThreadTestFixture() :
+        rx_channel(ZMQ_PAIR),
+        logger(log4cxx::Logger::getLogger("FrameReceiverRxThreadUnitTest")),
+        proxy(config)
+    {
+
+        // Bind the endpoint of the channel to communicate with the RX thread
+        rx_channel.bind(proxy.get_rx_channel_endpoint());
 
         // Create a log4cxx console appender so that thread messages can be printed, suppress debug messages
         log4cxx::ConsoleAppender* consoleAppender = new log4cxx::ConsoleAppender(log4cxx::LayoutPtr(new log4cxx::SimpleLayout()));
@@ -34,7 +52,7 @@ struct RxThreadTestFixture
         log4cxx::Logger::getRootLogger()->setLevel(log4cxx::Level::getInfo());
     }
 
-    ~RxThreadTestFixture()
+    ~FrameReceiverRxThreadTestFixture()
     {
         BOOST_TEST_MESSAGE("Tear down test fixture");
     }
@@ -42,55 +60,66 @@ struct RxThreadTestFixture
     FrameReceiver::IpcChannel rx_channel;
     FrameReceiver::FrameReceiverConfig config;
     log4cxx::LoggerPtr logger;
+    FrameReceiver::FrameReceiverRxThreadTestProxy proxy;
 };
 
-BOOST_FIXTURE_TEST_SUITE(FrameReceiverRxThreadUnitTest, RxThreadTestFixture);
+BOOST_FIXTURE_TEST_SUITE(FrameReceiverRxThreadUnitTest, FrameReceiverRxThreadTestFixture);
 
 BOOST_AUTO_TEST_CASE( CreateAndPingRxThread )
 {
-    FrameReceiver::FrameReceiverRxThread rxThread(config, logger);
 
-    BOOST_CHECK_NO_THROW(rxThread.start());
+    BOOST_TEST_MESSAGE("Setup test fixture");
 
-    int loopCount = 500;
+    bool initOK = true;
 
-    FrameReceiver::IpcMessage::MsgType msg_type = FrameReceiver::IpcMessage::MsgTypeCmd;
-    FrameReceiver::IpcMessage::MsgVal  msg_val =  FrameReceiver::IpcMessage::MsgValCmdStatus;
+    try {
+        FrameReceiver::FrameReceiverRxThread rxThread(config, logger);
 
-    for (int loop = 0; loop < loopCount; loop++)
-    {
-        FrameReceiver::IpcMessage message(msg_type, msg_val);
-        message.set_param<int>("count", loop);
-        rx_channel.send(message.encode());
-    }
+        FrameReceiver::IpcMessage::MsgType msg_type = FrameReceiver::IpcMessage::MsgTypeCmd;
+        FrameReceiver::IpcMessage::MsgVal  msg_val =  FrameReceiver::IpcMessage::MsgValCmdStatus;
 
-    int replyCount = 0;
-    int timeoutCount = 0;
+        int loopCount = 500;
+        int replyCount = 0;
+        int timeoutCount = 0;
+        bool msgMatch = true;
 
-    bool msgMatch = true;
-
-    while ((replyCount < loopCount) && (timeoutCount < 10))
-    {
-        if (rx_channel.poll(100))
+        for (int loop = 0; loop < loopCount; loop++)
         {
-            std::string reply = rx_channel.recv();
-            FrameReceiver::IpcMessage response(reply.c_str());
-            msgMatch &= (response.get_msg_type() == msg_type);
-            msgMatch &= (response.get_msg_val() == msg_val);
-            msgMatch &= (response.get_param<int>("count", -1) == replyCount);
-            replyCount++;
-            timeoutCount = 0;
+            FrameReceiver::IpcMessage message(msg_type, msg_val);
+            message.set_param<int>("count", loop);
+            rx_channel.send(message.encode());
         }
-        else
-        {
-            timeoutCount++;
-        }
-    }
 
-    BOOST_CHECK_EQUAL(msgMatch, true);
-    BOOST_CHECK_EQUAL(loopCount, replyCount);
-    BOOST_CHECK_EQUAL(timeoutCount, 0);
-    BOOST_CHECK_NO_THROW(rxThread.stop());
+
+        while ((replyCount < loopCount) && (timeoutCount < 10))
+        {
+            if (rx_channel.poll(100))
+            {
+                std::string reply = rx_channel.recv();
+                FrameReceiver::IpcMessage response(reply.c_str());
+                msgMatch &= (response.get_msg_type() == msg_type);
+                msgMatch &= (response.get_msg_val() == msg_val);
+                msgMatch &= (response.get_param<int>("count", -1) == replyCount);
+                replyCount++;
+                timeoutCount = 0;
+            }
+            else
+            {
+                timeoutCount++;
+            }
+        }
+
+        BOOST_CHECK_EQUAL(msgMatch, true);
+        BOOST_CHECK_EQUAL(loopCount, replyCount);
+        BOOST_CHECK_EQUAL(timeoutCount, 0);
+        }
+    catch (FrameReceiver::FrameReceiverException& e)
+    {
+        initOK = false;
+        BOOST_TEST_MESSAGE("Creation of FrameReceiverRxThread failed: " << e.what());
+    }
+    BOOST_REQUIRE_EQUAL(initOK, true);
+
 }
 
 BOOST_AUTO_TEST_SUITE_END();

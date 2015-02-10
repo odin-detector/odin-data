@@ -25,7 +25,8 @@ namespace FrameReceiver
 		    max_buffer_mem_(Defaults::default_max_buffer_mem),
 		    sensor_type_(Defaults::SensorTypeIllegal),
 		    rx_port_(Defaults::default_rx_port),
-		    rx_address_(Defaults::default_rx_address)
+		    rx_address_(Defaults::default_rx_address),
+		    rx_channel_endpoint_(Defaults::default_rx_chan_endpoint)
 		{
 		};
 
@@ -53,14 +54,16 @@ namespace FrameReceiver
 
 	private:
 
-		std::size_t          max_buffer_mem_; //!< Amount of shared buffer memory to allocate for frame buffers
-		Defaults::SensorType sensor_type_;    //!< Sensor type receiving data for - drives frame size
-		uint16_t             rx_port_;        //!< Port to receive frame data on
-		std::string          rx_address_;     //!< IP address to receive frame data on
+		std::size_t          max_buffer_mem_;      //!< Amount of shared buffer memory to allocate for frame buffers
+		Defaults::SensorType sensor_type_;         //!< Sensor type receiving data for - drives frame size
+		uint16_t             rx_port_;             //!< Port to receive frame data on
+		std::string          rx_address_;          //!< IP address to receive frame data on
+		std::string          rx_channel_endpoint_; //!< IPC channel endpoint for RX thread communication
 
 		friend class FrameReceiverApp;
 		friend class FrameReceiverRxThread;
 		friend class FrameReceiverConfigTestProxy;
+		friend class FrameReceiverRxThreadTestProxy;
 	};
 
 } // namespace FrameReceiver

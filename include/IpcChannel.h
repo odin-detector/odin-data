@@ -35,7 +35,9 @@ namespace FrameReceiver
         IpcChannel(int type);
         ~IpcChannel();
         void bind(const char* endpoint);
+        void bind(std::string& endpoint);
         void connect(const char* endpoint);
+        void connect(std::string& endpoint);
 
         void send(std::string& message_str);
         void send(const char* message);

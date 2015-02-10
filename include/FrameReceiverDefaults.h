@@ -24,11 +24,12 @@ namespace FrameReceiver
 			SensorTypeExcalibur3M,
 		};
 
-		const int         default_node           = 1;
-		const std::size_t default_max_buffer_mem = 1048576;
-		const SensorType  default_sensor_type    = SensorTypeIllegal;
-		const uint16_t    default_rx_port        = 8989;
-		const std::string default_rx_address     = "0.0.0.0";
+		const int         default_node               = 1;
+		const std::size_t default_max_buffer_mem     = 1048576;
+		const SensorType  default_sensor_type        = SensorTypeIllegal;
+		const uint16_t    default_rx_port            = 8989;
+		const std::string default_rx_address         = "0.0.0.0";
+		const std::string default_rx_chan_endpoint   = "inproc://rx_channel";
 
 	}
 }

@@ -17,6 +17,7 @@ using namespace log4cxx::helpers;
 #include "IpcChannel.h"
 
 #include "FrameReceiverConfig.h"
+#include "FrameReceiverException.h"
 
 namespace FrameReceiver
 {
@@ -39,9 +40,10 @@ namespace FrameReceiver
         LoggerPtr            logger_;
         boost::thread        rx_thread_;
         bool                 run_thread_;
+        bool                 thread_running_;
+        bool                 thread_init_error_;
+        std::string          thread_init_msg_;
 
-//        zmq::context_t&      zmq_context_;
-//        zmq::socket_t        main_thread_chan_;
         IpcChannel           rx_channel_;
     };
 

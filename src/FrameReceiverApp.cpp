@@ -29,17 +29,11 @@ bool FrameReceiverApp::run_frame_receiver_ = true;
 //! This constructor initialises the FrameRecevierApp instance
 
 FrameReceiverApp::FrameReceiverApp(void) :
-    //zmq_context_(1),
-    //rx_thread_chan_(zmq_context_, ZMQ_PAIR),
     rx_channel_(ZMQ_PAIR)
 {
 
 	// Retrieve a logger instance
 	logger_ = Logger::getLogger("FrameReceiver");
-
-	// Bind the RX thread channel
-	//rx_thread_chan_.bind("inproc://rx_thread");
-	rx_channel_.bind("inproc://rx_channel");
 
 }
 
@@ -51,7 +45,6 @@ FrameReceiverApp::~FrameReceiverApp()
     // to be closed cleanly
     rx_thread_.reset();
 
-    //rx_thread_chan_.close();
 }
 
 //! Parse command-line arguments and configuration file options.
@@ -203,16 +196,16 @@ int FrameReceiverApp::parseArguments(int argc, char** argv)
 void FrameReceiverApp::run(void)
 {
 
+    run_frame_receiver_ = true;
+    LOG4CXX_INFO(logger_,  "Running frame receiver");
+
+    // Bind the RX thread channel
+    //rx_channel_.bind(config_.rx_channel_endpoint_);
+    rx_channel_.bind("inproc://rx_channel_wrong");
+
     // Create the RX thread object
     rx_thread_.reset(new FrameReceiverRxThread( config_, logger_));
 
-    run_frame_receiver_ = true;
-	LOG4CXX_INFO(logger_,  "Running frame receiver");
-
-	// Start the RX thread
-	rx_thread_->start();
-
-//    zmq::pollitem_t pollitems[] = {{rx_thread_chan_, 0, ZMQ_POLLIN, 0}};
 
 	while (run_frame_receiver_)
 	{
@@ -223,22 +216,12 @@ void FrameReceiverApp::run(void)
             std::stringstream message_ss;
             message_ss << "Hello " << loopCount;
             std::string message = message_ss.str();
-//            zmq::message_t message(message_str.size()+1);
-//            memcpy(message.data(), message_str.data(), message_str.size()+1);
-//            rx_thread_chan_.send(message);
             rx_channel_.send(message);
 	    }
 
 	    loopCount = 0;
 	    while (++loopCount <= maxCount)
 	    {
-//            zmq::poll(pollitems, 1, -1);
-//            if (pollitems[0].revents & ZMQ_POLLIN)
-//            {
-//                zmq::message_t reply;
-//                rx_thread_chan_.recv(&reply);
-//                LOG4CXX_DEBUG(logger_, "Main Thread got reply : " << (char*)reply.data());
-//            }
 	        if (rx_channel_.poll(-1))
 	        {
 	            std::string reply = rx_channel_.recv();
@@ -248,8 +231,8 @@ void FrameReceiverApp::run(void)
         run_frame_receiver_ = false;
 	}
 
-	// Stop the RX thread
-	rx_thread_->stop();
+	// Destroy the RX thread
+	rx_thread_.reset();
 
 }
 
