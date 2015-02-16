@@ -80,7 +80,7 @@ std::string IpcChannel::recv(void)
     zmq::message_t msg;
     socket_.recv(&msg);
 
-    return std::string(reinterpret_cast<const char*>(msg.data()));
+    return std::string(reinterpret_cast<const char*>(msg.data()), msg.size());
 }
 
 bool IpcChannel::poll(long timeout_ms)
