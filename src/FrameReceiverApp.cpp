@@ -29,7 +29,8 @@ bool FrameReceiverApp::run_frame_receiver_ = true;
 //! This constructor initialises the FrameRecevierApp instance
 
 FrameReceiverApp::FrameReceiverApp(void) :
-    rx_channel_(ZMQ_PAIR)
+    rx_channel_(ZMQ_PAIR),
+    ctrl_channel_(ZMQ_REP)
 {
 
 	// Retrieve a logger instance
@@ -199,16 +200,21 @@ void FrameReceiverApp::run(void)
     run_frame_receiver_ = true;
     LOG4CXX_INFO(logger_,  "Running frame receiver");
 
+    // Bind the control channel
+    ctrl_channel_.bind(config_.ctrl_channel_endpoint_);
+
     // Bind the RX thread channel
-    //rx_channel_.bind(config_.rx_channel_endpoint_);
-    rx_channel_.bind("inproc://rx_channel_wrong");
+    rx_channel_.bind(config_.rx_channel_endpoint_);
 
     // Create the RX thread object
     rx_thread_.reset(new FrameReceiverRxThread( config_, logger_));
 
 
+    LOG4CXX_DEBUG(logger_, "Main thread entering event loop");
+
 	while (run_frame_receiver_)
 	{
+#ifdef TEMP_TEST_RX_THREAD
 	    int loopCount = 0;
 	    const int maxCount = 5;
 	    while (++loopCount <= maxCount)
@@ -229,6 +235,15 @@ void FrameReceiverApp::run(void)
 	        }
 	    }
         run_frame_receiver_ = false;
+#endif
+
+        if (ctrl_channel_.poll(1000))
+        {
+            std::string ctrl_req = ctrl_channel_.recv();
+            LOG4CXX_DEBUG(logger_, "Got control channel request: " << ctrl_req);
+
+            ctrl_channel_.send(ctrl_req);
+        }
 	}
 
 	// Destroy the RX thread

@@ -30,6 +30,7 @@ namespace FrameReceiver
 		const uint16_t    default_rx_port            = 8989;
 		const std::string default_rx_address         = "0.0.0.0";
 		const std::string default_rx_chan_endpoint   = "inproc://rx_channel";
+		const std::string default_ctrl_chan_endpoint = "tcp://*:5000"; //"ipc://frame_receiver_ctrl.ipc";
 
 	}
 }

@@ -60,6 +60,7 @@ namespace FrameReceiver
 		//zmq::socket_t  rx_thread_chan_;
 
 		IpcChannel rx_channel_;
+		IpcChannel ctrl_channel_;
 
 	};
 }

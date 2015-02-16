@@ -1,0 +1,38 @@
+from frame_receiver.ipc_channel import IpcChannel, IpcChannelException
+from frame_receiver.ipc_message import IpcMessage, IpcMessageException
+from frame_processor_config import FrameProcessorConfig
+
+import time
+
+class FrameProcessor(object):
+    
+    def __init__(self):
+
+        # Instantiate a configuration container object, which will be populated
+        # with sensible default values
+        self.config = FrameProcessorConfig("FrameProcessor - test harness to simulate operation of FrameProcessor application")
+                
+        # Create the appropriate IPC channels
+        self.ctrl_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_REQ)
+    
+                
+    def run(self):
+
+        self.ctrl_channel.connect(self.config.ctrl_endpoint)
+        
+        for i in range(10):
+            
+            msg = "HELLO " + str(i)
+            print "Sending message", msg
+            self.ctrl_channel.send(msg)
+            
+            reply = self.ctrl_channel.recv()
+            print "Got reply:", reply
+            time.sleep(1) 
+        
+
+if __name__ == "__main__":
+        
+        fp = FrameProcessor()
+        fp.run()
+        

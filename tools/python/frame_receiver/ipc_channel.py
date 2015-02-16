@@ -13,6 +13,7 @@ class IpcChannelException(Exception):
 class IpcChannel(object):
     
     CHANNEL_TYPE_PAIR = zmq.PAIR
+    CHANNEL_TYPE_REQ  = zmq.REQ
     
     def __init__(self, channel_type, endpoint=None, context=None):
         
