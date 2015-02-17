@@ -22,13 +22,14 @@ class FrameProcessor(object):
         
         for i in range(10):
             
-            msg = "HELLO " + str(i)
+            #msg = "HELLO " + str(i)
+            msg = IpcMessage(msg_type='cmd', msg_val='status')
             print "Sending message", msg
-            self.ctrl_channel.send(msg)
+            self.ctrl_channel.send(msg.encode())
             
             reply = self.ctrl_channel.recv()
             print "Got reply:", reply
-            time.sleep(1) 
+            time.sleep(0.01) 
         
 
 if __name__ == "__main__":
