@@ -23,6 +23,7 @@ int main(int argc, char** argv)
 
 	// Trap Ctrl-C and pass to TestThroughputMulti
 	signal(SIGINT, intHandler);
+	signal(SIGTERM, intHandler);
 
 	// Create a default basic logger configuration, which can be overridden by command-line option later
 	BasicConfigurator::configure();

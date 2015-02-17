@@ -75,12 +75,15 @@ void IpcChannel::send(const char* message)
 
 }
 
-std::string IpcChannel::recv(void)
+const std::string  IpcChannel::recv(void)
 {
+    std::size_t msg_size;
     zmq::message_t msg;
-    socket_.recv(&msg);
 
-    return std::string(reinterpret_cast<const char*>(msg.data()), msg.size());
+    socket_.recv(&msg);
+    msg_size = msg.size();
+
+    return std::string(reinterpret_cast<char*>(msg.data()), msg_size);
 }
 
 bool IpcChannel::poll(long timeout_ms)

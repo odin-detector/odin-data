@@ -10,6 +10,8 @@
 
 #include "zmq/zmq.hpp"
 #include <iostream>
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
 
 namespace FrameReceiver
 {
@@ -42,8 +44,11 @@ namespace FrameReceiver
         void send(std::string& message_str);
         void send(const char* message);
 
-        std::string recv(void);
+        const std::string recv(void);
+
         bool poll(long timeout_ms = -1);
+
+        friend class IpcReactor;
 
     private:
 
@@ -52,6 +57,7 @@ namespace FrameReceiver
 
 
     };
+
 } // namespace FrameReceiver
 
 

@@ -25,6 +25,8 @@ using namespace log4cxx::helpers;
 #include <boost/scoped_ptr.hpp>
 
 #include "IpcChannel.h"
+#include "IpcMessage.h"
+#include "IpcReactor.h"
 #include "FrameReceiverConfig.h"
 #include "FrameReceiverRxThread.h"
 
@@ -34,7 +36,7 @@ namespace FrameReceiver
 	//!
 	//! This class implements the main functionality of the FrameReceiver application, providing
 	//! the overall framework for running the frame receiver, capturing frames of incoming data and
-    //! handing them off to a processing appplication via shared memory. The application communicates
+    //! handing them off to a processing application via shared memory. The application communicates
 	//! with the downstream processing (and internally) via ZeroMQ inter-process channels.
 
 	class FrameReceiverApp
@@ -48,19 +50,27 @@ namespace FrameReceiver
 		void run(void);
 		static void stop(void);
 
+
 	private:
+
+        void handleCtrlChannel(void);
+        void handleRxChannel(void);
+        void rxPingTimerHandler(void);
+        void timerHandler2(void);
 
 		LoggerPtr             logger_;    //!< Log4CXX logger instance pointer
 		FrameReceiverConfig   config_;    //!< Configuration storage object
 		boost::scoped_ptr<FrameReceiverRxThread> rx_thread_; //!< Receiver thread object
 
-		static bool run_frame_receiver_;
+		static bool terminate_frame_receiver_;
 
 		//zmq::context_t zmq_context_;
 		//zmq::socket_t  rx_thread_chan_;
 
 		IpcChannel rx_channel_;
 		IpcChannel ctrl_channel_;
+
+		IpcReactor reactor_;
 
 	};
 }

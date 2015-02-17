@@ -66,7 +66,7 @@ void FrameReceiverRxThread::run_service(void)
         if (rx_channel_.poll(10))
         {
             std::string msg = rx_channel_.recv();
-            LOG4CXX_DEBUG(logger_, "RX Thread got message: " << msg);
+            //LOG4CXX_DEBUG(logger_, "RX Thread got message: " << msg);
 
             rx_channel_.send(msg);
         }

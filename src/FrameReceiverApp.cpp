@@ -22,7 +22,7 @@ namespace po = boost::program_options;
 
 using namespace FrameReceiver;
 
-bool FrameReceiverApp::run_frame_receiver_ = true;
+bool FrameReceiverApp::terminate_frame_receiver_ = false;
 
 //! Constructor for FrameReceiverApp class.
 //!
@@ -197,7 +197,7 @@ int FrameReceiverApp::parseArguments(int argc, char** argv)
 void FrameReceiverApp::run(void)
 {
 
-    run_frame_receiver_ = true;
+    terminate_frame_receiver_ = false;
     LOG4CXX_INFO(logger_,  "Running frame receiver");
 
     // Bind the control channel
@@ -209,51 +209,92 @@ void FrameReceiverApp::run(void)
     // Create the RX thread object
     rx_thread_.reset(new FrameReceiverRxThread( config_, logger_));
 
+    // Add IPC channels to the reactor
+    reactor_.add_channel(ctrl_channel_, boost::bind(&FrameReceiverApp::handleCtrlChannel, this));
+    reactor_.add_channel(rx_channel_,   boost::bind(&FrameReceiverApp::handleRxChannel, this));
 
-    LOG4CXX_DEBUG(logger_, "Main thread entering event loop");
+    // Add timers to the reactor
+    int rxPingTimer = reactor_.add_timer(1000, 0, boost::bind(&FrameReceiverApp::rxPingTimerHandler, this));
+    int timer2 = reactor_.add_timer(1500, 2, boost::bind(&FrameReceiverApp::timerHandler2, this));
 
-	while (run_frame_receiver_)
-	{
-#ifdef TEMP_TEST_RX_THREAD
-	    int loopCount = 0;
-	    const int maxCount = 5;
-	    while (++loopCount <= maxCount)
-	    {
-            std::stringstream message_ss;
-            message_ss << "Hello " << loopCount;
-            std::string message = message_ss.str();
-            rx_channel_.send(message);
-	    }
 
-	    loopCount = 0;
-	    while (++loopCount <= maxCount)
-	    {
-	        if (rx_channel_.poll(-1))
-	        {
-	            std::string reply = rx_channel_.recv();
-	            LOG4CXX_DEBUG(logger_, "Main Thread got reply : " << reply);
-	        }
-	    }
-        run_frame_receiver_ = false;
-#endif
+    LOG4CXX_DEBUG(logger_, "Main thread entering reactor loop");
 
-        if (ctrl_channel_.poll(1000))
-        {
-            std::string ctrl_req = ctrl_channel_.recv();
-            LOG4CXX_DEBUG(logger_, "Got control channel request: " << ctrl_req);
-
-            ctrl_channel_.send(ctrl_req);
-        }
-	}
+    // Run the reactor event loop
+    reactor_.run();
 
 	// Destroy the RX thread
 	rx_thread_.reset();
 
+	// Remove timers and channels from the reactor
+	reactor_.remove_timer(rxPingTimer);
+	reactor_.remove_timer(timer2);
+    reactor_.remove_channel(ctrl_channel_);
+    reactor_.remove_channel(rx_channel_);
+
+}
+
+void FrameReceiverApp::handleCtrlChannel(void)
+{
+    // Receive a request message from the control channel
+    std::string ctrl_req_encoded = ctrl_channel_.recv();
+
+    // Construct a default reply
+    IpcMessage ctrl_reply;
+
+    // Parse and handle the message
+    try {
+
+        IpcMessage ctrl_req(ctrl_req_encoded.c_str());
+
+        switch (ctrl_req.get_msg_type())
+        {
+        case IpcMessage::MsgTypeCmd:
+
+            LOG4CXX_DEBUG(logger_, "Got control channel command request");
+            ctrl_reply.set_msg_type(IpcMessage::MsgTypeAck);
+            ctrl_reply.set_msg_val(ctrl_req.get_msg_val());
+            break;
+        }
+    }
+    catch (IpcMessageException& e)
+    {
+        LOG4CXX_ERROR(logger_, "Error decoding control channel request: " << e.what());
+    }
+    ctrl_channel_.send(ctrl_reply.encode());
+
+}
+
+void FrameReceiverApp::handleRxChannel(void)
+{
+    std::string rx_reply_encoded = rx_channel_.recv();
+    try {
+        IpcMessage rx_reply(rx_reply_encoded.c_str());
+        LOG4CXX_DEBUG(logger_, "Got reply from RX thread : " << rx_reply_encoded);
+    }
+    catch (IpcMessageException& e)
+    {
+        LOG4CXX_ERROR(logger_, "Error decoding RX thread channel reply: " << e.what());
+    }
+}
+
+void FrameReceiverApp::rxPingTimerHandler(void)
+{
+
+    IpcMessage rxPing(IpcMessage::MsgTypeCmd, IpcMessage::MsgValCmdStatus);
+    rx_channel_.send(rxPing.encode());
+
+}
+
+void FrameReceiverApp::timerHandler2(void)
+{
+    LOG4CXX_DEBUG(logger_, "In timerHandler2");
 }
 
 void FrameReceiverApp::stop(void)
 {
-    run_frame_receiver_ = false;
+    std::cout << "In FrameReceiverApp::stop" << std::endl;
+    terminate_frame_receiver_ = true;
 }
 
 
