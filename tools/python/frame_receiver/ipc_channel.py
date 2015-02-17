@@ -43,7 +43,7 @@ class IpcChannel(object):
         
     def send(self, data):
         
-        self.socket.send(data)
+        self.socket.send_string(data)
         
     def recv(self):
         

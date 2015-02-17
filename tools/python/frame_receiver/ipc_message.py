@@ -20,6 +20,7 @@ class IpcMessage(object):
             self.attrs['msg_type'] = msg_type
             self.attrs['msg_val']  = msg_val
             self.attrs['timestamp'] = datetime.datetime.now().isoformat()
+            self.attrs['params'] = {}
             
         else:
             try:
