@@ -238,6 +238,14 @@ int IpcReactor::run(void)
             rebuild_pollitems();
         }
 
+        // If there are no channels to poll and no timers currently active, break out of the
+        // reactor loop cleanly
+        if ((pollsize_ == 0) && (timers_.size() == 0))
+        {
+            rc = 0;
+            break;
+        }
+
         try
         {
 
