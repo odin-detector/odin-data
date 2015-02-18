@@ -96,3 +96,8 @@ bool IpcChannel::poll(long timeout_ms)
 
 }
 
+void IpcChannel::close(void)
+{
+    socket_.close();
+}
+

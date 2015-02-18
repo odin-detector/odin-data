@@ -47,6 +47,7 @@ namespace FrameReceiver
         const std::string recv(void);
 
         bool poll(long timeout_ms = -1);
+        void close(void);
 
         friend class IpcReactor;
 
