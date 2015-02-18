@@ -35,9 +35,12 @@ BOOST_FIXTURE_TEST_SUITE( IpcChannelUnitTest , TestFixture);
 BOOST_AUTO_TEST_CASE( InprocBasicSendReceive )
 {
     std::string testMessage("This is a test message");
+    std::cout << testMessage.length() << " : >>" << testMessage << "<<" << std::endl;;
 
     send_channel.send(testMessage);
     std::string reply = recv_channel.recv();
+    std::cout << reply.length() << " : >>" << reply << "<<" << std::endl;
+
     BOOST_CHECK_EQUAL(testMessage, reply);
 
 }

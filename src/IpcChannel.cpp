@@ -1,5 +1,5 @@
 /*!
- * IpcChannel.cpp
+q * IpcChannel.cpp
  *
  *  Created on: Feb 6, 2015
  *      Author: Tim Nicholls, STFC Application Engineering
@@ -75,7 +75,7 @@ void IpcChannel::send(const char* message)
 
 }
 
-const std::string  IpcChannel::recv(void)
+const std::string IpcChannel::recv(void)
 {
     std::size_t msg_size;
     zmq::message_t msg;
@@ -83,7 +83,7 @@ const std::string  IpcChannel::recv(void)
     socket_.recv(&msg);
     msg_size = msg.size();
 
-    return std::string(reinterpret_cast<char*>(msg.data()), msg_size);
+    return std::string(reinterpret_cast<char*>(msg.data()), msg_size-1);
 }
 
 bool IpcChannel::poll(long timeout_ms)

@@ -43,8 +43,13 @@ class IpcChannel(object):
         
     def send(self, data):
         
+        if data[-1] != '\0':
+            data = data + '\0'
         self.socket.send_string(data)
         
     def recv(self):
         
-        return self.socket.recv()
+        data = self.socket.recv()
+        if data[-1] == '\0':
+            data = data[:-1]
+        return data

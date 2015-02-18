@@ -28,7 +28,8 @@ class FrameProcessor(object):
             self.ctrl_channel.send(msg.encode())
             
             reply = self.ctrl_channel.recv()
-            print "Got reply:", reply
+            reply_decoded = IpcMessage(from_str=reply)
+            print "Got reply, msg_type =", reply_decoded.get_msg_type(), "val =", reply_decoded.get_msg_val()
             time.sleep(0.01) 
         
 
