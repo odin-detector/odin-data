@@ -55,6 +55,7 @@ namespace FrameReceiver
 
         void handleCtrlChannel(void);
         void handleRxChannel(void);
+        void handleFrameReleaseChannel(void);
         void rxPingTimerHandler(void);
         void timerHandler2(void);
 
@@ -69,6 +70,8 @@ namespace FrameReceiver
 
 		IpcChannel rx_channel_;
 		IpcChannel ctrl_channel_;
+		IpcChannel frame_ready_channel_;
+		IpcChannel frame_release_channel_;
 
 		IpcReactor reactor_;
 

@@ -27,7 +27,10 @@ namespace FrameReceiver
 		    rx_port_(Defaults::default_rx_port),
 		    rx_address_(Defaults::default_rx_address),
 		    rx_channel_endpoint_(Defaults::default_rx_chan_endpoint),
-		    ctrl_channel_endpoint_(Defaults::default_ctrl_chan_endpoint)
+		    ctrl_channel_endpoint_(Defaults::default_ctrl_chan_endpoint),
+		    frame_ready_endpoint_(Defaults::default_frame_ready_endpoint),
+		    frame_release_endpoint_(Defaults::default_frame_release_endpoint),
+		    shared_buffer_name_(Defaults::default_shared_buffer_name)
 		{
 		};
 
@@ -55,12 +58,15 @@ namespace FrameReceiver
 
 	private:
 
-		std::size_t          max_buffer_mem_;        //!< Amount of shared buffer memory to allocate for frame buffers
-		Defaults::SensorType sensor_type_;           //!< Sensor type receiving data for - drives frame size
-		uint16_t             rx_port_;               //!< Port to receive frame data on
-		std::string          rx_address_;            //!< IP address to receive frame data on
-		std::string          rx_channel_endpoint_;   //!< IPC channel endpoint for RX thread communication
-		std::string          ctrl_channel_endpoint_; //!< IPC channel endpoint for control communication with other processes
+		std::size_t          max_buffer_mem_;         //!< Amount of shared buffer memory to allocate for frame buffers
+		Defaults::SensorType sensor_type_;            //!< Sensor type receiving data for - drives frame size
+		uint16_t             rx_port_;                //!< Port to receive frame data on
+		std::string          rx_address_;             //!< IP address to receive frame data on
+		std::string          rx_channel_endpoint_;    //!< IPC channel endpoint for RX thread communication
+		std::string          ctrl_channel_endpoint_;  //!< IPC channel endpoint for control communication with other processes
+		std::string          frame_ready_endpoint_;   //!< IPC channel endpoint for transmitting frame ready notifications to other processes
+        std::string          frame_release_endpoint_; //!< IPC channel endpoint for receiving frame release notifications from other processes
+		std::string          shared_buffer_name_;     //!< Shared memory frame buffer name
 
 		friend class FrameReceiverApp;
 		friend class FrameReceiverRxThread;

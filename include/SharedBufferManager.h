@@ -38,6 +38,8 @@ namespace FrameReceiver
 
         SharedBufferManager(const std::string& shared_mem_name, const size_t shared_mem_size,
                 const size_t buffer_size, bool remove_when_deleted=true);
+        SharedBufferManager(const std::string& shared_mem_name);
+
         ~SharedBufferManager();
 
         const size_t get_manager_id(void) const;

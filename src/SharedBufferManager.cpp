@@ -14,7 +14,7 @@ using namespace FrameReceiver;
 using namespace boost::interprocess;
 
 SharedBufferManager::SharedBufferManager(const std::string& shared_mem_name, const size_t shared_mem_size,
-        const size_t buffer_size, bool remove_when_deleted) :
+        const size_t buffer_size, bool remove_when_deleted) try :
     shared_mem_name_(shared_mem_name),
     shared_mem_size_(shared_mem_size),
     remove_when_deleted_(remove_when_deleted),
@@ -37,6 +37,37 @@ SharedBufferManager::SharedBufferManager(const std::string& shared_mem_name, con
     manager_hdr_->num_buffers = num_buffers;
     manager_hdr_->buffer_size = buffer_size;
 
+}
+catch (interprocess_exception& e)
+{
+    // Catch, transform and rethrow any exceptions thrown during the member initializer list
+    std::stringstream ss;
+    ss << "Failed to create shared buffer manager: " << e.what();
+    throw (SharedBufferManagerException(ss.str()));
+}
+
+SharedBufferManager::SharedBufferManager(const std::string& shared_mem_name) try :
+    shared_mem_name_(shared_mem_name),
+    remove_when_deleted_(false),
+    shared_mem_(open_only, shared_mem_name_.c_str(), read_write)
+{
+
+    // Map the whole shared memory region into this process
+    shared_mem_region_ = mapped_region(shared_mem_, read_write);
+
+    // Determine how big the region is
+    shared_mem_size_ = shared_mem_region_.get_size();
+
+    // Map the buffer manager header
+    manager_hdr_ = reinterpret_cast<Header*>(shared_mem_region_.get_address());
+
+}
+catch (interprocess_exception& e)
+{
+    // Catch, transform and rethrow any exceptions thrown during the member initializer list
+    std::stringstream ss;
+    ss << "Failed to map existing shared buffer manager: " << e.what();
+    throw (SharedBufferManagerException(ss.str()));
 }
 
 SharedBufferManager::~SharedBufferManager()

@@ -1,5 +1,5 @@
 /*!
- * FrameReceiver.cpp
+ * FrameReceiverApp.cpp
  *
  *  Created on: Jan 28, 2015
  *      Author: Tim Nicholls, STFC Application Engineering Group
@@ -7,6 +7,7 @@
 
 #include "FrameReceiverApp.h"
 #include "FrameReceiverConfig.h"
+#include "SharedBufferManager.h"
 
 #include <iostream>
 #include <iomanip>
@@ -30,7 +31,9 @@ bool FrameReceiverApp::terminate_frame_receiver_ = false;
 
 FrameReceiverApp::FrameReceiverApp(void) :
     rx_channel_(ZMQ_PAIR),
-    ctrl_channel_(ZMQ_REP)
+    ctrl_channel_(ZMQ_REP),
+    frame_ready_channel_(ZMQ_PUB),
+    frame_release_channel_(ZMQ_SUB)
 {
 
 	// Retrieve a logger instance
@@ -95,6 +98,8 @@ int FrameReceiverApp::parseArguments(int argc, char** argv)
                     "Set the port to receive frame data on")
                 ("ipaddress,i",  po::value<std::string>()->default_value(FrameReceiver::Defaults::default_rx_address),
                     "Set the IP address of the interface to receive frame data on")
+                ("sharedbuf",    po::value<std::string>()->default_value(FrameReceiver::Defaults::default_shared_buffer_name),
+                    "Set the name of the shared memory frame buffer")
 				;
 
 		// Group the variables for parsing at the command line and/or from the configuration file
@@ -172,6 +177,12 @@ int FrameReceiverApp::parseArguments(int argc, char** argv)
 		    config_.rx_address_ = vm["ipaddress"].as<std::string>();
 		    LOG4CXX_DEBUG(logger_, "Setting RX interface address to " << config_.rx_address_);
 		}
+
+		if (vm.count("sharedbuf"))
+		{
+		    config_.shared_buffer_name_ = vm["sharedbuf"].as<std::string>();
+		    LOG4CXX_DEBUG(logger_, "Setting shared frame buffer name to " << config_.shared_buffer_name_);
+		}
 	}
 	catch (Exception &e)
 	{
@@ -206,17 +217,36 @@ void FrameReceiverApp::run(void)
     // Bind the RX thread channel
     rx_channel_.bind(config_.rx_channel_endpoint_);
 
-    // Create the RX thread object
-    rx_thread_.reset(new FrameReceiverRxThread( config_, logger_));
+    // Bind the frame ready and release channels
+    frame_ready_channel_.bind(config_.frame_ready_endpoint_);
+    frame_release_channel_.bind(config_.frame_release_endpoint_);
 
     // Add IPC channels to the reactor
     reactor_.add_channel(ctrl_channel_, boost::bind(&FrameReceiverApp::handleCtrlChannel, this));
     reactor_.add_channel(rx_channel_,   boost::bind(&FrameReceiverApp::handleRxChannel, this));
+    reactor_.add_channel(frame_release_channel_, boost::bind(&FrameReceiverApp::handleFrameReleaseChannel, this));
+
+    // Create the RX thread object
+    rx_thread_.reset(new FrameReceiverRxThread( config_, logger_));
 
     // Add timers to the reactor
     int rxPingTimer = reactor_.add_timer(1000, 0, boost::bind(&FrameReceiverApp::rxPingTimerHandler, this));
     int timer2 = reactor_.add_timer(1500, 2, boost::bind(&FrameReceiverApp::timerHandler2, this));
 
+    // Create a shared buffer manager
+    SharedBufferManager shared_buffer_manager(config_.shared_buffer_name_, config_.max_buffer_mem_, 10000, false);
+
+    // Push the IDs of all of the empty buffers onto the RX thread channel
+    // TODO if the number of buffers is so big that the RX thread channel would reach HWM (in either direction)
+    // before the reactor has time to start, we could consider putting this pre-charge into a timer handler
+    // that runs as soon as the reactor starts, but need to think about how this might block. Need non-blocking
+    // send on channels??
+    for (int buf = 0; buf < shared_buffer_manager.get_num_buffers(); buf++)
+    {
+        IpcMessage buf_msg(IpcMessage::MsgTypeNotify, IpcMessage::MsgValNotifyFrameRelease);
+        buf_msg.set_param("buffer_id", buf);
+        rx_channel_.send(buf_msg.encode());
+    }
 
     LOG4CXX_DEBUG(logger_, "Main thread entering reactor loop");
 
@@ -231,6 +261,7 @@ void FrameReceiverApp::run(void)
 	reactor_.remove_timer(timer2);
     reactor_.remove_channel(ctrl_channel_);
     reactor_.remove_channel(rx_channel_);
+    reactor_.remove_channel(frame_release_channel_);
 
 }
 
@@ -275,6 +306,19 @@ void FrameReceiverApp::handleRxChannel(void)
     catch (IpcMessageException& e)
     {
         LOG4CXX_ERROR(logger_, "Error decoding RX thread channel reply: " << e.what());
+    }
+}
+
+void FrameReceiverApp::handleFrameReleaseChannel(void)
+{
+    std::string frame_release_encoded = frame_release_channel_.recv();
+    try {
+        IpcMessage rx_reply(frame_release_encoded.c_str());
+        LOG4CXX_DEBUG(logger_, "Got message on frame release channel : " << frame_release_encoded);
+    }
+    catch (IpcMessageException& e)
+    {
+        LOG4CXX_ERROR(logger_, "Error decoding message on frame release channel: " << e.what());
     }
 }
 
