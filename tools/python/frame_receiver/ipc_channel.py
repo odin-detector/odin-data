@@ -14,6 +14,8 @@ class IpcChannel(object):
     
     CHANNEL_TYPE_PAIR = zmq.PAIR
     CHANNEL_TYPE_REQ  = zmq.REQ
+    CHANNEL_TYPE_SUB  = zmq.SUB
+    CHANNEL_TYPE_PUB  = zmq.PUB
     
     def __init__(self, channel_type, endpoint=None, context=None):
         
@@ -53,3 +55,7 @@ class IpcChannel(object):
         if data[-1] == '\0':
             data = data[:-1]
         return data
+    
+    def subscribe(self, topic=b''):
+        
+        self.socket.setsockopt(zmq.SUBSCRIBE, topic)

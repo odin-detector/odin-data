@@ -221,6 +221,9 @@ void FrameReceiverApp::run(void)
     frame_ready_channel_.bind(config_.frame_ready_endpoint_);
     frame_release_channel_.bind(config_.frame_release_endpoint_);
 
+    // Set default subscription on frame release channel
+    frame_release_channel_.subscribe("");
+
     // Add IPC channels to the reactor
     reactor_.add_channel(ctrl_channel_, boost::bind(&FrameReceiverApp::handleCtrlChannel, this));
     reactor_.add_channel(rx_channel_,   boost::bind(&FrameReceiverApp::handleRxChannel, this));
@@ -231,7 +234,7 @@ void FrameReceiverApp::run(void)
 
     // Add timers to the reactor
     int rxPingTimer = reactor_.add_timer(1000, 0, boost::bind(&FrameReceiverApp::rxPingTimerHandler, this));
-    int timer2 = reactor_.add_timer(1500, 2, boost::bind(&FrameReceiverApp::timerHandler2, this));
+    int timer2 = reactor_.add_timer(1500, 0, boost::bind(&FrameReceiverApp::timerHandler2, this));
 
     // Create a shared buffer manager
     SharedBufferManager shared_buffer_manager(config_.shared_buffer_name_, config_.max_buffer_mem_, 10000, false);
@@ -332,7 +335,12 @@ void FrameReceiverApp::rxPingTimerHandler(void)
 
 void FrameReceiverApp::timerHandler2(void)
 {
-    LOG4CXX_DEBUG(logger_, "In timerHandler2");
+    static unsigned int dummy_last_frame = 0;
+
+    LOG4CXX_DEBUG(logger_, "Sending frame ready message for frame " << dummy_last_frame);
+    IpcMessage frame_ready(IpcMessage::MsgTypeNotify, IpcMessage::MsgValNotifyFrameReady);
+    frame_ready.set_param("frame", dummy_last_frame++);
+    frame_ready_channel_.send(frame_ready.encode());
 }
 
 void FrameReceiverApp::stop(void)
