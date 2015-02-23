@@ -9,6 +9,7 @@
 
 #include "FrameReceiverRxThread.h"
 #include "IpcMessage.h"
+#include "SharedBufferManager.h"
 
 #include <log4cxx/logger.h>
 #include <log4cxx/consoleappender.h>
@@ -38,7 +39,8 @@ public:
     FrameReceiverRxThreadTestFixture() :
         rx_channel(ZMQ_PAIR),
         logger(log4cxx::Logger::getLogger("FrameReceiverRxThreadUnitTest")),
-        proxy(config)
+        proxy(config),
+        buffer_manager("TestSharedBuffer", 10000, 1000)
     {
 
         // Bind the endpoint of the channel to communicate with the RX thread
@@ -61,6 +63,7 @@ public:
     FrameReceiver::FrameReceiverConfig config;
     log4cxx::LoggerPtr logger;
     FrameReceiver::FrameReceiverRxThreadTestProxy proxy;
+    FrameReceiver::SharedBufferManager buffer_manager;
 };
 
 BOOST_FIXTURE_TEST_SUITE(FrameReceiverRxThreadUnitTest, FrameReceiverRxThreadTestFixture);
@@ -73,7 +76,7 @@ BOOST_AUTO_TEST_CASE( CreateAndPingRxThread )
     bool initOK = true;
 
     try {
-        FrameReceiver::FrameReceiverRxThread rxThread(config, logger);
+        FrameReceiver::FrameReceiverRxThread rxThread(config, logger, buffer_manager);
 
         FrameReceiver::IpcMessage::MsgType msg_type = FrameReceiver::IpcMessage::MsgTypeCmd;
         FrameReceiver::IpcMessage::MsgVal  msg_val =  FrameReceiver::IpcMessage::MsgValCmdStatus;

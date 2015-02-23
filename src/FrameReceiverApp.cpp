@@ -221,27 +221,30 @@ void FrameReceiverApp::run(void)
     frame_ready_channel_.bind(config_.frame_ready_endpoint_);
     frame_release_channel_.bind(config_.frame_release_endpoint_);
 
+    // Set default subscription on frame release channel
+    frame_release_channel_.subscribe("");
+
     // Add IPC channels to the reactor
     reactor_.add_channel(ctrl_channel_, boost::bind(&FrameReceiverApp::handleCtrlChannel, this));
     reactor_.add_channel(rx_channel_,   boost::bind(&FrameReceiverApp::handleRxChannel, this));
     reactor_.add_channel(frame_release_channel_, boost::bind(&FrameReceiverApp::handleFrameReleaseChannel, this));
 
-    // Create the RX thread object
-    rx_thread_.reset(new FrameReceiverRxThread( config_, logger_));
-
     // Add timers to the reactor
-    int rxPingTimer = reactor_.add_timer(1000, 0, boost::bind(&FrameReceiverApp::rxPingTimerHandler, this));
-    int timer2 = reactor_.add_timer(1500, 2, boost::bind(&FrameReceiverApp::timerHandler2, this));
+    //int rxPingTimer = reactor_.add_timer(1000, 0, boost::bind(&FrameReceiverApp::rxPingTimerHandler, this));
+    //int timer2 = reactor_.add_timer(1500, 0, boost::bind(&FrameReceiverApp::timerHandler2, this));
 
     // Create a shared buffer manager
-    SharedBufferManager shared_buffer_manager(config_.shared_buffer_name_, config_.max_buffer_mem_, 10000, false);
+    SharedBufferManager buffer_manager(config_.shared_buffer_name_, config_.max_buffer_mem_, 10000, false);
+
+    // Create the RX thread object
+    rx_thread_.reset(new FrameReceiverRxThread( config_, logger_, buffer_manager));
 
     // Push the IDs of all of the empty buffers onto the RX thread channel
     // TODO if the number of buffers is so big that the RX thread channel would reach HWM (in either direction)
     // before the reactor has time to start, we could consider putting this pre-charge into a timer handler
     // that runs as soon as the reactor starts, but need to think about how this might block. Need non-blocking
     // send on channels??
-    for (int buf = 0; buf < shared_buffer_manager.get_num_buffers(); buf++)
+    for (int buf = 0; buf < buffer_manager.get_num_buffers(); buf++)
     {
         IpcMessage buf_msg(IpcMessage::MsgTypeNotify, IpcMessage::MsgValNotifyFrameRelease);
         buf_msg.set_param("buffer_id", buf);
@@ -257,8 +260,8 @@ void FrameReceiverApp::run(void)
 	rx_thread_.reset();
 
 	// Remove timers and channels from the reactor
-	reactor_.remove_timer(rxPingTimer);
-	reactor_.remove_timer(timer2);
+	//reactor_.remove_timer(rxPingTimer);
+	//reactor_.remove_timer(timer2);
     reactor_.remove_channel(ctrl_channel_);
     reactor_.remove_channel(rx_channel_);
     reactor_.remove_channel(frame_release_channel_);
@@ -301,7 +304,19 @@ void FrameReceiverApp::handleRxChannel(void)
     std::string rx_reply_encoded = rx_channel_.recv();
     try {
         IpcMessage rx_reply(rx_reply_encoded.c_str());
-        LOG4CXX_DEBUG(logger_, "Got reply from RX thread : " << rx_reply_encoded);
+        //LOG4CXX_DEBUG(logger_, "Got reply from RX thread : " << rx_reply_encoded);
+
+        if ((rx_reply.get_msg_type() == IpcMessage::MsgTypeNotify) &&
+            (rx_reply.get_msg_val() == IpcMessage::MsgValNotifyFrameReady))
+        {
+            LOG4CXX_DEBUG(logger_, "Got frame ready notification from RX thread for frame " << rx_reply.get_param<int>("frame", -1)
+                    << " in buffer " << rx_reply.get_param<int>("buffer_id", -1));
+            frame_ready_channel_.send(rx_reply_encoded);
+        }
+        else
+        {
+            LOG4CXX_ERROR(logger_, "Got unexpected message from RX thread: " << rx_reply_encoded);
+        }
     }
     catch (IpcMessageException& e)
     {
@@ -313,8 +328,20 @@ void FrameReceiverApp::handleFrameReleaseChannel(void)
 {
     std::string frame_release_encoded = frame_release_channel_.recv();
     try {
-        IpcMessage rx_reply(frame_release_encoded.c_str());
-        LOG4CXX_DEBUG(logger_, "Got message on frame release channel : " << frame_release_encoded);
+        IpcMessage frame_release(frame_release_encoded.c_str());
+        //LOG4CXX_DEBUG(logger_, "Got message on frame release channel : " << frame_release_encoded);
+
+        if ((frame_release.get_msg_type() == IpcMessage::MsgTypeNotify) &&
+            (frame_release.get_msg_val() == IpcMessage::MsgValNotifyFrameRelease))
+        {
+            LOG4CXX_DEBUG(logger_, "Got frame release notification from processor from frame " << frame_release.get_param<int>("frame", -1)
+                    << " in buffer " << frame_release.get_param<int>("buffer_id", -1));
+            rx_channel_.send(frame_release_encoded);
+        }
+        else
+        {
+            LOG4CXX_ERROR(logger_, "Got unexpected message on frame release channel: " << frame_release_encoded);
+        }
     }
     catch (IpcMessageException& e)
     {
@@ -332,7 +359,12 @@ void FrameReceiverApp::rxPingTimerHandler(void)
 
 void FrameReceiverApp::timerHandler2(void)
 {
-    LOG4CXX_DEBUG(logger_, "In timerHandler2");
+    static unsigned int dummy_last_frame = 0;
+
+    LOG4CXX_DEBUG(logger_, "Sending frame ready message for frame " << dummy_last_frame);
+    IpcMessage frame_ready(IpcMessage::MsgTypeNotify, IpcMessage::MsgValNotifyFrameReady);
+    frame_ready.set_param("frame", dummy_last_frame++);
+    frame_ready_channel_.send(frame_ready.encode());
 }
 
 void FrameReceiverApp::stop(void)

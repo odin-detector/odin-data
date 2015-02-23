@@ -10,9 +10,10 @@
 
 using namespace FrameReceiver;
 
-FrameReceiverRxThread::FrameReceiverRxThread(FrameReceiverConfig& config, LoggerPtr& logger) :
+FrameReceiverRxThread::FrameReceiverRxThread(FrameReceiverConfig& config, LoggerPtr& logger, SharedBufferManager& buffer_manager) :
    config_(config),
    logger_(logger),
+   buffer_manager(buffer_manager),
    rx_channel_(ZMQ_PAIR),
    run_thread_(true),
    thread_running_(false),
@@ -60,15 +61,42 @@ void FrameReceiverRxThread::run_service(void)
     // Set thread state to running, allows constructor to return
     thread_running_ = true;
 
+    int lastFrameReceived = 0;
     // Enter event loop
     while (run_thread_)
     {
         if (rx_channel_.poll(10))
         {
-            std::string msg = rx_channel_.recv();
+            std::string rx_msg_encoded = rx_channel_.recv();
             //LOG4CXX_DEBUG(logger_, "RX Thread got message: " << msg);
+            IpcMessage rx_msg(rx_msg_encoded.c_str());
+            IpcMessage rx_reply;
 
-            rx_channel_.send(msg);
+            if ((rx_msg.get_msg_type() == IpcMessage::MsgTypeNotify) &&
+                (rx_msg.get_msg_val()  == IpcMessage::MsgValNotifyFrameRelease))
+            {
+
+                int buffer_id = rx_msg.get_param<int>("buffer_id", -1);
+                uint64_t* buffer_addr = reinterpret_cast<uint64_t*>(buffer_manager.get_buffer_address(buffer_id));
+                buffer_addr[0] = lastFrameReceived;
+                buffer_addr[1] = 0x12345678;
+                buffer_addr[2] = 0xdeadbeef;
+
+                // Simulate receiving a frame then sending a ready notification back
+                usleep(100000);
+                rx_reply.set_msg_type(IpcMessage::MsgTypeNotify);
+                rx_reply.set_msg_val(IpcMessage::MsgValNotifyFrameReady);
+                rx_reply.set_param("buffer_id", rx_msg.get_param<int>("buffer_id", -1));
+                rx_reply.set_param("frame", lastFrameReceived++);
+            }
+            else
+            {
+                LOG4CXX_ERROR(logger_, "RX thread got unexpected message: " << rx_msg_encoded);
+                rx_reply.set_msg_type(IpcMessage::MsgTypeNack);
+                rx_reply.set_msg_val(rx_msg.get_msg_val());
+                //TODO add error in params
+            }
+            rx_channel_.send(rx_reply.encode());
         }
     }
     LOG4CXX_DEBUG(logger_, "Terminating RX thread service");

@@ -58,6 +58,11 @@ void IpcChannel::connect(std::string& endpoint)
     this->connect(endpoint.c_str());
 }
 
+void IpcChannel::subscribe(const char* topic)
+{
+    socket_.setsockopt(ZMQ_SUBSCRIBE, topic, strlen(topic));
+}
+
 void IpcChannel::send(std::string& message_str)
 {
     size_t msg_size = message_str.size() + 1;

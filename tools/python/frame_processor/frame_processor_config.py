@@ -6,8 +6,10 @@ class FrameProcessorConfig(object):
     def __init__(self, description="No description"):
 
         defaults = {}
-        defaults['ctrl_endpoint']         = "tcp://127.0.0.1:5000"
-        defaults['buffer_sharedmem_name'] = "FrameReceiverBuffer"
+        defaults['ctrl_endpoint']    = "tcp://127.0.0.1:5000"
+        defaults['ready_endpoint']   = "tcp://127.0.0.1:5001"
+        defaults['release_endpoint'] = "tcp://127.0.0.1:5002"
+        defaults['sharedbuf']        = "FrameReceiverBuffer"
 
         # Parse the command-line argument list        
         arg_config = self._parse_arguments(description)
@@ -34,6 +36,8 @@ class FrameProcessorConfig(object):
                             help="Parse additional options from specified configuration file")
         parser.add_argument('--ctrl', type=str, default=None, dest='ctrl_endpoint',
                             help='Specify the IPC control channel endpoint URL')
+        parser.add_argument('--sharedbuf', type=str, default=None, dest='sharedbuf',
+                            help='Specify the name of the shared memory frame buffer')
         
         args = parser.parse_args()
         
@@ -49,6 +53,6 @@ class FrameProcessorConfig(object):
         cp.read(config_file)
         
         config_vals['ctrl_endpoint'] = cp.get(sec_name, 'ctrl_endpoint')
-        config_vals['buffer_sharedmem_name'] = cp.get(sec_name, 'buffer_sharedmem_name')
+        config_vals['sharedbuf'] = cp.get(sec_name, 'sharedbuf')
         
         return config_vals
