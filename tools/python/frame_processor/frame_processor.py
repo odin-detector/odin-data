@@ -4,11 +4,14 @@ from frame_processor_config import FrameProcessorConfig
 
 import time
 import threading
+import logging
 
 class FrameProcessor(object):
     
     def __init__(self):
 
+        logging.basicConfig(format='%(asctime)s %(levelname)s FrameProcessor - %(message)s', level=logging.DEBUG)
+        
         # Instantiate a configuration container object, which will be populated
         # with sensible default values
         self.config = FrameProcessorConfig("FrameProcessor - test harness to simulate operation of FrameProcessor application")
@@ -20,9 +23,13 @@ class FrameProcessor(object):
         
         # Create the thread to handle frame processing
         self.frame_processor = threading.Thread(target=self.process_frames)
+        self.frame_processor.daemon = True
     
+        self._run = True
                 
     def run(self):
+        
+        logging.info("Frame processor starting up")
 
         # Connect the IPC channels
         self.ctrl_channel.connect(self.config.ctrl_endpoint)
@@ -35,37 +42,51 @@ class FrameProcessor(object):
         # Launch the frame processing thread
         self.frame_processor.start()
         
-        for i in range(10):
-             
-            #msg = "HELLO " + str(i)
-            msg = IpcMessage(msg_type='cmd', msg_val='status')
-            print "Sending message", msg
-            self.ctrl_channel.send(msg.encode())
-             
-            reply = self.ctrl_channel.recv()
-            reply_decoded = IpcMessage(from_str=reply)
-            print "Got reply, msg_type =", reply_decoded.get_msg_type(), "val =", reply_decoded.get_msg_val()
-            time.sleep(0.01) 
+        try:
+            while self._run:
+                 
+                msg = IpcMessage(msg_type='cmd', msg_val='status')
+                logging.debug("Sending status command message")
+                self.ctrl_channel.send(msg.encode())
+                 
+                reply = self.ctrl_channel.recv()
+                reply_decoded = IpcMessage(from_str=reply)
+                logging.debug("Got reply, msg_type = " + reply_decoded.get_msg_type() + " val = " + reply_decoded.get_msg_val())
+                time.sleep(1) 
+        
+        except KeyboardInterrupt:
+            
+            logging.info("Got interrupt, terminating")
+            self._run = False;
+            self.frame_processor.join()
+        
+        logging.info("Frame processor shutting down")
         
     def process_frames(self):
         
-        while 1:
+        while self._run:
             
-            ready_msg = self.ready_channel.recv() 
-            ready_decoded = IpcMessage(from_str=ready_msg)
-            
-            if ready_decoded.get_msg_type() == 'notify' and ready_decoded.get_msg_val() == 'frame_ready':
-            
-                frame_number = ready_decoded.get_param('frame')
-                print "Got frame ready notification for frame", frame_number
+            if (self.ready_channel.poll(100)):
+
+                ready_msg = self.ready_channel.recv() 
+                ready_decoded = IpcMessage(from_str=ready_msg)
                 
-                release_msg = IpcMessage(msg_type='notify', msg_val='frame_release')
-                release_msg.set_param('frame', frame_number)
-                self.release_channel.send(release_msg.encode())
+                if ready_decoded.get_msg_type() == 'notify' and ready_decoded.get_msg_val() == 'frame_ready':
                 
-            else:
-                
-                print "Got unexpected message on ready notification channel:", ready_decoded
+                    frame_number = ready_decoded.get_param('frame')
+                    buffer_id    = ready_decoded.get_param('buffer_id')
+                    logging.debug("Got frame ready notification for frame %d buffer ID %d" %(frame_number, buffer_id))
+                    
+                    release_msg = IpcMessage(msg_type='notify', msg_val='frame_release')
+                    release_msg.set_param('frame', frame_number)
+                    release_msg.set_param('buffer_id', buffer_id)
+                    self.release_channel.send(release_msg.encode())
+                    
+                else:
+                    
+                    logging.error("Got unexpected message on ready notification channel:", ready_decoded)
+        
+        logging.info("Frame processing thread interrupted, terminating")
         
 if __name__ == "__main__":
         

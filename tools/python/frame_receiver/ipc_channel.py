@@ -1,4 +1,5 @@
 import zmq
+from zmq.backend.cython.constants import EVENTS
 
 class IpcChannelException(Exception):
     
@@ -55,6 +56,11 @@ class IpcChannel(object):
         if data[-1] == '\0':
             data = data[:-1]
         return data
+    
+    def poll(self, timeout=None):
+        
+        pollevts = self.socket.poll(timeout)
+        return pollevts
     
     def subscribe(self, topic=b''):
         

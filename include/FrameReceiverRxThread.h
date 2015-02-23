@@ -15,6 +15,7 @@ using namespace log4cxx;
 using namespace log4cxx::helpers;
 
 #include "IpcChannel.h"
+#include "IpcMessage.h"
 
 #include "FrameReceiverConfig.h"
 #include "FrameReceiverException.h"
