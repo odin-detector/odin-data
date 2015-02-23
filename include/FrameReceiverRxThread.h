@@ -16,6 +16,7 @@ using namespace log4cxx::helpers;
 
 #include "IpcChannel.h"
 #include "IpcMessage.h"
+#include "SharedBufferManager.h"
 
 #include "FrameReceiverConfig.h"
 #include "FrameReceiverException.h"
@@ -26,7 +27,7 @@ namespace FrameReceiver
     class FrameReceiverRxThread
     {
     public:
-        FrameReceiverRxThread(FrameReceiverConfig& config, LoggerPtr& logger);
+        FrameReceiverRxThread(FrameReceiverConfig& config, LoggerPtr& logger, SharedBufferManager& buffer_manager_);
         virtual ~FrameReceiverRxThread();
 
         void start();
@@ -39,6 +40,7 @@ namespace FrameReceiver
 
         FrameReceiverConfig& config_;
         LoggerPtr            logger_;
+        SharedBufferManager& buffer_manager;
         boost::thread        rx_thread_;
         bool                 run_thread_;
         bool                 thread_running_;

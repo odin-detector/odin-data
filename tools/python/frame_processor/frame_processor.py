@@ -1,10 +1,12 @@
 from frame_receiver.ipc_channel import IpcChannel, IpcChannelException
 from frame_receiver.ipc_message import IpcMessage, IpcMessageException
+from frame_receiver.shared_buffer_manager import SharedBufferManager, SharedBufferManagerException
 from frame_processor_config import FrameProcessorConfig
 
 import time
 import threading
 import logging
+from struct import Struct
 
 class FrameProcessor(object):
     
@@ -21,6 +23,9 @@ class FrameProcessor(object):
         self.ready_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_SUB)
         self.release_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_PUB)
         
+        # Map the shared buffer manager
+        self.shared_buffer_manager = SharedBufferManager(self.config.sharedbuf)
+        
         # Create the thread to handle frame processing
         self.frame_processor = threading.Thread(target=self.process_frames)
         self.frame_processor.daemon = True
@@ -30,6 +35,11 @@ class FrameProcessor(object):
     def run(self):
         
         logging.info("Frame processor starting up")
+        
+        logging.info("Mapped shared buffer manager ID %d with %d buffers of size %d" % 
+                     (self.shared_buffer_manager.get_manager_id(), 
+                      self.shared_buffer_manager.get_num_buffers(),
+                      self.shared_buffer_manager.get_buffer_size()))
 
         # Connect the IPC channels
         self.ctrl_channel.connect(self.config.ctrl_endpoint)
@@ -64,6 +74,8 @@ class FrameProcessor(object):
         
     def process_frames(self):
         
+        self.frame_header = Struct('QQQ')
+        
         while self._run:
             
             if (self.ready_channel.poll(100)):
@@ -77,6 +89,8 @@ class FrameProcessor(object):
                     buffer_id    = ready_decoded.get_param('buffer_id')
                     logging.debug("Got frame ready notification for frame %d buffer ID %d" %(frame_number, buffer_id))
                     
+                    self.handle_frame(frame_number, buffer_id)
+                    
                     release_msg = IpcMessage(msg_type='notify', msg_val='frame_release')
                     release_msg.set_param('frame', frame_number)
                     release_msg.set_param('buffer_id', buffer_id)
@@ -87,6 +101,13 @@ class FrameProcessor(object):
                     logging.error("Got unexpected message on ready notification channel:", ready_decoded)
         
         logging.info("Frame processing thread interrupted, terminating")
+        
+    def handle_frame(self, frame_number, buffer_id):
+        
+        header_raw = self.shared_buffer_manager.read_buffer(buffer_id, self.frame_header.size)
+        header_vals = self.frame_header.unpack(header_raw)
+        logging.debug("Frame number %d had header values: %s" % (frame_number, ' '.join([hex(val) for val in header_vals])))
+        
         
 if __name__ == "__main__":
         

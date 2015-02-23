@@ -10,9 +10,10 @@
 
 using namespace FrameReceiver;
 
-FrameReceiverRxThread::FrameReceiverRxThread(FrameReceiverConfig& config, LoggerPtr& logger) :
+FrameReceiverRxThread::FrameReceiverRxThread(FrameReceiverConfig& config, LoggerPtr& logger, SharedBufferManager& buffer_manager) :
    config_(config),
    logger_(logger),
+   buffer_manager(buffer_manager),
    rx_channel_(ZMQ_PAIR),
    run_thread_(true),
    thread_running_(false),
@@ -74,6 +75,12 @@ void FrameReceiverRxThread::run_service(void)
             if ((rx_msg.get_msg_type() == IpcMessage::MsgTypeNotify) &&
                 (rx_msg.get_msg_val()  == IpcMessage::MsgValNotifyFrameRelease))
             {
+
+                int buffer_id = rx_msg.get_param<int>("buffer_id", -1);
+                uint64_t* buffer_addr = reinterpret_cast<uint64_t*>(buffer_manager.get_buffer_address(buffer_id));
+                buffer_addr[0] = lastFrameReceived;
+                buffer_addr[1] = 0x12345678;
+                buffer_addr[2] = 0xdeadbeef;
 
                 // Simulate receiving a frame then sending a ready notification back
                 usleep(100000);

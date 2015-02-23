@@ -229,22 +229,22 @@ void FrameReceiverApp::run(void)
     reactor_.add_channel(rx_channel_,   boost::bind(&FrameReceiverApp::handleRxChannel, this));
     reactor_.add_channel(frame_release_channel_, boost::bind(&FrameReceiverApp::handleFrameReleaseChannel, this));
 
-    // Create the RX thread object
-    rx_thread_.reset(new FrameReceiverRxThread( config_, logger_));
-
     // Add timers to the reactor
     //int rxPingTimer = reactor_.add_timer(1000, 0, boost::bind(&FrameReceiverApp::rxPingTimerHandler, this));
     //int timer2 = reactor_.add_timer(1500, 0, boost::bind(&FrameReceiverApp::timerHandler2, this));
 
     // Create a shared buffer manager
-    SharedBufferManager shared_buffer_manager(config_.shared_buffer_name_, config_.max_buffer_mem_, 10000, false);
+    SharedBufferManager buffer_manager(config_.shared_buffer_name_, config_.max_buffer_mem_, 10000, false);
+
+    // Create the RX thread object
+    rx_thread_.reset(new FrameReceiverRxThread( config_, logger_, buffer_manager));
 
     // Push the IDs of all of the empty buffers onto the RX thread channel
     // TODO if the number of buffers is so big that the RX thread channel would reach HWM (in either direction)
     // before the reactor has time to start, we could consider putting this pre-charge into a timer handler
     // that runs as soon as the reactor starts, but need to think about how this might block. Need non-blocking
     // send on channels??
-    for (int buf = 0; buf < shared_buffer_manager.get_num_buffers(); buf++)
+    for (int buf = 0; buf < buffer_manager.get_num_buffers(); buf++)
     {
         IpcMessage buf_msg(IpcMessage::MsgTypeNotify, IpcMessage::MsgValNotifyFrameRelease);
         buf_msg.set_param("buffer_id", buf);
