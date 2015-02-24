@@ -100,8 +100,8 @@ BOOST_AUTO_TEST_CASE( CreateAndPingRxThread )
             {
                 std::string reply = rx_channel.recv();
                 FrameReceiver::IpcMessage response(reply.c_str());
-                msgMatch &= (response.get_msg_type() == msg_type);
-                msgMatch &= (response.get_msg_val() == msg_val);
+                msgMatch &= (response.get_msg_type() == FrameReceiver::IpcMessage::MsgTypeAck);
+                msgMatch &= (response.get_msg_val() == FrameReceiver::IpcMessage::MsgValCmdStatus);
                 msgMatch &= (response.get_param<int>("count", -1) == replyCount);
                 replyCount++;
                 timeoutCount = 0;

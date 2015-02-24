@@ -89,6 +89,13 @@ void FrameReceiverRxThread::run_service(void)
                 rx_reply.set_param("buffer_id", rx_msg.get_param<int>("buffer_id", -1));
                 rx_reply.set_param("frame", lastFrameReceived++);
             }
+            else if ((rx_msg.get_msg_type() == IpcMessage::MsgTypeCmd) &&
+                    (rx_msg.get_msg_val()  == IpcMessage::MsgValCmdStatus))
+            {
+                rx_reply.set_msg_type(IpcMessage::MsgTypeAck);
+                rx_reply.set_msg_val(IpcMessage::MsgValCmdStatus);
+                rx_reply.set_param("count", rx_msg.get_param<int>("count", -1));
+            }
             else
             {
                 LOG4CXX_ERROR(logger_, "RX thread got unexpected message: " << rx_msg_encoded);
