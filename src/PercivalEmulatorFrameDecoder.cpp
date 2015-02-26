@@ -19,17 +19,19 @@ PercivalEmulatorFrameDecoder::~PercivalEmulatorFrameDecoder()
 {
 }
 
-size_t PercivalEmulatorFrameDecoder::frame_buffer_size(void) const
+const size_t PercivalEmulatorFrameDecoder::frame_buffer_size(void) const
 {
-    return 10000;
+    const size_t partial_size = (num_primary_packets * primary_packet_size) + (num_tail_packets + tail_packet_size);
+    const size_t buffer_size = (partial_size * num_subframes * 2) + frame_header_size();
+    return buffer_size;
 }
 
-size_t PercivalEmulatorFrameDecoder::frame_header_size(void) const
+const size_t PercivalEmulatorFrameDecoder::frame_header_size(void) const
 {
-    return 0;
+    return sizeof(PercivalEmulatorFrameDecoder::FrameHeader);
 }
 
-size_t PercivalEmulatorFrameDecoder::packet_header_size(void) const
+const size_t PercivalEmulatorFrameDecoder::packet_header_size(void) const
 {
     return sizeof(PercivalEmulatorFrameDecoder::PacketHeader);
 }

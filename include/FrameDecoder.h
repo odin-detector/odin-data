@@ -17,9 +17,9 @@ namespace FrameReceiver
     {
     public:
         virtual ~FrameDecoder() = 0;
-        virtual size_t frame_buffer_size(void) const = 0;
-        virtual size_t frame_header_size(void) const = 0;
-        virtual size_t packet_header_size(void) const = 0;
+        virtual const size_t frame_buffer_size(void) const = 0;
+        virtual const size_t frame_header_size(void) const = 0;
+        virtual const size_t packet_header_size(void) const = 0;
         virtual boost::shared_ptr<void> get_packet_header_buffer(void) = 0;
     };
 

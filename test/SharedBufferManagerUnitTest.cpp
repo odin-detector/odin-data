@@ -153,6 +153,13 @@ BOOST_AUTO_TEST_CASE( MapMissingSharedBufferTest )
             FrameReceiver::SharedBufferManagerException);
 
 }
+
+BOOST_AUTO_TEST_CASE( BufferBiggerThanSharedMemTest)
+{
+    BOOST_CHECK_THROW(FrameReceiver::SharedBufferManager illegal_manager("BadSize", 100, 1000),
+            FrameReceiver::SharedBufferManagerException);
+}
+
 BOOST_AUTO_TEST_SUITE_END();
 
 

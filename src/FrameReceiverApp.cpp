@@ -331,6 +331,8 @@ void FrameReceiverApp::initialise_buffer_manager(void)
     // Create a shared buffer manager
     buffer_manager_.reset(new SharedBufferManager(config_.shared_buffer_name_, config_.max_buffer_mem_,
             frame_decoder_->frame_buffer_size(), false));
+    LOG4CXX_DEBUG(logger_, "Initialsed frame buffer manager of total size " << config_.max_buffer_mem_
+            << " with " << buffer_manager_->get_num_buffers() << " buffers");
 }
 
 void FrameReceiverApp::precharge_buffers(void)

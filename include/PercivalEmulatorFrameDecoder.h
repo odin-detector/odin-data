@@ -32,11 +32,25 @@ namespace FrameReceiver
             uint8_t raw[22];
         } PacketHeader;
 
+        typedef struct
+        {
+            uint32_t frame_number;
+            uint32_t frame_state;
+            // TODO add packet state pointers etc
+        } FrameHeader;
+
+        static const size_t primary_packet_size = 8192;
+        static const size_t num_primary_packets = 255;
+        static const size_t tail_packet_size    = 512;
+        static const size_t num_tail_packets    = 1;
+        static const size_t num_subframes       = 2;
+
         PercivalEmulatorFrameDecoder(void);
         ~PercivalEmulatorFrameDecoder();
-        size_t frame_buffer_size(void) const;
-        size_t frame_header_size(void) const;
-        size_t packet_header_size(void) const;
+
+        const size_t frame_buffer_size(void) const;
+        const size_t frame_header_size(void) const;
+        const size_t packet_header_size(void) const;
 
         boost::shared_ptr<void> get_packet_header_buffer(void);
 

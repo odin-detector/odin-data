@@ -30,6 +30,10 @@ SharedBufferManager::SharedBufferManager(const std::string& shared_mem_name, con
 
     // Determine how many buffers of the requested size fit into the shared memory region
     size_t num_buffers = shared_mem_size_ / buffer_size;
+    if (!num_buffers)
+    {
+        throw SharedBufferManagerException("Buffer size requested exceeds size of shared memory");
+    }
 
     // Initialise the buffer manager header
     manager_hdr_ = reinterpret_cast<Header*>(shared_mem_region_.get_address());
