@@ -63,7 +63,7 @@ FrameReceiverApp::~FrameReceiverApp()
 //! \param argv - array of char command-line options
 //! \return return code, 0 if OK, 1 if option parsing failed
 
-int FrameReceiverApp::parseArguments(int argc, char** argv)
+int FrameReceiverApp::parse_arguments(int argc, char** argv)
 {
 
 	int rc = 0;
@@ -156,7 +156,7 @@ int FrameReceiverApp::parseArguments(int argc, char** argv)
 		if (vm.count("maxmem"))
 		{
 		    config_.max_buffer_mem_ = vm["maxmem"].as<std::size_t>();
-            LOG4CXX_DEBUG(logger_, "Setting maxmem to " << config_.max_buffer_mem_);
+            LOG4CXX_DEBUG(logger_, "Setting frame buffer maximum memory size to " << config_.max_buffer_mem_);
 		}
 
 		if (vm.count("sensortype"))
@@ -204,13 +204,67 @@ int FrameReceiverApp::parseArguments(int argc, char** argv)
 
 }
 
-
 void FrameReceiverApp::run(void)
 {
 
     terminate_frame_receiver_ = false;
     LOG4CXX_INFO(logger_,  "Running frame receiver");
 
+    try {
+
+        // Initialise IPC channels
+        initialise_ipc_channels();
+
+        // Add timers to the reactor
+        //int rxPingTimer = reactor_.add_timer(1000, 0, boost::bind(&FrameReceiverApp::rxPingTimerHandler, this));
+        //int timer2 = reactor_.add_timer(1500, 0, boost::bind(&FrameReceiverApp::timerHandler2, this));
+
+        // Create the appropriate frame decoder
+        initialise_frame_decoder();
+
+        // Initialise the frame buffer buffer manager
+        initialise_buffer_manager();
+
+        // Create the RX thread object
+        rx_thread_.reset(new FrameReceiverRxThread( config_, logger_, buffer_manager_, frame_decoder_));
+
+        // Pre-charge all frame buffers onto the RX thread queue ready for use
+        precharge_buffers();
+
+        LOG4CXX_DEBUG(logger_, "Main thread entering reactor loop");
+
+        // Run the reactor event loop
+        reactor_.run();
+
+        // Destroy the RX thread
+        rx_thread_.reset();
+
+        // Clean up IPC channels
+        cleanup_ipc_channels();
+
+        // Remove timers and channels from the reactor
+        //reactor_.remove_timer(rxPingTimer);
+        //reactor_.remove_timer(timer2);
+
+    }
+    catch (FrameReceiverException& e)
+    {
+        LOG4CXX_ERROR(logger_, "Frame receiver run failed: " << e.what());
+    }
+    catch (...)
+    {
+        LOG4CXX_ERROR(logger_, "Unexpected exception during frame receiver run");
+    }
+}
+
+void FrameReceiverApp::stop(void)
+{
+    std::cout << "In FrameReceiverApp::stop" << std::endl;
+    terminate_frame_receiver_ = true;
+}
+
+void FrameReceiverApp::initialise_ipc_channels(void)
+{
     // Bind the control channel
     ctrl_channel_.bind(config_.ctrl_channel_endpoint_);
 
@@ -225,50 +279,76 @@ void FrameReceiverApp::run(void)
     frame_release_channel_.subscribe("");
 
     // Add IPC channels to the reactor
-    reactor_.add_channel(ctrl_channel_, boost::bind(&FrameReceiverApp::handleCtrlChannel, this));
-    reactor_.add_channel(rx_channel_,   boost::bind(&FrameReceiverApp::handleRxChannel, this));
-    reactor_.add_channel(frame_release_channel_, boost::bind(&FrameReceiverApp::handleFrameReleaseChannel, this));
+    reactor_.add_channel(ctrl_channel_, boost::bind(&FrameReceiverApp::handle_ctrl_channel, this));
+    reactor_.add_channel(rx_channel_,   boost::bind(&FrameReceiverApp::handle_rx_channel, this));
+    reactor_.add_channel(frame_release_channel_, boost::bind(&FrameReceiverApp::handle_frame_release_channel, this));
 
-    // Add timers to the reactor
-    //int rxPingTimer = reactor_.add_timer(1000, 0, boost::bind(&FrameReceiverApp::rxPingTimerHandler, this));
-    //int timer2 = reactor_.add_timer(1500, 0, boost::bind(&FrameReceiverApp::timerHandler2, this));
+}
 
+void FrameReceiverApp::cleanup_ipc_channels(void)
+{
+    // Remove IPC channels from the reactor
+    reactor_.remove_channel(ctrl_channel_);
+    reactor_.remove_channel(rx_channel_);
+    reactor_.remove_channel(frame_release_channel_);
+
+    // Close all channels
+    ctrl_channel_.close();
+    rx_channel_.close();
+    frame_ready_channel_.close();
+    frame_release_channel_.close();
+
+}
+
+void FrameReceiverApp::initialise_frame_decoder(void)
+{
+    switch (config_.sensor_type_)
+    {
+    case Defaults::SensorTypePercivalEmulator:
+        frame_decoder_.reset(new PercivalEmulatorFrameDecoder());
+        LOG4CXX_INFO(logger_, "Created PERCIVAL emulator frame decoder instance");
+        break;
+
+    case Defaults::SensorTypePercival2M:
+    case Defaults::SensorTypePercival13M:
+    case Defaults::SensorTypeExcalibur3M:
+        throw FrameReceiverException("Cannot initialize frame decoder - sensor type not yet implemented");
+        break;
+
+    case Defaults::SensorTypeIllegal:
+        throw FrameReceiverException("Cannot initialize frame decoder - illegal sensor type specified");
+        break;
+
+    default:
+        throw FrameReceiverException("Cannot initialize frame decoder - sensor type not recognised");
+        break;
+    }
+}
+
+
+void FrameReceiverApp::initialise_buffer_manager(void)
+{
     // Create a shared buffer manager
-    SharedBufferManager buffer_manager(config_.shared_buffer_name_, config_.max_buffer_mem_, 10000, false);
+    buffer_manager_.reset(new SharedBufferManager(config_.shared_buffer_name_, config_.max_buffer_mem_,
+            frame_decoder_->frame_buffer_size(), false));
+}
 
-    // Create the RX thread object
-    rx_thread_.reset(new FrameReceiverRxThread( config_, logger_, buffer_manager));
-
+void FrameReceiverApp::precharge_buffers(void)
+{
     // Push the IDs of all of the empty buffers onto the RX thread channel
     // TODO if the number of buffers is so big that the RX thread channel would reach HWM (in either direction)
     // before the reactor has time to start, we could consider putting this pre-charge into a timer handler
     // that runs as soon as the reactor starts, but need to think about how this might block. Need non-blocking
     // send on channels??
-    for (int buf = 0; buf < buffer_manager.get_num_buffers(); buf++)
+    for (int buf = 0; buf < buffer_manager_->get_num_buffers(); buf++)
     {
         IpcMessage buf_msg(IpcMessage::MsgTypeNotify, IpcMessage::MsgValNotifyFrameRelease);
         buf_msg.set_param("buffer_id", buf);
         rx_channel_.send(buf_msg.encode());
     }
-
-    LOG4CXX_DEBUG(logger_, "Main thread entering reactor loop");
-
-    // Run the reactor event loop
-    reactor_.run();
-
-	// Destroy the RX thread
-	rx_thread_.reset();
-
-	// Remove timers and channels from the reactor
-	//reactor_.remove_timer(rxPingTimer);
-	//reactor_.remove_timer(timer2);
-    reactor_.remove_channel(ctrl_channel_);
-    reactor_.remove_channel(rx_channel_);
-    reactor_.remove_channel(frame_release_channel_);
-
 }
 
-void FrameReceiverApp::handleCtrlChannel(void)
+void FrameReceiverApp::handle_ctrl_channel(void)
 {
     // Receive a request message from the control channel
     std::string ctrl_req_encoded = ctrl_channel_.recv();
@@ -299,7 +379,7 @@ void FrameReceiverApp::handleCtrlChannel(void)
 
 }
 
-void FrameReceiverApp::handleRxChannel(void)
+void FrameReceiverApp::handle_rx_channel(void)
 {
     std::string rx_reply_encoded = rx_channel_.recv();
     try {
@@ -324,7 +404,7 @@ void FrameReceiverApp::handleRxChannel(void)
     }
 }
 
-void FrameReceiverApp::handleFrameReleaseChannel(void)
+void FrameReceiverApp::handle_frame_release_channel(void)
 {
     std::string frame_release_encoded = frame_release_channel_.recv();
     try {
@@ -349,7 +429,7 @@ void FrameReceiverApp::handleFrameReleaseChannel(void)
     }
 }
 
-void FrameReceiverApp::rxPingTimerHandler(void)
+void FrameReceiverApp::rx_ping_timer_handler(void)
 {
 
     IpcMessage rxPing(IpcMessage::MsgTypeCmd, IpcMessage::MsgValCmdStatus);
@@ -357,7 +437,7 @@ void FrameReceiverApp::rxPingTimerHandler(void)
 
 }
 
-void FrameReceiverApp::timerHandler2(void)
+void FrameReceiverApp::timer_handler2(void)
 {
     static unsigned int dummy_last_frame = 0;
 
@@ -366,11 +446,4 @@ void FrameReceiverApp::timerHandler2(void)
     frame_ready.set_param("frame", dummy_last_frame++);
     frame_ready_channel_.send(frame_ready.encode());
 }
-
-void FrameReceiverApp::stop(void)
-{
-    std::cout << "In FrameReceiverApp::stop" << std::endl;
-    terminate_frame_receiver_ = true;
-}
-
 

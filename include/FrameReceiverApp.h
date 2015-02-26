@@ -23,15 +23,20 @@ using namespace log4cxx::helpers;
 #include "zmq/zmq.hpp"
 
 #include <boost/scoped_ptr.hpp>
+#include <boost/shared_ptr.hpp>
 
 #include "IpcChannel.h"
 #include "IpcMessage.h"
 #include "IpcReactor.h"
 #include "FrameReceiverConfig.h"
 #include "FrameReceiverRxThread.h"
+#include "FrameDecoder.h"
+#include "PercivalEmulatorFrameDecoder.h"
+#include "FrameReceiverException.h"
 
 namespace FrameReceiver
 {
+
 	//! Frame receiver application class/
 	//!
 	//! This class implements the main functionality of the FrameReceiver application, providing
@@ -45,7 +50,7 @@ namespace FrameReceiver
 		FrameReceiverApp();
 		~FrameReceiverApp();
 
-		int parseArguments(int argc, char** argv);
+		int parse_arguments(int argc, char** argv);
 
 		void run(void);
 		static void stop(void);
@@ -53,20 +58,25 @@ namespace FrameReceiver
 
 	private:
 
-        void handleCtrlChannel(void);
-        void handleRxChannel(void);
-        void handleFrameReleaseChannel(void);
-        void rxPingTimerHandler(void);
-        void timerHandler2(void);
+		void initialise_ipc_channels(void);
+		void cleanup_ipc_channels(void);
+        void initialise_frame_decoder(void);
+        void initialise_buffer_manager(void);
+        void precharge_buffers(void);
 
-		LoggerPtr             logger_;    //!< Log4CXX logger instance pointer
-		FrameReceiverConfig   config_;    //!< Configuration storage object
-		boost::scoped_ptr<FrameReceiverRxThread> rx_thread_; //!< Receiver thread object
+        void handle_ctrl_channel(void);
+        void handle_rx_channel(void);
+        void handle_frame_release_channel(void);
+        void rx_ping_timer_handler(void);
+        void timer_handler2(void);
+
+		LoggerPtr             logger_;                           //!< Log4CXX logger instance pointer
+		FrameReceiverConfig   config_;                           //!< Configuration storage object
+		boost::scoped_ptr<FrameReceiverRxThread> rx_thread_;     //!< Receiver thread object
+		FrameDecoderPtr frame_decoder_;          //!< Frame decoder object
+		SharedBufferManagerPtr buffer_manager_;  //!< Buffer manager object
 
 		static bool terminate_frame_receiver_;
-
-		//zmq::context_t zmq_context_;
-		//zmq::socket_t  rx_thread_chan_;
 
 		IpcChannel rx_channel_;
 		IpcChannel ctrl_channel_;

@@ -43,6 +43,7 @@ namespace FrameReceiver
 
 		    if (sensor_name_map.empty())
 		    {
+		        sensor_name_map["percivalemulator"] = Defaults::SensorTypePercivalEmulator;
 		        sensor_name_map["percival2m"]  = Defaults::SensorTypePercival2M;
 		        sensor_name_map["percival13m"] = Defaults::SensorTypePercival13M;
 		        sensor_name_map["excalibur3m"]   = Defaults::SensorTypeExcalibur3M;

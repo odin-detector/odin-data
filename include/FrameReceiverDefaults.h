@@ -19,6 +19,7 @@ namespace FrameReceiver
 		enum SensorType
 		{
 			SensorTypeIllegal = -1,
+			SensorTypePercivalEmulator,
 			SensorTypePercival2M,
 			SensorTypePercival13M,
 			SensorTypeExcalibur3M,

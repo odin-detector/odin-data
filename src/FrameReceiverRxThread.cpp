@@ -10,10 +10,12 @@
 
 using namespace FrameReceiver;
 
-FrameReceiverRxThread::FrameReceiverRxThread(FrameReceiverConfig& config, LoggerPtr& logger, SharedBufferManager& buffer_manager) :
+FrameReceiverRxThread::FrameReceiverRxThread(FrameReceiverConfig& config, LoggerPtr& logger,
+        SharedBufferManagerPtr buffer_manager, FrameDecoderPtr frame_decoder) :
    config_(config),
    logger_(logger),
-   buffer_manager(buffer_manager),
+   buffer_manager_(buffer_manager),
+   frame_decoder_(frame_decoder),
    rx_channel_(ZMQ_PAIR),
    run_thread_(true),
    thread_running_(false),
@@ -77,7 +79,7 @@ void FrameReceiverRxThread::run_service(void)
             {
 
                 int buffer_id = rx_msg.get_param<int>("buffer_id", -1);
-                uint64_t* buffer_addr = reinterpret_cast<uint64_t*>(buffer_manager.get_buffer_address(buffer_id));
+                uint64_t* buffer_addr = reinterpret_cast<uint64_t*>(buffer_manager_->get_buffer_address(buffer_id));
                 buffer_addr[0] = lastFrameReceived;
                 buffer_addr[1] = 0x12345678;
                 buffer_addr[2] = 0xdeadbeef;
