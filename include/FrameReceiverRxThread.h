@@ -26,6 +26,12 @@ using namespace log4cxx::helpers;
 namespace FrameReceiver
 {
 
+    class FrameReceiverRxThreadException : public FrameReceiverException
+    {
+    public:
+        FrameReceiverRxThreadException(const std::string what) : FrameReceiverException(what) { };
+    };
+
     class FrameReceiverRxThread
     {
     public:

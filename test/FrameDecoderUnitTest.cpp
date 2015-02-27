@@ -8,20 +8,40 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/shared_ptr.hpp>
 #include <iostream>
+#include <log4cxx/logger.h>
+#include <log4cxx/consoleappender.h>
+#include <log4cxx/basicconfigurator.h>
+#include <log4cxx/simplelayout.h>
 
 #include "PercivalEmulatorFrameDecoder.h"
 
-BOOST_AUTO_TEST_SUITE(FrameDecoderUnitTest);
+class FrameDecoderTestFixture
+{
+public:
+    FrameDecoderTestFixture() :
+        logger(log4cxx::Logger::getLogger("FrameDecoderUnitTest"))
+    {
+
+    }
+    log4cxx::LoggerPtr logger;
+};
+BOOST_FIXTURE_TEST_SUITE(FrameDecoderUnitTest, FrameDecoderTestFixture);
 
 BOOST_AUTO_TEST_CASE( PercivalEmulatorDecoderTest )
 {
-    boost::shared_ptr<FrameReceiver::FrameDecoder> decoder(new FrameReceiver::PercivalEmulatorFrameDecoder());
+    boost::shared_ptr<FrameReceiver::FrameDecoder> decoder(new FrameReceiver::PercivalEmulatorFrameDecoder(logger));
+
+    BOOST_TEST_MESSAGE("Emulator buffer size is specified as " << decoder->get_frame_buffer_size());
+    BOOST_TEST_MESSAGE("Emulator frame header size is specified as " << decoder->get_frame_header_size());
+    BOOST_TEST_MESSAGE("Emulator packet header size is specified as " << decoder->get_packet_header_size());
+
+    // Check decoder is initialised with frame receive state set to frame empty
+    BOOST_CHECK_EQUAL(decoder->get_frame_receive_state(), FrameReceiver::FrameDecoder::FrameReceiveStateEmpty);
+
+    // Check decoder is initialised with packet receive state set to packet header
+    BOOST_CHECK_EQUAL(decoder->get_packet_receive_state(), FrameReceiver::FrameDecoder::PacketReceiveStateHeader);
 
     FrameReceiver::PercivalEmulatorFrameDecoder* percivalDecoder = reinterpret_cast<FrameReceiver::PercivalEmulatorFrameDecoder*>(decoder.get());
-
-    BOOST_TEST_MESSAGE("Emulator buffer size is specified as " << decoder->frame_buffer_size());
-    BOOST_TEST_MESSAGE("Emulator frame header size is specified as " << decoder->frame_header_size());
-    BOOST_TEST_MESSAGE("Emulator packet header size is specified as " << decoder->packet_header_size());
 
     boost::shared_ptr<void> packet_header = decoder->get_packet_header_buffer();
     BOOST_CHECK_NE(packet_header.get(), reinterpret_cast<void*>(0));

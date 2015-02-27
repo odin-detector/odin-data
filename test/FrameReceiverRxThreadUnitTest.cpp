@@ -42,7 +42,7 @@ public:
         rx_channel(ZMQ_PAIR),
         logger(log4cxx::Logger::getLogger("FrameReceiverRxThreadUnitTest")),
         proxy(config),
-        frame_decoder(new FrameReceiver::PercivalEmulatorFrameDecoder()),
+        frame_decoder(new FrameReceiver::PercivalEmulatorFrameDecoder(logger)),
         buffer_manager(new FrameReceiver::SharedBufferManager("TestSharedBuffer", 10000, 1000))
     {
 

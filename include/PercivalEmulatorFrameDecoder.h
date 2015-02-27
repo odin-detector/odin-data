@@ -45,12 +45,17 @@ namespace FrameReceiver
         static const size_t num_tail_packets    = 1;
         static const size_t num_subframes       = 2;
 
-        PercivalEmulatorFrameDecoder(void);
+        PercivalEmulatorFrameDecoder(LoggerPtr& logger);
         ~PercivalEmulatorFrameDecoder();
 
-        const size_t frame_buffer_size(void) const;
-        const size_t frame_header_size(void) const;
-        const size_t packet_header_size(void) const;
+        const size_t get_frame_buffer_size(void) const;
+        const size_t get_frame_header_size(void) const;
+        const size_t get_packet_header_size(void) const;
+
+        void* get_next_receive_location(void) const;
+        size_t get_next_receive_size(void) const;
+
+        void process_received_data(size_t bytes_received);
 
         boost::shared_ptr<void> get_packet_header_buffer(void);
 
@@ -65,7 +70,8 @@ namespace FrameReceiver
 
         uint8_t* raw_packet_header(void) const;
 
-        boost::shared_ptr<void> current_packet_header;
+        boost::shared_ptr<void> current_packet_header_;
+        boost::shared_ptr<void> scratch_payload_buffer_;
     };
 
 } // namespace FrameReceiver

@@ -75,11 +75,17 @@ void FrameReceiverRxThread::run_service(void)
     thread_running_ = true;
 
     // Enter event loop and run the async IO service until there are no more handlers registered
-    while (run_thread_)
-    {
-        boost::system::error_code io_service_ec;
-        io_service_.run(io_service_ec);
+    try {
+        while (run_thread_)
+        {
+            boost::system::error_code io_service_ec;
+            io_service_.run(io_service_ec);
 
+        }
+    }
+    catch (FrameReceiverRxThreadException& e)
+    {
+        LOG4CXX_ERROR(logger_, "Error running RX thread service: " << e.what());
     }
     LOG4CXX_DEBUG(logger_, "Terminating RX thread service");
 
@@ -104,8 +110,8 @@ void FrameReceiverRxThread::start_receive(void)
 {
 
     recv_socket_.async_receive_from(
-            boost::asio::buffer(boost::asio::buffer(frame_decoder_->get_packet_header_buffer().get(),
-                    frame_decoder_->packet_header_size())),
+            boost::asio::buffer(frame_decoder_->get_next_receive_location(),
+                frame_decoder_->get_next_receive_size()),
             remote_endpoint_,
             boost::bind(&FrameReceiverRxThread::handle_receive, this,
                     boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred)
@@ -118,6 +124,11 @@ void FrameReceiverRxThread::handle_receive(const boost::system::error_code& erro
     if (!error_code)
     {
         LOG4CXX_DEBUG(logger_, "Received " << bytes_received << " bytes on socket");
+        frame_decoder_->process_received_data(bytes_received);
+
+        if (run_thread_) {
+            start_receive();
+        }
     }
     else
     {

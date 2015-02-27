@@ -305,7 +305,7 @@ void FrameReceiverApp::initialise_frame_decoder(void)
     switch (config_.sensor_type_)
     {
     case Defaults::SensorTypePercivalEmulator:
-        frame_decoder_.reset(new PercivalEmulatorFrameDecoder());
+        frame_decoder_.reset(new PercivalEmulatorFrameDecoder(logger_));
         LOG4CXX_INFO(logger_, "Created PERCIVAL emulator frame decoder instance");
         break;
 
@@ -330,9 +330,13 @@ void FrameReceiverApp::initialise_buffer_manager(void)
 {
     // Create a shared buffer manager
     buffer_manager_.reset(new SharedBufferManager(config_.shared_buffer_name_, config_.max_buffer_mem_,
-            frame_decoder_->frame_buffer_size(), false));
-    LOG4CXX_DEBUG(logger_, "Initialsed frame buffer manager of total size " << config_.max_buffer_mem_
+            frame_decoder_->get_frame_buffer_size(), false));
+    LOG4CXX_DEBUG(logger_, "Initialised frame buffer manager of total size " << config_.max_buffer_mem_
             << " with " << buffer_manager_->get_num_buffers() << " buffers");
+
+    // Register buffer manager with the frame decoder
+    frame_decoder_->register_buffer_manager(buffer_manager_);
+
 }
 
 void FrameReceiverApp::precharge_buffers(void)
