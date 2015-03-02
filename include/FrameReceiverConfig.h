@@ -26,6 +26,7 @@ namespace FrameReceiver
 		    sensor_type_(Defaults::SensorTypeIllegal),
 		    rx_port_(Defaults::default_rx_port),
 		    rx_address_(Defaults::default_rx_address),
+		    rx_recv_buffer_size_(Defaults::default_rx_recv_buffer_size),
 		    rx_channel_endpoint_(Defaults::default_rx_chan_endpoint),
 		    ctrl_channel_endpoint_(Defaults::default_ctrl_chan_endpoint),
 		    frame_ready_endpoint_(Defaults::default_frame_ready_endpoint),
@@ -63,6 +64,7 @@ namespace FrameReceiver
 		Defaults::SensorType sensor_type_;            //!< Sensor type receiving data for - drives frame size
 		uint16_t             rx_port_;                //!< Port to receive frame data on
 		std::string          rx_address_;             //!< IP address to receive frame data on
+		int                  rx_recv_buffer_size_;    //!< Receive socket buffer size
 		std::string          rx_channel_endpoint_;    //!< IPC channel endpoint for RX thread communication
 		std::string          ctrl_channel_endpoint_;  //!< IPC channel endpoint for control communication with other processes
 		std::string          frame_ready_endpoint_;   //!< IPC channel endpoint for transmitting frame ready notifications to other processes

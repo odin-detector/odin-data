@@ -279,9 +279,9 @@ void FrameReceiverApp::initialise_ipc_channels(void)
     frame_release_channel_.subscribe("");
 
     // Add IPC channels to the reactor
-    reactor_.add_channel(ctrl_channel_, boost::bind(&FrameReceiverApp::handle_ctrl_channel, this));
-    reactor_.add_channel(rx_channel_,   boost::bind(&FrameReceiverApp::handle_rx_channel, this));
-    reactor_.add_channel(frame_release_channel_, boost::bind(&FrameReceiverApp::handle_frame_release_channel, this));
+    reactor_.register_channel(ctrl_channel_, boost::bind(&FrameReceiverApp::handle_ctrl_channel, this));
+    reactor_.register_channel(rx_channel_, boost::bind(&FrameReceiverApp::handle_rx_channel, this));
+	reactor_.register_channel(frame_release_channel_, boost::bind(&FrameReceiverApp::handle_frame_release_channel, this));
 
 }
 

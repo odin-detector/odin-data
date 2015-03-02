@@ -112,7 +112,7 @@ void PercivalEmulatorFrameDecoder::process_received_data(size_t bytes_received)
         );
         dump_header();
 
-        packet_receive_state_ = FrameDecoder::PacketReceiveStatePayload;
+        //packet_receive_state_ = FrameDecoder::PacketReceiveStatePayload;
         break;
 
     case FrameDecoder::PacketReceiveStatePayload:
@@ -156,7 +156,10 @@ uint8_t PercivalEmulatorFrameDecoder::get_subframe_number(void) const
 
 uint16_t PercivalEmulatorFrameDecoder::get_packet_number(void) const
 {
-    return *(reinterpret_cast<uint16_t*>(raw_packet_header()+6));
+	uint16_t packet_number =
+			(*(reinterpret_cast<uint16_t*>(raw_packet_header()+6)) << 8) |
+			(*(reinterpret_cast<uint8_t*>(raw_packet_header()+7)));
+    return packet_number;
 }
 
 uint32_t PercivalEmulatorFrameDecoder::get_frame_number(void) const

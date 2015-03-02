@@ -52,6 +52,7 @@ namespace FrameReceiver
         const size_t get_frame_header_size(void) const;
         const size_t get_packet_header_size(void) const;
 
+        inline const bool requires_header_peek(void) const { return true; };
         void* get_next_receive_location(void) const;
         size_t get_next_receive_size(void) const;
 

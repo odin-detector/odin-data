@@ -157,7 +157,7 @@ IpcReactor::~IpcReactor()
 //! \param channel IpcChannel to add to reactor
 //! \param callback function reference to callback method
 
-void IpcReactor::add_channel(IpcChannel& channel, ChannelCallback callback)
+void IpcReactor::register_channel(IpcChannel& channel, ReactorCallback callback)
 {
     // Add channel to channel map
     channels_[&(channel.socket_)] = callback;
@@ -182,6 +182,20 @@ void IpcReactor::remove_channel(IpcChannel& channel)
     needs_rebuild_ = true;
 }
 
+void IpcReactor::register_socket(int socket_fd, ReactorCallback callback)
+{
+	sockets_[socket_fd] = callback;
+
+	needs_rebuild_ = true;
+}
+
+void IpcReactor::remove_socket(int socket_fd)
+{
+	sockets_.erase(socket_fd);
+
+	needs_rebuild_ = true;
+}
+
 //! Adds a timer to the reactor
 //!
 //! This method adds a timer to the reactor. The periodic delay of the timer, the
@@ -193,7 +207,7 @@ void IpcReactor::remove_channel(IpcChannel& channel)
 //! \param callback function reference to callback method
 //! \return integer unique timer ID, which can be used by the caller to delete it subsequently
 
-int IpcReactor::add_timer(size_t delay_ms, size_t times, TimerCallback callback)
+int IpcReactor::register_timer(size_t delay_ms, size_t times, TimerCallback callback)
 {
 
     // Create a smart pointer to a new timer object
@@ -341,7 +355,7 @@ void IpcReactor::rebuild_pollitems(void)
     }
 
     // Set the number of items to poll to the number of channels registered
-    pollsize_ = channels_.size();
+    pollsize_ = channels_.size() + sockets_.size();
 
     // If the numer of items to poll is non-zero, craete new pollitems and callback
     // arrays and populate them
@@ -349,7 +363,7 @@ void IpcReactor::rebuild_pollitems(void)
     if (pollsize_) {
 
         pollitems_ = new zmq::pollitem_t[pollsize_];
-        callbacks_ = new ChannelCallback[pollsize_];
+        callbacks_ = new ReactorCallback[pollsize_];
 
         // Iterate over the channel map and build the pollitems and callback arrays. These have
         // a one-to-one correspondence, allowing the reactor loop to easy associate an active
@@ -358,6 +372,13 @@ void IpcReactor::rebuild_pollitems(void)
         for (ChannelMap::iterator it = channels_.begin(); it != channels_.end(); ++item, ++it)
         {
             zmq::pollitem_t pollitem = {*(it->first), 0, ZMQ_POLLIN, 0};
+            pollitems_[item] = pollitem;
+            callbacks_[item] = it->second;
+        }
+
+        for (SocketMap::iterator it = sockets_.begin(); it != sockets_.end(); ++item, ++it)
+        {
+        	zmq::pollitem_t pollitem = {0, it->first, ZMQ_POLLIN, 0};
             pollitems_[item] = pollitem;
             callbacks_[item] = it->second;
         }
