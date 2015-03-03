@@ -146,6 +146,7 @@ class FrameProducer(object):
 
                 # Transmit packet
                 bytesSent += sock.sendto(packet, (self.host, self.port))
+                time.sleep(0.01)
 
                 bytesRemaining  -= bytesToSend
                 streamPosn      += bytesToSend
@@ -211,7 +212,7 @@ class FrameProducer(object):
 
                 # Transmit packet
                 bytesSent += sock.sendto(packet, (self.host, self.port))
-
+                time.sleep(0.01)
                 bytesRemaining  -= bytesToSend
                 streamPosn      += bytesToSend
                 packetCounter   += 1

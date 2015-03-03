@@ -35,19 +35,13 @@ BOOST_AUTO_TEST_CASE( PercivalEmulatorDecoderTest )
     BOOST_TEST_MESSAGE("Emulator frame header size is specified as " << decoder->get_frame_header_size());
     BOOST_TEST_MESSAGE("Emulator packet header size is specified as " << decoder->get_packet_header_size());
 
-    // Check decoder is initialised with frame receive state set to frame empty
-    BOOST_CHECK_EQUAL(decoder->get_frame_receive_state(), FrameReceiver::FrameDecoder::FrameReceiveStateEmpty);
-
-    // Check decoder is initialised with packet receive state set to packet header
-    BOOST_CHECK_EQUAL(decoder->get_packet_receive_state(), FrameReceiver::FrameDecoder::PacketReceiveStateHeader);
-
     FrameReceiver::PercivalEmulatorFrameDecoder* percivalDecoder = reinterpret_cast<FrameReceiver::PercivalEmulatorFrameDecoder*>(decoder.get());
 
-    boost::shared_ptr<void> packet_header = decoder->get_packet_header_buffer();
-    BOOST_CHECK_NE(packet_header.get(), reinterpret_cast<void*>(0));
+    void* packet_header = decoder->get_packet_header_buffer();
+    BOOST_CHECK_NE(packet_header, reinterpret_cast<void*>(0));
 
     // Hand craft packet header to check accessor methods cope with field alignment
-    uint8_t* hdr_raw = reinterpret_cast<uint8_t*>(packet_header.get());
+    uint8_t* hdr_raw = reinterpret_cast<uint8_t*>(packet_header);
 
     uint8_t  packet_type = 1;
     uint8_t  subframe_number=15;
@@ -60,17 +54,13 @@ BOOST_AUTO_TEST_CASE( PercivalEmulatorDecoderTest )
     hdr_raw[3] = static_cast<uint8_t>((frame_number >> 8 ) & 0xFF);
     hdr_raw[4] = static_cast<uint8_t>((frame_number >> 16) & 0xFF);
     hdr_raw[5] = static_cast<uint8_t>((frame_number >> 24) & 0xFF);
-    hdr_raw[6] = static_cast<uint8_t>((packet_number >> 0) & 0xFF);
-    hdr_raw[7] = static_cast<uint8_t>((packet_number >> 8) & 0xFF);
+    hdr_raw[6] = static_cast<uint8_t>((packet_number >> 8) & 0xFF);
+    hdr_raw[7] = static_cast<uint8_t>((packet_number >> 0) & 0xFF);
 
     BOOST_CHECK_EQUAL(percivalDecoder->get_packet_type(), packet_type);
     BOOST_CHECK_EQUAL(percivalDecoder->get_subframe_number(), subframe_number);
     BOOST_CHECK_EQUAL(percivalDecoder->get_packet_number(), packet_number);
     BOOST_CHECK_EQUAL(percivalDecoder->get_frame_number(), frame_number);
-
-    percivalDecoder->dump_header();
-
-
 
 }
 

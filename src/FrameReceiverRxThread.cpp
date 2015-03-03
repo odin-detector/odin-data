@@ -40,15 +40,15 @@ FrameReceiverRxThread::FrameReceiverRxThread(FrameReceiverConfig& config, Logger
 FrameReceiverRxThread::~FrameReceiverRxThread()
 {
     run_thread_ = false;
-    LOG4CXX_DEBUG(logger_, "Waiting for RX thread to stop....");
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Waiting for RX thread to stop....");
     rx_thread_.join();
-    LOG4CXX_DEBUG(logger_, "RX thread stopped....");
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "RX thread stopped....");
 
 }
 
 void FrameReceiverRxThread::run_service(void)
 {
-    LOG4CXX_DEBUG(logger_, "Running RX thread service");
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Running RX thread service");
 
     // Connect the message channel to the main thread
     try {
@@ -88,7 +88,7 @@ void FrameReceiverRxThread::run_service(void)
 	int buffer_size;
 	socklen_t len = sizeof(buffer_size);
 	getsockopt(recv_socket_, SOL_SOCKET, SO_RCVBUF, &buffer_size, &len);
-	LOG4CXX_DEBUG(logger_, "RX thread receive buffer size is " << buffer_size);
+	LOG4CXX_DEBUG_LEVEL(1, logger_, "RX thread receive buffer size is " << buffer_size);
 
 	// Bind the socket to the specified port
     struct sockaddr_in siMe;
@@ -119,7 +119,7 @@ void FrameReceiverRxThread::run_service(void)
 
     reactor_.remove_channel(rx_channel_);
 
-    LOG4CXX_DEBUG(logger_, "Terminating RX thread service");
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Terminating RX thread service");
 
 }
 
@@ -141,8 +141,9 @@ void FrameReceiverRxThread::handle_rx_channel(void)
 
 			if (buffer_id != -1)
 			{
-				empty_buffer_queue_.push(buffer_id);
-				LOG4CXX_DEBUG(logger_, "Added empty buffer ID " << buffer_id << " to queue, length is now " << empty_buffer_queue_.size());
+				frame_decoder_->push_empty_buffer(buffer_id);
+				LOG4CXX_DEBUG_LEVEL(2, logger_, "Added empty buffer ID " << buffer_id << " to queue, length is now "
+						<< frame_decoder_->get_num_empty_buffers());
 			}
 			else
 			{
@@ -198,25 +199,37 @@ void FrameReceiverRxThread::handle_receive_socket(void)
 	if (frame_decoder_->requires_header_peek())
 	{
 		size_t header_size = frame_decoder_->get_packet_header_size();
-		void*  header_buffer = frame_decoder_->get_packet_header_buffer().get();
+		void*  header_buffer = frame_decoder_->get_packet_header_buffer();
 		size_t bytes_received = recvfrom(recv_socket_, header_buffer, header_size, MSG_PEEK, 0, 0);
-		LOG4CXX_DEBUG(logger_, "RX thread received " << bytes_received << " header bytes on recv socket");
-		frame_decoder_->process_received_data(bytes_received);
+		LOG4CXX_DEBUG_LEVEL(1, logger_, "RX thread received " << bytes_received << " header bytes on recv socket");
+		frame_decoder_->process_packet_header(bytes_received);
 	}
 
-	char recv_buf[10000];
-	size_t bytes_received = recvfrom(recv_socket_, &recv_buf, sizeof(recv_buf), 0, 0, 0);
-	LOG4CXX_DEBUG(logger_, "RX thread received " << bytes_received << " bytes on recv socket");
+	struct iovec io_vec[2];
+	io_vec[0].iov_base = frame_decoder_->get_packet_header_buffer();
+	io_vec[0].iov_len  = frame_decoder_->get_packet_header_size();
+	io_vec[1].iov_base = frame_decoder_->get_next_payload_buffer();
+	io_vec[1].iov_len  = frame_decoder_->get_next_payload_size();
 
+	struct msghdr msg_hdr;
+	memset((void*)&msg_hdr,  0, sizeof(struct msghdr));
+	msg_hdr.msg_name = 0;
+	msg_hdr.msg_namelen = 0;
+	msg_hdr.msg_iov = io_vec;
+	msg_hdr.msg_iovlen = 2;
 
+	size_t bytes_received = recvmsg(recv_socket_, &msg_hdr, 0);
+	LOG4CXX_DEBUG_LEVEL(1, logger_, "RX thread received " << bytes_received << " header/payload bytes on recv socket");
+
+	FrameDecoder::FrameReceiveState frame_receive_state = frame_decoder_->process_packet(bytes_received);
 }
 
 void FrameReceiverRxThread::tick_timer(void)
 {
-	//LOG4CXX_DEBUG(logger_, "RX thread tick timer fired");
+	//LOG4CXX_DEBUG_LEVEL(1, logger_, "RX thread tick timer fired");
 	if (!run_thread_)
 	{
-		LOG4CXX_DEBUG(logger_, "RX thread terminate detected in timer");
+		LOG4CXX_DEBUG_LEVEL(1, logger_, "RX thread terminate detected in timer");
 		reactor_.stop();
 	}
 }
@@ -226,7 +239,7 @@ void FrameReceiverRxThread::tick_timer(void)
 //    static int lastFrameReceived = 0;
 //    if (!error_code)
 //    {
-//        LOG4CXX_DEBUG(logger_, "Received " << bytes_received << " bytes on socket");
+//        LOG4CXX_DEBUG_LEVEL(1, logger_, "Received " << bytes_received << " bytes on socket");
 //        frame_decoder_->process_received_data(bytes_received);
 //
 //        if (run_thread_) {
@@ -244,7 +257,7 @@ void FrameReceiverRxThread::tick_timer(void)
 //                if (rx_channel_.poll(0))
 //                {
 //                    std::string rx_msg_encoded = rx_channel_.recv();
-//                    //LOG4CXX_DEBUG(logger_, "RX Thread got message: " << rx_msg_encoded);
+//                    //LOG4CXX_DEBUG_LEVEL(1, logger_, "RX Thread got message: " << rx_msg_encoded);
 //                    IpcMessage rx_msg(rx_msg_encoded.c_str());
 //                    IpcMessage rx_reply;
 //

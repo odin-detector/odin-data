@@ -25,6 +25,8 @@ using namespace FrameReceiver;
 
 bool FrameReceiverApp::terminate_frame_receiver_ = false;
 
+IMPLEMENT_DEBUG_LEVEL;
+
 //! Constructor for FrameReceiverApp class.
 //!
 //! This constructor initialises the FrameRecevierApp instance
@@ -86,6 +88,8 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
 		// and in the configuration file
 		po::options_description config("Configuration options");
 		config.add_options()
+				("debug,d",      po::value<unsigned int>()->default_value(debug_level),
+				    "Set the debug level")
 				("node,n",       po::value<unsigned int>()->default_value(FrameReceiver::Defaults::default_node),
 					"Set the frame receiver node ID")
 				("logconfig,l",  po::value<string>(),
@@ -127,6 +131,11 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
 			exit(0);
 		}
 
+		if (vm.count("debug"))
+		{
+			set_debug_level(vm["debug"].as<unsigned int>());
+			LOG4CXX_DEBUG_LEVEL(1, logger_, "Debug level set to  " << debug_level);
+		}
 		// If the command line config option was given, parse the specified configuration
 		// file for additional options. Note that boost::program_options gives precedence
 		// to the first instance occurring. In this case, that implies that command-line
@@ -136,7 +145,7 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
 			std::ifstream config_ifs(config_file.c_str());
 			if (config_ifs)
 			{
-				LOG4CXX_DEBUG(logger_, "Parsing configuration file " << config_file);
+				LOG4CXX_DEBUG_LEVEL(1, logger_, "Parsing configuration file " << config_file);
 				po::store(po::parse_config_file(config_ifs, config_file_options, true), vm);
 				po::notify(vm);
 			}
@@ -150,38 +159,38 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
 		if (vm.count("logconfig"))
 		{
 			PropertyConfigurator::configure(vm["logconfig"].as<string>());
-			LOG4CXX_DEBUG(logger_, "log4cxx config file is set to " << vm["logconfig"].as<string>());
+			LOG4CXX_DEBUG_LEVEL(1, logger_, "log4cxx config file is set to " << vm["logconfig"].as<string>());
 		}
 
 		if (vm.count("maxmem"))
 		{
 		    config_.max_buffer_mem_ = vm["maxmem"].as<std::size_t>();
-            LOG4CXX_DEBUG(logger_, "Setting frame buffer maximum memory size to " << config_.max_buffer_mem_);
+		    LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting frame buffer maximum memory size to " << config_.max_buffer_mem_);
 		}
 
 		if (vm.count("sensortype"))
 		{
 		    std::string sensor_name = vm["sensortype"].as<std::string>();
 		    config_.sensor_type_ = config_.map_sensor_name_to_type(sensor_name);
-		    LOG4CXX_DEBUG(logger_, "Setting sensor type to " << sensor_name << " (" << config_.sensor_type_ << ")");
+		    LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting sensor type to " << sensor_name << " (" << config_.sensor_type_ << ")");
 		}
 
 		if (vm.count("port"))
 		{
 		    config_.rx_port_ = vm["port"].as<uint16_t>();
-		    LOG4CXX_DEBUG(logger_, "Setting RX port to " << config_.rx_port_);
+		    LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting RX port to " << config_.rx_port_);
 		}
 
 		if (vm.count("ipaddress"))
 		{
 		    config_.rx_address_ = vm["ipaddress"].as<std::string>();
-		    LOG4CXX_DEBUG(logger_, "Setting RX interface address to " << config_.rx_address_);
+		    LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting RX interface address to " << config_.rx_address_);
 		}
 
 		if (vm.count("sharedbuf"))
 		{
 		    config_.shared_buffer_name_ = vm["sharedbuf"].as<std::string>();
-		    LOG4CXX_DEBUG(logger_, "Setting shared frame buffer name to " << config_.shared_buffer_name_);
+		    LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting shared frame buffer name to " << config_.shared_buffer_name_);
 		}
 	}
 	catch (Exception &e)
@@ -231,7 +240,7 @@ void FrameReceiverApp::run(void)
         // Pre-charge all frame buffers onto the RX thread queue ready for use
         precharge_buffers();
 
-        LOG4CXX_DEBUG(logger_, "Main thread entering reactor loop");
+        LOG4CXX_DEBUG_LEVEL(1, logger_, "Main thread entering reactor loop");
 
         // Run the reactor event loop
         reactor_.run();
@@ -259,7 +268,6 @@ void FrameReceiverApp::run(void)
 
 void FrameReceiverApp::stop(void)
 {
-    std::cout << "In FrameReceiverApp::stop" << std::endl;
     terminate_frame_receiver_ = true;
 }
 
@@ -331,7 +339,7 @@ void FrameReceiverApp::initialise_buffer_manager(void)
     // Create a shared buffer manager
     buffer_manager_.reset(new SharedBufferManager(config_.shared_buffer_name_, config_.max_buffer_mem_,
             frame_decoder_->get_frame_buffer_size(), false));
-    LOG4CXX_DEBUG(logger_, "Initialised frame buffer manager of total size " << config_.max_buffer_mem_
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Initialised frame buffer manager of total size " << config_.max_buffer_mem_
             << " with " << buffer_manager_->get_num_buffers() << " buffers");
 
     // Register buffer manager with the frame decoder
@@ -371,7 +379,7 @@ void FrameReceiverApp::handle_ctrl_channel(void)
         {
         case IpcMessage::MsgTypeCmd:
 
-            LOG4CXX_DEBUG(logger_, "Got control channel command request");
+        	LOG4CXX_DEBUG_LEVEL(1, logger_, "Got control channel command request");
             ctrl_reply.set_msg_type(IpcMessage::MsgTypeAck);
             ctrl_reply.set_msg_val(ctrl_req.get_msg_val());
             break;
@@ -390,12 +398,12 @@ void FrameReceiverApp::handle_rx_channel(void)
     std::string rx_reply_encoded = rx_channel_.recv();
     try {
         IpcMessage rx_reply(rx_reply_encoded.c_str());
-        //LOG4CXX_DEBUG(logger_, "Got reply from RX thread : " << rx_reply_encoded);
+        //LOG4CXX_DEBUG_LEVEL(1, logger_, "Got reply from RX thread : " << rx_reply_encoded);
 
         if ((rx_reply.get_msg_type() == IpcMessage::MsgTypeNotify) &&
             (rx_reply.get_msg_val() == IpcMessage::MsgValNotifyFrameReady))
         {
-            LOG4CXX_DEBUG(logger_, "Got frame ready notification from RX thread for frame " << rx_reply.get_param<int>("frame", -1)
+        	LOG4CXX_DEBUG_LEVEL(1, logger_, "Got frame ready notification from RX thread for frame " << rx_reply.get_param<int>("frame", -1)
                     << " in buffer " << rx_reply.get_param<int>("buffer_id", -1));
             frame_ready_channel_.send(rx_reply_encoded);
         }
@@ -420,7 +428,7 @@ void FrameReceiverApp::handle_frame_release_channel(void)
         if ((frame_release.get_msg_type() == IpcMessage::MsgTypeNotify) &&
             (frame_release.get_msg_val() == IpcMessage::MsgValNotifyFrameRelease))
         {
-            LOG4CXX_DEBUG(logger_, "Got frame release notification from processor from frame " << frame_release.get_param<int>("frame", -1)
+        	LOG4CXX_DEBUG_LEVEL(1, logger_, "Got frame release notification from processor from frame " << frame_release.get_param<int>("frame", -1)
                     << " in buffer " << frame_release.get_param<int>("buffer_id", -1));
             rx_channel_.send(frame_release_encoded);
         }
@@ -447,7 +455,7 @@ void FrameReceiverApp::timer_handler2(void)
 {
     static unsigned int dummy_last_frame = 0;
 
-    LOG4CXX_DEBUG(logger_, "Sending frame ready message for frame " << dummy_last_frame);
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Sending frame ready message for frame " << dummy_last_frame);
     IpcMessage frame_ready(IpcMessage::MsgTypeNotify, IpcMessage::MsgValNotifyFrameReady);
     frame_ready.set_param("frame", dummy_last_frame++);
     frame_ready_channel_.send(frame_ready.encode());

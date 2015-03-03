@@ -19,6 +19,7 @@ using namespace std;
 #include <log4cxx/helpers/exception.h>
 using namespace log4cxx;
 using namespace log4cxx::helpers;
+#include "DebugLevelLogger.h"
 
 #include "zmq/zmq.hpp"
 

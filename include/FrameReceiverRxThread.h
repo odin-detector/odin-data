@@ -11,11 +11,10 @@
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
 
-#include <queue>
-
 #include <log4cxx/logger.h>
 using namespace log4cxx;
 using namespace log4cxx::helpers;
+#include "DebugLevelLogger.h"
 
 #include "IpcChannel.h"
 #include "IpcMessage.h"
@@ -70,9 +69,6 @@ namespace FrameReceiver
         bool                   thread_init_error_;
         boost::thread          rx_thread_;
         std::string            thread_init_msg_;
-
-        std::queue<int>        empty_buffer_queue_;
-
 
     };
 

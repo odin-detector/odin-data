@@ -8,7 +8,12 @@
 #ifndef INCLUDE_FRAMEDECODER_H_
 #define INCLUDE_FRAMEDECODER_H_
 
+#include <queue>
+#include <map>
+
 #include <stddef.h>
+#include <stdint.h>
+
 #include <boost/shared_ptr.hpp>
 #include <log4cxx/logger.h>
 using namespace log4cxx;
@@ -29,13 +34,17 @@ namespace FrameReceiver
     {
     public:
 
-        enum FrameReceiveState  { FrameReceiveStateEmpty, FrameReceiveStateIncomplete, FrameReceiveStateComplete };
-        enum PacketReceiveState { PacketReceiveStateHeader, PacketReceiveStatePayload };
+        enum FrameReceiveState
+		{
+        	FrameReceiveStateEmpty = 0,
+        	FrameReceiveStateIncomplete,
+			FrameReceiveStateComplete,
+			FrameStateTimedout,
+			FrameStateError
+        };
 
         FrameDecoder(LoggerPtr& logger) :
-            logger_(logger),
-            frame_receive_state_(FrameReceiveStateEmpty),
-            packet_receive_state_(PacketReceiveStateHeader)
+            logger_(logger)
         {};
         virtual ~FrameDecoder() = 0;
 
@@ -46,42 +55,33 @@ namespace FrameReceiver
 
         virtual const size_t get_frame_buffer_size(void) const = 0;
         virtual const size_t get_frame_header_size(void) const = 0;
-        virtual const size_t get_packet_header_size(void) const = 0;
 
         virtual const bool requires_header_peek(void) const = 0;
 
-        virtual void* get_next_receive_location(void) const = 0;
-        virtual size_t get_next_receive_size(void) const = 0;
+        virtual const size_t get_packet_header_size(void) const = 0;
+        virtual void* get_packet_header_buffer(void) = 0;
+		virtual void process_packet_header(size_t bytes_received) = 0;
 
-        virtual void process_received_data(size_t bytes_received) = 0;
+        virtual void* get_next_payload_buffer(void) const = 0;
+        virtual size_t get_next_payload_size(void) const = 0;
+        virtual FrameReceiveState process_packet(size_t bytes_received) = 0;
 
-        virtual boost::shared_ptr<void> get_packet_header_buffer(void) = 0;
-
-        FrameReceiveState get_frame_receive_state(void) const
+        void push_empty_buffer(int buffer_id)
         {
-            return frame_receive_state_;
+        	empty_buffer_queue_.push(buffer_id);
         }
 
-        void set_frame_receive_state(FrameReceiveState state)
+        const size_t get_num_empty_buffers(void) const
         {
-            frame_receive_state_ = state;
-        }
-
-        PacketReceiveState get_packet_receive_state(void) const
-        {
-            return packet_receive_state_;
-        }
-
-        void set_packet_receive_state(PacketReceiveState state)
-        {
-            packet_receive_state_ = state;
+        	return empty_buffer_queue_.size();
         }
 
     protected:
         LoggerPtr logger_;
-        FrameReceiveState  frame_receive_state_;
-        PacketReceiveState packet_receive_state_;
         SharedBufferManagerPtr buffer_manager_;
+
+        std::queue<int>    empty_buffer_queue_;
+        std::map<uint32_t, int> frame_buffer_map_;
     };
 
     inline FrameDecoder::~FrameDecoder() {};

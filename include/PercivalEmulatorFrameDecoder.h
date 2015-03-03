@@ -11,6 +11,7 @@
 #include "FrameDecoder.h"
 #include <iostream>
 #include <stdint.h>
+#include <time.h>
 
 namespace FrameReceiver
 {
@@ -36,6 +37,8 @@ namespace FrameReceiver
         {
             uint32_t frame_number;
             uint32_t frame_state;
+            struct timespec frame_start_time;
+            uint32_t packets_received;
             // TODO add packet state pointers etc
         } FrameHeader;
 
@@ -50,15 +53,16 @@ namespace FrameReceiver
 
         const size_t get_frame_buffer_size(void) const;
         const size_t get_frame_header_size(void) const;
-        const size_t get_packet_header_size(void) const;
 
         inline const bool requires_header_peek(void) const { return true; };
-        void* get_next_receive_location(void) const;
-        size_t get_next_receive_size(void) const;
+        const size_t get_packet_header_size(void) const;
+        void process_packet_header(size_t bytes_received);
 
-        void process_received_data(size_t bytes_received);
+        void* get_next_payload_buffer(void) const;
+        size_t get_next_payload_size(void) const;
+        FrameDecoder::FrameReceiveState process_packet(size_t bytes_received);
 
-        boost::shared_ptr<void> get_packet_header_buffer(void);
+        void* get_packet_header_buffer(void);
 
         uint8_t get_packet_type(void) const;
         uint8_t get_subframe_number(void) const;
@@ -73,6 +77,11 @@ namespace FrameReceiver
 
         boost::shared_ptr<void> current_packet_header_;
         boost::shared_ptr<void> scratch_payload_buffer_;
+
+        uint32_t current_frame_seen_;
+        int current_frame_buffer_id_;
+        void* current_frame_buffer_;
+        FrameHeader* current_frame_header_;
     };
 
 } // namespace FrameReceiver
