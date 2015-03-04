@@ -112,7 +112,7 @@ void FrameReceiverRxThread::run_service(void)
     int tick_timer_id = reactor_.register_timer(tick_period_ms_, 0, boost::bind(&FrameReceiverRxThread::tick_timer, this));
 
     // Register the frame release callback with the decoder
-    frame_decoder_->register_frame_release_callback(boost::bind(&FrameReceiverRxThread::release_frame, this, _1, _2));
+    frame_decoder_->register_frame_ready_callback(boost::bind(&FrameReceiverRxThread::frame_ready, this, _1, _2));
 
     // Set thread state to running, allows constructor to return
     thread_running_ = true;
@@ -120,7 +120,11 @@ void FrameReceiverRxThread::run_service(void)
     // Run the reactor event loop
     reactor_.run();
 
+    // Cleanup - remove channels, sockets and timers from the reactor and close the receive socket
     reactor_.remove_channel(rx_channel_);
+    reactor_.remove_timer(tick_timer_id);
+    reactor_.remove_socket(recv_socket_);
+    close(recv_socket_);
 
     LOG4CXX_DEBUG_LEVEL(1, logger_, "Terminating RX thread service");
 
@@ -152,18 +156,7 @@ void FrameReceiverRxThread::handle_rx_channel(void)
 			{
 				LOG4CXX_ERROR(logger_, "RX thread received empty frame notification with buffer ID");
 			}
-//			uint64_t* buffer_addr = reinterpret_cast<uint64_t*>(buffer_manager_->get_buffer_address(buffer_id));
-//			buffer_addr[0] = lastFrameReceived;
-//			buffer_addr[1] = 0x12345678;
-//			buffer_addr[2] = 0xdeadbeef;
-//
-//			usleep(100000);
-//
-//			// Simulate receiving a frame then sending a ready notification back
-//			rx_reply.set_msg_type(IpcMessage::MsgTypeNotify);
-//			rx_reply.set_msg_val(IpcMessage::MsgValNotifyFrameReady);
-//			rx_reply.set_param("buffer_id", rx_msg.get_param<int>("buffer_id", -1));
-//			rx_reply.set_param("frame", lastFrameReceived++);
+
 		}
 		else if ((rx_msg.get_msg_type() == IpcMessage::MsgTypeCmd) &&
 				(rx_msg.get_msg_val()  == IpcMessage::MsgValCmdStatus))
@@ -204,7 +197,7 @@ void FrameReceiverRxThread::handle_receive_socket(void)
 		size_t header_size = frame_decoder_->get_packet_header_size();
 		void*  header_buffer = frame_decoder_->get_packet_header_buffer();
 		size_t bytes_received = recvfrom(recv_socket_, header_buffer, header_size, MSG_PEEK, 0, 0);
-		LOG4CXX_DEBUG_LEVEL(1, logger_, "RX thread received " << bytes_received << " header bytes on recv socket");
+		LOG4CXX_DEBUG_LEVEL(3, logger_, "RX thread received " << bytes_received << " header bytes on recv socket");
 		frame_decoder_->process_packet_header(bytes_received);
 	}
 
@@ -222,7 +215,7 @@ void FrameReceiverRxThread::handle_receive_socket(void)
 	msg_hdr.msg_iovlen = 2;
 
 	size_t bytes_received = recvmsg(recv_socket_, &msg_hdr, 0);
-	LOG4CXX_DEBUG_LEVEL(1, logger_, "RX thread received " << bytes_received << " header/payload bytes on recv socket");
+	LOG4CXX_DEBUG_LEVEL(3, logger_, "RX thread received " << bytes_received << " header/payload bytes on recv socket");
 
 	FrameDecoder::FrameReceiveState frame_receive_state = frame_decoder_->process_packet(bytes_received);
 }
@@ -237,78 +230,14 @@ void FrameReceiverRxThread::tick_timer(void)
 	}
 }
 
-void FrameReceiverRxThread::release_frame(int buffer_id, int frame_number)
+void FrameReceiverRxThread::frame_ready(int buffer_id, int frame_number)
 {
+    LOG4CXX_DEBUG_LEVEL(2, logger_, "Releasing frame " << frame_number << " in buffer " << buffer_id);
+
+    IpcMessage ready_msg(IpcMessage::MsgTypeNotify, IpcMessage::MsgValNotifyFrameReady);
+    ready_msg.set_param("frame", frame_number);
+    ready_msg.set_param("buffer_id", buffer_id);
+
+    rx_channel_.send(ready_msg.encode());
 
 }
-//void FrameReceiverRxThread::handle_receive(const boost::system::error_code& error_code, std::size_t bytes_received)
-//{
-//    static int lastFrameReceived = 0;
-//    if (!error_code)
-//    {
-//        LOG4CXX_DEBUG_LEVEL(1, logger_, "Received " << bytes_received << " bytes on socket");
-//        frame_decoder_->process_received_data(bytes_received);
-//
-//        if (run_thread_) {
-//            start_receive();
-//        }
-//    }
-//    else
-//    {
-//        // An error code of operation aborted means that the deadline timer called cancel on this
-//        // socket operation, i.e. the receive timed out and our event loop can tick
-//        if (error_code == boost::asio::error::operation_aborted)
-//        {
-//            if (run_thread_)
-//            {
-//                if (rx_channel_.poll(0))
-//                {
-//                    std::string rx_msg_encoded = rx_channel_.recv();
-//                    //LOG4CXX_DEBUG_LEVEL(1, logger_, "RX Thread got message: " << rx_msg_encoded);
-//                    IpcMessage rx_msg(rx_msg_encoded.c_str());
-//                    IpcMessage rx_reply;
-//
-//                    if ((rx_msg.get_msg_type() == IpcMessage::MsgTypeNotify) &&
-//                        (rx_msg.get_msg_val()  == IpcMessage::MsgValNotifyFrameRelease))
-//                    {
-//
-//                        int buffer_id = rx_msg.get_param<int>("buffer_id", -1);
-//                        uint64_t* buffer_addr = reinterpret_cast<uint64_t*>(buffer_manager_->get_buffer_address(buffer_id));
-//                        buffer_addr[0] = lastFrameReceived;
-//                        buffer_addr[1] = 0x12345678;
-//                        buffer_addr[2] = 0xdeadbeef;
-//
-//                        usleep(100000);
-//
-//                        // Simulate receiving a frame then sending a ready notification back
-//                        rx_reply.set_msg_type(IpcMessage::MsgTypeNotify);
-//                        rx_reply.set_msg_val(IpcMessage::MsgValNotifyFrameReady);
-//                        rx_reply.set_param("buffer_id", rx_msg.get_param<int>("buffer_id", -1));
-//                        rx_reply.set_param("frame", lastFrameReceived++);
-//                    }
-//                    else if ((rx_msg.get_msg_type() == IpcMessage::MsgTypeCmd) &&
-//                            (rx_msg.get_msg_val()  == IpcMessage::MsgValCmdStatus))
-//                    {
-//                        rx_reply.set_msg_type(IpcMessage::MsgTypeAck);
-//                        rx_reply.set_msg_val(IpcMessage::MsgValCmdStatus);
-//                        rx_reply.set_param("count", rx_msg.get_param<int>("count", -1));
-//                    }
-//                    else
-//                    {
-//                        LOG4CXX_ERROR(logger_, "RX thread got unexpected message: " << rx_msg_encoded);
-//                        rx_reply.set_msg_type(IpcMessage::MsgTypeNack);
-//                        rx_reply.set_msg_val(rx_msg.get_msg_val());
-//                        //TODO add error in params
-//                    }
-//                    rx_channel_.send(rx_reply.encode());
-//                }
-//
-//                start_receive();
-//            }
-//        }
-//        else
-//        {
-//            LOG4CXX_ERROR(logger_, "Got error on asynchronous receive: " << error_code);
-//        }
-//    }
-//}

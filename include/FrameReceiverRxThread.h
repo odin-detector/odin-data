@@ -45,7 +45,7 @@ namespace FrameReceiver
         void start();
         void stop();
 
-        void release_frame(int buffer_id, int frame_number);
+        void frame_ready(int buffer_id, int frame_number);
 
     private:
 

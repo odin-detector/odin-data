@@ -20,6 +20,7 @@
 #include <log4cxx/logger.h>
 using namespace log4cxx;
 using namespace log4cxx::helpers;
+#include <DebugLevelLogger.h>
 
 #include "FrameReceiverException.h"
 #include "SharedBufferManager.h"
@@ -32,7 +33,7 @@ namespace FrameReceiver
         FrameDecoderException(const std::string what) : FrameReceiverException(what) { };
     };
 
-    typedef boost::function<void(int, int)> FrameReleaseCallback;
+    typedef boost::function<void(int, int)> FrameReadyCallback;
 
     class FrameDecoder
     {
@@ -40,11 +41,11 @@ namespace FrameReceiver
 
         enum FrameReceiveState
 		{
-        	FrameReceiveStateEmpty = 0,
+        	FrameReceiveStateEmpty,
         	FrameReceiveStateIncomplete,
 			FrameReceiveStateComplete,
-			FrameStateTimedout,
-			FrameStateError
+			FrameReceiveStateTimedout,
+			FrameReceiveStateError
         };
 
         FrameDecoder(LoggerPtr& logger) :
@@ -57,9 +58,9 @@ namespace FrameReceiver
             buffer_manager_ = buffer_manager;
         }
 
-        void register_frame_release_callback(FrameReleaseCallback callback)
+        void register_frame_ready_callback(FrameReadyCallback callback)
         {
-        	release_callback_ = callback;
+        	ready_callback_ = callback;
         }
 
         virtual const size_t get_frame_buffer_size(void) const = 0;
@@ -88,7 +89,7 @@ namespace FrameReceiver
     protected:
         LoggerPtr logger_;
         SharedBufferManagerPtr buffer_manager_;
-        FrameReleaseCallback   release_callback_;
+        FrameReadyCallback   ready_callback_;
 
         std::queue<int>    empty_buffer_queue_;
         std::map<uint32_t, int> frame_buffer_map_;

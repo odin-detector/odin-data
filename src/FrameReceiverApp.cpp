@@ -379,7 +379,7 @@ void FrameReceiverApp::handle_ctrl_channel(void)
         {
         case IpcMessage::MsgTypeCmd:
 
-        	LOG4CXX_DEBUG_LEVEL(1, logger_, "Got control channel command request");
+        	LOG4CXX_DEBUG_LEVEL(3, logger_, "Got control channel command request");
             ctrl_reply.set_msg_type(IpcMessage::MsgTypeAck);
             ctrl_reply.set_msg_val(ctrl_req.get_msg_val());
             break;
@@ -403,7 +403,7 @@ void FrameReceiverApp::handle_rx_channel(void)
         if ((rx_reply.get_msg_type() == IpcMessage::MsgTypeNotify) &&
             (rx_reply.get_msg_val() == IpcMessage::MsgValNotifyFrameReady))
         {
-        	LOG4CXX_DEBUG_LEVEL(1, logger_, "Got frame ready notification from RX thread for frame " << rx_reply.get_param<int>("frame", -1)
+        	LOG4CXX_DEBUG_LEVEL(2, logger_, "Got frame ready notification from RX thread for frame " << rx_reply.get_param<int>("frame", -1)
                     << " in buffer " << rx_reply.get_param<int>("buffer_id", -1));
             frame_ready_channel_.send(rx_reply_encoded);
         }
@@ -428,7 +428,7 @@ void FrameReceiverApp::handle_frame_release_channel(void)
         if ((frame_release.get_msg_type() == IpcMessage::MsgTypeNotify) &&
             (frame_release.get_msg_val() == IpcMessage::MsgValNotifyFrameRelease))
         {
-        	LOG4CXX_DEBUG_LEVEL(1, logger_, "Got frame release notification from processor from frame " << frame_release.get_param<int>("frame", -1)
+        	LOG4CXX_DEBUG_LEVEL(2, logger_, "Got frame release notification from processor from frame " << frame_release.get_param<int>("frame", -1)
                     << " in buffer " << frame_release.get_param<int>("buffer_id", -1));
             rx_channel_.send(frame_release_encoded);
         }
