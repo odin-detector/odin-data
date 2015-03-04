@@ -50,10 +50,10 @@ BOOST_AUTO_TEST_CASE( PercivalEmulatorDecoderTest )
 
     hdr_raw[0] = packet_type;
     hdr_raw[1] = subframe_number;
-    hdr_raw[2] = static_cast<uint8_t>((frame_number >> 0 ) & 0xFF);
-    hdr_raw[3] = static_cast<uint8_t>((frame_number >> 8 ) & 0xFF);
-    hdr_raw[4] = static_cast<uint8_t>((frame_number >> 16) & 0xFF);
-    hdr_raw[5] = static_cast<uint8_t>((frame_number >> 24) & 0xFF);
+    hdr_raw[2] = static_cast<uint8_t>((frame_number >> 24) & 0xFF);
+    hdr_raw[3] = static_cast<uint8_t>((frame_number >> 16) & 0xFF);
+    hdr_raw[4] = static_cast<uint8_t>((frame_number >>  8) & 0xFF);
+    hdr_raw[5] = static_cast<uint8_t>((frame_number >>  0) & 0xFF);
     hdr_raw[6] = static_cast<uint8_t>((packet_number >> 8) & 0xFF);
     hdr_raw[7] = static_cast<uint8_t>((packet_number >> 0) & 0xFF);
 
