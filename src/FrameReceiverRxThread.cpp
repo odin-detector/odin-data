@@ -111,6 +111,9 @@ void FrameReceiverRxThread::run_service(void)
     // Add the tick timer to the reactor
     int tick_timer_id = reactor_.register_timer(tick_period_ms_, 0, boost::bind(&FrameReceiverRxThread::tick_timer, this));
 
+    // Register the frame release callback with the decoder
+    frame_decoder_->register_frame_release_callback(boost::bind(&FrameReceiverRxThread::release_frame, this, _1, _2));
+
     // Set thread state to running, allows constructor to return
     thread_running_ = true;
 
@@ -234,6 +237,10 @@ void FrameReceiverRxThread::tick_timer(void)
 	}
 }
 
+void FrameReceiverRxThread::release_frame(int buffer_id, int frame_number)
+{
+
+}
 //void FrameReceiverRxThread::handle_receive(const boost::system::error_code& error_code, std::size_t bytes_received)
 //{
 //    static int lastFrameReceived = 0;

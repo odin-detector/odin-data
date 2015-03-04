@@ -15,6 +15,8 @@
 #include <stdint.h>
 
 #include <boost/shared_ptr.hpp>
+#include <boost/function.hpp>
+
 #include <log4cxx/logger.h>
 using namespace log4cxx;
 using namespace log4cxx::helpers;
@@ -29,6 +31,8 @@ namespace FrameReceiver
     public:
         FrameDecoderException(const std::string what) : FrameReceiverException(what) { };
     };
+
+    typedef boost::function<void(int, int)> FrameReleaseCallback;
 
     class FrameDecoder
     {
@@ -51,6 +55,11 @@ namespace FrameReceiver
         void register_buffer_manager(SharedBufferManagerPtr buffer_manager)
         {
             buffer_manager_ = buffer_manager;
+        }
+
+        void register_frame_release_callback(FrameReleaseCallback callback)
+        {
+        	release_callback_ = callback;
         }
 
         virtual const size_t get_frame_buffer_size(void) const = 0;
@@ -79,6 +88,7 @@ namespace FrameReceiver
     protected:
         LoggerPtr logger_;
         SharedBufferManagerPtr buffer_manager_;
+        FrameReleaseCallback   release_callback_;
 
         std::queue<int>    empty_buffer_queue_;
         std::map<uint32_t, int> frame_buffer_map_;
