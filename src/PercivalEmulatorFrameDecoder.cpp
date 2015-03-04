@@ -21,7 +21,6 @@ PercivalEmulatorFrameDecoder::PercivalEmulatorFrameDecoder(LoggerPtr& logger) :
 {
     current_packet_header_.reset(new uint8_t[sizeof(PercivalEmulatorFrameDecoder::PacketHeader)]);
     scratch_frame_buffer_.reset(new uint8_t[get_frame_buffer_size()]);
-    std::cout << scratch_frame_buffer_.get() << std::endl;
 }
 
 PercivalEmulatorFrameDecoder::~PercivalEmulatorFrameDecoder()
@@ -75,7 +74,6 @@ void PercivalEmulatorFrameDecoder::process_packet_header(size_t bytes_received)
     	    if (empty_buffer_queue_.empty())
             {
                 current_frame_buffer_ = scratch_frame_buffer_.get();
-                std::cout << frame << " " << current_frame_buffer_ << std::endl;
 
     	        if (!dropping_frame_data_)
                 {
@@ -107,7 +105,6 @@ void PercivalEmulatorFrameDecoder::process_packet_header(size_t bytes_received)
             current_frame_header_->frame_number = current_frame_seen_;
             current_frame_header_->frame_state = FrameDecoder::FrameReceiveStateIncomplete;
             current_frame_header_->packets_received = 0;
-            std::cout << current_frame_header_->packets_received << std::endl;
 
             clock_gettime(CLOCK_REALTIME, reinterpret_cast<struct timespec*>(&(current_frame_header_->frame_start_time)));
 
@@ -167,10 +164,6 @@ FrameDecoder::FrameReceiveState PercivalEmulatorFrameDecoder::process_packet(siz
 //	std::cout << std::endl;
 
 	current_frame_header_->packets_received++;
-	if (dropping_frame_data_)
-	{
-	    std::cout << current_frame_header_ << " " << current_frame_header_->packets_received << std::endl;
-	}
 
 	if (current_frame_header_->packets_received == num_frame_packets)
 	{
@@ -181,12 +174,14 @@ FrameDecoder::FrameReceiveState PercivalEmulatorFrameDecoder::process_packet(siz
 		// Complete frame header
 		current_frame_header_->frame_state = frame_state;
 
-		// Erase frame from buffer map
-		frame_buffer_map_.erase(current_frame_seen_);
+		if (!dropping_frame_data_)
+		{
+			// Erase frame from buffer map
+			frame_buffer_map_.erase(current_frame_seen_);
 
-		// Notify main thread that frame is ready
-		ready_callback_(current_frame_buffer_id_, current_frame_seen_);
-
+			// Notify main thread that frame is ready
+			ready_callback_(current_frame_buffer_id_, current_frame_seen_);
+		}
 	}
 
 	return frame_state;
