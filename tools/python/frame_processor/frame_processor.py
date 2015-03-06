@@ -2,7 +2,7 @@ from frame_receiver.ipc_channel import IpcChannel, IpcChannelException
 from frame_receiver.ipc_message import IpcMessage, IpcMessageException
 from frame_receiver.shared_buffer_manager import SharedBufferManager, SharedBufferManagerException
 from frame_processor_config import FrameProcessorConfig
-from percival_emulator_frame_decoder import PercvialEmulatorFrameDecoder, PercivalFrameHeader
+from percival_emulator_frame_decoder import PercvialEmulatorFrameDecoder, PercivalFrameHeader, PercivalFrameData
 
 import time
 import datetime
@@ -108,23 +108,15 @@ class FrameProcessor(object):
         
     def handle_frame(self, frame_number, buffer_id):
         
-#         header_raw = self.shared_buffer_manager.read_buffer(buffer_id, self.frame_header.size)
-#         header_vals = self.frame_header.unpack(header_raw)
-#         
-#         hdr_frame_num = header_vals[0]
-#         hdr_frame_state = header_vals[1]
-#         hdr_frame_start_time = float(header_vals[2]) + float(header_vals[3])/1000000000
-#         hdr_packets_received = header_vals[4]
-       
         self.frame_decoder.decode_header(buffer_id)
         logging.debug("Frame %d in buffer %d decoded header values: frame_number %d state %d start_time %s packets_received %d" %
                       (frame_number, buffer_id, self.frame_decoder.header.frame_number, 
                        self.frame_decoder.header.frame_state, self.frame_decoder.header.frame_start_time.isoformat(),
                        self.frame_decoder.header.packets_received))
-#        logging.debug("Frame number %d in buffer %d had header values: %s" % (frame_number, buffer_id, ' '.join([hex(val) for val in header_vals])))
-#         logging.debug("Decoded header values: frame number %d state %d start_time %s packets_received %d" 
-#                       % (hdr_frame_num, hdr_frame_state, datetime.datetime.fromtimestamp(hdr_frame_start_time).isoformat(), hdr_packets_received))
-        
+
+        self.frame_decoder.decode_data(buffer_id)
+        logging.debug("Frame start: " + ' '.join("0x{:04x}".format(val) for val in self.frame_decoder.data.pixels[:32]))
+        logging.debug("Frame end  : " + ' '.join("0x{:04x}".format(val) for val in self.frame_decoder.data.pixels[-32:]))
         
 if __name__ == "__main__":
         

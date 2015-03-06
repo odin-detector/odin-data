@@ -20,7 +20,7 @@ PercivalEmulatorFrameDecoder::PercivalEmulatorFrameDecoder(LoggerPtr& logger) :
 		dropping_frame_data_(false)
 {
     current_packet_header_.reset(new uint8_t[sizeof(PercivalEmulatorFrameDecoder::PacketHeader)]);
-    scratch_frame_buffer_.reset(new uint8_t[get_frame_buffer_size()]);
+    dropped_frame_buffer_.reset(new uint8_t[PercivalEmulatorFrameDecoder::total_frame_size]);
 }
 
 PercivalEmulatorFrameDecoder::~PercivalEmulatorFrameDecoder()
@@ -29,9 +29,7 @@ PercivalEmulatorFrameDecoder::~PercivalEmulatorFrameDecoder()
 
 const size_t PercivalEmulatorFrameDecoder::get_frame_buffer_size(void) const
 {
-    const size_t partial_size = (num_primary_packets * primary_packet_size) + (num_tail_packets + tail_packet_size);
-    const size_t buffer_size = (partial_size * num_subframes * num_data_types) + get_frame_header_size();
-    return buffer_size;
+    return PercivalEmulatorFrameDecoder::total_frame_size;
 }
 
 const size_t PercivalEmulatorFrameDecoder::get_frame_header_size(void) const
@@ -54,15 +52,14 @@ void PercivalEmulatorFrameDecoder::process_packet_header(size_t bytes_received)
     //TODO validate header size and content, handle incoming new packet buffer allocation etc
 
 	uint32_t frame = get_frame_number();
-	uint16_t packet = get_packet_number();
+	uint16_t packet_number = get_packet_number();
 	uint8_t  subframe = get_subframe_number();
 	uint8_t  type = get_packet_type();
 
     LOG4CXX_DEBUG_LEVEL(3, logger_, "Got packet header:"
             << " type: "     << (int)type << " subframe: " << (int)subframe
-            << " packet: "   << packet    << " frame: "    << frame
+            << " packet: "   << packet_number    << " frame: "    << frame
     );
-    //dump_header();
 
     if (frame != current_frame_seen_)
     {
@@ -70,10 +67,9 @@ void PercivalEmulatorFrameDecoder::process_packet_header(size_t bytes_received)
 
     	if (frame_buffer_map_.count(current_frame_seen_) == 0)
     	{
-    		// TODO implement retry or error condition if empty buffer queue has no buffers available
     	    if (empty_buffer_queue_.empty())
             {
-                current_frame_buffer_ = scratch_frame_buffer_.get();
+                current_frame_buffer_ = dropped_frame_buffer_.get();
 
     	        if (!dropping_frame_data_)
                 {
@@ -118,13 +114,22 @@ void PercivalEmulatorFrameDecoder::process_packet_header(size_t bytes_received)
 
     }
 
+    // Update packet_number state map in frame header
+    current_frame_header_->packet_state[type][subframe][packet_number] = 1;
+
 }
 
 void* PercivalEmulatorFrameDecoder::get_next_payload_buffer(void) const
 {
 
-    void* next_receive_location = (void*)((uint8_t*)(scratch_frame_buffer_.get()) + get_frame_buffer_size());
-    return next_receive_location;
+    uint8_t* next_receive_location =
+            reinterpret_cast<uint8_t*>(current_frame_buffer_) +
+            get_frame_header_size() +
+            (data_type_size * get_packet_type()) +
+            (subframe_size * get_subframe_number()) +
+            (primary_packet_size * get_packet_number());
+
+    return reinterpret_cast<void*>(next_receive_location);
 }
 
 size_t PercivalEmulatorFrameDecoder::get_next_payload_size(void) const
@@ -148,21 +153,6 @@ FrameDecoder::FrameReceiveState PercivalEmulatorFrameDecoder::process_packet(siz
 
     FrameDecoder::FrameReceiveState frame_state = FrameDecoder::FrameReceiveStateIncomplete;
 
-//	uint8_t* payload_raw = reinterpret_cast<uint8_t*>(scratch_frame_buffer_.get());
-//
-//	for (int i = 0; i < 8; i++)
-//	{
-//		int idx = i;
-//		std::cout << std::hex << (int)payload_raw[idx] << std::dec << " ";
-//	}
-//	std::cout << std::endl << "..." << std::endl;;
-//	for (int i = 0; i < 8; i++)
-//	{
-//		int idx = primary_packet_size - (i+1);
-//		std::cout << std::hex << (int)payload_raw[idx] << std::dec << " ";
-//	}
-//	std::cout << std::endl;
-
 	current_frame_header_->packets_received++;
 
 	if (current_frame_header_->packets_received == num_frame_packets)
@@ -181,6 +171,10 @@ FrameDecoder::FrameReceiveState PercivalEmulatorFrameDecoder::process_packet(siz
 
 			// Notify main thread that frame is ready
 			ready_callback_(current_frame_buffer_id_, current_frame_seen_);
+
+			// Reset current frame seen ID so that if next frame has same number (e.g. repeated
+			// sends of single frame 0), it is detected properly
+			current_frame_seen_ = -1;
 		}
 	}
 
@@ -207,17 +201,6 @@ uint32_t PercivalEmulatorFrameDecoder::get_frame_number(void) const
 {
 	uint32_t frame_number_raw = *(reinterpret_cast<uint32_t*>(raw_packet_header()+2));
     return ntohl(frame_number_raw);
-}
-
-void PercivalEmulatorFrameDecoder::dump_header(void)
-{
-    uint8_t* raw_hdr = reinterpret_cast<uint8_t*>(current_packet_header_.get());
-
-    for (int i = 0; i < sizeof(PercivalEmulatorFrameDecoder::PacketHeader); i++)
-    {
-        std::cout << std::hex << (int)raw_hdr[i] << std::dec << " ";
-    }
-    std::cout << std::endl;
 }
 
 uint8_t* PercivalEmulatorFrameDecoder::raw_packet_header(void) const
