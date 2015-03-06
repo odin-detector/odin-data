@@ -65,48 +65,59 @@ void FrameReceiverRxThread::run_service(void)
     // Add the RX channel to the reactor
     reactor_.register_channel(rx_channel_, boost::bind(&FrameReceiverRxThread::handle_rx_channel, this));
 
-    // Create the receive socket
-    recv_socket_ = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if (recv_socket_ < 0)
+    for (std::vector<uint16_t>::iterator rx_port_itr = config_.rx_ports_.begin(); rx_port_itr != config_.rx_ports_.end(); rx_port_itr++)
     {
-    	std::stringstream ss;
-    	ss << "RX channel failed to create receive socket: " << strerror(errno);
-    	thread_init_msg_ = ss.str();
-    	thread_init_error_ = true;
+
+        uint16_t rx_port = *rx_port_itr;
+
+        // Create the receive socket
+        int recv_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+        if (recv_socket < 0)
+        {
+            std::stringstream ss;
+            ss << "RX channel failed to create receive socket for port " << rx_port << " : " << strerror(errno);
+            thread_init_msg_ = ss.str();
+            thread_init_error_ = true;
+        }
+
+        // Set the socket receive buffer size
+        if (setsockopt(recv_socket, SOL_SOCKET, SO_RCVBUF, &config_.rx_recv_buffer_size_, sizeof(config_.rx_recv_buffer_size_)) < 0)
+        {
+            std::stringstream ss;
+            ss << "RX channel failed to set receive socket buffer size for port " << rx_port << " : " << strerror(errno);
+            thread_init_msg_ = ss.str();
+            thread_init_error_ = true;
+        }
+
+        // Read it back and display
+        int buffer_size;
+        socklen_t len = sizeof(buffer_size);
+        getsockopt(recv_socket, SOL_SOCKET, SO_RCVBUF, &buffer_size, &len);
+        LOG4CXX_DEBUG_LEVEL(1, logger_, "RX thread receive buffer size for port " << rx_port << " is " << buffer_size);
+
+        // Bind the socket to the specified port
+        struct sockaddr_in recv_addr;
+        memset(&recv_addr, 0, sizeof(recv_addr));
+
+        recv_addr.sin_family      = AF_INET;
+        recv_addr.sin_port        = htons(rx_port);
+        recv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+        if (bind(recv_socket, (struct sockaddr*)&recv_addr, sizeof(recv_addr)) == -1)
+        {
+            std::stringstream ss;
+            ss <<  "RX channel failed to bind receive socket for port " << rx_port << " : " << strerror(errno);
+            thread_init_msg_ = ss.str();
+            thread_init_error_ = true;
+        }
+
+        if (thread_init_error_) break;
+
+        // Add the receive socket to the reactor
+        reactor_.register_socket(recv_socket, boost::bind(&FrameReceiverRxThread::handle_receive_socket, this, recv_socket));
+
+        recv_sockets_.push_back(recv_socket);
     }
-
-	// Set the socket receive buffer size
-	if (setsockopt(recv_socket_, SOL_SOCKET, SO_RCVBUF, &config_.rx_recv_buffer_size_, sizeof(config_.rx_recv_buffer_size_)) < 0)
-	{
-    	std::stringstream ss;
-    	ss << "RX channel failed to set receive socket buffer size: " << strerror(errno);
-    	thread_init_msg_ = ss.str();
-    	thread_init_error_ = true;
-	}
-
-	// Read it back and display
-	int buffer_size;
-	socklen_t len = sizeof(buffer_size);
-	getsockopt(recv_socket_, SOL_SOCKET, SO_RCVBUF, &buffer_size, &len);
-	LOG4CXX_DEBUG_LEVEL(1, logger_, "RX thread receive buffer size is " << buffer_size);
-
-	// Bind the socket to the specified port
-    struct sockaddr_in siMe;
-	memset(&siMe, 0, sizeof(siMe));
-    siMe.sin_family = AF_INET;
-    siMe.sin_port = htons(config_.rx_port_);
-    siMe.sin_addr.s_addr = htonl(INADDR_ANY);
-
-    if (bind(recv_socket_, (struct sockaddr*)&siMe, sizeof(siMe)) == -1)
-    {
-    	std::stringstream ss;
-		ss <<  "RX channel failed to bind receive socket: " << strerror(errno);
-	   	thread_init_msg_ = ss.str();
-		thread_init_error_ = true;
-    }
-
-    // Add the receive socket to the reactor
-    reactor_.register_socket(recv_socket_, boost::bind(&FrameReceiverRxThread::handle_receive_socket, this));
 
     // Add the tick timer to the reactor
     int tick_timer_id = reactor_.register_timer(tick_period_ms_, 0, boost::bind(&FrameReceiverRxThread::tick_timer, this));
@@ -123,8 +134,12 @@ void FrameReceiverRxThread::run_service(void)
     // Cleanup - remove channels, sockets and timers from the reactor and close the receive socket
     reactor_.remove_channel(rx_channel_);
     reactor_.remove_timer(tick_timer_id);
-    reactor_.remove_socket(recv_socket_);
-    close(recv_socket_);
+    for (std::vector<int>::iterator recv_sock_it = recv_sockets_.begin(); recv_sock_it != recv_sockets_.end(); recv_sock_it++)
+    {
+        reactor_.remove_socket(*recv_sock_it);
+        close(*recv_sock_it);
+    }
+    recv_sockets_.clear();
 
     LOG4CXX_DEBUG_LEVEL(1, logger_, "Terminating RX thread service");
 
@@ -189,14 +204,14 @@ void FrameReceiverRxThread::handle_rx_channel(void)
 
 }
 
-void FrameReceiverRxThread::handle_receive_socket(void)
+void FrameReceiverRxThread::handle_receive_socket(int recv_socket)
 {
 
 	if (frame_decoder_->requires_header_peek())
 	{
 		size_t header_size = frame_decoder_->get_packet_header_size();
 		void*  header_buffer = frame_decoder_->get_packet_header_buffer();
-		size_t bytes_received = recvfrom(recv_socket_, header_buffer, header_size, MSG_PEEK, 0, 0);
+		size_t bytes_received = recvfrom(recv_socket, header_buffer, header_size, MSG_PEEK, 0, 0);
 		LOG4CXX_DEBUG_LEVEL(3, logger_, "RX thread received " << bytes_received << " header bytes on recv socket");
 		frame_decoder_->process_packet_header(bytes_received);
 	}
@@ -214,7 +229,7 @@ void FrameReceiverRxThread::handle_receive_socket(void)
 	msg_hdr.msg_iov = io_vec;
 	msg_hdr.msg_iovlen = 2;
 
-	size_t bytes_received = recvmsg(recv_socket_, &msg_hdr, 0);
+	size_t bytes_received = recvmsg(recv_socket, &msg_hdr, 0);
 	LOG4CXX_DEBUG_LEVEL(3, logger_, "RX thread received " << bytes_received << " header/payload bytes on recv socket");
 
 	FrameDecoder::FrameReceiveState frame_receive_state = frame_decoder_->process_packet(bytes_received);

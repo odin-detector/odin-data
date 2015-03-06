@@ -52,7 +52,7 @@ namespace FrameReceiver
         void run_service(void);
 
         void handle_rx_channel(void);
-        void handle_receive_socket(void);
+        void handle_receive_socket(int socket_fd);
         void tick_timer(void);
 
         FrameReceiverConfig&   config_;
@@ -63,6 +63,7 @@ namespace FrameReceiver
 
         IpcChannel             rx_channel_;
         int                    recv_socket_;
+        std::vector<int>       recv_sockets_;
         IpcReactor             reactor_;
 
         bool                   run_thread_;

@@ -15,6 +15,7 @@
 #include <sstream>
 #include <string>
 #include <iterator>
+#include <cstdlib>
 using namespace std;
 
 #include <boost/foreach.hpp>
@@ -98,7 +99,7 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
 					"Set the maximum amount of shared memory to allocate for frame buffers")
 				("sensortype,s", po::value<std::string>()->default_value("unknown"),
 					"Set the sensor type to receive frame data from")
-				("port,p",       po::value<uint16_t>()->default_value(FrameReceiver::Defaults::default_rx_port),
+				("port,p",       po::value<std::string>()->default_value(FrameReceiver::Defaults::default_rx_port_list),
                     "Set the port to receive frame data on")
                 ("ipaddress,i",  po::value<std::string>()->default_value(FrameReceiver::Defaults::default_rx_address),
                     "Set the IP address of the interface to receive frame data on")
@@ -177,8 +178,15 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
 
 		if (vm.count("port"))
 		{
-		    config_.rx_port_ = vm["port"].as<uint16_t>();
-		    LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting RX port to " << config_.rx_port_);
+		    config_.rx_ports_.clear();
+            config_.tokenize_port_list(config_.rx_ports_, vm["port"].as<std::string>());
+
+		    std::stringstream ss;
+            for (std::vector<uint16_t>::iterator itr = config_.rx_ports_.begin(); itr !=config_.rx_ports_.end(); itr++)
+            {
+                ss << *itr << " ";
+            }
+		    LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting RX port(s) to " << ss.str());
 		}
 
 		if (vm.count("ipaddress"))

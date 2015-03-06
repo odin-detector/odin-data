@@ -23,7 +23,13 @@ namespace FrameReceiver
         {
             BOOST_CHECK_EQUAL(mConfig.max_buffer_mem_, FrameReceiver::Defaults::default_max_buffer_mem);
             BOOST_CHECK_EQUAL(mConfig.sensor_type_, FrameReceiver::Defaults::SensorTypeIllegal);
-            BOOST_CHECK_EQUAL(mConfig.rx_port_, FrameReceiver::Defaults::default_rx_port);
+            std::vector<uint16_t> port_list;
+            mConfig.tokenize_port_list(port_list, FrameReceiver::Defaults::default_rx_port_list);
+            BOOST_CHECK_EQUAL(mConfig.rx_ports_.size(), port_list.size());
+            for (int i = 0; i < mConfig.rx_ports_.size(); i++)
+            {
+                BOOST_CHECK_EQUAL(mConfig.rx_ports_[i], port_list[i]);
+            }
             BOOST_CHECK_EQUAL(mConfig.rx_address_, FrameReceiver::Defaults::default_rx_address);
         }
     private:

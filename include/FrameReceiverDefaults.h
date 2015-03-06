@@ -28,7 +28,7 @@ namespace FrameReceiver
 		const int         default_node                   = 1;
 		const std::size_t default_max_buffer_mem         = 1048576;
 		const SensorType  default_sensor_type            = SensorTypeIllegal;
-		const uint16_t    default_rx_port                = 8989;
+        const std::string default_rx_port_list           = "8989,8990";
 		const std::string default_rx_address             = "0.0.0.0";
 		const int         default_rx_recv_buffer_size    = 30000000;
 		const std::string default_rx_chan_endpoint       = "inproc://rx_channel";
