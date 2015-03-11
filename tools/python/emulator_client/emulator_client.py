@@ -17,10 +17,11 @@ class EmulatorClientError(Exception):
 
 class EmulatorClient(object):
  
-    def __init__(self, host, port, duration):
+    def __init__(self, host, port, timeout, duration):
 
         self.host     = host #'192.168.0.111'
         self.port     = port # 4321
+        self.timeout  = timeout
         self.duration = duration
         
         # Define Start and Stop TCP commands
@@ -44,7 +45,7 @@ class EmulatorClient(object):
         self.command[15] = 0x0D  # CR
 
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.settimeout(5)
+        self.sock.settimeout(self.timeout)
         # Open TCP connection
         try:
             self.sock.connect((host, port))
@@ -104,6 +105,8 @@ if __name__ == '__main__':
                         help="select emulator IP address")
     parser.add_argument('--port', type=int, default=4321,
                         help='select emulator IP port')
+    parser.add_argument('--timeout', type=int, default=5,
+                        help='set TCP connection timeout')
     parser.add_argument('--duration', type=float, default=0.30,
                         help='duration between sending start and stop command')
 
