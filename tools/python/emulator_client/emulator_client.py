@@ -21,6 +21,8 @@ class EmulatorClient(object):
 
         self.host = host #'192.168.0.111'
         self.port = port # 4321
+        
+        # Define Start and Stop TCP commands
         self.command = np.empty(16, dtype=np.uint8)
         self.command[0] = 0x73  # s
         self.command[1] = 0x74  # t
@@ -40,34 +42,43 @@ class EmulatorClient(object):
         self.command[14] = 0x0D  # CR
         self.command[15] = 0x0D  # CR
 
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.settimeout(5)
         # Open TCP connection
         try:
-            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.connect((host, port))
-        except Exception as echo:
-            print "Exception opening connection: ", echo
-    
+        except socket.timeout:
+            raise EmulatorClientError("Connecting to [%s:%d] timed out" % (host, port))
+            
+        except socket.error, e:
+            if self.sock:
+                self.sock.close()
+            raise EmulatorClientError("Error connecting to [%s:%d]: '%s'" % (host, port, e))
+            
+
+
     def execute(self):
         
         startCmd = self.command[0:8].tostring()
         
-        # Transmit
+        # Transmit Start command
         bytesSent = self.sock.send(startCmd)
+        if bytesSent != 8:
+            print "Failed to transmit start command properly"
+        else:
+            print "Transmitted Start command"
         
-        print "Start Bytes Sent: ", bytesSent
-        
-        time.sleep(0.15)
+        time.sleep(0.30)
         
         stopCmd = self.command[8:].tostring()
+        if bytesSent != 8:
+            print "Failed to transmit stop command properly"
+        else:
+            print "Transmitted Stop command"
         
+        # Transmit Stop command
         bytesSent = self.sock.send(stopCmd)
-        
-        print "Stop Bytes Sent: ", bytesSent
-        
-        # Open TCP connection
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        print "Closing socket upon program exit"
         # Close socket
         self.sock.close()
     
@@ -83,7 +94,9 @@ if __name__ == '__main__':
 
     
     args = parser.parse_args()
-
-    client = EmulatorClient(**vars(args))
-    client.execute()
-    # PercivalDummy
+    try:
+        client = EmulatorClient(**vars(args))
+        client.execute()
+    except Exception as e:
+        print e
+        
