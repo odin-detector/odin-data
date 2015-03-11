@@ -17,10 +17,11 @@ class EmulatorClientError(Exception):
 
 class EmulatorClient(object):
  
-    def __init__(self, host, port):
+    def __init__(self, host, port, duration):
 
-        self.host = host #'192.168.0.111'
-        self.port = port # 4321
+        self.host     = host #'192.168.0.111'
+        self.port     = port # 4321
+        self.duration = duration
         
         # Define Start and Stop TCP commands
         self.command = np.empty(16, dtype=np.uint8)
@@ -60,24 +61,36 @@ class EmulatorClient(object):
     def execute(self):
         
         startCmd = self.command[0:8].tostring()
-        
+        stopCmd  = self.command[8:].tostring()
+                
         # Transmit Start command
-        bytesSent = self.sock.send(startCmd)
+        try:
+            bytesSent = self.sock.send(startCmd)
+        except socket.error, e:
+            if self.sock:
+                self.sock.close()
+            raise EmulatorClientError("Error sending Start command: %s" % e)
+            
         if bytesSent != 8:
             print "Failed to transmit start command properly"
         else:
             print "Transmitted Start command"
+
+        print "Waiting %f seconds.." % self.duration        
+        time.sleep( self.duration )
         
-        time.sleep(0.30)
+        # Transmit Stop command
+        try:
+            bytesSent = self.sock.send(stopCmd)
+        except socket.error, e:
+            if self.sock:
+                self.sock.close()
+            raise EmulatorClientError("Error sending Stop command: %s" % e)
         
-        stopCmd = self.command[8:].tostring()
         if bytesSent != 8:
             print "Failed to transmit stop command properly"
         else:
             print "Transmitted Stop command"
-        
-        # Transmit Stop command
-        bytesSent = self.sock.send(stopCmd)
 
         # Close socket
         self.sock.close()
@@ -88,11 +101,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="EmulatorClient - control hardware simulator start/stop")
     
     parser.add_argument('--host', type=str, default='192.168.0.111', 
-                        help="select destination host IP address")
+                        help="select emulator IP address")
     parser.add_argument('--port', type=int, default=4321,
-                        help='select destination host IP port')
+                        help='select emulator IP port')
+    parser.add_argument('--duration', type=float, default=0.30,
+                        help='duration between sending start and stop command')
 
-    
     args = parser.parse_args()
     try:
         client = EmulatorClient(**vars(args))
