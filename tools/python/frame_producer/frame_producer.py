@@ -52,6 +52,7 @@ class FrameProducer(object):
         B0B1        = 0     # Which of the 4 horizontal regions does data come from?
         coarseValue = 0     # Which LVDS pair does data belong to?
         
+        timing1 = time.time()
         # Fill in image array with data according to emulator specifications
         for subframe in range(2):
             B0B1 = 0
@@ -64,15 +65,23 @@ class FrameProducer(object):
 
                 for column in range(self.colBlocksPerQuarter):
                     
-                    for adc in range(self.numADCs):          # 224
-                                                       
-                        index = (subframe * self.subframePixels) + (row * 4928) + (column * 224) + adc
-                        
-                        self.imageArray[index] = (coarseValue << 10) + (adc << 2) + B0B1
-                        self.resetArray[index] = (coarseValue << 10) + (1 << 2) + B0B1
+#                     for adc in range(self.numADCs):          # Took ~1.8 seconds
+#                                                        
+#                         index = (subframe * self.subframePixels) + (row * 4928) + (column * 224) + adc
+#                          
+#                         self.imageArray[index] = (coarseValue << 10) + (adc << 2) + B0B1
+#                         self.resetArray[index] = (coarseValue << 10) + (1 << 2) + B0B1
 
+                    # New implementation? Takes ~0.975 seconds
+                    index = (subframe * self.subframePixels) + (row * 4928) + (column * 224)
+                    self.imageArray[index:(index+224)] = [(coarseValue << 10) + (adc << 2) + B0B1 for adc in range(self.numADCs)]
+                    self.resetArray[index:(index+224)] = [(coarseValue << 10) + (1 << 2)] * self.numADCs
+                    
                     coarseValue += 1
-
+        
+        timing2 = time.time()
+        print "Nested loops took  %.3f secs" % (timing2 - timing1)
+        
         # Convert data stream to byte stream for transmission
         self.imageStream = self.imageArray.tostring()
         self.resetStream = self.resetArray.tostring()
@@ -109,17 +118,17 @@ class FrameProducer(object):
             print "frame: ", frame
             ######## Transmit Image Frame ########
             
-            for imageType in range(2):
+            for packetType in range(2):
 
-                # Use imageStream if imageType = 1,  otherwise use resetStream
-                bytesRemaining = len(self.imageStream) if imageType == 1 else len(self.resetStream)
+                # Use imageStream if packetType = 1,  otherwise use resetStream
+                bytesRemaining = len(self.imageStream) if packetType == 1 else len(self.resetStream)
 
                 streamPosn      = 0
                 subframeCounter = 0
                 packetCounter   = 0
                 bytesSent       = 0
                 subframeTotal   = 0       # How much of current subframe has been sent
-                header['PacketType'] = imageType    #0
+                header['PacketType'] = packetType    #0
                 
                 while bytesRemaining > 0:
                     
@@ -143,7 +152,7 @@ class FrameProducer(object):
                     header['FrameNumber']    = frame
                         
                     # Prepend header to current packet
-                    if imageType == 0:
+                    if packetType == 0:
                         packet = header.tostring() + self.imageStream[streamPosn:streamPosn+bytesToSend]
                     else:
                         packet = header.tostring() + self.resetStream[streamPosn:streamPosn+bytesToSend]
@@ -156,8 +165,8 @@ class FrameProducer(object):
                     packetCounter   += 1
                     subframeTotal   += bytesToSend
     
-                   # "Image" if imageType = 0, otherwise use "Reset"
-                    dataDesc = "Image" if imageType == 0 else "Reset"
+                   # "Image" if packetType = 0, otherwise use "Reset"
+                    dataDesc = "Image" if packetType == 0 else "Reset"
  
                     if subframeTotal >= self.subframeSize:
                         print "  Sent", dataDesc, "frame:", frame, "subframe:", subframeCounter, "packets:", packetCounter, "bytes:", bytesSent
