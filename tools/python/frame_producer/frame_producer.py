@@ -1,4 +1,4 @@
-'''
+'''1
 Created on Jan 15, 2015 - Based upon LpdFemUdpProducer.py (author: tcn45)
 
 @author: ckd27546
@@ -95,7 +95,7 @@ class FrameProducer(object):
         header = np.zeros(1, dtype=self.HeaderType)
         
         # Load header with dummy values
-        header['PacketType']        = 0  # Packet Type        (1 Byte)     [85 = 0x55]
+        header['PacketType']        = 0   # Packet Type        (1 Byte)
         header['SubframeNumber']    = 0   # Subframe Number    (1 Byte)
         header['FrameNumber']       = 0   # Frame Number       (4 Bytes)    
         header['PacketNumber']      = 0   # Packet Number      (2 Bytes)
@@ -108,129 +108,65 @@ class FrameProducer(object):
             
             print "frame: ", frame
             ######## Transmit Image Frame ########
-
-            bytesRemaining = len(self.imageStream) 
             
-            streamPosn      = 0
-            subframeCounter = 0
-            packetCounter   = 0
-            bytesSent       = 0
-            subframeTotal   = 0       # How much of current subframe has been sent
-            header['PacketType'] = 0
-            
-            frameStartTime = time.time()
+            for imageType in range(2):
 
-            while bytesRemaining > 0:
+                # Use imageStream if imageType = 1,  otherwise use resetStream
+                bytesRemaining = len(self.imageStream) if imageType == 1 else len(self.resetStream)
+
+                streamPosn      = 0
+                subframeCounter = 0
+                packetCounter   = 0
+                bytesSent       = 0
+                subframeTotal   = 0       # How much of current subframe has been sent
+                header['PacketType'] = imageType    #0
                 
-                # Calculate packet size and construct header
-
-                if bytesRemaining <= self.payloadLen:
-                    bytesToSend = bytesRemaining
-                    header['PacketNumber'] = packetCounter | endOfFrame
-
-                else:
+                while bytesRemaining > 0:
                     
-                    subframeRemainder = self.subframeSize - subframeTotal
-                    # Would sending full payload contain data from next subframe?
-                    if (subframeRemainder < self.payloadLen):
-                        bytesToSend = subframeRemainder
+                    # Calculate packet size and construct header
+    
+                    if bytesRemaining <= self.payloadLen:
+                        bytesToSend = bytesRemaining
+                        header['PacketNumber'] = packetCounter | endOfFrame
+    
                     else:
-                        bytesToSend = self.payloadLen
-                    header['PacketNumber'] = packetCounter | startOfFrame if packetCounter == 0 else packetCounter
-
-                header['SubframeNumber'] = subframeCounter
-                header['FrameNumber']    = frame
-                    
-                # Prepend header to current packet
-                packet = header.tostring() + self.imageStream[streamPosn:streamPosn+bytesToSend]
-
-                # Transmit packet
-                bytesSent += sock.sendto(packet, (self.host, self.port))
-
-                bytesRemaining  -= bytesToSend
-                streamPosn      += bytesToSend
-                packetCounter   += 1
-                subframeTotal   += bytesToSend
-
-                if subframeTotal >= self.subframeSize:
-                    print "  Sent Image frame:", frame, "subframe:", subframeCounter, "packets:", packetCounter, "bytes:", bytesSent
-                    subframeTotal   = 0
-                    subframeCounter += 1
-                    packetCounter   = 0
-                    totalBytesSent  += bytesSent
-                    bytesSent       = 0
-
-            # Calculate wait time and sleep so that frames are sent at requested intervals            
-            frameEndTime = time.time()
-            waitTime = (frameStartTime + self.interval) - frameEndTime
-            if waitTime > 0:
-                time.sleep(waitTime)
+                        
+                        subframeRemainder = self.subframeSize - subframeTotal
+                        # Would sending full payload contain data from next subframe?
+                        if (subframeRemainder < self.payloadLen):
+                            bytesToSend = subframeRemainder
+                        else:
+                            bytesToSend = self.payloadLen
+                        header['PacketNumber'] = packetCounter | startOfFrame if packetCounter == 0 else packetCounter
+    
+                    header['SubframeNumber'] = subframeCounter
+                    header['FrameNumber']    = frame
+                        
+                    # Prepend header to current packet
+                    if imageType == 0:
+                        packet = header.tostring() + self.imageStream[streamPosn:streamPosn+bytesToSend]
+                    else:
+                        packet = header.tostring() + self.resetStream[streamPosn:streamPosn+bytesToSend]
+    
+                    # Transmit packet
+                    bytesSent += sock.sendto(packet, (self.host, self.port))
+    
+                    bytesRemaining  -= bytesToSend
+                    streamPosn      += bytesToSend
+                    packetCounter   += 1
+                    subframeTotal   += bytesToSend
+    
+                   # "Image" if imageType = 0, otherwise use "Reset"
+                    dataDesc = "Image" if imageType == 0 else "Reset"
+ 
+                    if subframeTotal >= self.subframeSize:
+                        print "  Sent", dataDesc, "frame:", frame, "subframe:", subframeCounter, "packets:", packetCounter, "bytes:", bytesSent
+                        subframeTotal   = 0
+                        subframeCounter += 1
+                        packetCounter   = 0
+                        totalBytesSent  += bytesSent
+                        bytesSent       = 0
            
-            # Clear header before transmitting reset frame(s)
-            header['SubframeNumber']    = 0
-            header['FrameNumber']       = 0    
-            header['PacketNumber']      = 0
-            header['Information']       = 0
-            
-            ######## Transmit Reset Frame ########
-
-            bytesRemaining = len(self.resetStream) 
-            
-            streamPosn      = 0
-            subframeCounter = 0
-            packetCounter   = 0
-            bytesSent       = 0
-            subframeTotal   = 0       # How much of current subframe has been sent
-            header['PacketType'] = 1
-            
-            frameStartTime = time.time()
-
-            while bytesRemaining > 0:
-                
-                # Calculate packet size and construct header
-
-                if bytesRemaining <= self.payloadLen:
-                    bytesToSend = bytesRemaining
-                    header['PacketNumber'] = packetCounter | endOfFrame
-
-                else:
-                    
-                    subframeRemainder = self.subframeSize - subframeTotal
-                    # Would sending full payload contain data from next subframe?
-                    if (subframeRemainder < self.payloadLen):
-                        bytesToSend = subframeRemainder
-                    else:
-                        bytesToSend = self.payloadLen
-                    header['PacketNumber'] = packetCounter | startOfFrame if packetCounter == 0 else packetCounter
-
-                header['SubframeNumber'] = subframeCounter
-                header['FrameNumber']    = frame
-                    
-                # Prepend header to current packet
-                packet = header.tostring() + self.resetStream[streamPosn:streamPosn+bytesToSend]
-
-                # Transmit packet
-                bytesSent += sock.sendto(packet, (self.host, self.port))
-
-                bytesRemaining  -= bytesToSend
-                streamPosn      += bytesToSend
-                packetCounter   += 1
-                subframeTotal   += bytesToSend
-
-                if subframeTotal >= self.subframeSize:
-                    print "  Sent Reset frame:", frame, "subframe:", subframeCounter, "packets:", packetCounter, "bytes:", bytesSent
-                    subframeTotal   = 0
-                    subframeCounter += 1
-                    packetCounter   = 0
-                    totalBytesSent  += bytesSent
-                    bytesSent       = 0
-            
-            # Calculate wait time and sleep so that frames are sent at requested intervals            
-            frameEndTime = time.time()
-            waitTime = (frameStartTime + self.interval) - frameEndTime
-            if waitTime > 0:
-                time.sleep(waitTime)
-
        
         runTime = time.time() - runStartTime
              
