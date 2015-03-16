@@ -54,18 +54,18 @@ class FrameProducer(object):
         
         timing1 = time.time()
         # Fill in image array with data according to emulator specifications
-        for subframe in range(2):
+        for subframe in xrange(2):
             B0B1 = 0
 
-            for row in range(self.rowBlocksPerQuarter * self.quarterRows): # 106 * 2 = 212
+            for row in xrange(self.rowBlocksPerQuarter * self.quarterRows): # 106 * 2 = 212
                 coarseValue = 0
                 
                 if (row % 53 == 0) and (row != 0):
                     B0B1 += 1
 
-                for column in range(self.colBlocksPerQuarter):
+                for column in xrange(self.colBlocksPerQuarter):
                     
-#                     for adc in range(self.numADCs):          # Took ~1.8 seconds
+#                     for adc in xrange(self.numADCs):          # Took ~1.8 seconds
 #                                                        
 #                         index = (subframe * self.subframePixels) + (row * 4928) + (column * 224) + adc
 #                          
@@ -74,7 +74,7 @@ class FrameProducer(object):
 
                     # New implementation? Takes ~0.975 seconds
                     index = (subframe * self.subframePixels) + (row * 4928) + (column * 224)
-                    self.imageArray[index:(index+224)] = [(coarseValue << 10) + (adc << 2) + B0B1 for adc in range(self.numADCs)]
+                    self.imageArray[index:(index+224)] = [(coarseValue << 10) + (adc << 2) + B0B1 for adc in xrange(self.numADCs)]
                     self.resetArray[index:(index+224)] = [(coarseValue << 10) + (1 << 2)] * self.numADCs
                     
                     coarseValue += 1
