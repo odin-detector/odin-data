@@ -64,15 +64,8 @@ class FrameProducer(object):
                     B0B1 += 1
 
                 for column in xrange(self.colBlocksPerQuarter):
-                    
-#                     for adc in xrange(self.numADCs):          # Took ~1.8 seconds
-#                                                        
-#                         index = (subframe * self.subframePixels) + (row * 4928) + (column * 224) + adc
-#                          
-#                         self.imageArray[index] = (coarseValue << 10) + (adc << 2) + B0B1
-#                         self.resetArray[index] = (coarseValue << 10) + (1 << 2) + B0B1
 
-                    # New implementation? Takes ~0.975 seconds
+                    # New implementation? Takes ~0.975 seconds    # Quicker, but reset image broken !?
                     index = (subframe * self.subframePixels) + (row * 4928) + (column * 224)
                     self.imageArray[index:(index+224)] = [(coarseValue << 10) + (adc << 2) + B0B1 for adc in xrange(self.numADCs)]
                     self.resetArray[index:(index+224)] = [(coarseValue << 10) + (1 << 2)] * self.numADCs
