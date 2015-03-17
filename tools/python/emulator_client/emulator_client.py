@@ -5,7 +5,6 @@ Created on March 10, 2015
 '''
 
 import argparse, socket, time
-import numpy as np
 
 class EmulatorClientError(Exception):
     
@@ -25,24 +24,7 @@ class EmulatorClient(object):
         self.duration = duration
         
         # Define Start and Stop TCP commands
-        self.command = np.empty(16, dtype=np.uint8)
-        self.command[0] = 0x73  # s
-        self.command[1] = 0x74  # t
-        self.command[2] = 0x61  # a
-        self.command[3] = 0x72  # r
-        self.command[4] = 0x74  # t
-        self.command[5] = 0x64  # d
-        self.command[6] = 0x0A  # NL
-        self.command[7] = 0x0D  # CR
-        
-        self.command[8]  = 0x73  # s
-        self.command[9]  = 0x74  # t
-        self.command[10] = 0x6F  # o
-        self.command[11] = 0x70  # p
-        self.command[12] = 0x64  # d
-        self.command[13] = 0x0A  # NL
-        self.command[14] = 0x0D  # CR
-        self.command[15] = 0x0D  # CR
+        self.command = "startd\n\rstopd\n\r\r"
 
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.settimeout(self.timeout)
@@ -61,9 +43,9 @@ class EmulatorClient(object):
 
     def execute(self):
         
-        startCmd = self.command[0:8].tostring()
-        stopCmd  = self.command[8:].tostring()
-                
+        startCmd = self.command[0:8]
+        stopCmd  = self.command[8:]
+
         # Transmit Start command
         try:
             bytesSent = self.sock.send(startCmd)
