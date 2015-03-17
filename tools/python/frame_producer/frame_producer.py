@@ -1,4 +1,4 @@
-'''1
+'''
 Created on Jan 15, 2015 - Based upon LpdFemUdpProducer.py (author: tcn45)
 
 @author: ckd27546
@@ -46,7 +46,7 @@ class FrameProducer(object):
         # Initialise an array representing a single image in the system
         self.imageArray = np.empty((self.numPixelRows * self.numPixelCols), dtype=np.uint16)
         self.resetArray = np.ones((self.numPixelRows * self.numPixelCols), dtype=np.uint16)
-
+        
         self.numADCs = 224
         
         B0B1        = 0     # Which of the 4 horizontal regions does data come from?
@@ -65,7 +65,7 @@ class FrameProducer(object):
 
                 for column in xrange(self.colBlocksPerQuarter):
 
-                    # New implementation? Takes ~0.975 seconds    # Quicker, but reset image broken !?
+                    # New implementation? Takes ~0.975 seconds
                     index = (subframe * self.subframePixels) + (row * 4928) + (column * 224)
                     self.imageArray[index:(index+224)] = [(coarseValue << 10) + (adc << 2) + B0B1 for adc in xrange(self.numADCs)]
                     self.resetArray[index:(index+224)] = [(coarseValue << 10) + (1 << 2)] * self.numADCs
@@ -83,8 +83,8 @@ class FrameProducer(object):
     def run(self):
         
         self.payloadLen     = 8192
-        startOfFrame        = 0#x80000000
-        endOfFrame          = 0#x40000000
+        startOfFrame        = 0
+        endOfFrame          = 0
         self.bytesPerPixels = 2
         self.subframeSize   = self.subframePixels * self.bytesPerPixels
 
@@ -109,7 +109,6 @@ class FrameProducer(object):
         for frame in range(self.frames):
             
             print "frame: ", frame
-            ######## Transmit Image Frame ########
             
             for packetType in range(2):
 
@@ -121,7 +120,7 @@ class FrameProducer(object):
                 packetCounter   = 0
                 bytesSent       = 0
                 subframeTotal   = 0       # How much of current subframe has been sent
-                header['PacketType'] = packetType    #0
+                header['PacketType'] = packetType
                 
                 while bytesRemaining > 0:
                     
@@ -150,17 +149,17 @@ class FrameProducer(object):
                     else:
                         packet = header.tostring() + self.resetStream[streamPosn:streamPosn+bytesToSend]
     
-                    # Transmit packet
-                    bytesSent += sock.sendto(packet, (self.host, self.port))
+                    # Transmit packet (image, reset sent to consecutive ports)
+                    bytesSent += sock.sendto(packet, (self.host, self.port + packetType))
     
                     bytesRemaining  -= bytesToSend
                     streamPosn      += bytesToSend
                     packetCounter   += 1
                     subframeTotal   += bytesToSend
-    
-                   # "Image" if packetType = 0, otherwise use "Reset"
+
+                   # "Image" if packetType = 0, otherwise "Reset"
                     dataDesc = "Image" if packetType == 0 else "Reset"
- 
+
                     if subframeTotal >= self.subframeSize:
                         print "  Sent", dataDesc, "frame:", frame, "subframe:", subframeCounter, "packets:", packetCounter, "bytes:", bytesSent
                         subframeTotal   = 0
@@ -168,13 +167,13 @@ class FrameProducer(object):
                         packetCounter   = 0
                         totalBytesSent  += bytesSent
                         bytesSent       = 0
-           
-       
+
+
         runTime = time.time() - runStartTime
-             
+
         # Close socket
         sock.close()
-        
+
         print "%d frames completed, %d bytes sent in %.3f secs" % (self.frames, totalBytesSent, runTime)
         
         if self.display:
@@ -182,12 +181,21 @@ class FrameProducer(object):
             
     def displayImage(self):
 
-        import matplotlib.pyplot as plt
- 
-        fig = plt.figure(1)
-        ax = fig.add_subplot(111)
-        img = ax.imshow(self.imageArray)
-        plt.show()       
+        try:
+            import matplotlib.pyplot as plt
+        except ImportError:
+            print "\n*** matplotlib not installed, cannot plot data."
+        else:
+            self.imageArray = np.reshape(self.imageArray, (self.numPixelRows, self.numPixelCols))
+            self.resetArray = np.reshape(self.resetArray, (self.numPixelRows, self.numPixelCols))
+            fig = plt.figure(1)
+            ax = fig.add_subplot(121)
+            img = ax.imshow(self.imageArray)
+            plt.xlabel("Image Data")
+            ax = fig.add_subplot(122)
+            img = ax.imshow(self.resetArray)
+            plt.xlabel("Reset Data")
+            plt.show()
         
     
 if __name__ == '__main__':
