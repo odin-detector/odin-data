@@ -41,6 +41,8 @@ namespace FrameReceiver
         void connect(const char* endpoint);
         void connect(std::string& endpoint);
 
+        void subscribe(const char* topic);
+
         void send(std::string& message_str);
         void send(const char* message);
 

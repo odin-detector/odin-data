@@ -9,6 +9,9 @@
 
 #include "FrameReceiverRxThread.h"
 #include "IpcMessage.h"
+#include "SharedBufferManager.h"
+#include "FrameDecoder.h"
+#include "PercivalEmulatorFrameDecoder.h"
 
 #include <log4cxx/logger.h>
 #include <log4cxx/consoleappender.h>
@@ -38,8 +41,12 @@ public:
     FrameReceiverRxThreadTestFixture() :
         rx_channel(ZMQ_PAIR),
         logger(log4cxx::Logger::getLogger("FrameReceiverRxThreadUnitTest")),
-        proxy(config)
+        proxy(config),
+        frame_decoder(new FrameReceiver::PercivalEmulatorFrameDecoder(logger)),
+        buffer_manager(new FrameReceiver::SharedBufferManager("TestSharedBuffer", 10000, 1000))
     {
+
+        BOOST_TEST_MESSAGE("Setup test fixture");
 
         // Bind the endpoint of the channel to communicate with the RX thread
         rx_channel.bind(proxy.get_rx_channel_endpoint());
@@ -61,6 +68,8 @@ public:
     FrameReceiver::FrameReceiverConfig config;
     log4cxx::LoggerPtr logger;
     FrameReceiver::FrameReceiverRxThreadTestProxy proxy;
+    FrameReceiver::FrameDecoderPtr frame_decoder;
+    FrameReceiver::SharedBufferManagerPtr buffer_manager;
 };
 
 BOOST_FIXTURE_TEST_SUITE(FrameReceiverRxThreadUnitTest, FrameReceiverRxThreadTestFixture);
@@ -68,12 +77,10 @@ BOOST_FIXTURE_TEST_SUITE(FrameReceiverRxThreadUnitTest, FrameReceiverRxThreadTes
 BOOST_AUTO_TEST_CASE( CreateAndPingRxThread )
 {
 
-    BOOST_TEST_MESSAGE("Setup test fixture");
-
     bool initOK = true;
 
     try {
-        FrameReceiver::FrameReceiverRxThread rxThread(config, logger);
+        FrameReceiver::FrameReceiverRxThread rxThread(config, logger, buffer_manager, frame_decoder, 1);
 
         FrameReceiver::IpcMessage::MsgType msg_type = FrameReceiver::IpcMessage::MsgTypeCmd;
         FrameReceiver::IpcMessage::MsgVal  msg_val =  FrameReceiver::IpcMessage::MsgValCmdStatus;
@@ -90,15 +97,15 @@ BOOST_AUTO_TEST_CASE( CreateAndPingRxThread )
             rx_channel.send(message.encode());
         }
 
-
         while ((replyCount < loopCount) && (timeoutCount < 10))
         {
             if (rx_channel.poll(100))
             {
                 std::string reply = rx_channel.recv();
+
                 FrameReceiver::IpcMessage response(reply.c_str());
-                msgMatch &= (response.get_msg_type() == msg_type);
-                msgMatch &= (response.get_msg_val() == msg_val);
+                msgMatch &= (response.get_msg_type() == FrameReceiver::IpcMessage::MsgTypeAck);
+                msgMatch &= (response.get_msg_val() == FrameReceiver::IpcMessage::MsgValCmdStatus);
                 msgMatch &= (response.get_param<int>("count", -1) == replyCount);
                 replyCount++;
                 timeoutCount = 0;

@@ -32,7 +32,7 @@ int main(int argc, char** argv)
 	FrameReceiver::FrameReceiverApp fr_instance;
 
 	// Parse command line arguments and set up node configuration
-	rc = fr_instance.parseArguments(argc, argv);
+	rc = fr_instance.parse_arguments(argc, argv);
 
 	// Run the instance
 	fr_instance.run();

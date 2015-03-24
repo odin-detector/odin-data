@@ -83,14 +83,16 @@ namespace FrameReceiver
         static int last_timer_id_; //!< Class variable of last timer ID assigned
     };
 
-    //! Function signature for channel callback methods
-    typedef boost::function<void()> ChannelCallback;
+    //! Function signature for reactor callback methods
+    typedef boost::function<void()> ReactorCallback;
 
     //! Pointer to underlying ZMQ socket of a channel
     typedef zmq::socket_t* SocketPtr;
 
     //! Internal map to associate channel socket with a callback method
-    typedef std::map<SocketPtr, ChannelCallback> ChannelMap;
+    typedef std::map<SocketPtr, ReactorCallback> ChannelMap;
+
+    typedef std::map<int, ReactorCallback> SocketMap;
 
     //! Internal map to associate timer ID with a timer
     typedef std::map<int, boost::shared_ptr<IpcReactorTimer> > TimerMap;
@@ -103,13 +105,17 @@ namespace FrameReceiver
         ~IpcReactor();
 
          //! Adds an IPC channel and associated callback to the reactor
-         void add_channel(IpcChannel& channel, ChannelCallback callback);
+         void register_channel(IpcChannel& channel, ReactorCallback callback);
 
          //! Removes an IPC chanel from the reactor
          void remove_channel(IpcChannel& channel);
 
+         void register_socket(int socket_fd, ReactorCallback callback);
+
+         void remove_socket(int socket_fd);
+
          //! Adds a timer to the reactor
-         int add_timer(size_t delay_ms, size_t times, TimerCallback callback);
+         int register_timer(size_t delay_ms, size_t times, ReactorCallback callback);
 
          //! Removes a timer from the reactor
          void remove_timer(int timer_id);
@@ -132,9 +138,10 @@ namespace FrameReceiver
 
         bool terminate_reactor_;         //!< Indicates that the reactor loop should terminate
         ChannelMap channels_;            //!< Map of channels associated with the reactor
+        SocketMap  sockets_;
         TimerMap   timers_;              //!< Map of timers associated with the reactor
         zmq::pollitem_t* pollitems_;     //!< Ptr to array of pollitems to use in poll call
-        ChannelCallback* callbacks_;     //!< Ptr to matched array of callbacks
+        ReactorCallback* callbacks_;     //!< Ptr to matched array of callbacks
         std::size_t      pollsize_;      //!< Number if active items to poll
         bool             needs_rebuild_; //!< Indicates that the poll item list needs rebuilding
     };

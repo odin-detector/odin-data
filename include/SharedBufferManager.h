@@ -12,6 +12,7 @@
 
 #include <boost/interprocess/shared_memory_object.hpp>
 #include <boost/interprocess/mapped_region.hpp>
+#include <boost/shared_ptr.hpp>
 #include <string>
 
 #include <stddef.h>
@@ -59,6 +60,8 @@ namespace FrameReceiver
 
         static size_t last_manager_id;
     };
+
+    typedef boost::shared_ptr<SharedBufferManager> SharedBufferManagerPtr;
 
 } // namespace FrameReceiver
 
