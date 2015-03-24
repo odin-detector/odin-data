@@ -16,16 +16,18 @@ class EmulatorClientError(Exception):
 
 class EmulatorClient(object):
  
-    def __init__(self, host, port, timeout, duration):
+    # Define legal commands
+    LegalCommands = {
+                     "start" : "startd\n\r",
+                     "stop"  : "stopd\n\r\r"
+                     }
+    
+    def __init__(self, host, port, timeout):
 
         self.host     = host #'192.168.0.111'
         self.port     = port # 4321
         self.timeout  = timeout
-        self.duration = duration
         
-        # Define Start and Stop TCP commands
-        self.command = "startd\n\rstopd\n\r\r"
-
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.settimeout(self.timeout)
         # Open TCP connection
@@ -41,47 +43,28 @@ class EmulatorClient(object):
             
 
 
-    def execute(self):
+    def execute(self, command):
         
-        startCmd = self.command[0:8]
-        stopCmd  = self.command[8:]
-
-        # Transmit Start command
+        if not command in EmulatorClient.LegalCommands:
+            raise EmulatorClientError("Illegal command %s specified" % command)
+        
+        # Transmit command
         try:
-            bytesSent = self.sock.send(startCmd)
+            bytesSent = self.sock.send(EmulatorClient.LegalCommands[command])
         except socket.error, e:
             if self.sock:
                 self.sock.close()
-            raise EmulatorClientError("Error sending Start command: %s" % e)
+            raise EmulatorClientError("Error sending %s command: %s" % (command, e))
             
-        if bytesSent != 8:
-            print "Failed to transmit start command properly"
+        if bytesSent != len(EmulatorClient.LegalCommands[command]):
+            print "Failed to transmit %s command properly" % command
         else:
-            print "Transmitted Start command"
-
-        print "Waiting %f seconds.." % self.duration        
-        time.sleep( self.duration )
-        
-        # Transmit Stop command
-        try:
-            bytesSent = self.sock.send(stopCmd)
-        except socket.error, e:
-            if self.sock:
-                self.sock.close()
-            raise EmulatorClientError("Error sending Stop command: %s" % e)
-        
-        if bytesSent != 8:
-            print "Failed to transmit stop command properly"
-        else:
-            print "Transmitted Stop command"
-
-        # Close socket
-        self.sock.close()
-    
+            print "Transmitted %s command" % command
+   
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description="EmulatorClient - control hardware simulator start/stop")
+    parser = argparse.ArgumentParser(description="EmulatorClient - control hardware emulator start/stop")
     
     parser.add_argument('--host', type=str, default='192.168.0.111', 
                         help="select emulator IP address")
@@ -89,13 +72,13 @@ if __name__ == '__main__':
                         help='select emulator IP port')
     parser.add_argument('--timeout', type=int, default=5,
                         help='set TCP connection timeout')
-    parser.add_argument('--duration', type=float, default=0.30,
-                        help='duration between sending start and stop command')
+    parser.add_argument('command', choices=EmulatorClient.LegalCommands.keys(), default="start",
+                        help="specify which command to send to emulator")
 
     args = parser.parse_args()
     try:
-        client = EmulatorClient(**vars(args))
-        client.execute()
+        client = EmulatorClient(args.host, args.port, args.timeout)
+        client.execute(args.command)
     except Exception as e:
         print e
         
