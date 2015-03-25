@@ -10,6 +10,7 @@ class FrameProcessorConfig(object):
         defaults['ready_endpoint']   = "tcp://127.0.0.1:5001"
         defaults['release_endpoint'] = "tcp://127.0.0.1:5002"
         defaults['sharedbuf']        = "FrameReceiverBuffer"
+        defaults['bypass_mode']      = False
 
         # Parse the command-line argument list        
         arg_config = self._parse_arguments(description)
@@ -38,6 +39,8 @@ class FrameProcessorConfig(object):
                             help='Specify the IPC control channel endpoint URL')
         parser.add_argument('--sharedbuf', type=str, default=None, dest='sharedbuf',
                             help='Specify the name of the shared memory frame buffer')
+        parser.add_argument('--bypass_mode', action="store_true",
+                            help="Enable frame decoding bypass mode" )
         
         args = parser.parse_args()
         
@@ -54,5 +57,6 @@ class FrameProcessorConfig(object):
         
         config_vals['ctrl_endpoint'] = cp.get(sec_name, 'ctrl_endpoint')
         config_vals['sharedbuf'] = cp.get(sec_name, 'sharedbuf')
+        config_vals['bypass_mode'] = cp.getboolean(sec_name, 'bypass_mode')
         
         return config_vals

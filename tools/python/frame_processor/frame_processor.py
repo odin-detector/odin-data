@@ -93,7 +93,8 @@ class FrameProcessor(object):
                     buffer_id    = ready_decoded.get_param('buffer_id')
                     logging.debug("Got frame ready notification for frame %d buffer ID %d" %(frame_number, buffer_id))
                     
-                    self.handle_frame(frame_number, buffer_id)
+                    if not self.config.bypass_mode:
+                        self.handle_frame(frame_number, buffer_id)
                     
                     release_msg = IpcMessage(msg_type='notify', msg_val='frame_release')
                     release_msg.set_param('frame', frame_number)
