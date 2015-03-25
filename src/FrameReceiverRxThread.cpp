@@ -122,6 +122,9 @@ void FrameReceiverRxThread::run_service(void)
     // Add the tick timer to the reactor
     int tick_timer_id = reactor_.register_timer(tick_period_ms_, 0, boost::bind(&FrameReceiverRxThread::tick_timer, this));
 
+    // Add the buffer monitor timer to the reactor
+    int buffer_monitor_timer_id = reactor_.register_timer(3000, 0, boost::bind(&FrameReceiverRxThread::buffer_monitor_timer, this));
+
     // Register the frame release callback with the decoder
     frame_decoder_->register_frame_ready_callback(boost::bind(&FrameReceiverRxThread::frame_ready, this, _1, _2));
 
@@ -134,6 +137,8 @@ void FrameReceiverRxThread::run_service(void)
     // Cleanup - remove channels, sockets and timers from the reactor and close the receive socket
     reactor_.remove_channel(rx_channel_);
     reactor_.remove_timer(tick_timer_id);
+    reactor_.remove_timer(buffer_monitor_timer_id);
+
     for (std::vector<int>::iterator recv_sock_it = recv_sockets_.begin(); recv_sock_it != recv_sockets_.end(); recv_sock_it++)
     {
         reactor_.remove_socket(*recv_sock_it);
@@ -243,6 +248,11 @@ void FrameReceiverRxThread::tick_timer(void)
 		LOG4CXX_DEBUG_LEVEL(1, logger_, "RX thread terminate detected in timer");
 		reactor_.stop();
 	}
+}
+
+void FrameReceiverRxThread::buffer_monitor_timer(void)
+{
+    frame_decoder_->monitor_buffers();
 }
 
 void FrameReceiverRxThread::frame_ready(int buffer_id, int frame_number)

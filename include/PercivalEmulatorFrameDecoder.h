@@ -62,7 +62,7 @@ namespace FrameReceiver
         static const size_t num_frame_packets   = num_subframes * num_data_types *
                 (num_primary_packets + num_tail_packets);
 
-        PercivalEmulatorFrameDecoder(LoggerPtr& logger);
+        PercivalEmulatorFrameDecoder(LoggerPtr& logger, unsigned int frame_timeout_ms=1000);
         ~PercivalEmulatorFrameDecoder();
 
         const size_t get_frame_buffer_size(void) const;
@@ -76,6 +76,8 @@ namespace FrameReceiver
         size_t get_next_payload_size(void) const;
         FrameDecoder::FrameReceiveState process_packet(size_t bytes_received);
 
+        void monitor_buffers(void);
+
         void* get_packet_header_buffer(void);
 
         uint8_t get_packet_type(void) const;
@@ -86,6 +88,7 @@ namespace FrameReceiver
     private:
 
         uint8_t* raw_packet_header(void) const;
+        unsigned int elapsed_ms(struct timespec& start, struct timespec& end);
 
         boost::shared_ptr<void> current_packet_header_;
         boost::shared_ptr<void> dropped_frame_buffer_;
@@ -96,6 +99,9 @@ namespace FrameReceiver
         FrameHeader* current_frame_header_;
 
         bool dropping_frame_data_;
+
+        unsigned int frame_timeout_ms_;
+        unsigned int frames_timedout_;
     };
 
 } // namespace FrameReceiver

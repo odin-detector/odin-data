@@ -32,7 +32,8 @@ namespace FrameReceiver
 		    ctrl_channel_endpoint_(Defaults::default_ctrl_chan_endpoint),
 		    frame_ready_endpoint_(Defaults::default_frame_ready_endpoint),
 		    frame_release_endpoint_(Defaults::default_frame_release_endpoint),
-		    shared_buffer_name_(Defaults::default_shared_buffer_name)
+		    shared_buffer_name_(Defaults::default_shared_buffer_name),
+		    frame_timeout_ms_(Defaults::default_frame_timeout_ms)
 		{
 		    tokenize_port_list(rx_ports_, Defaults::default_rx_port_list);
 		};
@@ -91,6 +92,7 @@ namespace FrameReceiver
 		std::string           frame_ready_endpoint_;   //!< IPC channel endpoint for transmitting frame ready notifications to other processes
         std::string           frame_release_endpoint_; //!< IPC channel endpoint for receiving frame release notifications from other processes
 		std::string           shared_buffer_name_;     //!< Shared memory frame buffer name
+		unsigned int          frame_timeout_ms_;       //!< Incomplete rame timeout in milliseconds
 
 		friend class FrameReceiverApp;
 		friend class FrameReceiverRxThread;

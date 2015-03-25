@@ -76,6 +76,8 @@ namespace FrameReceiver
         virtual size_t get_next_payload_size(void) const = 0;
         virtual FrameReceiveState process_packet(size_t bytes_received) = 0;
 
+        virtual void monitor_buffers(void) = 0;
+
         void push_empty_buffer(int buffer_id)
         {
         	empty_buffer_queue_.push(buffer_id);
@@ -84,6 +86,11 @@ namespace FrameReceiver
         const size_t get_num_empty_buffers(void) const
         {
         	return empty_buffer_queue_.size();
+        }
+
+        const size_t get_num_mapped_buffers(void) const
+        {
+            return frame_buffer_map_.size();
         }
 
     protected:

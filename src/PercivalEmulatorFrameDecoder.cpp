@@ -11,13 +11,15 @@
 
 using namespace FrameReceiver;
 
-PercivalEmulatorFrameDecoder::PercivalEmulatorFrameDecoder(LoggerPtr& logger) :
+PercivalEmulatorFrameDecoder::PercivalEmulatorFrameDecoder(LoggerPtr& logger, unsigned int frame_timeout_ms) :
         FrameDecoder(logger),
 		current_frame_seen_(-1),
 		current_frame_buffer_id_(-1),
 		current_frame_buffer_(0),
 		current_frame_header_(0),
-		dropping_frame_data_(false)
+		dropping_frame_data_(false),
+		frame_timeout_ms_(frame_timeout_ms),
+		frames_timedout_(0)
 {
     current_packet_header_.reset(new uint8_t[sizeof(PercivalEmulatorFrameDecoder::PacketHeader)]);
     dropped_frame_buffer_.reset(new uint8_t[PercivalEmulatorFrameDecoder::total_frame_size]);
@@ -188,6 +190,52 @@ FrameDecoder::FrameReceiveState PercivalEmulatorFrameDecoder::process_packet(siz
 	return frame_state;
 }
 
+void PercivalEmulatorFrameDecoder::monitor_buffers(void)
+{
+
+    int frames_timedout = 0;
+    struct timespec current_time;
+
+    clock_gettime(CLOCK_REALTIME, &current_time);
+
+    // Loop over frame buffers currently in map and check their state
+    std::map<uint32_t, int>::iterator buffer_map_iter = frame_buffer_map_.begin();
+    while (buffer_map_iter != frame_buffer_map_.end())
+    {
+        uint32_t frame_num = buffer_map_iter->first;
+        int      buffer_id = buffer_map_iter->second;
+        void*    buffer_addr = buffer_manager_->get_buffer_address(buffer_id);
+        FrameHeader* frame_header = reinterpret_cast<FrameHeader*>(buffer_addr);
+
+        if (elapsed_ms(frame_header->frame_start_time, current_time) > frame_timeout_ms_)
+        {
+            LOG4CXX_DEBUG_LEVEL(1, logger_, "Frame " << frame_num << " in buffer " << buffer_id
+                    << " addr 0x" << std::hex << buffer_addr << std::dec
+                    << " timed out with " << frame_header->packets_received << " packets received");
+
+            frame_header->frame_state = FrameReceiveStateTimedout;
+            ready_callback_(buffer_id, frame_num);
+            frames_timedout++;
+
+            frame_buffer_map_.erase(buffer_map_iter++);
+        }
+        else
+        {
+            buffer_map_iter++;
+        }
+    }
+    if (frames_timedout)
+    {
+        LOG4CXX_WARN(logger_, "Released " << frames_timedout << " timed out incomplete frames");
+    }
+    frames_timedout_ += frames_timedout;
+
+    LOG4CXX_DEBUG_LEVEL(2, logger_, get_num_mapped_buffers() << " frame buffers in use, "
+            << get_num_empty_buffers() << " empty buffers available, "
+            << frames_timedout_ << " incomplete frames timed out");
+
+}
+
 uint8_t PercivalEmulatorFrameDecoder::get_packet_type(void) const
 {
     return *(reinterpret_cast<uint8_t*>(raw_packet_header()+0));
@@ -213,4 +261,14 @@ uint32_t PercivalEmulatorFrameDecoder::get_frame_number(void) const
 uint8_t* PercivalEmulatorFrameDecoder::raw_packet_header(void) const
 {
     return reinterpret_cast<uint8_t*>(current_packet_header_.get());
+}
+
+
+unsigned int PercivalEmulatorFrameDecoder::elapsed_ms(struct timespec& start, struct timespec& end)
+{
+
+    double start_ns = ((double)start.tv_sec * 1000000000) + start.tv_nsec;
+    double end_ns   = ((double)  end.tv_sec * 1000000000) +   end.tv_nsec;
+
+    return (unsigned int)((end_ns - start_ns)/1000000);
 }

@@ -54,6 +54,7 @@ namespace FrameReceiver
         void handle_rx_channel(void);
         void handle_receive_socket(int socket_fd);
         void tick_timer(void);
+        void buffer_monitor_timer(void);
 
         FrameReceiverConfig&   config_;
         LoggerPtr              logger_;

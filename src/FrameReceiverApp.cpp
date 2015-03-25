@@ -105,6 +105,8 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
                     "Set the IP address of the interface to receive frame data on")
                 ("sharedbuf",    po::value<std::string>()->default_value(FrameReceiver::Defaults::default_shared_buffer_name),
                     "Set the name of the shared memory frame buffer")
+                ("frametimeout", po::value<unsigned int>()->default_value(FrameReceiver::Defaults::default_frame_timeout_ms),
+                    "Set the incomplete frame timeout in ms")
 				;
 
 		// Group the variables for parsing at the command line and/or from the configuration file
@@ -199,6 +201,12 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
 		{
 		    config_.shared_buffer_name_ = vm["sharedbuf"].as<std::string>();
 		    LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting shared frame buffer name to " << config_.shared_buffer_name_);
+		}
+
+		if (vm.count("frametimeout"))
+		{
+		    config_.frame_timeout_ms_ = vm["frametimeout"].as<unsigned int>();
+		    LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting incomplete frame timeout to " << config_.frame_timeout_ms_);
 		}
 	}
 	catch (Exception &e)
@@ -321,7 +329,7 @@ void FrameReceiverApp::initialise_frame_decoder(void)
     switch (config_.sensor_type_)
     {
     case Defaults::SensorTypePercivalEmulator:
-        frame_decoder_.reset(new PercivalEmulatorFrameDecoder(logger_));
+        frame_decoder_.reset(new PercivalEmulatorFrameDecoder(logger_, config_.frame_timeout_ms_));
         LOG4CXX_INFO(logger_, "Created PERCIVAL emulator frame decoder instance");
         break;
 
