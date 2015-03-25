@@ -33,6 +33,12 @@ namespace FrameReceiver
             uint8_t raw[22];
         } PacketHeader;
 
+        typedef enum
+        {
+            PacketTypeSample = 0,
+            PacketTypeReset  = 1,
+        } PacketType;
+
         static const size_t primary_packet_size = 8192;
         static const size_t num_primary_packets = 255;
         static const size_t tail_packet_size    = 512;

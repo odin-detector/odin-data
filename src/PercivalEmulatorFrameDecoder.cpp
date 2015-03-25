@@ -56,6 +56,13 @@ void PercivalEmulatorFrameDecoder::process_packet_header(size_t bytes_received)
 	uint8_t  subframe = get_subframe_number();
 	uint8_t  type = get_packet_type();
 
+	// Emulator firmware increments the frame number between sample and reset subframes, so as a
+	// workaround to allow matching to occur, increment frame number for sample packets
+	if (type == PacketTypeSample)
+	{
+	    frame += 1;
+	}
+
     LOG4CXX_DEBUG_LEVEL(3, logger_, "Got packet header:"
             << " type: "     << (int)type << " subframe: " << (int)subframe
             << " packet: "   << packet_number    << " frame: "    << frame
