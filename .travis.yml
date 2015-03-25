@@ -1,16 +1,20 @@
 language: cpp
 compiler: gcc
 install:
-  - sudo apt-get update -qq
-  - sudo apt-get install -qq liblog4cxx10-dev libboost-program-options-dev libboost-filesystem-dev libboost-date-time-dev libboost-system-dev libboost-test-dev libboost-thread-dev libzmq3-dev
-  - pwd
-  - ls *
-  - mkdir -p build
-  - cd build
-  - cmake ..
-  - make VERBOSE=1 
+- sudo apt-get update -qq
+- sudo apt-get install -qq liblog4cxx10-dev libboost-program-options-dev libboost-filesystem-dev
+  libboost-date-time-dev libboost-system-dev libboost-test-dev libboost-thread-dev
+  libzmq3-dev
+- pwd
+- ls *
+- mkdir -p build
+- cd build
+- cmake ..
+- make VERBOSE=1
 script:
-  - pwd
-  - ls *
-  - bin/frameReceiverTest --log_level=all
-  
+- pwd
+- ls *
+- bin/frameReceiverTest --log_level=all
+notifications:
+  slack:
+    secure: r8pM4/MZxsJrazTV/mm6WF/qUb+Kz6rOnmNtCS3ggHthH4ISkks9hGGY055cOG3F0AUBzLimPttYFwAn9uPLxTr2VCWUZ9Bx5q4CAILspmzYTJcbFDG+vyiyJEw5b2DzaXto9wcvRMNx5UDGlXXygEvBwpEV7Mgh2jR9jEQKGds=
