@@ -141,7 +141,7 @@ class FrameProducer(object):
                         header['PacketNumber'] = packetCounter | startOfFrame if packetCounter == 0 else packetCounter
     
                     header['SubframeNumber'] = subframeCounter
-                    header['FrameNumber']    = frame
+                    header['FrameNumber']    = (frame * 2) + packetType  
                         
                     # Prepend header to current packet
                     if packetType == 0:
