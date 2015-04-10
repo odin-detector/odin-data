@@ -30,9 +30,6 @@ class FrameProducer(object):
         self.interval = interval
         self.display = display
         
-        # DEBUG:
-        #print "FrameProducer, arg host:", host, " port:", port, " frames:", frames, " interval:", interval, " display: ", display, "multihost: ", multihosts
-        
         # Initialise shape of data arrays in terms of sections and pixels
         # 1 quarter     = 704 x 742 pixels (columns x rows)
         self.quarterRows = 2
@@ -224,7 +221,7 @@ if __name__ == '__main__':
      
     args = parser.parse_args()
 
-    # Determine whether multiple destinations selected
+    # Determine whether multiple destinations selected (with/without defaults)
     if args.multihosts is not None:
         if len(args.multihosts) == 0:
             # Use defaults
