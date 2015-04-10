@@ -22,13 +22,16 @@ class FrameProducer(object):
     # Define custom class for Percival header
     HeaderType = np.dtype([('PacketType', '>i1'), ('SubframeNumber', '>i1'), ('FrameNumber', '>i4'), ('PacketNumber', '>i2'), ('Information', '>i1', 14) ])
 
-    def __init__(self, host, port, frames, interval, display):
+    def __init__(self, host, port, frames, interval, display, multihosts):
         
         self.host = host
         self.port = port
         self.frames = frames
         self.interval = interval
         self.display = display
+        
+        # DEBUG:
+        #print "FrameProducer, arg host:", host, " port:", port, " frames:", frames, " interval:", interval, " display: ", display, "multihost: ", multihosts
         
         # Initialise shape of data arrays in terms of sections and pixels
         # 1 quarter     = 704 x 742 pixels (columns x rows)
@@ -200,9 +203,12 @@ class FrameProducer(object):
     
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description="FrameProducer - generate a simulated UDP frane data stream")
+    # Define default list of destination IP addresses
+    addressList = ['192.168.0.1', '192.168.1.1', '192.168.2.1', '192.168.3.1']
+    parser = argparse.ArgumentParser(description="FrameProducer - generate a simulated UDP frame data stream")
     
-    parser.add_argument('--host', type=str, default='127.0.0.1', 
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('--host', type=str, default='127.0.0.1', 
                         help="select destination host IP address")
     parser.add_argument('--port', type=int, default=61649,
                         help='select destination host IP port')
@@ -212,9 +218,18 @@ if __name__ == '__main__':
                         help="select frame interval in seconds")
     parser.add_argument('--display', "-d", action='store_true',
                         help="Enable diagnostic display of generated image")
-    
+    # Support single source - multiple destinations 
+    group.add_argument('--multihosts', nargs='*', #default=addressList,
+                        help='Define multiple destination IP addresses')
+     
     args = parser.parse_args()
 
+    # Determine whether multiple destinations selected
+    if args.multihosts is not None:
+        if len(args.multihosts) == 0:
+            # Use defaults
+            args.multihosts = addressList
+    
     producer = FrameProducer(**vars(args))
     producer.run()
     # PercivalDummy
