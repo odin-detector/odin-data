@@ -37,6 +37,7 @@ namespace FrameReceiver
 		const std::string  default_frame_release_endpoint = "tcp://*:5002";
 		const std::string  default_shared_buffer_name     = "FrameReceiverBuffer";
 		const unsigned int default_frame_timeout_ms       = 1000;
+		const unsigned int default_frame_count            = 0;
 
 	}
 }
