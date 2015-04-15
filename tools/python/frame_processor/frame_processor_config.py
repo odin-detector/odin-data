@@ -11,6 +11,7 @@ class FrameProcessorConfig(object):
         defaults['release_endpoint'] = "tcp://127.0.0.1:5002"
         defaults['sharedbuf']        = "FrameReceiverBuffer"
         defaults['bypass_mode']      = False
+        defaults['max_frames']       = 0
 
         # Parse the command-line argument list        
         arg_config = self._parse_arguments(description)
@@ -41,6 +42,8 @@ class FrameProcessorConfig(object):
                             help='Specify the name of the shared memory frame buffer')
         parser.add_argument('--bypass_mode', action="store_true",
                             help="Enable frame decoding bypass mode" )
+        parser.add_argument('--max_frames', type=int, default=None, dest='max_frames',
+                            help="Specify the maximum number of frames to receive before shutting down")
         
         args = parser.parse_args()
         

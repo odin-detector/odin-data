@@ -30,6 +30,9 @@ class FrameProcessor(object):
         
         self.frame_decoder = PercvialEmulatorFrameDecoder(self.shared_buffer_manager)
         
+        # Zero frames recevied counter
+        self.frames_received = 0
+        
         # Create the thread to handle frame processing
         self.frame_processor = threading.Thread(target=self.process_frames)
         self.frame_processor.daemon = True
@@ -66,14 +69,19 @@ class FrameProcessor(object):
                 reply = self.ctrl_channel.recv()
                 reply_decoded = IpcMessage(from_str=reply)
                 #logging.debug("Got reply, msg_type = " + reply_decoded.get_msg_type() + " val = " + reply_decoded.get_msg_val())
-                time.sleep(1) 
+                
+                if self.config.max_frames and self.frames_received >= self.config.max_frames:
+                    logging.info("Received required number of frames, terminating")
+                    self._run = False
+                else:   
+                    time.sleep(1) 
         
         except KeyboardInterrupt:
             
             logging.info("Got interrupt, terminating")
             self._run = False;
-            self.frame_processor.join()
-        
+            
+        self.frame_processor.join()
         logging.info("Frame processor shutting down")
         
     def process_frames(self):
@@ -100,6 +108,8 @@ class FrameProcessor(object):
                     release_msg.set_param('frame', frame_number)
                     release_msg.set_param('buffer_id', buffer_id)
                     self.release_channel.send(release_msg.encode())
+                    
+                    self.frames_received += 1
                     
                 else:
                     
