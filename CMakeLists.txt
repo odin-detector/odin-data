@@ -4,8 +4,9 @@ project(frameReceiver)
 # Require CMake version >=2.8
 cmake_minimum_required(VERSION 2.8)
 
-# Set output directory
+# Set output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 # Appends the cmake/modules path inside the MAKE_MODULE_PATH variable which stores the
 # directories of additional CMake modules (ie. MacroOutOfSourceBuild.cmake):
@@ -23,6 +24,9 @@ include_directories(include)
 
 # Add the source subdirectory
 add_subdirectory(src)
+
+# Add the tools subdirectory
+add_subdirectory(tools)
 
 # Add the test subdirectory
 add_subdirectory(test)
