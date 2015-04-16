@@ -7,7 +7,7 @@ Created on Jan 15, 2015 - Based upon LpdFemUdpProducer.py (author: tcn45)
 import argparse
 import numpy as np
 import socket
-import time, sys
+import time
 
 class FrameProducerError(Exception):
     
@@ -51,7 +51,6 @@ class FrameProducer(object):
         B0B1        = 0     # Which of the 4 horizontal regions does data come from?
         coarseValue = 0     # Which LVDS pair does data belong to?
         
-        #timing1 = time.time()
         # Fill in image array with data according to emulator specifications
         for subframe in xrange(2):
             B0B1 = 0
@@ -70,9 +69,6 @@ class FrameProducer(object):
                     self.resetArray[index:(index+224)] = [(coarseValue << 10) + (1 << 2)] * self.numADCs
                     
                     coarseValue += 1
-        
-        #timing2 = time.time()
-        #print "Nested loops took  %.3f secs" % (timing2 - timing1)
         
         # Convert data streams to byte streams for transmission
         self.imageStream = self.imageArray.tostring()
@@ -118,12 +114,12 @@ class FrameProducer(object):
             
             print "frame: ", frame
             
-            # Construct host & port from list
+            # Construct host & port from lists
             (host, port) = (self.host[frame % index], self.port[frame % index] )
 
             for packetType in range(2):
 
-                # Use imageStream if packetType = 1,  otherwise use resetStream
+                # Use imageStream if packetType = 1, otherwise use resetStream
                 bytesRemaining = len(self.imageStream) if packetType == 1 else len(self.resetStream)
 
                 streamPosn      = 0
@@ -199,10 +195,12 @@ class FrameProducer(object):
         else:
             self.imageArray = np.reshape(self.imageArray, (self.numPixelRows, self.numPixelCols))
             self.resetArray = np.reshape(self.resetArray, (self.numPixelRows, self.numPixelCols))
+
             fig = plt.figure(1)
             ax = fig.add_subplot(121)
             img = ax.imshow(self.imageArray)
             plt.xlabel("Image Data")
+            
             ax = fig.add_subplot(122)
             img = ax.imshow(self.resetArray)
             plt.xlabel("Reset Data")
