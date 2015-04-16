@@ -22,10 +22,9 @@ class FrameProducer(object):
     # Define custom class for Percival header
     HeaderType = np.dtype([('PacketType', '>i1'), ('SubframeNumber', '>i1'), ('FrameNumber', '>i4'), ('PacketNumber', '>i2'), ('Information', '>i1', 14) ])
 
-    def __init__(self, host, port, frames, interval, display, multihosts):
+    def __init__(self, destaddr, frames, interval, display):
         
-        self.host = host
-        self.port = port
+        self.destaddr = destaddr
         self.frames = frames
         self.interval = interval
         self.display = display
@@ -52,7 +51,6 @@ class FrameProducer(object):
         B0B1        = 0     # Which of the 4 horizontal regions does data come from?
         coarseValue = 0     # Which LVDS pair does data belong to?
         
-        timing1 = time.time()
         # Fill in image array with data according to emulator specifications
         for subframe in xrange(2):
             B0B1 = 0
@@ -65,17 +63,14 @@ class FrameProducer(object):
 
                 for column in xrange(self.colBlocksPerQuarter):
 
-                    # New implementation? Takes ~0.975 seconds
+                    # New implementation: Takes ~0.975 seconds
                     index = (subframe * self.subframePixels) + (row * 4928) + (column * 224)
                     self.imageArray[index:(index+224)] = [(coarseValue << 10) + (adc << 2) + B0B1 for adc in xrange(self.numADCs)]
                     self.resetArray[index:(index+224)] = [(coarseValue << 10) + (1 << 2)] * self.numADCs
                     
                     coarseValue += 1
         
-        timing2 = time.time()
-        print "Nested loops took  %.3f secs" % (timing2 - timing1)
-        
-        # Convert data stream to byte stream for transmission
+        # Convert data streams to byte streams for transmission
         self.imageStream = self.imageArray.tostring()
         self.resetStream = self.resetArray.tostring()
         
@@ -88,8 +83,14 @@ class FrameProducer(object):
         self.bytesPerPixels = 2
         self.subframeSize   = self.subframePixels * self.bytesPerPixels
 
-        print "Starting Percival data transmission to address", self.host, "port", self.port, "..."
-                
+        (self.host, self.port) = ([], [])
+        for index in self.destaddr:
+            (host, port) = index.split(':')
+            self.host.append(host)
+            self.port.append(int(port))
+            
+        print "Starting Percival data transmission to:", self.host
+
         # Open UDP socket
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         
@@ -106,13 +107,19 @@ class FrameProducer(object):
         totalBytesSent = 0
         runStartTime = time.time()
         
+        # Number of destination(s) (List in format: ['0.0.0.0', 80, '0.0.0.1', etc])
+        index = len(self.host)
+        
         for frame in range(self.frames):
             
             print "frame: ", frame
             
+            # Construct host & port from lists
+            (host, port) = (self.host[frame % index], self.port[frame % index] )
+
             for packetType in range(2):
 
-                # Use imageStream if packetType = 1,  otherwise use resetStream
+                # Use imageStream if packetType = 1, otherwise use resetStream
                 bytesRemaining = len(self.imageStream) if packetType == 1 else len(self.resetStream)
 
                 streamPosn      = 0
@@ -150,24 +157,24 @@ class FrameProducer(object):
                         packet = header.tostring() + self.resetStream[streamPosn:streamPosn+bytesToSend]
     
                     # Transmit packet (image, reset sent to consecutive ports)
-                    bytesSent += sock.sendto(packet, (self.host, self.port + packetType))
+                    bytesSent += sock.sendto(packet, (host, port + packetType))
     
                     bytesRemaining  -= bytesToSend
                     streamPosn      += bytesToSend
                     packetCounter   += 1
                     subframeTotal   += bytesToSend
 
-                   # "Image" if packetType = 0, otherwise "Reset"
+                    # "Image" if packetType = 0, otherwise "Reset"
                     dataDesc = "Image" if packetType == 0 else "Reset"
 
                     if subframeTotal >= self.subframeSize:
-                        print "  Sent", dataDesc, "frame:", frame, "subframe:", subframeCounter, "packets:", packetCounter, "bytes:", bytesSent
+                        print "  Sent %s frame: %d subframe: %d packets: %d bytes: %d  to %s:%d" \
+                                        % (dataDesc, frame, subframeCounter, packetCounter, bytesSent, host, (port + packetType))
                         subframeTotal   = 0
                         subframeCounter += 1
                         packetCounter   = 0
                         totalBytesSent  += bytesSent
                         bytesSent       = 0
-
 
         runTime = time.time() - runStartTime
 
@@ -188,10 +195,12 @@ class FrameProducer(object):
         else:
             self.imageArray = np.reshape(self.imageArray, (self.numPixelRows, self.numPixelCols))
             self.resetArray = np.reshape(self.resetArray, (self.numPixelRows, self.numPixelCols))
+
             fig = plt.figure(1)
             ax = fig.add_subplot(121)
             img = ax.imshow(self.imageArray)
             plt.xlabel("Image Data")
+            
             ax = fig.add_subplot(122)
             img = ax.imshow(self.resetArray)
             plt.xlabel("Reset Data")
@@ -200,33 +209,27 @@ class FrameProducer(object):
     
 if __name__ == '__main__':
 
-    # Define default list of destination IP addresses
-    addressList = ['192.168.0.1', '192.168.1.1', '192.168.2.1', '192.168.3.1']
+    # Define default list of destination IP address(es) with port(s)
+#     addressList = ['192.168.0.0:8000', '192.168.0.1:8001', '192.168.0.2:8002', '192.168.0.3:8003', 
+#                    '192.168.0.4:8004', '192.168.0.5:8005', '192.168.0.6:8006', '192.168.0.7:8007']
+    addressList = ['127.0.0.1:61649']
+
     parser = argparse.ArgumentParser(description="FrameProducer - generate a simulated UDP frame data stream")
     
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument('--host', type=str, default='127.0.0.1', 
-                        help="select destination host IP address")
-    parser.add_argument('--port', type=int, default=61649,
-                        help='select destination host IP port')
-    parser.add_argument('--frames', '-n', type=int, default= 0, #1,
+    parser.add_argument('--destaddr', nargs='*', # nargs: 1 flag accept multiple arguments
+                        help="list destination host(s) IP address:port (e.g. 0.0.0.1:8081)")
+    parser.add_argument('--frames', '-n', type=int, default=1,
                         help='select number of frames to transmit')
     parser.add_argument('--interval', '-t', type=float, default=0.1,
                         help="select frame interval in seconds")
     parser.add_argument('--display', "-d", action='store_true',
                         help="Enable diagnostic display of generated image")
-    # Support single source - multiple destinations 
-    group.add_argument('--multihosts', nargs='*', #default=addressList,
-                        help='Define multiple destination IP addresses')
-     
+
     args = parser.parse_args()
 
-    # Determine whether multiple destinations selected (with/without defaults)
-    if args.multihosts is not None:
-        if len(args.multihosts) == 0:
-            # Use defaults
-            args.multihosts = addressList
-    
+    if args.destaddr == None:
+        args.destaddr = addressList
+
     producer = FrameProducer(**vars(args))
     producer.run()
-    # PercivalDummy
+
