@@ -92,7 +92,8 @@ namespace FrameReceiver
 		std::string           frame_ready_endpoint_;   //!< IPC channel endpoint for transmitting frame ready notifications to other processes
         std::string           frame_release_endpoint_; //!< IPC channel endpoint for receiving frame release notifications from other processes
 		std::string           shared_buffer_name_;     //!< Shared memory frame buffer name
-		unsigned int          frame_timeout_ms_;       //!< Incomplete rame timeout in milliseconds
+		unsigned int          frame_timeout_ms_;       //!< Incomplete frame timeout in milliseconds
+		unsigned int          frame_count_;            //!< Number of frames to receive before terminating
 
 		friend class FrameReceiverApp;
 		friend class FrameReceiverRxThread;

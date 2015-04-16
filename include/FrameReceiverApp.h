@@ -86,6 +86,9 @@ namespace FrameReceiver
 
 		IpcReactor reactor_;
 
+		unsigned int frames_received_;
+		unsigned int frames_released_;
+
 	};
 }
 

@@ -36,7 +36,9 @@ FrameReceiverApp::FrameReceiverApp(void) :
     rx_channel_(ZMQ_PAIR),
     ctrl_channel_(ZMQ_REP),
     frame_ready_channel_(ZMQ_PUB),
-    frame_release_channel_(ZMQ_SUB)
+    frame_release_channel_(ZMQ_SUB),
+    frames_received_(0),
+    frames_released_(0)
 {
 
 	// Retrieve a logger instance
@@ -107,6 +109,8 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
                     "Set the name of the shared memory frame buffer")
                 ("frametimeout", po::value<unsigned int>()->default_value(FrameReceiver::Defaults::default_frame_timeout_ms),
                     "Set the incomplete frame timeout in ms")
+                ("frames,f",     po::value<unsigned int>()->default_value(FrameReceiver::Defaults::default_frame_count),
+                    "Set the number of frames to receive before terminating")
 				;
 
 		// Group the variables for parsing at the command line and/or from the configuration file
@@ -208,6 +212,13 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
 		    config_.frame_timeout_ms_ = vm["frametimeout"].as<unsigned int>();
 		    LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting incomplete frame timeout to " << config_.frame_timeout_ms_);
 		}
+
+		if (vm.count("frames"))
+		{
+		    config_.frame_count_ = vm["frames"].as<unsigned int>();
+		    LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting number of frames to receive to " << config_.frame_count_);
+		}
+
 	}
 	catch (Exception &e)
 	{
@@ -422,6 +433,8 @@ void FrameReceiverApp::handle_rx_channel(void)
         	LOG4CXX_DEBUG_LEVEL(2, logger_, "Got frame ready notification from RX thread for frame " << rx_reply.get_param<int>("frame", -1)
                     << " in buffer " << rx_reply.get_param<int>("buffer_id", -1));
             frame_ready_channel_.send(rx_reply_encoded);
+
+            frames_received_++;
         }
         else
         {
@@ -447,6 +460,15 @@ void FrameReceiverApp::handle_frame_release_channel(void)
         	LOG4CXX_DEBUG_LEVEL(2, logger_, "Got frame release notification from processor from frame " << frame_release.get_param<int>("frame", -1)
                     << " in buffer " << frame_release.get_param<int>("buffer_id", -1));
             rx_channel_.send(frame_release_encoded);
+
+            frames_released_++;
+
+            if (config_.frame_count_ && (frames_released_ >= config_.frame_count_))
+            {
+                LOG4CXX_INFO(logger_, "Specified number of frames (" << config_.frame_count_ << ") received and released, terminating");
+                stop();
+                reactor_.stop();
+            }
         }
         else
         {
