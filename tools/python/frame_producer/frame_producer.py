@@ -22,12 +22,31 @@ class FrameProducer(object):
     # Define custom class for Percival header
     HeaderType = np.dtype([('PacketType', '>i1'), ('SubframeNumber', '>i1'), ('FrameNumber', '>i4'), ('PacketNumber', '>i2'), ('Information', '>i1', 14) ])
 
-    def __init__(self, destaddr, frames, interval, display):
+    def __init__(self):
         
-        self.destaddr = destaddr
-        self.frames = frames
-        self.interval = interval
-        self.display = display
+        # Define default list of destination IP address(es) with port(s)
+        defaultDestAddr = ['127.0.0.1:61649']
+    
+        parser = argparse.ArgumentParser(prog="FrameProducer", description="FrameProducer - generate a simulated UDP frame data stream")
+        
+        parser.add_argument('--destaddr', nargs='*', # nargs: 1 flag accept multiple arguments
+                            help="list destination host(s) IP address:port (e.g. 0.0.0.1:8081)")
+        parser.add_argument('--frames', '-n', type=int, default=1,
+                            help='select number of frames to transmit')
+        parser.add_argument('--interval', '-t', type=float, default=0.1,
+                            help="select frame interval in seconds")
+        parser.add_argument('--display', "-d", action='store_true',
+                            help="Enable diagnostic display of generated image")
+    
+        args = parser.parse_args()
+    
+        if args.destaddr == None:
+            args.destaddr = defaultDestAddr
+        
+        self.destaddr = args.destaddr
+        self.frames   = args.frames
+        self.interval = args.interval
+        self.display  = args.display
         
         # Initialise shape of data arrays in terms of sections and pixels
         # 1 quarter     = 704 x 742 pixels (columns x rows)
@@ -209,27 +228,6 @@ class FrameProducer(object):
     
 if __name__ == '__main__':
 
-    # Define default list of destination IP address(es) with port(s)
-#     addressList = ['192.168.0.0:8000', '192.168.0.1:8001', '192.168.0.2:8002', '192.168.0.3:8003', 
-#                    '192.168.0.4:8004', '192.168.0.5:8005', '192.168.0.6:8006', '192.168.0.7:8007']
-    addressList = ['127.0.0.1:61649']
-
-    parser = argparse.ArgumentParser(description="FrameProducer - generate a simulated UDP frame data stream")
-    
-    parser.add_argument('--destaddr', nargs='*', # nargs: 1 flag accept multiple arguments
-                        help="list destination host(s) IP address:port (e.g. 0.0.0.1:8081)")
-    parser.add_argument('--frames', '-n', type=int, default=1,
-                        help='select number of frames to transmit')
-    parser.add_argument('--interval', '-t', type=float, default=0.1,
-                        help="select frame interval in seconds")
-    parser.add_argument('--display', "-d", action='store_true',
-                        help="Enable diagnostic display of generated image")
-
-    args = parser.parse_args()
-
-    if args.destaddr == None:
-        args.destaddr = addressList
-
-    producer = FrameProducer(**vars(args))
+    producer = FrameProducer()
     producer.run()
 
