@@ -28,15 +28,17 @@ int main(int argc, char** argv)
 	// Create a default basic logger configuration, which can be overridden by command-line option later
 	BasicConfigurator::configure();
 
-	// Create a FrameRecveiverApp instance
+	// Create a FrameReceiverApp instance
 	FrameReceiver::FrameReceiverApp fr_instance;
 
 	// Parse command line arguments and set up node configuration
 	rc = fr_instance.parse_arguments(argc, argv);
 
-	// Run the instance
-	fr_instance.run();
-
+	if (rc == 0)
+	{
+        // Run the instance
+        fr_instance.run();
+	}
 
 	return rc;
 

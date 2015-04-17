@@ -127,15 +127,16 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
 		// If the command-line help option was given, print help and exit
 		if (vm.count("help"))
 		{
+		    std::cout << "usage: frameReceiver [options]" << std::endl << std::endl;
 			std::cout << cmdline_options << std::endl;
-			exit(0);
+			return 1;
 		}
 
 		// If the command line version option was given, print version and exit
 		if (vm.count("version"))
 		{
 			std::cout << "Will print version here" << std::endl;
-			exit(0);
+			return 1;
 		}
 
 		if (vm.count("debug"))
