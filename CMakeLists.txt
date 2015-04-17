@@ -7,6 +7,7 @@ cmake_minimum_required(VERSION 2.8)
 # Set output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_CONFIG_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/test_config)
 
 # Appends the cmake/modules path inside the MAKE_MODULE_PATH variable which stores the
 # directories of additional CMake modules (ie. MacroOutOfSourceBuild.cmake):
@@ -33,5 +34,8 @@ add_subdirectory(test)
 
 # Add the doc subdirectory
 add_subdirectory(doc)
+
+# Add the config subdirectory (config files used for integration testing)
+add_subdirectory(config)
 
 
