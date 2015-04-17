@@ -49,7 +49,7 @@ class PercivalFrameData(Struct):
         super(PercivalFrameData, self).__init__(PercivalFrameData.frame_data_format)
         self.pixels = self.unpack(data_raw)
         
-class PercvialEmulatorFrameDecoder(object):
+class PercivalEmulatorFrameDecoder(object):
        
     def __init__(self, shared_buffer_manager):
         

@@ -2,20 +2,41 @@ from frame_receiver.ipc_channel import IpcChannel, IpcChannelException
 from frame_receiver.ipc_message import IpcMessage, IpcMessageException
 from frame_receiver.shared_buffer_manager import SharedBufferManager, SharedBufferManagerException
 from frame_processor_config import FrameProcessorConfig
-from percival_emulator_frame_decoder import PercvialEmulatorFrameDecoder, PercivalFrameHeader, PercivalFrameData
+from percival_emulator_frame_decoder import PercivalEmulatorFrameDecoder, PercivalFrameHeader, PercivalFrameData
 
 import time
 import datetime
 import threading
 import logging
+import sys
 from struct import Struct
 
 class FrameProcessor(object):
     
     def __init__(self):
 
-        logging.basicConfig(format='%(asctime)s %(levelname)s FrameProcessor - %(message)s', level=logging.DEBUG)
+        # Initialise the logging module with log messages directed to stdout
+        #logging.basicConfig(format='%(asctime)s %(levelname)s FrameProcessor - %(message)s', level=logging.DEBUG)
+        #ch = logging.StreamHandler(sys.stdout)
+        #logging.addHandler(ch)
+
+        # create logger
+        self.logger = logging.getLogger('FrameProcessor')
+        self.logger.setLevel(logging.DEBUG)
         
+        # create console handler and set level to debug
+        ch = logging.StreamHandler(sys.stdout)
+        ch.setLevel(logging.DEBUG)
+        
+        # create formatter
+        formatter = logging.Formatter('%(asctime)s %(levelname)s %(name)s - %(message)s')
+        
+        # add formatter to ch
+        ch.setFormatter(formatter)
+        
+        # add ch to logger
+        self.logger.addHandler(ch)
+
         # Instantiate a configuration container object, which will be populated
         # with sensible default values
         self.config = FrameProcessorConfig("FrameProcessor", "FrameProcessor - test harness to simulate operation of FrameProcessor application")
@@ -28,7 +49,7 @@ class FrameProcessor(object):
         # Map the shared buffer manager
         self.shared_buffer_manager = SharedBufferManager(self.config.sharedbuf)
         
-        self.frame_decoder = PercvialEmulatorFrameDecoder(self.shared_buffer_manager)
+        self.frame_decoder = PercivalEmulatorFrameDecoder(self.shared_buffer_manager)
         
         # Zero frames recevied counter
         self.frames_received = 0
@@ -41,9 +62,9 @@ class FrameProcessor(object):
                 
     def run(self):
         
-        logging.info("Frame processor starting up")
+        self.logger.info("Frame processor starting up")
         
-        logging.info("Mapped shared buffer manager ID %d with %d buffers of size %d" % 
+        self.logger.info("Mapped shared buffer manager ID %d with %d buffers of size %d" % 
                      (self.shared_buffer_manager.get_manager_id(), 
                       self.shared_buffer_manager.get_num_buffers(),
                       self.shared_buffer_manager.get_buffer_size()))
@@ -61,28 +82,28 @@ class FrameProcessor(object):
         
         try:
             while self._run:
-                 
-                msg = IpcMessage(msg_type='cmd', msg_val='status')
-                #logging.debug("Sending status command message")
-                self.ctrl_channel.send(msg.encode())
-                 
-                reply = self.ctrl_channel.recv()
-                reply_decoded = IpcMessage(from_str=reply)
-                #logging.debug("Got reply, msg_type = " + reply_decoded.get_msg_type() + " val = " + reply_decoded.get_msg_val())
-                
-                if self.config.max_frames and self.frames_received >= self.config.max_frames:
-                    logging.info("Received required number of frames, terminating")
+                                
+                if self.config.frames and self.frames_received >= self.config.frames:
+                    self.logger.info("Specified number of frames (%d) received, terminating" % self.config.frames)
                     self._run = False
                 else:   
+                    msg = IpcMessage(msg_type='cmd', msg_val='status')
+                    #self.logger.debug("Sending status command message")
+                    self.ctrl_channel.send(msg.encode())
+                    
+                    reply = self.ctrl_channel.recv()
+                    reply_decoded = IpcMessage(from_str=reply)
+                        
+                    #self.logger.debug("Got reply, msg_type = " + reply_decoded.get_msg_type() + " val = " + reply_decoded.get_msg_val())
                     time.sleep(1) 
         
         except KeyboardInterrupt:
             
-            logging.info("Got interrupt, terminating")
+            self.logger.info("Got interrupt, terminating")
             self._run = False;
             
         self.frame_processor.join()
-        logging.info("Frame processor shutting down")
+        self.logger.info("Frame processor shutting down")
         
     def process_frames(self):
         
@@ -99,7 +120,7 @@ class FrameProcessor(object):
                 
                     frame_number = ready_decoded.get_param('frame')
                     buffer_id    = ready_decoded.get_param('buffer_id')
-                    logging.debug("Got frame ready notification for frame %d buffer ID %d" %(frame_number, buffer_id))
+                    self.logger.debug("Got frame ready notification for frame %d buffer ID %d" %(frame_number, buffer_id))
                     
                     if not self.config.bypass_mode:
                         self.handle_frame(frame_number, buffer_id)
@@ -113,21 +134,21 @@ class FrameProcessor(object):
                     
                 else:
                     
-                    logging.error("Got unexpected message on ready notification channel:", ready_decoded)
+                    self.logger.error("Got unexpected message on ready notification channel:", ready_decoded)
         
-        logging.info("Frame processing thread interrupted, terminating")
+        self.logger.info("Frame processing thread interrupted, terminating")
         
     def handle_frame(self, frame_number, buffer_id):
         
         self.frame_decoder.decode_header(buffer_id)
-        logging.debug("Frame %d in buffer %d decoded header values: frame_number %d state %d start_time %s packets_received %d" %
+        self.logger.debug("Frame %d in buffer %d decoded header values: frame_number %d state %d start_time %s packets_received %d" %
                       (frame_number, buffer_id, self.frame_decoder.header.frame_number, 
                        self.frame_decoder.header.frame_state, self.frame_decoder.header.frame_start_time.isoformat(),
                        self.frame_decoder.header.packets_received))
 
         self.frame_decoder.decode_data(buffer_id)
-        logging.debug("Frame start: " + ' '.join("0x{:04x}".format(val) for val in self.frame_decoder.data.pixels[:32]))
-        logging.debug("Frame end  : " + ' '.join("0x{:04x}".format(val) for val in self.frame_decoder.data.pixels[-32:]))
+        self.logger.debug("Frame start: " + ' '.join("0x{:04x}".format(val) for val in self.frame_decoder.data.pixels[:32]))
+        self.logger.debug("Frame end  : " + ' '.join("0x{:04x}".format(val) for val in self.frame_decoder.data.pixels[-32:]))
         
 if __name__ == "__main__":
         
