@@ -18,7 +18,7 @@ class FrameProcessor(object):
         
         # Instantiate a configuration container object, which will be populated
         # with sensible default values
-        self.config = FrameProcessorConfig("FrameProcessor - test harness to simulate operation of FrameProcessor application")
+        self.config = FrameProcessorConfig("FrameProcessor", "FrameProcessor - test harness to simulate operation of FrameProcessor application")
                 
         # Create the appropriate IPC channels
         self.ctrl_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_REQ)

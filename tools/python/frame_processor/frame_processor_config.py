@@ -1,9 +1,10 @@
+import sys
 import argparse
 import ConfigParser
         
 class FrameProcessorConfig(object):
     
-    def __init__(self, description="No description"):
+    def __init__(self, name=sys.argv[0], description="No description"):
 
         defaults = {}
         defaults['ctrl_endpoint']    = "tcp://127.0.0.1:5000"
@@ -14,7 +15,7 @@ class FrameProcessorConfig(object):
         defaults['max_frames']       = 0
 
         # Parse the command-line argument list        
-        arg_config = self._parse_arguments(description)
+        arg_config = self._parse_arguments(name, description)
         
         # Parse the configuration file if specified
         file_config = {}
@@ -30,9 +31,9 @@ class FrameProcessorConfig(object):
             if key in arg_config and arg_config[key]:
                 setattr(self, key, arg_config[key])
             
-    def _parse_arguments(self, description):
+    def _parse_arguments(self, name, description):
         
-        parser = argparse.ArgumentParser(description=description)
+        parser = argparse.ArgumentParser(prog=name, description=description)
         
         parser.add_argument('--config', '-c', type=str, default=None, dest='config_file',
                             help="Parse additional options from specified configuration file")
