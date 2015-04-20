@@ -126,9 +126,9 @@ class FrameProducer(object):
         totalBytesSent = 0
         runStartTime = time.time()
         
-        # Number of destination(s) (List in format: ['0.0.0.0', 80, '0.0.0.1', etc])
+        # Number of destination(s)
         index = len(self.host)
-        
+
         for frame in range(self.frames):
             
             print "frame: ", frame
@@ -147,6 +147,8 @@ class FrameProducer(object):
                 bytesSent       = 0
                 subframeTotal   = 0       # How much of current subframe has been sent
                 header['PacketType'] = packetType
+                
+                frameStartTime = time.time()
                 
                 while bytesRemaining > 0:
                     
@@ -194,6 +196,12 @@ class FrameProducer(object):
                         packetCounter   = 0
                         totalBytesSent  += bytesSent
                         bytesSent       = 0
+                
+                # Calculate wait time and sleep so that frames are sent at requested intervals            
+                frameEndTime = time.time()
+                waitTime = (frameStartTime + self.interval) - frameEndTime
+                if waitTime > 0:
+                    time.sleep(waitTime)
 
         runTime = time.time() - runStartTime
 
@@ -201,7 +209,7 @@ class FrameProducer(object):
         sock.close()
 
         print "%d frames completed, %d bytes sent in %.3f secs" % (self.frames, totalBytesSent, runTime)
-        
+
         if self.display:
             self.displayImage()
             
