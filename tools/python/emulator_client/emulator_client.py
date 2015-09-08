@@ -1,14 +1,13 @@
 '''
-Created on July 27, 2015
+Created on March 10, 2015
 
 @author: ckd27546
 
-    Acting as TCP client
 '''
 
 import argparse, socket, time
 
-class FirmwareTestingError(Exception):
+class EmulatorClientError(Exception):
     
     def __init__(self, msg):
         self.msg = msg
@@ -17,14 +16,14 @@ class FirmwareTestingError(Exception):
         return repr(self.msg)
 
 
-class FirmwareTesting(object):
+class EmulatorClient(object):
     ''' Test setting IP/MAC addresses in the firmware '''
  
     # Define legal commands #TODO: To include MAC/IP address?
     LegalCommands = {
-                     "start"   : "startd\n\r",
+                     "start"   : "startd\r\n",
                      "command" : "COMAND\n\r",
-                     "stop"    : "stopd\n\r\r"
+                     "stop"    : "\x20stopd\r\n"
                      }
 
     ## New stuff
@@ -94,12 +93,12 @@ class FirmwareTesting(object):
         try:
             self.sock.connect((host, port))
         except socket.timeout:
-            raise FirmwareTestingError("FW Connecting to [%s:%d] timed out" % (host, port))
+            raise EmulatorClientError("Connecting to [%s:%d] timed out" % (host, port))
             
         except socket.error, e:
             if self.sock:
                 self.sock.close()
-            raise FirmwareTestingError("FW Error connecting to [%s:%d]: '%s'" % (host, port, e))
+            raise EmulatorClientError("Error connecting to [%s:%d]: '%s'" % (host, port, e))
 
     def extractAddresses(self, jointAddress):
         ''' Extracting mac/IP from parser argument '''
@@ -112,20 +111,20 @@ class FirmwareTesting(object):
 
         self.command = command
         
-        if not command in FirmwareTesting.LegalCommands:
-            raise FirmwareTestingError("Illegal command %s specified" % command)
+        if not command in EmulatorClient.LegalCommands:
+            raise EmulatorClientError("Illegal command %s specified" % command)
         
         if (command == 'start') or (command == 'stop'):
 
             # Transmit command
             try:
-                bytesSent = self.sock.send(FirmwareTesting.LegalCommands[command])
+                bytesSent = self.sock.send(EmulatorClient.LegalCommands[command])
             except socket.error, e:
                 if self.sock:
                     self.sock.close()
-                raise FirmwareTestingError("Error sending %s command: %s" % (command, e))
+                raise EmulatorClientError("Error sending %s command: %s" % (command, e))
                 
-            if bytesSent != len(FirmwareTesting.LegalCommands[command]):
+            if bytesSent != len(EmulatorClient.LegalCommands[command]):
                 print "Failed to transmit %s command properly" % command
             else:
                 print "Transmitted %s command" % command
@@ -133,17 +132,17 @@ class FirmwareTesting(object):
             
             # Configure link(s) 
 
-            theDelay = 2.480  # Between each TCP transmission
+            theDelay = 1.00  # Between each TCP transmission
             
 #             debugList = [self.src0addr, self.src1addr, self.src2addr, self.dst0addr, self.dst1addr, self.dst2addr]
 #             print "MAC addresses.."
 #             for index in range(len(debugList)): print " Before:\t", debugList[index]
-            src0mac = self.src0addr[FirmwareTesting.MAC]
-            src1mac = self.src1addr[FirmwareTesting.MAC]
-            src2mac = self.src2addr[FirmwareTesting.MAC]
-            dst0mac = self.dst0addr[FirmwareTesting.MAC]
-            dst1mac = self.dst1addr[FirmwareTesting.MAC]
-            dst2mac = self.dst2addr[FirmwareTesting.MAC]
+            src0mac = self.src0addr[EmulatorClient.MAC]
+            src1mac = self.src1addr[EmulatorClient.MAC]
+            src2mac = self.src2addr[EmulatorClient.MAC]
+            dst0mac = self.dst0addr[EmulatorClient.MAC]
+            dst1mac = self.dst1addr[EmulatorClient.MAC]
+            dst2mac = self.dst2addr[EmulatorClient.MAC]
 #             debugList = [src0mac, src1mac, src2mac, dst0mac, dst1mac, dst2mac]
 #             for index in range(len(debugList)): print " After: \t", debugList[index]
             
@@ -151,87 +150,87 @@ class FirmwareTesting(object):
                 tokenList = self.tokeniser(src0mac)
                 macSourceStr = ''.join(tokenList)
                 #print "src0mac -> tokenList: '%s' macSourceStr: '%s'"  % (tokenList, macSourceStr)
-                self.send_to_hw(FirmwareTesting.Eth_Dev_RW, FirmwareTesting.MAC_0_ADDR, 6, macSourceStr)
+                self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.MAC_0_ADDR, 6, macSourceStr)
                 time.sleep(theDelay)
 #
             if dst0mac:
                 tokenList = self.tokeniser(dst0mac)
                 macSourceStr = ''.join(tokenList)
-                self.send_to_hw(FirmwareTesting.Eth_Dev_RW, FirmwareTesting.MAC_1_ADDR, 6, macSourceStr)
+                self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.MAC_1_ADDR, 6, macSourceStr)
                 time.sleep(theDelay)
      
             if src1mac:
                 tokenList = self.tokeniser(src1mac)
                 macSourceStr = ''.join(tokenList)
-                self.send_to_hw(FirmwareTesting.Eth_Dev_RW, FirmwareTesting.MAC_2_ADDR, 6, macSourceStr)
+                self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.MAC_2_ADDR, 6, macSourceStr)
                 time.sleep(theDelay)
 #
             if dst1mac:
                 tokenList = self.tokeniser(dst1mac)
                 macSourceStr = ''.join(tokenList)
-                self.send_to_hw(FirmwareTesting.Eth_Dev_RW, FirmwareTesting.MAC_3_ADDR, 6, macSourceStr)
+                self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.MAC_3_ADDR, 6, macSourceStr)
                 time.sleep(theDelay)
      
             if src2mac:
                 tokenList = self.tokeniser(src2mac)
                 macSourceStr = ''.join(tokenList)
-                self.send_to_hw(FirmwareTesting.Eth_Dev_RW, FirmwareTesting.MAC_4_ADDR, 6, macSourceStr)
+                self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.MAC_4_ADDR, 6, macSourceStr)
                 time.sleep(theDelay)
 #
             if dst2mac:
                 tokenList = self.tokeniser(dst2mac)
                 macSourceStr = ''.join(tokenList)
-                self.send_to_hw(FirmwareTesting.Eth_Dev_RW, FirmwareTesting.MAC_5_ADDR, 6, macSourceStr)
+                self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.MAC_5_ADDR, 6, macSourceStr)
                 time.sleep(theDelay)
 
-            src0ip = self.src0addr[FirmwareTesting.IP]
-            src1ip = self.src1addr[FirmwareTesting.IP]
-            src2ip = self.src2addr[FirmwareTesting.IP]
-            dst0ip = self.dst0addr[FirmwareTesting.IP]
-            dst1ip = self.dst1addr[FirmwareTesting.IP]
-            dst2ip = self.dst2addr[FirmwareTesting.IP]
+            src0ip = self.src0addr[EmulatorClient.IP]
+            src1ip = self.src1addr[EmulatorClient.IP]
+            src2ip = self.src2addr[EmulatorClient.IP]
+            dst0ip = self.dst0addr[EmulatorClient.IP]
+            dst1ip = self.dst1addr[EmulatorClient.IP]
+            dst2ip = self.dst2addr[EmulatorClient.IP]
 #             print "IP addresses.."
 #             debugList = [src0ip, src1ip, src2ip, dst0ip, dst1ip, dst2ip]
 #             for index in range(len(debugList)): print " After: \t", debugList[index]
 
             if src0ip:
-                FirmwareTesting.address0Enabled = True
+                EmulatorClient.address0Enabled = True
                 ipList = self.create_ip(src0ip)
                 ipSourceString = ''.join(ipList)
 #                 print "src0ip -> ipList:", ipList, " ipSourceString: ", ipSourceString
-                self.send_to_hw(FirmwareTesting.Eth_Dev_RW, FirmwareTesting.IP_0_ADDR, 4, ipSourceString)
+                self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.IP_0_ADDR, 4, ipSourceString)
                 time.sleep(theDelay)
 #
             if dst0ip:
                 ipList = self.create_ip(dst0ip)
                 ipSourceString = ''.join(ipList)
-                self.send_to_hw(FirmwareTesting.Eth_Dev_RW, FirmwareTesting.IP_1_ADDR, 4, ipSourceString)
+                self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.IP_1_ADDR, 4, ipSourceString)
                 time.sleep(theDelay)
                  
             if src1ip:
-                FirmwareTesting.address1Enabled = True
+                EmulatorClient.address1Enabled = True
                 ipList = self.create_ip(src1ip)
                 ipSourceString = ''.join(ipList)
-                self.send_to_hw(FirmwareTesting.Eth_Dev_RW, FirmwareTesting.IP_2_ADDR, 4, ipSourceString)
+                self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.IP_2_ADDR, 4, ipSourceString)
                 time.sleep(theDelay)
 #
             if dst1ip:
                 ipList = self.create_ip(dst1ip)
                 ipSourceString = ''.join(ipList)
-                self.send_to_hw(FirmwareTesting.Eth_Dev_RW, FirmwareTesting.IP_3_ADDR, 4, ipSourceString)
+                self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.IP_3_ADDR, 4, ipSourceString)
                 time.sleep(theDelay)
                  
             if src2ip:
-                FirmwareTesting.address2Enabled = True
+                EmulatorClient.address2Enabled = True
                 ipList = self.create_ip(src2ip)
                 ipSourceString = ''.join(ipList)
-                self.send_to_hw(FirmwareTesting.Eth_Dev_RW, FirmwareTesting.IP_4_ADDR, 4, ipSourceString)
+                self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.IP_4_ADDR, 4, ipSourceString)
                 time.sleep(theDelay)
 #
             if dst2ip:
                 ipList = self.create_ip(dst2ip)
                 ipSourceString = ''.join(ipList)
-                self.send_to_hw(FirmwareTesting.Eth_Dev_RW, FirmwareTesting.IP_5_ADDR, 4, ipSourceString)
+                self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.IP_5_ADDR, 4, ipSourceString)
                 time.sleep(theDelay)
 
 
@@ -273,16 +272,16 @@ class FirmwareTesting(object):
         #TODO: Redundant section: (Only translated from Java source code)
         #print "IP Addr Hex =  ", hexString
         temp_addr = "" + str(int_value[0]) + "." + str(int_value[1]) + "." + str(int_value[2]) + "." + str(int_value[3]) 
-        if FirmwareTesting.address0Enabled:
-            FirmwareTesting.ip_address_0 = temp_addr
+        if EmulatorClient.address0Enabled:
+            EmulatorClient.ip_address_0 = temp_addr
             address0Enabled = False
-        if FirmwareTesting.address1Enabled:
-            FirmwareTesting.ip_address_1 = temp_addr
+        if EmulatorClient.address1Enabled:
+            EmulatorClient.ip_address_1 = temp_addr
             address1Enabled = False
-        if FirmwareTesting.address2Enabled:
-            FirmwareTesting.ip_address_2 = temp_addr
+        if EmulatorClient.address2Enabled:
+            EmulatorClient.ip_address_2 = temp_addr
             address2Enabled = False 
-        #print "IP Addr Clean : ", temp_addr, " ip0: ", FirmwareTesting.ip_address_0, " ip1: ", FirmwareTesting.ip_address_1, " ip2: ", FirmwareTesting.ip_address_2
+        #print "IP Addr Clean : ", temp_addr, " ip0: ", EmulatorClient.ip_address_0, " ip1: ", EmulatorClient.ip_address_1, " ip2: ", EmulatorClient.ip_address_2
         #print "create_ip() (rc'd) ip_addr: ", ip_addr, type(ip_addr), "(ret) ip_value:", ip_value, type(ip_value)
         
         return ip_value     # Returns IP address as a list of integers 
@@ -290,6 +289,7 @@ class FirmwareTesting(object):
     
     # Convert create_mac() into Python
     def create_mac(self, mac_add):
+        ''' Convert mac address from string format into list '''
         mac_value = ['0'] * 8
         int_value = ['0'] * 8
         var_b   = [0]    #TODO: byte type, in Python should be..?
@@ -349,21 +349,18 @@ class FirmwareTesting(object):
         HEADER = [0,0,0,0]
         HEADER[0] = Dev_RW; HEADER[1] = ADDR;  HEADER[2] = Length;
         
-        # Extract "start" key from dictionary, store locally as string
-        command = FirmwareTesting.LegalCommands[self.command] + "0"* 16 # Add 16 empty spaces for header + data
-        #print "OVERRIDING command";command = 'COMAND\n\rABCDEFGHIJKLMNOP'
-        #
-        before = len(command)
-        
+        # Extract "command" key from dictionary
+        #command = EmulatorClient.LegalCommands[self.command] + " " * 16 # Add 16 empty spaces for header + data
+        command = EmulatorClient.LegalCommands[self.command] + "0" * 16 # Add room for header + data
+        # Copy HEADER into command
         command = self.intToByte( HEADER, 0, 3, 8, command)
-        #print "%d char's, command: '%s..%s'" % (len(command), command[:6], command[8:]), " After intToByte() called."
+
         try:
             results =''.join(chr(int(data[i:i+2], 16)) for i in range(0, len(data), 2))
             command = command[:20] +  results
         except Exception as e:
-            print "FW ** Exception: %s" % e
-        
-        #print "About to transmit '%s..%s', %d character(s).  ['..'=2 special characters]" % (command[:6], command[8:], len(command))
+            raise EmulatorClientError("Error manipulating '%s' and '%s', because: '%s'" % (results, command, e))
+            #print "FW ** Exception: %s" % e
         
         # Transmit command
         try:
@@ -371,7 +368,7 @@ class FirmwareTesting(object):
         except socket.error, e:
             if self.sock:
                 self.sock.close()
-            raise FirmwareTestingError("FW Error sending %s command: %s" % (command, e))
+            raise EmulatorClientError("FW Error sending %s command: %s" % (command, e))
         else:
             print " * Sent %d bytes." % (bytesSent)
     
@@ -379,9 +376,9 @@ class FirmwareTesting(object):
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description="FirmwareTesting - control hardware emulator start/stop", epilog="Specify IP & Mac like: '10.1.0.101:00-07-11-F0-FF-33'")
+    parser = argparse.ArgumentParser(description="EmulatorClient - control hardware emulator start/stop", epilog="Specify IP & Mac like: '10.1.0.101:00-07-11-F0-FF-33'")
     
-    parser.add_argument('--host', type=str, default='192.168.0.111', 
+    parser.add_argument('--host', type=str, default='192.168.0.103', 
                         help="select emulator IP address")
     parser.add_argument('--port', type=int, default=4321,
                         help='select emulator IP port')
@@ -402,22 +399,13 @@ if __name__ == '__main__':
     parser.add_argument('--dst2', type=str, 
                         help='Configure PC link 2 IP:MAC addresses')
     
-    parser.add_argument('command', choices=FirmwareTesting.LegalCommands.keys(), default="start",
+    parser.add_argument('command', choices=EmulatorClient.LegalCommands.keys(), default="start",
                         help="specify which command to send to emulator")
 
     args = parser.parse_args()
     try:
-        client = FirmwareTesting(args.host, args.port, args.timeout, args.src0, args.src1, args.src2, args.dst0, args.dst1, args.dst2)
-#         print " *** parser hijacked"
-#         print "args: ", args, args.__dict__
-#         args.command = "command"
+#         print "args: ", args, args.__dict__    # Display all parser selection(s)
+        client = EmulatorClient(args.host, args.port, args.timeout, args.src0, args.src1, args.src2, args.dst0, args.dst1, args.dst2)
         client.execute(args.command)
     except Exception as e:
         print e
-#         
-#  --src0 10.1.0.101:00-07-11-F0-FF-33
-#  --dst0 10.1.0.1:00-07-43-10-63-00
-#  --src1 10.1.0.102:00-07-11-F0-FF-44
-#  --dst1 10.1.0.2:00-07-43-10-5F-20
-#  --src2 10.1.0.103:00-07-11-F0-FF-55
-#  --dst2 10.1.0.3:EC-F4-BB-CC-D3-A8
