@@ -64,9 +64,6 @@ class EmulatorClient(object):
     IP_15_ADDR   = 0x7000001C   
       
     (IP, MAC)    = (0, 1)
-    # Redundant: ? Not yet at least
-#     (address0Enabled, address1Enabled, address2Enabled) = (False, False, False)
-#     (ip_address_0, ip_address_1, ip_address_2) = ("", "", "")
 
     def __init__(self, host, port, timeout, src0addr, src1addr, src2addr, dst0addr, dst1addr, dst2addr):
 
@@ -132,7 +129,7 @@ class EmulatorClient(object):
             
             # Configure link(s) 
 
-            theDelay = 0.800  # Between each TCP transmission
+            theDelay = 0.900  # Between each TCP transmission
             
             src0mac = self.src0addr[EmulatorClient.MAC]
             src1mac = self.src1addr[EmulatorClient.MAC]
@@ -144,7 +141,6 @@ class EmulatorClient(object):
             if src0mac:
                 tokenList = self.tokeniser(src0mac)
                 macSourceStr = ''.join(tokenList)
-                #print "src0mac -> tokenList: '%s' macSourceStr: '%s'"  % (tokenList, macSourceStr)
                 self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.MAC_0_ADDR, 6, macSourceStr)
                 time.sleep(theDelay)
 #
@@ -186,10 +182,8 @@ class EmulatorClient(object):
             dst2ip = self.dst2addr[EmulatorClient.IP]
 
             if src0ip:
-#                 EmulatorClient.address0Enabled = True
                 ipList = self.create_ip(src0ip)
                 ipSourceString = ''.join(ipList)
-#                 print "src0ip -> ipList:", ipList, " ipSourceString: ", ipSourceString
                 self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.IP_0_ADDR, 4, ipSourceString)
                 time.sleep(theDelay)
 #
@@ -200,7 +194,6 @@ class EmulatorClient(object):
                 time.sleep(theDelay)
                  
             if src1ip:
-#                 EmulatorClient.address1Enabled = True
                 ipList = self.create_ip(src1ip)
                 ipSourceString = ''.join(ipList)
                 self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.IP_2_ADDR, 4, ipSourceString)
@@ -213,7 +206,6 @@ class EmulatorClient(object):
                 time.sleep(theDelay)
                  
             if src2ip:
-#                 EmulatorClient.address2Enabled = True
                 ipList = self.create_ip(src2ip)
                 ipSourceString = ''.join(ipList)
                 self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.IP_4_ADDR, 4, ipSourceString)
@@ -260,21 +252,6 @@ class EmulatorClient(object):
             hexString = hexString + str(tokenList[index] )
             int_value[index] = var_i
             ip_value[index] = '%02X' % (var_b)  # Hexadecimal conversion
-
-        #TODO: Redundant section: (Only translated from Java source code)
-        #print "IP Addr Hex =  ", hexString
-#         temp_addr = "" + str(int_value[0]) + "." + str(int_value[1]) + "." + str(int_value[2]) + "." + str(int_value[3]) 
-#         if EmulatorClient.address0Enabled:
-#             EmulatorClient.ip_address_0 = temp_addr
-#             address0Enabled = False
-#         if EmulatorClient.address1Enabled:
-#             EmulatorClient.ip_address_1 = temp_addr
-#             address1Enabled = False
-#         if EmulatorClient.address2Enabled:
-#             EmulatorClient.ip_address_2 = temp_addr
-#             address2Enabled = False 
-        #print "IP Addr Clean : ", temp_addr, " ip0: ", EmulatorClient.ip_address_0, " ip1: ", EmulatorClient.ip_address_1, " ip2: ", EmulatorClient.ip_address_2
-        #print "create_ip() (rc'd) ip_addr: ", ip_addr, type(ip_addr), "(ret) ip_value:", ip_value, type(ip_value)
         
         return ip_value     # Returns IP address as a list of integers 
     
@@ -284,43 +261,30 @@ class EmulatorClient(object):
         ''' Convert mac address from string format into list '''
         mac_value = ['0'] * 8
         int_value = ['0'] * 8
-        var_b   = [0]    #TODO: byte type, in Python should be..?
+        var_b    = [0]
         lenToken = 0
-        var_i = 0
-        hdata = ""   #TODO: Receives char at specified index; string appropriate choice?
+        var_i    = 0
+        hdata    = ""
         hexString = ""
         tokenList = self.tokeniser(mac_add)
         for index in range(len(tokenList)):
-            cur_del = tokenList[index]  #TODO: rename cur_del to token
+            token = tokenList[index]
             var_i = 0
             #
             var_i = int(tokenList[index], 16)
-            lenToken = len(cur_del)
+            lenToken = len(token)
             var_b = (var_i & 0x000000FF)
-            #lenb = (byte)len    # lenb: Never Used
             
             for k in range(lenToken):
-                hdata = cur_del[k]
-                hex_16 = str(hdata)         # Redundant step, hdata already a string
-                var_b = int(hex_16, 16) 
+                hdata = token[k]
+                var_b = int(hdata, 16) 
                 var_i = var_i + var_b*((lenToken-1-k)*16 + k) 
             
-            hexString = hexString + cur_del#hex(cur_del)[2:]    # hex(15) -> '0xf'; hex(15)[2:] -> 'f'
+            hexString = hexString + token
             int_value[index] = var_i
-            mac_value[index] = str(var_b)   #TODO: Forced string conversion redundant here?
+            mac_value[index] = str(var_b)
 
-#         print "MAC Addr Hex =  ", hexString.upper()
-#         print "MAC Addr Int   %d:%d:%d:%d:%d:%d" % (int_value[0], int_value[1], int_value[2], int_value[3], int_value[4], int_value[5])
         return mac_value 
-
-#     def new_function(self, mac_add):
-#         tokenList = self.tokeniser(mac_add)
-#         macString = ""
-#         for token in tokenList:
-#             hexPadded  = (token).zfill(2)
-#             byteString = ''.join(chr(int(hexPadded[i:i+2], 16)) for i in range(0, len(hexPadded), 2))
-#             macString  = macString + byteString 
-#         return macString
     
     def intToByte(self, header, offset, length, offset2, command_b):
         ''' Functionality change so that header inserted into command_b according to offset and offset2 '''
@@ -342,7 +306,6 @@ class EmulatorClient(object):
         HEADER[0] = Dev_RW; HEADER[1] = ADDR;  HEADER[2] = Length;
         
         # Extract "command" key from dictionary
-        #command = EmulatorClient.LegalCommands[self.command] + " " * 16 # Add 16 empty spaces for header + data
         command = EmulatorClient.LegalCommands[self.command] + "0" * 16 # Add room for header + data
         # Copy HEADER into command
         command = self.intToByte( HEADER, 0, 3, 8, command)
@@ -362,22 +325,6 @@ class EmulatorClient(object):
             raise EmulatorClientError("Error sending %s command: %s" % (command, e))
         else:
             print " * Sent %d bytes." % (bytesSent)
-
-#     def tester(self):    
-#         # Transmit empty packet. #status command    -    IT'S REDUNDANT BECAUSE THE SOCKET mostly adds empty messages together
-#         #command = "STATUS\n\r"
-#         try:
-#             bytesSent = self.sock.send("") #command)
-#         except socket.error, e:
-#             if self.sock:
-#                 self.sock.close()
-#             raise EmulatorClientError("Error sending blank command: %s" %  e)
-#         else:
-#             BUFFER_SIZE =1024
-#             data = "(nowt)"
-# #             data = sock.recv(BUFFER_SIZE)
-#             print " * Sent %d bytes; Received: '%s'" % (bytesSent, data)
-    
 
 
 if __name__ == '__main__':
@@ -410,7 +357,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     try:
-#         print "args: ", args, args.__dict__    # Display all parser selection(s)
+        #print "args: ", args, args.__dict__    # Display all parser selection(s)
         client = EmulatorClient(args.host, args.port, args.timeout, args.src0, args.src1, args.src2, args.dst0, args.dst1, args.dst2)
         client.execute(args.command)
     except Exception as e:
