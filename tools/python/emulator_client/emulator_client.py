@@ -65,11 +65,12 @@ class EmulatorClient(object):
       
     (IP, MAC)    = (0, 1)
 
-    def __init__(self, host, port, timeout, src0addr, src1addr, src2addr, dst0addr, dst1addr, dst2addr):
+    def __init__(self, host, port, timeout, delay, src0addr, src1addr, src2addr, dst0addr, dst1addr, dst2addr):
 
         self.host     = host #'192.168.0.103'
         self.port     = port # 4321
         self.timeout  = timeout
+        self.delay    = delay
         
         if src0addr: self.src0addr = self.extractAddresses(src0addr) 
         else:        self.src0addr = (None, None)
@@ -129,7 +130,7 @@ class EmulatorClient(object):
             
             # Configure link(s) 
 
-            theDelay = 0.900  # Between each TCP transmission
+            theDelay = self.delay  # Between each TCP transmission
             
             src0mac = self.src0addr[EmulatorClient.MAC]
             src1mac = self.src1addr[EmulatorClient.MAC]
@@ -337,6 +338,8 @@ if __name__ == '__main__':
                         help='select emulator IP port')
     parser.add_argument('--timeout', type=int, default=5,
                         help='set TCP connection timeout')
+    parser.add_argument ('--delay', type=float, default=1.00,
+                         help='set delay between each address packet')
 
     parser.add_argument('--src0', type=str, 
                         help='Configure Mezzanine link 0 IP:MAC addresses')
@@ -358,7 +361,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     try:
         #print "args: ", args, args.__dict__    # Display all parser selection(s)
-        client = EmulatorClient(args.host, args.port, args.timeout, args.src0, args.src1, args.src2, args.dst0, args.dst1, args.dst2)
+        client = EmulatorClient(args.host, args.port, args.timeout, args.delay, args.src0, args.src1, args.src2, args.dst0, args.dst1, args.dst2)
+        #    def __init__(self, host, port, timeout, delay, src0addr, src1addr, src2addr, dst0addr, dst1addr, dst2addr):
         client.execute(args.command)
     except Exception as e:
         print e
