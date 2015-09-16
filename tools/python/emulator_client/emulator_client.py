@@ -5,7 +5,7 @@ Created on March 10, 2015
 
 '''
 
-import argparse, socket, time
+import argparse, socket, time, sys
 
 class EmulatorClientError(Exception):
     
@@ -138,6 +138,52 @@ class EmulatorClient(object):
             dst0mac = self.dst0addr[EmulatorClient.MAC]
             dst1mac = self.dst1addr[EmulatorClient.MAC]
             dst2mac = self.dst2addr[EmulatorClient.MAC]
+
+            src0ip = self.src0addr[EmulatorClient.IP]
+            src1ip = self.src1addr[EmulatorClient.IP]
+            src2ip = self.src2addr[EmulatorClient.IP]
+            dst0ip = self.dst0addr[EmulatorClient.IP]
+            dst1ip = self.dst1addr[EmulatorClient.IP]
+            dst2ip = self.dst2addr[EmulatorClient.IP]
+            
+            print "Sending: "
+            if src0ip:
+                ipList = self.create_ip(src0ip)
+                ipSourceString = ''.join(ipList)
+                self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.IP_0_ADDR, 4, ipSourceString)
+                time.sleep(theDelay)
+#
+            if dst0ip:
+                ipList = self.create_ip(dst0ip)
+                ipSourceString = ''.join(ipList)
+                self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.IP_1_ADDR, 4, ipSourceString)
+                time.sleep(theDelay)
+                 
+            if src1ip:
+                ipList = self.create_ip(src1ip)
+                ipSourceString = ''.join(ipList)
+                self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.IP_2_ADDR, 4, ipSourceString)
+                time.sleep(theDelay)
+#
+            if dst1ip:
+                ipList = self.create_ip(dst1ip)
+                ipSourceString = ''.join(ipList)
+                self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.IP_3_ADDR, 4, ipSourceString)
+                time.sleep(theDelay)
+                 
+            if src2ip:
+                ipList = self.create_ip(src2ip)
+                ipSourceString = ''.join(ipList)
+                self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.IP_4_ADDR, 4, ipSourceString)
+                time.sleep(theDelay)
+#
+            if dst2ip:
+                ipList = self.create_ip(dst2ip)
+                ipSourceString = ''.join(ipList)
+                self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.IP_5_ADDR, 4, ipSourceString)
+                time.sleep(theDelay)
+
+            # IP before Mac now..
             
             if src0mac:
                 tokenList = self.tokeniser(src0mac)
@@ -175,50 +221,8 @@ class EmulatorClient(object):
                 self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.MAC_5_ADDR, 6, macSourceStr)
                 time.sleep(theDelay)
 
-            src0ip = self.src0addr[EmulatorClient.IP]
-            src1ip = self.src1addr[EmulatorClient.IP]
-            src2ip = self.src2addr[EmulatorClient.IP]
-            dst0ip = self.dst0addr[EmulatorClient.IP]
-            dst1ip = self.dst1addr[EmulatorClient.IP]
-            dst2ip = self.dst2addr[EmulatorClient.IP]
-
-            if src0ip:
-                ipList = self.create_ip(src0ip)
-                ipSourceString = ''.join(ipList)
-                self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.IP_0_ADDR, 4, ipSourceString)
-                time.sleep(theDelay)
-#
-            if dst0ip:
-                ipList = self.create_ip(dst0ip)
-                ipSourceString = ''.join(ipList)
-                self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.IP_1_ADDR, 4, ipSourceString)
-                time.sleep(theDelay)
-                 
-            if src1ip:
-                ipList = self.create_ip(src1ip)
-                ipSourceString = ''.join(ipList)
-                self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.IP_2_ADDR, 4, ipSourceString)
-                time.sleep(theDelay)
-#
-            if dst1ip:
-                ipList = self.create_ip(dst1ip)
-                ipSourceString = ''.join(ipList)
-                self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.IP_3_ADDR, 4, ipSourceString)
-                time.sleep(theDelay)
-                 
-            if src2ip:
-                ipList = self.create_ip(src2ip)
-                ipSourceString = ''.join(ipList)
-                self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.IP_4_ADDR, 4, ipSourceString)
-                time.sleep(theDelay)
-#
-            if dst2ip:
-                ipList = self.create_ip(dst2ip)
-                ipSourceString = ''.join(ipList)
-                self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.IP_5_ADDR, 4, ipSourceString)
-                time.sleep(theDelay)
-
-
+            print " Done!"
+            
     def tokeniser(self, string):
         """ Remove white spaces and Split (IP/MAC address) string into list """
         string = string.replace(' ', '')
@@ -325,7 +329,8 @@ class EmulatorClient(object):
                 self.sock.close()
             raise EmulatorClientError("Error sending %s command: %s" % (command, e))
         else:
-            print " * Sent %d bytes." % (bytesSent)
+            print " %d bytes.." % (bytesSent),
+            sys.stdout.flush()
 
 
 if __name__ == '__main__':
