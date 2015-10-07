@@ -335,7 +335,7 @@ class EmulatorClient(object):
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description="EmulatorClient - control hardware emulator start/stop", epilog="Specify IP & Mac like: '10.1.0.101:00-07-11-F0-FF-33'")
+    parser = argparse.ArgumentParser(description="EmulatorClient - control hardware emulator start, stop & configure node(s)", epilog="Specify IP & Mac like: '10.1.0.101:00-07-11-F0-FF-33'")
     
     parser.add_argument('--host', type=str, default='192.168.0.103', 
                         help="select emulator IP address")
@@ -371,3 +371,4 @@ if __name__ == '__main__':
         client.execute(args.command)
     except Exception as e:
         print e
+
