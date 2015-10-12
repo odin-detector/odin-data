@@ -1,5 +1,4 @@
 import zmq
-from zmq.backend.cython.constants import EVENTS
 
 class IpcChannelException(Exception):
     
