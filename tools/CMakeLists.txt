@@ -5,3 +5,5 @@ add_custom_target(CopyPythonToolModules ALL
 	COMMAND cmake -E copy_directory ${PYTHON_TOOL_SOURCE_DIR} ${PYTHON_TOOL_MODULE_DIR}
 )
 
+add_subdirectory(client)
+
