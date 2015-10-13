@@ -22,6 +22,8 @@ using namespace log4cxx::helpers;
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
 
+#include "zmq/zmq.hpp"
+
 
 // Interrupt signal handler
 void intHandler(int sig)
@@ -50,7 +52,7 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
         config.add_options()
                 ("logconfig,l",  po::value<string>(),
                     "Set the log4cxx logging configuration file")
-                ("ready,p",       po::value<std::string>()->default_value("tcp://127.0.0.1:5001"),
+                ("ready,r",       po::value<std::string>()->default_value("tcp://127.0.0.1:5001"),
                     "Ready ZMQ endpoint from frameReceiver")
                 ("frames,f",     po::value<unsigned int>()->default_value(1),
                     "Set the number of frames to be notified about before terminating")
@@ -100,9 +102,9 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
             LOG4CXX_DEBUG(logger, "log4cxx config file is set to " << vm["logconfig"].as<string>());
         }
 
-        if (vm.count("ipaddress"))
+        if (vm.count("ready"))
         {
-            LOG4CXX_DEBUG(logger, "Setting RX interface address to " << vm["ipaddress"].as<string>());
+            LOG4CXX_DEBUG(logger, "Setting frame notification ZMQ address to " << vm["ready"].as<string>());
         }
 
         if (vm.count("frames"))
@@ -146,6 +148,40 @@ int main(int argc, char** argv)
     LoggerPtr logger(Logger::getLogger("FrameNotifier"));
     po::variables_map vm;
     parse_arguments(argc, argv, vm, logger);
+
+    zmq::context_t zmq_context;
+    zmq::socket_t zsocket(zmq_context, ZMQ_SUB);
+    //zsocket.bind(vm["ready"].as<string>().c_str());
+    zsocket.connect(vm["ready"].as<string>().c_str());
+    zsocket.setsockopt(ZMQ_SUBSCRIBE, "", strlen(""));
+
+    zmq::pollitem_t poll_item;
+    poll_item.socket = zsocket;
+    poll_item.events = ZMQ_POLLIN;
+    poll_item.fd = 0;
+    poll_item.revents = 0;
+
+    unsigned long notification_count = 0;
+    bool keep_running = true;
+    LOG4CXX_DEBUG(logger, "Entering ZMQ polling loop (" << vm["ready"].as<string>().c_str() << ")");
+    while (keep_running)
+    {
+        poll_item.revents = 0;
+        zmq::poll(&poll_item, 1, 100);
+        if (poll_item.revents & ZMQ_POLLIN)
+        {
+            LOG4CXX_DEBUG(logger, "Reading data from ZMQ socket");
+            notification_count++;
+            zmq::message_t msg;
+            zsocket.recv(&msg);
+            string msg_str(reinterpret_cast<char*>(msg.data()), msg.size()-1);
+            LOG4CXX_DEBUG(logger, "Got msg: " << msg_str);
+        } else
+        {
+            // No new data
+        }
+        if (notification_count >= vm["frames"].as<unsigned int>()) keep_running=false;
+    }
     return rc;
 }
 
