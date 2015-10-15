@@ -155,68 +155,94 @@ int main(int argc, char** argv)
     po::variables_map vm;
     parse_arguments(argc, argv, vm, logger);
 
-    zmq::context_t zmq_context;
-    zmq::socket_t zsocket(zmq_context, ZMQ_SUB);
-    zsocket.connect(vm["ready"].as<string>().c_str());
-    zsocket.setsockopt(ZMQ_SUBSCRIBE, "", strlen(""));
+    zmq::context_t zmq_context; // Global ZMQ context
 
-    zmq::socket_t release_zsocket(zmq_context, ZMQ_PUB);
-    release_zsocket.connect(vm["release"].as<string>().c_str());
+    // The "release" ZMQ PUB socket, used to release frames back to the frameReceiver
+    zmq::socket_t zsocket_release(zmq_context, ZMQ_PUB);
+    zsocket_release.connect(vm["release"].as<string>().c_str());
 
+    // The "ready" ZMQ SUB socket, used to get notifications that new frames are ready to be processed
+    zmq::socket_t zsocket_ready(zmq_context, ZMQ_SUB);
+    zsocket_ready.connect(vm["ready"].as<string>().c_str());
+    zsocket_ready.setsockopt(ZMQ_SUBSCRIBE, "", strlen(""));
     zmq::pollitem_t poll_item;
-    poll_item.socket = zsocket;
+    poll_item.socket = zsocket_ready;
     poll_item.events = ZMQ_POLLIN;
     poll_item.fd = 0;
     poll_item.revents = 0;
 
+    // The polling loop. Polls on all elements in poll_item
+    // Stop the loop by setting keep_running=false
+    // Loop automatically ends if notification_count > user option "frames"
     unsigned long notification_count = 0;
     bool keep_running = true;
     LOG4CXX_DEBUG(logger, "Entering ZMQ polling loop (" << vm["ready"].as<string>().c_str() << ")");
     while (keep_running)
     {
+        // Always reset the last raw events before polling
         poll_item.revents = 0;
-        zmq::poll(&poll_item, 1, 100);
+
+        // Do the poll with a 10ms timeout (i.e. 10Hz poll)
+        zmq::poll(&poll_item, 1, 10);
+
+        // Check for poll error and exit the loop is one is found
         if (poll_item.revents & ZMQ_POLLERR)
         {
             LOG4CXX_ERROR(logger, "Got ZMQ error in polling. Quitting polling loop.");
             keep_running = false;
         }
+        // Do work if a message is received
         else if (poll_item.revents & ZMQ_POLLIN)
         {
             LOG4CXX_DEBUG(logger, "Reading data from ZMQ socket");
             notification_count++;
             zmq::message_t msg;
-            zsocket.recv(&msg);
+            zsocket_ready.recv(&msg); // Read the message from the ready socket
+
             string msg_str(reinterpret_cast<char*>(msg.data()), msg.size()-1);
             LOG4CXX_DEBUG(logger, "Parsing JSON msg string: " << msg_str);
-
             Document msg_doc;
-            msg_doc.Parse(msg_str.c_str());
+            msg_doc.Parse(msg_str.c_str()); // Parse the JSON string into a Document DOM object
+
+            // Setup a string buffer and a writer so we can stringify the Document DOM object again
             StringBuffer buffer;
             PrettyWriter<StringBuffer> writer(buffer);
             msg_doc.Accept(writer);
             LOG4CXX_DEBUG(logger, "Parsed json: " << buffer.GetString());
+
+            // Copy the data out here
+
+            // Clear the json string buffer and reset the writer so we can re-use them
+            // after modifying the Document DOM object
             buffer.Clear();
             writer.Reset(buffer);
 
+            // We want to return the exact same JSON message back to the frameReceiver
+            // so we just modify the relevant bits: msg_val: from frame_ready to frame_release
+            // and update the timestamp
             msg_doc["msg_val"].SetString("frame_release");
 
+            // Create and update the timestamp in the JSON message
             boost::posix_time::ptime msg_timestamp = boost::posix_time::microsec_clock::local_time();
             string msg_timestamp_str = boost::posix_time::to_iso_extended_string(msg_timestamp);
             msg_doc["timestamp"].SetString(StringRef(msg_timestamp_str.c_str()));
 
+            // Encode the JSON Document DOM object using the writer
             msg_doc.Accept(writer);
             LOG4CXX_DEBUG(logger, "Changing msg_val: " << msg_doc["msg_val"].GetString());
-            LOG4CXX_DEBUG(logger, "New json: " << buffer.GetString());
-            string release_msg(buffer.GetString());
+            string release_msg(buffer.GetString()); // Get a copy of the JSON string
+            LOG4CXX_DEBUG(logger, "New json: " << release_msg);
 
             LOG4CXX_DEBUG(logger, "Sending release response");
-            size_t nbytes = release_zsocket.send(release_msg.c_str(), release_msg.size() + 1);
+            // Send the new JSON object (string) back to the frameReceiver on the "release" ZMQ socket
+            size_t nbytes = zsocket_release.send(release_msg.c_str(), release_msg.size() + 1);
             LOG4CXX_DEBUG(logger, "Sent " << nbytes << " bytes");
         } else
         {
             // No new data
         }
+
+        // Quit the loop if we have received the desired number of frames
         if (notification_count >= vm["frames"].as<unsigned int>()) keep_running=false;
     }
     return rc;
