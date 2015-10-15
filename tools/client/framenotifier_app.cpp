@@ -6,6 +6,7 @@ framenotifier_app.cpp
 */
 #include <signal.h>
 #include <string>
+#include <cstring>
 #include <iostream>
 #include <fstream>
 using namespace std;
@@ -20,7 +21,14 @@ using namespace log4cxx::helpers;
 
 #include <boost/foreach.hpp>
 #include <boost/program_options.hpp>
+#include "boost/date_time/posix_time/posix_time.hpp"
 namespace po = boost::program_options;
+
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/prettywriter.h"
+#include "rapidjson/stringbuffer.h"
+using namespace rapidjson;
 
 #include "zmq/zmq.hpp"
 
@@ -159,14 +167,40 @@ int main(int argc, char** argv)
     {
         poll_item.revents = 0;
         zmq::poll(&poll_item, 1, 100);
-        if (poll_item.revents & ZMQ_POLLIN)
+        if (poll_item.revents & ZMQ_POLLERR)
+        {
+            LOG4CXX_ERROR(logger, "Got ZMQ error in polling. Quitting polling loop.");
+            keep_running = false;
+        }
+        else if (poll_item.revents & ZMQ_POLLIN)
         {
             LOG4CXX_DEBUG(logger, "Reading data from ZMQ socket");
             notification_count++;
             zmq::message_t msg;
             zsocket.recv(&msg);
             string msg_str(reinterpret_cast<char*>(msg.data()), msg.size()-1);
-            LOG4CXX_DEBUG(logger, "Got msg: " << msg_str);
+            LOG4CXX_DEBUG(logger, "Parsing JSON msg string: " << msg_str);
+
+            Document msg_doc;
+            msg_doc.Parse(msg_str.c_str());
+            StringBuffer buffer;
+            PrettyWriter<StringBuffer> writer(buffer);
+            msg_doc.Accept(writer);
+            LOG4CXX_DEBUG(logger, "Parsed json: " << buffer.GetString());
+            buffer.Clear();
+            writer.Reset(buffer);
+
+            msg_doc["msg_val"].SetString("frame_release");
+
+            boost::posix_time::ptime msg_timestamp = boost::posix_time::microsec_clock::local_time();
+            string msg_timestamp_str = boost::posix_time::to_iso_extended_string(msg_timestamp);
+            msg_doc["timestamp"].SetString(StringRef(msg_timestamp_str.c_str()));
+
+            msg_doc.Accept(writer);
+            LOG4CXX_DEBUG(logger, "Changing msg_val: " << msg_doc["msg_val"].GetString());
+            LOG4CXX_DEBUG(logger, "New json: " << buffer.GetString());
+            string release_msg(buffer.GetString());
+
         } else
         {
             // No new data
