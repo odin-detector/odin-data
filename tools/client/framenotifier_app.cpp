@@ -25,11 +25,6 @@ namespace po = boost::program_options;
 #include "zmq/zmq.hpp"
 
 
-// Interrupt signal handler
-void intHandler(int sig)
-{
-
-}
 
 void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& logger)
 {
@@ -137,10 +132,6 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
 int main(int argc, char** argv)
 {
     int rc = 0;
-
-    // Trap Ctrl-C
-    signal(SIGINT, intHandler);
-    signal(SIGTERM, intHandler);
 
     // Create a default basic logger configuration, which can be overridden by command-line option later
     BasicConfigurator::configure();
