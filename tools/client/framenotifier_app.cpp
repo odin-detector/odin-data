@@ -57,6 +57,8 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
                     "Set the log4cxx logging configuration file")
                 ("ready,r",       po::value<std::string>()->default_value("tcp://127.0.0.1:5001"),
                     "Ready ZMQ endpoint from frameReceiver")
+                ("release",       po::value<std::string>()->default_value("tcp://127.0.0.1:5002"),
+                        "Release frame ZMQ endpoint from frameReceiver")
                 ("frames,f",     po::value<unsigned int>()->default_value(1),
                     "Set the number of frames to be notified about before terminating")
                 ;
@@ -107,7 +109,12 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
 
         if (vm.count("ready"))
         {
-            LOG4CXX_DEBUG(logger, "Setting frame notification ZMQ address to " << vm["ready"].as<string>());
+            LOG4CXX_DEBUG(logger, "Setting frame ready notification ZMQ address to " << vm["ready"].as<string>());
+        }
+
+        if (vm.count("release"))
+        {
+            LOG4CXX_DEBUG(logger, "Setting frame release notification ZMQ address to " << vm["release"].as<string>());
         }
 
         if (vm.count("frames"))
@@ -150,9 +157,11 @@ int main(int argc, char** argv)
 
     zmq::context_t zmq_context;
     zmq::socket_t zsocket(zmq_context, ZMQ_SUB);
-    //zsocket.bind(vm["ready"].as<string>().c_str());
     zsocket.connect(vm["ready"].as<string>().c_str());
     zsocket.setsockopt(ZMQ_SUBSCRIBE, "", strlen(""));
+
+    zmq::socket_t release_zsocket(zmq_context, ZMQ_PUB);
+    release_zsocket.connect(vm["release"].as<string>().c_str());
 
     zmq::pollitem_t poll_item;
     poll_item.socket = zsocket;
@@ -201,6 +210,9 @@ int main(int argc, char** argv)
             LOG4CXX_DEBUG(logger, "New json: " << buffer.GetString());
             string release_msg(buffer.GetString());
 
+            LOG4CXX_DEBUG(logger, "Sending release response");
+            size_t nbytes = release_zsocket.send(release_msg.c_str(), release_msg.size() + 1);
+            LOG4CXX_DEBUG(logger, "Sent " << nbytes << " bytes");
         } else
         {
             // No new data
