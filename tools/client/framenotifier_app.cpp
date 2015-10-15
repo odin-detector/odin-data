@@ -32,7 +32,7 @@ using namespace rapidjson;
 
 #include "zmq/zmq.hpp"
 
-
+#include "framenotifier_data.h"
 
 void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& logger)
 {
@@ -61,6 +61,8 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
                         "Release frame ZMQ endpoint from frameReceiver")
                 ("frames,f",     po::value<unsigned int>()->default_value(1),
                     "Set the number of frames to be notified about before terminating")
+                ("sharedbuf",    po::value<std::string>()->default_value("FrameReceiverBuffer"),
+                    "Set the name of the shared memory frame buffer")
                 ;
 
         // Group the variables for parsing at the command line and/or from the configuration file
@@ -155,6 +157,8 @@ int main(int argc, char** argv)
     po::variables_map vm;
     parse_arguments(argc, argv, vm, logger);
 
+    SharedMemParser smp(vm["sharedbuf"].as<string>());
+
     zmq::context_t zmq_context; // Global ZMQ context
 
     // The "release" ZMQ PUB socket, used to release frames back to the frameReceiver
@@ -210,7 +214,12 @@ int main(int argc, char** argv)
             msg_doc.Accept(writer);
             LOG4CXX_DEBUG(logger, "Parsed json: " << buffer.GetString());
 
-            // Copy the data out here
+            // Copy the data out into a Frame object
+            LOG4CXX_DEBUG(logger, "Creating Frame object");
+            Frame frame(smp.get_buffer_size());
+            LOG4CXX_DEBUG(logger, "Copying buffer ID: " << msg_doc["params"]["buffer_id"].GetInt64());
+            smp.get_frame(frame, msg_doc["params"]["buffer_id"].GetInt64());
+            LOG4CXX_DEBUG(logger, "Frame completeness: " << frame.get_header()->packets_received << " packets received");
 
             // Clear the json string buffer and reset the writer so we can re-use them
             // after modifying the Document DOM object
