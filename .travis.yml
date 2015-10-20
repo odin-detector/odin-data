@@ -12,6 +12,8 @@ addons:
     - libboost-test-dev
     - libboost-thread-dev
     - libzmq3-dev
+env:
+- PYTHONPATH=./lib/python
 install:
 - pwd
 - ls *
@@ -23,6 +25,8 @@ script:
 - pwd
 - ls *
 - bin/frameReceiverTest --log_level=all
+- python --version
+- python bin/run_integration_test.py --frames=10
 notifications:
   slack:
     secure: r8pM4/MZxsJrazTV/mm6WF/qUb+Kz6rOnmNtCS3ggHthH4ISkks9hGGY055cOG3F0AUBzLimPttYFwAn9uPLxTr2VCWUZ9Bx5q4CAILspmzYTJcbFDG+vyiyJEw5b2DzaXto9wcvRMNx5UDGlXXygEvBwpEV7Mgh2jR9jEQKGds=
