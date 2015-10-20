@@ -1,3 +1,4 @@
 pyzmq>=14.0.0
 posix_ipc>=1.0.0
+numpy>=1.9.1
 
