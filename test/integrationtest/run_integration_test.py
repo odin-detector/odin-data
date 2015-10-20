@@ -70,9 +70,9 @@ class IntegrationTest(object):
             print process_stderr
             rc = 1
                   
-        if expected_in_output is not None:
+        elif expected_in_output is not None:
             if not re.search(expected_in_output, process_stdout):
-                print "Failed to find expected output \"%s\" for %s process. Output follows:", (expected_in_output, name)
+                print "Failed to find expected output \"%s\" for %s process. Output follows:" % (expected_in_output, name)
                 print process_stdout
                 print process_stderr
                 rc = 1
