@@ -33,7 +33,8 @@ namespace FrameReceiver
 		    frame_ready_endpoint_(Defaults::default_frame_ready_endpoint),
 		    frame_release_endpoint_(Defaults::default_frame_release_endpoint),
 		    shared_buffer_name_(Defaults::default_shared_buffer_name),
-		    frame_timeout_ms_(Defaults::default_frame_timeout_ms)
+		    frame_timeout_ms_(Defaults::default_frame_timeout_ms),
+		    enable_packet_logging_(Defaults::default_enable_packet_logging)
 		{
 		    tokenize_port_list(rx_ports_, Defaults::default_rx_port_list);
 		};
@@ -94,6 +95,7 @@ namespace FrameReceiver
 		std::string           shared_buffer_name_;     //!< Shared memory frame buffer name
 		unsigned int          frame_timeout_ms_;       //!< Incomplete frame timeout in milliseconds
 		unsigned int          frame_count_;            //!< Number of frames to receive before terminating
+		bool                  enable_packet_logging_;  //!< Enable packet diagnostic logging
 
 		friend class FrameReceiverApp;
 		friend class FrameReceiverRxThread;

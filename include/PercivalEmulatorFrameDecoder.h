@@ -62,7 +62,7 @@ namespace FrameReceiver
         static const size_t num_frame_packets   = num_subframes * num_data_types *
                 (num_primary_packets + num_tail_packets);
 
-        PercivalEmulatorFrameDecoder(LoggerPtr& logger, unsigned int frame_timeout_ms=1000);
+        PercivalEmulatorFrameDecoder(LoggerPtr& logger, bool ebable_packet_logging=false, unsigned int frame_timeout_ms=1000);
         ~PercivalEmulatorFrameDecoder();
 
         const size_t get_frame_buffer_size(void) const;

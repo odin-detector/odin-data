@@ -48,9 +48,14 @@ namespace FrameReceiver
 			FrameReceiveStateError
         };
 
-        FrameDecoder(LoggerPtr& logger) :
-            logger_(logger)
-        {};
+        FrameDecoder(LoggerPtr& logger, bool enable_packet_logging) :
+            logger_(logger),
+            enable_packet_logging_(enable_packet_logging)
+        {
+            // Retrieve the packet logger instance
+            packet_logger_ = Logger::getLogger("PacketLogger");
+        };
+
         virtual ~FrameDecoder() = 0;
 
         void register_buffer_manager(SharedBufferManagerPtr buffer_manager)
@@ -95,6 +100,10 @@ namespace FrameReceiver
 
     protected:
         LoggerPtr logger_;
+
+        bool enable_packet_logging_;
+        LoggerPtr packet_logger_;
+
         SharedBufferManagerPtr buffer_manager_;
         FrameReadyCallback   ready_callback_;
 

@@ -7,12 +7,15 @@
 
 #include "PercivalEmulatorFrameDecoder.h"
 #include <iostream>
+#include <iomanip>
+#include <sstream>
 #include <arpa/inet.h>
 
 using namespace FrameReceiver;
 
-PercivalEmulatorFrameDecoder::PercivalEmulatorFrameDecoder(LoggerPtr& logger, unsigned int frame_timeout_ms) :
-        FrameDecoder(logger),
+PercivalEmulatorFrameDecoder::PercivalEmulatorFrameDecoder(LoggerPtr& logger,
+        bool enable_packet_logging, unsigned int frame_timeout_ms) :
+        FrameDecoder(logger, enable_packet_logging),
 		current_frame_seen_(-1),
 		current_frame_buffer_id_(-1),
 		current_frame_buffer_(0),
@@ -23,6 +26,15 @@ PercivalEmulatorFrameDecoder::PercivalEmulatorFrameDecoder(LoggerPtr& logger, un
 {
     current_packet_header_.reset(new uint8_t[sizeof(PercivalEmulatorFrameDecoder::PacketHeader)]);
     dropped_frame_buffer_.reset(new uint8_t[PercivalEmulatorFrameDecoder::total_frame_size]);
+
+    if (enable_packet_logging_) {
+        LOG4CXX_INFO(packet_logger_, "PktHdr:   PktType [1 Byte]");
+        LOG4CXX_INFO(packet_logger_, "PktHdr:   |  SubframeNumber [1 Byte]");
+        LOG4CXX_INFO(packet_logger_, "PktHdr:   |  |  FrameNumber [4 Bytes]");
+        LOG4CXX_INFO(packet_logger_, "PktHdr:   |  |  |           PacketNumber [2 Bytes]");
+        LOG4CXX_INFO(packet_logger_, "PktHdr:   |  |  |           |       Info [14 Bytes]");
+        LOG4CXX_INFO(packet_logger_, "PktHdr:   |  |  |           |       |");
+    }
 }
 
 PercivalEmulatorFrameDecoder::~PercivalEmulatorFrameDecoder()
@@ -52,6 +64,24 @@ void* PercivalEmulatorFrameDecoder::get_packet_header_buffer(void)
 void PercivalEmulatorFrameDecoder::process_packet_header(size_t bytes_received)
 {
     //TODO validate header size and content, handle incoming new packet buffer allocation etc
+
+    // Dump raw header if packet logging enabled
+    if (enable_packet_logging_)
+    {
+        std::stringstream ss;
+        uint8_t* hdr_ptr = raw_packet_header();
+        ss << "PktHdr: " << std::hex;
+        for (unsigned int hdr_byte = 0; hdr_byte < sizeof(PacketHeader); hdr_byte++)
+        {
+            if (hdr_byte % 8 == 0) {
+                ss << "  ";
+            }
+            ss << std::setw(2) << std::setfill('0') << (unsigned int)*hdr_ptr << " ";
+            hdr_ptr++;
+        }
+        ss << std::dec;
+        LOG4CXX_INFO(packet_logger_, ss.str());
+    }
 
 	uint32_t frame = get_frame_number();
 	uint16_t packet_number = get_packet_number();

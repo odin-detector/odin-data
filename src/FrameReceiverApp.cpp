@@ -111,6 +111,8 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
                     "Set the incomplete frame timeout in ms")
                 ("frames,f",     po::value<unsigned int>()->default_value(FrameReceiver::Defaults::default_frame_count),
                     "Set the number of frames to receive before terminating")
+                ("packetlog",    po::value<bool>()->default_value(FrameReceiver::Defaults::default_enable_packet_logging),
+                    "Enable logging of packet diagnostics to file")
 				;
 
 		// Group the variables for parsing at the command line and/or from the configuration file
@@ -218,6 +220,13 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
 		{
 		    config_.frame_count_ = vm["frames"].as<unsigned int>();
 		    LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting number of frames to receive to " << config_.frame_count_);
+		}
+
+		if (vm.count("packetlog"))
+		{
+		    config_.enable_packet_logging_ = vm["packetlog"].as<bool>();
+		    LOG4CXX_DEBUG_LEVEL(1, logger_, "Packet diagnostic logging is " <<
+		            (config_.enable_packet_logging_ ? "enabled" : "disabled"));
 		}
 
 	}
@@ -341,7 +350,7 @@ void FrameReceiverApp::initialise_frame_decoder(void)
     switch (config_.sensor_type_)
     {
     case Defaults::SensorTypePercivalEmulator:
-        frame_decoder_.reset(new PercivalEmulatorFrameDecoder(logger_, config_.frame_timeout_ms_));
+        frame_decoder_.reset(new PercivalEmulatorFrameDecoder(logger_, config_.enable_packet_logging_, config_.frame_timeout_ms_));
         LOG4CXX_INFO(logger_, "Created PERCIVAL emulator frame decoder instance");
         break;
 
