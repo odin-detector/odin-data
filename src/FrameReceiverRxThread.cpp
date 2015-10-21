@@ -114,7 +114,7 @@ void FrameReceiverRxThread::run_service(void)
         if (thread_init_error_) break;
 
         // Add the receive socket to the reactor
-        reactor_.register_socket(recv_socket, boost::bind(&FrameReceiverRxThread::handle_receive_socket, this, recv_socket));
+        reactor_.register_socket(recv_socket, boost::bind(&FrameReceiverRxThread::handle_receive_socket, this, recv_socket, (int)rx_port));
 
         recv_sockets_.push_back(recv_socket);
     }
@@ -209,7 +209,7 @@ void FrameReceiverRxThread::handle_rx_channel(void)
 
 }
 
-void FrameReceiverRxThread::handle_receive_socket(int recv_socket)
+void FrameReceiverRxThread::handle_receive_socket(int recv_socket, int recv_port)
 {
 
 	if (frame_decoder_->requires_header_peek())
@@ -218,7 +218,7 @@ void FrameReceiverRxThread::handle_receive_socket(int recv_socket)
 		void*  header_buffer = frame_decoder_->get_packet_header_buffer();
 		size_t bytes_received = recvfrom(recv_socket, header_buffer, header_size, MSG_PEEK, 0, 0);
 		LOG4CXX_DEBUG_LEVEL(3, logger_, "RX thread received " << bytes_received << " header bytes on recv socket");
-		frame_decoder_->process_packet_header(bytes_received);
+		frame_decoder_->process_packet_header(bytes_received, recv_port);
 	}
 
 	struct iovec io_vec[2];

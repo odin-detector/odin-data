@@ -52,7 +52,7 @@ namespace FrameReceiver
         void run_service(void);
 
         void handle_rx_channel(void);
-        void handle_receive_socket(int socket_fd);
+        void handle_receive_socket(int socket_fd, int recv_port);
         void tick_timer(void);
         void buffer_monitor_timer(void);
 

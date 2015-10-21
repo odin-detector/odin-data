@@ -28,12 +28,13 @@ PercivalEmulatorFrameDecoder::PercivalEmulatorFrameDecoder(LoggerPtr& logger,
     dropped_frame_buffer_.reset(new uint8_t[PercivalEmulatorFrameDecoder::total_frame_size]);
 
     if (enable_packet_logging_) {
-        LOG4CXX_INFO(packet_logger_, "PktHdr:   PktType [1 Byte]");
-        LOG4CXX_INFO(packet_logger_, "PktHdr:   |  SubframeNumber [1 Byte]");
-        LOG4CXX_INFO(packet_logger_, "PktHdr:   |  |  FrameNumber [4 Bytes]");
-        LOG4CXX_INFO(packet_logger_, "PktHdr:   |  |  |           PacketNumber [2 Bytes]");
-        LOG4CXX_INFO(packet_logger_, "PktHdr:   |  |  |           |       Info [14 Bytes]");
-        LOG4CXX_INFO(packet_logger_, "PktHdr:   |  |  |           |       |");
+        LOG4CXX_INFO(packet_logger_, "PktHdr:  Port");
+        LOG4CXX_INFO(packet_logger_, "PktHdr:  |     PktType [1 Byte]");
+        LOG4CXX_INFO(packet_logger_, "PktHdr:  |     |  SubframeNumber [1 Byte]");
+        LOG4CXX_INFO(packet_logger_, "PktHdr:  |     |  |  FrameNumber [4 Bytes]");
+        LOG4CXX_INFO(packet_logger_, "PktHdr:  |     |  |  |           PacketNumber [2 Bytes]");
+        LOG4CXX_INFO(packet_logger_, "PktHdr:  |     |  |  |           |       Info [14 Bytes]");
+        LOG4CXX_INFO(packet_logger_, "PktHdr:  |     |  |  |           |       |");
     }
 }
 
@@ -61,7 +62,7 @@ void* PercivalEmulatorFrameDecoder::get_packet_header_buffer(void)
     return current_packet_header_.get();
 }
 
-void PercivalEmulatorFrameDecoder::process_packet_header(size_t bytes_received)
+void PercivalEmulatorFrameDecoder::process_packet_header(size_t bytes_received, int port)
 {
     //TODO validate header size and content, handle incoming new packet buffer allocation etc
 
@@ -70,7 +71,7 @@ void PercivalEmulatorFrameDecoder::process_packet_header(size_t bytes_received)
     {
         std::stringstream ss;
         uint8_t* hdr_ptr = raw_packet_header();
-        ss << "PktHdr: " << std::hex;
+        ss << "PktHdr: " << std::setw(5) << port << std::hex;
         for (unsigned int hdr_byte = 0; hdr_byte < sizeof(PacketHeader); hdr_byte++)
         {
             if (hdr_byte % 8 == 0) {

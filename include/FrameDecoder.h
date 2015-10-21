@@ -75,7 +75,7 @@ namespace FrameReceiver
 
         virtual const size_t get_packet_header_size(void) const = 0;
         virtual void* get_packet_header_buffer(void) = 0;
-		virtual void process_packet_header(size_t bytes_received) = 0;
+		virtual void process_packet_header(size_t bytes_received, int port) = 0;
 
         virtual void* get_next_payload_buffer(void) const = 0;
         virtual size_t get_next_payload_size(void) const = 0;
