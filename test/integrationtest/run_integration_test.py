@@ -16,12 +16,15 @@ class IntegrationTest(object):
         
         parser.add_argument('--frames', '-n', type=int, default=100,
                             help='select number of frames to transmit in test')
+        parser.add_argument('--interval', '-i', type=float, default=0.1,
+                            help='set frame output interval in seconds')
         parser.add_argument('--timeout', '-t', type=float, default=5.0,
                             help="sets timeout for process completion")
     
         args = parser.parse_args()
     
         self.frames = args.frames
+        self.interval = args.interval
         self.timeout = args.timeout
     
     def run(self):
@@ -32,7 +35,7 @@ class IntegrationTest(object):
         time.sleep(0.5)
         processor = self.launch_process("python -m frame_processor --config test_config/fp_test.config --bypass_mode --frames %d" % self.frames)
         time.sleep(0.5)
-        producer = self.launch_process("python -m frame_producer --destaddr 127.0.0.1:8000 --frames %d" % self.frames)
+        producer = self.launch_process("python -m frame_producer --destaddr 127.0.0.1:8000 --frames %d --interval %f" % (self.frames, self.interval))
         
         # Wait for producer to run to completion and validate output. Other processes should complete shortly thereafter, so use a short timeout
         rc = rc + self.validate_process_output(producer, "Producer", "%d frames completed" % self.frames, None)
@@ -76,7 +79,11 @@ class IntegrationTest(object):
                 print process_stdout
                 print process_stderr
                 rc = 1
-                 
+            else:
+                print name, "process OK completed with expected output"
+        else:
+            print name, "process completed (no validation of output)"
+            
         return rc
     
     def wait_process_output(self, process, timeout=None):
