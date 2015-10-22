@@ -169,7 +169,7 @@ void FrameReceiverRxThread::handle_rx_channel(void)
 			if (buffer_id != -1)
 			{
 				frame_decoder_->push_empty_buffer(buffer_id);
-				LOG4CXX_DEBUG_LEVEL(2, logger_, "Added empty buffer ID " << buffer_id << " to queue, length is now "
+				LOG4CXX_DEBUG_LEVEL(3, logger_, "Added empty buffer ID " << buffer_id << " to queue, length is now "
 						<< frame_decoder_->get_num_empty_buffers());
 			}
 			else
@@ -216,9 +216,11 @@ void FrameReceiverRxThread::handle_receive_socket(int recv_socket, int recv_port
 	{
 		size_t header_size = frame_decoder_->get_packet_header_size();
 		void*  header_buffer = frame_decoder_->get_packet_header_buffer();
-		size_t bytes_received = recvfrom(recv_socket, header_buffer, header_size, MSG_PEEK, 0, 0);
+		struct sockaddr_in from_addr;
+		socklen_t from_len = sizeof(from_addr);
+		size_t bytes_received = recvfrom(recv_socket, header_buffer, header_size, MSG_PEEK, (struct sockaddr*)&from_addr, &from_len);
 		LOG4CXX_DEBUG_LEVEL(3, logger_, "RX thread received " << bytes_received << " header bytes on recv socket");
-		frame_decoder_->process_packet_header(bytes_received, recv_port);
+		frame_decoder_->process_packet_header(bytes_received, recv_port, &from_addr);
 	}
 
 	struct iovec io_vec[2];

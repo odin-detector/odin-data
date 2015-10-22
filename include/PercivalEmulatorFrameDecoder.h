@@ -70,7 +70,7 @@ namespace FrameReceiver
 
         inline const bool requires_header_peek(void) const { return true; };
         const size_t get_packet_header_size(void) const;
-        void process_packet_header(size_t bytes_received, int port);
+        void process_packet_header(size_t bytes_received, int port, struct sockaddr_in* from_addr);
 
         void* get_next_payload_buffer(void) const;
         size_t get_next_payload_size(void) const;
