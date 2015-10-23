@@ -6,6 +6,7 @@
  */
 
 #include "PercivalEmulatorFrameDecoder.h"
+#include "gettime.h"
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -146,7 +147,7 @@ void PercivalEmulatorFrameDecoder::process_packet_header(size_t bytes_received, 
             current_frame_header_->frame_state = FrameDecoder::FrameReceiveStateIncomplete;
             current_frame_header_->packets_received = 0;
 
-            clock_gettime(CLOCK_REALTIME, reinterpret_cast<struct timespec*>(&(current_frame_header_->frame_start_time)));
+            gettime(reinterpret_cast<struct timespec*>(&(current_frame_header_->frame_start_time)));
 
     	}
     	else
@@ -231,7 +232,7 @@ void PercivalEmulatorFrameDecoder::monitor_buffers(void)
     int frames_timedout = 0;
     struct timespec current_time;
 
-    clock_gettime(CLOCK_REALTIME, &current_time);
+    gettime(&current_time);
 
     // Loop over frame buffers currently in map and check their state
     std::map<uint32_t, int>::iterator buffer_map_iter = frame_buffer_map_.begin();

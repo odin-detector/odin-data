@@ -6,6 +6,7 @@
  */
 
 #include "IpcReactor.h"
+#include "gettime.h"
 
 using namespace FrameReceiver;
 
@@ -118,7 +119,7 @@ TimeMs IpcReactorTimer::when(void)
 TimeMs IpcReactorTimer::clock_mono_ms(void)
 {
     struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
+    gettime(&ts, true);
 
     return (TimeMs)((TimeMs) ts.tv_sec * 1000 + (TimeMs) ts.tv_nsec / 1000000);
 }
