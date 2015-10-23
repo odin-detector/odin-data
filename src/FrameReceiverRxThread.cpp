@@ -101,12 +101,20 @@ void FrameReceiverRxThread::run_service(void)
 
         recv_addr.sin_family      = AF_INET;
         recv_addr.sin_port        = htons(rx_port);
-        recv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+        recv_addr.sin_addr.s_addr = inet_addr(config_.rx_address_.c_str());
+
+        if (recv_addr.sin_addr.s_addr == INADDR_NONE)
+        {
+            std::stringstream ss;
+             ss <<  "Illegal receive address specified: " << config_.rx_address_;
+             thread_init_msg_ = ss.str();
+             thread_init_error_ = true;
+        }
 
         if (bind(recv_socket, (struct sockaddr*)&recv_addr, sizeof(recv_addr)) == -1)
         {
             std::stringstream ss;
-            ss <<  "RX channel failed to bind receive socket for port " << rx_port << " : " << strerror(errno);
+            ss <<  "RX channel failed to bind receive socket for address " << config_.rx_address_ << " port " << rx_port << " : " << strerror(errno);
             thread_init_msg_ = ss.str();
             thread_init_error_ = true;
         }
