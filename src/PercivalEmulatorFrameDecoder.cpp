@@ -73,7 +73,7 @@ void PercivalEmulatorFrameDecoder::process_packet_header(size_t bytes_received, 
     {
         std::stringstream ss;
         uint8_t* hdr_ptr = raw_packet_header();
-        ss << "PktHdr: " << std::setw(15) << std::left << inet_ntoa(from_addr->sin_addr) << " "
+        ss << "PktHdr: " << std::setw(15) << std::left << inet_ntoa(from_addr->sin_addr) << std::right << " "
            << std::setw(5) << ntohs(from_addr->sin_port) << " "
            << std::setw(5) << port << std::hex;
         for (unsigned int hdr_byte = 0; hdr_byte < sizeof(PacketHeader); hdr_byte++)
