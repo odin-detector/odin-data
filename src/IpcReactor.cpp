@@ -293,7 +293,8 @@ int IpcReactor::run(void)
 
             // Handle any timers that have now fired, calling their callbacks. Erase any timers
             // that have now expired
-            for (TimerMap::iterator it = timers_.begin(); it != timers_.end(); ++it)
+            TimerMap::iterator it = timers_.begin();
+            while (it != timers_.end())
             {
                 if ((it->second)->has_fired())
                 {
@@ -301,7 +302,11 @@ int IpcReactor::run(void)
                 }
                 if ((it->second)->has_expired())
                 {
-                   timers_.erase(it);
+                   timers_.erase(it++);
+                }
+                else
+                {
+                	++it;
                 }
             }
         }
@@ -413,7 +418,7 @@ long IpcReactor::calculate_timeout(void)
     long timeout = (long)(tickless - IpcReactorTimer::clock_mono_ms());
     if (timeout < 0)
     {
-        timeout == 0;
+        timeout = 0;
     }
 
     return timeout;
