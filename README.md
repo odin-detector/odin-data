@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/percival-detector/framereceiver.png?label=ready&title=Ready)](https://waffle.io/percival-detector/framereceiver)
 FrameReceiver
 =============
 
