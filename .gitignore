@@ -2,3 +2,7 @@
 /build
 *.pyc
 /tools/python/venv/
+/.settings
+/.metadata
+/.cproject
+
