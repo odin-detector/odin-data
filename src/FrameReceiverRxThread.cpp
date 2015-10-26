@@ -31,6 +31,7 @@ FrameReceiverRxThread::FrameReceiverRxThread(FrameReceiverConfig& config, Logger
     while (!thread_running_)
     {
         if (thread_init_error_) {
+            rx_thread_.join();
             throw FrameReceiverException(thread_init_msg_);
             break;
         }
@@ -78,6 +79,7 @@ void FrameReceiverRxThread::run_service(void)
             ss << "RX channel failed to create receive socket for port " << rx_port << " : " << strerror(errno);
             thread_init_msg_ = ss.str();
             thread_init_error_ = true;
+            return;
         }
 
         // Set the socket receive buffer size
@@ -87,6 +89,7 @@ void FrameReceiverRxThread::run_service(void)
             ss << "RX channel failed to set receive socket buffer size for port " << rx_port << " : " << strerror(errno);
             thread_init_msg_ = ss.str();
             thread_init_error_ = true;
+            return;
         }
 
         // Read it back and display
@@ -109,6 +112,7 @@ void FrameReceiverRxThread::run_service(void)
              ss <<  "Illegal receive address specified: " << config_.rx_address_;
              thread_init_msg_ = ss.str();
              thread_init_error_ = true;
+             return;
         }
 
         if (bind(recv_socket, (struct sockaddr*)&recv_addr, sizeof(recv_addr)) == -1)
@@ -117,6 +121,7 @@ void FrameReceiverRxThread::run_service(void)
             ss <<  "RX channel failed to bind receive socket for address " << config_.rx_address_ << " port " << rx_port << " : " << strerror(errno);
             thread_init_msg_ = ss.str();
             thread_init_error_ = true;
+            return;
         }
 
         if (thread_init_error_) break;
