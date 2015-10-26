@@ -420,6 +420,12 @@ void FrameReceiverApp::handle_ctrl_channel(void)
             ctrl_reply.set_msg_type(IpcMessage::MsgTypeAck);
             ctrl_reply.set_msg_val(ctrl_req.get_msg_val());
             break;
+
+        default:
+        	LOG4CXX_ERROR(logger_, "Got unexpected command on control channel with type " << ctrl_req.get_msg_type());
+            ctrl_reply.set_msg_type(IpcMessage::MsgTypeNack);
+            ctrl_reply.set_msg_val(ctrl_req.get_msg_val());
+        	break;
         }
     }
     catch (IpcMessageException& e)

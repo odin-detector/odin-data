@@ -11,6 +11,7 @@
 #include <exception>
 
 #include "IpcMessage.h"
+#include "gettime.h"
 
 BOOST_AUTO_TEST_SUITE(IpcMessageUnitTest);
 
@@ -272,7 +273,7 @@ BOOST_AUTO_TEST_CASE( TestIpcMessageCreationSpeed )
 	struct timespec start, end;
 	double deltaT, rate;
 
-	clock_gettime(CLOCK_REALTIME, &start);
+	gettime(&start);
 
 	BOOST_CHECK_NO_THROW(
 		for (int i = 0; i < numLoops; i++)
@@ -283,12 +284,12 @@ BOOST_AUTO_TEST_CASE( TestIpcMessageCreationSpeed )
 		}
 	);
 
-	clock_gettime(CLOCK_REALTIME, &end);
+	gettime(&end);
 	deltaT = timeDiff(&start, &end);
 	rate = (double)numLoops / deltaT;
 	BOOST_TEST_MESSAGE("Created and encoded " << numLoops << " IPC messages in " << timeDiff(&start, &end) << " secs, rate " << rate << " Hz" );
 
-	clock_gettime(CLOCK_REALTIME, &start);
+	gettime(&start);
 
 
 	BOOST_CHECK_NO_THROW(
@@ -307,7 +308,7 @@ BOOST_AUTO_TEST_CASE( TestIpcMessageCreationSpeed )
 		}
 	);
 
-	clock_gettime(CLOCK_REALTIME, &end);
+	gettime(&end);
 	deltaT = timeDiff(&start, &end);
 	rate = (double)numLoops / deltaT;
 	BOOST_TEST_MESSAGE("Created and parsed " << numLoops << " IPC messages from string in " << timeDiff(&start, &end) << " secs, rate " << rate << " Hz");

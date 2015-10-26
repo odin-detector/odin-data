@@ -25,7 +25,13 @@ namespace FrameReceiver
     public:
         FrameReceiverRxThreadTestProxy(FrameReceiver::FrameReceiverConfig& config) :
             config_(config)
-        {  }
+        {
+            // Override default RX buffer size on OS X as Linux default
+            // is too large for test to pass
+#ifdef __MACH__
+            config_.rx_recv_buffer_size_ = 1048576;
+#endif
+        }
 
         std::string& get_rx_channel_endpoint(void)
         {
