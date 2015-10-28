@@ -8,13 +8,13 @@ matrix:
       addons:
         apt:
           packages: ['liblog4cxx10-dev','libboost-program-options-dev','libboost-filesystem-dev','libboost-date-time-dev','libboost-system-dev','libboost-test-dev','libboost-thread-dev','libzmq3-dev']
-      env: PYTHONPATH=./lib/python
+      env: PYTHONPATH=./lib/python FR_TEST_CONFIG=test_config/fr_test.config
 
     - os: osx
       osx_image: xcode7
       compiler: clang
       before_install: brew update && brew install cmake log4cxx boost zeromq python
-      env: PYTHONPATH=./lib/python
+      env: PYTHONPATH=./lib/python FR_TEST_CONFIG=test_config/fr_test_osx.config
 
 install:
   - mkdir -p build
@@ -25,7 +25,7 @@ install:
 
 script:
   - bin/frameReceiverTest --log_level=all
-  - python bin/run_integration_test.py --frames=1 --interval=1.0 --timeout=30
+  - python bin/run_integration_test.py --frames=1 --interval=1.0 --timeout=30 --fr_config=$FR_TEST_CONFIG
 
 notifications:
   slack:

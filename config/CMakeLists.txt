@@ -1,6 +1,7 @@
 set(TEST_CONFIGS
   log4cxx.config
   fr_test.config
+  fr_test_osx.config
   fp_test.config
 )
 
