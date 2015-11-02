@@ -13,6 +13,7 @@ class FrameProcessorConfig(object):
         defaults['sharedbuf']        = "FrameReceiverBuffer"
         defaults['bypass_mode']      = False
         defaults['frames']       = 0
+        defaults['boost_mmap_mode'] = False
 
         # Parse the command-line argument list        
         arg_config = self._parse_arguments(name, description)
@@ -45,6 +46,8 @@ class FrameProcessorConfig(object):
                             help="Enable frame decoding bypass mode" )
         parser.add_argument('--frames', type=int, default=None, dest='frames',
                             help="Specify the number of frames to receive before shutting down")
+        parser.add_argument('--boost_mmap_mode',  action='store_true',
+                            help="Enable boost MMAP shared memory mode")
         
         args = parser.parse_args()
         
@@ -65,5 +68,6 @@ class FrameProcessorConfig(object):
         config_vals['sharedbuf'] = cp.get(sec_name, 'sharedbuf')
         config_vals['bypass_mode'] = cp.getboolean(sec_name, 'bypass_mode')
  #       config_vals['frames'] = cp.getint(sec_name, 'frames')
+        config_vals['boost_mmap_mode'] = cp.getboolean(sec_name, 'boost_mmap_mode')
         
         return config_vals
