@@ -19,21 +19,29 @@ class IntegrationTest(object):
         parser.add_argument('--interval', '-i', type=float, default=0.1,
                             help='set frame output interval in seconds')
         parser.add_argument('--timeout', '-t', type=float, default=5.0,
-                            help="sets timeout for process completion")
+                            help="set timeout for process completion")
+        parser.add_argument('--fr_config', type=str, default='test_config/fr_test.config',
+                            help="set configuration file for frameReceiver")
+        parser.add_argument('--fp_config', type=str, default='test_config/fp_test.config',
+                            help="set configuration file for frameProcessor")
     
         args = parser.parse_args()
     
         self.frames = args.frames
         self.interval = args.interval
         self.timeout = args.timeout
+        self.fr_config = args.fr_config
+        self.fp_config= args.fp_config
     
     def run(self):
         
         rc = 0
         
-        receiver = self.launch_process("bin/frameReceiver --config test_config/fr_test.config --logconfig test_config/log4cxx.config --debug 2 --frames %d" % self.frames)
+        receiver = self.launch_process("bin/frameReceiver --config %s --logconfig test_config/log4cxx.config --debug 2 --frames %d" % 
+                                       (self.fr_config, self.frames))
         time.sleep(0.5)
-        processor = self.launch_process("python -m frame_processor --config test_config/fp_test.config --bypass_mode --frames %d" % self.frames)
+        processor = self.launch_process("python -m frame_processor --config %s --bypass_mode --frames %d" % 
+                                        (self.fp_config, self.frames))
         time.sleep(0.5)
         producer = self.launch_process("python -m frame_producer --destaddr 127.0.0.1:8000 --frames %d --interval %f" % (self.frames, self.interval))
         

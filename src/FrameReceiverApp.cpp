@@ -113,6 +113,8 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
                     "Set the number of frames to receive before terminating")
                 ("packetlog",    po::value<bool>()->default_value(FrameReceiver::Defaults::default_enable_packet_logging),
                     "Enable logging of packet diagnostics to file")
+				("rxbuffer",     po::value<unsigned int>()->default_value(FrameReceiver::Defaults::default_rx_recv_buffer_size),
+					"Set UDP receive buffer size")
 				;
 
 		// Group the variables for parsing at the command line and/or from the configuration file
@@ -227,6 +229,12 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
 		    config_.enable_packet_logging_ = vm["packetlog"].as<bool>();
 		    LOG4CXX_DEBUG_LEVEL(1, logger_, "Packet diagnostic logging is " <<
 		            (config_.enable_packet_logging_ ? "enabled" : "disabled"));
+		}
+
+		if (vm.count("rxbuffer"))
+		{
+			config_.rx_recv_buffer_size_ = vm["rxbuffer"].as<unsigned int>();
+			LOG4CXX_DEBUG_LEVEL(1, logger_, "RX receive buffer size is " << config_.rx_recv_buffer_size_);
 		}
 
 	}

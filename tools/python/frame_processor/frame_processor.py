@@ -47,8 +47,11 @@ class FrameProcessor(object):
         self.release_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_PUB)
         
         # Map the shared buffer manager
-        self.shared_buffer_manager = SharedBufferManager(self.config.sharedbuf)
-        
+        try:
+            self.shared_buffer_manager = SharedBufferManager(self.config.sharedbuf, boost_mmap_mode=self.config.boost_mmap_mode)
+        except SharedBufferManagerException as e:
+            self.logger.error("Failed to create shared buffer manager: %s" % str(e))
+            
         self.frame_decoder = PercivalEmulatorFrameDecoder(self.shared_buffer_manager)
         
         # Zero frames recevied counter
