@@ -16,11 +16,8 @@ matrix:
       before_install: 
         - brew update || brew update
         - brew list
-        - brew outdated cmake || brew upgrade cmake
-        - brew outdated log4cxx || brew upgrade log4cxx
+        - brew install cmake log4cxx zeromq python
         - brew outdated boost || brew upgrade boost 
-        - brew outdated zeromq || brew upgrade zeromq 
-        - brew outdated python || brew upgrade python
       env: PYTHONPATH=./lib/python FR_TEST_CONFIG=test_config/fr_test_osx.config FP_TEST_CONFIG=test_config/fp_test_osx.config
 
 install:
