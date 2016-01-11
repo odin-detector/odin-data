@@ -5,5 +5,8 @@ add_custom_target(CopyPythonToolModules ALL
 	COMMAND cmake -E copy_directory ${PYTHON_TOOL_SOURCE_DIR} ${PYTHON_TOOL_MODULE_DIR}
 )
 
-add_subdirectory(client)
-
+IF (NOT HDF5_FOUND)
+    message(WARNING "Did not find HDF5. Not building file writer application")
+ELSE (NOT HDF5_FOUND)
+    add_subdirectory(client)
+ENDIF (NOT HDF5_FOUND)
