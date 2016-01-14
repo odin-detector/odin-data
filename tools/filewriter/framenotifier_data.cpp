@@ -7,32 +7,51 @@ framenotifier_data.cpp
 
 #include <cstring> // memcpy
 #include <cstdlib> // malloc
+#include <numeric> // accumulate
 
 #include "framenotifier_data.h"
 
 using namespace boost::interprocess;
 
-Frame::Frame(size_t buffer_size)
-: data_size(buffer_size - sizeof(FrameHeader))
+Frame::Frame(size_t buffer_size_bytes, const dimensions_t& dimensions)
+: buffer_allocated_bytes(buffer_size_bytes), bytes_per_pixel(2),
+  dimensions(dimensions)
 {
-    this->data = static_cast<uint16_t*>(malloc( this->data_size ));
-    this->header = static_cast<FrameHeader*>(malloc(sizeof(FrameHeader)));
+    this->data = malloc( this->buffer_allocated_bytes );
+    this->frame_header = static_cast<FrameHeader*>(malloc(sizeof(FrameHeader)));
 }
 Frame::~Frame()
 {
-    if (this->header != NULL) free (this->header);
+    if (this->frame_header != NULL) free (this->frame_header);
     if (this->data != NULL) free (this->data);
 }
 
-void Frame::copy_data(const void* data_src)
+void Frame::copy_data(const void* data_src, size_t nbytes)
 {
-    memcpy(this->data, data_src, this->data_size);
+    assert(nbytes <= this->buffer_allocated_bytes);
+    memcpy(this->data, data_src, nbytes);
 }
 
 void Frame::copy_header(const void* header_src)
 {
-    memcpy(this->header, header_src, sizeof(FrameHeader));
+    memcpy(this->frame_header, header_src, sizeof(FrameHeader));
 }
+
+size_t Frame::get_data_size() const
+{
+    dimsize_t npixels = 1;
+    dimensions_t::const_iterator it;
+    for (it = this->dimensions.begin(); it != this->dimensions.end(); ++it) npixels *= *it;
+    size_t nbytes = this->bytes_per_pixel * static_cast<size_t>(npixels);
+    return static_cast<size_t>(nbytes);
+}
+
+unsigned long long Frame::get_frame_number() const
+{
+    return static_cast<dimsize_t>(this->frame_header->frame_number);
+}
+
+
 
 
 SharedMemParser::SharedMemParser(const std::string& shared_mem_name)
@@ -61,7 +80,8 @@ SharedMemParser::~SharedMemParser()
 void SharedMemParser::get_frame(Frame& dest_frame, unsigned int buffer_id)
 {
     dest_frame.copy_header(this->get_frame_header_address(buffer_id));
-    dest_frame.copy_data(this->get_frame_data_address(buffer_id));
+    dest_frame.copy_data(this->get_frame_data_address(buffer_id),
+            this->get_buffer_size() - sizeof(FrameHeader));
 }
 
 size_t SharedMemParser::get_buffer_size()
@@ -83,3 +103,4 @@ const void * SharedMemParser::get_frame_data_address(unsigned int bufferid) cons
 {
     return static_cast<const void *>(static_cast<const char*>(this->get_buffer_address(bufferid)) + sizeof(FrameHeader));
 }
+

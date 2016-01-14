@@ -159,6 +159,9 @@ int main(int argc, char** argv)
 
     SharedMemParser smp(vm["sharedbuf"].as<string>());
 
+    // Assuming this is a P2M, our image dimensions are:
+    dimensions_t p2m_dims(2); p2m_dims[0] = 1484; p2m_dims[1] = 1404;
+
     zmq::context_t zmq_context; // Global ZMQ context
 
     // The "release" ZMQ PUB socket, used to release frames back to the frameReceiver
@@ -216,7 +219,7 @@ int main(int argc, char** argv)
 
             // Copy the data out into a Frame object
             LOG4CXX_DEBUG(logger, "Creating Frame object");
-            Frame frame(smp.get_buffer_size());
+            Frame frame(smp.get_buffer_size(), p2m_dims);
             LOG4CXX_DEBUG(logger, "Copying buffer ID: " << msg_doc["params"]["buffer_id"].GetInt64());
             smp.get_frame(frame, msg_doc["params"]["buffer_id"].GetInt64());
             LOG4CXX_DEBUG(logger, "Frame completeness: " << frame.get_header()->packets_received << " packets received");

@@ -72,26 +72,36 @@ typedef struct
     size_t buffer_size;
 } Header;
 
+typedef unsigned long long dimsize_t;
+typedef std::vector<dimsize_t> dimensions_t;
 
 //============== end of stolen bits ============================================================
 class Frame
 {
 public:
-    Frame(size_t data_size);
+    Frame(size_t buffer_size_bytes, const dimensions_t& dimensions);
     ~Frame();
 
-    void copy_data(const void* data_src);
+    void copy_data(const void* data_src, size_t nbytes);
     void copy_header(const void* header_src);
 
-    const FrameHeader* get_header(){return this->header;};
-    size_t get_data_size(){return this->data_size;};
+    const FrameHeader* get_header() const {return this->frame_header;};
+    const void* get_data() const {return this->data;};
+    size_t get_data_size() const;
+
+    //void set_dimensions(const std::vector<unsigned long long>& dimensions) { this->dimensions = dimensions;};
+    const dimensions_t& get_dimensions() const {return this->dimensions;};
+
+    unsigned long long get_frame_number() const;
 private:
     Frame();
     Frame(const Frame& src); // Don't try to copy one of these!
 
-    FrameHeader *header;
-    uint16_t *data;
-    size_t data_size;
+    size_t buffer_allocated_bytes; // Number of bytes malloc'd
+    const size_t bytes_per_pixel;
+    dimensions_t dimensions;
+    FrameHeader *frame_header;
+    void *data;
 };
 
 class SharedMemParser
