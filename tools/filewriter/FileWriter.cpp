@@ -8,8 +8,10 @@
 #include <hdf5_hl.h>
 #include "framenotifier_data.h"
 
+
 FileWriter::FileWriter() {
-    this->log_ = Logger::getLogger("SWMRWriter");
+    this->log_ = Logger::getLogger("FileWriter");
+    this->log_->setLevel(Level::getTrace());
     LOG4CXX_TRACE(log_, "FileWriter constructor.");
 
     this->hdf5_.fileid = 0;
