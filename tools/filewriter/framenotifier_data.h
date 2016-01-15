@@ -79,7 +79,7 @@ typedef std::vector<dimsize_t> dimensions_t;
 class Frame
 {
 public:
-    Frame(size_t buffer_size_bytes, const dimensions_t& dimensions);
+    Frame(size_t bytes_per_pixel, const dimensions_t& dimensions);
     ~Frame();
 
     void copy_data(const void* data_src, size_t nbytes);

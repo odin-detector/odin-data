@@ -13,10 +13,11 @@ framenotifier_data.cpp
 
 using namespace boost::interprocess;
 
-Frame::Frame(size_t buffer_size_bytes, const dimensions_t& dimensions)
-: buffer_allocated_bytes(buffer_size_bytes), bytes_per_pixel(2),
+Frame::Frame(size_t bytes_per_pixel, const dimensions_t& dimensions)
+: bytes_per_pixel(bytes_per_pixel),
   dimensions(dimensions)
 {
+    this->buffer_allocated_bytes = this->get_data_size();
     this->data = malloc( this->buffer_allocated_bytes );
     this->frame_header = static_cast<FrameHeader*>(malloc(sizeof(FrameHeader)));
 }
