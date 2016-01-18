@@ -24,7 +24,11 @@ FileWriter::FileWriter() {
 }
 
 FileWriter::~FileWriter() {
-    // TODO Auto-generated destructor stub
+    if (this->hdf5_.fileid != 0) {
+        LOG4CXX_TRACE(log_, "destructor closing file");
+        H5Fclose(this->hdf5_.fileid);
+        this->hdf5_.fileid = 0;
+    }
 }
 
 void FileWriter::createFile(std::string filename, size_t chunk_align) {
@@ -78,7 +82,6 @@ void FileWriter::writeFrame(const Frame& frame) {
                              filter_mask, &offset.front(),
                              frame.get_data_size(), frame.get_data());
     assert(status >= 0);
-
 }
 
 void FileWriter::createDataset(
@@ -136,7 +139,7 @@ void FileWriter::createDataset(
 
 
 void FileWriter::closeFile() {
-    LOG4CXX_TRACE(log_, "FileWriter destructor");
+    LOG4CXX_TRACE(log_, "FileWriter closeFile");
     if (this->hdf5_.fileid >= 0) {
         assert(H5Fclose(this->hdf5_.fileid) >= 0);
         this->hdf5_.fileid = 0;

@@ -33,7 +33,7 @@ public:
         std::vector<hsize_t> dataset_offsets;
     };
 
-    FileWriter();
+    explicit FileWriter();
     virtual ~FileWriter();
 
     void createFile(std::string filename, size_t chunk_align=1024 * 1024);
