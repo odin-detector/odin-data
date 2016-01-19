@@ -33,6 +33,7 @@ using namespace rapidjson;
 #include "zmq/zmq.hpp"
 
 #include "framenotifier_data.h"
+#include "FileWriter.h"
 
 void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& logger)
 {
@@ -160,6 +161,7 @@ int main(int argc, char** argv)
     SharedMemParser smp(vm["sharedbuf"].as<string>());
 
     // Assuming this is a P2M, our image dimensions are:
+    size_t bytes_per_pixel = 2;
     dimensions_t p2m_dims(2); p2m_dims[0] = 1484; p2m_dims[1] = 1404;
 
     zmq::context_t zmq_context; // Global ZMQ context
@@ -177,6 +179,16 @@ int main(int argc, char** argv)
     poll_item.events = ZMQ_POLLIN;
     poll_item.fd = 0;
     poll_item.revents = 0;
+
+    // The file writer object
+    FileWriter hdfwr;
+    hdfwr.createFile("data.h5");
+    FileWriter::DatasetDefinition dset_def;
+    dset_def.name = "data";
+    dset_def.frame_dimensions = p2m_dims;
+    dset_def.pixel = FileWriter::pixel_raw_16bit;
+    dset_def.num_frames = vm["frames"].as<unsigned int>();
+    hdfwr.createDataset(dset_def);
 
     // The polling loop. Polls on all elements in poll_item
     // Stop the loop by setting keep_running=false
@@ -219,7 +231,7 @@ int main(int argc, char** argv)
 
             // Copy the data out into a Frame object
             LOG4CXX_DEBUG(logger, "Creating Frame object");
-            Frame frame(smp.get_buffer_size(), p2m_dims);
+            Frame frame(bytes_per_pixel, p2m_dims);
             LOG4CXX_DEBUG(logger, "Copying buffer ID: " << msg_doc["params"]["buffer_id"].GetInt64());
             smp.get_frame(frame, msg_doc["params"]["buffer_id"].GetInt64());
             LOG4CXX_DEBUG(logger, "Frame completeness: " << frame.get_header()->packets_received << " packets received");
@@ -249,6 +261,10 @@ int main(int argc, char** argv)
             // Send the new JSON object (string) back to the frameReceiver on the "release" ZMQ socket
             size_t nbytes = zsocket_release.send(release_msg.c_str(), release_msg.size() + 1);
             LOG4CXX_DEBUG(logger, "Sent " << nbytes << " bytes");
+
+            // Write the frame to disk
+            hdfwr.writeFrame(frame);
+
         } else
         {
             // No new data
@@ -257,6 +273,7 @@ int main(int argc, char** argv)
         // Quit the loop if we have received the desired number of frames
         if (notification_count >= vm["frames"].as<unsigned int>()) keep_running=false;
     }
+    hdfwr.closeFile();
     return rc;
 }
 
