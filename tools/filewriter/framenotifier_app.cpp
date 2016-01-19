@@ -64,6 +64,8 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
                     "Set the number of frames to be notified about before terminating")
                 ("sharedbuf",    po::value<std::string>()->default_value("FrameReceiverBuffer"),
                     "Set the name of the shared memory frame buffer")
+                ("output,o",     po::value<std::string>(),
+                    "Name of HDF5 file to write frames to (default: no file writing)")
                 ;
 
         // Group the variables for parsing at the command line and/or from the configuration file
@@ -125,6 +127,11 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
             LOG4CXX_DEBUG(logger, "Setting number of frames to receive to " << vm["frames"].as<unsigned int>());
         }
 
+        if (vm.count("output"))
+        {
+            LOG4CXX_DEBUG(logger, "Writing frames to file: " << vm["output"].as<string>());
+        }
+
     }
     catch (po::unknown_option &e)
     {
@@ -182,13 +189,17 @@ int main(int argc, char** argv)
 
     // The file writer object
     FileWriter hdfwr;
-    hdfwr.createFile("data.h5");
-    FileWriter::DatasetDefinition dset_def;
-    dset_def.name = "data";
-    dset_def.frame_dimensions = p2m_dims;
-    dset_def.pixel = FileWriter::pixel_raw_16bit;
-    dset_def.num_frames = vm["frames"].as<unsigned int>();
-    hdfwr.createDataset(dset_def);
+    bool write_file = false;
+    if (vm.count("output")) {
+        write_file = true;
+        hdfwr.createFile(vm["output"].as<string>());
+        FileWriter::DatasetDefinition dset_def;
+        dset_def.name = "data";
+        dset_def.frame_dimensions = p2m_dims;
+        dset_def.pixel = FileWriter::pixel_raw_16bit;
+        dset_def.num_frames = vm["frames"].as<unsigned int>();
+        hdfwr.createDataset(dset_def);
+    }
 
     // The polling loop. Polls on all elements in poll_item
     // Stop the loop by setting keep_running=false
@@ -263,7 +274,7 @@ int main(int argc, char** argv)
             LOG4CXX_DEBUG(logger, "Sent " << nbytes << " bytes");
 
             // Write the frame to disk
-            hdfwr.writeFrame(frame);
+            if (write_file) hdfwr.writeFrame(frame);
 
         } else
         {
@@ -273,7 +284,7 @@ int main(int argc, char** argv)
         // Quit the loop if we have received the desired number of frames
         if (notification_count >= vm["frames"].as<unsigned int>()) keep_running=false;
     }
-    hdfwr.closeFile();
+    if (write_file) hdfwr.closeFile();
     return rc;
 }
 
