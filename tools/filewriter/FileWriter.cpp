@@ -91,6 +91,7 @@ void FileWriter::createDataset(
     hid_t prop = 0;
     hid_t dapl = 0;
     herr_t status;
+    hid_t dtype = pixelToHdfType(definition.pixel);
 
     std::vector<hsize_t> frame_dims = definition.frame_dimensions;
 
@@ -116,10 +117,13 @@ void FileWriter::createDataset(
     status = H5Pset_chunk(prop, dset_dims.size(), &chunk_dims.front());
     assert(status >= 0);
 
+    char fill_value[8] = {0,0,0,0,0,0,0,0};
+    status = H5Pset_fill_value(prop, dtype, fill_value);
+    assert(status >= 0);
+
     dapl = H5Pcreate(H5P_DATASET_ACCESS);
 
     /* Create dataset  */
-    hid_t dtype = pixelToHdfType(definition.pixel);
     LOG4CXX_DEBUG(log_, "Creating dataset: " << definition.name);
     this->hdf5_.datasetid = H5Dcreate2(this->hdf5_.fileid, definition.name.c_str(),
                                         dtype, dataspace,
