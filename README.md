@@ -15,6 +15,7 @@ The following libraries and packages are required:
 * [Boost](http://www.boost.org) : portable C++ utility libraries. The following components are used - program_options, unit_test_framework, date_time, interprocess, bimap (version >= 1.41)
 * [ZeroMQ](http://zeromq.org) : high-performance asynchronous messaging library (version >= 3.2.4)
 * [Log4CXX](http://logging.apache.org/log4cxx/): Configurable message logger (version >= 0.10.0)
+* [HDF5](https://www.hdfgroup.org/HDF5): __Optional:__ if found, the filewriter applicion will be built (version >= 1.8.14) 
 
 Installing dependencies
 -----------------------
@@ -53,3 +54,4 @@ The Boost_NO_BOOST_CMAKE=ON flag is required on systems with Boost installed on 
 * BOOST_ROOT
 * ZEROMQ_ROOTDIR
 * LOG4CXX_ROOT_DIR
+* HDF5_ROOT
