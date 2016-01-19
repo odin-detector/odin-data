@@ -88,6 +88,7 @@ public:
     const FrameHeader* get_header() const {return this->frame_header;};
     const void* get_data() const {return this->data;};
     size_t get_data_size() const;
+    static size_t get_data_size(const dimensions_t dimensions, size_t bytes_per_pixel);
 
     //void set_dimensions(const std::vector<unsigned long long>& dimensions) { this->dimensions = dimensions;};
     const dimensions_t& get_dimensions() const {return this->dimensions;};
@@ -97,6 +98,7 @@ private:
     Frame();
     Frame(const Frame& src); // Don't try to copy one of these!
 
+    log4cxx::LoggerPtr logger;
     size_t buffer_allocated_bytes; // Number of bytes malloc'd
     const size_t bytes_per_pixel;
     dimensions_t dimensions;

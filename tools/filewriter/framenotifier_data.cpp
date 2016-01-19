@@ -15,11 +15,18 @@ using namespace boost::interprocess;
 
 Frame::Frame(size_t bytes_per_pixel, const dimensions_t& dimensions)
 : bytes_per_pixel(bytes_per_pixel),
-  dimensions(dimensions)
+  dimensions(dimensions),
+  logger(log4cxx::Logger::getLogger("Frame"))
 {
-    this->buffer_allocated_bytes = this->get_data_size();
-    this->data = malloc( this->buffer_allocated_bytes );
-    this->frame_header = static_cast<FrameHeader*>(malloc(sizeof(FrameHeader)));
+    this->buffer_allocated_bytes = Frame::get_data_size(dimensions, bytes_per_pixel);
+    LOG4CXX_DEBUG(logger, "Allocating frame buffer: "
+                    << this->buffer_allocated_bytes << " bytes");
+    this->data = calloc( 1, this->buffer_allocated_bytes );
+    assert(this->data != NULL);
+    LOG4CXX_DEBUG(logger, "Allocating FrameHeader buffer: "
+                    << sizeof(FrameHeader) << " bytes");
+    this->frame_header = static_cast<FrameHeader*>(calloc(1, sizeof(FrameHeader)));
+    assert(this->frame_header != NULL);
 }
 Frame::~Frame()
 {
@@ -29,7 +36,13 @@ Frame::~Frame()
 
 void Frame::copy_data(const void* data_src, size_t nbytes)
 {
-    assert(nbytes <= this->buffer_allocated_bytes);
+    if (nbytes > this->buffer_allocated_bytes) {
+        LOG4CXX_WARN(logger, "Trying to copy: " << nbytes
+                            << " But allocated buffer only: "
+                            << this->buffer_allocated_bytes
+                            <<" bytes. Truncating copy.");
+        nbytes = this->buffer_allocated_bytes;
+    }
     memcpy(this->data, data_src, nbytes);
 }
 
@@ -40,11 +53,16 @@ void Frame::copy_header(const void* header_src)
 
 size_t Frame::get_data_size() const
 {
+    return Frame::get_data_size(this->dimensions, this->bytes_per_pixel);
+}
+
+size_t Frame::get_data_size(const dimensions_t dimensions, size_t bytes_per_pixel)
+{
     dimsize_t npixels = 1;
     dimensions_t::const_iterator it;
-    for (it = this->dimensions.begin(); it != this->dimensions.end(); ++it) npixels *= *it;
-    size_t nbytes = this->bytes_per_pixel * static_cast<size_t>(npixels);
-    return static_cast<size_t>(nbytes);
+    for (it = dimensions.begin(); it != dimensions.end(); ++it) npixels *= *it;
+    size_t nbytes = bytes_per_pixel * static_cast<size_t>(npixels);
+    return nbytes;
 }
 
 unsigned long long Frame::get_frame_number() const
@@ -57,7 +75,7 @@ unsigned long long Frame::get_frame_number() const
 
 SharedMemParser::SharedMemParser(const std::string& shared_mem_name)
 : shared_mem(boost::interprocess::open_only, shared_mem_name.c_str(), boost::interprocess::read_write),
-  logger(log4cxx::Logger::getLogger("DataMuncher")),
+  logger(log4cxx::Logger::getLogger("SharedMemParser")),
   shared_mem_header(static_cast<Header*>(malloc(sizeof(Header))))
 {
     LOG4CXX_DEBUG(logger, "Registering shared memory region \"" << shared_mem_name << "\"");
