@@ -99,8 +99,7 @@ SharedMemParser::~SharedMemParser()
 void SharedMemParser::get_frame(Frame& dest_frame, unsigned int buffer_id)
 {
     dest_frame.copy_header(this->get_frame_header_address(buffer_id));
-    dest_frame.copy_data(this->get_frame_data_address(buffer_id),
-            this->get_buffer_size() - sizeof(FrameHeader));
+    dest_frame.copy_data(this->get_frame_data_address(buffer_id),raw_frame_data_size);
 }
 
 size_t SharedMemParser::get_buffer_size()
@@ -110,7 +109,9 @@ size_t SharedMemParser::get_buffer_size()
 
 const void * SharedMemParser::get_buffer_address(unsigned int bufferid) const
 {
-    return static_cast<const void *>((static_cast<char*>(shared_mem_region.get_address()) + sizeof(Header)) + bufferid * shared_mem_header->buffer_size);
+    return static_cast<const void *>(
+            static_cast<char*>(shared_mem_region.get_address())
+            + sizeof(Header) + bufferid * shared_mem_header->buffer_size);
 }
 
 const void * SharedMemParser::get_frame_header_address(unsigned int bufferid) const
@@ -120,6 +121,8 @@ const void * SharedMemParser::get_frame_header_address(unsigned int bufferid) co
 
 const void * SharedMemParser::get_frame_data_address(unsigned int bufferid) const
 {
-    return static_cast<const void *>(static_cast<const char*>(this->get_buffer_address(bufferid)) + sizeof(FrameHeader));
+    return static_cast<const void *>(
+            static_cast<const char*>(this->get_buffer_address(bufferid))
+            + sizeof(FrameHeader));
 }
 
