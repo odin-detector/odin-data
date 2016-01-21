@@ -132,6 +132,8 @@ class FrameProducer(object):
         for frame in range(self.frames):
             
             print "frame: ", frame
+            info_offset = (frame % 16)*16
+            header['Information'] = [range(info_offset, info_offset+14)]
             
             # Construct host & port from lists
             (host, port) = (self.host[frame % index], self.port[frame % index] )

@@ -146,7 +146,7 @@ void PercivalEmulatorFrameDecoder::process_packet_header(size_t bytes_received, 
             current_frame_header_->frame_number = current_frame_seen_;
             current_frame_header_->frame_state = FrameDecoder::FrameReceiveStateIncomplete;
             current_frame_header_->packets_received = 0;
-
+            memcpy(current_frame_header_->frame_info, get_frame_info(), frame_info_size);
             gettime(reinterpret_cast<struct timespec*>(&(current_frame_header_->frame_start_time)));
 
     	}
@@ -292,6 +292,11 @@ uint32_t PercivalEmulatorFrameDecoder::get_frame_number(void) const
 {
 	uint32_t frame_number_raw = *(reinterpret_cast<uint32_t*>(raw_packet_header()+2));
     return ntohl(frame_number_raw);
+}
+
+uint8_t* PercivalEmulatorFrameDecoder::get_frame_info(void) const
+{
+    return (reinterpret_cast<uint8_t*>(raw_packet_header()+8));
 }
 
 uint8_t* PercivalEmulatorFrameDecoder::raw_packet_header(void) const

@@ -3,7 +3,7 @@ from struct import calcsize, Struct
 
 class PercivalFrameHeader(Struct):
     
-    frame_header_format = '<LLQQL1024BL'
+    frame_header_format = '<LLQQL14B1024B6B'
     
     @classmethod
     def size(cls):       
@@ -19,8 +19,11 @@ class PercivalFrameHeader(Struct):
         self.frame_state = header_vals[1]
         self.frame_start_time = datetime.fromtimestamp(float(header_vals[2]) + float(header_vals[3])/1000000000)
         self.packets_received = header_vals[4]
-        self.packet_state = header_vals[5:-1]
+        self.frame_info = header_vals[5:19]
+        self.packet_state = header_vals[19:-6]
+        self.padding = header_vals[-6:]
         
+
 class PercivalFrameData(Struct):
     
     primary_packet_size = 8192
