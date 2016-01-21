@@ -118,6 +118,7 @@ public:
     SharedMemParser(const std::string & shared_mem_name);
     ~SharedMemParser();
     void get_frame(Frame& dest_frame, unsigned int buffer_id);
+    void get_reset_frame(Frame& dest_frame, unsigned int buffer_id);
     size_t get_buffer_size();
 
 private:
@@ -127,6 +128,9 @@ private:
     const void* get_buffer_address(unsigned int bufferid) const;
     const void* get_frame_header_address(unsigned int bufferid) const;
     const void* get_frame_data_address(unsigned int bufferid) const;
+
+    const void* get_reset_header_address(unsigned int bufferid) const;
+    const void* get_reset_data_address(unsigned int bufferid) const;
 
     log4cxx::LoggerPtr logger;
     boost::interprocess::shared_memory_object shared_mem;

@@ -199,6 +199,9 @@ int main(int argc, char** argv)
         dset_def.pixel = FileWriter::pixel_raw_16bit;
         dset_def.num_frames = vm["frames"].as<unsigned int>();
         hdfwr.createDataset(dset_def);
+
+        dset_def.name = "reset";
+        hdfwr.createDataset(dset_def);
     }
 
     // The polling loop. Polls on all elements in poll_item
@@ -246,6 +249,12 @@ int main(int argc, char** argv)
             LOG4CXX_DEBUG(logger, "Copying buffer ID: " << msg_doc["params"]["buffer_id"].GetInt64());
             smp.get_frame(frame, msg_doc["params"]["buffer_id"].GetInt64());
             LOG4CXX_DEBUG(logger, "Frame completeness: " << frame.get_header()->packets_received << " packets received");
+
+            Frame reset_frame(bytes_per_pixel, p2m_dims);
+            LOG4CXX_DEBUG(logger, "Copying buffer ID (reset): " << msg_doc["params"]["buffer_id"].GetInt64());
+            smp.get_reset_frame(reset_frame, msg_doc["params"]["buffer_id"].GetInt64());
+            LOG4CXX_DEBUG(logger, "Frame completeness: " << reset_frame.get_header()->packets_received << " packets received");
+
 
             // Clear the json string buffer and reset the writer so we can re-use them
             // after modifying the Document DOM object
