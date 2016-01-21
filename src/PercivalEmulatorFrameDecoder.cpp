@@ -296,7 +296,7 @@ uint32_t PercivalEmulatorFrameDecoder::get_frame_number(void) const
 
 uint8_t* PercivalEmulatorFrameDecoder::get_frame_info(void) const
 {
-    return (reinterpret_cast<uint8_t*>(raw_packet_header()+14));
+    return (reinterpret_cast<uint8_t*>(raw_packet_header()+8));
 }
 
 uint8_t* PercivalEmulatorFrameDecoder::raw_packet_header(void) const

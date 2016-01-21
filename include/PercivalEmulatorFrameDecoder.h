@@ -45,15 +45,15 @@ namespace FrameReceiver
         static const size_t num_tail_packets    = 1;
         static const size_t num_subframes       = 2;
         static const size_t num_data_types      = 2;
-        static const size_t frame_info_size     = 22;
+        static const size_t frame_info_size     = 14;
 
         typedef struct
         {
             uint32_t frame_number;
             uint32_t frame_state;
             struct timespec frame_start_time;
-            uint8_t  frame_info[frame_info_size];
             uint32_t packets_received;
+            uint8_t  frame_info[frame_info_size];
             uint8_t  packet_state[num_data_types][num_subframes][num_primary_packets + num_tail_packets];
         } FrameHeader;
 
