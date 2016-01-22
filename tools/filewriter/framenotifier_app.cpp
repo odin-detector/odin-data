@@ -169,7 +169,7 @@ int main(int argc, char** argv)
 
     // Assuming this is a P2M, our image dimensions are:
     size_t bytes_per_pixel = 2;
-    dimensions_t p2m_dims(2); p2m_dims[0] = 1484; p2m_dims[1] = 1404;
+    dimensions_t p2m_dims(2); p2m_dims[0] = 1484; p2m_dims[1] = 1408;
 
     zmq::context_t zmq_context; // Global ZMQ context
 
@@ -248,17 +248,21 @@ int main(int argc, char** argv)
             LOG4CXX_DEBUG(logger, "Parsed json: " << buffer.GetString());
 
             // Copy the data out into a Frame object
-            LOG4CXX_DEBUG(logger, "Creating Frame object");
-            Frame frame(bytes_per_pixel, p2m_dims);
-            LOG4CXX_DEBUG(logger, "Copying buffer ID: " << msg_doc["params"]["buffer_id"].GetInt64());
-            smp.get_frame(frame, msg_doc["params"]["buffer_id"].GetInt64());
-            LOG4CXX_DEBUG(logger, "Frame completeness: " << frame.get_header()->packets_received << " packets received");
-
+            unsigned int buffer_id = msg_doc["params"]["buffer_id"].GetInt64();
+            LOG4CXX_DEBUG(logger, "Creating Reset Frame object. buffer=" << buffer_id
+                                << " buffer addr: " << smp.get_buffer_address(buffer_id));
+            LOG4CXX_DEBUG(logger, "  Header addr: " << smp.get_frame_header_address(buffer_id)
+                                << "  Data addr: " << smp.get_reset_data_address(buffer_id));
+            LOG4CXX_DEBUG(logger, FrameHeaderToString(static_cast<const FrameHeader*>(smp.get_frame_header_address(buffer_id))));
             Frame reset_frame(bytes_per_pixel, p2m_dims);
-            LOG4CXX_DEBUG(logger, "Copying buffer ID (reset): " << msg_doc["params"]["buffer_id"].GetInt64());
-            smp.get_reset_frame(reset_frame, msg_doc["params"]["buffer_id"].GetInt64());
-            LOG4CXX_DEBUG(logger, "Frame completeness: " << reset_frame.get_header()->packets_received << " packets received");
+            reset_frame.set_dataset_name("reset");
+            smp.get_reset_frame(reset_frame, buffer_id);
 
+            LOG4CXX_DEBUG(logger, "Creating Data Frame object. buffer=" << buffer_id);
+            LOG4CXX_DEBUG(logger,"  Data addr: " << smp.get_frame_data_address(buffer_id));
+            Frame frame(bytes_per_pixel, p2m_dims);
+            frame.set_dataset_name("data");
+            smp.get_frame(frame, buffer_id);
 
             // Clear the json string buffer and reset the writer so we can re-use them
             // after modifying the Document DOM object

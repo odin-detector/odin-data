@@ -16,7 +16,8 @@ using namespace boost::interprocess;
 Frame::Frame(size_t bytes_per_pixel, const dimensions_t& dimensions)
 : bytes_per_pixel(bytes_per_pixel),
   dimensions(dimensions),
-  logger(log4cxx::Logger::getLogger("Frame"))
+  logger(log4cxx::Logger::getLogger("Frame")),
+  dataset_name("data")
 {
     this->buffer_allocated_bytes = Frame::get_data_size(dimensions, bytes_per_pixel);
     LOG4CXX_DEBUG(logger, "Allocating frame buffer: "
@@ -120,7 +121,7 @@ const void * SharedMemParser::get_buffer_address(unsigned int bufferid) const
             + sizeof(Header) + bufferid * shared_mem_header->buffer_size);
 }
 
-const void * SharedMemParser::get_reset_header_address(unsigned int bufferid) const
+const void * SharedMemParser::get_frame_header_address(unsigned int bufferid) const
 {
     return this->get_buffer_address(bufferid);
 }
@@ -132,17 +133,10 @@ const void * SharedMemParser::get_reset_data_address(unsigned int bufferid) cons
             + sizeof(FrameHeader));
 }
 
-const void * SharedMemParser::get_frame_header_address(unsigned int bufferid) const
-{
-    return static_cast<const void *>(
-            static_cast<const char*>(this->get_buffer_address(bufferid))
-            + total_frame_size);
-}
-
 const void * SharedMemParser::get_frame_data_address(unsigned int bufferid) const
 {
     return static_cast<const void *>(
             static_cast<const char*>(this->get_buffer_address(bufferid))
-            + total_frame_size
-            + sizeof(FrameHeader));
+            + sizeof(FrameHeader)
+            + data_type_size);
 }
