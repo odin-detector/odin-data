@@ -8,6 +8,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include <log4cxx/logger.h>
 #include <hdf5.h>
 
@@ -26,8 +27,7 @@ public:
         std::vector<long long unsigned int> frame_dimensions;
     };
 
-    struct HDF5Handles {
-        hid_t fileid;
+    struct HDF5Dataset_t {
         hid_t datasetid;
         std::vector<hsize_t> dataset_dimensions;
         std::vector<hsize_t> dataset_offsets;
@@ -46,8 +46,8 @@ private:
     LoggerPtr log_;
     hid_t pixelToHdfType(FileWriter::PixelType pixel) const;
 
-    FileWriter::DatasetDefinition datsetDef_;
-    FileWriter::HDF5Handles hdf5_;
+    hid_t hdf5_fileid_;
+    std::map<std::string, FileWriter::HDF5Dataset_t> hdf5_datasets_;
 };
 
 #endif /* TOOLS_FILEWRITER_FILEWRITER_H_ */

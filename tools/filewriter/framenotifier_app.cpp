@@ -281,17 +281,18 @@ int main(int argc, char** argv)
 
             // Encode the JSON Document DOM object using the writer
             msg_doc.Accept(writer);
-            LOG4CXX_DEBUG(logger, "Changing msg_val: " << msg_doc["msg_val"].GetString());
             string release_msg(buffer.GetString()); // Get a copy of the JSON string
-            LOG4CXX_DEBUG(logger, "New json: " << release_msg);
+            LOG4CXX_DEBUG(logger, "Returning json release msg: " << release_msg);
 
-            LOG4CXX_DEBUG(logger, "Sending release response");
             // Send the new JSON object (string) back to the frameReceiver on the "release" ZMQ socket
             size_t nbytes = zsocket_release.send(release_msg.c_str(), release_msg.size() + 1);
-            LOG4CXX_DEBUG(logger, "Sent " << nbytes << " bytes");
+            LOG4CXX_DEBUG(logger, "  sent: " << nbytes << " bytes");
 
             // Write the frame to disk
-            if (write_file) hdfwr.writeFrame(frame);
+            if (write_file) {
+                hdfwr.writeFrame(frame);
+                hdfwr.writeFrame(reset_frame);
+            }
 
         } else
         {

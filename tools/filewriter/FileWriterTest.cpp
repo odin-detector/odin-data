@@ -108,8 +108,49 @@ BOOST_AUTO_TEST_CASE( FileWriterTest )
 {
     BOOST_REQUIRE_NO_THROW(fw.createFile("/tmp/blah.h5"));
     BOOST_REQUIRE_NO_THROW(fw.createDataset(dset_def));
+    BOOST_REQUIRE_EQUAL(dset_def.name, frame->get_dataset_name());
 
     BOOST_REQUIRE_NO_THROW(fw.writeFrame(*frame));
+    BOOST_REQUIRE_NO_THROW(fw.closeFile());
+}
+
+BOOST_AUTO_TEST_CASE( FileWriterMultiDatasetTest )
+{
+    BOOST_REQUIRE_NO_THROW(fw.createFile("/tmp/blah_multidataset.h5"));
+
+    // Create the first datset "data"
+    BOOST_REQUIRE_NO_THROW(fw.createDataset(dset_def));
+    BOOST_CHECK_EQUAL(dset_def.name, frame->get_dataset_name());
+
+    // Create the second datset "stuff"
+    dset_def.name = "stuff";
+    BOOST_REQUIRE_NO_THROW(fw.createDataset(dset_def));
+
+    // Write first frame to "data"
+    BOOST_REQUIRE_NO_THROW(fw.writeFrame(*frame));
+
+    // Write the frame to "stuff"
+    BOOST_CHECK_NO_THROW(frame->set_dataset_name("stuff"));
+    BOOST_CHECK_EQUAL(dset_def.name, frame->get_dataset_name());
+    BOOST_REQUIRE_NO_THROW(fw.writeFrame(*frame));
+
+    // write another frame to "data"
+    BOOST_CHECK_EQUAL("data", frames[2]->get_dataset_name());
+    BOOST_REQUIRE_NO_THROW(fw.writeFrame(*frames[2]));
+    // and yet another frame to "stuff"
+    BOOST_CHECK_NO_THROW(frames[2]->set_dataset_name("stuff"));
+    BOOST_REQUIRE_NO_THROW(fw.writeFrame(*frames[2]));
+
+    BOOST_REQUIRE_NO_THROW(fw.closeFile());
+}
+
+BOOST_AUTO_TEST_CASE( FileWriterInvalidDatasetTest )
+{
+    BOOST_REQUIRE_NO_THROW(fw.createFile("/tmp/blah_throw.h5"));
+    BOOST_REQUIRE_NO_THROW(fw.createDataset(dset_def));
+    BOOST_REQUIRE_NO_THROW(frame->set_dataset_name("non_existing_dataset_name"));
+
+    BOOST_CHECK_THROW(fw.writeFrame(*frame), std::runtime_error);
     BOOST_REQUIRE_NO_THROW(fw.closeFile());
 }
 

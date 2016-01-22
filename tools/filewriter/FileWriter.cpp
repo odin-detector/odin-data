@@ -14,20 +14,14 @@ FileWriter::FileWriter() {
     this->log_->setLevel(Level::getTrace());
     LOG4CXX_TRACE(log_, "FileWriter constructor.");
 
-    this->hdf5_.fileid = 0;
-    this->hdf5_.datasetid = 0;
-
-    this->datsetDef_.name = "";
-    this->datsetDef_.num_frames = 0;
-    this->datsetDef_.pixel = pixel_raw_16bit;
-    this->datsetDef_.frame_dimensions = std::vector<hsize_t>(2);
+    this->hdf5_fileid_ = 0;
 }
 
 FileWriter::~FileWriter() {
-    if (this->hdf5_.fileid != 0) {
+    if (this->hdf5_fileid_ != 0) {
         LOG4CXX_TRACE(log_, "destructor closing file");
-        H5Fclose(this->hdf5_.fileid);
-        this->hdf5_.fileid = 0;
+        H5Fclose(this->hdf5_fileid_);
+        this->hdf5_fileid_ = 0;
     }
 }
 
@@ -54,8 +48,8 @@ void FileWriter::createFile(std::string filename, size_t chunk_align) {
     /* Creating the file with SWMR write access*/
     LOG4CXX_INFO(log_, "Creating file: " << filename);
     unsigned int flags = H5F_ACC_TRUNC;
-    this->hdf5_.fileid = H5Fcreate(filename.c_str(), flags, fcpl, fapl);
-    assert(this->hdf5_.fileid >= 0);
+    this->hdf5_fileid_ = H5Fcreate(filename.c_str(), flags, fcpl, fapl);
+    assert(this->hdf5_fileid_ >= 0);
 
     /* Close file access property list */
     assert(H5Pclose(fapl) >= 0);
@@ -63,22 +57,34 @@ void FileWriter::createFile(std::string filename, size_t chunk_align) {
 
 void FileWriter::writeFrame(const Frame& frame) {
     herr_t status;
+
+    // Check if the frame destination dataset has been created
+    if (this->hdf5_datasets_.find(frame.get_dataset_name()) == this->hdf5_datasets_.end())
+    {
+        // no dataset of this name exist
+        LOG4CXX_ERROR(log_, "Attempted to write frame to invalid dataset: \"" << frame.get_dataset_name() << "\"\n");
+        throw std::runtime_error("Attempted to write frame to invalid dataset");
+    }
+
+    HDF5Dataset_t& dset = this->hdf5_datasets_.at(frame.get_dataset_name());
+
     hsize_t frame_offset = frame.get_frame_number();
-    if (frame_offset+1 > this->hdf5_.dataset_dimensions[0]) {
+    LOG4CXX_DEBUG(log_, "Writing frame offset=" << frame_offset << " dset=" << frame.get_dataset_name());
+    if (frame_offset+1 > dset.dataset_dimensions[0]) {
         // Extend the dataset
         LOG4CXX_DEBUG(log_, "Extending dataset_dimensions[0] = " << frame_offset+1);
-        this->hdf5_.dataset_dimensions[0] = frame_offset+1;
-        status = H5Dset_extent( this->hdf5_.datasetid,
-                                &this->hdf5_.dataset_dimensions.front());
+        dset.dataset_dimensions[0] = frame_offset+1;
+        status = H5Dset_extent( dset.datasetid,
+                                &dset.dataset_dimensions.front());
         assert(status >= 0);
     }
 
     // Set the offset
-    std::vector<hsize_t>offset(this->hdf5_.dataset_dimensions.size());
+    std::vector<hsize_t>offset(dset.dataset_dimensions.size());
     offset[0] = frame.get_frame_number();
 
     uint32_t filter_mask = 0x0;
-    status = H5DOwrite_chunk(this->hdf5_.datasetid, H5P_DEFAULT,
+    status = H5DOwrite_chunk(dset.datasetid, H5P_DEFAULT,
                              filter_mask, &offset.front(),
                              frame.get_data_size(), frame.get_data());
     assert(status >= 0);
@@ -125,15 +131,14 @@ void FileWriter::createDataset(
 
     /* Create dataset  */
     LOG4CXX_DEBUG(log_, "Creating dataset: " << definition.name);
-    this->hdf5_.datasetid = H5Dcreate2(this->hdf5_.fileid, definition.name.c_str(),
+    FileWriter::HDF5Dataset_t dset;
+    dset.datasetid = H5Dcreate2(this->hdf5_fileid_, definition.name.c_str(),
                                         dtype, dataspace,
                                         H5P_DEFAULT, prop, dapl);
-    assert(this->hdf5_.datasetid >= 0);
-
-    // Store our dataset definition
-    this->datsetDef_ = definition;
-    this->hdf5_.dataset_dimensions = dset_dims;
-    this->hdf5_.dataset_offsets = std::vector<hsize_t>(3);
+    assert(dset.datasetid >= 0);
+    dset.dataset_dimensions = dset_dims;
+    dset.dataset_offsets = std::vector<hsize_t>(3);
+    this->hdf5_datasets_[definition.name] = dset;
 
     LOG4CXX_DEBUG(log_, "Closing intermediate open HDF objects");
     assert( H5Pclose(prop) >= 0);
@@ -144,9 +149,9 @@ void FileWriter::createDataset(
 
 void FileWriter::closeFile() {
     LOG4CXX_TRACE(log_, "FileWriter closeFile");
-    if (this->hdf5_.fileid >= 0) {
-        assert(H5Fclose(this->hdf5_.fileid) >= 0);
-        this->hdf5_.fileid = 0;
+    if (this->hdf5_fileid_ >= 0) {
+        assert(H5Fclose(this->hdf5_fileid_) >= 0);
+        this->hdf5_fileid_ = 0;
     }
 }
 
