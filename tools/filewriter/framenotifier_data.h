@@ -100,6 +100,10 @@ public:
     const dimensions_t& get_dimensions() const {return this->dimensions;};
 
     unsigned long long get_frame_number() const;
+
+    const std::string& get_dataset_name() const { return dataset_name; }
+    void set_dataset_name(const std::string& dataset) { this->dataset_name = dataset; }
+
 private:
     Frame();
     Frame(const Frame& src); // Don't try to copy one of these!
@@ -110,6 +114,7 @@ private:
     dimensions_t dimensions;
     FrameHeader *frame_header;
     void *data;
+    std::string dataset_name;
 };
 
 class SharedMemParser
@@ -118,15 +123,18 @@ public:
     SharedMemParser(const std::string & shared_mem_name);
     ~SharedMemParser();
     void get_frame(Frame& dest_frame, unsigned int buffer_id);
+    void get_reset_frame(Frame& dest_frame, unsigned int buffer_id);
     size_t get_buffer_size();
+
+    const void* get_buffer_address(unsigned int bufferid) const;
+    const void* get_frame_header_address(unsigned int bufferid) const;
+    const void* get_frame_data_address(unsigned int bufferid) const;
+    const void* get_reset_data_address(unsigned int bufferid) const;
 
 private:
     SharedMemParser();
     SharedMemParser(const SharedMemParser& src); // Don't copy one of these!
 
-    const void* get_buffer_address(unsigned int bufferid) const;
-    const void* get_frame_header_address(unsigned int bufferid) const;
-    const void* get_frame_data_address(unsigned int bufferid) const;
 
     log4cxx::LoggerPtr logger;
     boost::interprocess::shared_memory_object shared_mem;
@@ -134,5 +142,14 @@ private:
     Header*                                   shared_mem_header;
 };
 
+static std::string FrameHeaderToString(const FrameHeader* frame_header) {
+    std::ostringstream oss;
+    oss << "FrameHeader: " << frame_header << "\n"
+        << "    number  = " << frame_header->frame_number << "\n"
+        << "    state   = " << frame_header->frame_state << "\n"
+        << "    time    = " << frame_header->frame_start_time.tv_sec << "\n"
+        << "    packets = " << frame_header->packets_received;
+    return oss.str();
+}
 
 #endif /* TOOLS_CLIENT_FRAMENOTIFIER_DATA_H_ */

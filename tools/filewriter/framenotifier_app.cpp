@@ -169,7 +169,7 @@ int main(int argc, char** argv)
 
     // Assuming this is a P2M, our image dimensions are:
     size_t bytes_per_pixel = 2;
-    dimensions_t p2m_dims(2); p2m_dims[0] = 1484; p2m_dims[1] = 1404;
+    dimensions_t p2m_dims(2); p2m_dims[0] = 1484; p2m_dims[1] = 1408;
 
     zmq::context_t zmq_context; // Global ZMQ context
 
@@ -199,7 +199,14 @@ int main(int argc, char** argv)
         dset_def.pixel = FileWriter::pixel_raw_16bit;
         dset_def.num_frames = vm["frames"].as<unsigned int>();
         hdfwr.createDataset(dset_def);
+
+        dset_def.name = "reset";
+        hdfwr.createDataset(dset_def);
     }
+
+    // Debug info
+    LOG4CXX_DEBUG(logger, "data_type_size   = " << data_type_size);
+    LOG4CXX_DEBUG(logger, "total_frame_size = " << total_frame_size);
 
     // The polling loop. Polls on all elements in poll_item
     // Stop the loop by setting keep_running=false
@@ -241,11 +248,21 @@ int main(int argc, char** argv)
             LOG4CXX_DEBUG(logger, "Parsed json: " << buffer.GetString());
 
             // Copy the data out into a Frame object
-            LOG4CXX_DEBUG(logger, "Creating Frame object");
+            unsigned int buffer_id = msg_doc["params"]["buffer_id"].GetInt64();
+            LOG4CXX_DEBUG(logger, "Creating Reset Frame object. buffer=" << buffer_id
+                                << " buffer addr: " << smp.get_buffer_address(buffer_id));
+            LOG4CXX_DEBUG(logger, "  Header addr: " << smp.get_frame_header_address(buffer_id)
+                                << "  Data addr: " << smp.get_reset_data_address(buffer_id));
+            LOG4CXX_DEBUG(logger, FrameHeaderToString(static_cast<const FrameHeader*>(smp.get_frame_header_address(buffer_id))));
+            Frame reset_frame(bytes_per_pixel, p2m_dims);
+            reset_frame.set_dataset_name("reset");
+            smp.get_reset_frame(reset_frame, buffer_id);
+
+            LOG4CXX_DEBUG(logger, "Creating Data Frame object. buffer=" << buffer_id);
+            LOG4CXX_DEBUG(logger,"  Data addr: " << smp.get_frame_data_address(buffer_id));
             Frame frame(bytes_per_pixel, p2m_dims);
-            LOG4CXX_DEBUG(logger, "Copying buffer ID: " << msg_doc["params"]["buffer_id"].GetInt64());
-            smp.get_frame(frame, msg_doc["params"]["buffer_id"].GetInt64());
-            LOG4CXX_DEBUG(logger, "Frame completeness: " << frame.get_header()->packets_received << " packets received");
+            frame.set_dataset_name("data");
+            smp.get_frame(frame, buffer_id);
 
             // Clear the json string buffer and reset the writer so we can re-use them
             // after modifying the Document DOM object
@@ -264,17 +281,18 @@ int main(int argc, char** argv)
 
             // Encode the JSON Document DOM object using the writer
             msg_doc.Accept(writer);
-            LOG4CXX_DEBUG(logger, "Changing msg_val: " << msg_doc["msg_val"].GetString());
             string release_msg(buffer.GetString()); // Get a copy of the JSON string
-            LOG4CXX_DEBUG(logger, "New json: " << release_msg);
+            LOG4CXX_DEBUG(logger, "Returning json release msg: " << release_msg);
 
-            LOG4CXX_DEBUG(logger, "Sending release response");
             // Send the new JSON object (string) back to the frameReceiver on the "release" ZMQ socket
             size_t nbytes = zsocket_release.send(release_msg.c_str(), release_msg.size() + 1);
-            LOG4CXX_DEBUG(logger, "Sent " << nbytes << " bytes");
+            LOG4CXX_DEBUG(logger, "  sent: " << nbytes << " bytes");
 
             // Write the frame to disk
-            if (write_file) hdfwr.writeFrame(frame);
+            if (write_file) {
+                hdfwr.writeFrame(frame);
+                hdfwr.writeFrame(reset_frame);
+            }
 
         } else
         {
