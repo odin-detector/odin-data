@@ -34,10 +34,11 @@ framenotifier_data.h
 //    0x1FE620              [Subframe 1][UDP packet 0]                    subframe size: (8192 x 255) + 512 = 2089472 bytes
 //                          ...
 //             ]
-//    0x3FC820 [[Reset Frame][FrameHeader size=1056 bytes]]
+//    0x3FC820 [[Reset Frame][[Subframe 0][UDP packet 0 size=8192 bytes]]
+//                          ...
 //
 //    In terms of pixels, the python emulator creates a P2M image of:
-//        width x  = 2 x 22 x 32 = 1404 pixels
+//        width x  = 2 x 22 x 32 = 1408 pixels
 //        height y = 2 x 106 x 7 = 1484 pixels
 //
 
