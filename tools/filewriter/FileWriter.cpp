@@ -6,7 +6,7 @@
 
 #include "FileWriter.h"
 #include <hdf5_hl.h>
-#include "framenotifier_data.h"
+#include "Frame.h"
 
 
 FileWriter::FileWriter() {

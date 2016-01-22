@@ -18,7 +18,7 @@ using namespace log4cxx;
 using namespace log4cxx::xml;
 
 #include "FileWriter.h"
-#include "framenotifier_data.h"
+#include "Frame.h"
 
 class GlobalConfig {
 public:

@@ -32,7 +32,7 @@ using namespace rapidjson;
 
 #include "zmq/zmq.hpp"
 
-#include "framenotifier_data.h"
+#include "Frame.h"
 #include "FileWriter.h"
 
 void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& logger)

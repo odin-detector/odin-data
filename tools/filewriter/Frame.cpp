@@ -9,7 +9,7 @@ framenotifier_data.cpp
 #include <cstdlib> // malloc
 #include <numeric> // accumulate
 
-#include "framenotifier_data.h"
+#include "Frame.h"
 
 using namespace boost::interprocess;
 
