@@ -204,6 +204,10 @@ int main(int argc, char** argv)
         hdfwr.createDataset(dset_def);
     }
 
+    // Debug info
+    LOG4CXX_DEBUG(logger, "data_type_size   = " << data_type_size);
+    LOG4CXX_DEBUG(logger, "total_frame_size = " << total_frame_size);
+
     // The polling loop. Polls on all elements in poll_item
     // Stop the loop by setting keep_running=false
     // Loop automatically ends if notification_count > user option "frames"

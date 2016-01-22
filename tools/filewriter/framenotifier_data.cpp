@@ -99,13 +99,13 @@ SharedMemParser::~SharedMemParser()
 void SharedMemParser::get_frame(Frame& dest_frame, unsigned int buffer_id)
 {
     dest_frame.copy_header(this->get_frame_header_address(buffer_id));
-    dest_frame.copy_data(this->get_frame_data_address(buffer_id),raw_frame_data_size);
+    dest_frame.copy_data(this->get_frame_data_address(buffer_id),data_type_size);
 }
 
 void SharedMemParser::get_reset_frame(Frame& dest_frame, unsigned int buffer_id)
 {
-    dest_frame.copy_header(this->get_reset_header_address(buffer_id));
-    dest_frame.copy_data(this->get_reset_data_address(buffer_id),raw_frame_data_size);
+    dest_frame.copy_header(this->get_frame_header_address(buffer_id));
+    dest_frame.copy_data(this->get_reset_data_address(buffer_id),data_type_size);
 }
 
 size_t SharedMemParser::get_buffer_size()

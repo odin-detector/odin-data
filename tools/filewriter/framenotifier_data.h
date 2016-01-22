@@ -41,7 +41,6 @@ framenotifier_data.h
 //        height y = 2 x 106 x 7 = 1484 pixels
 //
 
-static const size_t udp_packet_header_size = 22;
 static const size_t primary_packet_size = 8192;
 static const size_t num_primary_packets = 255;
 static const size_t tail_packet_size    = 512;
@@ -64,11 +63,6 @@ static const size_t data_type_size      = subframe_size * num_subframes;
 static const size_t total_frame_size    = (data_type_size * num_data_types) + sizeof(FrameHeader);
 static const size_t num_frame_packets   = num_subframes * num_data_types *
         (num_primary_packets + num_tail_packets);
-
-// Raw image frame data sizes - not including any form of headers
-static const size_t raw_frame_subframe_size = (num_primary_packets * (primary_packet_size - udp_packet_header_size))
-                                                + (num_tail_packets * (tail_packet_size - udp_packet_header_size));
-static const size_t raw_frame_data_size = raw_frame_subframe_size * num_subframes;
 
 // Shared Buffer (IPC) Header
 typedef struct
