@@ -1,7 +1,9 @@
 set(TEST_CONFIGS
   log4cxx.config
   fr_test.config
+  fr_test_osx.config
   fp_test.config
+  fp_test_osx.config
 )
 
 foreach(test_config ${TEST_CONFIGS})
