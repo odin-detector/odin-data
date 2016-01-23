@@ -107,6 +107,14 @@ public:
     const std::string& get_dataset_name() const { return dataset_name; }
     void set_dataset_name(const std::string& dataset) { this->dataset_name = dataset; }
 
+    // P2M specific...
+    const dimensions_t& get_subframe_dimensions() const {return this->subframe_dimensions;};
+    void set_subframe_dimensions(const dimensions_t& dims) {this->subframe_dimensions = dims;};
+    size_t get_subframe_size() const {return get_data_size(get_subframe_dimensions(),2);};
+    size_t get_subframe_count() const {return num_subframes;};
+    const void * get_subframe_data(size_t subframe_no) const
+    	{ return static_cast<char*>(this->data) + (subframe_no * this->get_subframe_size());};
+    // end-of P2M...
 private:
     Frame();
     Frame(const Frame& src); // Don't try to copy one of these!
@@ -115,6 +123,7 @@ private:
     size_t buffer_allocated_bytes; // Number of bytes malloc'd
     const size_t bytes_per_pixel;
     dimensions_t dimensions;
+    dimensions_t subframe_dimensions;
     FrameHeader *frame_header;
     void *data;
     std::string dataset_name;

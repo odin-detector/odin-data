@@ -16,6 +16,7 @@ using namespace boost::interprocess;
 Frame::Frame(size_t bytes_per_pixel, const dimensions_t& dimensions)
 : bytes_per_pixel(bytes_per_pixel),
   dimensions(dimensions),
+  subframe_dimensions(dimensions),
   logger(log4cxx::Logger::getLogger("Frame")),
   dataset_name("data")
 {
