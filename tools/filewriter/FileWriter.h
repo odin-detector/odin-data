@@ -25,6 +25,7 @@ public:
         FileWriter::PixelType pixel;
         size_t num_frames;
         std::vector<long long unsigned int> frame_dimensions;
+        std::vector<long long unsigned int> chunks;
     };
 
     struct HDF5Dataset_t {
@@ -39,12 +40,15 @@ public:
     void createFile(std::string filename, size_t chunk_align=1024 * 1024);
     void createDataset(const FileWriter::DatasetDefinition & definition);
     void writeFrame(const Frame& frame);
+    void writeSubFrames(const Frame& frame);
     void closeFile();
 
 private:
     FileWriter(const FileWriter& src); // prevent copying one of these
     LoggerPtr log_;
     hid_t pixelToHdfType(FileWriter::PixelType pixel) const;
+    HDF5Dataset_t& get_hdf5_dataset(const std::string dset_name);
+    void extend_dataset(FileWriter::HDF5Dataset_t& dset, size_t frame_no) const;
 
     hid_t hdf5_fileid_;
     std::map<std::string, FileWriter::HDF5Dataset_t> hdf5_datasets_;

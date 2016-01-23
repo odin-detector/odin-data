@@ -57,27 +57,13 @@ void FileWriter::createFile(std::string filename, size_t chunk_align) {
 
 void FileWriter::writeFrame(const Frame& frame) {
     herr_t status;
+    hsize_t frame_no = frame.get_frame_number();
 
-    // Check if the frame destination dataset has been created
-    if (this->hdf5_datasets_.find(frame.get_dataset_name()) == this->hdf5_datasets_.end())
-    {
-        // no dataset of this name exist
-        LOG4CXX_ERROR(log_, "Attempted to write frame to invalid dataset: \"" << frame.get_dataset_name() << "\"\n");
-        throw std::runtime_error("Attempted to write frame to invalid dataset");
-    }
+    HDF5Dataset_t& dset = this->get_hdf5_dataset(frame.get_dataset_name());
 
-    HDF5Dataset_t& dset = this->hdf5_datasets_.at(frame.get_dataset_name());
+    this->extend_dataset(dset, frame_no);
 
-    hsize_t frame_offset = frame.get_frame_number();
-    LOG4CXX_DEBUG(log_, "Writing frame offset=" << frame_offset << " dset=" << frame.get_dataset_name());
-    if (frame_offset+1 > dset.dataset_dimensions[0]) {
-        // Extend the dataset
-        LOG4CXX_DEBUG(log_, "Extending dataset_dimensions[0] = " << frame_offset+1);
-        dset.dataset_dimensions[0] = frame_offset+1;
-        status = H5Dset_extent( dset.datasetid,
-                                &dset.dataset_dimensions.front());
-        assert(status >= 0);
-    }
+    LOG4CXX_DEBUG(log_, "Writing frame offset=" << frame_no << " dset=" << frame.get_dataset_name());
 
     // Set the offset
     std::vector<hsize_t>offset(dset.dataset_dimensions.size());
@@ -88,6 +74,40 @@ void FileWriter::writeFrame(const Frame& frame) {
                              filter_mask, &offset.front(),
                              frame.get_data_size(), frame.get_data());
     assert(status >= 0);
+}
+
+/** Write horizontal subframes direct to dataset chunk
+ *
+ * Requirement: the chunking must have been configured exactly to the subframe size
+ * and dimensions at dataset creation time.
+ */
+void FileWriter::writeSubFrames(const Frame& frame) {
+    herr_t status;
+    uint32_t filter_mask = 0x0;
+    hsize_t frame_no = frame.get_frame_number();
+
+    HDF5Dataset_t& dset = this->get_hdf5_dataset(frame.get_dataset_name());
+
+    this->extend_dataset(dset, frame_no);
+
+    LOG4CXX_DEBUG(log_, "Writing frame=" << frame_no
+    					<< " dset=" << frame.get_dataset_name());
+
+    // Set the offset
+    std::vector<hsize_t>offset(dset.dataset_dimensions.size());
+    offset[0] = frame.get_frame_number();
+
+    for (int i = 0; i < frame.get_subframe_count(); i++)
+    {
+    	offset[2] = i * frame.get_subframe_dimensions()[1]; // For P2M: subframe is 704 pixels
+        LOG4CXX_DEBUG(log_, "    offset=" << offset[0]
+        					<< "," << offset[1] << "," << offset[2]);
+
+        status = H5DOwrite_chunk(dset.datasetid, H5P_DEFAULT,
+                                 filter_mask, &offset.front(),
+                                 frame.get_subframe_size(), frame.get_subframe_data(i));
+        assert(status >= 0);
+    }
 }
 
 void FileWriter::createDataset(
@@ -105,8 +125,13 @@ void FileWriter::createDataset(
     std::vector<hsize_t> dset_dims(1); dset_dims[0]=1;
     dset_dims.insert(dset_dims.end(), frame_dims.begin(), frame_dims.end());
 
-    // A chunk is a single full frame so far
-    std::vector<hsize_t> chunk_dims = dset_dims;
+    // If chunking has not been defined it defaults to a single full frame
+    std::vector<hsize_t> chunk_dims;
+    if (definition.chunks.size() != dset_dims.size()) {
+    	chunk_dims = dset_dims;
+    } else {
+    	chunk_dims = definition.chunks;
+    }
 
     std::vector<hsize_t> max_dims = dset_dims;
     max_dims[0] = H5S_UNLIMITED;
@@ -169,4 +194,27 @@ hid_t FileWriter::pixelToHdfType(FileWriter::PixelType pixel) const {
         dtype = H5T_NATIVE_UINT16;
     }
     return dtype;
+}
+
+FileWriter::HDF5Dataset_t& FileWriter::get_hdf5_dataset(const std::string dset_name) {
+    // Check if the frame destination dataset has been created
+    if (this->hdf5_datasets_.find(dset_name) == this->hdf5_datasets_.end())
+    {
+        // no dataset of this name exist
+        LOG4CXX_ERROR(log_, "Attempted to access non-existent dataset: \"" << dset_name << "\"\n");
+        throw std::runtime_error("Attempted to access non-existent dataset");
+    }
+    return this->hdf5_datasets_.at(dset_name);
+}
+
+void FileWriter::extend_dataset(HDF5Dataset_t& dset, size_t frame_no) const {
+	herr_t status;
+    if (frame_no+1 > dset.dataset_dimensions[0]) {
+        // Extend the dataset
+        LOG4CXX_DEBUG(log_, "Extending dataset_dimensions[0] = " << frame_no+1);
+        dset.dataset_dimensions[0] = frame_no+1;
+        status = H5Dset_extent( dset.datasetid,
+                                &dset.dataset_dimensions.front());
+        assert(status >= 0);
+    }
 }

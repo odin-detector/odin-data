@@ -182,6 +182,25 @@ BOOST_AUTO_TEST_CASE( FileWriterMultipleReverseTest )
     BOOST_REQUIRE_NO_THROW(fw.closeFile());
 }
 
+BOOST_AUTO_TEST_CASE( FileWriterSubframesTest )
+{
+	dset_def.chunks = dimensions_t(3);
+	dset_def.chunks[0] = 1; dset_def.chunks[1] = 3; dset_def.chunks[2] = 2;
+	dimensions_t subdims(2); subdims[0] = 3; subdims[1] = 2;
+
+    BOOST_REQUIRE_NO_THROW(fw.createFile("/tmp/blah_subframes.h5"));
+    BOOST_REQUIRE_NO_THROW(fw.createDataset(dset_def));
+
+    std::vector< boost::shared_ptr<Frame> >::iterator it;
+    for (it = frames.begin(); it != frames.end(); ++it){
+    	(*it)->set_subframe_dimensions(subdims);
+        BOOST_TEST_MESSAGE("Writing frame: " <<  (*it)->get_frame_number());
+        BOOST_REQUIRE_NO_THROW(fw.writeSubFrames(*(*it)));
+    }
+    BOOST_REQUIRE_NO_THROW(fw.closeFile());
+
+}
+
 
 BOOST_AUTO_TEST_SUITE_END(); //FileWriterUnitTest
 
