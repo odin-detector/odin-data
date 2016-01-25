@@ -94,7 +94,7 @@ void FileWriter::writeSubFrames(const Frame& frame) {
     					<< " dset=" << frame.get_dataset_name());
 
     // Set the offset
-    std::vector<hsize_t>offset(dset.dataset_dimensions.size());
+    std::vector<hsize_t>offset(dset.dataset_dimensions.size(), 0);
     offset[0] = frame.get_frame_number();
 
     for (int i = 0; i < frame.get_subframe_count(); i++)
@@ -122,11 +122,11 @@ void FileWriter::createDataset(
     std::vector<hsize_t> frame_dims = definition.frame_dimensions;
 
     // Dataset dims: {1, <image size Y>, <image size X>}
-    std::vector<hsize_t> dset_dims(1); dset_dims[0]=1;
+    std::vector<hsize_t> dset_dims(1,1);
     dset_dims.insert(dset_dims.end(), frame_dims.begin(), frame_dims.end());
 
     // If chunking has not been defined it defaults to a single full frame
-    std::vector<hsize_t> chunk_dims;
+    std::vector<hsize_t> chunk_dims(1, 1);
     if (definition.chunks.size() != dset_dims.size()) {
     	chunk_dims = dset_dims;
     } else {
