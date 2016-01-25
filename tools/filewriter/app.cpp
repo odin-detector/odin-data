@@ -170,6 +170,7 @@ int main(int argc, char** argv)
     // Assuming this is a P2M, our image dimensions are:
     size_t bytes_per_pixel = 2;
     dimensions_t p2m_dims(2); p2m_dims[0] = 1484; p2m_dims[1] = 1408;
+    dimensions_t p2m_subframe_dims = p2m_dims; p2m_subframe_dims[1] = p2m_subframe_dims[1] >> 1;
 
     zmq::context_t zmq_context; // Global ZMQ context
 
@@ -196,6 +197,9 @@ int main(int argc, char** argv)
         FileWriter::DatasetDefinition dset_def;
         dset_def.name = "data";
         dset_def.frame_dimensions = p2m_dims;
+        dset_def.chunks = dimensions_t(3,1);
+        dset_def.chunks[1] = p2m_subframe_dims[0]; // Chunk the frame in half (horizontal split) so we can write subframes
+        dset_def.chunks[2] = p2m_subframe_dims[1];
         dset_def.pixel = FileWriter::pixel_raw_16bit;
         dset_def.num_frames = vm["frames"].as<unsigned int>();
         hdfwr.createDataset(dset_def);
@@ -256,12 +260,14 @@ int main(int argc, char** argv)
             LOG4CXX_DEBUG(logger, FrameHeaderToString(static_cast<const FrameHeader*>(smp.get_frame_header_address(buffer_id))));
             Frame reset_frame(bytes_per_pixel, p2m_dims);
             reset_frame.set_dataset_name("reset");
+            reset_frame.set_subframe_dimensions(p2m_subframe_dims);
             smp.get_reset_frame(reset_frame, buffer_id);
 
             LOG4CXX_DEBUG(logger, "Creating Data Frame object. buffer=" << buffer_id);
             LOG4CXX_DEBUG(logger,"  Data addr: " << smp.get_frame_data_address(buffer_id));
             Frame frame(bytes_per_pixel, p2m_dims);
             frame.set_dataset_name("data");
+            frame.set_subframe_dimensions(p2m_subframe_dims);
             smp.get_frame(frame, buffer_id);
 
             // Clear the json string buffer and reset the writer so we can re-use them
@@ -290,8 +296,10 @@ int main(int argc, char** argv)
 
             // Write the frame to disk
             if (write_file) {
-                hdfwr.writeFrame(frame);
-                hdfwr.writeFrame(reset_frame);
+                //hdfwr.writeFrame(frame);
+                hdfwr.writeSubFrames(frame);
+                //hdfwr.writeFrame(reset_frame);
+                hdfwr.writeSubFrames(reset_frame);
             }
 
         } else
