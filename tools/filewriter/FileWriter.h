@@ -19,7 +19,7 @@ class Frame;
 
 class FileWriter {
 public:
-    enum PixelType { pixel_raw_16bit, pixel_float32 };
+    enum PixelType { pixel_raw_8bit, pixel_raw_16bit, pixel_float32 };
     struct DatasetDefinition {
         std::string name;
         FileWriter::PixelType pixel;

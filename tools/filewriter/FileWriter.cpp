@@ -190,6 +190,9 @@ hid_t FileWriter::pixelToHdfType(FileWriter::PixelType pixel) const {
     case pixel_raw_16bit:
         dtype = H5T_NATIVE_UINT16;
         break;
+    case pixel_raw_8bit:
+        dtype = H5T_NATIVE_UINT8;
+        break;
     default:
         dtype = H5T_NATIVE_UINT16;
     }
