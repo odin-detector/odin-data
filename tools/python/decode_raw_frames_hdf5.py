@@ -6,7 +6,7 @@ except:
 
 import numpy as np
 import h5py
-import sys
+import argparse
 
 def decode_dataset_8bit( arr_in, bit_mask, bit_shift ):
     arr_out = np.bitwise_and( arr_in, bit_mask)
@@ -15,7 +15,14 @@ def decode_dataset_8bit( arr_in, bit_mask, bit_shift ):
     return arr_out
     
 def main():
-    fname = sys.argv[1]
+    parser = argparse.ArgumentParser(description="""Decode fine/coarse ADC and gain bits from Percival data.
+    
+    The resulting datasets are stored in the input file.
+    """)
+    parser.add_argument("file", help="HDF5 file with Percival datasets to decode")
+    args = parser.parse_args()
+    
+    fname = args.file
     print fname
 
     with h5py.File(fname, 'r+') as f:
