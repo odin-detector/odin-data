@@ -26,3 +26,12 @@ target_link_libraries(fileWriterTest
         ${LOG4CXX_LIBRARIES}
         ${ZEROMQ_LIBRARIES}
         ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES}) 
+
+if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
+  # librt required for timing functions
+  find_library(REALTIME_LIBRARY 
+	  	NAMES rt)
+  target_link_libraries( filewriter ${REALTIME_LIBRARY} )
+  target_link_libraries( fileWriterTest ${REALTIME_LIBRARY} )
+endif()
+        

@@ -11,7 +11,7 @@ framenotifier_data.cpp
 
 #include "Frame.h"
 
-using namespace boost::interprocess;
+//using namespace boost::interprocess;
 
 Frame::Frame(size_t bytes_per_pixel, const dimensions_t& dimensions)
 : bytes_per_pixel(bytes_per_pixel),
@@ -83,7 +83,7 @@ SharedMemParser::SharedMemParser(const std::string& shared_mem_name)
     LOG4CXX_DEBUG(logger, "Registering shared memory region \"" << shared_mem_name << "\"");
 
     // Map the whole shared memory region into this process
-    this->shared_mem_region = mapped_region(this->shared_mem, boost::interprocess::read_write);
+    this->shared_mem_region = boost::interprocess::mapped_region(this->shared_mem, boost::interprocess::read_write);
 
     // Copy the buffer manager header - it's quite small
     memcpy(this->shared_mem_header, reinterpret_cast<const void*>(shared_mem_region.get_address()), sizeof(Header));
