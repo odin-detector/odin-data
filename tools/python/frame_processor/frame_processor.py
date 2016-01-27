@@ -148,11 +148,17 @@ class FrameProcessor(object):
                       (frame_number, buffer_id, self.frame_decoder.header.frame_number, 
                        self.frame_decoder.header.frame_state, self.frame_decoder.header.frame_start_time.isoformat(),
                        self.frame_decoder.header.packets_received))
-        self.logger.debug("Frame info : " + ' '.join("0x{:02x}".format(val) for val in self.frame_decoder.header.frame_info))
+        self.logger.debug("Frame info :\n      " + 
+                          ' '.join("0x{:02x}".format(val) for val in self.frame_decoder.header.frame_info[:21]) + '\n      ' + 
+                          ' '.join("0x{:02x}".format(val) for val in self.frame_decoder.header.frame_info[21:]))
+        
+        packetStateStr = ""
+
+        self.logger.debug("Packet state : \n" + self.frame_decoder.packet_state_str())
         
         self.frame_decoder.decode_data(buffer_id)
-        self.logger.debug("Frame start: " + ' '.join("0x{:04x}".format(val) for val in self.frame_decoder.data.pixels[:32]))
-        self.logger.debug("Frame end  : " + ' '.join("0x{:04x}".format(val) for val in self.frame_decoder.data.pixels[-32:]))
+        self.logger.debug("Frame start: " + ' '.join("0x{:04x}".format(val) for val in self.frame_decoder.data.pixels[:16]))
+        self.logger.debug("Frame end  : " + ' '.join("0x{:04x}".format(val) for val in self.frame_decoder.data.pixels[-16:]))
         
 if __name__ == "__main__":
         

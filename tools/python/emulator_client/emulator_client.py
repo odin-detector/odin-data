@@ -221,8 +221,10 @@ class EmulatorClient(object):
                 self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.MAC_5_ADDR, 6, macSourceStr)
                 time.sleep(theDelay)
 
+            print "\nWaiting 3 seconds before closing TCP connection.."
+            time.sleep(3.0)
             print " Done!"
-            
+
     def tokeniser(self, string):
         """ Remove white spaces and Split (IP/MAC address) string into list """
         string = string.replace(' ', '')
