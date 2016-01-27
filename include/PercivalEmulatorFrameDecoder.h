@@ -13,24 +13,35 @@
 #include <stdint.h>
 #include <time.h>
 
+#define P2M_EMULATOR_NEW_FIRMWARE 1
+
 namespace FrameReceiver
 {
     class PercivalEmulatorFrameDecoder : public FrameDecoder
     {
     public:
 
-//        typedef struct
-//        {
-//            uint8_t  packet_type;
-//            uint8_t  subframe_number;
-//            uint32_t frame_number;
-//            uint16_t packet_number;
-//            uint8_t  info[14];
-//        } PacketHeader;
+#ifdef P2M_EMULATOR_NEW_FIRMWARE
+        static const size_t packet_header_size = 54;
+        static const size_t pixel_data_size_offset = 0;
+        static const size_t packet_type_offset = 0; // 2;
+        static const size_t subframe_number_offset = 1; // 3;
+        static const size_t frame_number_offset = 2; // 4;
+        static const size_t packet_number_offset = 6; //8;
+        static const size_t packet_offset_offset = 10;
+        static const size_t frame_info_offset = 8; //;
+#else
+        static const size_t packet_header_size = 22;
+        static const size_t packet_type_offset = 0;
+        static const size_t subframe_number_offset = 1;
+        static const size_t frame_number_offset = 2;
+        static const size_t packet_number_offset = 6;
+        static const size_t frame_info_offset = 8;
+#endif
 
         typedef struct
         {
-            uint8_t raw[22];
+            uint8_t raw[packet_header_size];
         } PacketHeader;
 
         typedef enum
@@ -39,6 +50,15 @@ namespace FrameReceiver
             PacketTypeReset  = 1,
         } PacketType;
 
+#ifdef P2M_EMULATOR_NEW_FIRMWARE
+        static const size_t primary_packet_size = 4928;
+        static const size_t num_primary_packets = 424;
+        static const size_t tail_packet_size    = 0;
+        static const size_t num_tail_packets    = 0;
+        static const size_t num_subframes       = 2;
+        static const size_t num_data_types      = 2;
+        static const size_t frame_info_size     = 42;
+#else
         static const size_t primary_packet_size = 8192;
         static const size_t num_primary_packets = 255;
         static const size_t tail_packet_size    = 512;
@@ -46,6 +66,7 @@ namespace FrameReceiver
         static const size_t num_subframes       = 2;
         static const size_t num_data_types      = 2;
         static const size_t frame_info_size     = 14;
+#endif
 
         typedef struct
         {
@@ -82,10 +103,16 @@ namespace FrameReceiver
 
         void* get_packet_header_buffer(void);
 
+#ifdef P2M_EMULATOR_NEW_FIRMWARE
+        uint16_t get_pixel_data_size(void) const;
+#endif
         uint8_t get_packet_type(void) const;
         uint8_t get_subframe_number(void) const;
-        uint16_t get_packet_number(void) const;
         uint32_t get_frame_number(void) const;
+        uint16_t get_packet_number(void) const;
+#ifdef P2M_EMULATOR_NEW_FIRMWARE
+        uint16_t get_packet_offset(void) const;
+#endif
         uint8_t* get_frame_info(void) const;
 
     private:
