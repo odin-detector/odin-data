@@ -152,9 +152,8 @@ class FrameProcessor(object):
                           ' '.join("0x{:02x}".format(val) for val in self.frame_decoder.header.frame_info[:21]) + '\n      ' + 
                           ' '.join("0x{:02x}".format(val) for val in self.frame_decoder.header.frame_info[21:]))
         
-        packetStateStr = ""
-
-        self.logger.debug("Packet state : \n" + self.frame_decoder.packet_state_str())
+        if self.config.packet_state:
+            self.logger.debug("Packet state : \n" + self.frame_decoder.packet_state_str())
         
         self.frame_decoder.decode_data(buffer_id)
         self.logger.debug("Frame start: " + ' '.join("0x{:04x}".format(val) for val in self.frame_decoder.data.pixels[:16]))
