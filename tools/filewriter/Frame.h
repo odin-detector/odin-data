@@ -41,15 +41,30 @@ framenotifier_data.h
 //        width x  = 2 x 22 x 32 = 1408 pixels
 //        height y = 2 x 106 x 7 = 1484 pixels
 //
+#define P2M_EMULATOR_NEW_FIRMWARE 1
 
 static const size_t udp_packet_header_size = 22;
-static const size_t primary_packet_size = 8192;
-static const size_t num_primary_packets = 255;
-static const size_t tail_packet_size    = 512;
-static const size_t num_tail_packets    = 1;
-static const size_t num_subframes       = 2;
-static const size_t num_data_types      = 2;
-static const size_t frame_info_size     = 14;
+
+#ifdef P2M_EMULATOR_NEW_FIRMWARE
+
+    static const size_t primary_packet_size    = 4928;
+    static const size_t num_primary_packets    = 424;
+    static const size_t tail_packet_size       = 0;
+    static const size_t num_tail_packets       = 0;
+    static const size_t num_subframes          = 2;
+    static const size_t num_data_types         = 2;
+    static const size_t frame_info_size        = 42;
+#else
+    static const size_t primary_packet_size = 8192;
+    static const size_t num_primary_packets = 255;
+    static const size_t tail_packet_size    = 512;
+    static const size_t num_tail_packets    = 1;
+    static const size_t num_subframes       = 2;
+    static const size_t num_data_types      = 2;
+    static const size_t frame_info_size     = 14;
+#endif
+
+
 
 typedef struct
 {
