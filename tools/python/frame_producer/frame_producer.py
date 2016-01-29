@@ -9,6 +9,8 @@ import numpy as np
 import socket
 import time
 
+p2m_emulator_new_firmware = True
+
 class FrameProducerError(Exception):
     
     def __init__(self, msg):
@@ -20,7 +22,24 @@ class FrameProducerError(Exception):
 class FrameProducer(object):
  
     # Define custom class for Percival header
-    HeaderType = np.dtype([('PacketType', '>i1'), ('SubframeNumber', '>i1'), ('FrameNumber', '>i4'), ('PacketNumber', '>i2'), ('Information', '>i1', 14) ])
+    if p2m_emulator_new_firmware:
+
+        #InfoSize =42
+        #HeaderType = np.dtype([('PixelDataSize', '>i2'), ('PacketType', '>i1'), ('SubframeNumber', '>i1'), ('FrameNumber', '>i4'), ('PacketNumber', '>i2'), 
+        #                       ('PacketOffset', '>i2'), ('Information', '>i1', InfoSize)])
+        
+        # Temporary implementation 28-Jan-16: current reduced packet size emulator firmware increases header size to 54 bytes but does not
+        # implement fields correctly - existing fields left in place
+        InfoSize = 46
+        HeaderType = np.dtype([('PacketType', '>i1'), ('SubframeNumber', '>i1'), ('FrameNumber', '>i4'), ('PacketNumber', '>i2'), ('Information', '>i1', InfoSize)])
+        
+        PayloadLength = 4928
+        
+    else:
+        
+        InfoSize = 14
+        HeaderType = np.dtype([('PacketType', '>i1'), ('SubframeNumber', '>i1'), ('FrameNumber', '>i4'), ('PacketNumber', '>i2'), ('Information', '>i1', InfoSize) ])
+        PayloadLength = 8192
 
     def __init__(self):
         
@@ -96,7 +115,6 @@ class FrameProducer(object):
         
     def run(self):
         
-        self.payloadLen     = 8192
         startOfFrame        = 0
         endOfFrame          = 0
         self.bytesPerPixels = 2
@@ -121,7 +139,14 @@ class FrameProducer(object):
         header['SubframeNumber']    = 0   # Subframe Number    (1 Byte)
         header['FrameNumber']       = 0   # Frame Number       (4 Bytes)    
         header['PacketNumber']      = 0   # Packet Number      (2 Bytes)
-        header['Information']       = 0   # Information        (14 Bytes)
+        header['Information']       = 0   # Information        (14/42/46 Bytes)
+        
+        if p2m_emulator_new_firmware:
+            
+            # Not currently filled by emulator firmware
+            pass
+            #header['PixelDataSize'] = self.PayloadLength
+            #header['PacketOffset'] = 0
         
         totalBytesSent = 0
         runStartTime = time.time()
@@ -133,7 +158,7 @@ class FrameProducer(object):
             
             print "frame: ", frame
             info_offset = (frame % 16)*16
-            header['Information'] = [range(info_offset, info_offset+14)]
+            header['Information'] = [range(info_offset, info_offset+self.InfoSize)]
             
             # Construct host & port from lists
             (host, port) = (self.host[frame % index], self.port[frame % index] )
@@ -156,7 +181,7 @@ class FrameProducer(object):
                     
                     # Calculate packet size and construct header
     
-                    if bytesRemaining <= self.payloadLen:
+                    if bytesRemaining <= self.PayloadLength:
                         bytesToSend = bytesRemaining
                         header['PacketNumber'] = packetCounter | endOfFrame
     
@@ -164,14 +189,19 @@ class FrameProducer(object):
                         
                         subframeRemainder = self.subframeSize - subframeTotal
                         # Would sending full payload contain data from next subframe?
-                        if (subframeRemainder < self.payloadLen):
+                        if (subframeRemainder < self.PayloadLength):
                             bytesToSend = subframeRemainder
                         else:
-                            bytesToSend = self.payloadLen
+                            bytesToSend = self.PayloadLength
                         header['PacketNumber'] = packetCounter | startOfFrame if packetCounter == 0 else packetCounter
     
                     header['SubframeNumber'] = subframeCounter
-                    header['FrameNumber']    = (frame * 2) + packetType  
+                    
+                    if p2m_emulator_new_firmware:
+                        header['FrameNumber'] = frame
+                    else:
+                        # Original emulator firmware (incorrectly) increments frame number for every data type
+                        header['FrameNumber']    = (frame * 2) + packetType  
                         
                     # Prepend header to current packet
                     if packetType == 0:
