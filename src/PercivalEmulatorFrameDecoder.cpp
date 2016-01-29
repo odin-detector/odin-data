@@ -94,12 +94,14 @@ void PercivalEmulatorFrameDecoder::process_packet_header(size_t bytes_received, 
 	uint8_t  subframe = get_subframe_number();
 	uint8_t  type = get_packet_type();
 
+#ifndef P2M_EMULATOR_NEW_FIRMWARE
 	// Emulator firmware increments the frame number between sample and reset subframes, so as a
 	// workaround to allow matching to occur, increment frame number for sample packets
 	if (type == PacketTypeSample)
 	{
 	    frame += 1;
 	}
+#endif
 
     LOG4CXX_DEBUG_LEVEL(3, logger_, "Got packet header:"
             << " type: "     << (int)type << " subframe: " << (int)subframe
@@ -146,6 +148,7 @@ void PercivalEmulatorFrameDecoder::process_packet_header(size_t bytes_received, 
             current_frame_header_->frame_number = current_frame_seen_;
             current_frame_header_->frame_state = FrameDecoder::FrameReceiveStateIncomplete;
             current_frame_header_->packets_received = 0;
+            memset(current_frame_header_->packet_state, 0, num_frame_packets);
             memcpy(current_frame_header_->frame_info, get_frame_info(), frame_info_size);
             gettime(reinterpret_cast<struct timespec*>(&(current_frame_header_->frame_start_time)));
 
@@ -272,31 +275,45 @@ void PercivalEmulatorFrameDecoder::monitor_buffers(void)
 
 }
 
+#ifdef P2M_EMULATOR_NEW_FIRMWARE
+uint16_t PercivalEmulatorFrameDecoder::get_pixel_data_size(void) const
+{
+    return *(reinterpret_cast<uint16_t*>(raw_packet_header()+pixel_data_size_offset));
+}
+#endif
+
 uint8_t PercivalEmulatorFrameDecoder::get_packet_type(void) const
 {
-    return *(reinterpret_cast<uint8_t*>(raw_packet_header()+0));
+    return *(reinterpret_cast<uint8_t*>(raw_packet_header()+packet_type_offset));
 }
 
 uint8_t PercivalEmulatorFrameDecoder::get_subframe_number(void) const
 {
-    return *(reinterpret_cast<uint8_t*>(raw_packet_header()+1));
-}
-
-uint16_t PercivalEmulatorFrameDecoder::get_packet_number(void) const
-{
-	uint16_t packet_number_raw = *(reinterpret_cast<uint16_t*>(raw_packet_header()+6));
-    return ntohs(packet_number_raw);
+    return *(reinterpret_cast<uint8_t*>(raw_packet_header()+subframe_number_offset));
 }
 
 uint32_t PercivalEmulatorFrameDecoder::get_frame_number(void) const
 {
-	uint32_t frame_number_raw = *(reinterpret_cast<uint32_t*>(raw_packet_header()+2));
+    uint32_t frame_number_raw = *(reinterpret_cast<uint32_t*>(raw_packet_header()+frame_number_offset));
     return ntohl(frame_number_raw);
 }
 
+uint16_t PercivalEmulatorFrameDecoder::get_packet_number(void) const
+{
+	uint16_t packet_number_raw = *(reinterpret_cast<uint16_t*>(raw_packet_header()+packet_number_offset));
+    return ntohs(packet_number_raw);
+}
+
+#ifdef P2M_EMULATOR_NEW_FIRMWARE
+uint16_t PercivalEmulatorFrameDecoder::get_packet_offset(void) const
+{
+    return *(reinterpret_cast<uint16_t*>(raw_packet_header()+packet_offset_offset));
+}
+#endif
+
 uint8_t* PercivalEmulatorFrameDecoder::get_frame_info(void) const
 {
-    return (reinterpret_cast<uint8_t*>(raw_packet_header()+8));
+    return (reinterpret_cast<uint8_t*>(raw_packet_header()+frame_info_offset));
 }
 
 uint8_t* PercivalEmulatorFrameDecoder::raw_packet_header(void) const
