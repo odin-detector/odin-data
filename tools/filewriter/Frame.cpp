@@ -131,13 +131,13 @@ const void * SharedMemParser::get_reset_data_address(unsigned int bufferid) cons
 {
     return static_cast<const void *>(
             static_cast<const char*>(this->get_buffer_address(bufferid))
-            + sizeof(FrameHeader));
+            + sizeof(FrameHeader)
+            + data_type_size);
 }
 
 const void * SharedMemParser::get_frame_data_address(unsigned int bufferid) const
 {
     return static_cast<const void *>(
             static_cast<const char*>(this->get_buffer_address(bufferid))
-            + sizeof(FrameHeader)
-            + data_type_size);
+            + sizeof(FrameHeader));
 }
