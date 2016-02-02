@@ -217,7 +217,7 @@ BOOST_AUTO_TEST_CASE( FileWriterAdjustHugeOffset )
     std::vector< boost::shared_ptr<Frame> >::iterator it;
     for (it = frames.begin(); it != frames.end(); ++it){
         size_t frame_no = (*it)->get_frame_number();
-        FrameHeader img_header = *((*it)->get_header());
+        PercivalEmulator::FrameHeader img_header = *((*it)->get_header());
         img_header.frame_number = frame_no + huge_offset;
         (*it)->copy_header(&img_header);
         hsize_t offset = fw.getFrameOffset((*it)->get_frame_number());
