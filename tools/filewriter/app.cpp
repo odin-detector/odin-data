@@ -175,7 +175,7 @@ int main(int argc, char** argv)
     // Create a default basic logger configuration, which can be overridden by command-line option later
     BasicConfigurator::configure();
 
-    LoggerPtr logger(Logger::getLogger("FrameNotifier"));
+    LoggerPtr logger(Logger::getLogger("FileWriterApp"));
     po::variables_map vm;
     parse_arguments(argc, argv, vm, logger);
 
