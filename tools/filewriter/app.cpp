@@ -209,8 +209,8 @@ int main(int argc, char** argv)
     }
 
     // Debug info
-    LOG4CXX_DEBUG(logger, "data_type_size   = " << data_type_size);
-    LOG4CXX_DEBUG(logger, "total_frame_size = " << total_frame_size);
+    LOG4CXX_DEBUG(logger, "data_type_size   = " << PercivalEmulator::data_type_size);
+    LOG4CXX_DEBUG(logger, "total_frame_size = " << PercivalEmulator::total_frame_size);
 
     // The polling loop. Polls on all elements in poll_item
     // Stop the loop by setting keep_running=false
@@ -257,7 +257,7 @@ int main(int argc, char** argv)
                                 << " buffer addr: " << smp.get_buffer_address(buffer_id));
             LOG4CXX_DEBUG(logger, "  Header addr: " << smp.get_frame_header_address(buffer_id)
                                 << "  Data addr: " << smp.get_reset_data_address(buffer_id));
-            LOG4CXX_DEBUG(logger, FrameHeaderToString(static_cast<const FrameHeader*>(smp.get_frame_header_address(buffer_id))));
+            LOG4CXX_DEBUG(logger, FrameHeaderToString(static_cast<const PercivalEmulator::FrameHeader*>(smp.get_frame_header_address(buffer_id))));
             Frame reset_frame(bytes_per_pixel, p2m_dims);
             reset_frame.set_dataset_name("reset");
             reset_frame.set_subframe_dimensions(p2m_subframe_dims);
