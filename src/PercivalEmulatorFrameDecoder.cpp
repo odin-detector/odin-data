@@ -25,8 +25,8 @@ PercivalEmulatorFrameDecoder::PercivalEmulatorFrameDecoder(LoggerPtr& logger,
 		frame_timeout_ms_(frame_timeout_ms),
 		frames_timedout_(0)
 {
-    current_packet_header_.reset(new uint8_t[sizeof(PercivalEmulatorFrameDecoder::PacketHeader)]);
-    dropped_frame_buffer_.reset(new uint8_t[PercivalEmulatorFrameDecoder::total_frame_size]);
+    current_packet_header_.reset(new uint8_t[sizeof(PercivalEmulator::PacketHeader)]);
+    dropped_frame_buffer_.reset(new uint8_t[PercivalEmulator::total_frame_size]);
 
     if (enable_packet_logging_) {
         LOG4CXX_INFO(packet_logger_, "PktHdr: SourceAddress");
@@ -47,17 +47,17 @@ PercivalEmulatorFrameDecoder::~PercivalEmulatorFrameDecoder()
 
 const size_t PercivalEmulatorFrameDecoder::get_frame_buffer_size(void) const
 {
-    return PercivalEmulatorFrameDecoder::total_frame_size;
+    return PercivalEmulator::total_frame_size;
 }
 
 const size_t PercivalEmulatorFrameDecoder::get_frame_header_size(void) const
 {
-    return sizeof(PercivalEmulatorFrameDecoder::FrameHeader);
+    return sizeof(PercivalEmulator::FrameHeader);
 }
 
 const size_t PercivalEmulatorFrameDecoder::get_packet_header_size(void) const
 {
-    return sizeof(PercivalEmulatorFrameDecoder::PacketHeader);
+    return sizeof(PercivalEmulator::PacketHeader);
 }
 
 void* PercivalEmulatorFrameDecoder::get_packet_header_buffer(void)
@@ -77,7 +77,7 @@ void PercivalEmulatorFrameDecoder::process_packet_header(size_t bytes_received, 
         ss << "PktHdr: " << std::setw(15) << std::left << inet_ntoa(from_addr->sin_addr) << std::right << " "
            << std::setw(5) << ntohs(from_addr->sin_port) << " "
            << std::setw(5) << port << std::hex;
-        for (unsigned int hdr_byte = 0; hdr_byte < sizeof(PacketHeader); hdr_byte++)
+        for (unsigned int hdr_byte = 0; hdr_byte < sizeof(PercivalEmulator::PacketHeader); hdr_byte++)
         {
             if (hdr_byte % 8 == 0) {
                 ss << "  ";
@@ -144,12 +144,12 @@ void PercivalEmulatorFrameDecoder::process_packet_header(size_t bytes_received, 
     	    }
 
     	    // Initialise frame header
-            current_frame_header_ = reinterpret_cast<FrameHeader*>(current_frame_buffer_);
+            current_frame_header_ = reinterpret_cast<PercivalEmulator::FrameHeader*>(current_frame_buffer_);
             current_frame_header_->frame_number = current_frame_seen_;
             current_frame_header_->frame_state = FrameDecoder::FrameReceiveStateIncomplete;
             current_frame_header_->packets_received = 0;
-            memset(current_frame_header_->packet_state, 0, num_frame_packets);
-            memcpy(current_frame_header_->frame_info, get_frame_info(), frame_info_size);
+            memset(current_frame_header_->packet_state, 0, PercivalEmulator::num_frame_packets);
+            memcpy(current_frame_header_->frame_info, get_frame_info(), PercivalEmulator::frame_info_size);
             gettime(reinterpret_cast<struct timespec*>(&(current_frame_header_->frame_start_time)));
 
     	}
@@ -157,7 +157,7 @@ void PercivalEmulatorFrameDecoder::process_packet_header(size_t bytes_received, 
     	{
     		current_frame_buffer_id_ = frame_buffer_map_[current_frame_seen_];
         	current_frame_buffer_ = buffer_manager_->get_buffer_address(current_frame_buffer_id_);
-        	current_frame_header_ = reinterpret_cast<FrameHeader*>(current_frame_buffer_);
+        	current_frame_header_ = reinterpret_cast<PercivalEmulator::FrameHeader*>(current_frame_buffer_);
     	}
 
     }
@@ -173,9 +173,9 @@ void* PercivalEmulatorFrameDecoder::get_next_payload_buffer(void) const
     uint8_t* next_receive_location =
             reinterpret_cast<uint8_t*>(current_frame_buffer_) +
             get_frame_header_size() +
-            (data_type_size * get_packet_type()) +
-            (subframe_size * get_subframe_number()) +
-            (primary_packet_size * get_packet_number());
+            (PercivalEmulator::data_type_size * get_packet_type()) +
+            (PercivalEmulator::subframe_size * get_subframe_number()) +
+            (PercivalEmulator::primary_packet_size * get_packet_number());
 
     return reinterpret_cast<void*>(next_receive_location);
 }
@@ -184,13 +184,13 @@ size_t PercivalEmulatorFrameDecoder::get_next_payload_size(void) const
 {
    size_t next_receive_size = 0;
 
-	if (get_packet_number() < num_primary_packets)
+	if (get_packet_number() < PercivalEmulator::num_primary_packets)
 	{
-		next_receive_size = primary_packet_size;
+		next_receive_size = PercivalEmulator::primary_packet_size;
 	}
 	else
 	{
-		next_receive_size = tail_packet_size;
+		next_receive_size = PercivalEmulator::tail_packet_size;
 	}
 
     return next_receive_size;
@@ -203,7 +203,7 @@ FrameDecoder::FrameReceiveState PercivalEmulatorFrameDecoder::process_packet(siz
 
 	current_frame_header_->packets_received++;
 
-	if (current_frame_header_->packets_received == num_frame_packets)
+	if (current_frame_header_->packets_received == PercivalEmulator::num_frame_packets)
 	{
 
 	    // Set frame state accordingly
@@ -244,7 +244,7 @@ void PercivalEmulatorFrameDecoder::monitor_buffers(void)
         uint32_t frame_num = buffer_map_iter->first;
         int      buffer_id = buffer_map_iter->second;
         void*    buffer_addr = buffer_manager_->get_buffer_address(buffer_id);
-        FrameHeader* frame_header = reinterpret_cast<FrameHeader*>(buffer_addr);
+        PercivalEmulator::FrameHeader* frame_header = reinterpret_cast<PercivalEmulator::FrameHeader*>(buffer_addr);
 
         if (elapsed_ms(frame_header->frame_start_time, current_time) > frame_timeout_ms_)
         {
@@ -278,42 +278,42 @@ void PercivalEmulatorFrameDecoder::monitor_buffers(void)
 #ifdef P2M_EMULATOR_NEW_FIRMWARE
 uint16_t PercivalEmulatorFrameDecoder::get_pixel_data_size(void) const
 {
-    return *(reinterpret_cast<uint16_t*>(raw_packet_header()+pixel_data_size_offset));
+    return *(reinterpret_cast<uint16_t*>(raw_packet_header()+PercivalEmulator::pixel_data_size_offset));
 }
 #endif
 
 uint8_t PercivalEmulatorFrameDecoder::get_packet_type(void) const
 {
-    return *(reinterpret_cast<uint8_t*>(raw_packet_header()+packet_type_offset));
+    return *(reinterpret_cast<uint8_t*>(raw_packet_header()+PercivalEmulator::packet_type_offset));
 }
 
 uint8_t PercivalEmulatorFrameDecoder::get_subframe_number(void) const
 {
-    return *(reinterpret_cast<uint8_t*>(raw_packet_header()+subframe_number_offset));
+    return *(reinterpret_cast<uint8_t*>(raw_packet_header()+PercivalEmulator::subframe_number_offset));
 }
 
 uint32_t PercivalEmulatorFrameDecoder::get_frame_number(void) const
 {
-    uint32_t frame_number_raw = *(reinterpret_cast<uint32_t*>(raw_packet_header()+frame_number_offset));
+    uint32_t frame_number_raw = *(reinterpret_cast<uint32_t*>(raw_packet_header()+PercivalEmulator::frame_number_offset));
     return ntohl(frame_number_raw);
 }
 
 uint16_t PercivalEmulatorFrameDecoder::get_packet_number(void) const
 {
-	uint16_t packet_number_raw = *(reinterpret_cast<uint16_t*>(raw_packet_header()+packet_number_offset));
+	uint16_t packet_number_raw = *(reinterpret_cast<uint16_t*>(raw_packet_header()+PercivalEmulator::packet_number_offset));
     return ntohs(packet_number_raw);
 }
 
 #ifdef P2M_EMULATOR_NEW_FIRMWARE
 uint16_t PercivalEmulatorFrameDecoder::get_packet_offset(void) const
 {
-    return *(reinterpret_cast<uint16_t*>(raw_packet_header()+packet_offset_offset));
+    return *(reinterpret_cast<uint16_t*>(raw_packet_header()+PercivalEmulator::packet_offset_offset));
 }
 #endif
 
 uint8_t* PercivalEmulatorFrameDecoder::get_frame_info(void) const
 {
-    return (reinterpret_cast<uint8_t*>(raw_packet_header()+frame_info_offset));
+    return (reinterpret_cast<uint8_t*>(raw_packet_header()+PercivalEmulator::frame_info_offset));
 }
 
 uint8_t* PercivalEmulatorFrameDecoder::raw_packet_header(void) const

@@ -26,8 +26,8 @@ Frame::Frame(size_t bytes_per_pixel, const dimensions_t& dimensions)
     this->data = calloc( 1, this->buffer_allocated_bytes );
     assert(this->data != NULL);
     LOG4CXX_DEBUG(logger, "Allocating FrameHeader buffer: "
-                    << sizeof(FrameHeader) << " bytes");
-    this->frame_header = static_cast<FrameHeader*>(calloc(1, sizeof(FrameHeader)));
+                    << sizeof(PercivalEmulator::FrameHeader) << " bytes");
+    this->frame_header = static_cast<PercivalEmulator::FrameHeader*>(calloc(1, sizeof(PercivalEmulator::FrameHeader)));
     assert(this->frame_header != NULL);
 }
 Frame::~Frame()
@@ -50,7 +50,7 @@ void Frame::copy_data(const void* data_src, size_t nbytes)
 
 void Frame::copy_header(const void* header_src)
 {
-    memcpy(this->frame_header, header_src, sizeof(FrameHeader));
+    memcpy(this->frame_header, header_src, sizeof(PercivalEmulator::FrameHeader));
 }
 
 size_t Frame::get_data_size() const
@@ -90,7 +90,7 @@ SharedMemParser::SharedMemParser(const std::string& shared_mem_name)
     LOG4CXX_DEBUG(logger, "Shared mem: buffers=" << this->shared_mem_header->num_buffers
                           << " bufsize=" << this->shared_mem_header->buffer_size
                           << " headersize=" << sizeof(Header)
-                          << " frameheadersize=" << sizeof(FrameHeader));
+                          << " frameheadersize=" << sizeof(PercivalEmulator::FrameHeader));
 }
 
 SharedMemParser::~SharedMemParser()
@@ -101,13 +101,13 @@ SharedMemParser::~SharedMemParser()
 void SharedMemParser::get_frame(Frame& dest_frame, unsigned int buffer_id)
 {
     dest_frame.copy_header(this->get_frame_header_address(buffer_id));
-    dest_frame.copy_data(this->get_frame_data_address(buffer_id),data_type_size);
+    dest_frame.copy_data(this->get_frame_data_address(buffer_id), PercivalEmulator::data_type_size);
 }
 
 void SharedMemParser::get_reset_frame(Frame& dest_frame, unsigned int buffer_id)
 {
     dest_frame.copy_header(this->get_frame_header_address(buffer_id));
-    dest_frame.copy_data(this->get_reset_data_address(buffer_id),data_type_size);
+    dest_frame.copy_data(this->get_reset_data_address(buffer_id), PercivalEmulator::data_type_size);
 }
 
 size_t SharedMemParser::get_buffer_size()
@@ -131,13 +131,13 @@ const void * SharedMemParser::get_reset_data_address(unsigned int bufferid) cons
 {
     return static_cast<const void *>(
             static_cast<const char*>(this->get_buffer_address(bufferid))
-            + sizeof(FrameHeader)
-            + data_type_size);
+            + sizeof(PercivalEmulator::FrameHeader)
+            + PercivalEmulator::data_type_size);
 }
 
 const void * SharedMemParser::get_frame_data_address(unsigned int bufferid) const
 {
     return static_cast<const void *>(
             static_cast<const char*>(this->get_buffer_address(bufferid))
-            + sizeof(FrameHeader));
+            + sizeof(PercivalEmulator::FrameHeader));
 }

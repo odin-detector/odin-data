@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE( FrameTest )
                                 5, 6, 7, 8,
                                 9,10,11,12 };
     dimensions_t img_dims(2); img_dims[0] = 3; img_dims[1] = 4;
-    FrameHeader img_header;
+    PercivalEmulator::FrameHeader img_header;
     img_header.frame_number = 7;
 
     Frame frame(2, img_dims);
@@ -72,7 +72,7 @@ public:
                                     5, 6, 7, 8,
                                     9,10,11,12 };
         dimensions_t img_dims(2); img_dims[0] = 3; img_dims[1] = 4;
-        FrameHeader img_header;
+        PercivalEmulator::FrameHeader img_header;
         img_header.frame_number = 7;
 
         dset_def.name = "data";
