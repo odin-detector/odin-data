@@ -86,7 +86,7 @@ public:
         frame->copy_header(&img_header);
         frame->copy_data(static_cast<void*>(img), 24);
 
-        for (int i = 0; i<5; i++)
+        for (int i = 1; i<6; i++)
         {
             boost::shared_ptr<Frame> tmp_frame(new Frame(2, img_dims));
             img_header.frame_number = i;
@@ -174,6 +174,12 @@ BOOST_AUTO_TEST_CASE( FileWriterMultipleReverseTest )
     BOOST_REQUIRE_NO_THROW(fw.createFile("/tmp/blah_multiple_reverse.h5"));
     BOOST_REQUIRE_NO_THROW(fw.createDataset(dset_def));
 
+    // The first frame to write is used as an offset - so must be the lowest
+    // frame number. Frames received later with a smaller number would result
+    // in negative file index...
+    BOOST_TEST_MESSAGE("Writing frame: " << frame->get_frame_number());
+    BOOST_REQUIRE_NO_THROW(fw.writeFrame(*frame));
+
     std::vector< boost::shared_ptr<Frame> >::reverse_iterator rit;
     for (rit = frames.rbegin(); rit != frames.rend(); ++rit){
         BOOST_TEST_MESSAGE("Writing frame: " <<  (*rit)->get_frame_number());
@@ -198,7 +204,28 @@ BOOST_AUTO_TEST_CASE( FileWriterSubframesTest )
         BOOST_REQUIRE_NO_THROW(fw.writeSubFrames(*(*it)));
     }
     BOOST_REQUIRE_NO_THROW(fw.closeFile());
+}
 
+BOOST_AUTO_TEST_CASE( FileWriterAdjustHugeOffset )
+{
+    BOOST_REQUIRE_NO_THROW(fw.createFile("/tmp/test_huge_offset.h5"));
+    BOOST_REQUIRE_NO_THROW(fw.createDataset(dset_def));
+
+    hsize_t huge_offset = 100000;
+    BOOST_REQUIRE_NO_THROW(fw.setStartFrameOffset(huge_offset));
+
+    std::vector< boost::shared_ptr<Frame> >::iterator it;
+    for (it = frames.begin(); it != frames.end(); ++it){
+        size_t frame_no = (*it)->get_frame_number();
+        FrameHeader img_header = *((*it)->get_header());
+        img_header.frame_number = frame_no + huge_offset;
+        (*it)->copy_header(&img_header);
+        hsize_t offset = fw.getFrameOffset((*it)->get_frame_number());
+        BOOST_TEST_MESSAGE("Writing frame: " <<  frame_no << " offset:" <<  offset);
+        BOOST_CHECK_EQUAL(offset, frame_no);
+        BOOST_REQUIRE_NO_THROW(fw.writeFrame(*(*it)));
+    }
+    BOOST_REQUIRE_NO_THROW(fw.closeFile());
 }
 
 

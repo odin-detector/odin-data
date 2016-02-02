@@ -15,6 +15,7 @@ FileWriter::FileWriter() {
     LOG4CXX_TRACE(log_, "FileWriter constructor.");
 
     this->hdf5_fileid_ = 0;
+    this->start_frame_offset_ = 0;
 }
 
 FileWriter::~FileWriter() {
@@ -61,13 +62,16 @@ void FileWriter::writeFrame(const Frame& frame) {
 
     HDF5Dataset_t& dset = this->get_hdf5_dataset(frame.get_dataset_name());
 
-    this->extend_dataset(dset, frame_no);
+    hsize_t frame_offset = 0;
+    frame_offset = this->getFrameOffset(frame_no);
+    this->extend_dataset(dset, frame_offset + 1);
 
-    LOG4CXX_DEBUG(log_, "Writing frame offset=" << frame_no << " dset=" << frame.get_dataset_name());
+    LOG4CXX_DEBUG(log_, "Writing frame offset=" << frame_no  << " (" << frame_offset << ")"
+    		             << " dset=" << frame.get_dataset_name());
 
     // Set the offset
     std::vector<hsize_t>offset(dset.dataset_dimensions.size());
-    offset[0] = frame.get_frame_number();
+    offset[0] = frame_offset;
 
     uint32_t filter_mask = 0x0;
     status = H5DOwrite_chunk(dset.datasetid, H5P_DEFAULT,
@@ -88,14 +92,17 @@ void FileWriter::writeSubFrames(const Frame& frame) {
 
     HDF5Dataset_t& dset = this->get_hdf5_dataset(frame.get_dataset_name());
 
-    this->extend_dataset(dset, frame_no);
+    hsize_t frame_offset = 0;
+    frame_offset = this->getFrameOffset(frame_no);
 
-    LOG4CXX_DEBUG(log_, "Writing frame=" << frame_no
+    this->extend_dataset(dset, frame_offset + 1);
+
+    LOG4CXX_DEBUG(log_, "Writing frame=" << frame_no << " (" << frame_offset << ")"
     					<< " dset=" << frame.get_dataset_name());
 
     // Set the offset
     std::vector<hsize_t>offset(dset.dataset_dimensions.size(), 0);
-    offset[0] = frame.get_frame_number();
+    offset[0] = frame_offset;
 
     for (int i = 0; i < frame.get_subframe_count(); i++)
     {
@@ -210,12 +217,44 @@ FileWriter::HDF5Dataset_t& FileWriter::get_hdf5_dataset(const std::string dset_n
     return this->hdf5_datasets_.at(dset_name);
 }
 
+/** Adjust the incoming frame number with an offset
+ *
+ * This is a hacky work-around a missing feature in the Mezzanine
+ * firmware: the frame number is never reset and is ever incrementing.
+ * The file writer can deal with it, by inserting the frame right at
+ * the end of a very large dataset (fortunately sparsely written to disk).
+ *
+ * This function latches the first frame number and subtracts this number
+ * from every incoming frame.
+ *
+ * Throws a std::range_error if a frame is received which has a smaller
+ *   frame number than the initial frame used to set the offset.
+ *
+ * Returns the dataset offset for frame number <frame_no>
+ */
+size_t FileWriter::getFrameOffset(size_t frame_no) const {
+    size_t frame_offset = 0;
+    if (frame_no < this->start_frame_offset_) {
+        // Deal with a frame arriving after the very first frame
+        // which was used to set the offset: throw a range error
+        throw std::range_error("Frame out of order at start causing negative file offset");
+    }
+
+    // Normal case: apply offset
+    frame_offset = frame_no - this->start_frame_offset_;
+    return frame_offset;
+}
+
+void FileWriter::setStartFrameOffset(size_t frame_no) {
+    this->start_frame_offset_ = frame_no;
+}
+
 void FileWriter::extend_dataset(HDF5Dataset_t& dset, size_t frame_no) const {
 	herr_t status;
-    if (frame_no+1 > dset.dataset_dimensions[0]) {
+    if (frame_no > dset.dataset_dimensions[0]) {
         // Extend the dataset
-        LOG4CXX_DEBUG(log_, "Extending dataset_dimensions[0] = " << frame_no+1);
-        dset.dataset_dimensions[0] = frame_no+1;
+        LOG4CXX_DEBUG(log_, "Extending dataset_dimensions[0] = " << frame_no);
+        dset.dataset_dimensions[0] = frame_no;
         status = H5Dset_extent( dset.datasetid,
                                 &dset.dataset_dimensions.front());
         assert(status >= 0);

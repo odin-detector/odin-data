@@ -296,10 +296,19 @@ int main(int argc, char** argv)
 
             // Write the frame to disk
             if (write_file) {
-                //hdfwr.writeFrame(frame);
-                hdfwr.writeSubFrames(frame);
-                //hdfwr.writeFrame(reset_frame);
-                hdfwr.writeSubFrames(reset_frame);
+                if (notification_count <= 1) {
+                    // The first received frame is used to set a frame number offset
+                    hdfwr.setStartFrameOffset(frame.get_frame_number());
+                }
+                try {
+                    //hdfwr.writeFrame(frame);
+                    hdfwr.writeSubFrames(frame);
+                    //hdfwr.writeFrame(reset_frame);
+                    hdfwr.writeSubFrames(reset_frame);
+                }
+                catch (std::range_error& err){
+                	LOG4CXX_WARN(logger, "Dropping Frame: " << frame.get_frame_number() << " Exception: " << err.what());
+                }
             }
 
         } else
