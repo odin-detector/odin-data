@@ -228,6 +228,49 @@ BOOST_AUTO_TEST_CASE( FileWriterAdjustHugeOffset )
     BOOST_REQUIRE_NO_THROW(fw.closeFile());
 }
 
+BOOST_AUTO_TEST_CASE( FileWriterSubProcess )
+{
+    // Frame numbers start from 1: 1,2,3,4,5  - but are indexed from 0 in the frames vector.
+    // Process numbers start from 0: 0,1,2 - this process pretends to be process 1.
+
+    FileWriter fw1(3, 1);
+    BOOST_REQUIRE_NO_THROW(fw1.createFile("/tmp/process_1of3.h5"));
+    BOOST_REQUIRE_NO_THROW(fw1.createDataset(dset_def));
+    BOOST_REQUIRE_EQUAL(dset_def.name, frame->get_dataset_name());
+    BOOST_REQUIRE_NO_THROW(fw1.setStartFrameOffset(frames[0]->get_frame_number()));
+
+    // Write frame no. 2 to "data"
+    BOOST_CHECK_EQUAL(frames[1]->get_frame_number(), 2);
+    BOOST_REQUIRE_NO_THROW(fw1.writeFrame(*frames[1]));
+
+    // write frame no. 5 to "data"
+    BOOST_CHECK_EQUAL(frames[4]->get_frame_number(), 5);
+    BOOST_REQUIRE_NO_THROW(fw1.writeFrame(*frames[4]));
+
+    // check the edge case where the frame no. is not supposed to go into this file
+    // write frame no. 4 to "data" and watch it except!
+    BOOST_CHECK_EQUAL(frames[3]->get_frame_number(), 4);
+    BOOST_REQUIRE_THROW(fw1.writeFrame(*frames[3]), std::runtime_error);
+
+    BOOST_REQUIRE_NO_THROW(fw1.closeFile());
+
+    FileWriter fw0(3, 0);
+    BOOST_REQUIRE_NO_THROW(fw0.createFile("/tmp/process_0of3.h5"));
+    BOOST_REQUIRE_NO_THROW(fw0.createDataset(dset_def));
+    BOOST_REQUIRE_EQUAL(dset_def.name, frame->get_dataset_name());
+    BOOST_REQUIRE_NO_THROW(fw0.setStartFrameOffset(frames[0]->get_frame_number()));
+
+    // Write frame no. 1 to "data"
+    BOOST_CHECK_EQUAL(frames[0]->get_frame_number(), 1);
+    BOOST_REQUIRE_NO_THROW(fw0.writeFrame(*frames[0]));
+
+    // write frame no. 4 to "data"
+    BOOST_CHECK_EQUAL(frames[3]->get_frame_number(), 4);
+    BOOST_REQUIRE_NO_THROW(fw0.writeFrame(*frames[3]));
+
+    BOOST_REQUIRE_NO_THROW(fw0.closeFile());
+
+}
 
 BOOST_AUTO_TEST_SUITE_END(); //FileWriterUnitTest
 

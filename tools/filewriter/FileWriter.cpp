@@ -9,13 +9,29 @@
 #include "Frame.h"
 
 
-FileWriter::FileWriter() {
+FileWriter::FileWriter() :
+concurrent_processes_(1),
+concurrent_rank_(0),
+hdf5_fileid_(0),
+start_frame_offset_(0)
+{
     this->log_ = Logger::getLogger("FileWriter");
     this->log_->setLevel(Level::getTrace());
     LOG4CXX_TRACE(log_, "FileWriter constructor.");
 
     this->hdf5_fileid_ = 0;
     this->start_frame_offset_ = 0;
+}
+
+FileWriter::FileWriter(size_t num_processes, size_t process_rank) :
+concurrent_processes_(num_processes),
+concurrent_rank_(process_rank),
+hdf5_fileid_(0),
+start_frame_offset_(0)
+{
+    this->log_ = Logger::getLogger("FileWriter");
+    this->log_->setLevel(Level::getTrace());
+    LOG4CXX_TRACE(log_, "FileWriter constructor.");
 }
 
 FileWriter::~FileWriter() {
@@ -217,6 +233,25 @@ FileWriter::HDF5Dataset_t& FileWriter::get_hdf5_dataset(const std::string dset_n
     return this->hdf5_datasets_.at(dset_name);
 }
 
+size_t FileWriter::getFrameOffset(size_t frame_no) const {
+    size_t frame_offset = this->adjustFrameOffset(frame_no);
+
+    if (this->concurrent_processes_ > 1) {
+        // Check whether this frame should really be in this process
+        // Note: this expects the frame numbering from HW/FW to start at 1, not 0!
+        if ( (((frame_no-1) % this->concurrent_processes_) - this->concurrent_rank_) != 0) {
+            LOG4CXX_WARN(log_, "Unexpected frame: " << frame_no
+                                << " in this process rank: "
+                                << this->concurrent_rank_);
+            throw std::runtime_error("Unexpected frame in this process rank");
+        }
+
+        // Calculate the new offset based on how many concurrent processes are running
+        frame_offset = frame_offset / this->concurrent_processes_;
+    }
+    return frame_offset;
+}
+
 /** Adjust the incoming frame number with an offset
  *
  * This is a hacky work-around a missing feature in the Mezzanine
@@ -232,7 +267,7 @@ FileWriter::HDF5Dataset_t& FileWriter::get_hdf5_dataset(const std::string dset_n
  *
  * Returns the dataset offset for frame number <frame_no>
  */
-size_t FileWriter::getFrameOffset(size_t frame_no) const {
+size_t FileWriter::adjustFrameOffset(size_t frame_no) const {
     size_t frame_offset = 0;
     if (frame_no < this->start_frame_offset_) {
         // Deal with a frame arriving after the very first frame
@@ -245,6 +280,9 @@ size_t FileWriter::getFrameOffset(size_t frame_no) const {
     return frame_offset;
 }
 
+/** Part of big nasty work-around for the missing frame counter reset in FW
+ *
+ */
 void FileWriter::setStartFrameOffset(size_t frame_no) {
     this->start_frame_offset_ = frame_no;
 }
