@@ -311,6 +311,8 @@ int main(int argc, char** argv)
         if (notification_count >= vm["frames"].as<unsigned int>()) keep_running=false;
     }
     if (write_file) hdfwr.closeFile();
+    LOG4CXX_INFO(logger, "Specified number of frames (" << vm["frames"].as<unsigned int>() << ") received, terminating");
+
     return rc;
 }
 
