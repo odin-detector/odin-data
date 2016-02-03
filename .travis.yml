@@ -31,6 +31,7 @@ install:
   - cd build
   - cmake -DHDF5_ROOT=$HDF5_ROOT ..
   - make -j VERBOSE=1
+  - HDF5_DIR=$HDF5_ROOT pip install --user h5py
   - pip install --user -r $PYTHONPATH/requirements-travis.txt
 
 script:
