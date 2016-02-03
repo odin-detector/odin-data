@@ -17,7 +17,7 @@ Frame::Frame(size_t bytes_per_pixel, const dimensions_t& dimensions)
 : bytes_per_pixel(bytes_per_pixel),
   dimensions(dimensions),
   subframe_dimensions(dimensions),
-  logger(log4cxx::Logger::getLogger("Frame")),
+  logger(log4cxx::Logger::getLogger("FW.Frame")),
   dataset_name("data")
 {
     this->buffer_allocated_bytes = Frame::get_data_size(dimensions, bytes_per_pixel);
@@ -77,7 +77,7 @@ unsigned long long Frame::get_frame_number() const
 
 SharedMemParser::SharedMemParser(const std::string& shared_mem_name)
 : shared_mem(boost::interprocess::open_only, shared_mem_name.c_str(), boost::interprocess::read_write),
-  logger(log4cxx::Logger::getLogger("SharedMemParser")),
+  logger(log4cxx::Logger::getLogger("FW.SHM")),
   shared_mem_header(static_cast<Header*>(malloc(sizeof(Header))))
 {
     LOG4CXX_DEBUG(logger, "Registering shared memory region \"" << shared_mem_name << "\"");
