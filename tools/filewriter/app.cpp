@@ -56,7 +56,7 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
         config.add_options()
                 ("logconfig,l",  po::value<string>(),
                     "Set the log4cxx logging configuration file")
-                ("ready,r",       po::value<std::string>()->default_value("tcp://127.0.0.1:5001"),
+                ("ready",       po::value<std::string>()->default_value("tcp://127.0.0.1:5001"),
                     "Ready ZMQ endpoint from frameReceiver")
                 ("release",       po::value<std::string>()->default_value("tcp://127.0.0.1:5002"),
                         "Release frame ZMQ endpoint from frameReceiver")
@@ -66,6 +66,10 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
                     "Set the name of the shared memory frame buffer")
                 ("output,o",     po::value<std::string>(),
                     "Name of HDF5 file to write frames to (default: no file writing)")
+                ("processes,p",  po::value<unsigned int>()->default_value(1),
+                    "Number of concurrent file writer processes"   )
+                ("rank,r",       po::value<unsigned int>()->default_value(0),
+                    "The rank (index number) of the current file writer process in relation to the other concurrent ones")
                 ;
 
         // Group the variables for parsing at the command line and/or from the configuration file
@@ -132,6 +136,16 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
             LOG4CXX_DEBUG(logger, "Writing frames to file: " << vm["output"].as<string>());
         }
 
+        if (vm.count("processes"))
+        {
+            LOG4CXX_DEBUG(logger, "Number of concurrent filewriter processes: " << vm["processes"].as<unsigned int>());
+        }
+
+        if (vm.count("rank"))
+        {
+            LOG4CXX_DEBUG(logger, "This process rank (index): " << vm["rank"].as<unsigned int>());
+        }
+
     }
     catch (po::unknown_option &e)
     {
@@ -161,7 +175,7 @@ int main(int argc, char** argv)
     // Create a default basic logger configuration, which can be overridden by command-line option later
     BasicConfigurator::configure();
 
-    LoggerPtr logger(Logger::getLogger("FrameNotifier"));
+    LoggerPtr logger(Logger::getLogger("FileWriterApp"));
     po::variables_map vm;
     parse_arguments(argc, argv, vm, logger);
 
@@ -189,7 +203,7 @@ int main(int argc, char** argv)
     poll_item.revents = 0;
 
     // The file writer object
-    FileWriter hdfwr;
+    FileWriter hdfwr(vm["processes"].as<unsigned int>(), vm["rank"].as<unsigned int>());
     bool write_file = false;
     if (vm.count("output")) {
         write_file = true;
@@ -296,10 +310,19 @@ int main(int argc, char** argv)
 
             // Write the frame to disk
             if (write_file) {
-                //hdfwr.writeFrame(frame);
-                hdfwr.writeSubFrames(frame);
-                //hdfwr.writeFrame(reset_frame);
-                hdfwr.writeSubFrames(reset_frame);
+                if (notification_count <= 1) {
+                    // The first received frame is used to set a frame number offset
+                    hdfwr.setStartFrameOffset(frame.get_frame_number());
+                }
+                try {
+                    //hdfwr.writeFrame(frame);
+                    hdfwr.writeSubFrames(frame);
+                    //hdfwr.writeFrame(reset_frame);
+                    hdfwr.writeSubFrames(reset_frame);
+                }
+                catch (std::runtime_error& err){
+                	LOG4CXX_WARN(logger, "Dropping Frame: " << frame.get_frame_number() << " Exception: " << err.what());
+                }
             }
 
         } else
