@@ -40,7 +40,7 @@ class IntegrationTest(object):
         
         rc = 0
         
-        receiver = self.launch_process("bin/frameReceiver --config %s --logconfig test_config/log4cxx.config --debug 2 --frames %d" % 
+        receiver = self.launch_process("bin/frameReceiver --config %s --logconfig test_config/log4cxx.xml --debug 2 --frames %d" % 
                                        (self.fr_config, self.frames))
         time.sleep(0.5)
         if self.use_processor:
