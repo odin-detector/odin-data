@@ -1,5 +1,6 @@
 set(TEST_CONFIGS
-  log4cxx.xml
+  fw_log4cxx.xml
+  fr_log4cxx.xml
   fr_test.config
   fr_test_osx.config
   fp_test.config
