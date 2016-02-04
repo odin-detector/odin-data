@@ -227,7 +227,10 @@ class PortCounters(object):
 
         return node_deltas
     
-if __name__ == '__main__':
-    
+def main():
+ 
     sc = PortCounters()
     sc.run()
+    
+if __name__ == '__main__':
+    main()

@@ -67,7 +67,8 @@ class EmulatorClient(object):
 
     def __init__(self):
         
-        parser = argparse.ArgumentParser(description="EmulatorClient - control hardware emulator start, stop & configure node(s)", 
+        parser = argparse.ArgumentParser(prog="emulator_client",
+                                         description="EmulatorClient - control hardware emulator start, stop & configure node(s)", 
                                          epilog="Specify IP & Mac like: '10.1.0.101:00-07-11-F0-FF-33'")
     
         parser.add_argument('--host', type=str, default='192.168.0.103', 
@@ -375,8 +376,7 @@ class EmulatorClient(object):
             print " %d bytes.." % (bytesSent),
             sys.stdout.flush()
 
-
-if __name__ == '__main__':
+def main():
 
     try:
         ec = EmulatorClient()
@@ -384,3 +384,6 @@ if __name__ == '__main__':
     except Exception as e:
         print e
 
+if __name__ == '__main__':
+    
+    main()

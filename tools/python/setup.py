@@ -18,5 +18,13 @@ setup(name='percival_detector',
         'numpy>=1.9.1',
         'h5py>=2.5.0'
       ],
+      entry_points={
+        'console_scripts' : [
+            'emulator_client = emulator_client.emulator_client:main',
+            'frame_processor = frame_processor.frame_processor:main',
+            'frame_producer = frame_producer.frame_producer:main',
+            'port_counters = port_counters.port_counters:main',
+         ]
+      },
       zip_safe=False,
 )
