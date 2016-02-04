@@ -48,7 +48,7 @@ class IntegrationTest(object):
                                             (self.fp_config, self.frames))
             writer = None
         else:
-            writer = self.launch_process("bin/filewriter --logconfig=test_config/log4cxx_writer.config --frames=%d --output=/tmp/integration_test.hdf5" %
+            writer = self.launch_process("bin/filewriter --logconfig=test_config/log4cxx.xml --frames=%d --output=/tmp/integration_test.hdf5" %
                                          (self.frames))
             processor = None
             
