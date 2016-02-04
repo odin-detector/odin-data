@@ -17,6 +17,7 @@ using namespace std;
 #include <log4cxx/basicconfigurator.h>
 #include <log4cxx/propertyconfigurator.h>
 #include <log4cxx/helpers/exception.h>
+#include <log4cxx/xml/domconfigurator.h>
 using namespace log4cxx;
 using namespace log4cxx::helpers;
 #include "DebugLevelLogger.h"

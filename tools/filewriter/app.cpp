@@ -16,6 +16,7 @@ using namespace std;
 #include <log4cxx/basicconfigurator.h>
 #include <log4cxx/propertyconfigurator.h>
 #include <log4cxx/helpers/exception.h>
+#include <log4cxx/xml/domconfigurator.h>
 using namespace log4cxx;
 using namespace log4cxx::helpers;
 
@@ -34,6 +35,12 @@ using namespace rapidjson;
 
 #include "Frame.h"
 #include "FileWriter.h"
+
+static bool has_suffix(const std::string &str, const std::string &suffix)
+{
+    return str.size() >= suffix.size() &&
+            str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
+}
 
 void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& logger)
 {
@@ -112,8 +119,13 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
 
         if (vm.count("logconfig"))
         {
-            PropertyConfigurator::configure(vm["logconfig"].as<string>());
-            LOG4CXX_DEBUG(logger, "log4cxx config file is set to " << vm["logconfig"].as<string>());
+            std::string logconf_fname = vm["logconfig"].as<string>();
+            if (has_suffix(logconf_fname, ".xml")) {
+                log4cxx::xml::DOMConfigurator::configure(logconf_fname);
+            } else {
+                PropertyConfigurator::configure(logconf_fname);
+            }
+            LOG4CXX_DEBUG(logger, "log4cxx config file is set to " << logconf_fname);
         }
 
         if (vm.count("ready"))
@@ -175,7 +187,7 @@ int main(int argc, char** argv)
     // Create a default basic logger configuration, which can be overridden by command-line option later
     BasicConfigurator::configure();
 
-    LoggerPtr logger(Logger::getLogger("FileWriterApp"));
+    LoggerPtr logger(Logger::getLogger("FW.APP"));
     po::variables_map vm;
     parse_arguments(argc, argv, vm, logger);
 

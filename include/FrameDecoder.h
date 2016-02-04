@@ -54,7 +54,7 @@ namespace FrameReceiver
             enable_packet_logging_(enable_packet_logging)
         {
             // Retrieve the packet logger instance
-            packet_logger_ = Logger::getLogger("PacketLogger");
+            packet_logger_ = Logger::getLogger("FR.PacketLogger");
         };
 
         virtual ~FrameDecoder() = 0;
