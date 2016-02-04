@@ -48,7 +48,7 @@ FrameReceiverApp::FrameReceiverApp(void) :
 {
 
 	// Retrieve a logger instance
-	logger_ = Logger::getLogger("FrameReceiver");
+	logger_ = Logger::getLogger("FR.APP");
 
 }
 
