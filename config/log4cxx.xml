@@ -42,25 +42,25 @@
  </root>
 
  <!-- The file writer application logger hierachy -->
- <category name="FW">
+ <logger name="FW">
   <priority value="all" />
   <appender-ref ref="FileWriterAppender" />
- </category>
- <category name="FW.APP"></category>
- <category name="FW.SHM"></category>
- <category name="FW.Frame"></category>
- <category name="FW.FileWriter"></category>
+ </logger>
+ <logger name="FW.APP"></logger>
+ <logger name="FW.SHM"></logger>
+ <logger name="FW.Frame"></logger>
+ <logger name="FW.FileWriter"></logger>
 
  <!-- The frame receiver application logger hierachy -->
- <category name="FR">
+ <logger name="FR">
   <priority value="all" />
- </category>
- <category name="FR.APP">
+ </logger>
+ <logger name="FR.APP">
   <appender-ref ref="FrameReceiverAppender" />
- </category>
- <category name="FR.PacketLogger" additivity="false">
+ </logger>
+ <logger name="FR.PacketLogger" additivity="false">
   <priority value="info" />
   <appender-ref ref="FrameReceiverPacketAppender" />
- </category>
+ </logger>
 
 </log4j:configuration>
