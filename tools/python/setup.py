@@ -10,7 +10,8 @@ setup(name='percival_detector',
         'emulator_client',
         'frame_processor',
         'frame_producer',
-        'port_counters'        
+        'port_counters',
+        'tools'        
       ],
       install_requires=[
         'pyzmq>=14.0.0',
@@ -24,6 +25,7 @@ setup(name='percival_detector',
             'frame_processor = frame_processor.frame_processor:main',
             'frame_producer = frame_producer.frame_producer:main',
             'port_counters = port_counters.port_counters:main',
+            'decode_raw_frames_hdf5 = tools.decode_raw_frames_hdf5:main',
          ]
       },
       zip_safe=False,
