@@ -1,10 +1,13 @@
 FrameReceiver
 =============
 
-FrameReceiver is an application to enable reception of frames of detector data transmitted over a network connection as a UDP stream. FrameReceiver constructs data frames in shared memory buffers and communicates with external applications to allow processing and storage.
+FrameReceiver is an application to enable reception of frames of detector data transmitted over a network connection 
+as a UDP stream. FrameReceiver constructs data frames in shared memory buffers and communicates with external 
+applications to allow processing and storage.
 
 [![Build Status](https://travis-ci.org/percival-detector/framereceiver.svg)](https://travis-ci.org/percival-detector/framereceiver)
 [![Stories in Ready](https://badge.waffle.io/percival-detector/framereceiver.png?label=ready&title=Ready)](https://waffle.io/percival-detector/framereceiver)
+[![Stories in In Progress](https://badge.waffle.io/percival-detector/framereceiver.png?label=In%20Progress&title=In%20Progress)](https://waffle.io/percival-detector/framereceiver)
 
 External Software Dependencies
 ==============================
@@ -15,14 +18,16 @@ The following libraries and packages are required:
 * [Boost](http://www.boost.org) : portable C++ utility libraries. The following components are used - program_options, unit_test_framework, date_time, interprocess, bimap (version >= 1.41)
 * [ZeroMQ](http://zeromq.org) : high-performance asynchronous messaging library (version >= 3.2.4)
 * [Log4CXX](http://logging.apache.org/log4cxx/): Configurable message logger (version >= 0.10.0)
-* [HDF5](https://www.hdfgroup.org/HDF5): __Optional:__ if found, the filewriter applicion will be built (version >= 1.8.14) 
+* [HDF5](https://www.hdfgroup.org/HDF5): __Optional:__ if found, the filewriter application will be built (version >= 1.8.14) 
 
 Installing dependencies
 -----------------------
 
-The supported development platform is Linux RedHat 6 (RHEL6) however distributions like CentOS and Scientific Linux are essentially clones of RHEL and can be used as free alternatives to RHEL.
+The supported development platform is Linux RedHat 6 (RHEL6) however distributions like CentOS and Scientific 
+Linux are essentially clones of RHEL and can be used as free alternatives to RHEL.
 
-Most of the dependencies are available from the RHEL (or CentOS) repositories, but a few (log4cxx and zeromq) must be installed from the EPEL repository (or built from source).
+Most of the dependencies are available from the RHEL (or CentOS) repositories, but a few (log4cxx and zeromq) 
+must be installed from the EPEL repository (or built from source).
 
 The following is an exmaple of installing dependencies on CentOS 6:
 
@@ -49,9 +54,354 @@ FrameReceiver is built using CMake and make. FrameReceiver is configured and bui
     cmake -DBoost_NO_BOOST_CMAKE=ON ..
     make
 
-The Boost_NO_BOOST_CMAKE=ON flag is required on systems with Boost installed on system paths (e.g. from a package repository) where there is a bug in the installed CMake package discovery utilities. Non-default installations of the above libraries and packages can be used by setting the following flags:
+The Boost_NO_BOOST_CMAKE=ON flag is required on systems with Boost installed on system paths (e.g. from a package 
+repository) where there is a bug in the installed CMake package discovery utilities. Non-default installations of 
+the above libraries and packages can be used by setting the following flags:
 
 * BOOST_ROOT
 * ZEROMQ_ROOTDIR
 * LOG4CXX_ROOT_DIR
 * HDF5_ROOT
+
+Applications are compiled into the `bin` directory within `build` and the additional python etc tools installed into 
+tools. Sample configuration files for testing the system are installed into `test_config`.  See the sections below 
+further information on usage. 
+
+
+Usage
+=====
+
+In addition to the core FrameReceiver application, there are a number of associated tools that can be used in 
+conjunction to operate a system. These are described below.
+
+Running the FrameReceiver
+-------------------------
+
+	bin/frameReceiver --help
+	usage: frameReceiver [options]
+	
+	
+	Generic options:
+	  -h [ --help ]         Print this help message
+	  -v [ --version ]      Print program version string
+	  -c [ --config ] arg   Specify program configuration file
+	
+	Configuration options:
+	  -d [ --debug ] arg (=0)                Set the debug level
+	  -n [ --node ] arg (=1)                 Set the frame receiver node ID
+	  -l [ --logconfig ] arg                 Set the log4cxx logging configuration 
+	                                         file
+	  -m [ --maxmem ] arg (=1048576)         Set the maximum amount of shared 
+	                                         memory to allocate for frame buffers
+	  -s [ --sensortype ] arg (=unknown)     Set the sensor type to receive frame 
+	                                         data from
+	  -p [ --port ] arg (=8989,8990)         Set the port to receive frame data on
+	  -i [ --ipaddress ] arg (=0.0.0.0)      Set the IP address of the interface to
+	                                         receive frame data on
+	  --sharedbuf arg (=FrameReceiverBuffer) Set the name of the shared memory 
+	                                         frame buffer
+	  --frametimeout arg (=1000)             Set the incomplete frame timeout in ms
+	  -f [ --frames ] arg (=0)               Set the number of frames to receive 
+	                                         before terminating
+	  --packetlog arg (=0)                   Enable logging of packet diagnostics 
+	                                         to file
+	  --rxbuffer arg (=30000000)             Set UDP receive buffer size
+
+
+Running the FileWriter
+----------------------
+
+	bin/filewriter --help
+	usage: filewriter [options]
+	
+	
+	Generic options:
+	  -h [ --help ]         Print this help message
+	  -c [ --config ] arg   Specify program configuration file
+	
+	Configuration options:
+	  -l [ --logconfig ] arg                 Set the log4cxx logging configuration 
+	                                         file
+	  --ready arg (=tcp://127.0.0.1:5001)    Ready ZMQ endpoint from frameReceiver
+	  --release arg (=tcp://127.0.0.1:5002)  Release frame ZMQ endpoint from 
+	                                         frameReceiver
+	  -f [ --frames ] arg (=1)               Set the number of frames to be 
+	                                         notified about before terminating
+	  --sharedbuf arg (=FrameReceiverBuffer) Set the name of the shared memory 
+	                                         frame buffer
+	  -o [ --output ] arg                    Name of HDF5 file to write frames to 
+	                                         (default: no file writing)
+	  -p [ --processes ] arg (=1)            Number of concurrent file writer 
+	                                         processes
+	  -r [ --rank ] arg (=0)                 The rank (index number) of the current
+	                                         file writer process in relation to the
+	                                         other concurrent ones
+
+
+
+Using the python tools
+----------------------
+
+Several python scripts in this area can be used to emulate parts of the Percival
+data acquisition system. This is a summary of the tools and instructions on how to
+operate them. There are two options for using the tools: 
+
+* Create a virtual python environment, then install packages and the tools into it.
+* Install required python packages and set PYTHONPATH to point at the appropriate location
+
+The virtual environment is the preferred solution since it does not require system privileges
+to install packages.
+
+
+Installing a Virtual Python Environment
+-------------------------------------------
+
+Ensure you have [virtualenv](https://pypi.python.org/pypi/virtualenv) installed in your python environment 
+first. Then create and activate a new virtualenv - and finally install the required dependencies with the
+following commands:
+
+    # Ensure you are in the "build" directory created above otherwise move into it
+    cd <project root>/build
+    
+    # First create the virtual environment.
+    # This need to be done only once for your working copy
+    virtualenv -p /path/to/favourite/python venv
+    
+    # Activate the venv - this need to be done for each shell you work in
+    source venv/bin/activate
+    
+    # Move into the python directory to install
+    cd lib/python
+    
+    # Install the required dependencies.
+    # This step is only required once for each virtualenv
+    pip install -r requirements.txt
+    
+    # Install the tools into the environment
+    # The develop argument allows the underlying tools to be updated from the source in the 
+    # build step without requiring the setup script to be run-executed each time
+    python setup.py develop
+    
+    # Move back to the "build" directory
+    cd ../..
+    
+
+Having set up the virtual environment and installed packages and tools, it can be subsequently
+reused simply by activating it with the `source venv/bin/activate` command. The virtual env can 
+be exited with the command `deactivate` at any time.
+
+The `setup.py` script creates command-line entry points for the tools in the virtual environment, 
+which can be invoked directly, as shown in the descriptions below. 
+
+Installing the required python packages manually
+------------------------------------------------
+
+This option is less preferred since system privileges are typically required to install packages
+and it is necessary to ensure that PYTHONPATH is set appropriately. The following steps are
+required:
+
+	# Install required python packages using pip. This requires system
+	# privileges typically, e.g. sudo
+	# If pip is not installed in your python environment, packages can also be
+	# downloaded and installed manually: seek local expert advice for this if
+	# necessary
+	pip install posix_ipc
+	pip install pysnmp
+	pip install numpy
+	pip install h5py
+	pip install pyzmq
+	
+	# Set the PYTHONPATH to point at the location of the tools
+	export PYTHONPATH=<project root>/build/lib/python
+	
+The `h5py` python bindings require the HDF5 libraries to be installed on your system (see above). If
+not installed into a standard location, set the environment variable `HDF5_DIR` to point to the installation.
+See the [h5py install instructions](http://docs.h5py.org/en/latest/build.html) for more information.
+
+The `pyzmq` python bindings for ZeroMQ do not require ZeroMQ to be installed, although this is requried to
+build and run the compiled applications. There is, however, a potential conflict between `pyzmq` and ZeroMQ v3 
+libraries on RedHat-based systems, causing python tools to fail when importing the bindings. If this occurs,
+delete the bindings with the command `pip unintall pyzmq` and reinstall with 
+`pip install pyzmq --install-option='--zmq=bundled'` to force installation of a local ZeroMQ library.
+
+__NOTE__: unlike in the virtual environment, this installation method does __not__ create command-line
+entry points for the python tools. In this case, invoking them requires `python` to run with a module
+entry instead. For instance `port_counters ...` becomes `python -m port_counters ...`. 
+
+Available python tools
+----------------------
+
+The following describe the available tools, and their configurations.
+
+**emulator_client**
+
+This tool allows the PERCIVAL emulator firmware, installed on a mezzanine system, to be configured and
+controlled. Source and destination MAC and IP addresses can be set, frame transmission can be started
+and stopped (depending on the firmware configuration). All setup is controlled via command-line arguments:
+
+	(venv) $ emulator_client --help
+	
+	usage: emulator_client [-h] [--host HOST] [--port PORT] [--timeout TIMEOUT]
+	                       [--delay DELAY] [--src0 SRC0] [--src1 SRC1]
+	                       [--src2 SRC2] [--dst0 DST0] [--dst1 DST1] [--dst2 DST2]
+	                       {stop,start,command}
+	
+	EmulatorClient - control hardware emulator start, stop & configure node(s)
+	
+	positional arguments:
+	  {stop,start,command}  specify which command to send to emulator
+	
+	optional arguments:
+	  -h, --help            show this help message and exit
+	  --host HOST           select emulator IP address
+	  --port PORT           select emulator IP port
+	  --timeout TIMEOUT     set TCP connection timeout
+	  --delay DELAY         set delay between each address packet
+	  --src0 SRC0           Configure Mezzanine link 0 IP:MAC addresses
+	  --src1 SRC1           Configure Mezzanine link 1 IP:MAC addresses
+	  --src2 SRC2           Configure Mezzanine link 2 IP:MAC addresses
+	  --dst0 DST0           Configure PC link 0 IP:MAC addresses
+	  --dst1 DST1           Configure PC link 1 IP:MAC addresses
+	  --dst2 DST2           Configure PC link 2 IP:MAC addresses
+	  
+For instance, the firmware can be programmed with network parameters with the following:
+
+	(venv) $ emulator_client --host 192.168.0.103 --port 4321 --delay 1.2 command \
+	--src0 10.1.0.101:00-07-11-F0-FF-33 --dst0 10.1.0.1:00-07-43-10-63-00 \
+	--src1 10.1.0.102:00-07-11-F0-FF-44 --dst1 10.1.0.2:00-07-43-10-5F-20 \
+	--src2 10.1.0.103:00-07-11-F0-FF-55 --dst2 10.1.0.3:EC-F4-BB-CC-D3-A8
+	
+	Sending: 
+	 24 bytes..  24 bytes..  24 bytes..  24 bytes..  24 bytes..  24 bytes..  26 bytes..  26 bytes..  26 bytes..  26 bytes..  26 bytes..  26 bytes.. 
+	Waiting 3 seconds before closing TCP connection..
+	 Done!
+
+__NOTE__: the delay parameter is a debugging option that was used to investigate issues with loading multiple parameters in one step and 
+may not be necessary. 
+
+The emulator can then be triggered to start and stop producing frames, for instance with a short delay between the two:
+
+	(venv) $ emulator_client --host 192.168.0.103 --port 4321 start; sleep 0.5; emulator_client --host 192.168.0.103 --port 4321 stop
+	Transmitted start command
+	Transmitted stop command
+	
+	  
+**frame_producer**
+
+This tool generates a simulated UDP packet stream, allowing the FrameReceiver to tested without
+mezzanine hardware. 
+
+	(venv) $ frame_producer --help
+	
+	usage: frame_producer [-h] [--destaddr [DESTADDR [DESTADDR ...]]]
+	                      [--frames FRAMES] [--interval INTERVAL] [--display]
+	
+	FrameProducer - generate a simulated UDP frame data stream
+	
+	optional arguments:
+	  -h, --help            show this help message and exit
+	  --destaddr [DESTADDR [DESTADDR ...]]
+	                        list destination host(s) IP address:port (e.g.
+	                        0.0.0.1:8081)
+	  --frames FRAMES, -n FRAMES
+	                        select number of frames to transmit
+	  --interval INTERVAL, -t INTERVAL
+	                        select frame interval in seconds
+	  --display, -d         Enable diagnostic display of generated image
+	  
+__NOTE__: multiple destination address are supported.
+
+For example, to transmit three frames total to frame receivers on three separate hosts:  
+
+	(venv) $ frame_producer --destaddr 10.1.0.1:8000 10.1.0.2:8000 10.1.0.3:8000 --frames=3 --interval=0.1
+	
+	Starting Percival data transmission to: ['10.1.0.1', '10.1.0.2', '10.1.0.3']
+	frame:  0
+	  Sent Image frame: 0 subframe: 0 packets: 424 bytes: 2112368  to 10.1.0.1:8000
+	  Sent Image frame: 0 subframe: 1 packets: 424 bytes: 2112368  to 10.1.0.1:8000
+	  Sent Reset frame: 0 subframe: 0 packets: 424 bytes: 2112368  to 10.1.0.1:8001
+	  Sent Reset frame: 0 subframe: 1 packets: 424 bytes: 2112368  to 10.1.0.1:8001
+	frame:  1
+	  Sent Image frame: 1 subframe: 0 packets: 424 bytes: 2112368  to 10.1.0.2:8000
+	  Sent Image frame: 1 subframe: 1 packets: 424 bytes: 2112368  to 10.1.0.2:8000
+	  Sent Reset frame: 1 subframe: 0 packets: 424 bytes: 2112368  to 10.1.0.2:8001
+	  Sent Reset frame: 1 subframe: 1 packets: 424 bytes: 2112368  to 10.1.0.2:8001
+	frame:  2
+	  Sent Image frame: 2 subframe: 0 packets: 424 bytes: 2112368  to 10.1.0.3:8000
+	  Sent Image frame: 2 subframe: 1 packets: 424 bytes: 2112368  to 10.1.0.3:8000
+	  Sent Reset frame: 2 subframe: 0 packets: 424 bytes: 2112368  to 10.1.0.3:8001
+	  Sent Reset frame: 2 subframe: 1 packets: 424 bytes: 2112368  to 10.1.0.3:8001
+	3 frames completed, 25348416 bytes sent in 0.601 secs
+
+
+**frame_processor**
+
+This tool emulates the frame processor / fileWriter application that handles received
+frames downstream of the frameReceiver. Its primary purpose is to allow the debugging
+of the inter-process communications and frame buffering in shared memory. All options
+are exposed as arguments and can also be parsed from a configuration file:
+
+	(venv) $ frame_processor --help
+	
+	usage: FrameProcessor [-h] [--config CONFIG_FILE] [--ctrl CTRL_ENDPOINT]
+	                      [--sharedbuf SHAREDBUF] [--bypass_mode] [--packet_state]
+	                      [--frames FRAMES] [--boost_mmap_mode]
+	
+	FrameProcessor - test harness to simulate operation of FrameProcessor
+	application
+	
+	optional arguments:
+	  -h, --help            show this help message and exit
+	  --config CONFIG_FILE, -c CONFIG_FILE
+	                        Parse additional options from specified configuration
+	                        file
+	  --ctrl CTRL_ENDPOINT  Specify the IPC control channel endpoint URL
+	  --sharedbuf SHAREDBUF
+	                        Specify the name of the shared memory frame buffer
+	  --bypass_mode         Enable frame decoding bypass mode
+	  --packet_state        Enable printing of packet state info during frame
+	                        decoding
+	  --frames FRAMES       Specify the number of frames to receive before
+	                        shutting down
+	  --boost_mmap_mode     Enable boost MMAP shared memory mode
+	  
+Example usage:
+
+	(venv) $ $ frame_processor --config test_config/fp_test.config --frames 3 --packet_state
+	
+will output diagnostic information about frames received and released by a frame receiver, 
+including formatted printout of the packet receive state in each frame.	  
+
+**port_counters**
+
+This tool allows the packet count on the network interfaces of a switch (via SNMP) and a collection
+of nodes (via SSH  and ifconfig) to be saved to files, and the differences between the two to be 
+displayed:
+
+	(venv) $ port_counters --help
+	
+	usage: port_counters [-h] [--addr SWITCH_ADDR] [start_file] [end_file]
+	
+	port_counters - capture port packet counters from a switch via SNMP and
+	calculate deltas
+	
+	positional arguments:
+	  start_file            JSON-formatted file containing starting switch
+	                        counters for calculate mode (default: None)
+	  end_file              JSON-formatted file containing starting switch
+	                        counters for calculate mode (default: None)
+	
+	optional arguments:
+	  -h, --help            show this help message and exit
+	  --addr SWITCH_ADDR, -a SWITCH_ADDR
+	                        Address of switch to access (default: devswitch5920)
+
+__NOTE__: In the current version, there is a mapping between nodes and ports defined in the 
+script itself, which will require modification to suit the users' system configuration. The
+script requires SSH access to each node (ideally via public key authentication loaded into
+an SSH agent to avoid entering a password each time), and SNMP access to the switch to be enabled.
+
+Invoked without a start or end file name, the tool will capture the current packet counter state
+to a JSON-formatted file. This can be run twice, for instance before and after an acquisition sequence.
+Invoked with a pair for file names, it will calculate and display the differences between the two
+files.
