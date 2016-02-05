@@ -233,7 +233,7 @@ Available python tools
 
 The following describe the available tools, and their configurations.
 
-*emulator_client*
+**emulator_client**
 
 This tool allows the PERCIVAL emulator firmware, installed on a mezzanine system, to be configured and
 controlled. Source and destination MAC and IP addresses can be set, frame transmission can be started
@@ -286,7 +286,7 @@ The emulator can then be triggered to start and stop producing frames, for insta
 	Transmitted stop command
 	
 	  
-*frame_producer*
+**frame_producer**
 
 This tool generates a simulated UDP packet stream, allowing the FrameReceiver to tested without
 mezzanine hardware. 
@@ -334,7 +334,7 @@ For example, to transmit three frames total to frame receivers on three separate
 	3 frames completed, 25348416 bytes sent in 0.601 secs
 
 
-*frame_processor*
+**frame_processor**
 
 This tool emulates the frame processor / fileWriter application that handles received
 frames downstream of the frameReceiver. Its primary purpose is to allow the debugging
@@ -372,7 +372,7 @@ Example usage:
 will output diagnostic information about frames received and released by a frame receiver, 
 including formatted printout of the packet receive state in each frame.	  
 
-*port_counters*
+**port_counters**
 
 This tool allows the packet count on the network interfaces of a switch (via SNMP) and a collection
 of nodes (via SSH  and ifconfig) to be saved to files, and the differences between the two to be 
