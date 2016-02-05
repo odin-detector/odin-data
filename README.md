@@ -271,6 +271,11 @@ operate them. There are two options for using the tools:
 The virtual environment is the preferred solution since it does not require system privileges
 to install packages.
 
+__NOTE__ The `h5py` python bindings require the HDF5 libraries to be installed on your system (see above). If
+not installed into a standard location, set the environment variable `HDF5_DIR` to point to the installation,
+prior to either installation method. See the [h5py install instructions](http://docs.h5py.org/en/latest/build.html) 
+for more information.
+
 
 Installing a Virtual Python Environment
 -------------------------------------------
@@ -332,10 +337,6 @@ required:
 	
 	# Set the PYTHONPATH to point at the location of the tools
 	export PYTHONPATH=<project root>/build/lib/python
-	
-The `h5py` python bindings require the HDF5 libraries to be installed on your system (see above). If
-not installed into a standard location, set the environment variable `HDF5_DIR` to point to the installation.
-See the [h5py install instructions](http://docs.h5py.org/en/latest/build.html) for more information.
 
 The `pyzmq` python bindings for ZeroMQ do not require ZeroMQ to be installed, although this is requried to
 build and run the compiled applications. There is, however, a potential conflict between `pyzmq` and ZeroMQ v3 
