@@ -126,15 +126,15 @@ The meaning of the configuration options are as follows:
 
    Specify the program configuration file to be loaded.
    
- * `-d` or `--debug`
+* `-d` or `--debug`
  
    Specify the debug level. Increasing the value increases the verbosity of the debug output.
    
- * `-n` or `--node`
+* `-n` or `--node`
 
    Set the frame receiver node ID. Identifies the node in a multi-receiver system.
    
- * `-l` or `--logconfig`
+* `-l` or `--logconfig`
 
    Set the log4cxx logging configuration file to use, which configures the format and destination
    of logging output from the application. See the README.md file in the `config` directory for
