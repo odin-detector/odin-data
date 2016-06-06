@@ -23,7 +23,7 @@ namespace filewriter
 
   SharedMemoryController::~SharedMemoryController()
   {
-    // TODO Auto-generated destructor stub
+    LOG4CXX_TRACE(logger_, "SharedMemoryController destructor.");
   }
 
   /** setSharedMemoryParser

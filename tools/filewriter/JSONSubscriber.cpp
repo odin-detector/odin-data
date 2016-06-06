@@ -15,7 +15,7 @@ namespace filewriter
     thread_(0)
   {
     // Setup logging for the class
-    logger_ = Logger::getLogger("FileWriter");
+    logger_ = Logger::getLogger("JSONSubscriber");
     logger_->setLevel(Level::getAll());
     LOG4CXX_TRACE(logger_, "JSONSubscriber constructor.");
 
@@ -27,6 +27,7 @@ namespace filewriter
 
   JSONSubscriber::~JSONSubscriber()
   {
+    LOG4CXX_TRACE(logger_, "JSONSubscriber destructor.");
     // TODO Auto-generated destructor stub
   }
 
