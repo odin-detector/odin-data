@@ -17,8 +17,11 @@
 using namespace log4cxx;
 using namespace log4cxx::xml;
 
+#include "DataBlock.h"
+#include "DataBlockPool.h"
 #include "FileWriter.h"
 #include "Frame.h"
+#include "JSONMessage.h"
 
 class GlobalConfig {
 public:
@@ -273,4 +276,133 @@ BOOST_AUTO_TEST_CASE( FileWriterSubProcess )
 }
 
 BOOST_AUTO_TEST_SUITE_END(); //FileWriterUnitTest
+
+BOOST_AUTO_TEST_SUITE(DataBlockUnitTest);
+
+BOOST_AUTO_TEST_CASE(DataBlockTest)
+{
+  char data1[1024];
+  char data2[2048];
+  boost::shared_ptr<filewriter::DataBlock> block1;
+  boost::shared_ptr<filewriter::DataBlock> block2;
+  BOOST_CHECK_NO_THROW(block1 = boost::shared_ptr<filewriter::DataBlock>(new filewriter::DataBlock(1024)));
+  BOOST_CHECK_EQUAL(block1->getIndex(), 0);
+  BOOST_CHECK_EQUAL(block1->getSize(), 1024);
+  BOOST_CHECK_NO_THROW(block2 = boost::shared_ptr<filewriter::DataBlock>(new filewriter::DataBlock(2048)));
+  BOOST_CHECK_EQUAL(block2->getIndex(), 1);
+  BOOST_CHECK_EQUAL(block2->getSize(), 2048);
+  memset(data1, 1, 1024);
+  BOOST_CHECK_NO_THROW(block1->copyData(data1, 1024));
+  memset(data2, 2, 2048);
+  BOOST_CHECK_NO_THROW(block2->copyData(data2, 2048));
+  char *testPtr;
+  BOOST_CHECK_NO_THROW(testPtr = (char *)block1->get_data());
+  for (int index = 0; index < 1024; index++){
+    BOOST_CHECK_EQUAL(testPtr[index], 1);
+  }
+  BOOST_CHECK_NO_THROW(testPtr = (char *)block2->get_data());
+  for (int index = 0; index < 2048; index++){
+    BOOST_CHECK_EQUAL(testPtr[index], 2);
+  }
+}
+
+BOOST_AUTO_TEST_CASE(DataBlockPoolTest)
+{
+  boost::shared_ptr<filewriter::DataBlock> block1;
+  boost::shared_ptr<filewriter::DataBlock> block2;
+  // Allocate 100 blocks
+  BOOST_CHECK_NO_THROW(filewriter::DataBlockPool::allocate(100, 1024));
+  // Check pool statistics
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getFreeBlocks(), 100);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getUsedBlocks(), 0);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getTotalBlocks(), 100);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getMemoryAllocated(), 102400);
+  // Take 2 blocks
+  BOOST_CHECK_NO_THROW(block1 = filewriter::DataBlockPool::take(1024));
+  BOOST_CHECK_NO_THROW(block2 = filewriter::DataBlockPool::take(1024));
+  // Check pool statistics
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getFreeBlocks(), 98);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getUsedBlocks(), 2);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getTotalBlocks(), 100);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getMemoryAllocated(), 102400);
+  // Check the taken blocks have different index values
+  BOOST_CHECK_NE(block1->getIndex(), block2->getIndex());
+  // Release 1 block
+  BOOST_CHECK_NO_THROW(filewriter::DataBlockPool::release(block1));
+  // Check pool statistics
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getFreeBlocks(), 99);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getUsedBlocks(), 1);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getTotalBlocks(), 100);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getMemoryAllocated(), 102400);
+  // Allocate another 100 blocks
+  BOOST_CHECK_NO_THROW(filewriter::DataBlockPool::allocate(100, 1024));
+  // Check pool statistics
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getFreeBlocks(), 199);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getUsedBlocks(), 1);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getTotalBlocks(), 200);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getMemoryAllocated(), 204800);
+  // Now take a block of a different size
+  BOOST_CHECK_NO_THROW(block2 = filewriter::DataBlockPool::take(1025));
+  // Check pool statistics
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getFreeBlocks(), 198);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getUsedBlocks(), 2);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getTotalBlocks(), 200);
+  // Memory allocated should have increased by 1 byte
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getMemoryAllocated(), 204801);
+  // Check the blocks have different index values
+  BOOST_CHECK_NE(block1->getIndex(), block2->getIndex());
+  // Check the blocks have different sizes
+  BOOST_CHECK_NE(block1->getSize(), block2->getSize());
+}
+
+BOOST_AUTO_TEST_SUITE_END(); //DataBlockUnitTest
+
+BOOST_AUTO_TEST_SUITE(JSONMessageUnitTest);
+
+BOOST_AUTO_TEST_CASE(JSONMessageTest)
+{
+  filewriter::JSONMessage msg1("{\"hello\": \"world\",\"t\": true ,\"f\": false,\"n\": null,\"i\": 123,\"pi\": 3.1416,\"obj\": {\"first\" : 1, \"second\": 2} }");
+  BOOST_CHECK_EQUAL(msg1["hello"].GetString(), "world");
+  BOOST_CHECK_EQUAL(msg1["t"].GetBool(), true);
+  BOOST_CHECK_EQUAL(msg1["f"].GetBool(), false);
+  BOOST_CHECK_EQUAL(msg1["n"].IsNull(), true);
+  BOOST_CHECK_EQUAL(msg1["i"].GetInt(), 123);
+  BOOST_CHECK_EQUAL(msg1["pi"].GetDouble(), 3.1416);
+  BOOST_CHECK_EQUAL(msg1["obj"]["first"].GetInt(), 1);
+  BOOST_CHECK_EQUAL(msg1["obj"]["second"].GetInt(), 2);
+  BOOST_CHECK_EQUAL(msg1.toString(), "{\n\
+    \"hello\": \"world\",\n\
+    \"t\": true,\n\
+    \"f\": false,\n\
+    \"n\": null,\n\
+    \"i\": 123,\n\
+    \"pi\": 3.1416,\n\
+    \"obj\": {\n\
+        \"first\": 1,\n\
+        \"second\": 2\n\
+    }\n\
+}");
+  msg1["hello"].SetString("test1");
+  msg1["t"].SetBool(false);
+  msg1["f"].SetBool(true);
+  msg1["i"].SetInt(321);
+  msg1["pi"].SetDouble(6.1413);
+  msg1["obj"]["first"].SetString("test2");
+  msg1["obj"]["second"].SetString("test3");
+  BOOST_CHECK_EQUAL(msg1.toString(), "{\n\
+    \"hello\": \"test1\",\n\
+    \"t\": false,\n\
+    \"f\": true,\n\
+    \"n\": null,\n\
+    \"i\": 321,\n\
+    \"pi\": 6.1413,\n\
+    \"obj\": {\n\
+        \"first\": \"test2\",\n\
+        \"second\": \"test3\"\n\
+    }\n\
+}");
+
+}
+
+BOOST_AUTO_TEST_SUITE_END(); //JSONMessageUnitTest
 
