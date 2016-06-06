@@ -10,10 +10,16 @@
 
 
 FileWriter::FileWriter() :
-concurrent_processes_(1),
-concurrent_rank_(0),
-hdf5_fileid_(0),
-start_frame_offset_(0)
+  writing_(false),
+  framesToWrite_(3),
+  framesWritten_(0),
+  subFramesWritten_(0),
+  filePath_("./"),
+  fileName_("test_file.h5"),
+  concurrent_processes_(1),
+  concurrent_rank_(0),
+  hdf5_fileid_(0),
+  start_frame_offset_(0)
 {
     this->log_ = Logger::getLogger("FileWriter");
     this->log_->setLevel(Level::getTrace());
@@ -24,10 +30,16 @@ start_frame_offset_(0)
 }
 
 FileWriter::FileWriter(size_t num_processes, size_t process_rank) :
-concurrent_processes_(num_processes),
-concurrent_rank_(process_rank),
-hdf5_fileid_(0),
-start_frame_offset_(0)
+  writing_(false),
+  framesToWrite_(3),
+  framesWritten_(0),
+  subFramesWritten_(0),
+  filePath_("./"),
+  fileName_("test_file.h5"),
+  concurrent_processes_(num_processes),
+  concurrent_rank_(process_rank),
+  hdf5_fileid_(0),
+  start_frame_offset_(0)
 {
     this->log_ = Logger::getLogger("FileWriter");
     this->log_->setLevel(Level::getTrace());
@@ -297,4 +309,89 @@ void FileWriter::extend_dataset(HDF5Dataset_t& dset, size_t frame_no) const {
                                 &dset.dataset_dimensions.front());
         assert(status >= 0);
     }
+}
+
+void FileWriter::processFrame(boost::shared_ptr<Frame> frame)
+{
+  this->writeSubFrames(*frame);
+  subFramesWritten_++;
+  if (subFramesWritten_ == 2){
+    subFramesWritten_ = 0;
+    framesWritten_++;
+  }
+  // Check if we need to stop writing frames
+  if (framesWritten_ == framesToWrite_){
+    this->stopWriting();
+  }
+}
+
+void FileWriter::startWriting()
+{
+  if (!writing_){
+    // TODO: HARDCODED
+    // Assuming this is a P2M, our image dimensions are:
+    size_t bytes_per_pixel = 2;
+    dimensions_t p2m_dims(2); p2m_dims[0] = 1484; p2m_dims[1] = 1408;
+    dimensions_t p2m_subframe_dims = p2m_dims; p2m_subframe_dims[1] = p2m_subframe_dims[1] >> 1;
+    this->createFile(filePath_ + fileName_);
+    FileWriter::DatasetDefinition dset_def;
+    dset_def.name = "data";
+    dset_def.frame_dimensions = p2m_dims;
+    dset_def.chunks = dimensions_t(3,1);
+    dset_def.chunks[1] = p2m_subframe_dims[0]; // Chunk the frame in half (horizontal split) so we can write subframes
+    dset_def.chunks[2] = p2m_subframe_dims[1];
+    dset_def.pixel = FileWriter::pixel_raw_16bit;
+    dset_def.num_frames = framesToWrite_;
+    this->createDataset(dset_def);
+    dset_def.name = "reset";
+    this->createDataset(dset_def);
+
+    // Reset counters
+    framesWritten_ = 0;
+    subFramesWritten_ = 0;
+
+    // Set writing flag to true
+    writing_ = true;
+  }
+}
+
+void FileWriter::stopWriting()
+{
+  if (writing_){
+    writing_ = false;
+    this->closeFile();
+  }
+}
+
+boost::shared_ptr<filewriter::JSONMessage> FileWriter::configure(boost::shared_ptr<filewriter::JSONMessage> config)
+{
+  LOG4CXX_DEBUG(log_, config->toString());
+  // Check config for items
+  if (config->HasMember("filepath")){
+    if ((*config)["filepath"].IsString()){
+      filePath_ = (*config)["filepath"].GetString();
+    }
+  }
+  if (config->HasMember("filename")){
+    if ((*config)["filename"].IsString()){
+      fileName_ = (*config)["filename"].GetString();
+    }
+  }
+  if (config->HasMember("frames")){
+    if ((*config)["frames"].IsInt()){
+      framesToWrite_ = (*config)["frames"].GetInt();
+    }
+  }
+  // Final check is to start or stop writing
+  if (config->HasMember("write")){
+    if ((*config)["write"].IsBool()){
+      if ((*config)["write"].GetBool() == true){
+        this->startWriting();
+      } else {
+        this->stopWriting();
+      }
+    }
+  }
+
+  return config;
 }
