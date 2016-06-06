@@ -33,6 +33,8 @@ target_link_libraries(filewriter ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROM
 
 # Add library for dummy plugin
 add_library(DummyPlugin SHARED DummyPlugin.cpp)
+# Add library for excalibur plugin
+add_library(ExcaliburReorderPlugin SHARED ExcaliburReorderPlugin.cpp)
             
 # Add test and project source files to executable
 file(GLOB TESTABLE_SOURCES JSONMessage.cpp DataBlock.cpp DataBlockPool.cpp IFrameCallback.cpp FileWriterPlugin.cpp FileWriter.cpp Frame.cpp)
