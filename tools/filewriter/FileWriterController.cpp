@@ -11,59 +11,60 @@
 
 namespace filewriter
 {
+  const std::string FileWriterController::CONFIG_SHUTDOWN          = "shutdown";
+
+  const std::string FileWriterController::CONFIG_FR_SHARED_MEMORY  = "fr_shared_mem";
+  const std::string FileWriterController::CONFIG_FR_RELEASE        = "fr_release_cnxn";
+  const std::string FileWriterController::CONFIG_FR_READY          = "fr_ready_cnxn";
+  const std::string FileWriterController::CONFIG_FR_SETUP          = "fr_setup";
+
   const std::string FileWriterController::CONFIG_LOAD_PLUGIN       = "load_plugin";
   const std::string FileWriterController::CONFIG_CONNECT_PLUGIN    = "connect_plugin";
   const std::string FileWriterController::CONFIG_DISCONNECT_PLUGIN = "disconnect_plugin";
   const std::string FileWriterController::CONFIG_PLUGIN_NAME       = "plugin_name";
   const std::string FileWriterController::CONFIG_PLUGIN_CONNECTION = "plugin_connection";
-  const std::string FileWriterController::CONFIG_PLUGIN_LIBRARY     = "plugin_library";
+  const std::string FileWriterController::CONFIG_PLUGIN_LIBRARY    = "plugin_library";
 
-  FileWriterController::FileWriterController ()
+  FileWriterController::FileWriterController() :
+    logger_(log4cxx::Logger::getLogger("FileWriterController"))
   {
-    // TODO Auto-generated constructor stub
-    // Create shared memory parser
-    sharedMemParser_ = boost::shared_ptr<SharedMemoryParser>(new SharedMemoryParser("FrameReceiverBuffer"));
-
-    // create the zmq publisher
-    frameReleasePublisher_ = boost::shared_ptr<JSONPublisher>(new JSONPublisher("tcp://127.0.0.1:5002"));
-    frameReleasePublisher_->connect();
-
-    sharedMemController_ = boost::shared_ptr<SharedMemoryController>(new SharedMemoryController());
-    sharedMemController_->setSharedMemoryParser(sharedMemParser_);
-    sharedMemController_->setFrameReleasePublisher(frameReleasePublisher_);
-
-    // create the zmq subscriber
-    frameReadySubscriber_ = boost::shared_ptr<JSONSubscriber>(new JSONSubscriber("tcp://127.0.0.1:5001"));
-    frameReadySubscriber_->registerCallback(sharedMemController_);
-    frameReadySubscriber_->subscribe();
+    LOG4CXX_DEBUG(logger_, "Constructing FileWriterController");
 
     // Load in the default hdf5 writer plugin
     boost::shared_ptr<FileWriterPlugin> hdf5 = boost::shared_ptr<FileWriterPlugin>(new FileWriter());
     plugins_["hdf"] = hdf5;
-
-    // Register the default hdf5 writer plugin with the shared memory controller
-    sharedMemController_->registerCallback("hdf", plugins_["hdf"]);
   }
 
-  FileWriterController::~FileWriterController ()
+  FileWriterController::~FileWriterController()
   {
     // TODO Auto-generated destructor stub
   }
 
-  void FileWriterController::loadPlugin(const std::string& name, const std::string& library)
+  void FileWriterController::configure(boost::shared_ptr<JSONMessage> config)
   {
-    // Verify a plugin of the same name doesn't already exist
-    // Dynamically class load the plugin
-    // Add the plugin to the map, indexed by the name
-    boost::shared_ptr<FileWriterPlugin> plugin = ClassLoader<FileWriterPlugin>::load_class(name, library);
-  }
+    LOG4CXX_DEBUG(logger_, "Configuration submitted: " << config->toString());
 
-  void FileWriterController::callback(boost::shared_ptr<JSONMessage> msg)
-  {
-    printf("HERE!!! %s\n", msg->toString().c_str());
+    // Check if we are being asked to shutdown
+    if (config->HasMember(FileWriterController::CONFIG_SHUTDOWN)){
+      exitCondition_.notify_all();
+    }
+
+    // Check if we are being passed the shared memory configuration
+    if (config->HasMember(FileWriterController::CONFIG_FR_SETUP)){
+      JSONMessage frConfig((*config)[FileWriterController::CONFIG_FR_SETUP]);
+      if (frConfig.HasMember(FileWriterController::CONFIG_FR_SHARED_MEMORY) &&
+          frConfig.HasMember(FileWriterController::CONFIG_FR_RELEASE) &&
+          frConfig.HasMember(FileWriterController::CONFIG_FR_READY)){
+        std::string shMemName = frConfig[FileWriterController::CONFIG_FR_SHARED_MEMORY].GetString();
+        std::string pubString = frConfig[FileWriterController::CONFIG_FR_RELEASE].GetString();
+        std::string subString = frConfig[FileWriterController::CONFIG_FR_READY].GetString();
+        this->setupFrameReceiverInterface(shMemName, pubString, subString);
+      }
+    }
+
     // Check if we are being asked to load a plugin
-    if (msg->HasMember(FileWriterController::CONFIG_LOAD_PLUGIN)){
-      JSONMessage pluginConfig((*msg)[FileWriterController::CONFIG_LOAD_PLUGIN]);
+    if (config->HasMember(FileWriterController::CONFIG_LOAD_PLUGIN)){
+      JSONMessage pluginConfig((*config)[FileWriterController::CONFIG_LOAD_PLUGIN]);
       if (pluginConfig.HasMember(FileWriterController::CONFIG_PLUGIN_NAME) &&
           pluginConfig.HasMember(FileWriterController::CONFIG_PLUGIN_LIBRARY)){
         std::string name = pluginConfig[FileWriterController::CONFIG_PLUGIN_NAME].GetString();
@@ -74,16 +75,75 @@ namespace filewriter
     // Loop over plugins, checking for configuration messages
     std::map<std::string, boost::shared_ptr<FileWriterPlugin> >::iterator iter;
     for (iter = plugins_.begin(); iter != plugins_.end(); ++iter){
-      if (msg->HasMember(iter->first)){
-        boost::shared_ptr<JSONMessage> subConfig = boost::shared_ptr<JSONMessage>(new JSONMessage((*msg)[iter->first]));
+      if (config->HasMember(iter->first)){
+        boost::shared_ptr<JSONMessage> subConfig = boost::shared_ptr<JSONMessage>(new JSONMessage((*config)[iter->first]));
         iter->second->configure(subConfig);
       }
     }
+  }
 
-    //if (msg->HasMember("hdf")){
-    //  boost::shared_ptr<JSONMessage> hdf_msg = boost::shared_ptr<JSONMessage>(new JSONMessage((*msg)["hdf"]));
-    //  plugins_["hdf"]->configure(hdf_msg);
-    //}
+  void FileWriterController::loadPlugin(const std::string& name, const std::string& library)
+  {
+    // Verify a plugin of the same name doesn't already exist
+    // Dynamically class load the plugin
+    // Add the plugin to the map, indexed by the name
+    boost::shared_ptr<FileWriterPlugin> plugin = ClassLoader<FileWriterPlugin>::load_class(name, library);
+  }
+
+  void FileWriterController::waitForShutdown()
+  {
+    boost::unique_lock<boost::mutex> lock(exitMutex_);
+    exitCondition_.wait(lock);
+  }
+
+  void FileWriterController::callback(boost::shared_ptr<JSONMessage> msg)
+  {
+    // Pass straight to configure
+    this->configure(msg);
+  }
+
+  void FileWriterController::setupFrameReceiverInterface(const std::string& sharedMemName,
+                                                         const std::string& frPublisherString,
+                                                         const std::string& frSubscriberString)
+  {
+    LOG4CXX_DEBUG(logger_, "Shared Memory Config: Name=" << sharedMemName <<
+                  " Publisher=" << frPublisherString << " Subscriber=" << frSubscriberString);
+
+    // Release current shared memory parser if one exists
+    if (sharedMemParser_){
+      sharedMemParser_.reset();
+    }
+    // Create the new shared memory parser
+    sharedMemParser_ = boost::shared_ptr<SharedMemoryParser>(new SharedMemoryParser(sharedMemName));
+
+    // Release the current zmq frame release publisher if one exists
+    if (frameReleasePublisher_){
+      frameReleasePublisher_.reset();
+    }
+    // Now create the new zmq publisher
+    frameReleasePublisher_ = boost::shared_ptr<JSONPublisher>(new JSONPublisher(frPublisherString));
+    frameReleasePublisher_->connect();
+
+    // Release the current shared memory controller if one exists
+    if (sharedMemController_){
+      sharedMemController_.reset();
+    }
+    // Create the new shared memory controller and give it the parser and publisher
+    sharedMemController_ = boost::shared_ptr<SharedMemoryController>(new SharedMemoryController());
+    sharedMemController_->setSharedMemoryParser(sharedMemParser_);
+    sharedMemController_->setFrameReleasePublisher(frameReleasePublisher_);
+
+    // Release the current zmq frame ready subscriber if one exists
+    if (frameReadySubscriber_){
+      frameReadySubscriber_.reset();
+    }
+    // Now create the frame ready subscriber and register the shared memory controller
+    frameReadySubscriber_ = boost::shared_ptr<JSONSubscriber>(new JSONSubscriber(frSubscriberString));
+    frameReadySubscriber_->registerCallback(sharedMemController_);
+    frameReadySubscriber_->subscribe();
+
+    // Register the default hdf5 writer plugin with the shared memory controller
+    sharedMemController_->registerCallback("hdf", plugins_["hdf"]);
   }
 
 } /* namespace filewriter */
