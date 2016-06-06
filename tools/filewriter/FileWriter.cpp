@@ -313,15 +313,17 @@ void FileWriter::extend_dataset(HDF5Dataset_t& dset, size_t frame_no) const {
 
 void FileWriter::processFrame(boost::shared_ptr<Frame> frame)
 {
-  this->writeSubFrames(*frame);
-  subFramesWritten_++;
-  if (subFramesWritten_ == 2){
-    subFramesWritten_ = 0;
-    framesWritten_++;
-  }
-  // Check if we need to stop writing frames
-  if (framesWritten_ == framesToWrite_){
-    this->stopWriting();
+  if (writing_){
+    this->writeSubFrames(*frame);
+    subFramesWritten_++;
+    if (subFramesWritten_ == 2){
+      subFramesWritten_ = 0;
+      framesWritten_++;
+    }
+    // Check if we need to stop writing frames
+    if (framesWritten_ == framesToWrite_){
+      this->stopWriting();
+    }
   }
 }
 
