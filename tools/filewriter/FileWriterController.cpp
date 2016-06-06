@@ -22,7 +22,8 @@ namespace filewriter
   const std::string FileWriterController::CONFIG_CONNECT_PLUGIN    = "connect_plugin";
   const std::string FileWriterController::CONFIG_DISCONNECT_PLUGIN = "disconnect_plugin";
   const std::string FileWriterController::CONFIG_PLUGIN_NAME       = "plugin_name";
-  const std::string FileWriterController::CONFIG_PLUGIN_CONNECTION = "plugin_connection";
+  const std::string FileWriterController::CONFIG_PLUGIN_INDEX      = "plugin_index";
+  const std::string FileWriterController::CONFIG_PLUGIN_CONNECT_TO = "plugin_connect_to";
   const std::string FileWriterController::CONFIG_PLUGIN_LIBRARY    = "plugin_library";
 
   FileWriterController::FileWriterController() :
@@ -66,12 +67,26 @@ namespace filewriter
     if (config->HasMember(FileWriterController::CONFIG_LOAD_PLUGIN)){
       JSONMessage pluginConfig((*config)[FileWriterController::CONFIG_LOAD_PLUGIN]);
       if (pluginConfig.HasMember(FileWriterController::CONFIG_PLUGIN_NAME) &&
+          pluginConfig.HasMember(FileWriterController::CONFIG_PLUGIN_INDEX) &&
           pluginConfig.HasMember(FileWriterController::CONFIG_PLUGIN_LIBRARY)){
+        std::string index = pluginConfig[FileWriterController::CONFIG_PLUGIN_INDEX].GetString();
         std::string name = pluginConfig[FileWriterController::CONFIG_PLUGIN_NAME].GetString();
         std::string library = pluginConfig[FileWriterController::CONFIG_PLUGIN_LIBRARY].GetString();
-        this->loadPlugin(name, library);
+        this->loadPlugin(index, name, library);
       }
     }
+
+    // Check if we are being asked to connect a plugin
+    if (config->HasMember(FileWriterController::CONFIG_CONNECT_PLUGIN)){
+      JSONMessage pluginConfig((*config)[FileWriterController::CONFIG_CONNECT_PLUGIN]);
+      if (pluginConfig.HasMember(FileWriterController::CONFIG_PLUGIN_CONNECT_TO) &&
+          pluginConfig.HasMember(FileWriterController::CONFIG_PLUGIN_INDEX)){
+        std::string index = pluginConfig[FileWriterController::CONFIG_PLUGIN_INDEX].GetString();
+        std::string cnxn = pluginConfig[FileWriterController::CONFIG_PLUGIN_CONNECT_TO].GetString();
+        this->connectPlugin(index, cnxn);
+      }
+    }
+
     // Loop over plugins, checking for configuration messages
     std::map<std::string, boost::shared_ptr<FileWriterPlugin> >::iterator iter;
     for (iter = plugins_.begin(); iter != plugins_.end(); ++iter){
@@ -82,12 +97,30 @@ namespace filewriter
     }
   }
 
-  void FileWriterController::loadPlugin(const std::string& name, const std::string& library)
+  void FileWriterController::loadPlugin(const std::string& index, const std::string& name, const std::string& library)
   {
     // Verify a plugin of the same name doesn't already exist
-    // Dynamically class load the plugin
-    // Add the plugin to the map, indexed by the name
-    boost::shared_ptr<FileWriterPlugin> plugin = ClassLoader<FileWriterPlugin>::load_class(name, library);
+    if (plugins_.count(index) == 0){
+      // Dynamically class load the plugin
+      // Add the plugin to the map, indexed by the name
+      boost::shared_ptr<FileWriterPlugin> plugin = ClassLoader<FileWriterPlugin>::load_class(name, library);
+      plugins_[index] = plugin;
+    } else {
+      LOG4CXX_ERROR(logger_, "Cannot load plugin with index = " << index << ", already loaded");
+    }
+  }
+
+  void FileWriterController::connectPlugin(const std::string& index, const std::string& connectTo)
+  {
+    // Check that the plugin is loaded
+    if (plugins_.count(index) > 0){
+      // Check for the shared memory connection
+      if (connectTo == "frame_receiver"){
+        sharedMemController_->registerCallback(index, plugins_[index]);
+      }
+    } else {
+      LOG4CXX_ERROR(logger_, "Cannot connet plugin with index = " << index << ", plugin isn't loaded");
+    }
   }
 
   void FileWriterController::waitForShutdown()
