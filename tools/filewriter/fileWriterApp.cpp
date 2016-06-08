@@ -182,6 +182,8 @@ int main(int argc, char** argv)
     po::variables_map vm;
     parse_arguments(argc, argv, vm, logger);
 
+    //DataBlockPool::allocate(200, 1024);
+
     boost::shared_ptr<filewriter::FileWriterController> fwc;
     fwc = boost::shared_ptr<filewriter::FileWriterController>(new filewriter::FileWriterController());
     filewriter::JSONSubscriber sh("tcp://127.0.0.1:5003");
@@ -196,7 +198,43 @@ int main(int argc, char** argv)
         "}";
     cfgString = "{\"fr_setup\": " + cfgString + "}";
     boost::shared_ptr<JSONMessage> cfg = boost::shared_ptr<JSONMessage>(new JSONMessage(cfgString));
+    fwc->configure(cfg);
 
+    // Now load the percival plugin
+    cfgString = "{" +
+            std::string("\"plugin_library\":\"./lib/libPercivalProcessPlugin.so\",") +
+            "\"plugin_index\":\"percival\"," +
+            "\"plugin_name\":\"PercivalProcessPlugin\"" +
+            "}";
+    cfgString = "{\"load_plugin\": " + cfgString + "}";
+    cfg = boost::shared_ptr<JSONMessage>(new JSONMessage(cfgString));
+    fwc->configure(cfg);
+
+    // Connect the Percival plugin to the shared memory controller
+    cfgString = "{" +
+            std::string("\"plugin_index\":\"percival\",") +
+            "\"plugin_connect_to\":\"frame_receiver\"" +
+            "}";
+    cfgString = "{\"connect_plugin\": " + cfgString + "}";
+    cfg = boost::shared_ptr<JSONMessage>(new JSONMessage(cfgString));
+    fwc->configure(cfg);
+
+    // Disconnect the HDF5 plugin from the shared memory controller
+    cfgString = "{" +
+            std::string("\"plugin_index\":\"hdf\",") +
+            "\"plugin_disconnect_from\":\"frame_receiver\"" +
+            "}";
+    cfgString = "{\"disconnect_plugin\": " + cfgString + "}";
+    cfg = boost::shared_ptr<JSONMessage>(new JSONMessage(cfgString));
+    fwc->configure(cfg);
+
+    // Connect the HDF5 plugin to the Percival plugin
+    cfgString = "{" +
+            std::string("\"plugin_index\":\"hdf\",") +
+            "\"plugin_connect_to\":\"percival\"" +
+            "}";
+    cfgString = "{\"connect_plugin\": " + cfgString + "}";
+    cfg = boost::shared_ptr<JSONMessage>(new JSONMessage(cfgString));
     fwc->configure(cfg);
 
     // Now wait for the shutdown
