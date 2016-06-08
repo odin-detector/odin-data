@@ -32,6 +32,7 @@ namespace filewriter
     void configure(boost::shared_ptr<JSONMessage> config);
     void loadPlugin(const std::string& index, const std::string& name, const std::string& library);
     void connectPlugin(const std::string& index, const std::string& connectTo);
+    void disconnectPlugin(const std::string& index, const std::string& disconnectFrom);
     void waitForShutdown();
   private:
     static const std::string CONFIG_SHUTDOWN;
@@ -47,6 +48,7 @@ namespace filewriter
     static const std::string CONFIG_PLUGIN_NAME;
     static const std::string CONFIG_PLUGIN_INDEX;
     static const std::string CONFIG_PLUGIN_CONNECT_TO;
+    static const std::string CONFIG_PLUGIN_DISCONNECT_FROM;
     static const std::string CONFIG_PLUGIN_LIBRARY;
 
     void callback(boost::shared_ptr<JSONMessage> msg);
