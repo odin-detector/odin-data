@@ -50,43 +50,23 @@ namespace filewriter
 
   void SharedMemoryController::callback(boost::shared_ptr<JSONMessage> msg)
   {
-    LOG4CXX_DEBUG(logger_, "Parsed json: " << msg->toString());
+    LOG4CXX_DEBUG(logger_, "Callback with message: " << msg->toString());
 
-    // Copy the data out into a Frame object
+    // Get the shared memory buffer ID from the message
     unsigned int buffer_id = (*msg)["params"]["buffer_id"].GetInt64();
-    LOG4CXX_DEBUG(logger_, "Creating Reset Frame object. buffer=" << buffer_id
-                        << " buffer addr: " << smp_->get_buffer_address(buffer_id));
-    LOG4CXX_DEBUG(logger_, "  Header addr: " << smp_->get_frame_header_address(buffer_id)
-                        << "  Data addr: " << smp_->get_reset_data_address(buffer_id));
+    LOG4CXX_DEBUG(logger_, "Creating Raw Frame object. buffer=" << buffer_id <<
+                           " buffer addr: " << smp_->get_buffer_address(buffer_id));
 
-
-
-    // Assuming this is a P2M, our image dimensions are:
-    size_t bytes_per_pixel = 2;
-    dimensions_t p2m_dims(2); p2m_dims[0] = 1484; p2m_dims[1] = 1408;
-    dimensions_t p2m_subframe_dims = p2m_dims; p2m_subframe_dims[1] = p2m_subframe_dims[1] >> 1;
-
-    boost::shared_ptr<Frame> reset_frame;
-    reset_frame = boost::shared_ptr<Frame>(new Frame(bytes_per_pixel, p2m_dims));
-    reset_frame->set_dataset_name("reset");
-    reset_frame->set_subframe_dimensions(p2m_subframe_dims);
-    smp_->get_reset_frame(*reset_frame, buffer_id);
-
-    LOG4CXX_DEBUG(logger_, "Creating Data Frame object. buffer=" << buffer_id);
-    LOG4CXX_DEBUG(logger_,"  Data addr: " << smp_->get_frame_data_address(buffer_id));
+    // Create a frame object and copy in the raw frame data
     boost::shared_ptr<Frame> frame;
-    frame = boost::shared_ptr<Frame>(new Frame(bytes_per_pixel, p2m_dims));
-    frame->set_dataset_name("data");
-    frame->set_subframe_dimensions(p2m_subframe_dims);
-    smp_->get_frame(*frame, buffer_id);
+    frame = boost::shared_ptr<Frame>(new Frame("raw"));
+    smp_->get_frame((*frame), buffer_id);
 
-    // Loop over callbacks, plaing both frames onto each queue
+    // Loop over registered callbacks, placing the frame onto each queue
     std::map<std::string, boost::shared_ptr<IFrameCallback> >::iterator cbIter;
     for (cbIter = callbacks_.begin(); cbIter != callbacks_.end(); ++cbIter){
       cbIter->second->getWorkQueue()->add(frame);
-      cbIter->second->getWorkQueue()->add(reset_frame);
     }
-
 
     // We want to return the exact same JSON message back to the frameReceiver
     // so we just modify the relevant bits: msg_val: from frame_ready to frame_release
@@ -98,17 +78,33 @@ namespace filewriter
     std::string msg_timestamp_str = boost::posix_time::to_iso_extended_string(msg_timestamp);
     (*msg)["timestamp"].SetString(StringRef(msg_timestamp_str.c_str()));
 
-    // Now publish the release message
+    // Now publish the release message, to notify the frame receiver that we are
+    // finished with that block of shared memory
     frp_->publish(msg);
   }
 
   void SharedMemoryController::registerCallback(const std::string& name, boost::shared_ptr<IFrameCallback> cb)
   {
-    // Record the callback pointer
-    callbacks_[name] = cb;
-    // Start the callback thread
-    cb->start();
+    // Check if we own the callback already
+    if (callbacks_.count(name) == 0){
+      // Record the callback pointer
+      callbacks_[name] = cb;
+      // Confirm registration
+      cb->confirmRegistration("frame_receiver");
+    }
   }
 
+  void SharedMemoryController::removeCallback(const std::string& name)
+  {
+    boost::shared_ptr<IFrameCallback> cb;
+    if (callbacks_.count(name) > 0){
+      // Get the pointer
+      cb = callbacks_[name];
+      // Remove the callback from the map
+      callbacks_.erase(name);
+      // Confirm removal
+      cb->confirmRemoval("frame_receiver");
+    }
+  }
 
 } /* namespace filewriter */

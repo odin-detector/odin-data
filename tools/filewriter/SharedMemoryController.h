@@ -43,6 +43,8 @@ namespace filewriter
     void setSharedMemoryParser(boost::shared_ptr<SharedMemoryParser> smp);
     void setFrameReleasePublisher(boost::shared_ptr<JSONPublisher> frp);
     void registerCallback(const std::string& name, boost::shared_ptr<IFrameCallback> cb);
+    void removeCallback(const std::string& name);
+
   private:
     void callback(boost::shared_ptr<JSONMessage> msg);
 

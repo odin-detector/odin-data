@@ -17,7 +17,7 @@
 #include <log4cxx/logger.h>
 
 #include "Frame.h"
-#include "PercivalEmulatorDefinitions.h"
+//#include "PercivalEmulatorDefinitions.h"
 
 // Shared Buffer (IPC) Header
 //typedef struct
@@ -39,18 +39,12 @@ namespace filewriter
     SharedMemoryParser(const std::string & shared_mem_name);
     ~SharedMemoryParser();
     void get_frame(Frame& dest_frame, unsigned int buffer_id);
-    void get_reset_frame(Frame& dest_frame, unsigned int buffer_id);
     size_t get_buffer_size();
-
     const void* get_buffer_address(unsigned int bufferid) const;
-    const void* get_frame_header_address(unsigned int bufferid) const;
-    const void* get_frame_data_address(unsigned int bufferid) const;
-    const void* get_reset_data_address(unsigned int bufferid) const;
 
   private:
     SharedMemoryParser();
     SharedMemoryParser(const SharedMemoryParser& src); // Don't copy one of these!
-
 
     log4cxx::LoggerPtr logger;
     boost::interprocess::shared_memory_object shared_mem;
