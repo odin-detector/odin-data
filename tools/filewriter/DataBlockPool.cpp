@@ -10,55 +10,55 @@
 namespace filewriter
 {
 
-  DataBlockPool *DataBlockPool::instance_;
+  std::map<std::string, DataBlockPool*> DataBlockPool::instanceMap_;
 
   DataBlockPool::~DataBlockPool()
   {
     // TODO Auto-generated destructor stub
   }
 
-  void DataBlockPool::allocate(size_t nBlocks, size_t nBytes)
+  void DataBlockPool::allocate(const std::string& index, size_t nBlocks, size_t nBytes)
   {
-    DataBlockPool::instance()->internalAllocate(nBlocks, nBytes);
+    DataBlockPool::instance(index)->internalAllocate(nBlocks, nBytes);
   }
 
-  boost::shared_ptr<DataBlock> DataBlockPool::take(size_t nBytes)
+  boost::shared_ptr<DataBlock> DataBlockPool::take(const std::string& index, size_t nBytes)
   {
-    return DataBlockPool::instance()->internalTake(nBytes);
+    return DataBlockPool::instance(index)->internalTake(nBytes);
   }
 
-  void DataBlockPool::release(boost::shared_ptr<DataBlock> block)
+  void DataBlockPool::release(const std::string& index, boost::shared_ptr<DataBlock> block)
   {
-    DataBlockPool::instance()->internalRelease(block);
+    DataBlockPool::instance(index)->internalRelease(block);
   }
 
-  size_t DataBlockPool::getFreeBlocks()
+  size_t DataBlockPool::getFreeBlocks(const std::string& index)
   {
-    return DataBlockPool::instance()->internalGetFreeBlocks();
+    return DataBlockPool::instance(index)->internalGetFreeBlocks();
   }
 
-  size_t DataBlockPool::getUsedBlocks()
+  size_t DataBlockPool::getUsedBlocks(const std::string& index)
   {
-    return DataBlockPool::instance()->internalGetUsedBlocks();
+    return DataBlockPool::instance(index)->internalGetUsedBlocks();
   }
 
-  size_t DataBlockPool::getTotalBlocks()
+  size_t DataBlockPool::getTotalBlocks(const std::string& index)
   {
-    return DataBlockPool::instance()->internalGetTotalBlocks();
+    return DataBlockPool::instance(index)->internalGetTotalBlocks();
   }
 
-  size_t DataBlockPool::getMemoryAllocated()
+  size_t DataBlockPool::getMemoryAllocated(const std::string& index)
   {
-    return DataBlockPool::instance()->internalGetMemoryAllocated();
+    return DataBlockPool::instance(index)->internalGetMemoryAllocated();
   }
 
 
-  DataBlockPool* DataBlockPool::instance()
+  DataBlockPool* DataBlockPool::instance(const std::string& index)
   {
-     if (!DataBlockPool::instance_){
-       DataBlockPool::instance_ = new DataBlockPool();
+     if (DataBlockPool::instanceMap_.count(index) == 0){
+       DataBlockPool::instanceMap_[index] = new DataBlockPool();
      }
-     return DataBlockPool::instance_;
+     return DataBlockPool::instanceMap_[index];
   }
 
   DataBlockPool::DataBlockPool() :
@@ -86,7 +86,13 @@ namespace filewriter
   boost::shared_ptr<DataBlock> DataBlockPool::internalTake(size_t nBytes)
   {
     boost::shared_ptr<DataBlock> block;
-    // TODO: Allocate more blocks
+    if (freeBlocks_ == 0){
+      if (totalBlocks_ == 0){
+        this->internalAllocate(2, nBytes);
+      } else {
+        this->internalAllocate(totalBlocks_, nBytes);
+      }
+    }
     if (freeBlocks_ > 0){
       block = freeList_.front();
       if (block->getSize() != nBytes){

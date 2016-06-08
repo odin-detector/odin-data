@@ -69,7 +69,7 @@ namespace filewriter
    */
   void DataBlock::resize(size_t nbytes)
   {
-    LOG4CXX_DEBUG(logger_, "Resizing DataBlock to " << nbytes << " bytes");
+    LOG4CXX_DEBUG(logger_, "Resizing DataBlock " << index_ << " to " << nbytes << " bytes");
     // If the new size requested is the different
     // to our current size then re-allocate
     if (nbytes != allocatedBytes_){

@@ -32,16 +32,16 @@ namespace filewriter
   public:
     virtual ~DataBlockPool();
 
-    static void allocate(size_t nBlocks, size_t nBytes);
-    static boost::shared_ptr<DataBlock> take(size_t nBytes);
-    static void release(boost::shared_ptr<DataBlock> block);
-    static size_t getFreeBlocks();
-    static size_t getUsedBlocks();
-    static size_t getTotalBlocks();
-    static size_t getMemoryAllocated();
+    static void allocate(const std::string& index, size_t nBlocks, size_t nBytes);
+    static boost::shared_ptr<DataBlock> take(const std::string& index, size_t nBytes);
+    static void release(const std::string& index, boost::shared_ptr<DataBlock> block);
+    static size_t getFreeBlocks(const std::string& index);
+    static size_t getUsedBlocks(const std::string& index);
+    static size_t getTotalBlocks(const std::string& index);
+    static size_t getMemoryAllocated(const std::string& index);
 
   private:
-    static DataBlockPool *instance();
+    static DataBlockPool *instance(const std::string& index);
     DataBlockPool();
     void internalAllocate(size_t nBlocks, size_t nBytes);
     boost::shared_ptr<DataBlock> internalTake(size_t nBytes);
@@ -58,7 +58,7 @@ namespace filewriter
     size_t totalBlocks_;
     size_t memoryAllocated_;
 
-    static DataBlockPool *instance_;
+    static std::map<std::string, DataBlockPool*> instanceMap_;
 
   };
 
