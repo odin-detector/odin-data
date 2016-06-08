@@ -8,6 +8,8 @@
 #include <hdf5_hl.h>
 #include "Frame.h"
 
+namespace filewriter
+{
 
 FileWriter::FileWriter() :
   writing_(false),
@@ -132,15 +134,18 @@ void FileWriter::writeSubFrames(const Frame& frame) {
     std::vector<hsize_t>offset(dset.dataset_dimensions.size(), 0);
     offset[0] = frame_offset;
 
-    for (int i = 0; i < frame.get_subframe_count(); i++)
+    for (int i = 0; i < frame.get_parameter("subframe_count"); i++)
     {
-    	offset[2] = i * frame.get_subframe_dimensions()[1]; // For P2M: subframe is 704 pixels
+      offset[2] = i * frame.get_dimensions("subframe")[1]; // For P2M: subframe is 704 pixels
         LOG4CXX_DEBUG(log_, "    offset=" << offset[0]
-        					<< "," << offset[1] << "," << offset[2]);
+                  << "," << offset[1] << "," << offset[2]);
+
+        LOG4CXX_DEBUG(log_, "    subframe_size=" << frame.get_parameter("subframe_size"));
 
         status = H5DOwrite_chunk(dset.datasetid, H5P_DEFAULT,
                                  filter_mask, &offset.front(),
-                                 frame.get_subframe_size(), frame.get_subframe_data(i));
+                                 frame.get_parameter("subframe_size"),
+                                 (static_cast<const char*>(frame.get_data())+(i*frame.get_parameter("subframe_size"))));
         assert(status >= 0);
     }
 }
@@ -396,4 +401,6 @@ boost::shared_ptr<filewriter::JSONMessage> FileWriter::configure(boost::shared_p
   }
 
   return config;
+}
+
 }

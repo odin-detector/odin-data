@@ -20,6 +20,9 @@ using namespace log4cxx;
 #include "FileWriterPlugin.h"
 #include "JSONMessage.h"
 
+namespace filewriter
+{
+
 // Forward declarations
 class Frame;
 
@@ -81,4 +84,5 @@ private:
     std::map<std::string, FileWriter::HDF5Dataset_t> hdf5_datasets_;
 };
 
+}
 #endif /* TOOLS_FILEWRITER_FILEWRITER_H_ */
