@@ -4,7 +4,6 @@
  *  Created on: 7 Jun 2016
  *      Author: gnx91527
  */
-#undef OLD_FRAME
 #include <Frame.h>
 
 namespace filewriter
