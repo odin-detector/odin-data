@@ -21,7 +21,7 @@ class FrameProcessor(object):
         #logging.addHandler(ch)
 
         # create logger
-        self.logger = logging.getLogger('FrameProcessor')
+        self.logger = logging.getLogger('frame_processor')
         self.logger.setLevel(logging.DEBUG)
         
         # create console handler and set level to debug
@@ -159,8 +159,9 @@ class FrameProcessor(object):
         self.logger.debug("Frame start: " + ' '.join("0x{:04x}".format(val) for val in self.frame_decoder.data.pixels[:16]))
         self.logger.debug("Frame end  : " + ' '.join("0x{:04x}".format(val) for val in self.frame_decoder.data.pixels[-16:]))
         
-if __name__ == "__main__":
-        
+def main():        
         fp = FrameProcessor()
         fp.run()
-        
+
+if __name__ == "__main__":
+    main()

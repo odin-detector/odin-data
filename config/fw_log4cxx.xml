@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+ <!-- Output the log message to system console -->
+ <appender name="ApplicationConsoleAppender" class="org.apache.log4j.ConsoleAppender">
+  <param name="Target" value="System.out" />
+  <layout class="org.apache.log4j.PatternLayout">
+   <!-- <param name="ConversionPattern" value="%d{HH:mm:ss,SSS} %-14c %-5p (%F:%L) - %m%n"/> -->
+   <param name="ConversionPattern" value="%d{HH:mm:ss,SSS}  %-14c %-5p - %m%n" />
+  </layout>
+ </appender>
+
+ <appender name="FileWriterAppender" class="org.apache.log4j.FileAppender">
+  <param name="file" value="/tmp/fileWriter.log" />
+  <param name="append" value="false" />
+  <layout class="org.apache.log4j.PatternLayout">
+   <param name="ConversionPattern" value="%d{HH:mm:ss,SSS} %-16c %-5p (%F:%L) - %m%n" />
+  </layout>
+ </appender>
+ 
+<!-- 
+<appender name="syslog" class="org.apache.log4j.net.SyslogAppender">
+  <param name="Facility" value="LOCAL1"/>
+  <param name="SyslogHost" value="localhost:5140"/>
+  <param name="Threshold" value="INFO"/>
+  <layout class="org.apache.log4j.PatternLayout">
+    <param name="ConversionPattern"  value="%d{HH:mm:ss,SSS} %-16c %-5p - %m%n"/>
+  </layout>
+</appender>
+ -->
+ 
+ <!-- all of the loggers inherit settings from the root -->
+ <root>
+  <priority value="all" />
+  <appender-ref ref="ApplicationConsoleAppender" />
+  <!--   <appender-ref ref="syslog" /> -->
+ </root>
+
+ <!-- The file writer application logger hierachy -->
+ <logger name="FW">
+  <priority value="all" />
+  <appender-ref ref="FileWriterAppender" />
+ </logger>
+ <logger name="FW.APP"></logger>
+ <logger name="FW.SHM"></logger>
+ <logger name="FW.Frame"></logger>
+ <logger name="FW.FileWriter"></logger>
+
+</log4j:configuration>

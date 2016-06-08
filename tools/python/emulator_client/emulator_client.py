@@ -65,38 +65,74 @@ class EmulatorClient(object):
       
     (IP, MAC)    = (0, 1)
 
-    def __init__(self, host, port, timeout, delay, src0addr, src1addr, src2addr, dst0addr, dst1addr, dst2addr):
-
-        self.host     = host #'192.168.0.103'
-        self.port     = port # 4321
-        self.timeout  = timeout
-        self.delay    = delay
+    def __init__(self):
         
-        if src0addr: self.src0addr = self.extractAddresses(src0addr) 
-        else:        self.src0addr = (None, None)
-        if src1addr: self.src1addr = self.extractAddresses(src1addr) 
-        else:        self.src1addr = (None, None)
-        if src2addr: self.src2addr = self.extractAddresses(src2addr) 
-        else:        self.src2addr = (None, None)
-        if dst0addr: self.dst0addr = self.extractAddresses(dst0addr) 
-        else:        self.dst0addr = (None, None)
-        if dst1addr: self.dst1addr = self.extractAddresses(dst1addr) 
-        else:        self.dst1addr = (None, None)
-        if dst2addr: self.dst2addr = self.extractAddresses(dst2addr) 
-        else:        self.dst2addr = (None, None)
+        parser = argparse.ArgumentParser(prog="emulator_client",
+                                         description="EmulatorClient - control hardware emulator start, stop & configure node(s)", 
+                                         epilog="Specify IP & Mac like: '10.1.0.101:00-07-11-F0-FF-33'")
+    
+        parser.add_argument('--host', type=str, default='192.168.0.103', 
+                            help="select emulator IP address")
+        parser.add_argument('--port', type=int, default=4321,
+                            help='select emulator IP port')
+        parser.add_argument('--timeout', type=int, default=5,
+                            help='set TCP connection timeout')
+        parser.add_argument ('--delay', type=float, default=1.00,
+                             help='set delay between each address packet')
+    
+        parser.add_argument('--src0', type=str, 
+                            help='Configure Mezzanine link 0 IP:MAC addresses')
+        parser.add_argument('--src1', type=str, 
+                            help='Configure Mezzanine link 1 IP:MAC addresses')
+        parser.add_argument('--src2', type=str, 
+                            help='Configure Mezzanine link 2 IP:MAC addresses')
+        
+        parser.add_argument('--dst0', type=str, 
+                            help='Configure PC link 0 IP:MAC addresses')
+        parser.add_argument('--dst1', type=str, 
+                            help='Configure PC link 1 IP:MAC addresses')
+        parser.add_argument('--dst2', type=str, 
+                            help='Configure PC link 2 IP:MAC addresses')
+        
+        parser.add_argument('command', choices=EmulatorClient.LegalCommands.keys(), default="start",
+                            help="specify which command to send to emulator")
+    
+        args = parser.parse_args()
 
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.settimeout(self.timeout)
-        # Open TCP connection
-        try:
-            self.sock.connect((host, port))
-        except socket.timeout:
-            raise EmulatorClientError("Connecting to [%s:%d] timed out" % (host, port))
-            
-        except socket.error, e:
-            if self.sock:
-                self.sock.close()
-            raise EmulatorClientError("Error connecting to [%s:%d]: '%s'" % (host, port, e))
+        self.host     = args.host 
+        self.port     = args.port 
+        self.timeout  = args.timeout
+        self.delay    = args.delay
+        
+        if args.src0: 
+            self.src0addr = self.extractAddresses(args.src0) 
+        else:
+            self.src0addr = (None, None)
+        if args.src1: 
+            self.src1addr = self.extractAddresses(args.src1) 
+        else:        
+            self.src1addr = (None, None)
+        if args.src2: 
+            self.src2addr = self.extractAddresses(args.src2) 
+        else:        
+            self.src2addr = (None, None)
+        if args.dst0: 
+            self.dst0addr = self.extractAddresses(args.dst0) 
+        else:        
+            self.dst0addr = (None, None)
+        if args.dst1: 
+            self.dst1addr = self.extractAddresses(args.dst1) 
+        else:        
+            self.dst1addr = (None, None)
+        if args.dst2: 
+            self.dst2addr = self.extractAddresses(args.dst2) 
+        else:        
+            self.dst2addr = (None, None)
+
+        self.command = args.command       
+        if not self.command in EmulatorClient.LegalCommands:
+            raise EmulatorClientError("Illegal command %s specified" % self.command)
+
 
     def extractAddresses(self, jointAddress):
         ''' Extracting mac/IP from parser argument '''
@@ -105,33 +141,39 @@ class EmulatorClient(object):
         mac   = jointAddress[delim+1:]
         return (ip, mac)
 
-    def execute(self, command):
+    def run(self):
 
-        self.command = command
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.settimeout(self.timeout)
+        # Open TCP connection
+        try:
+            self.sock.connect((self.host, self.port))
+        except socket.timeout:
+            raise EmulatorClientError("Connecting to [%s:%d] timed out" % (self.host, self.port))
+            
+        except socket.error, e:
+            if self.sock:
+                self.sock.close()
+            raise EmulatorClientError("Error connecting to [%s:%d]: '%s'" % (self.host, self.port, e))
         
-        if not command in EmulatorClient.LegalCommands:
-            raise EmulatorClientError("Illegal command %s specified" % command)
-        
-        if (command == 'start') or (command == 'stop'):
+        if (self.command == 'start') or (self.command == 'stop'):
 
             # Transmit command
             try:
-                bytesSent = self.sock.send(EmulatorClient.LegalCommands[command])
+                bytesSent = self.sock.send(EmulatorClient.LegalCommands[self.command])
             except socket.error, e:
                 if self.sock:
                     self.sock.close()
-                raise EmulatorClientError("Error sending %s command: %s" % (command, e))
+                raise EmulatorClientError("Error sending %s command: %s" % (self.command, e))
                 
-            if bytesSent != len(EmulatorClient.LegalCommands[command]):
-                print "Failed to transmit %s command properly" % command
+            if bytesSent != len(EmulatorClient.LegalCommands[self.command]):
+                print "Failed to transmit %s command properly" % self.command
             else:
-                print "Transmitted %s command" % command
+                print "Transmitted %s command" % self.command
         else:
             
             # Configure link(s) 
 
-            theDelay = self.delay  # Between each TCP transmission
-            
             src0mac = self.src0addr[EmulatorClient.MAC]
             src1mac = self.src1addr[EmulatorClient.MAC]
             src2mac = self.src2addr[EmulatorClient.MAC]
@@ -151,37 +193,37 @@ class EmulatorClient(object):
                 ipList = self.create_ip(src0ip)
                 ipSourceString = ''.join(ipList)
                 self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.IP_0_ADDR, 4, ipSourceString)
-                time.sleep(theDelay)
-#
+                time.sleep(self.delay)
+
             if dst0ip:
                 ipList = self.create_ip(dst0ip)
                 ipSourceString = ''.join(ipList)
                 self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.IP_1_ADDR, 4, ipSourceString)
-                time.sleep(theDelay)
+                time.sleep(self.delay)
                  
             if src1ip:
                 ipList = self.create_ip(src1ip)
                 ipSourceString = ''.join(ipList)
                 self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.IP_2_ADDR, 4, ipSourceString)
-                time.sleep(theDelay)
-#
+                time.sleep(self.delay)
+
             if dst1ip:
                 ipList = self.create_ip(dst1ip)
                 ipSourceString = ''.join(ipList)
                 self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.IP_3_ADDR, 4, ipSourceString)
-                time.sleep(theDelay)
+                time.sleep(self.delay)
                  
             if src2ip:
                 ipList = self.create_ip(src2ip)
                 ipSourceString = ''.join(ipList)
                 self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.IP_4_ADDR, 4, ipSourceString)
-                time.sleep(theDelay)
-#
+                time.sleep(self.delay)
+
             if dst2ip:
                 ipList = self.create_ip(dst2ip)
                 ipSourceString = ''.join(ipList)
                 self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.IP_5_ADDR, 4, ipSourceString)
-                time.sleep(theDelay)
+                time.sleep(self.delay)
 
             # IP before Mac now..
             
@@ -189,37 +231,37 @@ class EmulatorClient(object):
                 tokenList = self.tokeniser(src0mac)
                 macSourceStr = ''.join(tokenList)
                 self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.MAC_0_ADDR, 6, macSourceStr)
-                time.sleep(theDelay)
-#
+                time.sleep(self.delay)
+
             if dst0mac:
                 tokenList = self.tokeniser(dst0mac)
                 macSourceStr = ''.join(tokenList)
                 self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.MAC_1_ADDR, 6, macSourceStr)
-                time.sleep(theDelay)
+                time.sleep(self.delay)
      
             if src1mac:
                 tokenList = self.tokeniser(src1mac)
                 macSourceStr = ''.join(tokenList)
                 self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.MAC_2_ADDR, 6, macSourceStr)
-                time.sleep(theDelay)
-#
+                time.sleep(self.delay)
+
             if dst1mac:
                 tokenList = self.tokeniser(dst1mac)
                 macSourceStr = ''.join(tokenList)
                 self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.MAC_3_ADDR, 6, macSourceStr)
-                time.sleep(theDelay)
+                time.sleep(self.delay)
      
             if src2mac:
                 tokenList = self.tokeniser(src2mac)
                 macSourceStr = ''.join(tokenList)
                 self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.MAC_4_ADDR, 6, macSourceStr)
-                time.sleep(theDelay)
-#
+                time.sleep(self.delay)
+
             if dst2mac:
                 tokenList = self.tokeniser(dst2mac)
                 macSourceStr = ''.join(tokenList)
                 self.send_to_hw(EmulatorClient.Eth_Dev_RW, EmulatorClient.MAC_5_ADDR, 6, macSourceStr)
-                time.sleep(theDelay)
+                time.sleep(self.delay)
 
             print "\nWaiting 3 seconds before closing TCP connection.."
             time.sleep(3.0)
@@ -334,43 +376,14 @@ class EmulatorClient(object):
             print " %d bytes.." % (bytesSent),
             sys.stdout.flush()
 
+def main():
 
-if __name__ == '__main__':
-
-    parser = argparse.ArgumentParser(description="EmulatorClient - control hardware emulator start, stop & configure node(s)", epilog="Specify IP & Mac like: '10.1.0.101:00-07-11-F0-FF-33'")
-    
-    parser.add_argument('--host', type=str, default='192.168.0.103', 
-                        help="select emulator IP address")
-    parser.add_argument('--port', type=int, default=4321,
-                        help='select emulator IP port')
-    parser.add_argument('--timeout', type=int, default=5,
-                        help='set TCP connection timeout')
-    parser.add_argument ('--delay', type=float, default=1.00,
-                         help='set delay between each address packet')
-
-    parser.add_argument('--src0', type=str, 
-                        help='Configure Mezzanine link 0 IP:MAC addresses')
-    parser.add_argument('--src1', type=str, 
-                        help='Configure Mezzanine link 1 IP:MAC addresses')
-    parser.add_argument('--src2', type=str, 
-                        help='Configure Mezzanine link 2 IP:MAC addresses')
-    
-    parser.add_argument('--dst0', type=str, 
-                        help='Configure PC link 0 IP:MAC addresses')
-    parser.add_argument('--dst1', type=str, 
-                        help='Configure PC link 1 IP:MAC addresses')
-    parser.add_argument('--dst2', type=str, 
-                        help='Configure PC link 2 IP:MAC addresses')
-    
-    parser.add_argument('command', choices=EmulatorClient.LegalCommands.keys(), default="start",
-                        help="specify which command to send to emulator")
-
-    args = parser.parse_args()
     try:
-        #print "args: ", args, args.__dict__    # Display all parser selection(s)
-        client = EmulatorClient(args.host, args.port, args.timeout, args.delay, args.src0, args.src1, args.src2, args.dst0, args.dst1, args.dst2)
-        #    def __init__(self, host, port, timeout, delay, src0addr, src1addr, src2addr, dst0addr, dst1addr, dst2addr):
-        client.execute(args.command)
+        ec = EmulatorClient()
+        ec.run()
     except Exception as e:
         print e
 
+if __name__ == '__main__':
+    
+    main()

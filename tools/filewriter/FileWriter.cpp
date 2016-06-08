@@ -23,7 +23,7 @@ FileWriter::FileWriter() :
   hdf5_fileid_(0),
   start_frame_offset_(0)
 {
-    this->log_ = Logger::getLogger("FileWriter");
+    this->log_ = Logger::getLogger("FW.FileWriter");
     this->log_->setLevel(Level::getTrace());
     LOG4CXX_TRACE(log_, "FileWriter constructor.");
 
@@ -43,7 +43,7 @@ FileWriter::FileWriter(size_t num_processes, size_t process_rank) :
   hdf5_fileid_(0),
   start_frame_offset_(0)
 {
-    this->log_ = Logger::getLogger("FileWriter");
+    this->log_ = Logger::getLogger("FW.FileWriter");
     this->log_->setLevel(Level::getTrace());
     LOG4CXX_TRACE(log_, "FileWriter constructor.");
 }

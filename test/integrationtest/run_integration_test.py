@@ -24,6 +24,8 @@ class IntegrationTest(object):
                             help="set configuration file for frameReceiver")
         parser.add_argument('--fp_config', type=str, default='test_config/fp_test.config',
                             help="set configuration file for frameProcessor")
+        parser.add_argument('--use_processor', action='store_true',
+                            help='use python frame processor instead of fileWriter')
     
         args = parser.parse_args()
     
@@ -32,16 +34,24 @@ class IntegrationTest(object):
         self.timeout = args.timeout
         self.fr_config = args.fr_config
         self.fp_config= args.fp_config
+        self.use_processor = args.use_processor
     
     def run(self):
         
         rc = 0
         
-        receiver = self.launch_process("bin/frameReceiver --config %s --logconfig test_config/log4cxx.config --debug 2 --frames %d" % 
+        receiver = self.launch_process("bin/frameReceiver --config %s --logconfig test_config/fr_log4cxx.xml --debug 2 --frames %d" % 
                                        (self.fr_config, self.frames))
         time.sleep(0.5)
-        processor = self.launch_process("python -m frame_processor --config %s --bypass_mode --frames %d" % 
-                                        (self.fp_config, self.frames))
+        if self.use_processor:
+            processor = self.launch_process("python -m frame_processor --config %s --bypass_mode --frames %d" % 
+                                            (self.fp_config, self.frames))
+            writer = None
+        else:
+            writer = self.launch_process("bin/filewriter --logconfig=test_config/fw_log4cxx.xml --frames=%d --output=/tmp/integration_test.hdf5" %
+                                         (self.frames))
+            processor = None
+            
         time.sleep(0.5)
         producer = self.launch_process("python -m frame_producer --destaddr 127.0.0.1:8000 --frames %d --interval %f" % (self.frames, self.interval))
         
@@ -49,9 +59,13 @@ class IntegrationTest(object):
         rc = rc + self.validate_process_output(producer, "Producer", "%d frames completed" % self.frames, None)
         rc = rc + self.validate_process_output(receiver, "Receiver", 
            "Specified number of frames \(%d\) received and released, terminating" % self.frames, self.timeout)
-        rc = rc + self.validate_process_output(processor, "Processor",
-           "Specified number of frames \(%d\) received, terminating" % self.frames, self.timeout)
-        
+        if self.use_processor:
+            rc = rc + self.validate_process_output(processor, "Processor",
+               "Specified number of frames \(%d\) received, terminating" % self.frames, self.timeout)
+        else:
+            rc = rc + self.validate_process_output(writer, "FileWriter", 
+                'Specified number of frames \(%d\) received, terminating' % self.frames, self.timeout)
+            
         if rc == 0:
             print "Integration test (%d frames) PASSED" % self.frames
         else:

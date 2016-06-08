@@ -46,7 +46,7 @@ class FrameProducer(object):
         # Define default list of destination IP address(es) with port(s)
         defaultDestAddr = ['127.0.0.1:61649']
     
-        parser = argparse.ArgumentParser(prog="FrameProducer", description="FrameProducer - generate a simulated UDP frame data stream")
+        parser = argparse.ArgumentParser(prog="frame_producer", description="FrameProducer - generate a simulated UDP frame data stream")
         
         parser.add_argument('--destaddr', nargs='*', # nargs: 1 flag accept multiple arguments
                             help="list destination host(s) IP address:port (e.g. 0.0.0.1:8081)")
@@ -266,8 +266,10 @@ class FrameProducer(object):
             plt.show()
         
     
-if __name__ == '__main__':
-
+def main():
+    
     producer = FrameProducer()
     producer.run()
 
+if __name__ == '__main__':
+    main()

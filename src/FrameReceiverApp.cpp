@@ -28,6 +28,12 @@ bool FrameReceiverApp::terminate_frame_receiver_ = false;
 
 IMPLEMENT_DEBUG_LEVEL;
 
+static bool has_suffix(const std::string &str, const std::string &suffix)
+{
+    return str.size() >= suffix.size() &&
+            str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
+}
+
 //! Constructor for FrameReceiverApp class.
 //!
 //! This constructor initialises the FrameRecevierApp instance
@@ -42,7 +48,7 @@ FrameReceiverApp::FrameReceiverApp(void) :
 {
 
 	// Retrieve a logger instance
-	logger_ = Logger::getLogger("FrameReceiver");
+	logger_ = Logger::getLogger("FR.APP");
 
 }
 
@@ -170,8 +176,13 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
 
 		if (vm.count("logconfig"))
 		{
-			PropertyConfigurator::configure(vm["logconfig"].as<string>());
-			LOG4CXX_DEBUG_LEVEL(1, logger_, "log4cxx config file is set to " << vm["logconfig"].as<string>());
+            std::string logconf_fname = vm["logconfig"].as<string>();
+            if (has_suffix(logconf_fname, ".xml")) {
+                log4cxx::xml::DOMConfigurator::configure(logconf_fname);
+            } else {
+                PropertyConfigurator::configure(logconf_fname);
+            }
+            LOG4CXX_DEBUG_LEVEL(1, logger_, "log4cxx config file is set to " << logconf_fname);
 		}
 
 		if (vm.count("maxmem"))
