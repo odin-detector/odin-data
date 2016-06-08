@@ -19,11 +19,20 @@ namespace filewriter
   public:
     FileWriterPlugin();
     virtual ~FileWriterPlugin();
+    void setName(const std::string& name);
     virtual boost::shared_ptr<filewriter::JSONMessage> configure(boost::shared_ptr<filewriter::JSONMessage> config);
+    void registerCallback(const std::string& name, boost::shared_ptr<IFrameCallback> cb);
+    void removeCallback(const std::string& name);
+
+  protected:
+    void push(boost::shared_ptr<Frame> frame);
 
   private:
     void callback(boost::shared_ptr<Frame> frame);
     virtual void processFrame(boost::shared_ptr<Frame> frame) = 0;
+
+    std::string name_;
+    std::map<std::string, boost::shared_ptr<IFrameCallback> > callbacks_;
   };
 
 } /* namespace filewriter */
