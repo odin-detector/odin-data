@@ -10,6 +10,8 @@ namespace filewriter
 {
 
   Frame::Frame(const std::string& index) :
+    bytes_per_pixel(0),
+    frameNumber_(0),
     logger(log4cxx::Logger::getLogger("Frame"))
   {
     logger->setLevel(log4cxx::Level::getAll());
