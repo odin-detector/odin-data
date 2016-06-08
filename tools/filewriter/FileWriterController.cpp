@@ -36,6 +36,8 @@ namespace filewriter
     boost::shared_ptr<FileWriterPlugin> hdf5 = boost::shared_ptr<FileWriterPlugin>(new FileWriter());
     hdf5->setName("hdf");
     plugins_["hdf"] = hdf5;
+    // Start the hdf5 worker thread
+    hdf5->start();
   }
 
   FileWriterController::~FileWriterController()
@@ -119,6 +121,8 @@ namespace filewriter
       boost::shared_ptr<FileWriterPlugin> plugin = ClassLoader<FileWriterPlugin>::load_class(name, library);
       plugin->setName(index);
       plugins_[index] = plugin;
+      // Start the plugin worker thread
+      plugin->start();
     } else {
       LOG4CXX_ERROR(logger_, "Cannot load plugin with index = " << index << ", already loaded");
     }
