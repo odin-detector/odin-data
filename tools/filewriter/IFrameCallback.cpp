@@ -16,6 +16,8 @@ namespace filewriter
   {
     // Create the work queue for message offload
     queue_ = boost::shared_ptr<WorkQueue<boost::shared_ptr<Frame> > >(new WorkQueue<boost::shared_ptr<Frame> >);
+    // Start the callback worker queue thread
+    this->start();
   }
 
   IFrameCallback::~IFrameCallback()
@@ -29,10 +31,24 @@ namespace filewriter
 
   void IFrameCallback::start()
   {
-    // Set the working flag to true
-    working_ = true;
-    // Now start the worker thread to monitor the queue
-    thread_ = new boost::thread(&IFrameCallback::workerTask, this);
+    if (!working_){
+      // Set the working flag to true
+      working_ = true;
+      // Now start the worker thread to monitor the queue
+      thread_ = new boost::thread(&IFrameCallback::workerTask, this);
+    }
+  }
+
+  void IFrameCallback::confirmRegistration(const std::string& name)
+  {
+    // Add the name of the frame source to our container
+    registrations_[name] = "valid";
+  }
+
+  void IFrameCallback::confirmRemoval(const std::string& name)
+  {
+    // Remove the name of the frame source from our container
+    registrations_.erase(name);
   }
 
   void IFrameCallback::workerTask()

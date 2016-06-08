@@ -31,12 +31,15 @@ namespace filewriter
     virtual ~IFrameCallback ();
     boost::shared_ptr<WorkQueue<boost::shared_ptr<Frame> > > getWorkQueue();
     void start();
+    void confirmRegistration(const std::string& name);
+    void confirmRemoval(const std::string& name);
 
   private:
     LoggerPtr logger_;
     boost::thread *thread_;
     boost::shared_ptr<WorkQueue<boost::shared_ptr<Frame> > > queue_;
     bool working_;
+    std::map<std::string, std::string> registrations_;
 
     void workerTask();
     virtual void callback(boost::shared_ptr<Frame> frame) = 0;
