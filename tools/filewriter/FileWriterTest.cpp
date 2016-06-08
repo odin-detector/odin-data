@@ -41,7 +41,7 @@ private:
 };
 BOOST_GLOBAL_FIXTURE(GlobalConfig);
 
-
+/*
 BOOST_AUTO_TEST_SUITE(FrameUnitTest);
 
 BOOST_AUTO_TEST_CASE( FrameTest )
@@ -65,7 +65,8 @@ BOOST_AUTO_TEST_CASE( FrameTest )
 
 BOOST_AUTO_TEST_SUITE_END(); //FrameUnitTest
 
-
+*/
+/*
 class FileWriterTestFixture
 {
 public:
@@ -105,6 +106,7 @@ public:
     FileWriter fw;
     FileWriter::DatasetDefinition dset_def;
 };
+
 BOOST_FIXTURE_TEST_SUITE(FileWriterUnitTest, FileWriterTestFixture);
 
 BOOST_AUTO_TEST_CASE( FileWriterTest )
@@ -276,7 +278,7 @@ BOOST_AUTO_TEST_CASE( FileWriterSubProcess )
 }
 
 BOOST_AUTO_TEST_SUITE_END(); //FileWriterUnitTest
-
+*/
 BOOST_AUTO_TEST_SUITE(DataBlockUnitTest);
 
 BOOST_AUTO_TEST_CASE(DataBlockTest)
@@ -311,44 +313,44 @@ BOOST_AUTO_TEST_CASE(DataBlockPoolTest)
   boost::shared_ptr<filewriter::DataBlock> block1;
   boost::shared_ptr<filewriter::DataBlock> block2;
   // Allocate 100 blocks
-  BOOST_CHECK_NO_THROW(filewriter::DataBlockPool::allocate(100, 1024));
+  BOOST_CHECK_NO_THROW(filewriter::DataBlockPool::allocate("test1", 100, 1024));
   // Check pool statistics
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getFreeBlocks(), 100);
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getUsedBlocks(), 0);
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getTotalBlocks(), 100);
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getMemoryAllocated(), 102400);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getFreeBlocks("test1"), 100);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getUsedBlocks("test1"), 0);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getTotalBlocks("test1"), 100);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getMemoryAllocated("test1"), 102400);
   // Take 2 blocks
-  BOOST_CHECK_NO_THROW(block1 = filewriter::DataBlockPool::take(1024));
-  BOOST_CHECK_NO_THROW(block2 = filewriter::DataBlockPool::take(1024));
+  BOOST_CHECK_NO_THROW(block1 = filewriter::DataBlockPool::take("test1", 1024));
+  BOOST_CHECK_NO_THROW(block2 = filewriter::DataBlockPool::take("test1", 1024));
   // Check pool statistics
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getFreeBlocks(), 98);
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getUsedBlocks(), 2);
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getTotalBlocks(), 100);
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getMemoryAllocated(), 102400);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getFreeBlocks("test1"), 98);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getUsedBlocks("test1"), 2);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getTotalBlocks("test1"), 100);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getMemoryAllocated("test1"), 102400);
   // Check the taken blocks have different index values
   BOOST_CHECK_NE(block1->getIndex(), block2->getIndex());
   // Release 1 block
-  BOOST_CHECK_NO_THROW(filewriter::DataBlockPool::release(block1));
+  BOOST_CHECK_NO_THROW(filewriter::DataBlockPool::release("test1", block1));
   // Check pool statistics
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getFreeBlocks(), 99);
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getUsedBlocks(), 1);
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getTotalBlocks(), 100);
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getMemoryAllocated(), 102400);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getFreeBlocks("test1"), 99);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getUsedBlocks("test1"), 1);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getTotalBlocks("test1"), 100);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getMemoryAllocated("test1"), 102400);
   // Allocate another 100 blocks
-  BOOST_CHECK_NO_THROW(filewriter::DataBlockPool::allocate(100, 1024));
+  BOOST_CHECK_NO_THROW(filewriter::DataBlockPool::allocate("test1", 100, 1024));
   // Check pool statistics
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getFreeBlocks(), 199);
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getUsedBlocks(), 1);
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getTotalBlocks(), 200);
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getMemoryAllocated(), 204800);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getFreeBlocks("test1"), 199);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getUsedBlocks("test1"), 1);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getTotalBlocks("test1"), 200);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getMemoryAllocated("test1"), 204800);
   // Now take a block of a different size
-  BOOST_CHECK_NO_THROW(block2 = filewriter::DataBlockPool::take(1025));
+  BOOST_CHECK_NO_THROW(block2 = filewriter::DataBlockPool::take("test1", 1025));
   // Check pool statistics
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getFreeBlocks(), 198);
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getUsedBlocks(), 2);
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getTotalBlocks(), 200);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getFreeBlocks("test1"), 198);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getUsedBlocks("test1"), 2);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getTotalBlocks("test1"), 200);
   // Memory allocated should have increased by 1 byte
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getMemoryAllocated(), 204801);
+  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getMemoryAllocated("test1"), 204801);
   // Check the blocks have different index values
   BOOST_CHECK_NE(block1->getIndex(), block2->getIndex());
   // Check the blocks have different sizes
