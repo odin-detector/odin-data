@@ -71,8 +71,11 @@ namespace filewriter
 
   void DataBlockPool::internalAllocate(size_t nBlocks, size_t nBytes)
   {
-    boost::shared_ptr<DataBlock> block;
+    // Protect this method
+    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+
     // Allocate the number of data blocks, each of size nBytes
+    boost::shared_ptr<DataBlock> block;
     for (size_t count = 0; count < nBlocks; count++){
        block = boost::shared_ptr<DataBlock>(new DataBlock(nBytes));
        freeList_.push_front(block);
@@ -85,6 +88,9 @@ namespace filewriter
 
   boost::shared_ptr<DataBlock> DataBlockPool::internalTake(size_t nBytes)
   {
+    // Protect this method
+    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+
     boost::shared_ptr<DataBlock> block;
     if (freeBlocks_ == 0){
       if (totalBlocks_ == 0){
@@ -110,6 +116,9 @@ namespace filewriter
 
   void DataBlockPool::internalRelease(boost::shared_ptr<DataBlock> block)
   {
+    // Protect this method
+    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+
     if (usedMap_.count(block->getIndex()) > 0){
       usedMap_.erase(block->getIndex());
     }

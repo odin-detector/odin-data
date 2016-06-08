@@ -9,6 +9,7 @@
 #define TOOLS_FILEWRITER_DATABLOCKPOOL_H_
 
 #include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
 #include <list>
 
 #include "DataBlock.h"
@@ -51,6 +52,7 @@ namespace filewriter
     size_t internalGetTotalBlocks();
     size_t internalGetMemoryAllocated();
 
+    boost::recursive_mutex mutex_;
     std::list<boost::shared_ptr<DataBlock> > freeList_;
     std::map<int, boost::shared_ptr<DataBlock> > usedMap_;
     size_t freeBlocks_;
