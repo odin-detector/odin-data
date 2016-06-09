@@ -52,6 +52,7 @@ namespace filewriter
     size_t internalGetTotalBlocks();
     size_t internalGetMemoryAllocated();
 
+    log4cxx::LoggerPtr logger_;
     boost::recursive_mutex mutex_;
     std::list<boost::shared_ptr<DataBlock> > freeList_;
     std::map<int, boost::shared_ptr<DataBlock> > usedMap_;
