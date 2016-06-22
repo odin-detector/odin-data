@@ -14,6 +14,8 @@
 #include "FileWriter.h"
 #include "FileWriterPlugin.h"
 #include "IJSONCallback.h"
+#include "IpcReactor.h"
+#include "IpcChannel.h"
 #include "JSONMessage.h"
 #include "JSONPublisher.h"
 #include "JSONSubscriber.h"
@@ -24,11 +26,12 @@
 namespace filewriter
 {
 
-  class FileWriterController : public IJSONCallback
+  class FileWriterController
   {
   public:
     FileWriterController();
     virtual ~FileWriterController();
+    void handleCtrlChannel();
     void configure(boost::shared_ptr<JSONMessage> config);
     void loadPlugin(const std::string& index, const std::string& name, const std::string& library);
     void connectPlugin(const std::string& index, const std::string& connectTo);
@@ -41,6 +44,8 @@ namespace filewriter
     static const std::string CONFIG_FR_RELEASE;       // Cnxn string for frame release
     static const std::string CONFIG_FR_READY;         // Cnxn string for frame ready
     static const std::string CONFIG_FR_SETUP;         // Command to execute setup
+
+    static const std::string CONFIG_CTRL_ENDPOINT;    // Command to start the control socket
 
     static const std::string CONFIG_LOAD_PLUGIN;
     static const std::string CONFIG_CONNECT_PLUGIN;
@@ -55,6 +60,9 @@ namespace filewriter
     void setupFrameReceiverInterface(const std::string& sharedMemName,
                                      const std::string& frPublisherString,
                                      const std::string& frSubscriberString);
+    void setupControlInterface(const std::string& ctrlEndpointString);
+    void runIpcService(void);
+    void tickTimer(void);
 
     log4cxx::LoggerPtr logger_;
     boost::shared_ptr<SharedMemoryController> sharedMemController_;
@@ -64,6 +72,14 @@ namespace filewriter
     std::map<std::string, boost::shared_ptr<FileWriterPlugin> > plugins_;
     boost::condition_variable exitCondition_;
     boost::mutex exitMutex_;
+
+    bool                                         runThread_;
+    bool                                         threadRunning_;
+    bool                                         threadInitError_;
+    boost::thread                                ctrlThread_;
+    std::string                                  threadInitMsg_;
+    boost::shared_ptr<FrameReceiver::IpcReactor> reactor_;
+    FrameReceiver::IpcChannel                    ctrlChannel_;
   };
 
 } /* namespace filewriter */

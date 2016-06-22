@@ -186,18 +186,23 @@ int main(int argc, char** argv)
 
     boost::shared_ptr<filewriter::FileWriterController> fwc;
     fwc = boost::shared_ptr<filewriter::FileWriterController>(new filewriter::FileWriterController());
-    filewriter::JSONSubscriber sh("tcp://127.0.0.1:5003");
-    sh.registerCallback(fwc);
-    sh.subscribe();
+    //filewriter::JSONSubscriber sh("tcp://127.0.0.1:5003");
+    //sh.registerCallback(fwc);
+    //sh.subscribe();
+
+    // Configure the control channel for the filewriter
+    std::string cfgString = "{" + std::string("\"ctrl_endpoint\":\"tcp://127.0.0.1:5004\"") + "}";
+    boost::shared_ptr<JSONMessage> cfg = boost::shared_ptr<JSONMessage>(new JSONMessage(cfgString));
+    fwc->configure(cfg);
 
     // Configure the shared memory setup of the file writer controller
-    std::string cfgString = "{" +
+    cfgString = "{" +
         std::string("\"fr_release_cnxn\":\"") + vm["release"].as<string>() + std::string("\",") +
         "\"fr_ready_cnxn\":\"" + vm["ready"].as<string>() + "\"," +
         "\"fr_shared_mem\":\"" + vm["sharedbuf"].as<string>() + "\"" +
         "}";
     cfgString = "{\"fr_setup\": " + cfgString + "}";
-    boost::shared_ptr<JSONMessage> cfg = boost::shared_ptr<JSONMessage>(new JSONMessage(cfgString));
+    cfg = boost::shared_ptr<JSONMessage>(new JSONMessage(cfgString));
     fwc->configure(cfg);
 
     // Now load the percival plugin

@@ -29,7 +29,7 @@ message(STATUS "HDF5 include files:  " ${HDF5_INCLUDE_DIRS})
 message(STATUS "HDF5 libs:           " ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES})
 message(STATUS "HDF5 defs:           " ${HDF5_DEFINITIONS})
 
-target_link_libraries(filewriter ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES})
+target_link_libraries(filewriter ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} Ipc)
 
 # Add library for dummy plugin
 add_library(DummyPlugin SHARED DummyPlugin.cpp)

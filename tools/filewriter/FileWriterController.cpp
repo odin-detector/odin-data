@@ -18,6 +18,8 @@ namespace filewriter
   const std::string FileWriterController::CONFIG_FR_READY          = "fr_ready_cnxn";
   const std::string FileWriterController::CONFIG_FR_SETUP          = "fr_setup";
 
+  const std::string FileWriterController::CONFIG_CTRL_ENDPOINT     = "ctrl_endpoint";
+
   const std::string FileWriterController::CONFIG_LOAD_PLUGIN       = "load_plugin";
   const std::string FileWriterController::CONFIG_CONNECT_PLUGIN    = "connect_plugin";
   const std::string FileWriterController::CONFIG_DISCONNECT_PLUGIN = "disconnect_plugin";
@@ -28,7 +30,12 @@ namespace filewriter
   const std::string FileWriterController::CONFIG_PLUGIN_LIBRARY    = "plugin_library";
 
   FileWriterController::FileWriterController() :
-    logger_(log4cxx::Logger::getLogger("FileWriterController"))
+    logger_(log4cxx::Logger::getLogger("FileWriterController")),
+    runThread_(true),
+    threadRunning_(false),
+    threadInitError_(false),
+    ctrlThread_(boost::bind(&FileWriterController::runIpcService, this)),
+    ctrlChannel_(ZMQ_PAIR)
   {
     LOG4CXX_DEBUG(logger_, "Constructing FileWriterController");
 
@@ -38,11 +45,47 @@ namespace filewriter
     plugins_["hdf"] = hdf5;
     // Start the hdf5 worker thread
     hdf5->start();
+
+    // Wait for the thread service to initialise and be running properly, so that
+    // this constructor only returns once the object is fully initialised (RAII).
+    // Monitor the thread error flag and throw an exception if initialisation fails
+    while (!threadRunning_)
+    {
+        if (threadInitError_) {
+            ctrlThread_.join();
+            throw std::runtime_error(threadInitMsg_);
+            break;
+        }
+    }
+
   }
 
   FileWriterController::~FileWriterController()
   {
     // TODO Auto-generated destructor stub
+  }
+
+  void FileWriterController::handleCtrlChannel()
+  {
+    // Receive a message from the main thread channel
+    std::string ctrlMsgEncoded = ctrlChannel_.recv();
+
+    LOG4CXX_DEBUG(logger_, "Control thread called with message: " << ctrlMsgEncoded);
+
+    // Parse and handle the message
+    try {
+      FrameReceiver::IpcMessage ctrlMsg(ctrlMsgEncoded.c_str());
+
+      //if ((rxMsg.get_msg_type() == FrameReceiver::IpcMessage::MsgTypeNotify) &&
+      //    (rxMsg.get_msg_val()  == FrameReceiver::IpcMessage::MsgValNotifyFrameReady)){
+      //} else {
+      //  LOG4CXX_ERROR(logger_, "RX thread got unexpected message: " << rxMsgEncoded);
+      //}
+    }
+    catch (FrameReceiver::IpcMessageException& e)
+    {
+        LOG4CXX_ERROR(logger_, "Error decoding control channel request: " << e.what());
+    }
   }
 
   void FileWriterController::configure(boost::shared_ptr<JSONMessage> config)
@@ -52,6 +95,11 @@ namespace filewriter
     // Check if we are being asked to shutdown
     if (config->HasMember(FileWriterController::CONFIG_SHUTDOWN)){
       exitCondition_.notify_all();
+    }
+
+    if (config->HasMember(FileWriterController::CONFIG_CTRL_ENDPOINT)){
+      std::string endpoint = (*config)[FileWriterController::CONFIG_CTRL_ENDPOINT].GetString();
+      this->setupControlInterface(endpoint);
     }
 
     // Check if we are being passed the shared memory configuration
@@ -168,12 +216,6 @@ namespace filewriter
     exitCondition_.wait(lock);
   }
 
-  void FileWriterController::callback(boost::shared_ptr<JSONMessage> msg)
-  {
-    // Pass straight to configure
-    this->configure(msg);
-  }
-
   void FileWriterController::setupFrameReceiverInterface(const std::string& sharedMemName,
                                                          const std::string& frPublisherString,
                                                          const std::string& frSubscriberString)
@@ -189,33 +231,86 @@ namespace filewriter
     sharedMemParser_ = boost::shared_ptr<SharedMemoryParser>(new SharedMemoryParser(sharedMemName));
 
     // Release the current zmq frame release publisher if one exists
-    if (frameReleasePublisher_){
-      frameReleasePublisher_.reset();
-    }
+//    if (frameReleasePublisher_){
+//      frameReleasePublisher_.reset();
+//    }
     // Now create the new zmq publisher
-    frameReleasePublisher_ = boost::shared_ptr<JSONPublisher>(new JSONPublisher(frPublisherString));
-    frameReleasePublisher_->connect();
+//    frameReleasePublisher_ = boost::shared_ptr<JSONPublisher>(new JSONPublisher(frPublisherString));
+//    frameReleasePublisher_->connect();
 
     // Release the current shared memory controller if one exists
     if (sharedMemController_){
       sharedMemController_.reset();
     }
     // Create the new shared memory controller and give it the parser and publisher
-    sharedMemController_ = boost::shared_ptr<SharedMemoryController>(new SharedMemoryController());
+    sharedMemController_ = boost::shared_ptr<SharedMemoryController>(new SharedMemoryController(reactor_, frSubscriberString, frPublisherString));
     sharedMemController_->setSharedMemoryParser(sharedMemParser_);
-    sharedMemController_->setFrameReleasePublisher(frameReleasePublisher_);
+//    sharedMemController_->setFrameReleasePublisher(frameReleasePublisher_);
 
     // Release the current zmq frame ready subscriber if one exists
-    if (frameReadySubscriber_){
-      frameReadySubscriber_.reset();
-    }
+    //if (frameReadySubscriber_){
+    //  frameReadySubscriber_.reset();
+    //}
     // Now create the frame ready subscriber and register the shared memory controller
-    frameReadySubscriber_ = boost::shared_ptr<JSONSubscriber>(new JSONSubscriber(frSubscriberString));
-    frameReadySubscriber_->registerCallback(sharedMemController_);
-    frameReadySubscriber_->subscribe();
+    //frameReadySubscriber_ = boost::shared_ptr<JSONSubscriber>(new JSONSubscriber(frSubscriberString));
+    //frameReadySubscriber_->registerCallback(sharedMemController_);
+    //frameReadySubscriber_->subscribe();
 
     // Register the default hdf5 writer plugin with the shared memory controller
     sharedMemController_->registerCallback("hdf", plugins_["hdf"]);
+  }
+
+  void FileWriterController::setupControlInterface(const std::string& ctrlEndpointString)
+  {
+    try {
+      LOG4CXX_DEBUG(logger_, "Connecting control channel to endpoint: " << ctrlEndpointString);
+      ctrlChannel_.bind(ctrlEndpointString.c_str());
+    }
+    catch (zmq::error_t& e) {
+      //std::stringstream ss;
+      //ss << "RX channel connect to endpoint " << config_.rx_channel_endpoint_ << " failed: " << e.what();
+      // TODO: What to do here, I think throw it up
+      throw std::runtime_error(e.what());
+    }
+
+    // Add the control channel to the reactor
+    reactor_->register_channel(ctrlChannel_, boost::bind(&FileWriterController::handleCtrlChannel, this));
+  }
+
+  void FileWriterController::runIpcService(void)
+  {
+    LOG4CXX_DEBUG(logger_, "Running IPC thread service");
+
+    // Create the reactor
+    reactor_ = boost::shared_ptr<FrameReceiver::IpcReactor>(new FrameReceiver::IpcReactor());
+
+    // Add the tick timer to the reactor
+    int tick_timer_id = reactor_->register_timer(1000, 0, boost::bind(&FileWriterController::tickTimer, this));
+
+    // Add the buffer monitor timer to the reactor
+    //int buffer_monitor_timer_id = reactor_.register_timer(3000, 0, boost::bind(&FrameReceiverRxThread::buffer_monitor_timer, this));
+
+    // Register the frame release callback with the decoder
+    //frame_decoder_->register_frame_ready_callback(boost::bind(&FrameReceiverRxThread::frame_ready, this, _1, _2));
+
+    // Set thread state to running, allows constructor to return
+    threadRunning_ = true;
+
+    // Run the reactor event loop
+    reactor_->run();
+
+    // Cleanup - remove channels, sockets and timers from the reactor and close the receive socket
+    LOG4CXX_DEBUG(logger_, "Terminating IPC thread service");
+  }
+
+  void FileWriterController::tickTimer(void)
+  {
+    LOG4CXX_DEBUG(logger_, "IPC thread tick timer fired");
+    if (!runThread_)
+    {
+      LOG4CXX_DEBUG(logger_, "IPC thread terminate detected in timer");
+      reactor_->stop();
+    }
   }
 
 } /* namespace filewriter */

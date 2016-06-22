@@ -42,7 +42,7 @@ namespace filewriter
     {
     case 0: // 1-bit counter depth
       reorderedImage = (void *)malloc(frame->get_data_size());
-  //    memcpy(reorderedImage, (void*)(buffer->buffer), (buffer->bufferLength));
+      memcpy(reorderedImage, (void*)(frame->get_data()), (frame->get_data_size()));
       reorder1BitImage((unsigned int*)(frame->get_data()), (unsigned char *)reorderedImage);
       break;
 
