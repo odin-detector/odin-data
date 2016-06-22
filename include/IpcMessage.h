@@ -85,6 +85,7 @@ namespace FrameReceiver
 			MsgValIllegal = -1,       //!< Illegal value
 			MsgValCmdReset,           //!< Reset command message
 			MsgValCmdStatus,          //!< Status command message
+			MsgValCmdConfigure,       //!< Configure command message
 			MsgValNotifyFrameReady,   //!< Frame ready notification message
 			MsgValNotifyFrameRelease, //!< Frame release notification message
 		};
@@ -100,7 +101,12 @@ namespace FrameReceiver
 
 		IpcMessage(MsgType msg_type=MsgTypeIllegal, MsgVal msg_val=MsgValIllegal, bool strict_validation=true);
 
-		IpcMessage(const char* json_msg, bool strict_validation=true);
+    IpcMessage(const char* json_msg, bool strict_validation=true);
+
+    IpcMessage(const rapidjson::Value& value,
+               MsgType msg_type=MsgTypeIllegal,
+               MsgVal msg_val=MsgValIllegal,
+               bool strict_validation=true);
 
 		//! Gets the value of a named parameter in the message.
 		//!
@@ -197,6 +203,9 @@ namespace FrameReceiver
 				set_value(const_cast<rapidjson::Value&>(param_itr->value), param_value);
 			}
 		}
+
+		  //! Returns true if the parameter is found within the message
+    bool has_param(const std::string& param_name) const;
 
 	    //! Indicates if message has necessary attributes with legal values
 		bool is_valid(void);

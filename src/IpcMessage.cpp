@@ -98,6 +98,65 @@ namespace FrameReceiver {
 
     }
 
+    //! Constructor taking rapidJSON value as argument.
+    //!
+    //! This constructor takes a rapidJSON value as an argument to construct a message
+    //! based on its contents.
+    //!
+    //! \param value             - rapidJSON value to set as the parameters
+    //! \param msg_type          - MsgType enumerated message type (default: MsgTypeIllegal)
+    //! \param msg_val           - MsgVal enumerated message value (default: MsgValIllegal)
+    //! \param strict_validation - Enforces strict validation of the message contents during subsequent
+    //!                            setter calls (default: True)
+
+    IpcMessage::IpcMessage(const rapidjson::Value& value,
+                           MsgType msg_type,
+                           MsgVal msg_val,
+                           bool strict_validation) :
+      strict_validation_(strict_validation),
+      msg_type_(msg_type),
+      msg_val_(msg_val),
+      msg_timestamp_(boost::posix_time::microsec_clock::local_time())
+    {
+      // Intialise empty JSON document
+      doc_.SetObject();
+
+      // Make a deep copy of the value
+      rapidjson::Value newValue(value, doc_.GetAllocator());
+      // Create the required params block
+      doc_.AddMember("params", newValue, doc_.GetAllocator());
+    }
+
+    //! Searches for the named parameter in the message.
+    //!
+    //! This method returns true if the parameter is found in the message, or false
+    //! if the block or parameter is missing
+    //!
+    //! \param param_name - string name of the parameter to return
+    //! \return true if the parameter is present, otherwise false
+
+    bool IpcMessage::has_param(const std::string& param_name) const
+    {
+      bool param_found = true;
+
+      // Locate the params block
+      rapidjson::Value::ConstMemberIterator itr = doc_.FindMember("params");
+      if (itr == doc_.MemberEnd())
+      {
+        // No params block so we will not find the parameter
+        param_found = false;
+      } else {
+        // Attempt to locate parameter within block
+        rapidjson::Value::ConstMemberIterator param_itr = itr->value.FindMember(param_name.c_str());
+        if (param_itr == itr->value.MemberEnd())
+        {
+          // Couldn't find the parameter
+          param_found = false;
+        }
+      }
+      return param_found;
+    }
+
     //! Indicates if message has necessary attributes with legal values.
     //!
     //! This method indicates if the message is valid, i.e. that all required attributes
@@ -365,6 +424,7 @@ namespace FrameReceiver {
     {
         msg_val_map_.insert(MsgValMapEntry("reset",         MsgValCmdReset));
         msg_val_map_.insert(MsgValMapEntry("status",        MsgValCmdStatus));
+        msg_val_map_.insert(MsgValMapEntry("configure",     MsgValCmdConfigure));
         msg_val_map_.insert(MsgValMapEntry("frame_ready",   MsgValNotifyFrameReady));
         msg_val_map_.insert(MsgValMapEntry("frame_release", MsgValNotifyFrameRelease));
     }
@@ -504,6 +564,17 @@ namespace FrameReceiver {
     template<> std::string IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr)
     {
         return itr->value.GetString();
+    }
+
+    template<> bool IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr)
+    {
+        return itr->value.GetBool();
+    }
+
+    template<> const rapidjson::Value& IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr)
+    {
+        const rapidjson::Value& val = itr->value;
+        return val;
     }
 
     // Explicit specialisations of the the set_value method, mapping  RapidJSON storage types
