@@ -39,13 +39,6 @@ namespace filewriter
   {
     LOG4CXX_DEBUG(logger_, "Constructing FileWriterController");
 
-    // Load in the default hdf5 writer plugin
-    boost::shared_ptr<FileWriterPlugin> hdf5 = boost::shared_ptr<FileWriterPlugin>(new FileWriter());
-    hdf5->setName("hdf");
-    plugins_["hdf"] = hdf5;
-    // Start the hdf5 worker thread
-    hdf5->start();
-
     // Wait for the thread service to initialise and be running properly, so that
     // this constructor only returns once the object is fully initialised (RAII).
     // Monitor the thread error flag and throw an exception if initialisation fails
@@ -76,11 +69,12 @@ namespace filewriter
     try {
       FrameReceiver::IpcMessage ctrlMsg(ctrlMsgEncoded.c_str());
 
-      //if ((rxMsg.get_msg_type() == FrameReceiver::IpcMessage::MsgTypeNotify) &&
-      //    (rxMsg.get_msg_val()  == FrameReceiver::IpcMessage::MsgValNotifyFrameReady)){
-      //} else {
-      //  LOG4CXX_ERROR(logger_, "RX thread got unexpected message: " << rxMsgEncoded);
-      //}
+      if ((ctrlMsg.get_msg_type() == FrameReceiver::IpcMessage::MsgTypeCmd) &&
+          (ctrlMsg.get_msg_val()  == FrameReceiver::IpcMessage::MsgValCmdConfigure)){
+        this->configure(ctrlMsg);
+      } else {
+        LOG4CXX_ERROR(logger_, "Control thread got unexpected message: " << ctrlMsgEncoded);
+      }
     }
     catch (FrameReceiver::IpcMessageException& e)
     {
@@ -88,64 +82,64 @@ namespace filewriter
     }
   }
 
-  void FileWriterController::configure(boost::shared_ptr<JSONMessage> config)
+  void FileWriterController::configure(FrameReceiver::IpcMessage& config)
   {
-    LOG4CXX_DEBUG(logger_, "Configuration submitted: " << config->toString());
+    LOG4CXX_DEBUG(logger_, "Configuration submitted: " << config.encode());
 
     // Check if we are being asked to shutdown
-    if (config->HasMember(FileWriterController::CONFIG_SHUTDOWN)){
+    if (config.has_param(FileWriterController::CONFIG_SHUTDOWN)){
       exitCondition_.notify_all();
     }
 
-    if (config->HasMember(FileWriterController::CONFIG_CTRL_ENDPOINT)){
-      std::string endpoint = (*config)[FileWriterController::CONFIG_CTRL_ENDPOINT].GetString();
+    if (config.has_param(FileWriterController::CONFIG_CTRL_ENDPOINT)){
+      std::string endpoint = config.get_param<std::string>(FileWriterController::CONFIG_CTRL_ENDPOINT);
       this->setupControlInterface(endpoint);
     }
 
     // Check if we are being passed the shared memory configuration
-    if (config->HasMember(FileWriterController::CONFIG_FR_SETUP)){
-      JSONMessage frConfig((*config)[FileWriterController::CONFIG_FR_SETUP]);
-      if (frConfig.HasMember(FileWriterController::CONFIG_FR_SHARED_MEMORY) &&
-          frConfig.HasMember(FileWriterController::CONFIG_FR_RELEASE) &&
-          frConfig.HasMember(FileWriterController::CONFIG_FR_READY)){
-        std::string shMemName = frConfig[FileWriterController::CONFIG_FR_SHARED_MEMORY].GetString();
-        std::string pubString = frConfig[FileWriterController::CONFIG_FR_RELEASE].GetString();
-        std::string subString = frConfig[FileWriterController::CONFIG_FR_READY].GetString();
+    if (config.has_param(FileWriterController::CONFIG_FR_SETUP)){
+      FrameReceiver::IpcMessage frConfig(config.get_param<const rapidjson::Value&>(FileWriterController::CONFIG_FR_SETUP));
+      if (frConfig.has_param(FileWriterController::CONFIG_FR_SHARED_MEMORY) &&
+          frConfig.has_param(FileWriterController::CONFIG_FR_RELEASE) &&
+          frConfig.has_param(FileWriterController::CONFIG_FR_READY)){
+        std::string shMemName = frConfig.get_param<std::string>(FileWriterController::CONFIG_FR_SHARED_MEMORY);
+        std::string pubString = frConfig.get_param<std::string>(FileWriterController::CONFIG_FR_RELEASE);
+        std::string subString = frConfig.get_param<std::string>(FileWriterController::CONFIG_FR_READY);
         this->setupFrameReceiverInterface(shMemName, pubString, subString);
       }
     }
 
     // Check if we are being asked to load a plugin
-    if (config->HasMember(FileWriterController::CONFIG_LOAD_PLUGIN)){
-      JSONMessage pluginConfig((*config)[FileWriterController::CONFIG_LOAD_PLUGIN]);
-      if (pluginConfig.HasMember(FileWriterController::CONFIG_PLUGIN_NAME) &&
-          pluginConfig.HasMember(FileWriterController::CONFIG_PLUGIN_INDEX) &&
-          pluginConfig.HasMember(FileWriterController::CONFIG_PLUGIN_LIBRARY)){
-        std::string index = pluginConfig[FileWriterController::CONFIG_PLUGIN_INDEX].GetString();
-        std::string name = pluginConfig[FileWriterController::CONFIG_PLUGIN_NAME].GetString();
-        std::string library = pluginConfig[FileWriterController::CONFIG_PLUGIN_LIBRARY].GetString();
+    if (config.has_param(FileWriterController::CONFIG_LOAD_PLUGIN)){
+      FrameReceiver::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FileWriterController::CONFIG_LOAD_PLUGIN));
+      if (pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_NAME) &&
+          pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_INDEX) &&
+          pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_LIBRARY)){
+        std::string index = pluginConfig.get_param<std::string>(FileWriterController::CONFIG_PLUGIN_INDEX);
+        std::string name = pluginConfig.get_param<std::string>(FileWriterController::CONFIG_PLUGIN_NAME);
+        std::string library = pluginConfig.get_param<std::string>(FileWriterController::CONFIG_PLUGIN_LIBRARY);
         this->loadPlugin(index, name, library);
       }
     }
 
     // Check if we are being asked to connect a plugin
-    if (config->HasMember(FileWriterController::CONFIG_CONNECT_PLUGIN)){
-      JSONMessage pluginConfig((*config)[FileWriterController::CONFIG_CONNECT_PLUGIN]);
-      if (pluginConfig.HasMember(FileWriterController::CONFIG_PLUGIN_CONNECT_TO) &&
-          pluginConfig.HasMember(FileWriterController::CONFIG_PLUGIN_INDEX)){
-        std::string index = pluginConfig[FileWriterController::CONFIG_PLUGIN_INDEX].GetString();
-        std::string cnxn = pluginConfig[FileWriterController::CONFIG_PLUGIN_CONNECT_TO].GetString();
+    if (config.has_param(FileWriterController::CONFIG_CONNECT_PLUGIN)){
+      FrameReceiver::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FileWriterController::CONFIG_CONNECT_PLUGIN));
+      if (pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_CONNECT_TO) &&
+          pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_INDEX)){
+        std::string index = pluginConfig.get_param<std::string>(FileWriterController::CONFIG_PLUGIN_INDEX);
+        std::string cnxn = pluginConfig.get_param<std::string>(FileWriterController::CONFIG_PLUGIN_CONNECT_TO);
         this->connectPlugin(index, cnxn);
       }
     }
 
     // Check if we are being asked to disconnect a plugin
-    if (config->HasMember(FileWriterController::CONFIG_DISCONNECT_PLUGIN)){
-      JSONMessage pluginConfig((*config)[FileWriterController::CONFIG_DISCONNECT_PLUGIN]);
-      if (pluginConfig.HasMember(FileWriterController::CONFIG_PLUGIN_DISCONNECT_FROM) &&
-          pluginConfig.HasMember(FileWriterController::CONFIG_PLUGIN_INDEX)){
-        std::string index = pluginConfig[FileWriterController::CONFIG_PLUGIN_INDEX].GetString();
-        std::string cnxn = pluginConfig[FileWriterController::CONFIG_PLUGIN_DISCONNECT_FROM].GetString();
+    if (config.has_param(FileWriterController::CONFIG_DISCONNECT_PLUGIN)){
+      FrameReceiver::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FileWriterController::CONFIG_DISCONNECT_PLUGIN));
+      if (pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_DISCONNECT_FROM) &&
+          pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_INDEX)){
+        std::string index = pluginConfig.get_param<std::string>(FileWriterController::CONFIG_PLUGIN_INDEX);
+        std::string cnxn = pluginConfig.get_param<std::string>(FileWriterController::CONFIG_PLUGIN_DISCONNECT_FROM);
         this->disconnectPlugin(index, cnxn);
       }
     }
@@ -153,8 +147,8 @@ namespace filewriter
     // Loop over plugins, checking for configuration messages
     std::map<std::string, boost::shared_ptr<FileWriterPlugin> >::iterator iter;
     for (iter = plugins_.begin(); iter != plugins_.end(); ++iter){
-      if (config->HasMember(iter->first)){
-        boost::shared_ptr<JSONMessage> subConfig = boost::shared_ptr<JSONMessage>(new JSONMessage((*config)[iter->first]));
+      if (config.has_param(iter->first)){
+        FrameReceiver::IpcMessage subConfig(config.get_param<const rapidjson::Value&>(iter->first));
         iter->second->configure(subConfig);
       }
     }
@@ -230,14 +224,6 @@ namespace filewriter
     // Create the new shared memory parser
     sharedMemParser_ = boost::shared_ptr<SharedMemoryParser>(new SharedMemoryParser(sharedMemName));
 
-    // Release the current zmq frame release publisher if one exists
-//    if (frameReleasePublisher_){
-//      frameReleasePublisher_.reset();
-//    }
-    // Now create the new zmq publisher
-//    frameReleasePublisher_ = boost::shared_ptr<JSONPublisher>(new JSONPublisher(frPublisherString));
-//    frameReleasePublisher_->connect();
-
     // Release the current shared memory controller if one exists
     if (sharedMemController_){
       sharedMemController_.reset();
@@ -245,19 +231,6 @@ namespace filewriter
     // Create the new shared memory controller and give it the parser and publisher
     sharedMemController_ = boost::shared_ptr<SharedMemoryController>(new SharedMemoryController(reactor_, frSubscriberString, frPublisherString));
     sharedMemController_->setSharedMemoryParser(sharedMemParser_);
-//    sharedMemController_->setFrameReleasePublisher(frameReleasePublisher_);
-
-    // Release the current zmq frame ready subscriber if one exists
-    //if (frameReadySubscriber_){
-    //  frameReadySubscriber_.reset();
-    //}
-    // Now create the frame ready subscriber and register the shared memory controller
-    //frameReadySubscriber_ = boost::shared_ptr<JSONSubscriber>(new JSONSubscriber(frSubscriberString));
-    //frameReadySubscriber_->registerCallback(sharedMemController_);
-    //frameReadySubscriber_->subscribe();
-
-    // Register the default hdf5 writer plugin with the shared memory controller
-    sharedMemController_->registerCallback("hdf", plugins_["hdf"]);
   }
 
   void FileWriterController::setupControlInterface(const std::string& ctrlEndpointString)

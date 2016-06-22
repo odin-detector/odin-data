@@ -18,11 +18,9 @@ using namespace log4cxx::helpers;
 #include "boost/date_time/posix_time/posix_time.hpp"
 
 #include "IFrameCallback.h"
-#include "IJSONCallback.h"
 #include "IpcReactor.h"
 #include "IpcChannel.h"
 #include "IpcMessage.h"
-#include "JSONPublisher.h"
 #include "SharedMemoryParser.h"
 
 namespace filewriter
@@ -38,23 +36,20 @@ namespace filewriter
    * plugins.  This class also notifies the frame receiver service once the
    * shared memory location is available.
    */
-  class SharedMemoryController : public IJSONCallback
+  class SharedMemoryController
   {
   public:
     SharedMemoryController(boost::shared_ptr<FrameReceiver::IpcReactor> reactor, const std::string& rxEndPoint, const std::string& txEndPoint);
     virtual ~SharedMemoryController();
     void setSharedMemoryParser(boost::shared_ptr<SharedMemoryParser> smp);
-    void setFrameReleasePublisher(boost::shared_ptr<JSONPublisher> frp);
     void registerCallback(const std::string& name, boost::shared_ptr<IFrameCallback> cb);
     void removeCallback(const std::string& name);
     void handleRxChannel();
 
   private:
-    void callback(boost::shared_ptr<JSONMessage> msg);
-
     LoggerPtr logger_;
     boost::shared_ptr<SharedMemoryParser> smp_;
-    boost::shared_ptr<JSONPublisher> frp_;
+    //boost::shared_ptr<JSONPublisher> frp_;
     std::map<std::string, boost::shared_ptr<IFrameCallback> > callbacks_;
     boost::shared_ptr<FrameReceiver::IpcReactor> reactor_;
     FrameReceiver::IpcChannel             rxChannel_;

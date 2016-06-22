@@ -7,15 +7,10 @@ add_definitions(${HDF5_DEFINITIONS})
 
 file(GLOB APP_SOURCES DataBlock.cpp 
                       DataBlockPool.cpp 
-                      FileWriter.cpp 
                       FileWriterController.cpp 
                       FileWriterPlugin.cpp 
                       Frame.cpp 
                       IFrameCallback.cpp 
-                      IJSONCallback.cpp 
-                      JSONMessage.cpp 
-                      JSONPublisher.cpp 
-                      JSONSubscriber.cpp 
                       SharedMemoryController.cpp 
                       SharedMemoryParser.cpp 
                       SocketHandler.cpp )
@@ -33,13 +28,18 @@ target_link_libraries(filewriter ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROM
 
 # Add library for dummy plugin
 add_library(DummyPlugin SHARED DummyPlugin.cpp)
+
+# Add library for HDF5 writer plugin
+add_library(Hdf5Plugin SHARED FileWriter.cpp)
+
 # Add library for excalibur plugin
 add_library(ExcaliburReorderPlugin SHARED ExcaliburReorderPlugin.cpp)
+
 # Add library for percival process plugin
 add_library(PercivalProcessPlugin SHARED PercivalProcessPlugin.cpp)
             
 # Add test and project source files to executable
-file(GLOB TESTABLE_SOURCES JSONMessage.cpp DataBlock.cpp DataBlockPool.cpp IFrameCallback.cpp FileWriterPlugin.cpp FileWriter.cpp Frame.cpp)
+file(GLOB TESTABLE_SOURCES DataBlock.cpp DataBlockPool.cpp IFrameCallback.cpp FileWriterPlugin.cpp Frame.cpp)
 add_executable(fileWriterTest ${TEST_SOURCES} ${TESTABLE_SOURCES})
 
 # Define libraries to link against
@@ -47,7 +47,10 @@ target_link_libraries(fileWriterTest
         ${Boost_LIBRARIES}
         ${LOG4CXX_LIBRARIES}
         ${ZEROMQ_LIBRARIES}
-        ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES}) 
+        ${HDF5_LIBRARIES} 
+        ${HDF5HL_LIBRARIES}
+        Hdf5Plugin
+        Ipc) 
 
 if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
   # librt required for timing functions

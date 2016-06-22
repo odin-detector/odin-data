@@ -18,7 +18,7 @@
 using namespace log4cxx;
 
 #include "FileWriterPlugin.h"
-#include "JSONMessage.h"
+#include "ClassLoader.h"
 
 namespace filewriter
 {
@@ -59,7 +59,7 @@ public:
 
     void startWriting();
     void stopWriting();
-    boost::shared_ptr<filewriter::JSONMessage> configure(boost::shared_ptr<filewriter::JSONMessage> config);
+    FrameReceiver::IpcMessage& configure(FrameReceiver::IpcMessage& config);
 
 private:
     FileWriter(const FileWriter& src); // prevent copying one of these
@@ -83,6 +83,12 @@ private:
     hid_t hdf5_fileid_;
     std::map<std::string, FileWriter::HDF5Dataset_t> hdf5_datasets_;
 };
+
+/**
+ * Registration of this plugin through the ClassLoader.  This macro
+ * registers the class without needing to worry about name mangling
+ */
+REGISTER(FileWriterPlugin, FileWriter, "FileWriter");
 
 }
 #endif /* TOOLS_FILEWRITER_FILEWRITER_H_ */

@@ -9,7 +9,7 @@
 #define TOOLS_FILEWRITER_FILEWRITERPLUGIN_H_
 
 #include "IFrameCallback.h"
-#include "JSONMessage.h"
+#include "IpcMessage.h"
 
 namespace filewriter
 {
@@ -20,7 +20,7 @@ namespace filewriter
     FileWriterPlugin();
     virtual ~FileWriterPlugin();
     void setName(const std::string& name);
-    virtual boost::shared_ptr<filewriter::JSONMessage> configure(boost::shared_ptr<filewriter::JSONMessage> config);
+    virtual FrameReceiver::IpcMessage& configure(FrameReceiver::IpcMessage& config);
     void registerCallback(const std::string& name, boost::shared_ptr<IFrameCallback> cb);
     void removeCallback(const std::string& name);
 

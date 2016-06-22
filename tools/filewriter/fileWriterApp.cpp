@@ -33,8 +33,8 @@ using namespace rapidjson;
 
 #include "zmq/zmq.hpp"
 
-#include <JSONSubscriber.h>
 #include "FileWriterController.h"
+#include "IpcMessage.h"
 #include "SharedMemoryParser.h"
 #include "SharedMemoryController.h"
 
@@ -178,69 +178,88 @@ int main(int argc, char** argv)
     // Create a default basic logger configuration, which can be overridden by command-line option later
     BasicConfigurator::configure();
 
+    // Setup some rapid JSON objects that will be usefull for us
+    rapidjson::Document jsonDoc;
+    jsonDoc.SetObject();
+    rapidjson::Document::AllocatorType& allocator = jsonDoc.GetAllocator();
+    rapidjson::Value map;
+    map.SetObject();
+    rapidjson::Value val;
+
     LoggerPtr logger(Logger::getLogger("socketApp"));
     po::variables_map vm;
     parse_arguments(argc, argv, vm, logger);
 
-    //DataBlockPool::allocate(200, 1024);
-
     boost::shared_ptr<filewriter::FileWriterController> fwc;
     fwc = boost::shared_ptr<filewriter::FileWriterController>(new filewriter::FileWriterController());
-    //filewriter::JSONSubscriber sh("tcp://127.0.0.1:5003");
-    //sh.registerCallback(fwc);
-    //sh.subscribe();
 
     // Configure the control channel for the filewriter
-    std::string cfgString = "{" + std::string("\"ctrl_endpoint\":\"tcp://127.0.0.1:5004\"") + "}";
-    boost::shared_ptr<JSONMessage> cfg = boost::shared_ptr<JSONMessage>(new JSONMessage(cfgString));
+    FrameReceiver::IpcMessage cfg;
+    cfg.set_param<std::string>("ctrl_endpoint", "tcp://127.0.0.1:5004");
     fwc->configure(cfg);
 
-    // Configure the shared memory setup of the file writer controller
-    cfgString = "{" +
-        std::string("\"fr_release_cnxn\":\"") + vm["release"].as<string>() + std::string("\",") +
-        "\"fr_ready_cnxn\":\"" + vm["ready"].as<string>() + "\"," +
-        "\"fr_shared_mem\":\"" + vm["sharedbuf"].as<string>() + "\"" +
-        "}";
-    cfgString = "{\"fr_setup\": " + cfgString + "}";
-    cfg = boost::shared_ptr<JSONMessage>(new JSONMessage(cfgString));
-    fwc->configure(cfg);
+    // Configure the shared memory interface for the filewriter
+    val.SetObject();
+    val.SetString(vm["release"].as<string>().c_str(), allocator);
+    map.AddMember("fr_release_cnxn", val, allocator);
+    val.SetObject();
+    val.SetString(vm["ready"].as<string>().c_str(), allocator);
+    map.AddMember("fr_ready_cnxn", val, allocator);
+    val.SetObject();
+    val.SetString(vm["sharedbuf"].as<string>().c_str(), allocator);
+    map.AddMember("fr_shared_mem", val, allocator);
+    rapidjson::Value fr_config;
+    fr_config.SetObject();
+    fr_config.AddMember("fr_setup", map, allocator);
+    FrameReceiver::IpcMessage shm_cfg(fr_config);
+    fwc->configure(shm_cfg);
 
     // Now load the percival plugin
-    cfgString = "{" +
-            std::string("\"plugin_library\":\"./lib/libPercivalProcessPlugin.so\",") +
-            "\"plugin_index\":\"percival\"," +
-            "\"plugin_name\":\"PercivalProcessPlugin\"" +
-            "}";
-    cfgString = "{\"load_plugin\": " + cfgString + "}";
-    cfg = boost::shared_ptr<JSONMessage>(new JSONMessage(cfgString));
-    fwc->configure(cfg);
+    map.SetObject();
+    map.AddMember("plugin_library", "./lib/libPercivalProcessPlugin.so", allocator);
+    map.AddMember("plugin_index", "percival", allocator);
+    map.AddMember("plugin_name", "PercivalProcessPlugin", allocator);
+    rapidjson::Value plugin_config;
+    plugin_config.SetObject();
+    plugin_config.AddMember("load_plugin", map, allocator);
+    {
+      FrameReceiver::IpcMessage plugin_msg(plugin_config);
+      fwc->configure(plugin_msg);
+    }
 
     // Connect the Percival plugin to the shared memory controller
-    cfgString = "{" +
-            std::string("\"plugin_index\":\"percival\",") +
-            "\"plugin_connect_to\":\"frame_receiver\"" +
-            "}";
-    cfgString = "{\"connect_plugin\": " + cfgString + "}";
-    cfg = boost::shared_ptr<JSONMessage>(new JSONMessage(cfgString));
-    fwc->configure(cfg);
+    map.SetObject();
+    map.AddMember("plugin_index", "percival", allocator);
+    map.AddMember("plugin_connect_to", "frame_receiver", allocator);
+    plugin_config.SetObject();
+    plugin_config.AddMember("connect_plugin", map, allocator);
+    {
+      FrameReceiver::IpcMessage plugin_msg(plugin_config);
+      fwc->configure(plugin_msg);
+    }
 
-    // Disconnect the HDF5 plugin from the shared memory controller
-    cfgString = "{" +
-            std::string("\"plugin_index\":\"hdf\",") +
-            "\"plugin_disconnect_from\":\"frame_receiver\"" +
-            "}";
-    cfgString = "{\"disconnect_plugin\": " + cfgString + "}";
-    cfg = boost::shared_ptr<JSONMessage>(new JSONMessage(cfgString));
-    fwc->configure(cfg);
+    // Now load the HDF5 plugin
+    map.SetObject();
+    map.AddMember("plugin_library", "./lib/libHdf5Plugin.so", allocator);
+    map.AddMember("plugin_index", "hdf", allocator);
+    map.AddMember("plugin_name", "FileWriter", allocator);
+    plugin_config.SetObject();
+    plugin_config.AddMember("load_plugin", map, allocator);
+    {
+      FrameReceiver::IpcMessage plugin_msg(plugin_config);
+      fwc->configure(plugin_msg);
+    }
 
     // Connect the HDF5 plugin to the Percival plugin
-    cfgString = "{" +
-            std::string("\"plugin_index\":\"hdf\",") +
-            "\"plugin_connect_to\":\"percival\"" +
-            "}";
-    cfgString = "{\"connect_plugin\": " + cfgString + "}";
-    cfg = boost::shared_ptr<JSONMessage>(new JSONMessage(cfgString));
-    fwc->configure(cfg);
+    map.SetObject();
+    map.AddMember("plugin_index", "hdf", allocator);
+    map.AddMember("plugin_connect_to", "percival", allocator);
+    plugin_config.SetObject();
+    plugin_config.AddMember("connect_plugin", map, allocator);
+    {
+      FrameReceiver::IpcMessage plugin_msg(plugin_config);
+      fwc->configure(plugin_msg);
+    }
 
     // Now wait for the shutdown
     fwc->waitForShutdown();

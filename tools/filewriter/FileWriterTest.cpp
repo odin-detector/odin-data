@@ -21,7 +21,6 @@ using namespace log4cxx::xml;
 #include "DataBlockPool.h"
 #include "FileWriter.h"
 #include "Frame.h"
-#include "JSONMessage.h"
 
 class GlobalConfig {
 public:
@@ -366,53 +365,4 @@ BOOST_AUTO_TEST_CASE( FileWriterSubProcess )
 
 BOOST_AUTO_TEST_SUITE_END(); //FileWriterUnitTest
 
-
-BOOST_AUTO_TEST_SUITE(JSONMessageUnitTest);
-
-BOOST_AUTO_TEST_CASE(JSONMessageTest)
-{
-  filewriter::JSONMessage msg1("{\"hello\": \"world\",\"t\": true ,\"f\": false,\"n\": null,\"i\": 123,\"pi\": 3.1416,\"obj\": {\"first\" : 1, \"second\": 2} }");
-  BOOST_CHECK_EQUAL(msg1["hello"].GetString(), "world");
-  BOOST_CHECK_EQUAL(msg1["t"].GetBool(), true);
-  BOOST_CHECK_EQUAL(msg1["f"].GetBool(), false);
-  BOOST_CHECK_EQUAL(msg1["n"].IsNull(), true);
-  BOOST_CHECK_EQUAL(msg1["i"].GetInt(), 123);
-  BOOST_CHECK_EQUAL(msg1["pi"].GetDouble(), 3.1416);
-  BOOST_CHECK_EQUAL(msg1["obj"]["first"].GetInt(), 1);
-  BOOST_CHECK_EQUAL(msg1["obj"]["second"].GetInt(), 2);
-  BOOST_CHECK_EQUAL(msg1.toString(), "{\n\
-    \"hello\": \"world\",\n\
-    \"t\": true,\n\
-    \"f\": false,\n\
-    \"n\": null,\n\
-    \"i\": 123,\n\
-    \"pi\": 3.1416,\n\
-    \"obj\": {\n\
-        \"first\": 1,\n\
-        \"second\": 2\n\
-    }\n\
-}");
-  msg1["hello"].SetString("test1");
-  msg1["t"].SetBool(false);
-  msg1["f"].SetBool(true);
-  msg1["i"].SetInt(321);
-  msg1["pi"].SetDouble(6.1413);
-  msg1["obj"]["first"].SetString("test2");
-  msg1["obj"]["second"].SetString("test3");
-  BOOST_CHECK_EQUAL(msg1.toString(), "{\n\
-    \"hello\": \"test1\",\n\
-    \"t\": false,\n\
-    \"f\": true,\n\
-    \"n\": null,\n\
-    \"i\": 321,\n\
-    \"pi\": 6.1413,\n\
-    \"obj\": {\n\
-        \"first\": \"test2\",\n\
-        \"second\": \"test3\"\n\
-    }\n\
-}");
-
-}
-
-BOOST_AUTO_TEST_SUITE_END(); //JSONMessageUnitTest
 

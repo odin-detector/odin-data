@@ -11,14 +11,9 @@
 #include <boost/shared_ptr.hpp>
 #include <log4cxx/logger.h>
 
-#include "FileWriter.h"
 #include "FileWriterPlugin.h"
-#include "IJSONCallback.h"
 #include "IpcReactor.h"
 #include "IpcChannel.h"
-#include "JSONMessage.h"
-#include "JSONPublisher.h"
-#include "JSONSubscriber.h"
 #include "SharedMemoryController.h"
 #include "SharedMemoryParser.h"
 #include "ClassLoader.h"
@@ -32,7 +27,7 @@ namespace filewriter
     FileWriterController();
     virtual ~FileWriterController();
     void handleCtrlChannel();
-    void configure(boost::shared_ptr<JSONMessage> config);
+    void configure(FrameReceiver::IpcMessage& config);
     void loadPlugin(const std::string& index, const std::string& name, const std::string& library);
     void connectPlugin(const std::string& index, const std::string& connectTo);
     void disconnectPlugin(const std::string& index, const std::string& disconnectFrom);
@@ -56,7 +51,6 @@ namespace filewriter
     static const std::string CONFIG_PLUGIN_DISCONNECT_FROM;
     static const std::string CONFIG_PLUGIN_LIBRARY;
 
-    void callback(boost::shared_ptr<JSONMessage> msg);
     void setupFrameReceiverInterface(const std::string& sharedMemName,
                                      const std::string& frPublisherString,
                                      const std::string& frSubscriberString);
@@ -67,8 +61,6 @@ namespace filewriter
     log4cxx::LoggerPtr logger_;
     boost::shared_ptr<SharedMemoryController> sharedMemController_;
     boost::shared_ptr<SharedMemoryParser> sharedMemParser_;
-    boost::shared_ptr<JSONPublisher> frameReleasePublisher_;
-    boost::shared_ptr<JSONSubscriber> frameReadySubscriber_;
     std::map<std::string, boost::shared_ptr<FileWriterPlugin> > plugins_;
     boost::condition_variable exitCondition_;
     boost::mutex exitMutex_;

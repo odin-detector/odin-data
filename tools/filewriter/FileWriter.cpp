@@ -370,33 +370,25 @@ void FileWriter::stopWriting()
   }
 }
 
-boost::shared_ptr<filewriter::JSONMessage> FileWriter::configure(boost::shared_ptr<filewriter::JSONMessage> config)
+FrameReceiver::IpcMessage& FileWriter::configure(FrameReceiver::IpcMessage& config)
 {
-  LOG4CXX_DEBUG(log_, config->toString());
+  LOG4CXX_DEBUG(log_, config.encode());
   // Check config for items
-  if (config->HasMember("filepath")){
-    if ((*config)["filepath"].IsString()){
-      filePath_ = (*config)["filepath"].GetString();
-    }
+  if (config.has_param("filepath")){
+    filePath_ = config.get_param<std::string>("filepath");
   }
-  if (config->HasMember("filename")){
-    if ((*config)["filename"].IsString()){
-      fileName_ = (*config)["filename"].GetString();
-    }
+  if (config.has_param("filename")){
+    fileName_ = config.get_param<std::string>("filename");
   }
-  if (config->HasMember("frames")){
-    if ((*config)["frames"].IsInt()){
-      framesToWrite_ = (*config)["frames"].GetInt();
-    }
+  if (config.has_param("frames")){
+    framesToWrite_ = config.get_param<int>("frames");
   }
   // Final check is to start or stop writing
-  if (config->HasMember("write")){
-    if ((*config)["write"].IsBool()){
-      if ((*config)["write"].GetBool() == true){
-        this->startWriting();
-      } else {
-        this->stopWriting();
-      }
+  if (config.has_param("write")){
+    if (config.get_param<bool>("write") == true){
+      this->startWriting();
+    } else {
+      this->stopWriting();
     }
   }
 

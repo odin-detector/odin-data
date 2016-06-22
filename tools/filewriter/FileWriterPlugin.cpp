@@ -26,7 +26,7 @@ namespace filewriter
     name_ = name;
   }
 
-  boost::shared_ptr<filewriter::JSONMessage> FileWriterPlugin::configure(boost::shared_ptr<filewriter::JSONMessage> config)
+  FrameReceiver::IpcMessage& FileWriterPlugin::configure(FrameReceiver::IpcMessage& config)
   {
     // Default method simply returns the configuration that was passed in
     return config;

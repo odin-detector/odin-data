@@ -68,17 +68,6 @@ namespace filewriter
     smp_ = smp;
   }
 
-  /** setFrameReleasePublisher
-   * Takes a shared pointer to a JSONPublisher and stores it in a member
-   *  variable.
-   *
-   * \param[in] frp - shared pointer to a JSONPublisher object.
-   */
-  void SharedMemoryController::setFrameReleasePublisher(boost::shared_ptr<JSONPublisher> frp)
-  {
-    frp_ = frp;
-  }
-
   void SharedMemoryController::handleRxChannel()
   {
     // Receive a message from the main thread channel
@@ -106,14 +95,7 @@ namespace filewriter
             cbIter->second->getWorkQueue()->add(frame);
           }
 
-          // We want to return the exact same JSON message back to the frameReceiver
-          // so we just modify the relevant bits: msg_val: from frame_ready to frame_release
-          // and update the timestamp
-//          boost::shared_ptr<JSONMessage> msg;
-//          msg = boost::shared_ptr<JSONMessage>(new JSONMessage(rxMsgEncoded));
-
-//          (*msg)["msg_val"].SetString("frame_release");
-
+          // We want to send the notify frame release message back to the frameReceiver
           FrameReceiver::IpcMessage txMsg(FrameReceiver::IpcMessage::MsgTypeNotify,
                                           FrameReceiver::IpcMessage::MsgValNotifyFrameRelease);
 
@@ -121,16 +103,10 @@ namespace filewriter
           txMsg.set_param("buffer_id", rxMsg.get_param<int>("buffer_id"));
           LOG4CXX_DEBUG(logger_, "Sending response: " << txMsg.encode());
 
-          txChannel_.send(txMsg.encode());
-
-          // Create and update the timestamp in the JSON message
-//          boost::posix_time::ptime msg_timestamp = boost::posix_time::microsec_clock::local_time();
-//          std::string msg_timestamp_str = boost::posix_time::to_iso_extended_string(msg_timestamp);
-//          (*msg)["timestamp"].SetString(StringRef(msg_timestamp_str.c_str()));
-
           // Now publish the release message, to notify the frame receiver that we are
           // finished with that block of shared memory
-//          frp_->publish(msg);
+          txChannel_.send(txMsg.encode());
+
         } else {
           LOG4CXX_ERROR(logger_, "RX thread received empty frame notification with buffer ID");
         }
@@ -150,41 +126,6 @@ namespace filewriter
     {
         LOG4CXX_ERROR(logger_, "Error decoding control channel request: " << e.what());
     }
-  }
-
-  void SharedMemoryController::callback(boost::shared_ptr<JSONMessage> msg)
-  {
-    LOG4CXX_DEBUG(logger_, "Callback with message: " << msg->toString());
-
-    // Get the shared memory buffer ID from the message
-    unsigned int buffer_id = (*msg)["params"]["buffer_id"].GetInt64();
-    LOG4CXX_DEBUG(logger_, "Creating Raw Frame object. buffer=" << buffer_id <<
-                           " buffer addr: " << smp_->get_buffer_address(buffer_id));
-
-    // Create a frame object and copy in the raw frame data
-    boost::shared_ptr<Frame> frame;
-    frame = boost::shared_ptr<Frame>(new Frame("raw"));
-    smp_->get_frame((*frame), buffer_id);
-
-    // Loop over registered callbacks, placing the frame onto each queue
-    std::map<std::string, boost::shared_ptr<IFrameCallback> >::iterator cbIter;
-    for (cbIter = callbacks_.begin(); cbIter != callbacks_.end(); ++cbIter){
-      cbIter->second->getWorkQueue()->add(frame);
-    }
-
-    // We want to return the exact same JSON message back to the frameReceiver
-    // so we just modify the relevant bits: msg_val: from frame_ready to frame_release
-    // and update the timestamp
-    (*msg)["msg_val"].SetString("frame_release");
-
-    // Create and update the timestamp in the JSON message
-    boost::posix_time::ptime msg_timestamp = boost::posix_time::microsec_clock::local_time();
-    std::string msg_timestamp_str = boost::posix_time::to_iso_extended_string(msg_timestamp);
-    (*msg)["timestamp"].SetString(StringRef(msg_timestamp_str.c_str()));
-
-    // Now publish the release message, to notify the frame receiver that we are
-    // finished with that block of shared memory
-    frp_->publish(msg);
   }
 
   void SharedMemoryController::registerCallback(const std::string& name, boost::shared_ptr<IFrameCallback> cb)
