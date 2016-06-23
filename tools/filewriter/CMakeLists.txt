@@ -28,6 +28,7 @@ target_link_libraries(filewriter ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROM
 
 # Add library for dummy plugin
 add_library(DummyPlugin SHARED DummyPlugin.cpp)
+target_link_libraries(DummyPlugin ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} Ipc)
 
 # Add library for HDF5 writer plugin
 add_library(Hdf5Plugin SHARED FileWriter.cpp)
@@ -35,9 +36,11 @@ target_link_libraries(Hdf5Plugin ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROM
 
 # Add library for excalibur plugin
 add_library(ExcaliburReorderPlugin SHARED ExcaliburReorderPlugin.cpp)
+target_link_libraries(ExcaliburReorderPlugin ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} Ipc)
 
 # Add library for percival process plugin
 add_library(PercivalProcessPlugin SHARED PercivalProcessPlugin.cpp)
+target_link_libraries(PercivalProcessPlugin ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} Ipc)
             
 # Add test and project source files to executable
 file(GLOB TESTABLE_SOURCES DataBlock.cpp DataBlockPool.cpp IFrameCallback.cpp FileWriterPlugin.cpp Frame.cpp)
