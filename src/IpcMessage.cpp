@@ -659,6 +659,19 @@ namespace FrameReceiver {
         value_obj.SetString(value.c_str(), doc_.GetAllocator());
     }
 
+    //! Sets the value of a message attribute.
+    //!
+    //! This explicit specialisation of the private template method sets the value of a
+    //! message attribute referenced by the RapidJSON value object passed as an argument.
+    //!
+    //! \param value_obj - RapidJSON value object to set value of
+    //! \param value - RapidJSON value to set
+
+    template<> void IpcMessage::set_value(rapidjson::Value& value_obj, rapidjson::Value const& value)
+    {
+        value_obj.CopyFrom(value, doc_.GetAllocator());
+    }
+
     // Definition of static member variables used for type and value mapping
     IpcMessage::MsgTypeMap IpcMessage::msg_type_map_;
     IpcMessage::MsgValMap IpcMessage::msg_val_map_;
