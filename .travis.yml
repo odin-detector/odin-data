@@ -36,7 +36,7 @@ install:
 
 script:
   - bin/frameReceiverTest --log_level=all
-  - python bin/run_integration_test.py --frames=1 --interval=1.0 --timeout=30 --fr_config=$FR_TEST_CONFIG --fp_config=$FP_TEST_CONFIG
+#  - python bin/run_integration_test.py --frames=1 --interval=1.0 --timeout=30 --fr_config=$FR_TEST_CONFIG --fp_config=$FP_TEST_CONFIG
   - bin/fileWriterTest --log_level=all
 
 notifications:
