@@ -27,7 +27,8 @@ namespace filewriter
     FileWriterController();
     virtual ~FileWriterController();
     void handleCtrlChannel();
-    void configure(FrameReceiver::IpcMessage& config);
+    void configure(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply);
+    void configurePlugin(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply);
     void loadPlugin(const std::string& index, const std::string& name, const std::string& library);
     void connectPlugin(const std::string& index, const std::string& connectTo);
     void disconnectPlugin(const std::string& index, const std::string& disconnectFrom);
@@ -41,6 +42,9 @@ namespace filewriter
     static const std::string CONFIG_FR_SETUP;         // Command to execute setup
 
     static const std::string CONFIG_CTRL_ENDPOINT;    // Command to start the control socket
+
+    static const std::string CONFIG_PLUGIN;
+    static const std::string CONFIG_PLUGIN_LIST;
 
     static const std::string CONFIG_LOAD_PLUGIN;
     static const std::string CONFIG_CONNECT_PLUGIN;

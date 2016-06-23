@@ -20,6 +20,9 @@ namespace filewriter
 
   const std::string FileWriterController::CONFIG_CTRL_ENDPOINT     = "ctrl_endpoint";
 
+  const std::string FileWriterController::CONFIG_PLUGIN            = "plugin";
+  const std::string FileWriterController::CONFIG_PLUGIN_LIST       = "list";
+
   const std::string FileWriterController::CONFIG_LOAD_PLUGIN       = "load_plugin";
   const std::string FileWriterController::CONFIG_CONNECT_PLUGIN    = "connect_plugin";
   const std::string FileWriterController::CONFIG_DISCONNECT_PLUGIN = "disconnect_plugin";
@@ -68,10 +71,13 @@ namespace filewriter
     // Parse and handle the message
     try {
       FrameReceiver::IpcMessage ctrlMsg(ctrlMsgEncoded.c_str());
+      FrameReceiver::IpcMessage replyMsg(FrameReceiver::IpcMessage::MsgTypeAck, FrameReceiver::IpcMessage::MsgValCmdConfigure);
 
       if ((ctrlMsg.get_msg_type() == FrameReceiver::IpcMessage::MsgTypeCmd) &&
           (ctrlMsg.get_msg_val()  == FrameReceiver::IpcMessage::MsgValCmdConfigure)){
-        this->configure(ctrlMsg);
+        this->configure(ctrlMsg, replyMsg);
+        LOG4CXX_DEBUG(logger_, "Control thread reply message: " << replyMsg.encode());
+
       } else {
         LOG4CXX_ERROR(logger_, "Control thread got unexpected message: " << ctrlMsgEncoded);
       }
@@ -82,7 +88,7 @@ namespace filewriter
     }
   }
 
-  void FileWriterController::configure(FrameReceiver::IpcMessage& config)
+  void FileWriterController::configure(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply)
   {
     LOG4CXX_DEBUG(logger_, "Configuration submitted: " << config.encode());
 
@@ -94,6 +100,11 @@ namespace filewriter
     if (config.has_param(FileWriterController::CONFIG_CTRL_ENDPOINT)){
       std::string endpoint = config.get_param<std::string>(FileWriterController::CONFIG_CTRL_ENDPOINT);
       this->setupControlInterface(endpoint);
+    }
+
+    if (config.has_param(FileWriterController::CONFIG_PLUGIN)){
+      FrameReceiver::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FileWriterController::CONFIG_PLUGIN));
+      this->configurePlugin(pluginConfig, reply);
     }
 
     // Check if we are being passed the shared memory configuration
@@ -151,6 +162,27 @@ namespace filewriter
         FrameReceiver::IpcMessage subConfig(config.get_param<const rapidjson::Value&>(iter->first));
         iter->second->configure(subConfig);
       }
+    }
+  }
+
+  void FileWriterController::configurePlugin(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply)
+  {
+
+    if (config.has_param(FileWriterController::CONFIG_PLUGIN_LIST)){
+      // We have been asked to list the loaded plugins
+      rapidjson::Document jsonDoc;
+      jsonDoc.SetObject();
+      rapidjson::Document::AllocatorType& allocator = jsonDoc.GetAllocator();
+      rapidjson::Value list(rapidjson::kArrayType);
+      rapidjson::Value val;
+      val.SetObject();
+      std::map<std::string, boost::shared_ptr<FileWriterPlugin> >::iterator iter;
+      for (iter = plugins_.begin(); iter != plugins_.end(); ++iter){
+        val.SetObject();
+        val.SetString(iter->first.c_str(), allocator);
+        list.PushBack(val, allocator);
+      }
+      reply.set_param("plugins", list);
     }
   }
 

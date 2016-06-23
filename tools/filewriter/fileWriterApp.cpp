@@ -195,8 +195,9 @@ int main(int argc, char** argv)
 
     // Configure the control channel for the filewriter
     FrameReceiver::IpcMessage cfg;
+    FrameReceiver::IpcMessage reply;
     cfg.set_param<std::string>("ctrl_endpoint", "tcp://127.0.0.1:5004");
-    fwc->configure(cfg);
+    fwc->configure(cfg, reply);
 
     // Configure the shared memory interface for the filewriter
     val.SetObject();
@@ -212,7 +213,7 @@ int main(int argc, char** argv)
     fr_config.SetObject();
     fr_config.AddMember("fr_setup", map, allocator);
     FrameReceiver::IpcMessage shm_cfg(fr_config);
-    fwc->configure(shm_cfg);
+    fwc->configure(shm_cfg, reply);
 
     // Now load the percival plugin
     map.SetObject();
@@ -224,7 +225,7 @@ int main(int argc, char** argv)
     plugin_config.AddMember("load_plugin", map, allocator);
     {
       FrameReceiver::IpcMessage plugin_msg(plugin_config);
-      fwc->configure(plugin_msg);
+      fwc->configure(plugin_msg, reply);
     }
 
     // Connect the Percival plugin to the shared memory controller
@@ -235,7 +236,7 @@ int main(int argc, char** argv)
     plugin_config.AddMember("connect_plugin", map, allocator);
     {
       FrameReceiver::IpcMessage plugin_msg(plugin_config);
-      fwc->configure(plugin_msg);
+      fwc->configure(plugin_msg, reply);
     }
 
     // Now load the HDF5 plugin
@@ -247,7 +248,7 @@ int main(int argc, char** argv)
     plugin_config.AddMember("load_plugin", map, allocator);
     {
       FrameReceiver::IpcMessage plugin_msg(plugin_config);
-      fwc->configure(plugin_msg);
+      fwc->configure(plugin_msg, reply);
     }
 
     // Connect the HDF5 plugin to the Percival plugin
@@ -258,7 +259,7 @@ int main(int argc, char** argv)
     plugin_config.AddMember("connect_plugin", map, allocator);
     {
       FrameReceiver::IpcMessage plugin_msg(plugin_config);
-      fwc->configure(plugin_msg);
+      fwc->configure(plugin_msg, reply);
     }
 
     // Now wait for the shutdown
