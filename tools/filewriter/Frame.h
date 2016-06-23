@@ -20,12 +20,23 @@ framenotifier_data.h
 #include "DataBlock.h"
 #include "DataBlockPool.h"
 
-// Shared Buffer (IPC) Header
+/**
+ *  Shared Buffer (IPC) Header
+ */
 typedef struct
 {
-    size_t manager_id;
-    size_t num_buffers;
-    size_t buffer_size;
+  /**
+   * ID of the buffer manager
+   */
+  size_t manager_id;
+  /**
+   * Number of buffers present in the shared memory block
+   */
+  size_t num_buffers;
+  /**
+   * The size of each buffer in the shared memory block
+   */
+  size_t buffer_size;
 } Header;
 
 typedef unsigned long long dimsize_t;
