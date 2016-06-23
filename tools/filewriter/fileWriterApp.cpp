@@ -217,12 +217,14 @@ int main(int argc, char** argv)
 
     // Now load the percival plugin
     map.SetObject();
-    map.AddMember("plugin_library", "./lib/libPercivalProcessPlugin.so", allocator);
-    map.AddMember("plugin_index", "percival", allocator);
-    map.AddMember("plugin_name", "PercivalProcessPlugin", allocator);
+    map.AddMember("library", "./lib/libPercivalProcessPlugin.so", allocator);
+    map.AddMember("index", "percival", allocator);
+    map.AddMember("name", "PercivalProcessPlugin", allocator);
+    val.SetObject();
+    val.AddMember("load", map, allocator);
     rapidjson::Value plugin_config;
     plugin_config.SetObject();
-    plugin_config.AddMember("load_plugin", map, allocator);
+    plugin_config.AddMember("plugin", val, allocator);
     {
       FrameReceiver::IpcMessage plugin_msg(plugin_config);
       fwc->configure(plugin_msg, reply);
@@ -230,10 +232,12 @@ int main(int argc, char** argv)
 
     // Connect the Percival plugin to the shared memory controller
     map.SetObject();
-    map.AddMember("plugin_index", "percival", allocator);
-    map.AddMember("plugin_connect_to", "frame_receiver", allocator);
+    map.AddMember("index", "percival", allocator);
+    map.AddMember("connection", "frame_receiver", allocator);
+    val.SetObject();
+    val.AddMember("connect", map, allocator);
     plugin_config.SetObject();
-    plugin_config.AddMember("connect_plugin", map, allocator);
+    plugin_config.AddMember("plugin", val, allocator);
     {
       FrameReceiver::IpcMessage plugin_msg(plugin_config);
       fwc->configure(plugin_msg, reply);
@@ -241,11 +245,13 @@ int main(int argc, char** argv)
 
     // Now load the HDF5 plugin
     map.SetObject();
-    map.AddMember("plugin_library", "./lib/libHdf5Plugin.so", allocator);
-    map.AddMember("plugin_index", "hdf", allocator);
-    map.AddMember("plugin_name", "FileWriter", allocator);
+    map.AddMember("library", "./lib/libHdf5Plugin.so", allocator);
+    map.AddMember("index", "hdf", allocator);
+    map.AddMember("name", "FileWriter", allocator);
+    val.SetObject();
+    val.AddMember("load", map, allocator);
     plugin_config.SetObject();
-    plugin_config.AddMember("load_plugin", map, allocator);
+    plugin_config.AddMember("plugin", val, allocator);
     {
       FrameReceiver::IpcMessage plugin_msg(plugin_config);
       fwc->configure(plugin_msg, reply);
@@ -253,10 +259,12 @@ int main(int argc, char** argv)
 
     // Connect the HDF5 plugin to the Percival plugin
     map.SetObject();
-    map.AddMember("plugin_index", "hdf", allocator);
-    map.AddMember("plugin_connect_to", "percival", allocator);
+    map.AddMember("index", "hdf", allocator);
+    map.AddMember("connection", "percival", allocator);
+    val.SetObject();
+    val.AddMember("connect", map, allocator);
     plugin_config.SetObject();
-    plugin_config.AddMember("connect_plugin", map, allocator);
+    plugin_config.AddMember("plugin", val, allocator);
     {
       FrameReceiver::IpcMessage plugin_msg(plugin_config);
       fwc->configure(plugin_msg, reply);

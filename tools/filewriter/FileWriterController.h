@@ -21,6 +21,16 @@
 namespace filewriter
 {
 
+ /**
+  * The FileWriterController class has overall responsibility for management of the
+  * core classes and plugins present within the file writer application.  This class
+  * maintains the SharedMemoryController and SharedMemoryParser classes.  The class
+  * also manages the control IpcChannel, and accepts configuration IpcMessages.  The
+  * class provides an interface for loading plugins, connecting the plugins together
+  * into chains and for configuring the plugins (from the control channel).
+  *
+  * The class uses an IpcReactor to manage connections and status updates.
+  */
   class FileWriterController
   {
   public:
@@ -45,15 +55,13 @@ namespace filewriter
 
     static const std::string CONFIG_PLUGIN;
     static const std::string CONFIG_PLUGIN_LIST;
-
-    static const std::string CONFIG_LOAD_PLUGIN;
-    static const std::string CONFIG_CONNECT_PLUGIN;
-    static const std::string CONFIG_DISCONNECT_PLUGIN;
+    static const std::string CONFIG_PLUGIN_LOAD;
+    static const std::string CONFIG_PLUGIN_CONNECT;
+    static const std::string CONFIG_PLUGIN_DISCONNECT;
     static const std::string CONFIG_PLUGIN_NAME;
     static const std::string CONFIG_PLUGIN_INDEX;
-    static const std::string CONFIG_PLUGIN_CONNECT_TO;
-    static const std::string CONFIG_PLUGIN_DISCONNECT_FROM;
     static const std::string CONFIG_PLUGIN_LIBRARY;
+    static const std::string CONFIG_PLUGIN_CONNECTION;
 
     void setupFrameReceiverInterface(const std::string& sharedMemName,
                                      const std::string& frPublisherString,
@@ -62,20 +70,19 @@ namespace filewriter
     void runIpcService(void);
     void tickTimer(void);
 
-    log4cxx::LoggerPtr logger_;
-    boost::shared_ptr<SharedMemoryController> sharedMemController_;
-    boost::shared_ptr<SharedMemoryParser> sharedMemParser_;
+    log4cxx::LoggerPtr                                          logger_;
+    boost::shared_ptr<SharedMemoryController>                   sharedMemController_;
+    boost::shared_ptr<SharedMemoryParser>                       sharedMemParser_;
     std::map<std::string, boost::shared_ptr<FileWriterPlugin> > plugins_;
-    boost::condition_variable exitCondition_;
-    boost::mutex exitMutex_;
-
-    bool                                         runThread_;
-    bool                                         threadRunning_;
-    bool                                         threadInitError_;
-    boost::thread                                ctrlThread_;
-    std::string                                  threadInitMsg_;
-    boost::shared_ptr<FrameReceiver::IpcReactor> reactor_;
-    FrameReceiver::IpcChannel                    ctrlChannel_;
+    boost::condition_variable                                   exitCondition_;
+    boost::mutex                                                exitMutex_;
+    bool                                                        runThread_;
+    bool                                                        threadRunning_;
+    bool                                                        threadInitError_;
+    boost::thread                                               ctrlThread_;
+    std::string                                                 threadInitMsg_;
+    boost::shared_ptr<FrameReceiver::IpcReactor>                reactor_;
+    FrameReceiver::IpcChannel                                   ctrlChannel_;
   };
 
 } /* namespace filewriter */

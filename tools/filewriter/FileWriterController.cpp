@@ -22,15 +22,13 @@ namespace filewriter
 
   const std::string FileWriterController::CONFIG_PLUGIN            = "plugin";
   const std::string FileWriterController::CONFIG_PLUGIN_LIST       = "list";
-
-  const std::string FileWriterController::CONFIG_LOAD_PLUGIN       = "load_plugin";
-  const std::string FileWriterController::CONFIG_CONNECT_PLUGIN    = "connect_plugin";
-  const std::string FileWriterController::CONFIG_DISCONNECT_PLUGIN = "disconnect_plugin";
-  const std::string FileWriterController::CONFIG_PLUGIN_NAME       = "plugin_name";
-  const std::string FileWriterController::CONFIG_PLUGIN_INDEX      = "plugin_index";
-  const std::string FileWriterController::CONFIG_PLUGIN_CONNECT_TO = "plugin_connect_to";
-  const std::string FileWriterController::CONFIG_PLUGIN_DISCONNECT_FROM = "plugin_disconnect_from";
-  const std::string FileWriterController::CONFIG_PLUGIN_LIBRARY    = "plugin_library";
+  const std::string FileWriterController::CONFIG_PLUGIN_LOAD       = "load";
+  const std::string FileWriterController::CONFIG_PLUGIN_CONNECT    = "connect";
+  const std::string FileWriterController::CONFIG_PLUGIN_DISCONNECT = "disconnect";
+  const std::string FileWriterController::CONFIG_PLUGIN_NAME       = "name";
+  const std::string FileWriterController::CONFIG_PLUGIN_INDEX      = "index";
+  const std::string FileWriterController::CONFIG_PLUGIN_LIBRARY    = "library";
+  const std::string FileWriterController::CONFIG_PLUGIN_CONNECTION = "connection";
 
   FileWriterController::FileWriterController() :
     logger_(log4cxx::Logger::getLogger("FileWriterController")),
@@ -86,6 +84,13 @@ namespace filewriter
     {
         LOG4CXX_ERROR(logger_, "Error decoding control channel request: " << e.what());
     }
+    catch (std::runtime_error& e)
+    {
+        LOG4CXX_ERROR(logger_, "Bad control message: " << e.what());
+        FrameReceiver::IpcMessage replyMsg(FrameReceiver::IpcMessage::MsgTypeNack, FrameReceiver::IpcMessage::MsgValCmdConfigure);
+        replyMsg.set_param<std::string>("error", std::string(e.what()));
+        ctrlChannel_.send(replyMsg.encode());
+    }
   }
 
   void FileWriterController::configure(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply)
@@ -120,41 +125,6 @@ namespace filewriter
       }
     }
 
-    // Check if we are being asked to load a plugin
-    if (config.has_param(FileWriterController::CONFIG_LOAD_PLUGIN)){
-      FrameReceiver::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FileWriterController::CONFIG_LOAD_PLUGIN));
-      if (pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_NAME) &&
-          pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_INDEX) &&
-          pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_LIBRARY)){
-        std::string index = pluginConfig.get_param<std::string>(FileWriterController::CONFIG_PLUGIN_INDEX);
-        std::string name = pluginConfig.get_param<std::string>(FileWriterController::CONFIG_PLUGIN_NAME);
-        std::string library = pluginConfig.get_param<std::string>(FileWriterController::CONFIG_PLUGIN_LIBRARY);
-        this->loadPlugin(index, name, library);
-      }
-    }
-
-    // Check if we are being asked to connect a plugin
-    if (config.has_param(FileWriterController::CONFIG_CONNECT_PLUGIN)){
-      FrameReceiver::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FileWriterController::CONFIG_CONNECT_PLUGIN));
-      if (pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_CONNECT_TO) &&
-          pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_INDEX)){
-        std::string index = pluginConfig.get_param<std::string>(FileWriterController::CONFIG_PLUGIN_INDEX);
-        std::string cnxn = pluginConfig.get_param<std::string>(FileWriterController::CONFIG_PLUGIN_CONNECT_TO);
-        this->connectPlugin(index, cnxn);
-      }
-    }
-
-    // Check if we are being asked to disconnect a plugin
-    if (config.has_param(FileWriterController::CONFIG_DISCONNECT_PLUGIN)){
-      FrameReceiver::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FileWriterController::CONFIG_DISCONNECT_PLUGIN));
-      if (pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_DISCONNECT_FROM) &&
-          pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_INDEX)){
-        std::string index = pluginConfig.get_param<std::string>(FileWriterController::CONFIG_PLUGIN_INDEX);
-        std::string cnxn = pluginConfig.get_param<std::string>(FileWriterController::CONFIG_PLUGIN_DISCONNECT_FROM);
-        this->disconnectPlugin(index, cnxn);
-      }
-    }
-
     // Loop over plugins, checking for configuration messages
     std::map<std::string, boost::shared_ptr<FileWriterPlugin> >::iterator iter;
     for (iter = plugins_.begin(); iter != plugins_.end(); ++iter){
@@ -167,7 +137,6 @@ namespace filewriter
 
   void FileWriterController::configurePlugin(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply)
   {
-
     if (config.has_param(FileWriterController::CONFIG_PLUGIN_LIST)){
       // We have been asked to list the loaded plugins
       rapidjson::Document jsonDoc;
@@ -184,6 +153,41 @@ namespace filewriter
       }
       reply.set_param("plugins", list);
     }
+
+    // Check if we are being asked to load a plugin
+    if (config.has_param(FileWriterController::CONFIG_PLUGIN_LOAD)){
+      FrameReceiver::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FileWriterController::CONFIG_PLUGIN_LOAD));
+      if (pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_NAME) &&
+          pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_INDEX) &&
+          pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_LIBRARY)){
+        std::string index = pluginConfig.get_param<std::string>(FileWriterController::CONFIG_PLUGIN_INDEX);
+        std::string name = pluginConfig.get_param<std::string>(FileWriterController::CONFIG_PLUGIN_NAME);
+        std::string library = pluginConfig.get_param<std::string>(FileWriterController::CONFIG_PLUGIN_LIBRARY);
+        this->loadPlugin(index, name, library);
+      }
+    }
+
+    // Check if we are being asked to connect a plugin
+    if (config.has_param(FileWriterController::CONFIG_PLUGIN_CONNECT)){
+      FrameReceiver::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FileWriterController::CONFIG_PLUGIN_CONNECT));
+      if (pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_CONNECTION) &&
+          pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_INDEX)){
+        std::string index = pluginConfig.get_param<std::string>(FileWriterController::CONFIG_PLUGIN_INDEX);
+        std::string cnxn = pluginConfig.get_param<std::string>(FileWriterController::CONFIG_PLUGIN_CONNECTION);
+        this->connectPlugin(index, cnxn);
+      }
+    }
+
+    // Check if we are being asked to disconnect a plugin
+    if (config.has_param(FileWriterController::CONFIG_PLUGIN_DISCONNECT)){
+      FrameReceiver::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FileWriterController::CONFIG_PLUGIN_DISCONNECT));
+      if (pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_CONNECTION) &&
+          pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_INDEX)){
+        std::string index = pluginConfig.get_param<std::string>(FileWriterController::CONFIG_PLUGIN_INDEX);
+        std::string cnxn = pluginConfig.get_param<std::string>(FileWriterController::CONFIG_PLUGIN_CONNECTION);
+        this->disconnectPlugin(index, cnxn);
+      }
+    }
   }
 
   void FileWriterController::loadPlugin(const std::string& index, const std::string& name, const std::string& library)
@@ -199,6 +203,9 @@ namespace filewriter
       plugin->start();
     } else {
       LOG4CXX_ERROR(logger_, "Cannot load plugin with index = " << index << ", already loaded");
+      std::stringstream is;
+      is << "Cannot load plugin with index = " << index << ", already loaded";
+      throw std::runtime_error(is.str().c_str());
     }
   }
 
@@ -215,7 +222,10 @@ namespace filewriter
         }
       }
     } else {
-      LOG4CXX_ERROR(logger_, "Cannot connet plugin with index = " << index << ", plugin isn't loaded");
+      LOG4CXX_ERROR(logger_, "Cannot connect plugin with index = " << index << ", plugin isn't loaded");
+      std::stringstream is;
+      is << "Cannot connect plugin with index = " << index << ", plugin isn't loaded";
+      throw std::runtime_error(is.str().c_str());
     }
   }
 
@@ -232,7 +242,10 @@ namespace filewriter
         }
       }
     } else {
-      LOG4CXX_ERROR(logger_, "Cannot disconnet plugin with index = " << index << ", plugin isn't loaded");
+      LOG4CXX_ERROR(logger_, "Cannot disconnect plugin with index = " << index << ", plugin isn't loaded");
+      std::stringstream is;
+      is << "Cannot disconnect plugin with index = " << index << ", plugin isn't loaded";
+      throw std::runtime_error(is.str().c_str());
     }
   }
 
