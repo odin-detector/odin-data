@@ -41,11 +41,16 @@ namespace filewriter
 
   private:
     void resize(size_t nbytes);
-    log4cxx::LoggerPtr logger_;
-    size_t allocatedBytes_;
-    int index_;
-    void *blockPtr_;
 
+    /** Pointer to logger */
+    log4cxx::LoggerPtr logger_;
+    /** Number of bytes allocated for this DataBlock */
+    size_t allocatedBytes_;
+    /** Unique index of this DataBlock */
+    int index_;
+    /** Void pointer to the allocated memory */
+    void *blockPtr_;
+    /** Static counter for the unique index */
     static int indexCounter_;
   };
 

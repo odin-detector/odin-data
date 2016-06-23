@@ -52,17 +52,24 @@ namespace filewriter
     size_t internalGetTotalBlocks();
     size_t internalGetMemoryAllocated();
 
+    /** Pointer to logger */
     log4cxx::LoggerPtr logger_;
+    /** Mutex used to make this class thread safe */
     boost::recursive_mutex mutex_;
+    /** List of currently available DataBlock objects */
     std::list<boost::shared_ptr<DataBlock> > freeList_;
+    /** Map of currently used DataBlock objects, indexed by their uniqe IDs */
     std::map<int, boost::shared_ptr<DataBlock> > usedMap_;
+    /** Number of currently available DataBlock objects */
     size_t freeBlocks_;
+    /** Number of currently used DataBlock objects */
     size_t usedBlocks_;
+    /** Total number of DataBlock objects, used + free */
     size_t totalBlocks_;
+    /** Total number of bytes allocated (sum of all DataBlocks) */
     size_t memoryAllocated_;
-
+    /** Static map of all DataBlockPool objects, indexed by their names */
     static std::map<std::string, DataBlockPool*> instanceMap_;
-
   };
 
 } /* namespace filewriter */

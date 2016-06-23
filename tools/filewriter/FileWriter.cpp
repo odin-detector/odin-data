@@ -56,33 +56,34 @@ FileWriter::~FileWriter() {
     }
 }
 
-void FileWriter::createFile(std::string filename, size_t chunk_align) {
-    hid_t fapl; /* File access property list */
+void FileWriter::createFile(std::string filename, size_t chunk_align)
+{
+    hid_t fapl; // File access property list
     hid_t fcpl;
 
-    /* Create file access property list */
+    // Create file access property list
     fapl = H5Pcreate(H5P_FILE_ACCESS);
     assert(fapl >= 0);
 
     assert(H5Pset_fclose_degree(fapl, H5F_CLOSE_STRONG) >= 0);
 
-    /* Set chunk boundary alignment to 4MB */
+    // Set chunk boundary alignment to 4MB
     assert( H5Pset_alignment( fapl, 65536, 4*1024*1024 ) >= 0);
 
-    /* Set to use the latest library format */
+    // Set to use the latest library format
     assert(H5Pset_libver_bounds(fapl, H5F_LIBVER_LATEST, H5F_LIBVER_LATEST) >= 0);
 
-    /* Create file creation property list */
+    // Create file creation property list
     if ((fcpl = H5Pcreate(H5P_FILE_CREATE)) < 0)
     assert(fcpl >= 0);
 
-    /* Creating the file with SWMR write access*/
+    // Creating the file with SWMR write access
     LOG4CXX_INFO(log_, "Creating file: " << filename);
     unsigned int flags = H5F_ACC_TRUNC;
     this->hdf5_fileid_ = H5Fcreate(filename.c_str(), flags, fcpl, fapl);
     assert(this->hdf5_fileid_ >= 0);
 
-    /* Close file access property list */
+    // Close file access property list
     assert(H5Pclose(fapl) >= 0);
 }
 

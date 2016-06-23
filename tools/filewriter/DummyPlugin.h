@@ -38,6 +38,7 @@ namespace filewriter
   private:
     void processFrame(boost::shared_ptr<Frame> frame);
 
+    /** Pointer to logger */
     LoggerPtr logger_;
   };
 

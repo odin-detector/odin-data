@@ -61,7 +61,9 @@ namespace filewriter
     void reorder12BitImage(unsigned short* in, unsigned short* out);
     void build24BitImage(unsigned short* inC0, unsigned short* inC1, unsigned int* out);
 
+    /** Pointer to logger */
     LoggerPtr logger_;
+    /** Bit depth of the incoming frames */
     int gAsicCounterDepth_;
   };
 

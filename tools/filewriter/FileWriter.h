@@ -63,7 +63,6 @@ public:
 
 private:
     FileWriter(const FileWriter& src); // prevent copying one of these
-    LoggerPtr log_;
     hid_t pixelToHdfType(FileWriter::PixelType pixel) const;
     HDF5Dataset_t& get_hdf5_dataset(const std::string dset_name);
     void extend_dataset(FileWriter::HDF5Dataset_t& dset, size_t frame_no) const;
@@ -71,16 +70,29 @@ private:
 
     void processFrame(boost::shared_ptr<Frame> frame);
 
+    /** Pointer to logger */
+    LoggerPtr log_;
+    /** Is this plugin writing frames to file? */
     bool writing_;
+    /** Number of frames to write to file */
     size_t framesToWrite_;
+    /** Number of frames that have been written to file */
     size_t framesWritten_;
+    /** Number of sub-frames that have been written to file */
     size_t subFramesWritten_;
+    /** Path of the file to write to */
     std::string filePath_;
+    /** Name of the file to write to */
     std::string fileName_;
+    /** Number of concurrent file writers executing */
     const hsize_t concurrent_processes_;
+    /** Rank of this file writer */
     const hsize_t concurrent_rank_;
+    /** Starting frame offset */
     hsize_t start_frame_offset_;
+    /** Internal ID of the file being written to */
     hid_t hdf5_fileid_;
+    /** Map of datasets that are being written to */
     std::map<std::string, FileWriter::HDF5Dataset_t> hdf5_datasets_;
 };
 

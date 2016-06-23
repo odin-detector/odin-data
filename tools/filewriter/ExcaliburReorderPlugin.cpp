@@ -10,6 +10,9 @@
 namespace filewriter
 {
 
+  /**
+   * The constructor sets up logging used within the class.
+   */
   ExcaliburReorderPlugin::ExcaliburReorderPlugin() :
       gAsicCounterDepth_(0)
   {
@@ -19,11 +22,20 @@ namespace filewriter
     LOG4CXX_TRACE(logger_, "ExcaliburReorderPlugin constructor.");
   }
 
+  /**
+   * Destructor.
+   */
   ExcaliburReorderPlugin::~ExcaliburReorderPlugin()
   {
     LOG4CXX_TRACE(logger_, "ExcaliburReorderPlugin destructor.");
   }
 
+  /**
+   * Perform processing on the frame.  Depending on the selected bit depth
+   * the corresponding pixel re-ordering algorithm is executed.
+   *
+   * \param[in] frame - Pointer to a Frame object.
+   */
   void ExcaliburReorderPlugin::processFrame(boost::shared_ptr<Frame> frame)
   {
     LOG4CXX_TRACE(logger_, "Reordering frame.");
@@ -100,12 +112,17 @@ namespace filewriter
     }
   }
 
+  /**
+   * Reorder the image using 1 bit re-ordering.
+   * 1 bit images are captured in raw data mode, i.e. without reordering. In this mode, each
+   * 32-bit word contains the current pixel being output on each data line of the group of
+   * 4 ASICs, i.e. a supercolumn
+   *
+   * \param[in] in - Pointer to the incoming image data.
+   * \param[out] out - Pointer to the allocated memory where the reordered image is written.
+   */
   void ExcaliburReorderPlugin::reorder1BitImage(unsigned int* in, unsigned char* out)
   {
-    // 1 bit images are captured in raw data mode, i.e. without reordering. In this mode, each
-    // 32-bit word contains the current pixel being output on each data line of the group of
-    // 4 ASICs, i.e. a supercolumn
-
     int block, y, x, x2, chip, pixelX, pixelY, pixelAddr, bitPosn;
     int rawAddr = 0;
 
@@ -139,6 +156,12 @@ namespace filewriter
     }
   }
 
+  /**
+   * Reorder the image using 6 bit re-ordering.
+   *
+   * \param[in] in - Pointer to the incoming image data.
+   * \param[out] out - Pointer to the allocated memory where the reordered image is written.
+   */
   void ExcaliburReorderPlugin::reorder6BitImage(unsigned char* in, unsigned char* out)
   {
     int block, y, x, chip, x2, pixelX, pixelY, pixelAddr;
@@ -171,6 +194,12 @@ namespace filewriter
     }
   }
 
+  /**
+   * Reorder the image using 12 bit re-ordering.
+   *
+   * \param[in] in - Pointer to the incoming image data.
+   * \param[out] out - Pointer to the allocated memory where the reordered image is written.
+   */
   void ExcaliburReorderPlugin::reorder12BitImage(unsigned short* in, unsigned short* out)
   {
     int block, y, x, chip, x2, pixelX, pixelY, pixelAddr;
@@ -199,6 +228,13 @@ namespace filewriter
     }
   }
 
+  /**
+   * Build a 24bit image from two images.
+   *
+   * \param[in] inC0 - Pointer to the incoming first image data.
+   * \param[in] inC1 - Pointer to the incoming second image data.
+   * \param[out] out - Pointer to the allocated memory where the combined image is written.
+   */
   void ExcaliburReorderPlugin::build24BitImage(unsigned short* inC0, unsigned short* inC1, unsigned int* out)
   {
     int addr;

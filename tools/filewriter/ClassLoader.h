@@ -27,10 +27,20 @@ namespace filewriter
   }
 
   /**
-   * C++ dynamic class loader.
+   * C++ dynamic class loader.  Classes are loaded by calling the static method
+   * load_class for the specific BaseClass type to load.  This loader will keep a
+   * record of loaded classes and so if the same class is requested twice it can
+   * simply create another instance of the (already loaded) class.  Name mangling
+   * is dealt with by having each individual class register itself as soon as the
+   * library is opened by calling the REGISTER macro, which creates an instance of
+   * the ClassLoader object specific to that class and registers it with the map,
+   * indexed by name.
    */
   template <typename BaseClass> class ClassLoader
   {
+    /**
+     * Shared pointer to the specified BaseClass
+     */
     typedef boost::shared_ptr<BaseClass> maker_t();
 
   public:
@@ -47,6 +57,7 @@ namespace filewriter
     /**
      * Load a class given the class name
      * \param[in] name - name of class to load
+     * \param[in] path - full path of the library to load
      */
     static boost::shared_ptr<BaseClass> load_class(const std::string& name, const std::string& path)
     {
