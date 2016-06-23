@@ -3,6 +3,7 @@ pysnmp>=4.3.0
 numpy>=1.9.1
 h5py>=2.5.0
 pyzmq>=14.0.0 --install-option='--zmq=bundled'
+npyscreen>=4.10.0
 
 
 
