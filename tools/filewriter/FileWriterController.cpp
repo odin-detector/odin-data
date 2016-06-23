@@ -77,7 +77,7 @@ namespace filewriter
           (ctrlMsg.get_msg_val()  == FrameReceiver::IpcMessage::MsgValCmdConfigure)){
         this->configure(ctrlMsg, replyMsg);
         LOG4CXX_DEBUG(logger_, "Control thread reply message: " << replyMsg.encode());
-
+        ctrlChannel_.send(replyMsg.encode());
       } else {
         LOG4CXX_ERROR(logger_, "Control thread got unexpected message: " << ctrlMsgEncoded);
       }
@@ -310,7 +310,7 @@ namespace filewriter
 
   void FileWriterController::tickTimer(void)
   {
-    LOG4CXX_DEBUG(logger_, "IPC thread tick timer fired");
+    //LOG4CXX_DEBUG(logger_, "IPC thread tick timer fired");
     if (!runThread_)
     {
       LOG4CXX_DEBUG(logger_, "IPC thread terminate detected in timer");
