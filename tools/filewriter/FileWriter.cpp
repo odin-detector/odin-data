@@ -571,12 +571,12 @@ void FileWriter::status(FrameReceiver::IpcMessage& status)
   LOG4CXX_DEBUG(log_, "File name " << this->fileName_);
 
   status.set_param(getName() + "/writing", this->writing_);
-  status.set_param(getName() + "/frames_max", this->framesToWrite_);
-  status.set_param(getName() + "/frames_written", this->framesWritten_);
+  status.set_param(getName() + "/frames_max", (int)this->framesToWrite_);
+  status.set_param(getName() + "/frames_written", (int)this->framesWritten_);
   status.set_param(getName() + "/file_path", this->filePath_);
   status.set_param(getName() + "/file_name", this->fileName_);
-  status.set_param(getName() + "/processes", this->concurrent_processes_);
-  status.set_param(getName() + "/rank", this->concurrent_rank_);
+  status.set_param(getName() + "/processes", (int)this->concurrent_processes_);
+  status.set_param(getName() + "/rank", (int)this->concurrent_rank_);
 
   // Check for datasets
   std::map<std::string, FileWriter::DatasetDefinition>::iterator iter;
@@ -588,14 +588,14 @@ void FileWriter::status(FrameReceiver::IpcMessage& status)
     if (iter->second.frame_dimensions.size() > 0){
       std::string dimParamName = getName() + "/datasets/" + iter->first + "/dimensions[]";
       for (int index = 0; index < iter->second.frame_dimensions.size(); index++){
-        status.set_param(dimParamName, (uint64_t)iter->second.frame_dimensions[index]);
+        status.set_param(dimParamName, (int)iter->second.frame_dimensions[index]);
       }
     }
     // Check for and add chunking dimensions
     if (iter->second.chunks.size() > 0){
       std::string chunkParamName = getName() + "/datasets/" + iter->first + "/chunks[]";
       for (int index = 0; index < iter->second.chunks.size(); index++){
-        status.set_param(chunkParamName, (uint64_t)iter->second.chunks[index]);
+        status.set_param(chunkParamName, (int)iter->second.chunks[index]);
       }
     }
   }
