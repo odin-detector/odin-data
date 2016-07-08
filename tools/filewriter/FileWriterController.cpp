@@ -13,6 +13,8 @@ namespace filewriter
 {
   const std::string FileWriterController::CONFIG_SHUTDOWN          = "shutdown";
 
+  const std::string FileWriterController::CONFIG_STATUS            = "status";
+
   const std::string FileWriterController::CONFIG_FR_SHARED_MEMORY  = "fr_shared_mem";
   const std::string FileWriterController::CONFIG_FR_RELEASE        = "fr_release_cnxn";
   const std::string FileWriterController::CONFIG_FR_READY          = "fr_ready_cnxn";
@@ -102,6 +104,15 @@ namespace filewriter
       exitCondition_.notify_all();
     }
 
+    // Check if we are being asked to shutdown
+    if (config.has_param(FileWriterController::CONFIG_STATUS)){
+      // Loop over plugins, checking for configuration messages
+      std::map<std::string, boost::shared_ptr<FileWriterPlugin> >::iterator iter;
+      for (iter = plugins_.begin(); iter != plugins_.end(); ++iter){
+        iter->second->status(reply);
+      }
+    }
+
     if (config.has_param(FileWriterController::CONFIG_CTRL_ENDPOINT)){
       std::string endpoint = config.get_param<std::string>(FileWriterController::CONFIG_CTRL_ENDPOINT);
       this->setupControlInterface(endpoint);
@@ -130,7 +141,7 @@ namespace filewriter
     for (iter = plugins_.begin(); iter != plugins_.end(); ++iter){
       if (config.has_param(iter->first)){
         FrameReceiver::IpcMessage subConfig(config.get_param<const rapidjson::Value&>(iter->first));
-        iter->second->configure(subConfig);
+        iter->second->configure(subConfig, reply);
       }
     }
   }
@@ -153,6 +164,7 @@ namespace filewriter
       }
       reply.set_param("plugins", list);
     }
+
 
     // Check if we are being asked to load a plugin
     if (config.has_param(FileWriterController::CONFIG_PLUGIN_LOAD)){
@@ -215,7 +227,14 @@ namespace filewriter
     if (plugins_.count(index) > 0){
       // Check for the shared memory connection
       if (connectTo == "frame_receiver"){
-        sharedMemController_->registerCallback(index, plugins_[index]);
+        if (sharedMemController_){
+          sharedMemController_->registerCallback(index, plugins_[index]);
+        } else {
+          LOG4CXX_ERROR(logger_, "Cannot connect " << index << " to frame_receiver, frame_receiver is not configured");
+          std::stringstream is;
+          is << "Cannot connect " << index << " to frame_receiver, frame_receiver is not configured";
+          throw std::runtime_error(is.str().c_str());
+        }
       } else {
         if (plugins_.count(connectTo) > 0){
           plugins_[connectTo]->registerCallback(index, plugins_[index]);
@@ -262,20 +281,28 @@ namespace filewriter
     LOG4CXX_DEBUG(logger_, "Shared Memory Config: Name=" << sharedMemName <<
                   " Publisher=" << frPublisherString << " Subscriber=" << frSubscriberString);
 
-    // Release current shared memory parser if one exists
-    if (sharedMemParser_){
-      sharedMemParser_.reset();
-    }
-    // Create the new shared memory parser
-    sharedMemParser_ = boost::shared_ptr<SharedMemoryParser>(new SharedMemoryParser(sharedMemName));
+    try
+    {
+      // Release current shared memory parser if one exists
+      if (sharedMemParser_){
+        sharedMemParser_.reset();
+      }
+      // Create the new shared memory parser
+      sharedMemParser_ = boost::shared_ptr<SharedMemoryParser>(new SharedMemoryParser(sharedMemName));
 
-    // Release the current shared memory controller if one exists
-    if (sharedMemController_){
-      sharedMemController_.reset();
+      // Release the current shared memory controller if one exists
+      if (sharedMemController_){
+        sharedMemController_.reset();
+      }
+      // Create the new shared memory controller and give it the parser and publisher
+      sharedMemController_ = boost::shared_ptr<SharedMemoryController>(new SharedMemoryController(reactor_, frSubscriberString, frPublisherString));
+      sharedMemController_->setSharedMemoryParser(sharedMemParser_);
+
+    } catch (const boost::interprocess::interprocess_exception& e)
+    {
+      LOG4CXX_ERROR(logger_, "Unable to access shared memory: " << e.what());
     }
-    // Create the new shared memory controller and give it the parser and publisher
-    sharedMemController_ = boost::shared_ptr<SharedMemoryController>(new SharedMemoryController(reactor_, frSubscriberString, frPublisherString));
-    sharedMemController_->setSharedMemoryParser(sharedMemParser_);
+
   }
 
   void FileWriterController::setupControlInterface(const std::string& ctrlEndpointString)

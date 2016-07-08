@@ -20,7 +20,10 @@ namespace filewriter
     FileWriterPlugin();
     virtual ~FileWriterPlugin();
     void setName(const std::string& name);
-    virtual FrameReceiver::IpcMessage& configure(FrameReceiver::IpcMessage& config);
+    std::string getName();
+    virtual void configure(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply);
+//    virtual void status(rapidjson::Value& status, rapidjson::Document::AllocatorType& allocator);
+    virtual void status(FrameReceiver::IpcMessage& status);
     void registerCallback(const std::string& name, boost::shared_ptr<IFrameCallback> cb);
     void removeCallback(const std::string& name);
 

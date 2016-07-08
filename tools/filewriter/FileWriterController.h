@@ -46,6 +46,8 @@ namespace filewriter
   private:
     static const std::string CONFIG_SHUTDOWN;
 
+    static const std::string CONFIG_STATUS;
+
     static const std::string CONFIG_FR_SHARED_MEMORY; // Name of shared memory storage
     static const std::string CONFIG_FR_RELEASE;       // Cnxn string for frame release
     static const std::string CONFIG_FR_READY;         // Cnxn string for frame ready

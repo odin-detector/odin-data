@@ -26,10 +26,20 @@ namespace filewriter
     name_ = name;
   }
 
-  FrameReceiver::IpcMessage& FileWriterPlugin::configure(FrameReceiver::IpcMessage& config)
+  std::string FileWriterPlugin::getName()
   {
-    // Default method simply returns the configuration that was passed in
-    return config;
+    // Return our name
+    return name_;
+  }
+
+  void FileWriterPlugin::configure(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply)
+  {
+    // Default method simply does nothing
+  }
+
+  void FileWriterPlugin::status(FrameReceiver::IpcMessage& status)
+  {
+    // Default method simply does nothing
   }
 
   void FileWriterPlugin::registerCallback(const std::string& name, boost::shared_ptr<IFrameCallback> cb)
