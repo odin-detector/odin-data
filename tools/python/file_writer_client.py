@@ -25,6 +25,7 @@ class PercivalClientApp(npyscreen.NPSAppManaged):
         self.registerForm("MAIN", IntroForm())
         self.registerForm("MAIN_MENU", MainMenu())
         self.registerForm("LOAD_PLUGIN", LoadPlugin())
+        self.registerForm("SETUP_PROCESS", SetupFileProcess())
         self.registerForm("SETUP_FILE", SetupFileWriting())
         
     def send_message(self, ipc_message):
@@ -42,8 +43,6 @@ class PercivalClientApp(npyscreen.NPSAppManaged):
             reply = IpcMessage(from_str=self._ctrl_channel.recv())
             return reply
         return None
-
-# This form class defines the display that will be presented to the user.
 
 class IntroForm(npyscreen.Form):
     def create(self):
@@ -69,9 +68,13 @@ class MainMenu(npyscreen.FormBaseNew):
         
         self.t2.values = ["List plugins",
                           "Load new plugin", 
+                          "Setup File Process", 
                           "Setup File Writing", 
                           "Start Writing", 
                           "Stop Writing",
+                          "Read Status",
+                          "Setup For Percival",
+                          "Setup For Excalibur",
                           "Exit"]
         self.t2.when_value_edited = self.button
 
@@ -89,24 +92,161 @@ class MainMenu(npyscreen.FormBaseNew):
           self.editing = False
           self.parentApp.switchFormNow()
         if selected == 2:
-          self.parentApp.setNextForm("SETUP_FILE")
+          self.parentApp.setNextForm("SETUP_PROCESS")
           self.editing = False
           self.parentApp.switchFormNow()
         if selected == 3:
+          self.parentApp.setNextForm("SETUP_FILE")
+          self.editing = False
+          self.parentApp.switchFormNow()
+        if selected == 4:
           msg = IpcMessage("cmd", "configure")
           config = {
                      "write": True
                    }
           msg.set_param("hdf", config)
           self.parentApp.send_message(msg)
-        if selected == 4:
+        if selected == 5:
           msg = IpcMessage("cmd", "configure")
           config = {
                      "write": False
                    }
           msg.set_param("hdf", config)
           self.parentApp.send_message(msg)
-        if selected == 5:
+        if selected == 6:
+          msg = IpcMessage("cmd", "configure")
+          msg.set_param("status", True)
+          self.parentApp.send_message(msg)
+        if selected == 7:
+          msg = IpcMessage("cmd", "configure")
+          config = {
+                     "fr_release_cnxn": "tcp://127.0.0.1:5002",
+                     "fr_ready_cnxn": "tcp://127.0.0.1:5001",
+                     "fr_shared_mem": "FrameReceiverBuffer"
+                   }
+          msg.set_param("fr_setup", config)
+          self.parentApp.send_message(msg)
+          msg = IpcMessage("cmd", "configure")
+          config = {
+                     "load": {
+                               "library": "./lib/libPercivalProcessPlugin.so",
+                               "index": "percival",
+                               "name": "PercivalProcessPlugin"
+                             }
+                   }
+          msg.set_param("plugin", config)
+          self.parentApp.send_message(msg)
+          msg = IpcMessage("cmd", "configure")
+          config = {
+                     "load": {
+                               "library": "./lib/libHdf5Plugin.so",
+                               "index": "hdf",
+                               "name": "FileWriter"
+                             }
+                   }
+          msg.set_param("plugin", config)
+          self.parentApp.send_message(msg)
+          msg = IpcMessage("cmd", "configure")
+          config = {
+                     "connect": {
+                               "index": "percival",
+                               "connection": "frame_receiver"
+                             }
+                   }
+          msg.set_param("plugin", config)
+          self.parentApp.send_message(msg)
+          msg = IpcMessage("cmd", "configure")
+          config = {
+                     "connect": {
+                               "index": "hdf",
+                               "connection": "percival"
+                             }
+                   }
+          msg.set_param("plugin", config)
+          self.parentApp.send_message(msg)
+          msg = IpcMessage("cmd", "configure")
+          config = {
+                     "dataset": {
+                                  "cmd": "create",
+                                  "name": "data",
+                                  "datatype": 1,
+                                  "dims": [1484, 1408],
+                                  "chunks": [1, 1484, 704]
+                                }
+                   }
+          msg.set_param("hdf", config)
+          self.parentApp.send_message(msg)
+          msg = IpcMessage("cmd", "configure")
+          config = {
+                     "dataset": {
+                                  "cmd": "create",
+                                  "name": "reset",
+                                  "datatype": 1,
+                                  "dims": [1484, 1408],
+                                  "chunks": [1, 1484, 704]
+                                }
+                   }
+          msg.set_param("hdf", config)
+          self.parentApp.send_message(msg)
+        if selected == 8:
+          msg = IpcMessage("cmd", "configure")
+          config = {
+                     "fr_release_cnxn": "tcp://127.0.0.1:5002",
+                     "fr_ready_cnxn": "tcp://127.0.0.1:5001",
+                     "fr_shared_mem": "ExcaliburSharedBuffer"
+                   }
+          msg.set_param("fr_setup", config)
+          self.parentApp.send_message(msg)
+          msg = IpcMessage("cmd", "configure")
+          config = {
+                     "load": {
+                               "library": "./lib/libExcaliburReorderPlugin.so",
+                               "index": "excalibur",
+                               "name": "ExcaliburReorderPlugin"
+                             }
+                   }
+          msg.set_param("plugin", config)
+          self.parentApp.send_message(msg)
+          msg = IpcMessage("cmd", "configure")
+          config = {
+                     "load": {
+                               "library": "./lib/libHdf5Plugin.so",
+                               "index": "hdf",
+                               "name": "FileWriter"
+                             }
+                   }
+          msg.set_param("plugin", config)
+          self.parentApp.send_message(msg)
+          msg = IpcMessage("cmd", "configure")
+          config = {
+                     "connect": {
+                               "index": "excalibur",
+                               "connection": "frame_receiver"
+                             }
+                   }
+          msg.set_param("plugin", config)
+          self.parentApp.send_message(msg)
+          msg = IpcMessage("cmd", "configure")
+          config = {
+                     "connect": {
+                               "index": "hdf",
+                               "connection": "excalibur"
+                             }
+                   }
+          msg.set_param("plugin", config)
+          self.parentApp.send_message(msg)
+          msg = IpcMessage("cmd", "configure")
+          config = {
+                     "dataset": {
+                                  "cmd": "create",
+                                  "name": "data",
+                                  "datatype": 1,
+                                  "dims": [256, 2048]
+                                }
+                   }
+          msg.set_param("hdf", config)
+          self.parentApp.send_message(msg)
+        if selected == 9:
           self.parentApp.setNextForm(None)
           self.parentApp.switchFormNow()
           
@@ -144,6 +284,29 @@ class LoadPlugin(npyscreen.ActionForm):
         self.editing = False
         self.parentApp.switchFormNow()
 
+class SetupFileProcess(npyscreen.ActionForm):
+    def create(self):
+        self.name = "ODIN File Writer Client"
+        self.add(npyscreen.TitleText, labelColor="LABELBOLD", name="Setup file process and rank", value="", editable=False)
+        self.ctrl1 = self.add(npyscreen.TitleText, name="Processes:        ", value="1")
+        self.ctrl2 = self.add(npyscreen.TitleText, name="Process rank:     ", value="0")
+
+    def on_ok(self):
+        msg = IpcMessage("cmd", "configure")
+        config = {
+                   "process": {
+                       "number": int(self.ctrl1.value),
+                       "rank": int(self.ctrl2.value),
+                   },
+                 }
+        msg.set_param("hdf", config)
+        self.parentApp.send_message(msg)
+
+    def afterEditing(self):
+        self.parentApp.setNextForm("MAIN_MENU")
+        self.editing = False
+        self.parentApp.switchFormNow()
+
 class SetupFileWriting(npyscreen.ActionForm):
     def create(self):
         self.name = "ODIN File Writer Client"
@@ -155,8 +318,10 @@ class SetupFileWriting(npyscreen.ActionForm):
     def on_ok(self):
         msg = IpcMessage("cmd", "configure")
         config = {
-                   "filename": self.ctrl1.value,
-                   "filepath": self.ctrl2.value,
+                   "file": {
+                       "name": self.ctrl1.value,
+                       "path": self.ctrl2.value,
+                   },
                    "frames": int(self.ctrl3.value),
                  }
         msg.set_param("hdf", config)
