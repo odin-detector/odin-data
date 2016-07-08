@@ -175,6 +175,8 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
 
 int main(int argc, char** argv)
 {
+  try {
+
     // Create a default basic logger configuration, which can be overridden by command-line option later
     BasicConfigurator::configure();
 
@@ -199,79 +201,11 @@ int main(int argc, char** argv)
     cfg.set_param<std::string>("ctrl_endpoint", "tcp://127.0.0.1:5004");
     fwc->configure(cfg, reply);
 
-    // Configure the shared memory interface for the filewriter
-    val.SetObject();
-    val.SetString(vm["release"].as<string>().c_str(), allocator);
-    map.AddMember("fr_release_cnxn", val, allocator);
-    val.SetObject();
-    val.SetString(vm["ready"].as<string>().c_str(), allocator);
-    map.AddMember("fr_ready_cnxn", val, allocator);
-    val.SetObject();
-    val.SetString(vm["sharedbuf"].as<string>().c_str(), allocator);
-    map.AddMember("fr_shared_mem", val, allocator);
-    rapidjson::Value fr_config;
-    fr_config.SetObject();
-    fr_config.AddMember("fr_setup", map, allocator);
-    FrameReceiver::IpcMessage shm_cfg(fr_config);
-    fwc->configure(shm_cfg, reply);
-
-    // Now load the percival plugin
-    map.SetObject();
-    map.AddMember("library", "./lib/libPercivalProcessPlugin.so", allocator);
-    map.AddMember("index", "percival", allocator);
-    map.AddMember("name", "PercivalProcessPlugin", allocator);
-    val.SetObject();
-    val.AddMember("load", map, allocator);
-    rapidjson::Value plugin_config;
-    plugin_config.SetObject();
-    plugin_config.AddMember("plugin", val, allocator);
-    {
-      FrameReceiver::IpcMessage plugin_msg(plugin_config);
-      fwc->configure(plugin_msg, reply);
-    }
-
-    // Connect the Percival plugin to the shared memory controller
-    map.SetObject();
-    map.AddMember("index", "percival", allocator);
-    map.AddMember("connection", "frame_receiver", allocator);
-    val.SetObject();
-    val.AddMember("connect", map, allocator);
-    plugin_config.SetObject();
-    plugin_config.AddMember("plugin", val, allocator);
-    {
-      FrameReceiver::IpcMessage plugin_msg(plugin_config);
-      fwc->configure(plugin_msg, reply);
-    }
-
-    // Now load the HDF5 plugin
-    map.SetObject();
-    map.AddMember("library", "./lib/libHdf5Plugin.so", allocator);
-    map.AddMember("index", "hdf", allocator);
-    map.AddMember("name", "FileWriter", allocator);
-    val.SetObject();
-    val.AddMember("load", map, allocator);
-    plugin_config.SetObject();
-    plugin_config.AddMember("plugin", val, allocator);
-    {
-      FrameReceiver::IpcMessage plugin_msg(plugin_config);
-      fwc->configure(plugin_msg, reply);
-    }
-
-    // Connect the HDF5 plugin to the Percival plugin
-    map.SetObject();
-    map.AddMember("index", "hdf", allocator);
-    map.AddMember("connection", "percival", allocator);
-    val.SetObject();
-    val.AddMember("connect", map, allocator);
-    plugin_config.SetObject();
-    plugin_config.AddMember("plugin", val, allocator);
-    {
-      FrameReceiver::IpcMessage plugin_msg(plugin_config);
-      fwc->configure(plugin_msg, reply);
-    }
-
     // Now wait for the shutdown
     fwc->waitForShutdown();
 
-    return 0;
+  } catch (const std::exception& e){
+    // Nothing to do, terminate gracefully(?)
+  }
+  return 0;
 }
