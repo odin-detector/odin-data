@@ -593,6 +593,22 @@ namespace FrameReceiver {
         value_obj.SetInt(value);
     }
 
+    // Explicit specialisations of the the set_value method, mapping  RapidJSON storage types
+    // to the appropriate native type.
+
+    //! Sets the value of a message attribute.
+    //!
+    //! This explicit specialisation of the private template method sets the value of a
+    //! message attribute referenced by the RapidJSON value object passed as an argument.
+    //!
+    //! \param value_obj - RapidJSON value object to set value of
+    //! \param value - boolean value to set
+
+    template<> void IpcMessage::set_value(rapidjson::Value& value_obj, bool const& value)
+    {
+        value_obj.SetBool(value);
+    }
+
     //! Sets the value of a message attribute.
     //!
     //! This explicit specialisation of the private template method sets the value of a
