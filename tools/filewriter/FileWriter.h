@@ -27,9 +27,14 @@ namespace filewriter
 class Frame;
 
 
-class FileWriter : public filewriter::FileWriterPlugin {
-public:
+class FileWriter : public filewriter::FileWriterPlugin
+{
+  public:
+    /**
+     * Enumeration to store the pixel type of the incoming image
+     */
     enum PixelType { pixel_raw_8bit, pixel_raw_16bit, pixel_float32 };
+
     struct DatasetDefinition {
         std::string name;
         FileWriter::PixelType pixel;
@@ -45,7 +50,6 @@ public:
     };
 
     explicit FileWriter();
-    FileWriter(size_t num_processes, size_t process_rank);
     virtual ~FileWriter();
 
     void createFile(std::string filename, size_t chunk_align=1024 * 1024);
@@ -59,9 +63,28 @@ public:
 
     void startWriting();
     void stopWriting();
-    FrameReceiver::IpcMessage& configure(FrameReceiver::IpcMessage& config);
+    void configure(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply);
+    void configureProcess(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply);
+    void configureFile(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply);
+    void configureDataset(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply);
+    void status(FrameReceiver::IpcMessage& status);
 
 private:
+    static const std::string CONFIG_PROCESS;
+    static const std::string CONFIG_PROCESS_NUMBER;
+    static const std::string CONFIG_PROCESS_RANK;
+
+    static const std::string CONFIG_FILE;
+    static const std::string CONFIG_FILE_NAME;
+    static const std::string CONFIG_FILE_PATH;
+
+    static const std::string CONFIG_DATASET;
+    static const std::string CONFIG_DATASET_CMD;
+    static const std::string CONFIG_DATASET_NAME;
+    static const std::string CONFIG_DATASET_TYPE;
+    static const std::string CONFIG_DATASET_DIMS;
+    static const std::string CONFIG_DATASET_CHUNKS;
+
     FileWriter(const FileWriter& src); // prevent copying one of these
     hid_t pixelToHdfType(FileWriter::PixelType pixel) const;
     HDF5Dataset_t& get_hdf5_dataset(const std::string dset_name);
@@ -74,26 +97,27 @@ private:
     LoggerPtr log_;
     /** Is this plugin writing frames to file? */
     bool writing_;
+    /** Name of master frame.  When a master frame is received frame numbers increment */
+    std::string masterFrame_;
     /** Number of frames to write to file */
     size_t framesToWrite_;
     /** Number of frames that have been written to file */
     size_t framesWritten_;
-    /** Number of sub-frames that have been written to file */
-    size_t subFramesWritten_;
     /** Path of the file to write to */
     std::string filePath_;
     /** Name of the file to write to */
     std::string fileName_;
     /** Number of concurrent file writers executing */
-    const hsize_t concurrent_processes_;
+    size_t concurrent_processes_;
     /** Rank of this file writer */
-    const hsize_t concurrent_rank_;
+    size_t concurrent_rank_;
     /** Starting frame offset */
-    hsize_t start_frame_offset_;
+    size_t start_frame_offset_;
     /** Internal ID of the file being written to */
     hid_t hdf5_fileid_;
     /** Map of datasets that are being written to */
     std::map<std::string, FileWriter::HDF5Dataset_t> hdf5_datasets_;
+    std::map<std::string, FileWriter::DatasetDefinition> dataset_defs_;
 };
 
 /**
