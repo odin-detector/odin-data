@@ -64,6 +64,7 @@ namespace filewriter
     dimensions_t get_dimensions(const std::string& type) const;
     void set_parameter(const std::string& index, size_t parameter);
     size_t get_parameter(const std::string& index) const;
+    bool has_parameter(const std::string& index);
 
   private:
     Frame();

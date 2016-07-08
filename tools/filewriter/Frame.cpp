@@ -84,4 +84,9 @@ namespace filewriter
     return parameters_.find(index)->second;
   }
 
+  bool Frame::has_parameter(const std::string& index)
+  {
+    return (parameters_.count(index) == 1);
+  }
+
 } /* namespace filewriter */
