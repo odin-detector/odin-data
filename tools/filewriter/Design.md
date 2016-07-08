@@ -17,7 +17,11 @@ The service can be configured using a public socket, and by passing configuratio
 
 ## Interface Control Definitions
 
-The filewriter service understands standard IPC messages as defined within the IpcMessage class.  There are three IPC channels used by the filewriter service, and each is detailed below.  These interface 
+The filewriter service understands standard IPC messages as defined within the IpcMessage class.  There are three IPC channels used by the filewriter service, and each is detailed below.
+
+- Control channel.  This is a ZeroMQ pair socket, which can be used to send configuration and control messages to the FileWriter, and receive responses from the FileWriter.
+- Frame ready channel.  This is a ZeroMQ subscriber that listens to the FrameReceiver application for notifications of new frames that are ready to be processed.
+- Frame release channel.  This is a ZeroMQ publisher that publishes notifications whenever the FileWriter application has finished with a frame.
 
 ## Class Design
 
@@ -57,6 +61,29 @@ The following table describes all of the parameters that are understood by the F
 |            |                 | connection      | String  | Index of the plugin to disconnect from                    |
 
 
+To send a control message to the FileWriter application it conform to the standard IPC message format.  See example below
 
-Messages are passed to the filewriter using JSON objects, from ZeroMQ sockets.  The filewriter subscribes to two sockets, one is dedicated to the framereceiver service, and the other is for client side control of the filewriter.  The filewriter also publishes to another ZeroMQ socket, again dedicated to the framereceiver service.  The filewriter publishes a JSON message to notify when it has finished with a frame.
+```json
+{
+  "timestamp": "2016-06-30T13:52:07.447634",
+  "msg_val": "configure",
+  "msg_type": "cmd",
+  "params": {
+    "status": true
+  }
+}
+```
+
+The message must be a valid IPC message for the FileWriter to accept it.  The FileWriter expects messages with the type of "cmd"
+and the value of "configure".  The message can contain any number of parameters, it is the responsibility of the FileWriter to 
+reject any inconsistent sets of parameters.
+
+## Status
+
+Status for the FileWriter can be requested through the 
+
+## OLD Stuff
+
+Messages are passed to the filewriter using JSON objects, from ZeroMQ sockets.  The filewriter subscribes to two sockets, one is 
+dedicated to the framereceiver service, and the other is for client side control of the filewriter.  The filewriter also publishes to another ZeroMQ socket, again dedicated to the framereceiver service.  The filewriter publishes a JSON message to notify when it has finished with a frame.
  
