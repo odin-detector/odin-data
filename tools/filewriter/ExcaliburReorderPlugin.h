@@ -53,8 +53,24 @@ namespace filewriter
   public:
     ExcaliburReorderPlugin();
     virtual ~ExcaliburReorderPlugin();
+    void configure(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply);
+    void status(FrameReceiver::IpcMessage& status);
 
   private:
+    /** Configuration constant for asic counter depth */
+    static const std::string CONFIG_ASIC_COUNTER_DEPTH;
+
+    /** Configuration constant for 1 bit asic counter depth */
+    static const int DEPTH_1_BIT  = 0;
+    /** Configuration constant for 6 bit asic counter depth */
+    static const int DEPTH_6_BIT  = 1;
+    /** Configuration constant for 12 bit asic counter depth */
+    static const int DEPTH_12_BIT = 2;
+    /** Configuration constant for 24 bit asic counter depth */
+    static const int DEPTH_24_BIT = 3;
+    /** Configuration string representations for the bit depths */
+    static const std::string BIT_DEPTH[4];
+
     void processFrame(boost::shared_ptr<Frame> frame);
     void reorder1BitImage(unsigned int* in, unsigned char* out);
     void reorder6BitImage(unsigned char* in, unsigned char* out);

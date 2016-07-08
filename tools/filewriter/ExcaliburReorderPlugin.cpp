@@ -10,11 +10,14 @@
 namespace filewriter
 {
 
+  const std::string ExcaliburReorderPlugin::CONFIG_ASIC_COUNTER_DEPTH = "bitdepth";
+  const std::string ExcaliburReorderPlugin::BIT_DEPTH[4] = {"1-bit", "6-bit", "12-bit", "24-bit"};
+
   /**
    * The constructor sets up logging used within the class.
    */
   ExcaliburReorderPlugin::ExcaliburReorderPlugin() :
-      gAsicCounterDepth_(0)
+      gAsicCounterDepth_(DEPTH_12_BIT)
   {
     // Setup logging for the class
     logger_ = Logger::getLogger("ExcaliburReorderPlugin");
@@ -31,6 +34,47 @@ namespace filewriter
   }
 
   /**
+   * Configure the Excalibur plugin.  This receives an IpcMessage which should be processed
+   * to configure the plugin, and any response can be added to the reply IpcMessage.  This
+   * plugin supports the following configuration parameters:
+   * - bitdepth
+   *
+   * \param[in] config - Reference to the configuration IpcMessage object.
+   * \param[out] reply - Reference to the reply IpcMessage object.
+   */
+  void ExcaliburReorderPlugin::configure(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply)
+  {
+    if (config.has_param(ExcaliburReorderPlugin::CONFIG_ASIC_COUNTER_DEPTH)){
+      std::string sBitDepth = config.get_param<std::string>(ExcaliburReorderPlugin::CONFIG_ASIC_COUNTER_DEPTH);
+      if (sBitDepth == BIT_DEPTH[DEPTH_1_BIT]){
+        gAsicCounterDepth_ = DEPTH_1_BIT;
+      } else if (sBitDepth == BIT_DEPTH[DEPTH_6_BIT]){
+        gAsicCounterDepth_ = DEPTH_6_BIT;
+      } else if (sBitDepth == BIT_DEPTH[DEPTH_12_BIT]){
+        gAsicCounterDepth_ = DEPTH_12_BIT;
+      } else if (sBitDepth == BIT_DEPTH[DEPTH_24_BIT]){
+        gAsicCounterDepth_ = DEPTH_24_BIT;
+      } else {
+        LOG4CXX_ERROR(logger_, "Invalid bit depth requested: " << sBitDepth);
+        throw std::runtime_error("Invalid bit depth requested");
+      }
+    }
+  }
+
+  /**
+   * Collate status information for the plugin.  The status is added to the status Value object.
+   *
+   * \param[out] status - Reference to a RapidJSON generic value to store the status.
+   * \param[in] allocator - Allocator used for constructing RapidJSON values.
+   */
+  void ExcaliburReorderPlugin::status(FrameReceiver::IpcMessage& status)
+  {
+    // Record the plugin's status items
+    LOG4CXX_DEBUG(logger_, "Status requested for Excalibur plugin");
+    status.set_param(getName() + "/bitdepth", BIT_DEPTH[gAsicCounterDepth_]);
+  }
+
+  /**
    * Perform processing on the frame.  Depending on the selected bit depth
    * the corresponding pixel re-ordering algorithm is executed.
    *
@@ -39,6 +83,7 @@ namespace filewriter
   void ExcaliburReorderPlugin::processFrame(boost::shared_ptr<Frame> frame)
   {
     LOG4CXX_TRACE(logger_, "Reordering frame.");
+    LOG4CXX_TRACE(logger_, "Frame data size: " << frame->get_data_size());
 
     static void* reorderedPartImageC1;
 
@@ -52,23 +97,23 @@ namespace filewriter
     // Reorder image according to counter depth
     switch (gAsicCounterDepth_)
     {
-    case 0: // 1-bit counter depth
+    case DEPTH_1_BIT: // 1-bit counter depth
       reorderedImage = (void *)malloc(frame->get_data_size());
       memcpy(reorderedImage, (void*)(frame->get_data()), (frame->get_data_size()));
       reorder1BitImage((unsigned int*)(frame->get_data()), (unsigned char *)reorderedImage);
       break;
 
-    case 1: // 6-bit counter depth
+    case DEPTH_6_BIT: // 6-bit counter depth
       reorderedImage = (void *)malloc(frame->get_data_size());
       reorder6BitImage((unsigned char *)(frame->get_data()), (unsigned char *)reorderedImage);
       break;
 
-    case 2: // 12-bit counter depth
+    case DEPTH_12_BIT: // 12-bit counter depth
       reorderedImage = (void *)malloc(frame->get_data_size());
       reorder12BitImage((unsigned short *)(frame->get_data()), (unsigned short*)reorderedImage);
       break;
 
-    case 3: // 24-bit counter depth - needs special handling to merge successive frames
+    case DEPTH_24_BIT: // 24-bit counter depth - needs special handling to merge successive frames
 
   #if 1
       if (gFramesReceived == 1)
@@ -106,7 +151,18 @@ namespace filewriter
 
     // Set the frame image to the reordered image buffer if appropriate
     if (reorderedImage){
-      frame->copy_data(reorderedImage, frame->get_data_size());
+      // Assume our image dimensions are:
+      size_t bytes_per_pixel = 2;
+      dimensions_t dims(2); dims[0] = 2048; dims[1] = 256;
+
+      boost::shared_ptr<Frame> data_frame;
+      data_frame = boost::shared_ptr<Frame>(new Frame("data"));
+      data_frame->set_frame_number(0);
+      data_frame->set_dimensions("frame", dims);
+      data_frame->copy_data(reorderedImage, frame->get_data_size());
+//      data_frame->copy_data(frame->get_data(), frame->get_data_size());
+      LOG4CXX_TRACE(logger_, "Pushing data frame.");
+      this->push(data_frame);
       free(reorderedImage);
       reorderedImage = NULL;
     }
@@ -221,6 +277,8 @@ namespace filewriter
               pixelAddr = pixelX + pixelY*(FEM_PIXELS_PER_CHIP_X*FEM_CHIPS_PER_STRIPE_X);
               out[pixelAddr] = in[rawAddr];
               rawAddr++;
+              //LOG4CXX_TRACE(logger_, "Pixel Address: " << pixelAddr);
+              //LOG4CXX_TRACE(logger_, "Raw Address: " << rawAddr);
             }
           }
         }
