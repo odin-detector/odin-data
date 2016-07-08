@@ -165,47 +165,75 @@ namespace FrameReceiver
 			return the_value;
 		}
 
-		//! Sets the value of a named parameter in the message.
-		//!
-		//! This template method sets the value of a named parameter in the message,
-		//! creating that block and/orparameter if necessary.
-		//!
-		//! \param param_name - string name of the parameter to set
-		//! \param param_value - value of parameter to set
-
-		template<typename T> void set_param(std::string const& param_name, T const& param_value)
-		{
-
-			rapidjson::Document::AllocatorType& allocator = doc_.GetAllocator();
-
-			// Create the params block if it doesn't exist
-			rapidjson::Value::ConstMemberIterator itr = doc_.FindMember("params");
-			if (itr == doc_.MemberEnd())
-			{
-				rapidjson::Value params;
-				params.SetObject();
-				doc_.AddMember("params", params, allocator);
-			}
-			rapidjson::Value& params = doc_["params"];
-
-			// Now search through the params block for the parameter, creating it if missing, and set
-			// the value appropriately
-			rapidjson::Value::MemberIterator param_itr = params.FindMember(param_name.c_str());
-			if (param_itr == params.MemberEnd())
-			{
-				rapidjson::Value param_name_val(param_name.c_str(), allocator);
-				rapidjson::Value param_value_val;
-				set_value(param_value_val, param_value);
-				params.AddMember(param_name_val, param_value_val, allocator);
-			}
-			else
-			{
-				set_value(const_cast<rapidjson::Value&>(param_itr->value), param_value);
-			}
-		}
-
 		  //! Returns true if the parameter is found within the message
     bool has_param(const std::string& param_name) const;
+
+    //! Sets the value of a named parameter in the message.
+    //!
+    //! This template method sets the value of a named parameter in the message,
+    //! creating that block and/orparameter if necessary.  Complex names can be
+    //! supplied to generate complex parameter structures.
+    //!
+    //! \param param_name - string name of the parameter to set
+    //! \param param_value - value of parameter to set
+
+    template<typename T> void set_param(const std::string& param_name, T const& param_value)
+    {
+      bool found_array = false;
+      std::vector<std::string> names;
+      // Split the name by / character
+      std::stringstream ss(param_name);
+      std::string item;
+      while (getline(ss, item, '/')) {
+        names.push_back(item);
+      }
+      // Get the top level name
+      std::string tl_param_name = names[0];
+      names.erase(names.begin());
+
+      // Pointer to the rapidjson value
+      rapidjson::Value *next;
+      // Does the param exist
+      if (!this->has_param(tl_param_name)){
+        this->internal_set_param(tl_param_name, rapidjson::Value().SetObject());
+      }
+      // Get the reference to the parameter
+      next = &(doc_["params"][rapidjson::Value().SetObject().SetString(tl_param_name.c_str(), doc_.GetAllocator())]);
+
+      std::vector<std::string>::iterator iter;
+      for (iter = names.begin(); iter != names.end(); ++iter){
+        if (*iter == names.back()){
+          // Check for array notation
+          std::string array_end = "[]";
+          if (0 == (*iter).compare((*iter).length() - array_end.length(), array_end.length(), array_end)){
+            found_array = true;
+          }
+        }
+        std::string index = *iter;
+        if (found_array){
+          index = index.substr(0, index.size()-2);
+        }
+        // For each entry check to see if it already exists
+        rapidjson::Value::MemberIterator param_itr = next->FindMember(index.c_str());
+        if (param_itr == next->MemberEnd()){
+          // This one doesn't exist so create it
+          rapidjson::Value newval;
+          newval.SetObject();
+          next->AddMember(rapidjson::Value().SetObject().SetString(index.c_str(), doc_.GetAllocator()), newval, doc_.GetAllocator());
+        }
+        next = &(*next)[index.c_str()];
+      }
+      if (!found_array){
+        set_value(*next, param_value);
+      } else {
+        if (!next->IsArray()){
+          next->SetArray();
+        }
+        rapidjson::Value val;
+        set_value(val, param_value);
+        next->PushBack(val, doc_.GetAllocator());
+      }
+    }
 
 	    //! Indicates if message has necessary attributes with legal values
 		bool is_valid(void);
@@ -241,6 +269,45 @@ namespace FrameReceiver
 		friend std::ostream& operator <<(std::ostream& os, IpcMessage& the_msg);
 
 	private:
+
+    //! Sets the value of a named parameter in the message.
+    //!
+    //! This template method sets the value of a named parameter in the message,
+    //! creating that block and/orparameter if necessary.
+    //!
+    //! \param param_name - string name of the parameter to set
+    //! \param param_value - value of parameter to set
+
+    template<typename T> void internal_set_param(std::string const& param_name, T const& param_value)
+    {
+
+      rapidjson::Document::AllocatorType& allocator = doc_.GetAllocator();
+
+      // Create the params block if it doesn't exist
+      rapidjson::Value::ConstMemberIterator itr = doc_.FindMember("params");
+      if (itr == doc_.MemberEnd())
+      {
+        rapidjson::Value params;
+        params.SetObject();
+        doc_.AddMember("params", params, allocator);
+      }
+      rapidjson::Value& params = doc_["params"];
+
+      // Now search through the params block for the parameter, creating it if missing, and set
+      // the value appropriately
+      rapidjson::Value::MemberIterator param_itr = params.FindMember(param_name.c_str());
+      if (param_itr == params.MemberEnd())
+      {
+        rapidjson::Value param_name_val(param_name.c_str(), allocator);
+        rapidjson::Value param_value_val;
+        set_value(param_value_val, param_value);
+        params.AddMember(param_name_val, param_value_val, allocator);
+      }
+      else
+      {
+        set_value(const_cast<rapidjson::Value&>(param_itr->value), param_value);
+      }
+    }
 
 
 		//! Gets the value of a message attribute.
