@@ -323,8 +323,15 @@ BOOST_AUTO_TEST_CASE( FileWriterSubProcess )
 {
     // Frame numbers start from 1: 1,2,3,4,5  - but are indexed from 0 in the frames vector.
     // Process numbers start from 0: 0,1,2 - this process pretends to be process 1.
+    FrameReceiver::IpcMessage reply;
 
-    filewriter::FileWriter fw1(3, 1);
+    filewriter::FileWriter fw1;
+    {
+      FrameReceiver::IpcMessage cfg;
+      cfg.set_param("process/number", 3);
+      cfg.set_param("process/rank", 1);
+      fw1.configure(cfg, reply);
+    }
     BOOST_REQUIRE_NO_THROW(fw1.createFile("/tmp/process_1of3.h5"));
     BOOST_REQUIRE_NO_THROW(fw1.createDataset(dset_def));
     BOOST_REQUIRE_EQUAL(dset_def.name, frame->get_dataset_name());
@@ -345,7 +352,13 @@ BOOST_AUTO_TEST_CASE( FileWriterSubProcess )
 
     BOOST_REQUIRE_NO_THROW(fw1.closeFile());
 
-    filewriter::FileWriter fw0(3, 0);
+    filewriter::FileWriter fw0;
+    {
+      FrameReceiver::IpcMessage cfg;
+      cfg.set_param("process/number", 3);
+      cfg.set_param("process/rank", 0);
+      fw0.configure(cfg, reply);
+    }
     BOOST_REQUIRE_NO_THROW(fw0.createFile("/tmp/process_0of3.h5"));
     BOOST_REQUIRE_NO_THROW(fw0.createDataset(dset_def));
     BOOST_REQUIRE_EQUAL(dset_def.name, frame->get_dataset_name());
