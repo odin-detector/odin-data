@@ -57,8 +57,14 @@ namespace filewriter
     void status(FrameReceiver::IpcMessage& status);
 
   private:
-    /** Configuration constant for asic counter depth */
+    /** Configuration constant for asic counter depth **/
     static const std::string CONFIG_ASIC_COUNTER_DEPTH;
+    /** Configuration constant for image width **/
+    static const std::string CONFIG_IMAGE_WIDTH;
+    /** Configuration constant for image height **/
+    static const std::string CONFIG_IMAGE_HEIGHT;
+    /** Configuration constant for reset of 24bit image counter **/
+    static const std::string CONFIG_RESET_24_BIT;
 
     /** Configuration constant for 1 bit asic counter depth */
     static const int DEPTH_1_BIT  = 0;
@@ -77,10 +83,16 @@ namespace filewriter
     void reorder12BitImage(unsigned short* in, unsigned short* out);
     void build24BitImage(unsigned short* inC0, unsigned short* inC1, unsigned int* out);
 
-    /** Pointer to logger */
+    /** Pointer to logger **/
     LoggerPtr logger_;
-    /** Bit depth of the incoming frames */
+    /** Bit depth of the incoming frames **/
     int gAsicCounterDepth_;
+    /** Image width **/
+    int imageWidth_;
+    /** Image height **/
+    int imageHeight_;
+    /** Counter used for construction of 24 bit frames **/
+    int framesReceived_;
   };
 
   /**
