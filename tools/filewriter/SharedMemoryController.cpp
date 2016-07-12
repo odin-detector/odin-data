@@ -88,6 +88,8 @@ namespace filewriter
           boost::shared_ptr<Frame> frame;
           frame = boost::shared_ptr<Frame>(new Frame("raw"));
           smp_->get_frame((*frame), bufferID);
+          // Set the frame number
+          frame->set_frame_number(rxMsg.get_param<int>("frame", 0));
 
           // Loop over registered callbacks, placing the frame onto each queue
           std::map<std::string, boost::shared_ptr<IFrameCallback> >::iterator cbIter;
