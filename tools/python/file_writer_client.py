@@ -27,6 +27,7 @@ class PercivalClientApp(npyscreen.NPSAppManaged):
         self.registerForm("LOAD_PLUGIN", LoadPlugin())
         self.registerForm("SETUP_PROCESS", SetupFileProcess())
         self.registerForm("SETUP_FILE", SetupFileWriting())
+        self.registerForm("SETUP_EXCALIBUR", SetupExcalibur())
         
     def send_message(self, ipc_message):
         self._ctrl_channel.send(ipc_message.encode())
@@ -189,6 +190,44 @@ class MainMenu(npyscreen.FormBaseNew):
           msg.set_param("hdf", config)
           self.parentApp.send_message(msg)
         if selected == 8:
+          self.parentApp.setNextForm("SETUP_EXCALIBUR")
+          self.editing = False
+          self.parentApp.switchFormNow()
+        if selected == 9:
+          self.parentApp.setNextForm(None)
+          self.parentApp.switchFormNow()
+          
+    def while_waiting(self):
+        if self.parentApp._current_value != self.parentApp._prev_value:
+            self.t3.values = self.parentApp._current_value.split("\n")
+            self.t3.display()
+            self.parentApp._prev_value = self.parentApp._current_value
+        self.t2.entry_widget.value = None
+        self.t2.entry_widget._old_value = None
+        self.t2.display()
+
+class SetupExcalibur(npyscreen.FormBaseNew):
+    def create(self):
+        self.keypress_timeout = 1
+        self.name = "ODIN File Writer Client"
+        self.t2 = self.add(npyscreen.BoxTitle, name="Choose excalibur data type:") #, max_height=20)
+        
+        self.t2.values = ["1-bit",
+                          "6-bit", 
+                          "12-bit", 
+                          "24-bit", 
+                          "Exit"]
+        self.t2.when_value_edited = self.button
+
+    def setup(self, dtype):
+          rdtype = 0
+          if dtype == "6-bit":
+            rdtype = 0
+          if dtype == "12-bit":
+            rdtype = 1
+          if dtype == "24-bit":
+            rdtype = 2
+            
           msg = IpcMessage("cmd", "configure")
           config = {
                      "fr_release_cnxn": "tcp://127.0.0.1:5002",
@@ -240,24 +279,47 @@ class MainMenu(npyscreen.FormBaseNew):
                      "dataset": {
                                   "cmd": "create",
                                   "name": "data",
-                                  "datatype": 1,
+                                  "datatype": rdtype,
                                   "dims": [256, 2048]
                                 }
                    }
           msg.set_param("hdf", config)
           self.parentApp.send_message(msg)
-        if selected == 9:
-          self.parentApp.setNextForm(None)
-          self.parentApp.switchFormNow()
-          
-    def while_waiting(self):
-        if self.parentApp._current_value != self.parentApp._prev_value:
-            self.t3.values = self.parentApp._current_value.split("\n")
-            self.t3.display()
-            self.parentApp._prev_value = self.parentApp._current_value
+          msg = IpcMessage("cmd", "configure")
+          config = {
+                     "bitdepth": dtype
+                   }
+          msg.set_param("excalibur", config)
+          self.parentApp.send_message(msg)
+    
+    def button(self):
+        selected = self.t2.entry_widget.value
         self.t2.entry_widget.value = None
         self.t2.entry_widget._old_value = None
-        self.t2.display()
+        if selected == 0:
+          self.setup("1-bit")
+          self.parentApp.setNextForm("MAIN_MENU")
+          self.editing = False
+          self.parentApp.switchFormNow()
+        if selected == 1:
+          self.setup("6-bit")
+          self.parentApp.setNextForm("MAIN_MENU")
+          self.editing = False
+          self.parentApp.switchFormNow()
+        if selected == 2:
+          self.setup("12-bit")
+          self.parentApp.setNextForm("MAIN_MENU")
+          self.editing = False
+          self.parentApp.switchFormNow()
+        if selected == 3:
+          self.setup("24-bit")
+          self.parentApp.setNextForm("MAIN_MENU")
+          self.editing = False
+          self.parentApp.switchFormNow()
+        if selected == 4:
+          self.parentApp.setNextForm("MAIN_MENU")
+          self.editing = False
+          self.parentApp.switchFormNow()
 
 class LoadPlugin(npyscreen.ActionForm):
     def create(self):
