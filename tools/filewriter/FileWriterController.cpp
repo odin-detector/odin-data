@@ -32,6 +32,11 @@ namespace filewriter
   const std::string FileWriterController::CONFIG_PLUGIN_LIBRARY    = "library";
   const std::string FileWriterController::CONFIG_PLUGIN_CONNECTION = "connection";
 
+  /** Construct a new FileWriterController class.
+   *
+   * The constructor sets up logging used within the class, and starts the
+   * IpcReactor thread.
+   */
   FileWriterController::FileWriterController() :
     logger_(log4cxx::Logger::getLogger("FileWriterController")),
     runThread_(true),
@@ -53,14 +58,24 @@ namespace filewriter
             break;
         }
     }
-
   }
 
+  /**
+   * Destructor.
+   */
   FileWriterController::~FileWriterController()
   {
     // TODO Auto-generated destructor stub
   }
 
+  /** Handle an incoming configuration message.
+   *
+   * This method is called by the IpcReactor when a configuration IpcMessage
+   * has been received.  The raw message is read and parsed into an IpcMessage
+   * for further processing.  The configure method is called, and once
+   * configuration has completed a response IpcMessage is sent back on the
+   * control channel.
+   */
   void FileWriterController::handleCtrlChannel()
   {
     // Receive a message from the main thread channel
@@ -95,6 +110,25 @@ namespace filewriter
     }
   }
 
+  /**
+   * Set configuration options for the FileWriterController.
+   *
+   * Sets up the overall FileWriter application according to the
+   * configuration IpcMessage objects that are received.  The objects
+   * are searched for:
+   * CONFIG_SHUTDOWN - Shuts down the application
+   * CONFIG_STATUS - Retrieves status for all plugins and replies
+   * CONFIG_CTRL_ENDPOINT - Calls the method setupControlInterface
+   * CONFIG_PLUGIN - Calls the method configurePlugin
+   * CONFIG_FR_SETUP - Calls the method setupFrameReceiverInterface
+   *
+   * The method also searches for configuration objects that have the
+   * same index as loaded plugins.  If any of these are found the they
+   * are passed down to the plugin for execution.
+   *
+   * \param[in] config - IpcMessage containing configuration data.
+   * \param[out] reply - Response IpcMessage.
+   */
   void FileWriterController::configure(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply)
   {
     LOG4CXX_DEBUG(logger_, "Configuration submitted: " << config.encode());
@@ -146,23 +180,31 @@ namespace filewriter
     }
   }
 
+  /**
+   * Set configuration options for the plugins.
+   *
+   * Sets up the plugins loaded into the controller according to the
+   * configuration IpcMessage objects that are received.  The objects
+   * are searched for:
+   * CONFIG_PLUGIN_LIST - Replies with a list of loaded plugins
+   * CONFIG_PLUGIN_LOAD - Uses NAME, INDEX and LIBRARY to load a plugin
+   * into the controller.
+   * CONFIG_PLUGIN_CONNECT - Uses CONNECTION and INDEX to connect one
+   * plugin input to another plugin output.
+   * CONFIG_PLUGIN_DISCONNECT - Uses CONNECTION and INDEX to disconnect
+   * one plugin from another.
+   *
+   * \param[in] config - IpcMessage containing configuration data.
+   * \param[out] reply - Response IpcMessage.
+   */
   void FileWriterController::configurePlugin(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply)
   {
     if (config.has_param(FileWriterController::CONFIG_PLUGIN_LIST)){
       // We have been asked to list the loaded plugins
-      rapidjson::Document jsonDoc;
-      jsonDoc.SetObject();
-      rapidjson::Document::AllocatorType& allocator = jsonDoc.GetAllocator();
-      rapidjson::Value list(rapidjson::kArrayType);
-      rapidjson::Value val;
-      val.SetObject();
       std::map<std::string, boost::shared_ptr<FileWriterPlugin> >::iterator iter;
       for (iter = plugins_.begin(); iter != plugins_.end(); ++iter){
-        val.SetObject();
-        val.SetString(iter->first.c_str(), allocator);
-        list.PushBack(val, allocator);
+        reply.set_param("plugins/names[]", iter->first);
       }
-      reply.set_param("plugins", list);
     }
 
 
@@ -202,6 +244,17 @@ namespace filewriter
     }
   }
 
+  /** Load a new plugin.
+   *
+   * Attempts to load the specified library dynamically using the classloader.
+   * If the index specified is already used then throws an error.  Once the plugin
+   * has been loaded it's processing thread is started.  The same plugin type can
+   * be loaded multiple times as long as each index is unique.
+   *
+   * \param[in] index - Unique index required for the plugin.
+   * \param[in] name - Name of the plugin class.
+   * \param[in] library - Full path of shared library file for the plugin.
+   */
   void FileWriterController::loadPlugin(const std::string& index, const std::string& name, const std::string& library)
   {
     // Verify a plugin of the same name doesn't already exist
@@ -221,6 +274,13 @@ namespace filewriter
     }
   }
 
+  /** Connects two plugins together.
+   *
+   * When plugins have been connected they can pass frame objects between them.
+   *
+   * \param[in] index - Index of the plugin wanting to connect.
+   * \param[in] connectTo - Index of the plugin to connect to.
+   */
   void FileWriterController::connectPlugin(const std::string& index, const std::string& connectTo)
   {
     // Check that the plugin is loaded
@@ -248,6 +308,11 @@ namespace filewriter
     }
   }
 
+  /** Disconnect one plugin from another plugin.
+   *
+   * \param[in] index - Index of the plugin wanting to disconnect.
+   * \param[in] disconnectFrom - Index of the plugin to disconnect from.
+   */
   void FileWriterController::disconnectPlugin(const std::string& index, const std::string& disconnectFrom)
   {
     // Check that the plugin is loaded
@@ -268,12 +333,26 @@ namespace filewriter
     }
   }
 
+  /**
+   * Wait for the exit condition before returning.
+   */
   void FileWriterController::waitForShutdown()
   {
     boost::unique_lock<boost::mutex> lock(exitMutex_);
     exitCondition_.wait(lock);
   }
 
+  /** Set up the frame receiver interface.
+   *
+   * This method creates new SharedMemoryController and SharedMemoryParser objects,
+   * which manage the receipt of frame ready notifications and construction of
+   * Frame objects from shared memory.
+   * Pointers to the two objects are kept by this class.
+   *
+   * \param[in] sharedMemName - Name of the shared memory block opened by the frame receiver.
+   * \param[in] frPublisherString - Endpoint for sending frame release notifications.
+   * \param[in] frSubscriberString - Endpoint for receiving frame ready notifications.
+   */
   void FileWriterController::setupFrameReceiverInterface(const std::string& sharedMemName,
                                                          const std::string& frPublisherString,
                                                          const std::string& frSubscriberString)
@@ -305,6 +384,14 @@ namespace filewriter
 
   }
 
+  /** Set up the control interface.
+   *
+   * This method binds the control IpcChannel to the provided endpoint,
+   * creating a socket for controlling applications to connect to.  This
+   * socket is used for sending configuration IpcMessages.
+   *
+   * \param[in] ctrlEndpointString - Name of the control endpoint.
+   */
   void FileWriterController::setupControlInterface(const std::string& ctrlEndpointString)
   {
     try {
@@ -322,6 +409,11 @@ namespace filewriter
     reactor_->register_channel(ctrlChannel_, boost::bind(&FileWriterController::handleCtrlChannel, this));
   }
 
+  /** Start the Ipc service running.
+   *
+   * Sets up a tick timer and runs the Ipc reactor.
+   * Currently the tick timer does not perform any processing.
+   */
   void FileWriterController::runIpcService(void)
   {
     LOG4CXX_DEBUG(logger_, "Running IPC thread service");
@@ -331,12 +423,6 @@ namespace filewriter
 
     // Add the tick timer to the reactor
     int tick_timer_id = reactor_->register_timer(1000, 0, boost::bind(&FileWriterController::tickTimer, this));
-
-    // Add the buffer monitor timer to the reactor
-    //int buffer_monitor_timer_id = reactor_.register_timer(3000, 0, boost::bind(&FrameReceiverRxThread::buffer_monitor_timer, this));
-
-    // Register the frame release callback with the decoder
-    //frame_decoder_->register_frame_ready_callback(boost::bind(&FrameReceiverRxThread::frame_ready, this, _1, _2));
 
     // Set thread state to running, allows constructor to return
     threadRunning_ = true;
@@ -348,9 +434,12 @@ namespace filewriter
     LOG4CXX_DEBUG(logger_, "Terminating IPC thread service");
   }
 
+  /** Tick timer task called by IpcReactor.
+   *
+   * This currently performs no processing.
+   */
   void FileWriterController::tickTimer(void)
   {
-    //LOG4CXX_DEBUG(logger_, "IPC thread tick timer fired");
     if (!runThread_)
     {
       LOG4CXX_DEBUG(logger_, "IPC thread terminate detected in timer");

@@ -80,10 +80,9 @@ namespace filewriter
   }
 
   /**
-   * Collate status information for the plugin.  The status is added to the status Value object.
+   * Collate status information for the plugin.  The status is added to the status IpcMessage object.
    *
-   * \param[out] status - Reference to a RapidJSON generic value to store the status.
-   * \param[in] allocator - Allocator used for constructing RapidJSON values.
+   * \param[out] status - Reference to an IpcMessage value to store the status.
    */
   void ExcaliburReorderPlugin::status(FrameReceiver::IpcMessage& status)
   {

@@ -22,6 +22,12 @@ using namespace log4cxx::helpers;
 namespace filewriter
 {
 
+  /** Processing of Percival Frame objects.
+   *
+   * The PercivalProcessPlugin class is currently responsible for receiving a raw data
+   * Frame object and parsing the header information, before splitting the raw data into
+   * the two "data" and "reset" Frame objects.
+   */
   class PercivalProcessPlugin : public FileWriterPlugin
   {
   public:
@@ -31,6 +37,7 @@ namespace filewriter
   private:
     void processFrame(boost::shared_ptr<Frame> frame);
 
+    /** Pointer to logger */
     LoggerPtr logger_;
   };
 

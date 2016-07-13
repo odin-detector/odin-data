@@ -11,9 +11,21 @@ namespace filewriter
 {
 
   /** Constructor.
-   * The constructor sets up logging used within the class.
+   *
+   * The constructor sets up logging used within the class.  It also creates the
+   * rxChannel_ subscribing IpcChannel and registers it with the IpcReactor reactor_.
+   * Finally, the txChannel_ publishing IpcChannel is created.  rxChannel_ is a ZeroMQ
+   * subscriber (listening for frame ready notifications from the frame recevier) and
+   * txChannel_ is a ZeroMQ plublisher that sends notifications (of released frames to
+   * the frame receiver).
+   *
+   * \param[in] reactor - pointer to the IpcReactor object.
+   * \param[in] rxEndPoint - string name of the subscribing endpoint for frame ready notifications.
+   * \param[in] txEndPoint - string name of the publishing endpoint for frame release notifications.
    */
-  SharedMemoryController::SharedMemoryController(boost::shared_ptr<FrameReceiver::IpcReactor> reactor, const std::string& rxEndPoint, const std::string& txEndPoint) :
+  SharedMemoryController::SharedMemoryController(boost::shared_ptr<FrameReceiver::IpcReactor> reactor,
+                                                 const std::string& rxEndPoint,
+                                                 const std::string& txEndPoint) :
     reactor_(reactor),
     rxChannel_(ZMQ_SUB),
     txChannel_(ZMQ_PUB)
@@ -52,6 +64,9 @@ namespace filewriter
     }
 }
 
+  /**
+   * Destructor.
+   */
   SharedMemoryController::~SharedMemoryController()
   {
     LOG4CXX_TRACE(logger_, "SharedMemoryController destructor.");
@@ -68,6 +83,15 @@ namespace filewriter
     smp_ = smp;
   }
 
+  /** Called whenever a new IpcMessage is received to notify that a frame is ready.
+   *
+   * Reads the raw message bytes from the rxChannel_ and constructs an IpcMessage object
+   * from the bytes.  Verifies the IpcMessage type and value, and then uses the frame
+   * number and buffer ID information to tell the SharedMemoryParser which frame is ready
+   * for extraction from shared memory.
+   * Loops over registered callbacks and passes the frame to the relevant WorkQueue objects,
+   * before sending notifiation that the frame has been released for re-use.
+   */
   void SharedMemoryController::handleRxChannel()
   {
     // Receive a message from the main thread channel
@@ -130,6 +154,15 @@ namespace filewriter
     }
   }
 
+  /** Register a callback for Frame updates with this class.
+   *
+   * The callback (IFrameCallback subclass) is added to the map of callbacks, indexed
+   * by name.  Whenever a new Frame object is received from the frame receiver then these
+   * callbacks will be called and passed the Frame pointer.
+   *
+   * \param[in] name - string index of the callback.
+   * \param[in] cb - IFrameCallback to register for updates.
+   */
   void SharedMemoryController::registerCallback(const std::string& name, boost::shared_ptr<IFrameCallback> cb)
   {
     // Check if we own the callback already
@@ -141,6 +174,12 @@ namespace filewriter
     }
   }
 
+  /** Remove a callback from the callback map.
+   *
+   * The callback is removed from the map of callbacks.
+   *
+   * \param[in] name - string index of the callback.
+   */
   void SharedMemoryController::removeCallback(const std::string& name)
   {
     boost::shared_ptr<IFrameCallback> cb;

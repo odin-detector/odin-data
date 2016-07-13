@@ -302,6 +302,17 @@ FileWriter::HDF5Dataset_t& FileWriter::get_hdf5_dataset(const std::string dset_n
     return this->hdf5_datasets_.at(dset_name);
 }
 
+/**
+ * Return the dataset offset for the supplied frame number.
+ *
+ * This method checks that the frame really belongs to this writer instance
+ * in the case of multiple writer instances.  It then calculates the dataset
+ * offset for this frame, which is the offset divided by the number of filewriter
+ * concurrent processes.
+ *
+ * \param[in] frame_no - Frame number of the frame.
+ * \return - the dataset offset for the frame number.
+ */
 size_t FileWriter::getFrameOffset(size_t frame_no) const {
     size_t frame_offset = this->adjustFrameOffset(frame_no);
 
@@ -334,7 +345,7 @@ size_t FileWriter::getFrameOffset(size_t frame_no) const {
  * Throws a std::range_error if a frame is received which has a smaller
  *   frame number than the initial frame used to set the offset.
  *
- * Returns the dataset offset for frame number <frame_no>
+ * Returns the dataset offset for frame number (frame_no)
  */
 size_t FileWriter::adjustFrameOffset(size_t frame_no) const {
     size_t frame_offset = 0;
@@ -356,6 +367,14 @@ void FileWriter::setStartFrameOffset(size_t frame_no) {
     this->start_frame_offset_ = frame_no;
 }
 
+/** Extend the HDF5 dataset ready for new data
+ *
+ * Checks the frame_no is larger than the current dataset dimensions and then
+ * sets the extent of the dataset to this new value.
+ *
+ * \param[in] dset - Handle to the HDF5 dataset.
+ * \param[in] frame_no - Number of the incoming frame to extend to.
+ */
 void FileWriter::extend_dataset(HDF5Dataset_t& dset, size_t frame_no) const {
 	herr_t status;
     if (frame_no > dset.dataset_dimensions[0]) {
@@ -368,6 +387,17 @@ void FileWriter::extend_dataset(HDF5Dataset_t& dset, size_t frame_no) const {
     }
 }
 
+/** Process an incoming frame.
+ *
+ * Checks we have been asked to write frames.  If we are in writing mode
+ * then the frame is checked for subframes.  If subframes are found then
+ * writeSubFrames is called.  If no subframes are found then writeFrame
+ * is called.
+ * Finally counters are updated and if the number of required frames has
+ * been reached then the stopWriting method is called.
+ *
+ * \param[in] frame - Pointer to the Frame object.
+ */
 void FileWriter::processFrame(boost::shared_ptr<Frame> frame)
 {
   if (writing_){
@@ -395,6 +425,12 @@ void FileWriter::processFrame(boost::shared_ptr<Frame> frame)
   }
 }
 
+/** Start writing frames to file.
+ *
+ * This method checks that the writer is not already writing.  Then it creates
+ * the datasets required (from their definitions) and creates the HDF5 file
+ * ready to write frames.  The framesWritten counter is reset to 0.
+ */
 void FileWriter::startWriting()
 {
   if (!writing_){
@@ -417,6 +453,11 @@ void FileWriter::startWriting()
   }
 }
 
+/** Stop writing frames to file.
+ *
+ * This method checks that the writer is currently writing.  Then it closes
+ * the file and stops writing frames.
+ */
 void FileWriter::stopWriting()
 {
   if (writing_){
@@ -425,6 +466,21 @@ void FileWriter::stopWriting()
   }
 }
 
+/**
+ * Set configuration options for the file writer.
+ *
+ * This sets up the file writer plugin according to the configuration IpcMessage
+ * objects that are received.  The options are searched for:
+ * CONFIG_PROCESS - Calls the method processConfig
+ * CONFIG_FILE - Calls the method fileConfig
+ * CONFIG_DATASET - Calls the method dsetConfig
+ *
+ * Checks to see if the number of frames to write has been set.
+ * Checks to see if the writer should start or stop writing frames.
+ *
+ * \param[in] config - IpcMessage containing configuration data.
+ * \param[out] reply - Response IpcMessage.
+ */
 void FileWriter::configure(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply)
 {
   LOG4CXX_DEBUG(log_, config.encode());
@@ -460,6 +516,19 @@ void FileWriter::configure(FrameReceiver::IpcMessage& config, FrameReceiver::Ipc
   }
 }
 
+/**
+ * Set configuration options for the file writer process count.
+ *
+ * This sets up the file writer plugin according to the configuration IpcMessage
+ * objects that are received.  The options are searched for:
+ * CONFIG_PROCESS_NUMBER - Sets the number of writer processes executing
+ * CONFIG_PROCESS_RANK - Sets the rank of this process
+ *
+ * The configuration is not applied if the writer is currently writing.
+ *
+ * \param[in] config - IpcMessage containing configuration data.
+ * \param[out] reply - Response IpcMessage.
+ */
 void FileWriter::configureProcess(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply)
 {
   // If we are writing a file then we cannot change these items
@@ -479,6 +548,19 @@ void FileWriter::configureProcess(FrameReceiver::IpcMessage& config, FrameReceiv
   }
 }
 
+/**
+ * Set file configuration options for the file writer.
+ *
+ * This sets up the file writer plugin according to the configuration IpcMessage
+ * objects that are received.  The options are searched for:
+ * CONFIG_FILE_PATH - Sets the path of the file to write to
+ * CONFIG_FILE_NAME - Sets the filename of the file to write to
+ *
+ * The configuration is not applied if the writer is currently writing.
+ *
+ * \param[in] config - IpcMessage containing configuration data.
+ * \param[out] reply - Response IpcMessage.
+ */
 void FileWriter::configureFile(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply)
 {
   // If we are writing a file then we cannot change these items
@@ -499,6 +581,22 @@ void FileWriter::configureFile(FrameReceiver::IpcMessage& config, FrameReceiver:
   }
 }
 
+/**
+ * Set dataset configuration options for the file writer.
+ *
+ * This sets up the file writer plugin according to the configuration IpcMessage
+ * objects that are received.  The options are searched for:
+ * CONFIG_DATASET_CMD - Should we create/delete a dataset definition
+ * CONFIG_DATASET_NAME - Name of the dataset
+ * CONFIG_DATASET_TYPE - Datatype of the dataset
+ * CONFIG_DATASET_DIMS - Dimensions of the dataset
+ * CONFIG_DATASET_CHUNKS - Chunking parameters of the dataset
+ *
+ * The configuration is not applied if the writer is currently writing.
+ *
+ * \param[in] config - IpcMessage containing configuration data.
+ * \param[out] reply - Response IpcMessage.
+ */
 void FileWriter::configureDataset(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply)
 {
   // If we are writing a file then we cannot change these items
@@ -565,6 +663,11 @@ void FileWriter::configureDataset(FrameReceiver::IpcMessage& config, FrameReceiv
   }
 }
 
+/**
+ * Collate status information for the plugin.  The status is added to the status IpcMessage object.
+ *
+ * \param[out] status - Reference to an IpcMessage value to store the status.
+ */
 void FileWriter::status(FrameReceiver::IpcMessage& status)
 {
   // Record the plugin's status items

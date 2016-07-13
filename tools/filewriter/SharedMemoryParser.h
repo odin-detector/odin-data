@@ -17,15 +17,6 @@
 #include <log4cxx/logger.h>
 
 #include "Frame.h"
-//#include "PercivalEmulatorDefinitions.h"
-
-// Shared Buffer (IPC) Header
-//typedef struct
-//{
-//    size_t manager_id;
-//    size_t num_buffers;
-//    size_t buffer_size;
-//} Header;
 
 typedef unsigned long long dimsize_t;
 typedef std::vector<dimsize_t> dimensions_t;
@@ -33,6 +24,12 @@ typedef std::vector<dimsize_t> dimensions_t;
 namespace filewriter
 {
 
+  /** Parses shared memory buffer and populates Frame objects.
+   *
+   * The SharedMemoryParser class manages the boost shared memory objects,
+   * and is used to extract raw data from shared memory buffers and copy the
+   * data into Frame objects for further processing.
+   */
   class SharedMemoryParser
   {
   public:
@@ -44,11 +41,18 @@ namespace filewriter
 
   private:
     SharedMemoryParser();
+    /**
+     * Do not allow Frame copy
+     */
     SharedMemoryParser(const SharedMemoryParser& src); // Don't copy one of these!
 
+    /** Pointer to logger */
     log4cxx::LoggerPtr logger;
+    /** Shared memory object */
     boost::interprocess::shared_memory_object shared_mem;
+    /** Shared memory region object */
     boost::interprocess::mapped_region        shared_mem_region;
+    /** IPC shared memory header */
     Header*                                   shared_mem_header;
   };
 

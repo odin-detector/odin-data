@@ -48,6 +48,12 @@ using namespace log4cxx::helpers;
 namespace filewriter
 {
 
+  /** Processing of Excalibur Frame objects.
+   *
+   * The ExcaliburReorderPlugin class is currently responsible for receiving a raw data
+   * Frame object and reordering the data into valid Excalibur frames according to the selected
+   * bit depth.
+   */
   class ExcaliburReorderPlugin : public FileWriterPlugin
   {
   public:
