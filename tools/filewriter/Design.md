@@ -11,6 +11,27 @@ The service provides a standard IpcMessage control interface for submitting conf
 
 ## Detailed Design
 
+### Classes
+
+The following classes are used by the filewriter, an a brief description is provided below.  Full documentation of the classes and methods can be found in the generated documentation for the filewriter.
+
+- ClassLoader - Generic shared library loader, used for dynamically loading plugins.
+- DataBlock - Allocated memory block used to avoid reallocating memory for each new frame.
+- DataBlockPool - Indexed pools of DataBlocks, manages memory.
+- DummyPlugin - Example plugin that does nothing with frames
+- FileWriter - Specific plugin for writing frames to HDF5 files
+- FileWriterController - Controlling class of the service, accepting commands, managing plugins, shared memory.
+- FileWriterPlugin - All plugins must inherit from this class, and implement the process method.
+- Frame - A lightweight object that surrounds the data.  Contains a DataBlock retrieved from the pool.  This ojbect can be created and destroyed, as it doesn't allocate memory for the data.
+- IFrameCallback - Any classes inheriting from this can be registered for callbacks when a new frame is available.  Shared pointers to frames are added to a locked queue and the queue is read in a separate thread.  When a new frame is available the callback method is invoked with a shared pointer to the frame.  The FileWriterPlugin class inherits from this class.
+- SharedMemoryController - Controls the SharedMemoryParser class, and pushes frames to registered callback classes.
+- SharedMemoryParser - Contains specific information regarding the setup of the shared memory buffer.  Copies data from shared memory into Frames.
+
+
+Below is a class diagram for the filewriter.
+
+![classes](https://github.com/percival-detector/framereceiver/blob/filewriter/tools/filewriter/doc/classes.png "Class Diagram")
+
 ### Startup
 
 When the filewriter application is first started, it creates an instance of the FileWriterController class.  This class creates the IPC reactor thread ready to handle IPC messages.  The class is then configured with the control channel endpoint, which registers a ZeroMQ socket with the IPC reactor thread, which enables the filewriter to receive new configurations from external clients (either the Odin parallel detector framework or a test client supplied with the filewriter application).  The filewriter is now operational, but requires further configuration to be able to accept and process incoming frames.
@@ -145,21 +166,6 @@ Plugin chains can be updated and plugins removed from the system if required, al
 
 The message above will create a new dataset definition within the HDF5 plugin.  More details of the configuration options of the HDF5 plugin can be found in the specific section below.
 
-### Classes
-
-The following classes are used by the filewriter, an a brief description is provided below.  Full documentation of the classes and methods can be found in the generated documentation for the filewriter.
-
-- ClassLoader - Generic shared library loader, used for dynamically loading plugins.
-- DataBlock - Allocated memory block used to avoid reallocating memory for each new frame.
-- DataBlockPool - Indexed pools of DataBlocks, manages memory.
-- DummyPlugin - Example plugin that does nothing with frames
-- FileWriter - Specific plugin for writing frames to HDF5 files
-- FileWriterController - Controlling class of the service, accepting commands, managing plugins, shared memory.
-- FileWriterPlugin - All plugins must inherit from this class, and implement the process method.
-- Frame - A lightweight object that surrounds the data.  Contains a DataBlock retrieved from the pool.  This ojbect can be created and destroyed, as it doesn't allocate memory for the data.
-- IFrameCallback - Any classes inheriting from this can be registered for callbacks when a new frame is available.  Shared pointers to frames are added to a locked queue and the queue is read in a separate thread.  When a new frame is available the callback method is invoked with a shared pointer to the frame.  The FileWriterPlugin class inherits from this class.
-- SharedMemoryController - Controls the SharedMemoryParser class, and pushes frames to registered callback classes.
-- SharedMemoryParser - Contains specific information regarding the setup of the shared memory buffer.  Copies data from shared memory into Frames.
 
 ### Frame Recevier API
 

@@ -1,0 +1,16 @@
+// UML example using suml from scruffy: https://github.com/aivarsk/scruffy
+// Generate UML class diagram image with the following command:
+// suml --svg --font-family "Humor Sans" --scruffy -i classes.suml -o classes.svg
+
+[DataBlockPool]++-0..n>[DataBlock]
+[Frame]++-1>[DataBlock]
+[Frame]->[DataBlockPool],
+[FileWriterController]++-1>[SharedMemoryController],
+[FileWriterController]++-0..n>[FileWriterPlugin],
+[SharedMemoryController]++-1>[SharedMemoryParser],
+[<<IFrameCallback>>]^-[FileWriterPlugin],
+[<<IFrameCallback>>]++-0..n>[Frame],
+[FileWriterPlugin]^-[FileWriter],
+[FileWriterPlugin]^-[PercivalProcessPlugin],
+[FileWriterPlugin]^-[ExcaliburReorderPlugin],
+
