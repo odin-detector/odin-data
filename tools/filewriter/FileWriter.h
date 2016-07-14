@@ -120,6 +120,13 @@ private:
     /** Configuration constant for chunking dimensions */
     static const std::string CONFIG_DATASET_CHUNKS;
 
+    /** Configuration constant for number of frames to write */
+    static const std::string CONFIG_FRAMES;
+    /** Configuration constant for master dataset name */
+    static const std::string CONFIG_MASTER_DATASET;
+    /** Configuration constant for starting and stopping writing of frames */
+    static const std::string CONFIG_WRITE;
+
     /**
      * Prevent a copy of the FileWriter plugin.
      *
@@ -134,7 +141,7 @@ private:
     void processFrame(boost::shared_ptr<Frame> frame);
 
     /** Pointer to logger */
-    LoggerPtr log_;
+    LoggerPtr logger_;
     /** Is this plugin writing frames to file? */
     bool writing_;
     /** Name of master frame.  When a master frame is received frame numbers increment */

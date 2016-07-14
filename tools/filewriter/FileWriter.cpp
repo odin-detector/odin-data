@@ -26,6 +26,10 @@ const std::string FileWriter::CONFIG_DATASET_TYPE   = "datatype";
 const std::string FileWriter::CONFIG_DATASET_DIMS   = "dims";
 const std::string FileWriter::CONFIG_DATASET_CHUNKS = "chunks";
 
+const std::string FileWriter::CONFIG_FRAMES         = "frames";
+const std::string FileWriter::CONFIG_MASTER_DATASET = "master";
+const std::string FileWriter::CONFIG_WRITE          = "write";
+
 /**
  * Create a FileWriterPlugin with default values.
  * File path is set to default of current directory, and the
@@ -48,9 +52,9 @@ FileWriter::FileWriter() :
   hdf5_fileid_(0),
   start_frame_offset_(0)
 {
-    this->log_ = Logger::getLogger("FW.FileWriter");
-    this->log_->setLevel(Level::getTrace());
-    LOG4CXX_TRACE(log_, "FileWriter constructor.");
+    this->logger_ = Logger::getLogger("FW.FileWriter");
+    this->logger_->setLevel(Level::getTrace());
+    LOG4CXX_TRACE(logger_, "FileWriter constructor.");
 
     this->hdf5_fileid_ = 0;
     this->start_frame_offset_ = 0;
@@ -62,7 +66,7 @@ FileWriter::FileWriter() :
 FileWriter::~FileWriter()
 {
     if (this->hdf5_fileid_ != 0) {
-        LOG4CXX_TRACE(log_, "destructor closing file");
+        LOG4CXX_TRACE(logger_, "destructor closing file");
         H5Fclose(this->hdf5_fileid_);
         this->hdf5_fileid_ = 0;
     }
@@ -101,7 +105,7 @@ void FileWriter::createFile(std::string filename, size_t chunk_align)
     assert(fcpl >= 0);
 
     // Creating the file with SWMR write access
-    LOG4CXX_INFO(log_, "Creating file: " << filename);
+    LOG4CXX_INFO(logger_, "Creating file: " << filename);
     unsigned int flags = H5F_ACC_TRUNC;
     this->hdf5_fileid_ = H5Fcreate(filename.c_str(), flags, fcpl, fapl);
     assert(this->hdf5_fileid_ >= 0);
@@ -125,7 +129,7 @@ void FileWriter::writeFrame(const Frame& frame) {
     frame_offset = this->getFrameOffset(frame_no);
     this->extend_dataset(dset, frame_offset + 1);
 
-    LOG4CXX_DEBUG(log_, "Writing frame offset=" << frame_no  << " (" << frame_offset << ")"
+    LOG4CXX_DEBUG(logger_, "Writing frame offset=" << frame_no  << " (" << frame_offset << ")"
     		             << " dset=" << frame.get_dataset_name());
 
     // Set the offset
@@ -156,7 +160,7 @@ void FileWriter::writeSubFrames(const Frame& frame) {
 
     this->extend_dataset(dset, frame_offset + 1);
 
-    LOG4CXX_DEBUG(log_, "Writing frame=" << frame_no << " (" << frame_offset << ")"
+    LOG4CXX_DEBUG(logger_, "Writing frame=" << frame_no << " (" << frame_offset << ")"
     					<< " dset=" << frame.get_dataset_name());
 
     // Set the offset
@@ -166,10 +170,10 @@ void FileWriter::writeSubFrames(const Frame& frame) {
     for (int i = 0; i < frame.get_parameter("subframe_count"); i++)
     {
       offset[2] = i * frame.get_dimensions("subframe")[1]; // For P2M: subframe is 704 pixels
-        LOG4CXX_DEBUG(log_, "    offset=" << offset[0]
+        LOG4CXX_DEBUG(logger_, "    offset=" << offset[0]
                   << "," << offset[1] << "," << offset[2]);
 
-        LOG4CXX_DEBUG(log_, "    subframe_size=" << frame.get_parameter("subframe_size"));
+        LOG4CXX_DEBUG(logger_, "    subframe_size=" << frame.get_parameter("subframe_size"));
 
         status = H5DOwrite_chunk(dset.datasetid, H5P_DEFAULT,
                                  filter_mask, &offset.front(),
@@ -215,7 +219,7 @@ void FileWriter::createDataset(const FileWriter::DatasetDefinition& definition)
     assert(dataspace >= 0);
 
     /* Enable chunking  */
-    LOG4CXX_DEBUG(log_, "Chunking=" << chunk_dims[0] << ","
+    LOG4CXX_DEBUG(logger_, "Chunking=" << chunk_dims[0] << ","
                        << chunk_dims[1] << ","
                        << chunk_dims[2]);
     prop = H5Pcreate(H5P_DATASET_CREATE);
@@ -229,7 +233,7 @@ void FileWriter::createDataset(const FileWriter::DatasetDefinition& definition)
     dapl = H5Pcreate(H5P_DATASET_ACCESS);
 
     /* Create dataset  */
-    LOG4CXX_DEBUG(log_, "Creating dataset: " << definition.name);
+    LOG4CXX_DEBUG(logger_, "Creating dataset: " << definition.name);
     FileWriter::HDF5Dataset_t dset;
     dset.datasetid = H5Dcreate2(this->hdf5_fileid_, definition.name.c_str(),
                                         dtype, dataspace,
@@ -239,7 +243,7 @@ void FileWriter::createDataset(const FileWriter::DatasetDefinition& definition)
     dset.dataset_offsets = std::vector<hsize_t>(3);
     this->hdf5_datasets_[definition.name] = dset;
 
-    LOG4CXX_DEBUG(log_, "Closing intermediate open HDF objects");
+    LOG4CXX_DEBUG(logger_, "Closing intermediate open HDF objects");
     assert( H5Pclose(prop) >= 0);
     assert( H5Pclose(dapl) >= 0);
     assert( H5Sclose(dataspace) >= 0);
@@ -249,7 +253,7 @@ void FileWriter::createDataset(const FileWriter::DatasetDefinition& definition)
  * Close the currently open HDF5 file.
  */
 void FileWriter::closeFile() {
-    LOG4CXX_TRACE(log_, "FileWriter closeFile");
+    LOG4CXX_TRACE(logger_, "FileWriter closeFile");
     if (this->hdf5_fileid_ >= 0) {
         assert(H5Fclose(this->hdf5_fileid_) >= 0);
         this->hdf5_fileid_ = 0;
@@ -296,7 +300,7 @@ FileWriter::HDF5Dataset_t& FileWriter::get_hdf5_dataset(const std::string dset_n
     if (this->hdf5_datasets_.find(dset_name) == this->hdf5_datasets_.end())
     {
         // no dataset of this name exist
-        LOG4CXX_ERROR(log_, "Attempted to access non-existent dataset: \"" << dset_name << "\"\n");
+        LOG4CXX_ERROR(logger_, "Attempted to access non-existent dataset: \"" << dset_name << "\"\n");
         throw std::runtime_error("Attempted to access non-existent dataset");
     }
     return this->hdf5_datasets_.at(dset_name);
@@ -320,7 +324,7 @@ size_t FileWriter::getFrameOffset(size_t frame_no) const {
         // Check whether this frame should really be in this process
         // Note: this expects the frame numbering from HW/FW to start at 1, not 0!
         if ( (((frame_no-1) % this->concurrent_processes_) - this->concurrent_rank_) != 0) {
-            LOG4CXX_WARN(log_, "Unexpected frame: " << frame_no
+            LOG4CXX_WARN(logger_, "Unexpected frame: " << frame_no
                                 << " in this process rank: "
                                 << this->concurrent_rank_);
             throw std::runtime_error("Unexpected frame in this process rank");
@@ -379,7 +383,7 @@ void FileWriter::extend_dataset(HDF5Dataset_t& dset, size_t frame_no) const {
 	herr_t status;
     if (frame_no > dset.dataset_dimensions[0]) {
         // Extend the dataset
-        LOG4CXX_DEBUG(log_, "Extending dataset_dimensions[0] = " << frame_no);
+        LOG4CXX_DEBUG(logger_, "Extending dataset_dimensions[0] = " << frame_no);
         dset.dataset_dimensions[0] = frame_no;
         status = H5Dset_extent( dset.datasetid,
                                 &dset.dataset_dimensions.front());
@@ -412,7 +416,7 @@ void FileWriter::processFrame(boost::shared_ptr<Frame> frame)
     }
 
     // Check if this is a master frame (for multi dataset acquisitions)
-    // of if no master frame has been defined.  If either of these conditions
+    // or if no master frame has been defined.  If either of these conditions
     // are true then increment the number of frames written.
     if (masterFrame_ == "" || masterFrame_ == frame->get_dataset_name()){
       framesWritten_++;
@@ -483,7 +487,7 @@ void FileWriter::stopWriting()
  */
 void FileWriter::configure(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply)
 {
-  LOG4CXX_DEBUG(log_, config.encode());
+  LOG4CXX_DEBUG(logger_, config.encode());
 
   // Check to see if we are configuring the process number and rank
   if (config.has_param(FileWriter::CONFIG_PROCESS)){
@@ -503,12 +507,19 @@ void FileWriter::configure(FrameReceiver::IpcMessage& config, FrameReceiver::Ipc
     this->configureDataset(dsetConfig, reply);
   }
 
-  if (config.has_param("frames")){
-    framesToWrite_ = config.get_param<int>("frames");
+  // Check to see if we are being told how many frames to write
+  if (config.has_param(FileWriter::CONFIG_FRAMES)){
+    framesToWrite_ = config.get_param<int>(FileWriter::CONFIG_FRAMES);
   }
+
+  // Check to see if the master dataset is being set
+  if (config.has_param(FileWriter::CONFIG_MASTER_DATASET)){
+    masterFrame_ = config.get_param<std::string>(FileWriter::CONFIG_MASTER_DATASET);
+  }
+
   // Final check is to start or stop writing
-  if (config.has_param("write")){
-    if (config.get_param<bool>("write") == true){
+  if (config.has_param(FileWriter::CONFIG_WRITE)){
+    if (config.get_param<bool>(FileWriter::CONFIG_WRITE) == true){
       this->startWriting();
     } else {
       this->stopWriting();
@@ -533,18 +544,18 @@ void FileWriter::configureProcess(FrameReceiver::IpcMessage& config, FrameReceiv
 {
   // If we are writing a file then we cannot change these items
   if (this->writing_){
-    LOG4CXX_ERROR(log_, "Cannot change concurrent processes or rank whilst writing");
+    LOG4CXX_ERROR(logger_, "Cannot change concurrent processes or rank whilst writing");
     throw std::runtime_error("Cannot change concurrent processes or rank whilst writing");
   }
 
   // Check for process number and rank number
   if (config.has_param(FileWriter::CONFIG_PROCESS_NUMBER)){
     this->concurrent_processes_ = config.get_param<int>(FileWriter::CONFIG_PROCESS_NUMBER);
-    LOG4CXX_DEBUG(log_, "Concurrent processes changed to " << this->concurrent_processes_);
+    LOG4CXX_DEBUG(logger_, "Concurrent processes changed to " << this->concurrent_processes_);
   }
   if (config.has_param(FileWriter::CONFIG_PROCESS_RANK)){
     this->concurrent_rank_ = config.get_param<int>(FileWriter::CONFIG_PROCESS_RANK);
-    LOG4CXX_DEBUG(log_, "Process rank changed to " << this->concurrent_rank_);
+    LOG4CXX_DEBUG(logger_, "Process rank changed to " << this->concurrent_rank_);
   }
 }
 
@@ -565,19 +576,19 @@ void FileWriter::configureFile(FrameReceiver::IpcMessage& config, FrameReceiver:
 {
   // If we are writing a file then we cannot change these items
   if (this->writing_){
-    LOG4CXX_ERROR(log_, "Cannot change file path or name whilst writing");
+    LOG4CXX_ERROR(logger_, "Cannot change file path or name whilst writing");
     throw std::runtime_error("Cannot change file path or name whilst writing");
   }
 
-  LOG4CXX_DEBUG(log_, "Configure file name and path");
+  LOG4CXX_DEBUG(logger_, "Configure file name and path");
   // Check for file path and file name
   if (config.has_param(FileWriter::CONFIG_FILE_PATH)){
     this->filePath_ = config.get_param<std::string>(FileWriter::CONFIG_FILE_PATH);
-    LOG4CXX_DEBUG(log_, "File path changed to " << this->filePath_);
+    LOG4CXX_DEBUG(logger_, "File path changed to " << this->filePath_);
   }
   if (config.has_param(FileWriter::CONFIG_FILE_NAME)){
     this->fileName_ = config.get_param<std::string>(FileWriter::CONFIG_FILE_NAME);
-    LOG4CXX_DEBUG(log_, "File name changed to " << this->fileName_);
+    LOG4CXX_DEBUG(logger_, "File name changed to " << this->fileName_);
   }
 }
 
@@ -601,11 +612,11 @@ void FileWriter::configureDataset(FrameReceiver::IpcMessage& config, FrameReceiv
 {
   // If we are writing a file then we cannot change these items
   if (this->writing_){
-    LOG4CXX_ERROR(log_, "Cannot update datasets whilst writing");
+    LOG4CXX_ERROR(logger_, "Cannot update datasets whilst writing");
     throw std::runtime_error("Cannot update datasets whilst writing");
   }
 
-  LOG4CXX_DEBUG(log_, "Configure dataset");
+  LOG4CXX_DEBUG(logger_, "Configure dataset");
   // Read the dataset command
   if (config.has_param(FileWriter::CONFIG_DATASET_CMD)){
     std::string cmd = config.get_param<std::string>(FileWriter::CONFIG_DATASET_CMD);
@@ -617,7 +628,7 @@ void FileWriter::configureDataset(FrameReceiver::IpcMessage& config, FrameReceiv
       if (config.has_param(FileWriter::CONFIG_DATASET_NAME)){
         dset_def.name = config.get_param<std::string>(FileWriter::CONFIG_DATASET_NAME);
       } else {
-        LOG4CXX_ERROR(log_, "Cannot create a dataset without a name");
+        LOG4CXX_ERROR(logger_, "Cannot create a dataset without a name");
         throw std::runtime_error("Cannot create a dataset without a name");
       }
 
@@ -625,7 +636,7 @@ void FileWriter::configureDataset(FrameReceiver::IpcMessage& config, FrameReceiv
       if (config.has_param(FileWriter::CONFIG_DATASET_TYPE)){
         dset_def.pixel = (filewriter::FileWriter::PixelType)config.get_param<int>(FileWriter::CONFIG_DATASET_TYPE);
       } else {
-        LOG4CXX_ERROR(log_, "Cannot create a dataset without a data type");
+        LOG4CXX_ERROR(logger_, "Cannot create a dataset without a data type");
         throw std::runtime_error("Cannot create a dataset without a data type");
       }
 
@@ -640,7 +651,7 @@ void FileWriter::configureDataset(FrameReceiver::IpcMessage& config, FrameReceiv
         }
         dset_def.frame_dimensions = dims;
       } else {
-        LOG4CXX_ERROR(log_, "Cannot create a dataset without dimensions");
+        LOG4CXX_ERROR(logger_, "Cannot create a dataset without dimensions");
         throw std::runtime_error("Cannot create a dataset without dimensions");
       }
 
@@ -656,7 +667,7 @@ void FileWriter::configureDataset(FrameReceiver::IpcMessage& config, FrameReceiv
         dset_def.chunks = chunks;
       }
 
-      LOG4CXX_DEBUG(log_, "Creating dataset [" << dset_def.name << "] (" << dset_def.frame_dimensions[0] << ", " << dset_def.frame_dimensions[1] << ")");
+      LOG4CXX_DEBUG(logger_, "Creating dataset [" << dset_def.name << "] (" << dset_def.frame_dimensions[0] << ", " << dset_def.frame_dimensions[1] << ")");
       // Add the dataset definition to the store
       this->dataset_defs_[dset_def.name] = dset_def;
     }
@@ -671,7 +682,7 @@ void FileWriter::configureDataset(FrameReceiver::IpcMessage& config, FrameReceiv
 void FileWriter::status(FrameReceiver::IpcMessage& status)
 {
   // Record the plugin's status items
-  LOG4CXX_DEBUG(log_, "File name " << this->fileName_);
+  LOG4CXX_DEBUG(logger_, "File name " << this->fileName_);
 
   status.set_param(getName() + "/writing", this->writing_);
   status.set_param(getName() + "/frames_max", (int)this->framesToWrite_);
@@ -702,50 +713,6 @@ void FileWriter::status(FrameReceiver::IpcMessage& status)
       }
     }
   }
-
-  /*
-  status.AddMember("writing", rapidjson::Value().SetObject().SetBool(this->writing_), allocator);
-  status.AddMember("frames_max", rapidjson::Value().SetObject().SetInt(this->framesToWrite_), allocator);
-  status.AddMember("frames_written", rapidjson::Value().SetObject().SetInt(this->framesWritten_), allocator);
-  status.AddMember("file_path", rapidjson::Value().SetObject().SetString(this->filePath_.c_str(), allocator), allocator);
-  status.AddMember("file_name", rapidjson::Value().SetObject().SetString(this->fileName_.c_str(), allocator), allocator);
-  status.AddMember("processes", rapidjson::Value().SetObject().SetInt(this->concurrent_processes_), allocator);
-  status.AddMember("rank", rapidjson::Value().SetObject().SetInt(this->concurrent_rank_), allocator);
-
-  // Check for datasets
-  rapidjson::Value dsetdefs;
-  dsetdefs.SetObject();
-  std::map<std::string, FileWriter::DatasetDefinition>::iterator iter;
-  for (iter = this->dataset_defs_.begin(); iter != this->dataset_defs_.end(); ++iter){
-    // Create the dataset value
-    rapidjson::Value dset;
-    dset.SetObject();
-    // Add the dataset type
-    dset.AddMember("type", rapidjson::Value().SetObject().SetInt(iter->second.pixel), allocator);
-    // Check for and add dimensions
-    if (iter->second.frame_dimensions.size() > 0){
-      rapidjson::Value dims;
-      dims.SetObject().SetArray();
-      for (int index = 0; index < iter->second.frame_dimensions.size(); index++){
-        dims.PushBack<uint64_t>(iter->second.frame_dimensions[index], allocator);
-      }
-      dset.AddMember("dimensions", dims, allocator);
-    }
-    // Check for and add chunking dimensions
-    if (iter->second.chunks.size() > 0){
-      rapidjson::Value chunks;
-      chunks.SetObject().SetArray();
-      for (int index = 0; index < iter->second.chunks.size(); index++){
-        chunks.PushBack<uint64_t>(iter->second.chunks[index], allocator);
-      }
-      dset.AddMember("chunks", chunks, allocator);
-    }
-    // Now add the dataset to the definitions
-    dsetdefs.AddMember(rapidjson::Value().SetObject().SetString(iter->first.c_str(), allocator), dset, allocator);
-  }
-  // Finally add the dataset defs to the status
-  status.AddMember("datasets", dsetdefs, allocator);
-  */
 }
 
 }
