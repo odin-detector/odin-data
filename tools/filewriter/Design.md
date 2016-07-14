@@ -290,3 +290,29 @@ The plugin can be configured using the IpcMessage control interface; submitting 
 | frames        |                 | Integer   | Number of frames to write to file for next acquisition    |
 | write         |                 | Boolean   | Start or stop writing frames to file                      |
 
+
+## File Writer Client Application
+
+A client side python application has been developed to provide the ability to submit configuration IPC messages to the filewriter application.  This client application is expected to be replaced by the Odin parallel detector framework once that becomes available.  To start the client application type into a terminal
+
+```
+python ./file_writer_client.py
+```
+
+Once the application starts you are presented with the introductory screen, which allows you to specify the control endpoint for the filewriter instance that you wish to communicate with.
+
+![intro screen](https://github.com/percival-detector/framereceiver/blob/filewriter/tools/filewriter/doc/client_intro.png "Client Introduction")
+
+Once the endpoint has been chosen, navigate to the OK button and press return.  You are then presented with the Main Menu.  From here you can submit many common configurations to the filewriter.  When a configuration is submitted any response from the filewriter is displayed in the "Response:" box.  For example if a configuration is submitted to list the loaded plugins for a freshly executed filewriter the response will be an empty message, see below.
+
+![list plugin](https://github.com/percival-detector/framereceiver/blob/filewriter/tools/filewriter/doc/client_list.png "Client List")
+
+The filewriter can be setup for the processing of Percival or Excalibur frames for testing purposes.  When selecting Excalibur you are then presented with the option to specify which type of Excalibur frames are to be expected.
+
+![excalibur](https://github.com/percival-detector/framereceiver/blob/filewriter/tools/filewriter/doc/client_excalibur.png "Client Excalibur")
+
+Other options available are self explanatory, and most result in either a message being sent to the filewriter, or another screen is presented to allow setting of options before sending the message.  Note that this client application does not perform any checking whatsoever, so for example it is perfectly possible to setup the filewriter for Percival and Excalibur, but this will not end well if you then receive some frames...
+
+Below is an example of sending the status message after selecting an Excalibur configuration.
+
+![status](https://github.com/percival-detector/framereceiver/blob/filewriter/tools/filewriter/doc/client_status.png "Client Status")
