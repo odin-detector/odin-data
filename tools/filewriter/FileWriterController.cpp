@@ -38,7 +38,7 @@ namespace filewriter
    * IpcReactor thread.
    */
   FileWriterController::FileWriterController() :
-    logger_(log4cxx::Logger::getLogger("FileWriterController")),
+    logger_(log4cxx::Logger::getLogger("FW.FileWriterController")),
     runThread_(true),
     threadRunning_(false),
     threadInitError_(false),

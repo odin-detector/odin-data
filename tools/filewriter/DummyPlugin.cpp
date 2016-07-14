@@ -16,7 +16,7 @@ namespace filewriter
   DummyPlugin::DummyPlugin()
   {
     // Setup logging for the class
-    logger_ = Logger::getLogger("DummyPlugin");
+    logger_ = Logger::getLogger("FW.DummyPlugin");
     logger_->setLevel(Level::getAll());
     LOG4CXX_TRACE(logger_, "DummyPlugin constructor.");
   }

@@ -18,7 +18,7 @@ namespace filewriter
    * \param[in] nbytes - number of bytes to allocate.
    */
   DataBlock::DataBlock(size_t nbytes) :
-    logger_(log4cxx::Logger::getLogger("DataBlock")),
+    logger_(log4cxx::Logger::getLogger("FW.DataBlock")),
     allocatedBytes_(nbytes)
   {
     LOG4CXX_DEBUG(logger_, "Constructing DataBlock, allocating " << nbytes << " bytes");

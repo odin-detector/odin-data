@@ -31,7 +31,7 @@ namespace filewriter
     txChannel_(ZMQ_PUB)
   {
     // Setup logging for the class
-    logger_ = Logger::getLogger("SharedMemoryController");
+    logger_ = Logger::getLogger("FW.SharedMemoryController");
     logger_->setLevel(Level::getAll());
     LOG4CXX_TRACE(logger_, "SharedMemoryController constructor.");
 

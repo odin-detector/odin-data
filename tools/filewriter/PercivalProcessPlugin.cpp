@@ -13,7 +13,7 @@ namespace filewriter
   PercivalProcessPlugin::PercivalProcessPlugin()
   {
     // Setup logging for the class
-    logger_ = Logger::getLogger("PercivalProcessPlugin");
+    logger_ = Logger::getLogger("FW.PercivalProcessPlugin");
     logger_->setLevel(Level::getAll());
     LOG4CXX_TRACE(logger_, "PercivalProcessPlugin constructor.");
   }

@@ -26,7 +26,7 @@ namespace filewriter
       framesReceived_(0)
   {
     // Setup logging for the class
-    logger_ = Logger::getLogger("ExcaliburReorderPlugin");
+    logger_ = Logger::getLogger("FW.ExcaliburReorderPlugin");
     logger_->setLevel(Level::getAll());
     LOG4CXX_TRACE(logger_, "ExcaliburReorderPlugin constructor.");
   }

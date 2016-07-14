@@ -180,15 +180,7 @@ int main(int argc, char** argv)
     // Create a default basic logger configuration, which can be overridden by command-line option later
     BasicConfigurator::configure();
 
-    // Setup some rapid JSON objects that will be usefull for us
-    rapidjson::Document jsonDoc;
-    jsonDoc.SetObject();
-    rapidjson::Document::AllocatorType& allocator = jsonDoc.GetAllocator();
-    rapidjson::Value map;
-    map.SetObject();
-    rapidjson::Value val;
-
-    LoggerPtr logger(Logger::getLogger("socketApp"));
+    LoggerPtr logger(Logger::getLogger("FW.fileWriterApp"));
     po::variables_map vm;
     parse_arguments(argc, argv, vm, logger);
 

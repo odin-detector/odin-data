@@ -21,7 +21,7 @@ namespace filewriter
    */
   SharedMemoryParser::SharedMemoryParser(const std::string& shared_mem_name) :
     shared_mem(boost::interprocess::open_only, shared_mem_name.c_str(), boost::interprocess::read_write),
-    logger(log4cxx::Logger::getLogger("SharedMemParser")),
+    logger(log4cxx::Logger::getLogger("FW.SharedMemParser")),
     shared_mem_header(static_cast<Header*>(malloc(sizeof(Header))))
   {
     LOG4CXX_DEBUG(logger, "Registering shared memory region \"" << shared_mem_name << "\"");
