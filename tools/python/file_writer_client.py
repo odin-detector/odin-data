@@ -173,7 +173,8 @@ class MainMenu(npyscreen.FormBaseNew):
                                   "datatype": 1,
                                   "dims": [1484, 1408],
                                   "chunks": [1, 1484, 704]
-                                }
+                                },
+                     "master": "data"
                    }
           msg.set_param("hdf", config)
           self.parentApp.send_message(msg)
