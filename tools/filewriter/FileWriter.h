@@ -11,6 +11,7 @@
 #include <map>
 
 #include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
 
 #include <log4cxx/logger.h>
 #include <hdf5.h>
@@ -142,6 +143,8 @@ private:
 
     /** Pointer to logger */
     LoggerPtr logger_;
+    /** Mutex used to make this class thread safe */
+    boost::recursive_mutex mutex_;
     /** Is this plugin writing frames to file? */
     bool writing_;
     /** Name of master frame.  When a master frame is received frame numbers increment */

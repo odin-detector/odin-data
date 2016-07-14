@@ -404,6 +404,9 @@ void FileWriter::extend_dataset(HDF5Dataset_t& dset, size_t frame_no) const {
  */
 void FileWriter::processFrame(boost::shared_ptr<Frame> frame)
 {
+  // Protect this method
+  boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+
   if (writing_){
 
     // Check if the frame has defined subframes
@@ -487,6 +490,9 @@ void FileWriter::stopWriting()
  */
 void FileWriter::configure(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply)
 {
+  // Protect this method
+  boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+
   LOG4CXX_DEBUG(logger_, config.encode());
 
   // Check to see if we are configuring the process number and rank
@@ -681,6 +687,9 @@ void FileWriter::configureDataset(FrameReceiver::IpcMessage& config, FrameReceiv
  */
 void FileWriter::status(FrameReceiver::IpcMessage& status)
 {
+  // Protect this method
+  boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+
   // Record the plugin's status items
   LOG4CXX_DEBUG(logger_, "File name " << this->fileName_);
 
