@@ -7,6 +7,7 @@
 #include "FileWriter.h"
 #include <hdf5_hl.h>
 #include "Frame.h"
+#include <stdio.h>
 
 namespace filewriter
 {
@@ -30,6 +31,13 @@ const std::string FileWriter::CONFIG_FRAMES         = "frames";
 const std::string FileWriter::CONFIG_MASTER_DATASET = "master";
 const std::string FileWriter::CONFIG_WRITE          = "write";
 
+herr_t hdf5_error_cb(unsigned n, const H5E_error2_t *err_desc, void* client_data)
+{
+  FileWriter *fwPtr = (FileWriter *)client_data;
+  fwPtr->hdfErrorHandler(n, err_desc);
+  return 0;
+}
+
 /**
  * Create a FileWriterPlugin with default values.
  * File path is set to default of current directory, and the
@@ -50,11 +58,16 @@ FileWriter::FileWriter() :
   concurrent_processes_(1),
   concurrent_rank_(0),
   hdf5_fileid_(0),
+  hdf5ErrorFlag_(false),
   start_frame_offset_(0)
 {
     this->logger_ = Logger::getLogger("FW.FileWriter");
     this->logger_->setLevel(Level::getTrace());
     LOG4CXX_TRACE(logger_, "FileWriter constructor.");
+
+    H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
+    H5Ewalk2(H5E_DEFAULT, H5E_WALK_DOWNWARD, hdf5_error_cb, this);
+    //H5Eset_auto2(H5E_DEFAULT, my_hdf5_error_handler, NULL);
 
     this->hdf5_fileid_ = 0;
     this->start_frame_offset_ = 0;
@@ -65,7 +78,7 @@ FileWriter::FileWriter() :
  */
 FileWriter::~FileWriter()
 {
-    if (this->hdf5_fileid_ != 0) {
+    if (this->hdf5_fileid_ > 0) {
         LOG4CXX_TRACE(logger_, "destructor closing file");
         H5Fclose(this->hdf5_fileid_);
         this->hdf5_fileid_ = 0;
@@ -108,8 +121,14 @@ void FileWriter::createFile(std::string filename, size_t chunk_align)
     LOG4CXX_INFO(logger_, "Creating file: " << filename);
     unsigned int flags = H5F_ACC_TRUNC;
     this->hdf5_fileid_ = H5Fcreate(filename.c_str(), flags, fcpl, fapl);
-    assert(this->hdf5_fileid_ >= 0);
-
+    if (this->hdf5_fileid_ < 0){
+      // Close file access property list
+      assert(H5Pclose(fapl) >= 0);
+      // Now throw a runtime error to explain that the file could not be created
+      std::stringstream err;
+      err << "Could not create file " << filename;
+      throw std::runtime_error(err.str().c_str());
+    }
     // Close file access property list
     assert(H5Pclose(fapl) >= 0);
 }
@@ -238,7 +257,14 @@ void FileWriter::createDataset(const FileWriter::DatasetDefinition& definition)
     dset.datasetid = H5Dcreate2(this->hdf5_fileid_, definition.name.c_str(),
                                         dtype, dataspace,
                                         H5P_DEFAULT, prop, dapl);
-    assert(dset.datasetid >= 0);
+    if (dset.datasetid < 0){
+      // Unable to create the dataset, clean up resources
+      assert( H5Pclose(prop) >= 0);
+      assert( H5Pclose(dapl) >= 0);
+      assert( H5Sclose(dataspace) >= 0);
+      // Now throw a runtime error to notify that the dataset could not be created
+      throw std::runtime_error("Unable to create the dataset");
+    }
     dset.dataset_dimensions = dset_dims;
     dset.dataset_offsets = std::vector<hsize_t>(3);
     this->hdf5_datasets_[definition.name] = dset;
@@ -722,6 +748,59 @@ void FileWriter::status(FrameReceiver::IpcMessage& status)
       }
     }
   }
+}
+
+void FileWriter::hdfErrorHandler(unsigned n, const H5E_error2_t *err_desc)
+{
+  const int MSG_SIZE = 64;
+  char maj[MSG_SIZE];
+  char min[MSG_SIZE];
+  char cls[MSG_SIZE];
+
+  // Protect this method
+  boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+printf("In here!!!\n");
+  // Set the error flag true
+  hdf5ErrorFlag_ = true;
+
+  // Get descriptions for the major and minor error numbers
+  H5Eget_class_name(err_desc->cls_id, cls, MSG_SIZE);
+  H5Eget_msg(err_desc->maj_num, NULL, maj, MSG_SIZE);
+  H5Eget_msg(err_desc->min_num, NULL, min, MSG_SIZE);
+
+  // Record the error into the error stack
+  std::stringstream err;
+  err << "[" << cls << "] " << maj << " (" << min << ")";
+  hdf5Errors_.push_back(err.str());
+}
+
+bool FileWriter::checkForHdfErrors()
+{
+  // Protect this method
+  boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+
+  // Simply return the current error flag state
+  return hdf5ErrorFlag_;
+}
+
+std::vector<std::string> FileWriter::readHdfErrors()
+{
+  // Protect this method
+  boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+
+  // Simply return the current error array
+  return hdf5Errors_;
+}
+
+void FileWriter::clearHdfErrors()
+{
+  // Protect this method
+  boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+
+  // Empty the error array
+  hdf5Errors_.clear();
+  // Now reset the error flag
+  hdf5ErrorFlag_ = false;
 }
 
 }

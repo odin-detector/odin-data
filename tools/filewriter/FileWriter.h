@@ -92,8 +92,12 @@ class FileWriter : public filewriter::FileWriterPlugin
     void configureFile(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply);
     void configureDataset(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply);
     void status(FrameReceiver::IpcMessage& status);
+    void hdfErrorHandler(unsigned n, const H5E_error2_t *err_desc);
+    bool checkForHdfErrors();
+    std::vector<std::string> readHdfErrors();
+    void clearHdfErrors();
 
-private:
+  private:
     /** Configuration constant for process related items */
     static const std::string CONFIG_PROCESS;
     /** Configuration constant for number of processes */
@@ -165,6 +169,10 @@ private:
     size_t start_frame_offset_;
     /** Internal ID of the file being written to */
     hid_t hdf5_fileid_;
+    /** Internal HDF5 error flag */
+    bool hdf5ErrorFlag_;
+    /** Internal HDF5 error recording */
+    std::vector<std::string> hdf5Errors_;
     /** Map of datasets that are being written to */
     std::map<std::string, FileWriter::HDF5Dataset_t> hdf5_datasets_;
     /** Map of dataset definitions for this file writer instance */
