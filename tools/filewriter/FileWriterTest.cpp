@@ -232,6 +232,30 @@ BOOST_AUTO_TEST_CASE( FileWriterMultiDatasetTest )
     BOOST_REQUIRE_NO_THROW(fw.closeFile());
 }
 
+BOOST_AUTO_TEST_CASE( FileWriterBadFileTest )
+{
+  // Check for an error when a bad file path is provided
+  BOOST_CHECK_THROW(fw.createFile("/non/existent/path/blah_throw.h5"), std::runtime_error);
+}
+
+BOOST_AUTO_TEST_CASE( FileWriterDatasetWithoutOpenFileTest )
+{
+  // Check for an error when a dataset is created without a file open
+  BOOST_CHECK_THROW(fw.createDataset(dset_def), std::runtime_error);
+}
+
+BOOST_AUTO_TEST_CASE( FileWriterNoDatasetDefinitionsTest )
+{
+  // Create a file ready for writing
+  BOOST_REQUIRE_NO_THROW(fw.createFile("/tmp/blah_throw.h5"));
+
+  // Write a frame without first creating the dataset
+  BOOST_CHECK_THROW(fw.writeFrame(*frame), std::runtime_error);
+
+  // Attempt to close the file
+  BOOST_REQUIRE_NO_THROW(fw.closeFile());
+}
+
 BOOST_AUTO_TEST_CASE( FileWriterInvalidDatasetTest )
 {
     BOOST_REQUIRE_NO_THROW(fw.createFile("/tmp/blah_throw.h5"));
