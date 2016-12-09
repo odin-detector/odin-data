@@ -5,9 +5,9 @@ FrameReceiver is an application to enable reception of frames of detector data t
 as a UDP stream. FrameReceiver constructs data frames in shared memory buffers and communicates with external 
 applications to allow processing and storage.
 
-[![Build Status](https://travis-ci.org/percival-detector/framereceiver.svg)](https://travis-ci.org/percival-detector/framereceiver)
-[![Stories in Ready](https://badge.waffle.io/percival-detector/framereceiver.png?label=ready&title=Ready)](https://waffle.io/percival-detector/framereceiver)
-[![Stories in In Progress](https://badge.waffle.io/percival-detector/framereceiver.png?label=In%20Progress&title=In%20Progress)](https://waffle.io/percival-detector/framereceiver)
+[![Build Status](https://travis-ci.org/percival-detector/odin-data.svg)](https://travis-ci.org/percival-detector/odin-data)
+[![Stories in Ready](https://badge.waffle.io/percival-detector/odin-data.png?label=ready&title=Ready)](https://waffle.io/percival-detector/odin-data)
+[![Stories in In Progress](https://badge.waffle.io/percival-detector/odin-data.png?label=In%20Progress&title=In%20Progress)](https://waffle.io/percival-detector/odin-data)
 
 External Software Dependencies
 ==============================
