@@ -34,6 +34,7 @@ using namespace log4cxx::helpers;
 #include "FrameReceiverRxThread.h"
 #include "FrameDecoder.h"
 #include "PercivalEmulatorFrameDecoder.h"
+#include "ExcaliburFrameDecoder.h"
 #include "FrameReceiverException.h"
 
 namespace FrameReceiver

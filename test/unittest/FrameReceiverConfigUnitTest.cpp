@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE( ValidSensorNameToTypeMapping )
     // Check that the sensor name mapping to type works for all known values, and returns illegal for a bad name
     BOOST_CHECK_EQUAL(theConfig.map_sensor_name_to_type(p2mName), FrameReceiver::Defaults::SensorTypePercival2M);
     BOOST_CHECK_EQUAL(theConfig.map_sensor_name_to_type(p13mName), FrameReceiver::Defaults::SensorTypePercival13M);
-    BOOST_CHECK_EQUAL(theConfig.map_sensor_name_to_type(excalibur3mName), FrameReceiver::Defaults::SensorTypeExcalibur3M);
+    BOOST_CHECK_EQUAL(theConfig.map_sensor_name_to_type(excalibur3mName), FrameReceiver::Defaults::SensorTypeExcalibur);
     BOOST_CHECK_EQUAL(theConfig.map_sensor_name_to_type(badName), FrameReceiver::Defaults::SensorTypeIllegal);
 }
 

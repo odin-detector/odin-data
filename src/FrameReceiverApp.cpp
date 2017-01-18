@@ -375,9 +375,13 @@ void FrameReceiverApp::initialise_frame_decoder(void)
 
     case Defaults::SensorTypePercival2M:
     case Defaults::SensorTypePercival13M:
-    case Defaults::SensorTypeExcalibur3M:
         throw FrameReceiverException("Cannot initialize frame decoder - sensor type not yet implemented");
         break;
+
+    case Defaults::SensorTypeExcalibur:
+    	frame_decoder_.reset(new ExcaliburFrameDecoder(logger_, config_.enable_packet_logging_, config_.frame_timeout_ms_));
+    	LOG4CXX_INFO(logger_, "Created EXCALIBUR frame decoder instance");
+    	break;
 
     case Defaults::SensorTypeIllegal:
         throw FrameReceiverException("Cannot initialize frame decoder - illegal sensor type specified");

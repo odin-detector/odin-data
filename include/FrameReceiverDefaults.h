@@ -22,7 +22,8 @@ namespace FrameReceiver
 			SensorTypePercivalEmulator,
 			SensorTypePercival2M,
 			SensorTypePercival13M,
-			SensorTypeExcalibur3M,
+			SensorTypeExcalibur1M,
+			SensorTypeExcalibur,
 		};
 
 		const int          default_node                   = 1;

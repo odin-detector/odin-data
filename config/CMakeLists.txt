@@ -5,6 +5,7 @@ set(TEST_CONFIGS
   fr_test_osx.config
   fp_test.config
   fp_test_osx.config
+  fr_test_excalibur.config
 )
 
 foreach(test_config ${TEST_CONFIGS})
