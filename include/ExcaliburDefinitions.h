@@ -29,7 +29,6 @@ namespace Excalibur {
     typedef struct
     {
     	uint64_t frame_number;
-    	uint64_t unused;
     } SubframeTrailer;
 
     typedef struct

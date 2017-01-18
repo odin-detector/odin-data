@@ -203,9 +203,12 @@ FrameDecoder::FrameReceiveState ExcaliburFrameDecoder::process_packet(size_t byt
     // number (which counts from 1) from the subframe trailer, update and/or validate in the frame buffer
     // header appropriately.
     if (get_end_of_frame_marker()) {
+
+    	size_t payload_bytes_received = bytes_received - sizeof(Excalibur::PacketHeader);
+
     	Excalibur::SubframeTrailer* trailer = reinterpret_cast<Excalibur::SubframeTrailer*>(
-    			(uint8_t*)get_next_payload_buffer() + bytes_received - sizeof(Excalibur::SubframeTrailer)
-		);
+    			(uint8_t*)get_next_payload_buffer() + payload_bytes_received - sizeof(Excalibur::SubframeTrailer));
+
     	uint32_t frame_number = static_cast<uint32_t>((trailer->frame_number & 0xFFFFFFFF) - 1);
     	LOG4CXX_DEBUG_LEVEL(3, logger_, "Subframe EOF trailer has frame number = " << frame_number);
 
