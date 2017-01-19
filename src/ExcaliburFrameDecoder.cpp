@@ -254,7 +254,7 @@ FrameDecoder::FrameReceiveState ExcaliburFrameDecoder::process_packet(size_t byt
 			frame_buffer_map_.erase(current_frame_seen_);
 
 			// Notify main thread that frame is ready
-			ready_callback_(current_frame_buffer_id_, current_frame_seen_);
+			ready_callback_(current_frame_buffer_id_, current_frame_header_->frame_number); //current_frame_seen_);
 
 			// Reset current frame seen ID so that if next frame has same number (e.g. repeated
 			// sends of single frame 0), it is detected properly
