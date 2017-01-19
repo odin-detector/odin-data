@@ -233,7 +233,8 @@ class SetupExcalibur(npyscreen.FormBaseNew):
           config = {
                      "fr_release_cnxn": "tcp://127.0.0.1:5002",
                      "fr_ready_cnxn": "tcp://127.0.0.1:5001",
-                     "fr_shared_mem": "ExcaliburSharedBuffer"
+#                     "fr_shared_mem": "ExcaliburSharedBuffer"
+                     "fr_shared_mem": "FrameReceiverBuffer"
                    }
           msg.set_param("fr_setup", config)
           self.parentApp.send_message(msg)

@@ -17,6 +17,7 @@ using namespace log4cxx::helpers;
 
 
 #include "FileWriterPlugin.h"
+#include "ExcaliburDefinitions.h"
 #include "ClassLoader.h"
 
 #define FEM_PIXELS_PER_CHIP_X 256

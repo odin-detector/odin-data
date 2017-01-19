@@ -100,7 +100,16 @@ namespace filewriter
   void ExcaliburReorderPlugin::processFrame(boost::shared_ptr<Frame> frame)
   {
     LOG4CXX_TRACE(logger_, "Reordering frame.");
-    LOG4CXX_TRACE(logger_, "Frame data size: " << frame->get_data_size());
+    LOG4CXX_TRACE(logger_, "Frame size: " << frame->get_data_size());
+
+    const Excalibur::FrameHeader* hdrPtr = static_cast<const Excalibur::FrameHeader*>(frame->get_data());
+    LOG4CXX_TRACE(logger_, "Raw frame number: " << hdrPtr->frame_number);
+    LOG4CXX_TRACE(logger_, "Packets received: " << hdrPtr->packets_received << " SOF markers: "
+    		<< (int)hdrPtr->sof_marker_count << " EOF markers: " << (int)hdrPtr->eof_marker_count);
+
+    const void* dataPtr = static_cast<const void*>(static_cast<const char*>(frame->get_data()) + sizeof(Excalibur::FrameHeader));
+    const size_t dataSize = frame->get_data_size() - sizeof(Excalibur::FrameHeader);
+    LOG4CXX_TRACE(logger_, "Frame data size: " << dataSize);
 
     static void* reorderedPartImageC1;
 
@@ -118,19 +127,19 @@ namespace filewriter
       {
         case DEPTH_1_BIT: // 1-bit counter depth
           memScaleFactor = 8;
-          reorderedImage = (void *)malloc(frame->get_data_size()*memScaleFactor);
-          memcpy(reorderedImage, (void*)(frame->get_data()), (frame->get_data_size()));
-          reorder1BitImage((unsigned int*)(frame->get_data()), (unsigned char *)reorderedImage);
+          reorderedImage = (void *)malloc(dataSize * memScaleFactor);
+          memcpy(reorderedImage, (void*)(dataPtr), dataSize);
+          reorder1BitImage((unsigned int*)(dataPtr), (unsigned char *)reorderedImage);
           break;
 
         case DEPTH_6_BIT: // 6-bit counter depth
-          reorderedImage = (void *)malloc(frame->get_data_size());
-          reorder6BitImage((unsigned char *)(frame->get_data()), (unsigned char *)reorderedImage);
+          reorderedImage = (void *)malloc(dataSize);
+          reorder6BitImage((unsigned char *)(dataPtr), (unsigned char *)reorderedImage);
           break;
 
         case DEPTH_12_BIT: // 12-bit counter depth
-          reorderedImage = (void *)malloc(frame->get_data_size());
-          reorder12BitImage((unsigned short *)(frame->get_data()), (unsigned short*)reorderedImage);
+          reorderedImage = (void *)malloc(dataSize);
+          reorder12BitImage((unsigned short *)(dataPtr), (unsigned short*)reorderedImage);
           break;
 
         case DEPTH_24_BIT: // 24-bit counter depth - needs special handling to merge successive frames
@@ -139,22 +148,22 @@ namespace filewriter
   #if 1
           if (framesReceived_ == 0){
             // First frame contains C1 data, so allocate space, reorder and store for later use
-            reorderedPartImageC1 = (void *)malloc(frame->get_data_size());
+            reorderedPartImageC1 = (void *)malloc(dataSize);
 
-            reorder12BitImage((unsigned short *)(frame->get_data()), (unsigned short*)reorderedPartImageC1);
+            reorder12BitImage((unsigned short *)(dataPtr), (unsigned short*)reorderedPartImageC1);
             reorderedImage = 0;  // No buffer to write to file or release
 
             // set the frames switch ready for the second frame
             framesReceived_ = 1;
           } else {
             // Second frame contains C0 data, allocate space for this and for output image (32bit)
-            void* reorderedPartImageC0 = (void *)malloc(frame->get_data_size());
+            void* reorderedPartImageC0 = (void *)malloc(dataSize);
 
             size_t outputImageSize = imageWidth_ * imageHeight_ * 4;
             reorderedImage = (void *)malloc(outputImageSize);
 
             // Reorder received buffer into C0
-            reorder12BitImage((unsigned short *)(frame->get_data()), (unsigned short*)reorderedPartImageC0);
+            reorder12BitImage((unsigned short *)(dataPtr), (unsigned short*)reorderedPartImageC0);
 
             // Build 24 bit image into output buffer
             build24BitImage((unsigned short *)reorderedPartImageC0,
@@ -182,9 +191,9 @@ namespace filewriter
         data_frame = boost::shared_ptr<Frame>(new Frame("data"));
         if (gAsicCounterDepth_ == DEPTH_24_BIT){
           // Only every other incoming frame results in a new frame
-          data_frame->set_frame_number(frame->get_frame_number()/2);
+          data_frame->set_frame_number(hdrPtr->frame_number/2);
         } else {
-          data_frame->set_frame_number(frame->get_frame_number());
+          data_frame->set_frame_number(hdrPtr->frame_number);
         }
         data_frame->set_dimensions("frame", dims);
         data_frame->copy_data(reorderedImage, frame->get_data_size()*memScaleFactor);
