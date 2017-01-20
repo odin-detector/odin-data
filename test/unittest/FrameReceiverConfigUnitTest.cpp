@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE( ValidSensorNameToTypeMapping )
     FrameReceiver::FrameReceiverConfig theConfig;
     std::string p2mName         = "percival2m";
     std::string p13mName        = "percival13m";
-    std::string excalibur3mName = "excalibur3m";
+    std::string excalibur3mName = "excalibur";
     std::string badName         = "foo";
 
     // Check that the sensor name mapping to type works for all known values, and returns illegal for a bad name
