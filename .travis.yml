@@ -1,5 +1,5 @@
 language: cpp
-sudo: false
+sudo: required
   
 matrix:
   include:
@@ -10,7 +10,10 @@ matrix:
           packages: ['liblog4cxx10-dev','libboost-program-options-dev','libboost-filesystem-dev','libboost-date-time-dev','libboost-system-dev','libboost-test-dev','libboost-thread-dev','libzmq3-dev']
       env: PYTHONPATH=./lib/python FR_TEST_CONFIG=test_config/fr_test.config FP_TEST_CONFIG=test_config/fp_test.config HDF5_ROOT=$HOME/hdf5-1.8.16
       before_install:
-        - bash .travis-install-hdf5.sh 
+        - bash .travis-install-hdf5.sh
+        - sudo apt-get install -y -qq lcov curl
+        - export COVERALLS_SERVICE_NAME=travis-ci
+        - export COVERALLS_REPO_TOKEN=Aa9l1gFhHsaLtNWpeKKj4kTzMTFbQI5m2
       cache:
         directories:
           - $HOME/hdf5-1.8.16
@@ -29,7 +32,7 @@ matrix:
 install:
   - mkdir -p build
   - cd build
-  - cmake -DHDF5_ROOT=$HDF5_ROOT ..
+  - cmake -DHDF5_ROOT=$HDF5_ROOT -DCOVERALLS=ON -DCMAKE_BUILD_TYPE=Debug ..
   - make -j VERBOSE=1
   - HDF5_DIR=$HDF5_ROOT pip install --user h5py
   - pip install --user -r $PYTHONPATH/requirements-travis.txt
@@ -38,6 +41,7 @@ script:
   - bin/frameReceiverTest --log_level=all
 #  - python bin/run_integration_test.py --frames=1 --interval=1.0 --timeout=30 --fr_config=$FR_TEST_CONFIG --fp_config=$FP_TEST_CONFIG
   - bin/fileWriterTest --log_level=all
+  - make coveralls
 
 notifications:
   slack:
