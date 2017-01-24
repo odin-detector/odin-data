@@ -20,16 +20,18 @@ boost_mmap_mode = False
 def options():
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--path", default="/home/gnx91527/work/percival/datasets", help="Raw data file")
-    parser.add_argument("-n", "--notify", default="tcp://127.0.0.1:5001", help="Frame Notify endpoint")
-    parser.add_argument("-r", "--release", default="tcp://127.0.0.1:5002", help="Frame Release endpoint")
+    parser.add_argument("--ready", default="tcp://127.0.0.1:5001", help="Frame Ready endpoint")
+    parser.add_argument("--release", default="tcp://127.0.0.1:5002", help="Frame Release endpoint")
+    parser.add_argument("-b", "--buffer", default=shared_mem_name, help="Unique name of shared buffer")
     args = parser.parse_args()
     return args
 
 class ExcaliburTestApp(npyscreen.NPSAppManaged):
-    def __init__(self, ctrl_endpoint, release_endpoint, filepath):
+    def __init__(self, ready_endpoint, release_endpoint, buffer, filepath):
         super(ExcaliburTestApp, self).__init__()
-        self._ctrl_endpoint = ctrl_endpoint
+        self._ready_endpoint = ready_endpoint
         self._release_endpoint = release_endpoint
+        self._buffer = buffer
         self._ctrl_channel = None
         self._release_channel = None
         self._current_value = None
@@ -56,7 +58,7 @@ class ExcaliburTestApp(npyscreen.NPSAppManaged):
         self._filename = filename
         self._frames = frames
         # Create the shared buffer
-        self._shared_buffer_manager = SharedBufferManager(shared_mem_name, 
+        self._shared_buffer_manager = SharedBufferManager(self._buffer,
                                                           buffer_size*num_buffers,
                                                           buffer_size, 
                                                           remove_when_deleted=True, 
@@ -80,22 +82,33 @@ class ExcaliburTestApp(npyscreen.NPSAppManaged):
 class IntroForm(npyscreen.Form):
     def create(self):
         self.name = "Excalibur test application"
-        self.add(npyscreen.TitleText, labelColor="LABELBOLD", name="Set the frame notify endpoint for this test", value="", editable=False)
-        self.ctrl = self.add(npyscreen.TitleText, name="Frame Notify Endpoint: ", value="")
+
+        self.add(npyscreen.TitleText, labelColor="LABELBOLD", name="Set the frame ready endpoint for this test", value="", editable=False)
+        self.ready = self.add(npyscreen.TitleText, name="Frame Notify Endpoint: ", value="")
+
         self.add(npyscreen.TitleText, labelColor="LABELBOLD", name=" ", value="", editable=False)
+
         self.add(npyscreen.TitleText, labelColor="LABELBOLD", name="Set the frame release endpoint for this test", value="", editable=False)
         self.release = self.add(npyscreen.TitleText, name="Frame Release Endpoint: ", value="")
+
         self.add(npyscreen.TitleText, labelColor="LABELBOLD", name=" ", value="", editable=False)
+
+        self.add(npyscreen.TitleText, labelColor="LABELBOLD", name="Set the unique name for the shared memory buffer", value="", editable=False)
+        self.buffer = self.add(npyscreen.TitleText, name="Shared memory buffer name: ", value="")
+
+        self.add(npyscreen.TitleText, labelColor="LABELBOLD", name=" ", value="", editable=False)
+
         self.add(npyscreen.TitleText, labelColor="LABELBOLD", name="Which type of dataset (1bit, 6bit, 12bit, 24bit)", value="", editable=False)
         self.datatype = self.add(npyscreen.TitleText, name="Datatype: ", value="12bit")
 
     def beforeEditing(self):
-        self.ctrl.value = self.parentApp._ctrl_endpoint
+        self.ready.value = self.parentApp._ready_endpoint
         self.release.value = self.parentApp._release_endpoint
+        self.buffer.value = self.parentApp._buffer
 
     def afterEditing(self):
         self.parentApp._ctrl_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_PUB)
-        self.parentApp._ctrl_channel.bind(self.ctrl.value)
+        self.parentApp._ctrl_channel.bind(self.ready.value)
         self.parentApp._release_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_SUB)
         self.parentApp._release_channel.bind(self.release.value)
         if self.datatype.value == "1bit":
@@ -178,7 +191,7 @@ class SetupAcquisition(npyscreen.ActionForm):
 def main():
     args = options()
 
-    app = ExcaliburTestApp(args.notify, args.release, args.path)
+    app = ExcaliburTestApp(args.ready, args.release, args.buffer, args.path)
     app.run()
 
 
