@@ -13,6 +13,40 @@ set(CMAKE_CONFIG_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/test_config)
 # directories of additional CMake modules (ie. MacroOutOfSourceBuild.cmake):
 set(CMAKE_MODULE_PATH ${frameReceiver_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
+# Coverage configuration
+option(COVERALLS "Generate coveralls data" OFF)
+
+if (COVERALLS)
+  include(Coveralls)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage")
+
+  set(FR_SRC src)
+  set(FW_SRC tools/filewriter)
+
+  set(COVERAGE_SRCS
+          ${FR_SRC}/appMain.cpp ${FR_SRC}/FrameReceiverApp.cpp ${FR_SRC}/FrameReceiverRxThread.cpp
+          ${FR_SRC}/FrameReceiverApp.cpp ${FR_SRC}/IpcChannel.cpp ${FR_SRC}/IpcMessage.cpp ${FR_SRC}/IpcReactor.cpp
+          ${FR_SRC}/PercivalEmulatorFrameDecoder.cpp ${FR_SRC}/SharedBufferManager.cpp
+          ${FW_SRC}/DataBlock.cpp ${FW_SRC}/DataBlockPool.cpp ${FW_SRC}/DataBlock.cpp ${FW_SRC}/DummyPlugin.cpp
+          ${FW_SRC}/ExcaliburReorderPlugin.cpp  ${FW_SRC}/FileWriter.cpp  ${FW_SRC}/fileWriterApp.cpp
+          ${FW_SRC}/FileWriterController.cpp ${FW_SRC}/FileWriterPlugin.cpp ${FW_SRC}/Frame.cpp
+          ${FW_SRC}/IFrameCallback.cpp ${FW_SRC}/PercivalProcessPlugin.cpp ${FW_SRC}/SharedMemoryController.cpp
+          ${FW_SRC}/SharedMemoryParser.cpp
+          )
+
+  # Create the coveralls target.
+  coveralls_setup(
+          "${COVERAGE_SRCS}" # The source files
+          ON                 # If we should upload.
+          "${PROJECT_SOURCE_DIR}/cmake")
+
+  enable_testing()
+  add_test(frame_receiver_test ${PROJECT_SOURCE_DIR}/build/bin/frameReceiverTest)
+  add_test(file_writer_test ${PROJECT_SOURCE_DIR}/build/bin/fileWriterTest)
+
+endif()
+
 # Find and add external packages required for application and test
 find_package( Boost 1.41.0
 	      REQUIRED
