@@ -153,7 +153,7 @@ class MainMenu(npyscreen.FormBaseNew):
     def while_waiting(self):
         if self.parentApp._running == True:
             millis = int(round(time.time() * 1000))
-            if millis > (self.parentApp._last_millis + int(self.parentApp._frame_rate * 1000)):
+            if millis > (self.parentApp._last_millis + int(1000 / self.parentApp._frame_rate)):
                 msg = IpcMessage("notify", "frame_ready")
                 msg.set_param("frame", self.parentApp._frames_sent)
                 buff_id = self.parentApp._frames_sent % self.parentApp._frames
