@@ -67,6 +67,11 @@ class IntroForm(npyscreen.Form):
         self.buffer.value = self.parentApp.shared_buffer
 
     def afterEditing(self):
+        self.parentApp.ctrl_endpoint = self.ctrl.value
+        self.parentApp.ready_endpoint = self.ready.value
+        self.parentApp.release_endpoint = self.release.value
+        self.parentApp.shared_buffer = self.buffer.value
+
         self.parentApp._ctrl_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_REQ)
         self.parentApp._ctrl_channel.connect(self.ctrl.value)
         self.parentApp.setNextForm("MAIN_MENU")
