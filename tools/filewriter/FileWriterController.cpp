@@ -43,7 +43,7 @@ namespace filewriter
     threadRunning_(false),
     threadInitError_(false),
     ctrlThread_(boost::bind(&FileWriterController::runIpcService, this)),
-    ctrlChannel_(ZMQ_PAIR)
+    ctrlChannel_(ZMQ_REP)
   {
     LOG4CXX_DEBUG(logger_, "Constructing FileWriterController");
 
