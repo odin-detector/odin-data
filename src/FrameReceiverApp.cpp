@@ -121,6 +121,12 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
                     "Enable logging of packet diagnostics to file")
 				("rxbuffer",     po::value<unsigned int>()->default_value(FrameReceiver::Defaults::default_rx_recv_buffer_size),
 					"Set UDP receive buffer size")
+				("ctrl",         po::value<std::string>()->default_value(FrameReceiver::Defaults::default_ctrl_chan_endpoint),
+					"Set the control channel endpoint")
+				("ready",        po::value<std::string>()->default_value(FrameReceiver::Defaults::default_frame_ready_endpoint),
+					"Set the frame ready channel endpoint")
+				("release",        po::value<std::string>()->default_value(FrameReceiver::Defaults::default_frame_release_endpoint),
+					"Set the frame release channel endpoint")
 				;
 
 		// Group the variables for parsing at the command line and/or from the configuration file
@@ -248,6 +254,24 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
 			LOG4CXX_DEBUG_LEVEL(1, logger_, "RX receive buffer size is " << config_.rx_recv_buffer_size_);
 		}
 
+		if (vm.count("ctrl"))
+		{
+			config_.ctrl_channel_endpoint_ = vm["ctrl"].as<std::string>();
+			LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting control channel endpoint to " << config_.ctrl_channel_endpoint_);
+		}
+
+		if (vm.count("ready"))
+		{
+			config_.frame_ready_endpoint_ = vm["ready"].as<std::string>();
+			LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting frame ready channel endpoint to " << config_.frame_ready_endpoint_);
+		}
+
+		if (vm.count("release"))
+		{
+			config_.frame_release_endpoint_ = vm["release"].as<std::string>();
+			LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting frame release channel endpoint to " << config_.frame_release_endpoint_);
+		}
+
 	}
 	catch (Exception &e)
 	{
@@ -336,8 +360,14 @@ void FrameReceiverApp::initialise_ipc_channels(void)
     rx_channel_.bind(config_.rx_channel_endpoint_);
 
     // Bind the frame ready and release channels
-    frame_ready_channel_.bind(config_.frame_ready_endpoint_);
-    frame_release_channel_.bind(config_.frame_release_endpoint_);
+    try {
+    	frame_ready_channel_.bind(config_.frame_ready_endpoint_);
+    	frame_release_channel_.bind(config_.frame_release_endpoint_);
+    }
+    catch (std::exception& e)
+    {
+    	LOG4CXX_ERROR(logger_, "Got exception biding channels: " << e.what());
+    }
 
     // Set default subscription on frame release channel
     frame_release_channel_.subscribe("");
