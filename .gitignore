@@ -8,4 +8,4 @@
 /.project 
 /.pydevproject
 .project
-
+venv*
