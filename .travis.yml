@@ -1,6 +1,5 @@
 language: cpp
 sudo: false
-  
 matrix:
   include:
     - os: linux
@@ -26,21 +25,16 @@ matrix:
         - brew outdated python || brew upgrade python
         - brew outdated boost || brew upgrade boost 
       env: PYTHONPATH=./lib/python FR_TEST_CONFIG=test_config/fr_test_osx.config FP_TEST_CONFIG=test_config/fp_test_osx.config HDF5_ROOT=/usr/local/
-
-
 install:
-  - mkdir -p build
-  - cd build
-  - cmake -DHDF5_ROOT=$HDF5_ROOT ..
-  - make -j VERBOSE=1
-  - HDF5_DIR=$HDF5_ROOT pip install --user h5py
-  - pip install --user -r $PYTHONPATH/requirements-travis.txt
-
+- mkdir -p build
+- cd build
+- cmake -DHDF5_ROOT=$HDF5_ROOT ..
+- make -j VERBOSE=1
+- HDF5_DIR=$HDF5_ROOT pip install --user h5py
+- pip install --user -r $PYTHONPATH/requirements-travis.txt
 script:
-  - bin/frameReceiverTest --log_level=all
-#  - python bin/run_integration_test.py --frames=1 --interval=1.0 --timeout=30 --fr_config=$FR_TEST_CONFIG --fp_config=$FP_TEST_CONFIG
-  - bin/fileWriterTest --log_level=all
-
+- bin/frameReceiverTest --log_level=all
+- bin/fileWriterTest --log_level=all
 notifications:
   slack:
-    secure: r8pM4/MZxsJrazTV/mm6WF/qUb+Kz6rOnmNtCS3ggHthH4ISkks9hGGY055cOG3F0AUBzLimPttYFwAn9uPLxTr2VCWUZ9Bx5q4CAILspmzYTJcbFDG+vyiyJEw5b2DzaXto9wcvRMNx5UDGlXXygEvBwpEV7Mgh2jR9jEQKGds=
+    secure: co/PaEjGldADmPdZVg66Ry2IZMwA/ttadneZ+LaA+nzT/heAfIOjCBLngHGe2zp1lzSi49IiZ0uKJPBq5ugrxzXwj7OD7RNH54033dAXTP0FOwM/HKppRqTNsRUANs+zQn/jyUI6EL7Mmf0WbS22aVP7EwyL4ogCLv3ZoqufYRPN4aefVRREK3JoUNAERb9I8npFeeBcvdYl1zpzJu9DaKOWuX7V/X6fBC/nvoq5LRWYkGaSUkkHS3bJsM77YG9aKKVY7XbBy2TlYvIPzE1lPjb+j3ZhRcuElPWgM4JtX4iYb7mb1+jDTQ0GFMDUuy75NFpNRjo4exYRZhJPkgY27yoUGloyXPbzqI/cI9e2cItTURVB1580cCY9JN6Ry5n25aGJT0joLkohYT9/s2cbcFREdE+rbDl7Ny2CxNzvHkt5hT4bYF+KKAaZzg/ckDAhzTMaHLAgJzdEQTDotw9hcai3inB6CSkR+wABVEEEeePwrt5JmRpW0Q8YLjrfkbLsStz0WlJ/UQ+RFGI/0igAVj7M/5qGRcRZ1spkF6EUvw3f09MYNHAhjcYPhypv+I9pZB8yIW4GVd+a9mhyYdB1ccfJXz0WXamG5z9EXLB02ucp6i+YgiILdUVsYk1uKo53lKQbcJlDl43WalqumcgfwSBVve/WjDlqEjOu7VlN5+4=
