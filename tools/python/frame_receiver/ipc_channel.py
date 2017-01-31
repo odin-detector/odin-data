@@ -16,6 +16,9 @@ class IpcChannel(object):
     CHANNEL_TYPE_REQ  = zmq.REQ
     CHANNEL_TYPE_SUB  = zmq.SUB
     CHANNEL_TYPE_PUB  = zmq.PUB
+    POLLIN = zmq.POLLIN
+    POLLOUT = zmq.POLLOUT
+    POLLERR = zmq.POLLERR
     
     def __init__(self, channel_type, endpoint=None, context=None):
         
