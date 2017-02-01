@@ -366,7 +366,7 @@ void FrameReceiverApp::initialise_ipc_channels(void)
     }
     catch (std::exception& e)
     {
-    	LOG4CXX_ERROR(logger_, "Got exception biding channels: " << e.what());
+    	LOG4CXX_ERROR(logger_, "Got exception binding IPC channels: " << e.what());
     }
 
     // Set default subscription on frame release channel
