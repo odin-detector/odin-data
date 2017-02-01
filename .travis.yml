@@ -14,17 +14,18 @@ matrix:
         directories:
           - $HOME/hdf5-1.8.16
 
-    - os: osx
-      osx_image: xcode7.3
-      compiler: clang
-      before_install: 
-        - brew update || brew update
-        - brew list
-        - brew install log4cxx zeromq homebrew/science/hdf5
-        - brew outdated cmake || brew upgrade cmake
-        - brew outdated python || brew upgrade python
-        - brew outdated boost || brew upgrade boost 
-      env: PYTHONPATH=./lib/python FR_TEST_CONFIG=test_config/fr_test_osx.config FP_TEST_CONFIG=test_config/fp_test_osx.config HDF5_ROOT=/usr/local/
+    # - os: osx
+    #   osx_image: xcode7.3
+    #   compiler: clang
+    #   before_install: 
+    #     - brew update || brew update
+    #     - brew list
+    #     - brew install log4cxx zeromq homebrew/science/hdf5
+    #     - brew outdated cmake || brew upgrade cmake
+    #     - brew outdated python || brew upgrade python
+    #     - brew outdated boost || brew upgrade boost 
+    #   env: PYTHONPATH=./lib/python FR_TEST_CONFIG=test_config/fr_test_osx.config FP_TEST_CONFIG=test_config/fp_test_osx.config HDF5_ROOT=/usr/local/
+
 install:
 - mkdir -p build
 - cd build
