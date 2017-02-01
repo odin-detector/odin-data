@@ -22,7 +22,6 @@ namespace FrameReceiver
 			SensorTypePercivalEmulator,
 			SensorTypePercival2M,
 			SensorTypePercival13M,
-			SensorTypeExcalibur1M,
 			SensorTypeExcalibur,
 		};
 
