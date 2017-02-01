@@ -250,7 +250,8 @@ void FrameReceiverRxThread::handle_receive_socket(int recv_socket, int recv_port
 	msg_hdr.msg_iovlen = 2;
 
 	size_t bytes_received = recvmsg(recv_socket, &msg_hdr, 0);
-	LOG4CXX_DEBUG_LEVEL(3, logger_, "RX thread received " << bytes_received << " header/payload bytes on recv socket");
+	LOG4CXX_DEBUG_LEVEL(3, logger_, "RX thread received " << bytes_received << " header/payload bytes on recv socket, payload buffer address "
+			<< frame_decoder_->get_next_payload_buffer());
 
 	FrameDecoder::FrameReceiveState frame_receive_state = frame_decoder_->process_packet(bytes_received);
 }

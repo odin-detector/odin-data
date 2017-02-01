@@ -3,6 +3,7 @@ from frame_receiver.ipc_message import IpcMessage, IpcMessageException
 from frame_receiver.shared_buffer_manager import SharedBufferManager, SharedBufferManagerException
 from frame_processor_config import FrameProcessorConfig
 from percival_emulator_frame_decoder import PercivalEmulatorFrameDecoder, PercivalFrameHeader, PercivalFrameData
+from excalibur_frame_decoder import ExcaliburFrameDecoder, ExcaliburFrameHeader, ExcaliburFrameData
 
 import time
 import datetime
@@ -51,8 +52,18 @@ class FrameProcessor(object):
             self.shared_buffer_manager = SharedBufferManager(self.config.sharedbuf, boost_mmap_mode=self.config.boost_mmap_mode)
         except SharedBufferManagerException as e:
             self.logger.error("Failed to create shared buffer manager: %s" % str(e))
-            
-        self.frame_decoder = PercivalEmulatorFrameDecoder(self.shared_buffer_manager)
+            sys.exit(1)
+        
+        if self.config.sensortype == 'percivalemulator':    
+            self.frame_decoder = PercivalEmulatorFrameDecoder(self.shared_buffer_manager)
+            self.logger.debug('Loaded frame decoder for PERCIVAL emulator sensor type')
+        elif self.config.sensortype == 'excalibur':
+            self.frame_decoder = ExcaliburFrameDecoder(self.shared_buffer_manager)
+            self.logger.debug('Loaded frame decoder for EXCALIBUR sensor type')
+        else:
+            self.frame_decoder = None
+            self.logger.error("Unrecognised sensor type specified: %s" % self.config.sensortype)
+            sys.exit(1)
         
         # Zero frames recevied counter
         self.frames_received = 0
@@ -144,13 +155,8 @@ class FrameProcessor(object):
     def handle_frame(self, frame_number, buffer_id):
         
         self.frame_decoder.decode_header(buffer_id)
-        self.logger.debug("Frame %d in buffer %d decoded header values: frame_number %d state %d start_time %s packets_received %d" %
-                      (frame_number, buffer_id, self.frame_decoder.header.frame_number, 
-                       self.frame_decoder.header.frame_state, self.frame_decoder.header.frame_start_time.isoformat(),
-                       self.frame_decoder.header.packets_received))
-        self.logger.debug("Frame info :\n      " + 
-                          ' '.join("0x{:02x}".format(val) for val in self.frame_decoder.header.frame_info[:21]) + '\n      ' + 
-                          ' '.join("0x{:02x}".format(val) for val in self.frame_decoder.header.frame_info[21:]))
+        self.logger.debug('Frame {:d} in buffer {:d} decoded header values:\n{:s}'.format(
+            frame_number, buffer_id, self.frame_decoder.header_state_str()))
         
         if self.config.packet_state:
             self.logger.debug("Packet state : \n" + self.frame_decoder.packet_state_str())

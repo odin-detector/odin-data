@@ -12,9 +12,12 @@ from ipc_channel import IpcChannel
 from ipc_message import IpcMessage
 
 class PercivalClientApp(npyscreen.NPSAppManaged):
-    def __init__(self, ctrl_endpoint):
+    def __init__(self, ctrl_endpoint, ready_endpoint, release_endpoint, shared_buffer):
         super(PercivalClientApp, self).__init__()
-        self._ctrl_endpoint = ctrl_endpoint
+        self.ctrl_endpoint = ctrl_endpoint
+        self.ready_endpoint = ready_endpoint
+        self.release_endpoint = release_endpoint
+        self.shared_buffer = shared_buffer
         self._poller = zmq.Poller()
         self._ctrl_channel = None
         self._current_value = None
@@ -50,12 +53,26 @@ class IntroForm(npyscreen.Form):
         self.name = "ODIN File Writer Client"
         self.add(npyscreen.TitleText, labelColor="LABELBOLD", name="Set the control endpoint for the application", value="", editable=False)
         self.ctrl = self.add(npyscreen.TitleText, name="Control Endpoint: ", value="")
+        self.add(npyscreen.TitleText, labelColor="LABELBOLD", name="Set the frame ready endpoint for the application", value="", editable=False)
+        self.ready = self.add(npyscreen.TitleText, name="Ready Endpoint: ", value="")
+        self.add(npyscreen.TitleText, labelColor="LABELBOLD", name="Set the frame release endpoint for the application", value="", editable=False)
+        self.release = self.add(npyscreen.TitleText, name="Release Endpoint: ", value="")
+        self.add(npyscreen.TitleText, labelColor="LABELBOLD", name="Set the shared buffer name for the application", value="", editable=False)
+        self.buffer = self.add(npyscreen.TitleText, name="Shared buffer: ", value="")
 
     def beforeEditing(self):
-        self.ctrl.value = self.parentApp._ctrl_endpoint
+        self.ctrl.value = self.parentApp.ctrl_endpoint
+        self.ready.value = self.parentApp.ready_endpoint
+        self.release.value = self.parentApp.release_endpoint
+        self.buffer.value = self.parentApp.shared_buffer
 
     def afterEditing(self):
-        self.parentApp._ctrl_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_PAIR)
+        self.parentApp.ctrl_endpoint = self.ctrl.value
+        self.parentApp.ready_endpoint = self.ready.value
+        self.parentApp.release_endpoint = self.release.value
+        self.parentApp.shared_buffer = self.buffer.value
+
+        self.parentApp._ctrl_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_REQ)
         self.parentApp._ctrl_channel.connect(self.ctrl.value)
         self.parentApp.setNextForm("MAIN_MENU")
 
@@ -231,9 +248,9 @@ class SetupExcalibur(npyscreen.FormBaseNew):
             
           msg = IpcMessage("cmd", "configure")
           config = {
-                     "fr_release_cnxn": "tcp://127.0.0.1:5002",
-                     "fr_ready_cnxn": "tcp://127.0.0.1:5001",
-                     "fr_shared_mem": "ExcaliburSharedBuffer"
+                     "fr_release_cnxn": self.parentApp.release_endpoint,
+                     "fr_ready_cnxn": self.parentApp.ready_endpoint,
+                     "fr_shared_mem": self.parentApp.shared_buffer
                    }
           msg.set_param("fr_setup", config)
           self.parentApp.send_message(msg)
@@ -398,6 +415,9 @@ class SetupFileWriting(npyscreen.ActionForm):
 def options():
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--control", default="tcp://127.0.0.1:5004", help="Control endpoint")
+    parser.add_argument("--ready", default="tcp://127.0.0.1:5001", help="Ready endpoint")
+    parser.add_argument("--release", default="tcp://127.0.0.1:5002", help="Release endpoint")
+    parser.add_argument("-b", "--buffer", default="ExcaliburSharedMemory", help="Shared memory buffer")
     args = parser.parse_args()
     return args
 
@@ -405,7 +425,7 @@ def options():
 def main():
     args = options()
 
-    app = PercivalClientApp(args.control)
+    app = PercivalClientApp(args.control, args.ready, args.release, args.buffer)
     app.run()
 
 

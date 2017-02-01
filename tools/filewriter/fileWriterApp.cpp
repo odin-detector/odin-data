@@ -68,6 +68,8 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
                 ("frames,f",     po::value<unsigned int>()->default_value(1),
                     "Set the number of frames to be notified about before terminating")
                 ("sharedbuf",    po::value<std::string>()->default_value("FrameReceiverBuffer"),
+                    "Set the control endpoint")
+                ("ctrl",    po::value<std::string>()->default_value("tcp://127.0.0.1:5004"),
                     "Set the name of the shared memory frame buffer")
                 ("output,o",     po::value<std::string>(),
                     "Name of HDF5 file to write frames to (default: no file writing)")
@@ -136,6 +138,11 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
             LOG4CXX_DEBUG(logger, "Setting number of frames to receive to " << vm["frames"].as<unsigned int>());
         }
 
+        if (vm.count("ctrl"))
+        {
+            LOG4CXX_DEBUG(logger, "Setting control endpoint to: " << vm["ctrl"].as<string>());
+        }
+
         if (vm.count("output"))
         {
             LOG4CXX_DEBUG(logger, "Writing frames to file: " << vm["output"].as<string>());
@@ -190,7 +197,7 @@ int main(int argc, char** argv)
     // Configure the control channel for the filewriter
     FrameReceiver::IpcMessage cfg;
     FrameReceiver::IpcMessage reply;
-    cfg.set_param<std::string>("ctrl_endpoint", "tcp://127.0.0.1:5004");
+    cfg.set_param<std::string>("ctrl_endpoint", vm["ctrl"].as<string>());
     fwc->configure(cfg, reply);
 
     // Now wait for the shutdown

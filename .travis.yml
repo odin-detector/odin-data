@@ -2,36 +2,30 @@ language: cpp
 sudo: false
 matrix:
   include:
-  - os: linux
-    compiler: gcc
-    addons:
-      apt:
-        packages:
-        - liblog4cxx10-dev
-        - libboost-program-options-dev
-        - libboost-filesystem-dev
-        - libboost-date-time-dev
-        - libboost-system-dev
-        - libboost-test-dev
-        - libboost-thread-dev
-        - libzmq3-dev
-    env: PYTHONPATH=./lib/python FR_TEST_CONFIG=test_config/fr_test.config FP_TEST_CONFIG=test_config/fp_test.config
-      HDF5_ROOT=$HOME/hdf5-1.8.16
-    before_install:
-    - bash .travis-install-hdf5.sh
-    cache:
-      directories:
-      - "$HOME/hdf5-1.8.16"
-  - os: osx
-    osx_image: xcode7
-    compiler: clang
-    before_install:
-    - brew update || brew update
-    - brew list
-    - brew install cmake log4cxx zeromq python homebrew/science/hdf5
-    - brew outdated boost || brew upgrade boost
-    env: PYTHONPATH=./lib/python FR_TEST_CONFIG=test_config/fr_test_osx.config FP_TEST_CONFIG=test_config/fp_test_osx.config
-      HDF5_ROOT=/usr/local/
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          packages: ['liblog4cxx10-dev','libboost-program-options-dev','libboost-filesystem-dev','libboost-date-time-dev','libboost-system-dev','libboost-test-dev','libboost-thread-dev','libzmq3-dev']
+      env: PYTHONPATH=./lib/python FR_TEST_CONFIG=test_config/fr_test.config FP_TEST_CONFIG=test_config/fp_test.config HDF5_ROOT=$HOME/hdf5-1.8.16
+      before_install:
+        - bash .travis-install-hdf5.sh 
+      cache:
+        directories:
+          - $HOME/hdf5-1.8.16
+
+    # - os: osx
+    #   osx_image: xcode7.3
+    #   compiler: clang
+    #   before_install: 
+    #     - brew update || brew update
+    #     - brew list
+    #     - brew install log4cxx zeromq homebrew/science/hdf5
+    #     - brew outdated cmake || brew upgrade cmake
+    #     - brew outdated python || brew upgrade python
+    #     - brew outdated boost || brew upgrade boost 
+    #   env: PYTHONPATH=./lib/python FR_TEST_CONFIG=test_config/fr_test_osx.config FP_TEST_CONFIG=test_config/fp_test_osx.config HDF5_ROOT=/usr/local/
+
 install:
 - mkdir -p build
 - cd build

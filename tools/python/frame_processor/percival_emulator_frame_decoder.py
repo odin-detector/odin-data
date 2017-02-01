@@ -82,6 +82,23 @@ class PercivalEmulatorFrameDecoder(object):
         header_raw = self.shared_buffer_manager.read_buffer(buffer_id, PercivalFrameHeader.size())
         self.header = PercivalFrameHeader(header_raw)
         
+    def header_state_str(self):
+        
+        header_state_str = ""
+        
+        if self.header is not None:
+
+            header_state_str += '      Frame number {:d} State {:d} Start time {:s} Packets received {:d} \n'.format(
+                self.header.frame_number, self.header.frame_state, self.header.frame_start_time.isoformat(),
+                 self.header.packets_received)
+                          
+            header_state_str += '      Frame info :\n        {:s}\n        {"s}'.format( 
+                ' '.join("0x{:02x}".format(val) for val in self.frame_decoder.header.frame_info[:21]),
+                ' '.join("0x{:02x}".format(val) for val in self.frame_decoder.header.frame_info[21:])
+            )
+                                  
+        return header_state_str
+        
     def packet_state_str(self, step=32):
         
         packet_state_str = ""

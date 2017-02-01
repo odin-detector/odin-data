@@ -15,6 +15,7 @@ class FrameProcessorConfig(object):
         defaults['packet_state']     = False
         defaults['frames']           = 0
         defaults['boost_mmap_mode']  = False
+        defaults['sensortype']       = "percivalemulator"
 
         # Parse the command-line argument list        
         arg_config = self._parse_arguments(name, description)
@@ -51,6 +52,8 @@ class FrameProcessorConfig(object):
                             help="Specify the number of frames to receive before shutting down")
         parser.add_argument('--boost_mmap_mode',  action='store_true',
                             help="Enable boost MMAP shared memory mode")
+        parser.add_argument('--sensortype', type=str, default=None, dest='sensortype',
+                            help='Specify the sensor type in use')
         
         args = parser.parse_args()
         
@@ -73,5 +76,6 @@ class FrameProcessorConfig(object):
         config_vals['packet_state'] = cp.getboolean(sec_name, 'packet_state')
  #       config_vals['frames'] = cp.getint(sec_name, 'frames')
         config_vals['boost_mmap_mode'] = cp.getboolean(sec_name, 'boost_mmap_mode')
+        config_vals['sensor_type'] = cp.get(sec_name, 'sensortype')
         
         return config_vals
