@@ -18,7 +18,7 @@ BOOST_AUTO_TEST_SUITE(IpcMessageUnitTest);
 BOOST_AUTO_TEST_CASE( ValidIpcMessageFromString )
 {
 	// Instantiate a valid message from a JSON string
-    FrameReceiver::IpcMessage validMsgFromString("{\"msg_type\":\"cmd\", "
+    OdinData::IpcMessage validMsgFromString("{\"msg_type\":\"cmd\", "
     		"\"msg_val\":\"status\", "
     		"\"timestamp\" : \"2015-01-27T15:26:01.123456\", "
     		"\"params\" : {"
@@ -32,8 +32,8 @@ BOOST_AUTO_TEST_CASE( ValidIpcMessageFromString )
     BOOST_CHECK_EQUAL(validMsgFromString.is_valid(), true);
 
     // Check that all attributes are as expected
-    BOOST_CHECK_EQUAL(validMsgFromString.get_msg_type(), FrameReceiver::IpcMessage::MsgTypeCmd);
-    BOOST_CHECK_EQUAL(validMsgFromString.get_msg_val(), FrameReceiver::IpcMessage::MsgValCmdStatus);
+    BOOST_CHECK_EQUAL(validMsgFromString.get_msg_type(), OdinData::IpcMessage::MsgTypeCmd);
+    BOOST_CHECK_EQUAL(validMsgFromString.get_msg_val(), OdinData::IpcMessage::MsgValCmdStatus);
     BOOST_CHECK_EQUAL(validMsgFromString.get_msg_timestamp(), "2015-01-27T15:26:01.123456");
     struct tm timestamp_tm = validMsgFromString.get_msg_datetime();
     BOOST_CHECK_EQUAL(asctime(&timestamp_tm), "Tue Jan 27 15:26:01 2015\n");
@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE( ValidIpcMessageFromString )
     BOOST_CHECK_EQUAL(validMsgFromString.get_param<double>("paramDouble"), 3.1415);
 
     // Check valid message throws exception on missing parameter
-    BOOST_CHECK_THROW(validMsgFromString.get_param<int>("missingParam"), FrameReceiver::IpcMessageException);
+    BOOST_CHECK_THROW(validMsgFromString.get_param<int>("missingParam"), OdinData::IpcMessageException);
 
     // Check valid message can fall back to default value if parameter missing
     int defaultParamValue = 90210;
@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE( ValidIpcMessageFromString )
 BOOST_AUTO_TEST_CASE( EmptyIpcMessage )
 {
 	// Instantiate an empty message, which will be invalid by default since no attributes have been set
-	FrameReceiver::IpcMessage emptyMsg;
+	OdinData::IpcMessage emptyMsg;
 
 	// Check the message isn't valid
 	BOOST_CHECK_EQUAL(emptyMsg.is_valid(), false);
@@ -64,15 +64,15 @@ BOOST_AUTO_TEST_CASE( EmptyIpcMessage )
 BOOST_AUTO_TEST_CASE( CreateValidIpcMessageFromEmpty)
 {
 	// Instantiate an empty message, which will be invalid by default since no attributes have been set
-	FrameReceiver::IpcMessage theMsg;
+	OdinData::IpcMessage theMsg;
 
 	// Empty message isn't valid
 	BOOST_CHECK_EQUAL(theMsg.is_valid(), false);
 
 	// Set message type and value
-	FrameReceiver::IpcMessage::MsgType msg_type = FrameReceiver::IpcMessage::MsgTypeCmd;
+	OdinData::IpcMessage::MsgType msg_type = OdinData::IpcMessage::MsgTypeCmd;
 	theMsg.set_msg_type(msg_type);
-	FrameReceiver::IpcMessage::MsgVal msg_val = FrameReceiver::IpcMessage::MsgValCmdReset;
+	OdinData::IpcMessage::MsgVal msg_val = OdinData::IpcMessage::MsgValCmdReset;
 	theMsg.set_msg_val(msg_val);
 
 	// Check the message is now valid
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE( CreateValidIpcMessageFromEmpty)
 BOOST_AUTO_TEST_CASE( CreateAndModifyParametersInEmptyIpcMessage )
 {
 	// Create an emprty message
-	FrameReceiver::IpcMessage emptyMsg;
+	OdinData::IpcMessage emptyMsg;
 
 	// Define and set some parameters
 	int paramIntVal = 1234;
@@ -117,12 +117,12 @@ BOOST_AUTO_TEST_CASE( RoundTripFromEmptyIpcMessage )
 {
 
 	// Create an empty message
-	FrameReceiver::IpcMessage theMsg;
+	OdinData::IpcMessage theMsg;
 
 	// Set message type and value
-	FrameReceiver::IpcMessage::MsgType msg_type = FrameReceiver::IpcMessage::MsgTypeCmd;
+	OdinData::IpcMessage::MsgType msg_type = OdinData::IpcMessage::MsgTypeCmd;
 	theMsg.set_msg_type(msg_type);
-	FrameReceiver::IpcMessage::MsgVal msg_val = FrameReceiver::IpcMessage::MsgValCmdReset;
+	OdinData::IpcMessage::MsgVal msg_val = OdinData::IpcMessage::MsgValCmdReset;
 	theMsg.set_msg_val(msg_val);
 
 	// Define and set some parameters
@@ -140,7 +140,7 @@ BOOST_AUTO_TEST_CASE( RoundTripFromEmptyIpcMessage )
 	const char* theMsgEncoded = theMsg.encode();
 
 	// Create another message from the encoded version
-	FrameReceiver::IpcMessage msgFromEncoded(theMsgEncoded);
+	OdinData::IpcMessage msgFromEncoded(theMsgEncoded);
 
 	// Validate the contents of all attributes and parameters of the new message
 	BOOST_CHECK_EQUAL(msgFromEncoded.get_msg_type(), msg_type);
@@ -157,12 +157,12 @@ BOOST_AUTO_TEST_CASE( RoundTripFromEmptyIpcMessageComparison )
 {
 
 	// Create an empty message
-	FrameReceiver::IpcMessage theMsg;
+	OdinData::IpcMessage theMsg;
 
 	// Set message type and value
-	FrameReceiver::IpcMessage::MsgType msg_type = FrameReceiver::IpcMessage::MsgTypeCmd;
+	OdinData::IpcMessage::MsgType msg_type = OdinData::IpcMessage::MsgTypeCmd;
 	theMsg.set_msg_type(msg_type);
-	FrameReceiver::IpcMessage::MsgVal msg_val = FrameReceiver::IpcMessage::MsgValCmdReset;
+	OdinData::IpcMessage::MsgVal msg_val = OdinData::IpcMessage::MsgValCmdReset;
 	theMsg.set_msg_val(msg_val);
 
 	// Define and set some parameters
@@ -180,7 +180,7 @@ BOOST_AUTO_TEST_CASE( RoundTripFromEmptyIpcMessageComparison )
 	const char* theMsgEncoded = theMsg.encode();
 
 	// Create another message from the encoded version
-	FrameReceiver::IpcMessage msgFromEncoded(theMsgEncoded);
+	OdinData::IpcMessage msgFromEncoded(theMsgEncoded);
 
 	// Test that the relational (in)equality operators work correctly for the IpcMessage class
 	BOOST_CHECK_EQUAL((msgFromEncoded == theMsg), true);
@@ -191,14 +191,14 @@ BOOST_AUTO_TEST_CASE( RoundTripFromEmptyIpcMessageComparison )
 BOOST_AUTO_TEST_CASE( InvalidIpcMessageFromString )
 {
 	// Instantiate an invalid message from an illegal JSON string - should throw an IpcMessageException
-	BOOST_CHECK_THROW(FrameReceiver::IpcMessage invalidMsgFromString("{\"wibble\" : \"wobble\" \"shouldnt be here\"}"), FrameReceiver::IpcMessageException);
+	BOOST_CHECK_THROW(OdinData::IpcMessage invalidMsgFromString("{\"wibble\" : \"wobble\" \"shouldnt be here\"}"), OdinData::IpcMessageException);
 }
 
 BOOST_AUTO_TEST_CASE( IllegalTypeIpcMessageFromString )
 {
 	// Instantiate a  message from a JSON string with valid syntax but an illegal type. Turning off strict validation will prevent an exception
 	// at this point but render the message invalid
-    FrameReceiver::IpcMessage illegalTypeMsgFromString("{\"msg_type\":\"wrong\", \"msg_val\":\"status\", \"timestamp\" : \"2015-01-27T15:26:01.123456\" }", false);
+    OdinData::IpcMessage illegalTypeMsgFromString("{\"msg_type\":\"wrong\", \"msg_val\":\"status\", \"timestamp\" : \"2015-01-27T15:26:01.123456\" }", false);
 
     // Check that the message isn't valid
     BOOST_CHECK_EQUAL(illegalTypeMsgFromString.is_valid(), false);
@@ -208,7 +208,7 @@ BOOST_AUTO_TEST_CASE( IllegalValueIpcMessageFromString )
 {
 	// Instantiate a  message from a JSON string with valid syntax but an illegal value. Turning off strict validation will prevent an exception
 	// at this point but render the message invalid
-    FrameReceiver::IpcMessage illegalValueMsgFromString("{\"msg_type\":\"cmd\", \"msg_val\":\"wrong\", \"timestamp\" : \"2015-01-27T15:26:01.123456\" }", false);
+    OdinData::IpcMessage illegalValueMsgFromString("{\"msg_type\":\"cmd\", \"msg_val\":\"wrong\", \"timestamp\" : \"2015-01-27T15:26:01.123456\" }", false);
 
     // Check that the message isn't valid
     BOOST_CHECK_EQUAL(illegalValueMsgFromString.is_valid(), false);
@@ -218,7 +218,7 @@ BOOST_AUTO_TEST_CASE( IllegalTimestampIpcMessageFromString )
 {
 	// Instantiate a  message from a JSON string with valid syntax but an illegal timestamp. Turning off strict validation will prevent an exception
 	// at this point but render the message invalid
-    FrameReceiver::IpcMessage illegalTimestampMsgFromString("{\"msg_type\":\"cmd\", \"msg_val\":\"status\", \"timestamp\" : \"1 Jan 1970 00:00:00\" }", false);
+    OdinData::IpcMessage illegalTimestampMsgFromString("{\"msg_type\":\"cmd\", \"msg_val\":\"status\", \"timestamp\" : \"1 Jan 1970 00:00:00\" }", false);
 
     // Check that the message isn't valid
     BOOST_CHECK_EQUAL(illegalTimestampMsgFromString.is_valid(), false);
@@ -228,32 +228,32 @@ BOOST_AUTO_TEST_CASE( IllegalTypeIpcMessageFromStringStrictValidation )
 {
 	// Instantiate a  message from a JSON string with valid syntax but an illegal type - with strict validation on, should throw an IpcMessageException
     BOOST_CHECK_THROW(
-    		FrameReceiver::IpcMessage illegalTypeMsgFromString("{\"msg_type\":\"wrong\", \"msg_val\":\"status\", \"timestamp\" : \"2015-01-27T15:26:01.123456\" }", true),
-    		FrameReceiver::IpcMessageException);
+    		OdinData::IpcMessage illegalTypeMsgFromString("{\"msg_type\":\"wrong\", \"msg_val\":\"status\", \"timestamp\" : \"2015-01-27T15:26:01.123456\" }", true),
+    		OdinData::IpcMessageException);
 }
 
 BOOST_AUTO_TEST_CASE( IllegalValueIpcMessageFromStringStrictValidation )
 {
 	// Instantiate a  message from a JSON string with valid syntax but an illegal value - with strict validation on, should throw an IpcMessageException
 	BOOST_CHECK_THROW(
-			FrameReceiver::IpcMessage illegalValueMsgFromString("{\"msg_type\":\"cmd\", \"msg_val\":\"wrong\", \"timestamp\" : \"2015-01-27T15:26:01.123456\" }", true),
-			FrameReceiver::IpcMessageException);
+			OdinData::IpcMessage illegalValueMsgFromString("{\"msg_type\":\"cmd\", \"msg_val\":\"wrong\", \"timestamp\" : \"2015-01-27T15:26:01.123456\" }", true),
+			OdinData::IpcMessageException);
 }
 
 BOOST_AUTO_TEST_CASE( IllegalTimestampIpcMessageFromStringStrictValidation )
 {
 	// Instantiate a  message from a JSON string with valid syntax but an illegal timestamp - with strict validation on, should throw an IpcMessageException
 	BOOST_CHECK_THROW(
-			FrameReceiver::IpcMessage illegalTimestampMsgFromString("{\"msg_type\":\"cmd\", \"msg_val\":\"status\", \"timestamp\" : \"1 Jan 1970 00:00:00\" }", true),
-			FrameReceiver::IpcMessageException);
+			OdinData::IpcMessage illegalTimestampMsgFromString("{\"msg_type\":\"cmd\", \"msg_val\":\"status\", \"timestamp\" : \"1 Jan 1970 00:00:00\" }", true),
+			OdinData::IpcMessageException);
 }
 
 BOOST_AUTO_TEST_CASE( MissingParamsIpcMessageFromStringStrictValidation )
 {
 	// Instantiate a valid message from a JSON string
 	BOOST_CHECK_THROW(
-			FrameReceiver::IpcMessage missingParamsMsgFromString("{\"msg_type\":\"cmd\", \"msg_val\":\"status\", \"timestamp\" : \"2015-01-27T15:26:01.123456\" }", true),
-			FrameReceiver::IpcMessageException);
+			OdinData::IpcMessage missingParamsMsgFromString("{\"msg_type\":\"cmd\", \"msg_val\":\"status\", \"timestamp\" : \"2015-01-27T15:26:01.123456\" }", true),
+			OdinData::IpcMessageException);
 }
 
 // Calculate the difference, in seconds, between two timespecs
@@ -278,7 +278,7 @@ BOOST_AUTO_TEST_CASE( TestIpcMessageCreationSpeed )
 	BOOST_CHECK_NO_THROW(
 		for (int i = 0; i < numLoops; i++)
 		{
-			FrameReceiver::IpcMessage simpleMessage(FrameReceiver::IpcMessage::MsgTypeCmd, FrameReceiver::IpcMessage::MsgValCmdStatus);
+			OdinData::IpcMessage simpleMessage(OdinData::IpcMessage::MsgTypeCmd, OdinData::IpcMessage::MsgValCmdStatus);
 			simpleMessage.set_param<int>("loopParam", i);
 			const char *encodedMsg = simpleMessage.encode();
 		}
@@ -295,7 +295,7 @@ BOOST_AUTO_TEST_CASE( TestIpcMessageCreationSpeed )
 	BOOST_CHECK_NO_THROW(
 		for (int i = 0 ; i < numLoops; i++)
 		{
-			FrameReceiver::IpcMessage validMsgFromString("{\"msg_type\":\"cmd\", "
+			OdinData::IpcMessage validMsgFromString("{\"msg_type\":\"cmd\", "
 					"\"msg_val\":\"status\", "
 					"\"timestamp\" : \"2015-01-27T15:26:01.123456\", "
 					"\"params\" : {"

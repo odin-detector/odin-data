@@ -60,9 +60,9 @@ public:
         send_channel.send(test_message);
     }
 
-    FrameReceiver::IpcChannel send_channel;
-    FrameReceiver::IpcChannel recv_channel;
-    FrameReceiver::IpcReactor reactor;
+    OdinData::IpcChannel send_channel;
+    OdinData::IpcChannel recv_channel;
+    OdinData::IpcReactor reactor;
     unsigned int timer_count;
     std::string  test_message;
     std::string  received_message;

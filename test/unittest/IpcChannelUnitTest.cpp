@@ -26,8 +26,8 @@ struct TestFixture
         BOOST_TEST_MESSAGE("Tear down test fixture");
     }
 
-    FrameReceiver::IpcChannel send_channel;
-    FrameReceiver::IpcChannel recv_channel;
+    OdinData::IpcChannel send_channel;
+    OdinData::IpcChannel recv_channel;
 };
 
 BOOST_FIXTURE_TEST_SUITE( IpcChannelUnitTest , TestFixture);

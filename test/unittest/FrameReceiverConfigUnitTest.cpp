@@ -42,8 +42,8 @@ BOOST_AUTO_TEST_SUITE(FrameReceiverConfigUnitTest);
 BOOST_AUTO_TEST_CASE( ValidConfigWithDefaults )
 {
     // Instantiate a configuration and a test proxy
-    FrameReceiver::FrameReceiverConfig theConfig;
-    FrameReceiver::FrameReceiverConfigTestProxy testProxy(theConfig);
+	FrameReceiver::FrameReceiverConfig theConfig;
+	FrameReceiver::FrameReceiverConfigTestProxy testProxy(theConfig);
 
     // Use the test proxy to test that the configuration object has the correct default
     // private configuration variables
@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE( ValidConfigWithDefaults )
 
 BOOST_AUTO_TEST_CASE( ValidSensorNameToTypeMapping )
 {
-    FrameReceiver::FrameReceiverConfig theConfig;
+	FrameReceiver::FrameReceiverConfig theConfig;
     std::string p2mName       = "percival2m";
     std::string p13mName      = "percival13m";
     std::string excaliburName = "excalibur";

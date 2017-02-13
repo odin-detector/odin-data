@@ -31,7 +31,7 @@ public:
         BOOST_TEST_MESSAGE("Tear down test fixture");
     }
 
-    FrameReceiver::SharedBufferManager shared_buffer_manager;
+    OdinData::SharedBufferManager shared_buffer_manager;
 };
 
 BOOST_FIXTURE_TEST_SUITE( SharedBufferManagerUnitTest, SharedBufferManagerTestFixture );
@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE( BasicSharedBufferTest )
 
 BOOST_AUTO_TEST_CASE( IllegalSharedBufferIndexTest )
 {
-    BOOST_CHECK_THROW(shared_buffer_manager.get_buffer_address(num_buffers), FrameReceiver::SharedBufferManagerException);
+    BOOST_CHECK_THROW(shared_buffer_manager.get_buffer_address(num_buffers), OdinData::SharedBufferManagerException);
 }
 
 BOOST_AUTO_TEST_CASE( SharedWithChildProcessTest )
@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE( SharedWithChildProcessTest )
         int rc = 0;
 
         // Child process - create a shared buffer manager object pointing at the existing shared memory
-        FrameReceiver::SharedBufferManager child_manager(shared_mem_name);
+        OdinData::SharedBufferManager child_manager(shared_mem_name);
 
         // Check manager ID matches parent
         size_t child_manager_id = child_manager.get_manager_id();
@@ -149,15 +149,15 @@ BOOST_AUTO_TEST_CASE( MapMissingSharedBufferTest )
 {
     // Try to create a shared buffer manager pointing at name that doesn't exist - should throw
     // a SharedBufferManagerException
-    BOOST_CHECK_THROW(FrameReceiver::SharedBufferManager illegal_manager("ThisIsNotShared"),
-            FrameReceiver::SharedBufferManagerException);
+    BOOST_CHECK_THROW(OdinData::SharedBufferManager illegal_manager("ThisIsNotShared"),
+            OdinData::SharedBufferManagerException);
 
 }
 
 BOOST_AUTO_TEST_CASE( BufferBiggerThanSharedMemTest)
 {
-    BOOST_CHECK_THROW(FrameReceiver::SharedBufferManager illegal_manager("BadSize", 100, 1000),
-            FrameReceiver::SharedBufferManagerException);
+    BOOST_CHECK_THROW(OdinData::SharedBufferManager illegal_manager("BadSize", 100, 1000),
+            OdinData::SharedBufferManagerException);
 }
 
 BOOST_AUTO_TEST_SUITE_END();
