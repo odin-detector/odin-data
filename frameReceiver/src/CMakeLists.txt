@@ -1,7 +1,7 @@
 
 set(CMAKE_INCLUDE_CURRENT_DIR on)
 
-include_directories(${Boost_INCLUDE_DIRS} ${LOG4CXX_INCLUDE_DIRS}/.. ${ZEROMQ_INCLUDE_DIRS})
+include_directories(${FRAMERECEIVER_DIR}/include ${Boost_INCLUDE_DIRS} ${LOG4CXX_INCLUDE_DIRS}/.. ${ZEROMQ_INCLUDE_DIRS})
 
 file(GLOB APP_SOURCES *.cpp)
 

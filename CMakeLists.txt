@@ -9,6 +9,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_CONFIG_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/test_config)
 
+# Specify the frameReceiver directory
+get_filename_component(FRAMERECEIVER_DIR frameReceiver ABSOLUTE)
+
 # Appends the cmake/modules path inside the MAKE_MODULE_PATH variable which stores the
 # directories of additional CMake modules (ie. MacroOutOfSourceBuild.cmake):
 set(CMAKE_MODULE_PATH ${frameReceiver_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
@@ -54,11 +57,11 @@ ELSE(HDF5_ROOT)
                  COMPONENTS C HL)
 ENDIF(HDF5_ROOT)
 
-# Add include directory to include path
-include_directories(include)
+# Add common/include directory to include path
+include_directories(common/include)
 
-# Add the source subdirectory
-add_subdirectory(src)
+# Add the frameReceiver subdirectory
+add_subdirectory(${FRAMERECEIVER_DIR})
 
 # Add the tools subdirectory
 add_subdirectory(tools)
