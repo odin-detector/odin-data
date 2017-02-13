@@ -66,7 +66,7 @@ namespace OdinData {
             std::stringstream ss;
             ss << "JSON parse error creating message from string at offset " << doc_.GetErrorOffset() ;
             ss << " : " << rapidjson::GetParseError_En(doc_.GetParseError());
-            throw (ss.str());
+            throw OdinData::IpcMessageException(ss.str());
         }
 
         // Extract required valid attributes from message. If strict validation is enabled, throw an
