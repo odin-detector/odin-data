@@ -7,5 +7,5 @@ file(GLOB APP_SOURCES *.cpp)
 
 add_executable(frameReceiver ${APP_SOURCES})
 
-target_link_libraries(frameReceiver Ipc ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES})
+target_link_libraries(frameReceiver ${COMMON_LIBRARY} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES})
 

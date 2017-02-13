@@ -18,6 +18,9 @@ set(FRAMERECEIVER_DIR ${odinData_SOURCE_DIR}/frameReceiver)
 # Set the frameProcessor directory
 set(FRAMEPROCESSOR_DIR ${odinData_SOURCE_DIR}/frameProcessor)
 
+# Set the name of the common library
+set(COMMON_LIBRARY ${PROJECT_NAME})
+
 # Appends the cmake/modules path inside the MAKE_MODULE_PATH variable which stores the
 # directories of additional CMake modules (ie. MacroOutOfSourceBuild.cmake):
 set(CMAKE_MODULE_PATH ${odinData_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})

@@ -23,23 +23,23 @@ message(STATUS "HDF5 include files:  " ${HDF5_INCLUDE_DIRS})
 message(STATUS "HDF5 libs:           " ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES})
 message(STATUS "HDF5 defs:           " ${HDF5_DEFINITIONS})
 
-target_link_libraries(frameProcessor ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} Ipc)
+target_link_libraries(frameProcessor ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${COMMON_LIBRARY})
 
 # Add library for dummy plugin
 add_library(DummyPlugin SHARED DummyPlugin.cpp FileWriterPlugin.cpp IFrameCallback.cpp Frame.cpp DataBlock.cpp DataBlockPool.cpp)
-target_link_libraries(DummyPlugin ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} Ipc)
+target_link_libraries(DummyPlugin ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${COMMON_LIBRARY})
 
 # Add library for HDF5 writer plugin
 add_library(Hdf5Plugin SHARED FileWriter.cpp FileWriterPlugin.cpp IFrameCallback.cpp Frame.cpp DataBlock.cpp DataBlockPool.cpp)
-target_link_libraries(Hdf5Plugin ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} Ipc)
+target_link_libraries(Hdf5Plugin ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${COMMON_LIBRARY})
 
 # Add library for excalibur plugin
 add_library(ExcaliburReorderPlugin SHARED ExcaliburReorderPlugin.cpp FileWriterPlugin.cpp IFrameCallback.cpp Frame.cpp DataBlock.cpp DataBlockPool.cpp)
-target_link_libraries(ExcaliburReorderPlugin ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} Ipc)
+target_link_libraries(ExcaliburReorderPlugin ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${COMMON_LIBRARY})
 
 # Add library for percival process plugin
 add_library(PercivalProcessPlugin SHARED PercivalProcessPlugin.cpp FileWriterPlugin.cpp IFrameCallback.cpp Frame.cpp DataBlock.cpp DataBlockPool.cpp)
-target_link_libraries(PercivalProcessPlugin ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} Ipc)
+target_link_libraries(PercivalProcessPlugin ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${COMMON_LIBRARY})
             
 # Add test and project source files to executable
 file(GLOB TESTABLE_SOURCES DataBlock.cpp DataBlockPool.cpp IFrameCallback.cpp FileWriterPlugin.cpp Frame.cpp)
@@ -53,7 +53,7 @@ target_link_libraries(frameProcessorTest
         ${HDF5_LIBRARIES} 
         ${HDF5HL_LIBRARIES}
         Hdf5Plugin
-        Ipc) 
+        ${COMMON_LIBRARY}) 
 
 if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
   # librt required for timing functions
