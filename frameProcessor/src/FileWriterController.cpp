@@ -85,11 +85,11 @@ namespace filewriter
 
     // Parse and handle the message
     try {
-      FrameReceiver::IpcMessage ctrlMsg(ctrlMsgEncoded.c_str());
-      FrameReceiver::IpcMessage replyMsg(FrameReceiver::IpcMessage::MsgTypeAck, FrameReceiver::IpcMessage::MsgValCmdConfigure);
+      OdinData::IpcMessage ctrlMsg(ctrlMsgEncoded.c_str());
+      OdinData::IpcMessage replyMsg(OdinData::IpcMessage::MsgTypeAck, OdinData::IpcMessage::MsgValCmdConfigure);
 
-      if ((ctrlMsg.get_msg_type() == FrameReceiver::IpcMessage::MsgTypeCmd) &&
-          (ctrlMsg.get_msg_val()  == FrameReceiver::IpcMessage::MsgValCmdConfigure)){
+      if ((ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) &&
+          (ctrlMsg.get_msg_val()  == OdinData::IpcMessage::MsgValCmdConfigure)){
         this->configure(ctrlMsg, replyMsg);
         LOG4CXX_DEBUG(logger_, "Control thread reply message: " << replyMsg.encode());
         ctrlChannel_.send(replyMsg.encode());
@@ -97,14 +97,14 @@ namespace filewriter
         LOG4CXX_ERROR(logger_, "Control thread got unexpected message: " << ctrlMsgEncoded);
       }
     }
-    catch (FrameReceiver::IpcMessageException& e)
+    catch (OdinData::IpcMessageException& e)
     {
         LOG4CXX_ERROR(logger_, "Error decoding control channel request: " << e.what());
     }
     catch (std::runtime_error& e)
     {
         LOG4CXX_ERROR(logger_, "Bad control message: " << e.what());
-        FrameReceiver::IpcMessage replyMsg(FrameReceiver::IpcMessage::MsgTypeNack, FrameReceiver::IpcMessage::MsgValCmdConfigure);
+        OdinData::IpcMessage replyMsg(OdinData::IpcMessage::MsgTypeNack, OdinData::IpcMessage::MsgValCmdConfigure);
         replyMsg.set_param<std::string>("error", std::string(e.what()));
         ctrlChannel_.send(replyMsg.encode());
     }
@@ -129,7 +129,7 @@ namespace filewriter
    * \param[in] config - IpcMessage containing configuration data.
    * \param[out] reply - Response IpcMessage.
    */
-  void FileWriterController::configure(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply)
+  void FileWriterController::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
   {
     LOG4CXX_DEBUG(logger_, "Configuration submitted: " << config.encode());
 
@@ -153,13 +153,13 @@ namespace filewriter
     }
 
     if (config.has_param(FileWriterController::CONFIG_PLUGIN)){
-      FrameReceiver::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FileWriterController::CONFIG_PLUGIN));
+      OdinData::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FileWriterController::CONFIG_PLUGIN));
       this->configurePlugin(pluginConfig, reply);
     }
 
     // Check if we are being passed the shared memory configuration
     if (config.has_param(FileWriterController::CONFIG_FR_SETUP)){
-      FrameReceiver::IpcMessage frConfig(config.get_param<const rapidjson::Value&>(FileWriterController::CONFIG_FR_SETUP));
+      OdinData::IpcMessage frConfig(config.get_param<const rapidjson::Value&>(FileWriterController::CONFIG_FR_SETUP));
       if (frConfig.has_param(FileWriterController::CONFIG_FR_SHARED_MEMORY) &&
           frConfig.has_param(FileWriterController::CONFIG_FR_RELEASE) &&
           frConfig.has_param(FileWriterController::CONFIG_FR_READY)){
@@ -174,7 +174,7 @@ namespace filewriter
     std::map<std::string, boost::shared_ptr<FileWriterPlugin> >::iterator iter;
     for (iter = plugins_.begin(); iter != plugins_.end(); ++iter){
       if (config.has_param(iter->first)){
-        FrameReceiver::IpcMessage subConfig(config.get_param<const rapidjson::Value&>(iter->first));
+        OdinData::IpcMessage subConfig(config.get_param<const rapidjson::Value&>(iter->first));
         iter->second->configure(subConfig, reply);
       }
     }
@@ -197,7 +197,7 @@ namespace filewriter
    * \param[in] config - IpcMessage containing configuration data.
    * \param[out] reply - Response IpcMessage.
    */
-  void FileWriterController::configurePlugin(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply)
+  void FileWriterController::configurePlugin(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
   {
     if (config.has_param(FileWriterController::CONFIG_PLUGIN_LIST)){
       // We have been asked to list the loaded plugins
@@ -210,7 +210,7 @@ namespace filewriter
 
     // Check if we are being asked to load a plugin
     if (config.has_param(FileWriterController::CONFIG_PLUGIN_LOAD)){
-      FrameReceiver::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FileWriterController::CONFIG_PLUGIN_LOAD));
+      OdinData::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FileWriterController::CONFIG_PLUGIN_LOAD));
       if (pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_NAME) &&
           pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_INDEX) &&
           pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_LIBRARY)){
@@ -223,7 +223,7 @@ namespace filewriter
 
     // Check if we are being asked to connect a plugin
     if (config.has_param(FileWriterController::CONFIG_PLUGIN_CONNECT)){
-      FrameReceiver::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FileWriterController::CONFIG_PLUGIN_CONNECT));
+      OdinData::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FileWriterController::CONFIG_PLUGIN_CONNECT));
       if (pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_CONNECTION) &&
           pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_INDEX)){
         std::string index = pluginConfig.get_param<std::string>(FileWriterController::CONFIG_PLUGIN_INDEX);
@@ -234,7 +234,7 @@ namespace filewriter
 
     // Check if we are being asked to disconnect a plugin
     if (config.has_param(FileWriterController::CONFIG_PLUGIN_DISCONNECT)){
-      FrameReceiver::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FileWriterController::CONFIG_PLUGIN_DISCONNECT));
+      OdinData::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FileWriterController::CONFIG_PLUGIN_DISCONNECT));
       if (pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_CONNECTION) &&
           pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_INDEX)){
         std::string index = pluginConfig.get_param<std::string>(FileWriterController::CONFIG_PLUGIN_INDEX);
@@ -419,7 +419,7 @@ namespace filewriter
     LOG4CXX_DEBUG(logger_, "Running IPC thread service");
 
     // Create the reactor
-    reactor_ = boost::shared_ptr<FrameReceiver::IpcReactor>(new FrameReceiver::IpcReactor());
+    reactor_ = boost::shared_ptr<OdinData::IpcReactor>(new OdinData::IpcReactor());
 
     // Add the tick timer to the reactor
     int tick_timer_id = reactor_->register_timer(1000, 0, boost::bind(&FileWriterController::tickTimer, this));

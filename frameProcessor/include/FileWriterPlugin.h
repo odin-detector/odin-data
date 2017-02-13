@@ -28,8 +28,8 @@ namespace filewriter
     virtual ~FileWriterPlugin();
     void setName(const std::string& name);
     std::string getName();
-    virtual void configure(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply);
-    virtual void status(FrameReceiver::IpcMessage& status);
+    virtual void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
+    virtual void status(OdinData::IpcMessage& status);
     void registerCallback(const std::string& name, boost::shared_ptr<IFrameCallback> cb);
     void removeCallback(const std::string& name);
 

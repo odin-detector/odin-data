@@ -87,11 +87,11 @@ class FileWriter : public filewriter::FileWriterPlugin
 
     void startWriting();
     void stopWriting();
-    void configure(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply);
-    void configureProcess(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply);
-    void configureFile(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply);
-    void configureDataset(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply);
-    void status(FrameReceiver::IpcMessage& status);
+    void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
+    void configureProcess(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
+    void configureFile(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
+    void configureDataset(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
+    void status(OdinData::IpcMessage& status);
     void hdfErrorHandler(unsigned n, const H5E_error2_t *err_desc);
     bool checkForHdfErrors();
     std::vector<std::string> readHdfErrors();

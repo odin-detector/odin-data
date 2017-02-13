@@ -60,8 +60,8 @@ namespace filewriter
   public:
     ExcaliburReorderPlugin();
     virtual ~ExcaliburReorderPlugin();
-    void configure(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply);
-    void status(FrameReceiver::IpcMessage& status);
+    void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
+    void status(OdinData::IpcMessage& status);
 
   private:
     /** Configuration constant for asic counter depth **/

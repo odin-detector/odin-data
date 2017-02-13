@@ -23,7 +23,7 @@ namespace filewriter
    * \param[in] rxEndPoint - string name of the subscribing endpoint for frame ready notifications.
    * \param[in] txEndPoint - string name of the publishing endpoint for frame release notifications.
    */
-  SharedMemoryController::SharedMemoryController(boost::shared_ptr<FrameReceiver::IpcReactor> reactor,
+  SharedMemoryController::SharedMemoryController(boost::shared_ptr<OdinData::IpcReactor> reactor,
                                                  const std::string& rxEndPoint,
                                                  const std::string& txEndPoint) :
     reactor_(reactor),
@@ -101,10 +101,10 @@ namespace filewriter
 
     // Parse and handle the message
     try {
-      FrameReceiver::IpcMessage rxMsg(rxMsgEncoded.c_str());
+      OdinData::IpcMessage rxMsg(rxMsgEncoded.c_str());
 
-      if ((rxMsg.get_msg_type() == FrameReceiver::IpcMessage::MsgTypeNotify) &&
-          (rxMsg.get_msg_val()  == FrameReceiver::IpcMessage::MsgValNotifyFrameReady)){
+      if ((rxMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeNotify) &&
+          (rxMsg.get_msg_val()  == OdinData::IpcMessage::MsgValNotifyFrameReady)){
         int bufferID = rxMsg.get_param<int>("buffer_id", -1);
 
         if (bufferID != -1){
@@ -122,8 +122,8 @@ namespace filewriter
           }
 
           // We want to send the notify frame release message back to the frameReceiver
-          FrameReceiver::IpcMessage txMsg(FrameReceiver::IpcMessage::MsgTypeNotify,
-                                          FrameReceiver::IpcMessage::MsgValNotifyFrameRelease);
+          OdinData::IpcMessage txMsg(OdinData::IpcMessage::MsgTypeNotify,
+                                          OdinData::IpcMessage::MsgValNotifyFrameRelease);
 
           txMsg.set_param("frame", rxMsg.get_param<int>("frame"));
           txMsg.set_param("buffer_id", rxMsg.get_param<int>("buffer_id"));
@@ -148,7 +148,7 @@ namespace filewriter
         //rx_channel_.send(rx_reply.encode());
       }
     }
-    catch (FrameReceiver::IpcMessageException& e)
+    catch (OdinData::IpcMessageException& e)
     {
         LOG4CXX_ERROR(logger_, "Error decoding control channel request: " << e.what());
     }

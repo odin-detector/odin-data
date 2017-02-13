@@ -347,11 +347,11 @@ BOOST_AUTO_TEST_CASE( FileWriterSubProcess )
 {
     // Frame numbers start from 1: 1,2,3,4,5  - but are indexed from 0 in the frames vector.
     // Process numbers start from 0: 0,1,2 - this process pretends to be process 1.
-    FrameReceiver::IpcMessage reply;
+    OdinData::IpcMessage reply;
 
     filewriter::FileWriter fw1;
     {
-      FrameReceiver::IpcMessage cfg;
+      OdinData::IpcMessage cfg;
       cfg.set_param("process/number", 3);
       cfg.set_param("process/rank", 1);
       fw1.configure(cfg, reply);
@@ -378,7 +378,7 @@ BOOST_AUTO_TEST_CASE( FileWriterSubProcess )
 
     filewriter::FileWriter fw0;
     {
-      FrameReceiver::IpcMessage cfg;
+      OdinData::IpcMessage cfg;
       cfg.set_param("process/number", 3);
       cfg.set_param("process/rank", 0);
       fw0.configure(cfg, reply);

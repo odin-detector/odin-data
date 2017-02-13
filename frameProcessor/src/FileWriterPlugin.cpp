@@ -56,7 +56,7 @@ namespace filewriter
    * \param[in] config - IpcMessage containing configuration data.
    * \param[out] reply - Response IpcMessage.
    */
-  void FileWriterPlugin::configure(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply)
+  void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
   {
     // Default method simply does nothing
   }
@@ -70,7 +70,7 @@ namespace filewriter
    *
    * \param[out] status - Reference to an IpcMessage value to store the status.
    */
-  void FileWriterPlugin::status(FrameReceiver::IpcMessage& status)
+  void FileWriterPlugin::status(OdinData::IpcMessage& status)
   {
     // Default method simply does nothing
   }

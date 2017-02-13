@@ -514,7 +514,7 @@ void FileWriter::stopWriting()
  * \param[in] config - IpcMessage containing configuration data.
  * \param[out] reply - Response IpcMessage.
  */
-void FileWriter::configure(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply)
+void FileWriter::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
@@ -523,19 +523,19 @@ void FileWriter::configure(FrameReceiver::IpcMessage& config, FrameReceiver::Ipc
 
   // Check to see if we are configuring the process number and rank
   if (config.has_param(FileWriter::CONFIG_PROCESS)){
-    FrameReceiver::IpcMessage processConfig(config.get_param<const rapidjson::Value&>(FileWriter::CONFIG_PROCESS));
+    OdinData::IpcMessage processConfig(config.get_param<const rapidjson::Value&>(FileWriter::CONFIG_PROCESS));
     this->configureProcess(processConfig, reply);
   }
 
   // Check to see if we are configuring the file path and name
   if (config.has_param(FileWriter::CONFIG_FILE)){
-    FrameReceiver::IpcMessage fileConfig(config.get_param<const rapidjson::Value&>(FileWriter::CONFIG_FILE));
+    OdinData::IpcMessage fileConfig(config.get_param<const rapidjson::Value&>(FileWriter::CONFIG_FILE));
     this->configureFile(fileConfig, reply);
   }
 
   // Check to see if we are configuring a dataset
   if (config.has_param(FileWriter::CONFIG_DATASET)){
-    FrameReceiver::IpcMessage dsetConfig(config.get_param<const rapidjson::Value&>(FileWriter::CONFIG_DATASET));
+    OdinData::IpcMessage dsetConfig(config.get_param<const rapidjson::Value&>(FileWriter::CONFIG_DATASET));
     this->configureDataset(dsetConfig, reply);
   }
 
@@ -572,7 +572,7 @@ void FileWriter::configure(FrameReceiver::IpcMessage& config, FrameReceiver::Ipc
  * \param[in] config - IpcMessage containing configuration data.
  * \param[out] reply - Response IpcMessage.
  */
-void FileWriter::configureProcess(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply)
+void FileWriter::configureProcess(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
   // If we are writing a file then we cannot change these items
   if (this->writing_){
@@ -604,7 +604,7 @@ void FileWriter::configureProcess(FrameReceiver::IpcMessage& config, FrameReceiv
  * \param[in] config - IpcMessage containing configuration data.
  * \param[out] reply - Response IpcMessage.
  */
-void FileWriter::configureFile(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply)
+void FileWriter::configureFile(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
   // If we are writing a file then we cannot change these items
   if (this->writing_){
@@ -640,7 +640,7 @@ void FileWriter::configureFile(FrameReceiver::IpcMessage& config, FrameReceiver:
  * \param[in] config - IpcMessage containing configuration data.
  * \param[out] reply - Response IpcMessage.
  */
-void FileWriter::configureDataset(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply)
+void FileWriter::configureDataset(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
   // If we are writing a file then we cannot change these items
   if (this->writing_){
@@ -711,7 +711,7 @@ void FileWriter::configureDataset(FrameReceiver::IpcMessage& config, FrameReceiv
  *
  * \param[out] status - Reference to an IpcMessage value to store the status.
  */
-void FileWriter::status(FrameReceiver::IpcMessage& status)
+void FileWriter::status(OdinData::IpcMessage& status)
 {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);

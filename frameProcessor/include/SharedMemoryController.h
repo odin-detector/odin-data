@@ -39,7 +39,7 @@ namespace filewriter
   class SharedMemoryController
   {
   public:
-    SharedMemoryController(boost::shared_ptr<FrameReceiver::IpcReactor> reactor, const std::string& rxEndPoint, const std::string& txEndPoint);
+    SharedMemoryController(boost::shared_ptr<OdinData::IpcReactor> reactor, const std::string& rxEndPoint, const std::string& txEndPoint);
     virtual ~SharedMemoryController();
     void setSharedMemoryParser(boost::shared_ptr<SharedMemoryParser> smp);
     void registerCallback(const std::string& name, boost::shared_ptr<IFrameCallback> cb);
@@ -54,11 +54,11 @@ namespace filewriter
     /** Map of IFrameCallback pointers, indexed by name */
     std::map<std::string, boost::shared_ptr<IFrameCallback> > callbacks_;
     /** IpcReactor pointer, for managing IpcMessage objects */
-    boost::shared_ptr<FrameReceiver::IpcReactor> reactor_;
+    boost::shared_ptr<OdinData::IpcReactor> reactor_;
     /** IpcChannel for receiving notifications of new frames */
-    FrameReceiver::IpcChannel             rxChannel_;
+    OdinData::IpcChannel             rxChannel_;
     /** IpcChannel for sending notifications of frame release */
-    FrameReceiver::IpcChannel             txChannel_;
+    OdinData::IpcChannel             txChannel_;
   };
 
 } /* namespace filewriter */

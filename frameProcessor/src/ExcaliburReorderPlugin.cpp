@@ -48,7 +48,7 @@ namespace filewriter
    * \param[in] config - Reference to the configuration IpcMessage object.
    * \param[out] reply - Reference to the reply IpcMessage object.
    */
-  void ExcaliburReorderPlugin::configure(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply)
+  void ExcaliburReorderPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
   {
     if (config.has_param(ExcaliburReorderPlugin::CONFIG_ASIC_COUNTER_DEPTH)){
       std::string sBitDepth = config.get_param<std::string>(ExcaliburReorderPlugin::CONFIG_ASIC_COUNTER_DEPTH);
@@ -84,7 +84,7 @@ namespace filewriter
    *
    * \param[out] status - Reference to an IpcMessage value to store the status.
    */
-  void ExcaliburReorderPlugin::status(FrameReceiver::IpcMessage& status)
+  void ExcaliburReorderPlugin::status(OdinData::IpcMessage& status)
   {
     // Record the plugin's status items
     LOG4CXX_DEBUG(logger_, "Status requested for Excalibur plugin");

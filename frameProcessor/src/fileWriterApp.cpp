@@ -195,8 +195,8 @@ int main(int argc, char** argv)
     fwc = boost::shared_ptr<filewriter::FileWriterController>(new filewriter::FileWriterController());
 
     // Configure the control channel for the filewriter
-    FrameReceiver::IpcMessage cfg;
-    FrameReceiver::IpcMessage reply;
+    OdinData::IpcMessage cfg;
+    OdinData::IpcMessage reply;
     cfg.set_param<std::string>("ctrl_endpoint", vm["ctrl"].as<string>());
     fwc->configure(cfg, reply);
 

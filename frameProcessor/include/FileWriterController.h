@@ -37,8 +37,8 @@ namespace filewriter
     FileWriterController();
     virtual ~FileWriterController();
     void handleCtrlChannel();
-    void configure(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply);
-    void configurePlugin(FrameReceiver::IpcMessage& config, FrameReceiver::IpcMessage& reply);
+    void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
+    void configurePlugin(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
     void loadPlugin(const std::string& index, const std::string& name, const std::string& library);
     void connectPlugin(const std::string& index, const std::string& connectTo);
     void disconnectPlugin(const std::string& index, const std::string& disconnectFrom);
@@ -111,9 +111,9 @@ namespace filewriter
     /** Store for any messages occurring during thread initialisation */
     std::string                                                 threadInitMsg_;
     /** Pointer to the IpcReactor for incoming frame handling */
-    boost::shared_ptr<FrameReceiver::IpcReactor>                reactor_;
+    boost::shared_ptr<OdinData::IpcReactor>                reactor_;
     /** IpcChannel for control messages */
-    FrameReceiver::IpcChannel                                   ctrlChannel_;
+    OdinData::IpcChannel                                   ctrlChannel_;
   };
 
 } /* namespace filewriter */
