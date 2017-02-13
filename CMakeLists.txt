@@ -1,5 +1,5 @@
 # Project name
-project(frameReceiver)
+project(odinData)
 
 # Require CMake version >=2.8
 cmake_minimum_required(VERSION 2.8)
@@ -8,6 +8,9 @@ cmake_minimum_required(VERSION 2.8)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_CONFIG_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/test_config)
+
+# Set the common directory
+get_filename_component(COMMON_DIR common ABSOLUTE)
 
 # Specify the frameReceiver directory
 get_filename_component(FRAMERECEIVER_DIR frameReceiver ABSOLUTE)
@@ -58,7 +61,10 @@ ELSE(HDF5_ROOT)
 ENDIF(HDF5_ROOT)
 
 # Add common/include directory to include path
-include_directories(common/include)
+include_directories(${COMMON_DIR}/include)
+
+# Add the common subdirectory
+add_subdirectory(${COMMON_DIR})
 
 # Add the frameReceiver subdirectory
 add_subdirectory(${FRAMERECEIVER_DIR})

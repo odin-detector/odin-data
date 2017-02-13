@@ -2,7 +2,7 @@
 set(CMAKE_INCLUDE_CURRENT_DIR on)
 ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK)
 
-include_directories(${Boost_INCLUDE_DIRS} ${LOG4CXX_INCLUDE_DIRS}/.. ${ZEROMQ_INCLUDE_DIRS})
+include_directories(${FRAMERECEIVER_DIR}/include ${Boost_INCLUDE_DIRS} ${LOG4CXX_INCLUDE_DIRS}/.. ${ZEROMQ_INCLUDE_DIRS})
 
 # Build list of test source files from current dir
 file(GLOB TEST_SOURCES *.cpp)
@@ -23,7 +23,8 @@ target_link_libraries( frameReceiverTest ${REALTIME_LIBRARY} )
 endif()
 
 # Define libraries to link against
-target_link_libraries(frameReceiverTest 
+target_link_libraries(frameReceiverTest
+		Ipc 
 		${Boost_LIBRARIES}
 		${LOG4CXX_LIBRARIES}
 		${ZEROMQ_LIBRARIES}) 
