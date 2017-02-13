@@ -8,7 +8,7 @@
 #include "IpcReactor.h"
 #include "gettime.h"
 
-using namespace FrameReceiver;
+using namespace OdinData;
 
 //! Constructor - instantiates an IpcReactorTimer object
 //!

@@ -8,22 +8,21 @@
 #ifndef SHAREDBUFFERMANAGER_H_
 #define SHAREDBUFFERMANAGER_H_
 
-#include "FrameReceiverException.h"
-
 #include <boost/interprocess/shared_memory_object.hpp>
 #include <boost/interprocess/mapped_region.hpp>
 #include <boost/shared_ptr.hpp>
 #include <string>
 
 #include <stddef.h>
+#include "OdinDataException.h"
 
-namespace FrameReceiver
+namespace OdinData
 {
 
     //! SharedBufferManagerException - custom exception class implementing "what" for error string
-    class SharedBufferManagerException : public FrameReceiverException {
+    class SharedBufferManagerException : public OdinDataException {
     public:
-        SharedBufferManagerException(const std::string what) : FrameReceiverException(what) { }
+        SharedBufferManagerException(const std::string what) : OdinDataException(what) { }
     };
 
     class SharedBufferManager
@@ -63,7 +62,7 @@ namespace FrameReceiver
 
     typedef boost::shared_ptr<SharedBufferManager> SharedBufferManagerPtr;
 
-} // namespace FrameReceiver
+} // namespace OdinData
 
 
 

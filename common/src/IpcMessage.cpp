@@ -8,7 +8,7 @@
 #include "IpcMessage.h"
 
 
-namespace FrameReceiver {
+namespace OdinData {
 
     //! Default constructor - initialises all attributes.
     //!
@@ -57,7 +57,7 @@ namespace FrameReceiver {
         }
         catch (...)
         {
-            throw FrameReceiver::IpcMessageException("Unknown exception caught during parsing message");
+            throw OdinData::IpcMessageException("Unknown exception caught during parsing message");
         }
 
         // Test if the message parsed correctly, otherwise throw an exception
@@ -66,7 +66,7 @@ namespace FrameReceiver {
             std::stringstream ss;
             ss << "JSON parse error creating message from string at offset " << doc_.GetErrorOffset() ;
             ss << " : " << rapidjson::GetParseError_En(doc_.GetParseError());
-            throw FrameReceiver::IpcMessageException(ss.str());
+            throw (ss.str());
         }
 
         // Extract required valid attributes from message. If strict validation is enabled, throw an
@@ -74,26 +74,26 @@ namespace FrameReceiver {
         msg_type_ = valid_msg_type(get_attribute<std::string>("msg_type", "none"));
         if (strict_validation_ && (msg_type_ == MsgTypeIllegal))
         {
-            throw FrameReceiver::IpcMessageException("Illegal or missing msg_type attribute in message");
+            throw OdinData::IpcMessageException("Illegal or missing msg_type attribute in message");
         }
 
         msg_val_  = valid_msg_val(get_attribute<std::string>("msg_val", "none"));
         if (strict_validation_ && (msg_val_ == MsgValIllegal))
         {
-            throw FrameReceiver::IpcMessageException("Illegal or missing msg_val attribute in message");
+            throw OdinData::IpcMessageException("Illegal or missing msg_val attribute in message");
         }
 
         msg_timestamp_ = valid_msg_timestamp(get_attribute<std::string>("timestamp", "none"));
         if (strict_validation_ && (msg_timestamp_ == boost::posix_time::not_a_date_time))
         {
-            throw FrameReceiver::IpcMessageException("Illegal or missing timestamp attribute in message");
+            throw OdinData::IpcMessageException("Illegal or missing timestamp attribute in message");
         }
 
         // Check if a params block is present. If strict validation is enabled, thrown an exception if
         // absent.
         if (strict_validation && !has_params())
         {
-            throw FrameReceiver::IpcMessageException("Missing params block in message");
+            throw OdinData::IpcMessageException("Missing params block in message");
         }
 
     }
@@ -692,4 +692,4 @@ namespace FrameReceiver {
     IpcMessage::MsgTypeMap IpcMessage::msg_type_map_;
     IpcMessage::MsgValMap IpcMessage::msg_val_map_;
 
-} // namespace FrameReceiver
+} // namespace OdinData

@@ -13,7 +13,7 @@
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
-namespace FrameReceiver
+namespace OdinData
 {
 
     class IpcContext
@@ -61,7 +61,7 @@ namespace FrameReceiver
 
     };
 
-} // namespace FrameReceiver
+} // namespace OdinData
 
 
 

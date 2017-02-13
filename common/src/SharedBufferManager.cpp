@@ -10,7 +10,7 @@
 #include <iostream>
 #include <sstream>
 
-using namespace FrameReceiver;
+using namespace OdinData;
 using namespace boost::interprocess;
 
 SharedBufferManager::SharedBufferManager(const std::string& shared_mem_name, const size_t shared_mem_size,

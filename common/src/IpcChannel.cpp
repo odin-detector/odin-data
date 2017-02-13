@@ -7,7 +7,7 @@ q * IpcChannel.cpp
 
 #include "IpcChannel.h"
 
-using namespace FrameReceiver;
+using namespace OdinData;
 
 IpcContext& IpcContext::Instance(void)
 {

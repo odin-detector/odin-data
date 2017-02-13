@@ -19,7 +19,7 @@
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "boost/bimap.hpp"
 
-namespace FrameReceiver
+namespace OdinData
 {
 	//! IpcMessageException - custom exception class implementing "what" for error string
 	class IpcMessageException : public std::exception
@@ -52,17 +52,17 @@ namespace FrameReceiver
 
 	}; // IpcMessageException
 
-} // namespace FrameReceiver
+} // namespace OdinData
 
 // Override rapidsjon assertion mechanism before including appropriate headers
-#define RAPIDJSON_ASSERT(x) if (!(x)) throw FrameReceiver::IpcMessageException("rapidjson assertion thrown");
+#define RAPIDJSON_ASSERT(x) if (!(x)) throw OdinData::IpcMessageException("rapidjson assertion thrown");
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/error/en.h"
 
 
-namespace FrameReceiver
+namespace OdinData
 {
 
 	//! IpcMessage - inter-process communication JSON message format class
@@ -440,7 +440,7 @@ namespace FrameReceiver
 	}; // IpcMessage
 
 
-} // namespace frameReceiver
+} // namespace OdinData
 
 
 #endif /* IPCMESSAGE_H_ */

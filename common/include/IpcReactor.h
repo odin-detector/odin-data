@@ -19,7 +19,6 @@
 
 #include "zmq/zmq.hpp"
 #include "IpcChannel.h"
-#include "FrameReceiverException.h"
 #include <iostream>
 #include <sstream>
 #include <boost/bind.hpp>
@@ -28,14 +27,15 @@
 #include <boost/shared_ptr.hpp>
 #include <map>
 #include <time.h>
+#include "OdinDataException.h"
 
-namespace FrameReceiver
+namespace OdinData
 {
 
     //! IpcReactorException - custom exception class implementing "what" for error string
-    class IpcReactorException : public FrameReceiverException {
+    class IpcReactorException : public OdinDataException {
     public:
-        IpcReactorException(const std::string what) : FrameReceiverException(what) { }
+        IpcReactorException(const std::string what) : OdinDataException(what) { }
     };
 
     //! Function signature for timer callback methods
@@ -146,7 +146,7 @@ namespace FrameReceiver
         bool             needs_rebuild_; //!< Indicates that the poll item list needs rebuilding
     };
 
-} // namespace FrameReceiver
+} // namespace OdinData
 
 
 
