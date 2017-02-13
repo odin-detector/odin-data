@@ -336,7 +336,7 @@ void FrameReceiverApp::run(void)
         //reactor_.remove_timer(timer2);
 
     }
-    catch (FrameReceiverException& e)
+    catch (OdinData::OdinDataException& e)
     {
         LOG4CXX_ERROR(logger_, "Frame receiver run failed: " << e.what());
     }
@@ -405,7 +405,7 @@ void FrameReceiverApp::initialise_frame_decoder(void)
 
     case Defaults::SensorTypePercival2M:
     case Defaults::SensorTypePercival13M:
-        throw FrameReceiverException("Cannot initialize frame decoder - sensor type not yet implemented");
+        throw OdinData::OdinDataException("Cannot initialize frame decoder - sensor type not yet implemented");
         break;
 
     case Defaults::SensorTypeExcalibur:
@@ -414,11 +414,11 @@ void FrameReceiverApp::initialise_frame_decoder(void)
     	break;
 
     case Defaults::SensorTypeIllegal:
-        throw FrameReceiverException("Cannot initialize frame decoder - illegal sensor type specified");
+        throw OdinData::OdinDataException("Cannot initialize frame decoder - illegal sensor type specified");
         break;
 
     default:
-        throw FrameReceiverException("Cannot initialize frame decoder - sensor type not recognised");
+        throw OdinData::OdinDataException("Cannot initialize frame decoder - sensor type not recognised");
         break;
     }
 }

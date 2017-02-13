@@ -23,15 +23,17 @@ using namespace log4cxx::helpers;
 #include "FrameDecoder.h"
 
 #include "FrameReceiverConfig.h"
-#include "FrameReceiverException.h"
+#include "OdinDataException.h"
+
+using namespace OdinData;
 
 namespace FrameReceiver
 {
 
-    class FrameReceiverRxThreadException : public FrameReceiverException
+    class FrameReceiverRxThreadException : public OdinData::OdinDataException
     {
     public:
-        FrameReceiverRxThreadException(const std::string what) : FrameReceiverException(what) { };
+        FrameReceiverRxThreadException(const std::string what) : OdinData::OdinDataException(what) { };
     };
 
     class FrameReceiverRxThread

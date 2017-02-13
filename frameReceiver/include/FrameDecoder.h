@@ -23,15 +23,15 @@ using namespace log4cxx;
 using namespace log4cxx::helpers;
 #include <DebugLevelLogger.h>
 
-#include "FrameReceiverException.h"
+#include "OdinDataException.h"
 #include "SharedBufferManager.h"
 
 namespace FrameReceiver
 {
-    class FrameDecoderException : public FrameReceiverException
+    class FrameDecoderException : public OdinData::OdinDataException
     {
     public:
-        FrameDecoderException(const std::string what) : FrameReceiverException(what) { };
+        FrameDecoderException(const std::string what) : OdinData::OdinDataException(what) { };
     };
 
     typedef boost::function<void(int, int)> FrameReadyCallback;
@@ -59,7 +59,7 @@ namespace FrameReceiver
 
         virtual ~FrameDecoder() = 0;
 
-        void register_buffer_manager(SharedBufferManagerPtr buffer_manager)
+        void register_buffer_manager(OdinData::SharedBufferManagerPtr buffer_manager)
         {
             buffer_manager_ = buffer_manager;
         }
@@ -105,7 +105,7 @@ namespace FrameReceiver
         bool enable_packet_logging_;
         LoggerPtr packet_logger_;
 
-        SharedBufferManagerPtr buffer_manager_;
+        OdinData::SharedBufferManagerPtr buffer_manager_;
         FrameReadyCallback   ready_callback_;
 
         std::queue<int>    empty_buffer_queue_;

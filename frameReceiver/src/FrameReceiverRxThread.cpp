@@ -32,7 +32,7 @@ FrameReceiverRxThread::FrameReceiverRxThread(FrameReceiverConfig& config, Logger
     {
         if (thread_init_error_) {
             rx_thread_.join();
-            throw FrameReceiverException(thread_init_msg_);
+            throw OdinData::OdinDataException(thread_init_msg_);
             break;
         }
     }
