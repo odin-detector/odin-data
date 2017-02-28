@@ -455,6 +455,9 @@ void FileWriter::processFrame(boost::shared_ptr<Frame> frame)
     if (framesWritten_ == framesToWrite_){
       this->stopWriting();
     }
+    
+    // Push frame to any registered callbacks
+    this->push(frame);
   }
 }
 

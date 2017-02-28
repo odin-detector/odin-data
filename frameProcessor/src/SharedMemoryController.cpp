@@ -69,7 +69,14 @@ namespace filewriter
    */
   SharedMemoryController::~SharedMemoryController()
   {
-    LOG4CXX_TRACE(logger_, "SharedMemoryController destructor.");
+    LOG4CXX_TRACE(logger_, "Shutting down SharedMemoryController.\n");
+    // Close the IPC Channels
+    reactor_->remove_channel(txChannel_);
+    reactor_->remove_channel(rxChannel_);
+    txChannel_.close();
+    rxChannel_.close();
+    // Stop the SharedMemoryController reactor
+    reactor_->stop();
   }
 
   /** setSharedMemoryParser

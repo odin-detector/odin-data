@@ -40,6 +40,7 @@ namespace filewriter
     static size_t getUsedBlocks(const std::string& index);
     static size_t getTotalBlocks(const std::string& index);
     static size_t getMemoryAllocated(const std::string& index);
+    static void tearDownClass();
 
   private:
     static DataBlockPool *instance(const std::string& index);

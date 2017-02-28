@@ -31,7 +31,7 @@ namespace filewriter
   *
   * The class uses an IpcReactor to manage connections and status updates.
   */
-  class FileWriterController
+  class FileWriterController : public IFrameCallback, public boost::enable_shared_from_this<FileWriterController>
   {
   public:
     FileWriterController();
@@ -84,9 +84,12 @@ namespace filewriter
     void setupFrameReceiverInterface(const std::string& sharedMemName,
                                      const std::string& frPublisherString,
                                      const std::string& frSubscriberString);
+    void closeFrameReceiverInterface();
     void setupControlInterface(const std::string& ctrlEndpointString);
+    void closeControlInterface();
     void runIpcService(void);
     void tickTimer(void);
+    void callback(boost::shared_ptr<Frame> frame);
 
     /** Pointer to the logging facility */
     log4cxx::LoggerPtr                                          logger_;
@@ -98,6 +101,10 @@ namespace filewriter
     std::map<std::string, boost::shared_ptr<FileWriterPlugin> > plugins_;
     /** Condition for exiting this file writing process */
     boost::condition_variable                                   exitCondition_;
+    /** Frames per dataset */
+    int                                                         datasetSize;
+    /** Total frames processed */
+    int                                                         totalFrames;
     /** Mutex used for locking the exitCondition */
     boost::mutex                                                exitMutex_;
     /** Used to check for Ipc tick timer termination */

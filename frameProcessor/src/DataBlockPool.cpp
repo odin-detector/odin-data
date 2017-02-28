@@ -262,4 +262,16 @@ namespace filewriter
     return memoryAllocated_;
   }
 
+  /**
+   * Delete DataBlockPool instances stored in static class attribute instanceMap_
+   */
+  void DataBlockPool::tearDownClass()
+  {
+    std::map<std::string, DataBlockPool*>::iterator it;
+    for (it = instanceMap_.begin(); it != instanceMap_.end(); it++) {
+      delete it->second;
+      instanceMap_.erase(it);
+    }
+  }
+
 } /* namespace filewriter */

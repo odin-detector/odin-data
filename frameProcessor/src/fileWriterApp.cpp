@@ -64,7 +64,7 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
                     "Ready ZMQ endpoint from frameReceiver")
                 ("release",       po::value<std::string>()->default_value("tcp://127.0.0.1:5002"),
                         "Release frame ZMQ endpoint from frameReceiver")
-                ("frames,f",     po::value<unsigned int>()->default_value(1),
+                ("frames,f",     po::value<unsigned int>()->default_value(0),
                     "Set the number of frames to be notified about before terminating")
                 ("sharedbuf",    po::value<std::string>()->default_value("FrameReceiverBuffer"),
                     "Set the control endpoint")
@@ -196,11 +196,17 @@ int main(int argc, char** argv)
     // Configure the control channel for the filewriter
     OdinData::IpcMessage cfg;
     OdinData::IpcMessage reply;
+    cfg.set_param<unsigned int>("frames", vm["frames"].as<unsigned int>());
     cfg.set_param<std::string>("ctrl_endpoint", vm["ctrl"].as<string>());
     fwc->configure(cfg, reply);
 
+    // Start worker thread to monitor frames passed through
+    fwc->start();
+    
     // Now wait for the shutdown
     fwc->waitForShutdown();
+    
+    LOG4CXX_DEBUG(logger, "Shutting Down.")
 
   } catch (const std::exception& e){
     // Nothing to do, terminate gracefully(?)

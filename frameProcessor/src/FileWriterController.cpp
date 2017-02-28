@@ -46,6 +46,8 @@ namespace filewriter
     ctrlChannel_(ZMQ_REP)
   {
     LOG4CXX_DEBUG(logger_, "Constructing FileWriterController");
+    
+    totalFrames = 0;
 
     // Wait for the thread service to initialise and be running properly, so that
     // this constructor only returns once the object is fully initialised (RAII).
@@ -111,6 +113,19 @@ namespace filewriter
   }
 
   /**
+   * Count frames passed through plugin chain and trigger shutdown when expected datasets received.
+   * @param frame - Pointer to the frame
+   */
+  void FileWriterController::callback(boost::shared_ptr<Frame> frame) {
+    
+    totalFrames++;
+    if (totalFrames == datasetSize) {
+      LOG4CXX_DEBUG(logger_, "Dataset complete. Shutting down.");
+      exitCondition_.notify_all();
+    }
+  }
+
+  /**
    * Set configuration options for the FileWriterController.
    *
    * Sets up the overall FileWriter application according to the
@@ -132,6 +147,12 @@ namespace filewriter
   void FileWriterController::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
   {
     LOG4CXX_DEBUG(logger_, "Configuration submitted: " << config.encode());
+  
+    // If frames given then we are running for defined number and then stopping
+    if (config.has_param("frames") && config.get_param<unsigned int>("frames") != 0) {
+      datasetSize = 2 * config.get_param<unsigned int>("frames");
+      LOG4CXX_DEBUG(logger_, "Dataset size: " << datasetSize);
+    }
 
     // Check if we are being asked to shutdown
     if (config.has_param(FileWriterController::CONFIG_SHUTDOWN)){
@@ -264,6 +285,12 @@ namespace filewriter
       boost::shared_ptr<FileWriterPlugin> plugin = OdinData::ClassLoader<FileWriterPlugin>::load_class(name, library);
       plugin->setName(index);
       plugins_[index] = plugin;
+      
+      // Register callback to FWC with FileWriter plugin
+      if (name == "FileWriter") {
+        plugin->registerCallback("controller", this->shared_from_this());
+      }
+      
       // Start the plugin worker thread
       plugin->start();
     } else {
@@ -340,6 +367,29 @@ namespace filewriter
   {
     boost::unique_lock<boost::mutex> lock(exitMutex_);
     exitCondition_.wait(lock);
+  
+    // Stop all plugin worker threads
+    LOG4CXX_DEBUG(logger_, "Stopping plugin worker threads.\n")
+    std::map<std::string, boost::shared_ptr<FileWriterPlugin> >::iterator it;
+    for (it = plugins_.begin(); it != plugins_.end(); it++) {
+      it->second->stop();
+      plugins_.erase(it);
+    }
+    
+    // Stop worker thread (for IFrameCallback) and reactor
+    LOG4CXX_DEBUG(logger_, "Stopping FileWriterController worker thread and IPCReactor.\n")
+    stop();
+    reactor_->stop();
+    
+    // Close control IPC channel
+    closeControlInterface();
+    // Close FrameReceiver interface IPC channels
+    closeFrameReceiverInterface();
+    
+    // Destroy any allocated DataBlocks
+    LOG4CXX_DEBUG(logger_, "Tearing down DataBlockPool class.\n")
+    DataBlockPool::tearDownClass();
+    
   }
 
   /** Set up the frame receiver interface.
@@ -384,6 +434,39 @@ namespace filewriter
 
   }
 
+  /** Close the frame receiver interface.
+   *
+   * This method creates new SharedMemoryController and SharedMemoryParser objects,
+   * which manage the receipt of frame ready notifications and construction of
+   * Frame objects from shared memory.
+   * Pointers to the two objects are kept by this class.
+   *
+   * \param[in] sharedMemName - Name of the shared memory block opened by the frame receiver.
+   * \param[in] frPublisherString - Endpoint for sending frame release notifications.
+   * \param[in] frSubscriberString - Endpoint for receiving frame ready notifications.
+   */
+  void FileWriterController::closeFrameReceiverInterface()
+  {
+    LOG4CXX_DEBUG(logger_, "Closing FrameReceiver interface.");
+    
+    try
+    {
+      // Release current shared memory parser if one exists
+      if (sharedBufferManager_){
+        sharedBufferManager_.reset();
+      }
+      
+      // Release the current shared memory controller if one exists
+      if (sharedMemController_){
+        sharedMemController_.reset();
+      }
+    } catch (const boost::interprocess::interprocess_exception& e)
+    {
+      LOG4CXX_ERROR(logger_, "Error occurred when closing FrameReceiver interface: " << e.what());
+    }
+    
+  }
+
   /** Set up the control interface.
    *
    * This method binds the control IpcChannel to the provided endpoint,
@@ -407,6 +490,23 @@ namespace filewriter
 
     // Add the control channel to the reactor
     reactor_->register_channel(ctrlChannel_, boost::bind(&FileWriterController::handleCtrlChannel, this));
+  }
+
+  /** Close the control interface.
+   *
+   */
+  void FileWriterController::closeControlInterface()
+  {
+    try {
+      LOG4CXX_DEBUG(logger_, "Closing control endpoint socket.");
+      ctrlThread_.join();
+      reactor_->remove_channel(ctrlChannel_);
+      ctrlChannel_.close();
+    }
+    catch (zmq::error_t& e) {
+      // TODO: What to do here, I think throw it up
+      throw std::runtime_error(e.what());
+    }
   }
 
   /** Start the Ipc service running.
