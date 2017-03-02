@@ -78,7 +78,7 @@ namespace filewriter
    *
    * \param[in] smp - shared pointer to a SharedMemoryParser object.
    */
-  void SharedMemoryController::setSharedMemoryParser(boost::shared_ptr<SharedMemoryParser> smp)
+  void SharedMemoryController::setSharedMemoryParser(boost::shared_ptr<OdinData::SharedBufferManager> smp)
   {
     smp_ = smp;
   }
@@ -111,7 +111,8 @@ namespace filewriter
           // Create a frame object and copy in the raw frame data
           boost::shared_ptr<Frame> frame;
           frame = boost::shared_ptr<Frame>(new Frame("raw"));
-          smp_->get_frame((*frame), bufferID);
+          frame->copy_data(smp_->get_buffer_address(bufferID), smp_->get_buffer_size());
+
           // Set the frame number
           frame->set_frame_number(rxMsg.get_param<int>("frame", 0));
 

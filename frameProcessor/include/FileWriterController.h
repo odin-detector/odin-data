@@ -15,7 +15,7 @@
 #include "IpcReactor.h"
 #include "IpcChannel.h"
 #include "SharedMemoryController.h"
-#include "SharedMemoryParser.h"
+#include "SharedBufferManager.h"
 #include "ClassLoader.h"
 
 namespace filewriter
@@ -93,7 +93,7 @@ namespace filewriter
     /** Pointer to the shared memory controller instance for this process */
     boost::shared_ptr<SharedMemoryController>                   sharedMemController_;
     /** Pointer to the shared memory parser instance for this process */
-    boost::shared_ptr<SharedMemoryParser>                       sharedMemParser_;
+    boost::shared_ptr<OdinData::SharedBufferManager>            sharedMemParser_;
     /** Map of plugins loaded, indexed by plugin index */
     std::map<std::string, boost::shared_ptr<FileWriterPlugin> > plugins_;
     /** Condition for exiting this file writing process */
