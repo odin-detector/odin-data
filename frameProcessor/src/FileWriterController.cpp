@@ -363,11 +363,11 @@ namespace filewriter
     try
     {
       // Release current shared memory parser if one exists
-      if (sharedMemParser_){
-        sharedMemParser_.reset();
+      if (sharedBufferManager_){
+        sharedBufferManager_.reset();
       }
       // Create the new shared memory parser
-      sharedMemParser_ = boost::shared_ptr<OdinData::SharedBufferManager>(new OdinData::SharedBufferManager(sharedMemName));
+      sharedBufferManager_ = boost::shared_ptr<OdinData::SharedBufferManager>(new OdinData::SharedBufferManager(sharedMemName));
 
       // Release the current shared memory controller if one exists
       if (sharedMemController_){
@@ -375,7 +375,7 @@ namespace filewriter
       }
       // Create the new shared memory controller and give it the parser and publisher
       sharedMemController_ = boost::shared_ptr<SharedMemoryController>(new SharedMemoryController(reactor_, frSubscriberString, frPublisherString));
-      sharedMemController_->setSharedMemoryParser(sharedMemParser_);
+      sharedMemController_->setSharedBufferManager(sharedBufferManager_);
 
     } catch (const boost::interprocess::interprocess_exception& e)
     {

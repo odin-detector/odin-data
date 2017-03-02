@@ -41,7 +41,7 @@ namespace filewriter
   public:
     SharedMemoryController(boost::shared_ptr<OdinData::IpcReactor> reactor, const std::string& rxEndPoint, const std::string& txEndPoint);
     virtual ~SharedMemoryController();
-    void setSharedMemoryParser(boost::shared_ptr<OdinData::SharedBufferManager> smp);
+    void setSharedBufferManager(boost::shared_ptr<OdinData::SharedBufferManager> sbm);
     void registerCallback(const std::string& name, boost::shared_ptr<IFrameCallback> cb);
     void removeCallback(const std::string& name);
     void handleRxChannel();
@@ -49,8 +49,8 @@ namespace filewriter
   private:
     /** Pointer to logger */
     LoggerPtr logger_;
-    /** Pointer to SharedMemoryParser object */
-    boost::shared_ptr<OdinData::SharedBufferManager> smp_;
+    /** Pointer to SharedBufferManager object */
+    boost::shared_ptr<OdinData::SharedBufferManager> sbm_;
     /** Map of IFrameCallback pointers, indexed by name */
     std::map<std::string, boost::shared_ptr<IFrameCallback> > callbacks_;
     /** IpcReactor pointer, for managing IpcMessage objects */
