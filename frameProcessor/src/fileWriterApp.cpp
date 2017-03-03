@@ -35,7 +35,6 @@ using namespace rapidjson;
 
 #include "FileWriterController.h"
 #include "IpcMessage.h"
-#include "SharedMemoryParser.h"
 #include "SharedMemoryController.h"
 
 using namespace filewriter;
