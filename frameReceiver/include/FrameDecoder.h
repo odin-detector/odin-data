@@ -49,15 +49,25 @@ namespace FrameReceiver
 			FrameReceiveStateError
         };
 
-        FrameDecoder(LoggerPtr& logger, bool enable_packet_logging) :
-            logger_(logger),
-            enable_packet_logging_(enable_packet_logging)
+        FrameDecoder() :
+            logger_(0),
+            enable_packet_logging_(false),
+        	frame_timeout_ms_(1000),
+			frames_timedout_(0)
         {
-            // Retrieve the packet logger instance
-            packet_logger_ = Logger::getLogger("FR.PacketLogger");
         };
 
         virtual ~FrameDecoder() = 0;
+
+        virtual void init(LoggerPtr& logger, bool enable_packet_logging=false, unsigned int frame_timeout_ms=1000)
+        {
+            logger_ = logger;
+            enable_packet_logging_ = enable_packet_logging;
+            // Retrieve the packet logger instance
+            packet_logger_ = Logger::getLogger("FR.PacketLogger");
+            // Setup frame timeout
+        	frame_timeout_ms_ = frame_timeout_ms;
+        };
 
         void register_buffer_manager(OdinData::SharedBufferManagerPtr buffer_manager)
         {
@@ -110,6 +120,9 @@ namespace FrameReceiver
 
         std::queue<int>    empty_buffer_queue_;
         std::map<uint32_t, int> frame_buffer_map_;
+
+        unsigned int frame_timeout_ms_;
+        unsigned int frames_timedout_;
     };
 
     inline FrameDecoder::~FrameDecoder() {};
