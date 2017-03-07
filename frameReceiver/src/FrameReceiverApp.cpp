@@ -28,6 +28,10 @@ bool FrameReceiverApp::terminate_frame_receiver_ = false;
 
 IMPLEMENT_DEBUG_LEVEL;
 
+#ifndef BUILD_DIR
+	#define BUILD_DIR "."
+#endif
+
 static bool has_suffix(const std::string &str, const std::string &suffix)
 {
     return str.size() >= suffix.size() &&
@@ -396,10 +400,13 @@ void FrameReceiverApp::cleanup_ipc_channels(void)
 
 void FrameReceiverApp::initialise_frame_decoder(void)
 {
+	std::string libDir(BUILD_DIR);
+	libDir += "/lib/";
+    LOG4CXX_INFO(logger_, "Loading decoder libraries from " + libDir);
     switch (config_.sensor_type_)
     {
     case Defaults::SensorTypePercivalEmulator:
-        frame_decoder_.reset(new PercivalEmulatorFrameDecoder(logger_, config_.enable_packet_logging_, config_.frame_timeout_ms_));
+    	frame_decoder_ = filewriter::ClassLoader<FrameDecoder>::load_class("PercivalEmulatorFrameDecoder", libDir + "libPercivalEmulatorFrameDecoder.so");
         LOG4CXX_INFO(logger_, "Created PERCIVAL emulator frame decoder instance");
         break;
 
@@ -409,7 +416,7 @@ void FrameReceiverApp::initialise_frame_decoder(void)
         break;
 
     case Defaults::SensorTypeExcalibur:
-    	frame_decoder_.reset(new ExcaliburFrameDecoder(logger_, config_.enable_packet_logging_, config_.frame_timeout_ms_));
+    	frame_decoder_ = filewriter::ClassLoader<FrameDecoder>::load_class("ExcaliburFrameDecoder", libDir + "libExcaliburFrameDecoder.so");
     	LOG4CXX_INFO(logger_, "Created EXCALIBUR frame decoder instance");
     	break;
 
@@ -421,6 +428,8 @@ void FrameReceiverApp::initialise_frame_decoder(void)
         throw OdinData::OdinDataException("Cannot initialize frame decoder - sensor type not recognised");
         break;
     }
+    // Initialise the decoder object
+	frame_decoder_->init(logger_, config_.enable_packet_logging_, config_.frame_timeout_ms_);
 }
 
 
