@@ -14,19 +14,25 @@
 
 using namespace FrameReceiver;
 
-ExcaliburFrameDecoder::ExcaliburFrameDecoder(LoggerPtr& logger,
-        bool enable_packet_logging, unsigned int frame_timeout_ms) :
-        FrameDecoder(logger, enable_packet_logging),
+ExcaliburFrameDecoder::ExcaliburFrameDecoder() :
+        FrameDecoder(),
 		current_frame_seen_(-1),
 		current_frame_buffer_id_(-1),
 		current_frame_buffer_(0),
 		current_frame_header_(0),
-		dropping_frame_data_(false),
-		frame_timeout_ms_(frame_timeout_ms),
-		frames_timedout_(0)
+		dropping_frame_data_(false)
 {
     current_packet_header_.reset(new uint8_t[sizeof(Excalibur::PacketHeader)]);
     dropped_frame_buffer_.reset(new uint8_t[Excalibur::total_frame_size]);
+}
+
+ExcaliburFrameDecoder::~ExcaliburFrameDecoder()
+{
+}
+
+void ExcaliburFrameDecoder::init(LoggerPtr& logger, bool enable_packet_logging, unsigned int frame_timeout_ms)
+{
+	FrameDecoder::init(logger, enable_packet_logging, frame_timeout_ms);
 
     if (enable_packet_logging_) {
         LOG4CXX_INFO(packet_logger_, "PktHdr: SourceAddress");
@@ -37,10 +43,6 @@ ExcaliburFrameDecoder::ExcaliburFrameDecoder(LoggerPtr& logger,
         LOG4CXX_INFO(packet_logger_, "PktHdr: |               |     |      |           |");
         LOG4CXX_INFO(packet_logger_, "PktHdr: |-------------- |---- |----  |---------- |----------");
     }
-}
-
-ExcaliburFrameDecoder::~ExcaliburFrameDecoder()
-{
 }
 
 const size_t ExcaliburFrameDecoder::get_frame_buffer_size(void) const
