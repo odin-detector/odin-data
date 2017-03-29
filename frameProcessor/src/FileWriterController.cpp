@@ -435,15 +435,6 @@ namespace filewriter
   }
 
   /** Close the frame receiver interface.
-   *
-   * This method creates new SharedMemoryController and SharedMemoryParser objects,
-   * which manage the receipt of frame ready notifications and construction of
-   * Frame objects from shared memory.
-   * Pointers to the two objects are kept by this class.
-   *
-   * \param[in] sharedMemName - Name of the shared memory block opened by the frame receiver.
-   * \param[in] frPublisherString - Endpoint for sending frame release notifications.
-   * \param[in] frSubscriberString - Endpoint for receiving frame ready notifications.
    */
   void FileWriterController::closeFrameReceiverInterface()
   {
@@ -493,7 +484,6 @@ namespace filewriter
   }
 
   /** Close the control interface.
-   *
    */
   void FileWriterController::closeControlInterface()
   {
