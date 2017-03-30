@@ -60,6 +60,8 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
         config.add_options()
                 ("logconfig,l",  po::value<string>(),
                     "Set the log4cxx logging configuration file")
+                ("no-client,N",  po::bool_switch(),
+                    "Enable full initial configuration to run without any client controller")
                 ("ready",       po::value<std::string>()->default_value("tcp://127.0.0.1:5001"),
                     "Ready ZMQ endpoint from frameReceiver")
                 ("release",       po::value<std::string>()->default_value("tcp://127.0.0.1:5002"),
@@ -70,7 +72,7 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
                     "Set the control endpoint")
                 ("ctrl",    po::value<std::string>()->default_value("tcp://127.0.0.1:5004"),
                     "Set the name of the shared memory frame buffer")
-                ("output,o",     po::value<std::string>(),
+                ("output,o",     po::value<std::string>()->default_value("test.hdf5"),
                     "Name of HDF5 file to write frames to (default: no file writing)")
                 ("processes,p",  po::value<unsigned int>()->default_value(1),
                     "Number of concurrent file writer processes"   )
@@ -121,38 +123,45 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
             PropertyConfigurator::configure(vm["logconfig"].as<string>());
             LOG4CXX_DEBUG(logger, "log4cxx config file is set to " << vm["logconfig"].as<string>());
         }
+        
+        bool no_client = vm["no-client"].as<bool>();
+  
+        if (no_client)
+        {
+            LOG4CXX_DEBUG(logger, "Running FileWriter without client");
+        }
 
-        if (vm.count("ready"))
+        if (no_client && vm.count("ready"))
         {
             LOG4CXX_DEBUG(logger, "Setting frame ready notification ZMQ address to " << vm["ready"].as<string>());
         }
 
-        if (vm.count("release"))
+        if (no_client && vm.count("release"))
         {
             LOG4CXX_DEBUG(logger, "Setting frame release notification ZMQ address to " << vm["release"].as<string>());
         }
 
-        if (vm.count("frames"))
+        if (no_client && vm.count("frames"))
         {
             LOG4CXX_DEBUG(logger, "Setting number of frames to receive to " << vm["frames"].as<unsigned int>());
         }
 
-        if (vm.count("ctrl"))
+        if (no_client && vm.count("ctrl"))
         {
             LOG4CXX_DEBUG(logger, "Setting control endpoint to: " << vm["ctrl"].as<string>());
         }
 
-        if (vm.count("output"))
+        if (no_client && vm.count("output"))
         {
             LOG4CXX_DEBUG(logger, "Writing frames to file: " << vm["output"].as<string>());
         }
 
-        if (vm.count("processes"))
+        if (no_client && vm.count("processes"))
         {
             LOG4CXX_DEBUG(logger, "Number of concurrent filewriter processes: " << vm["processes"].as<unsigned int>());
         }
 
-        if (vm.count("rank"))
+        if (no_client && vm.count("rank"))
         {
             LOG4CXX_DEBUG(logger, "This process rank (index): " << vm["rank"].as<unsigned int>());
         }
@@ -179,14 +188,94 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
     }
 }
 
+void configureDefaults(boost::shared_ptr<filewriter::FileWriterController> fwc, po::variables_map vm) {
+  OdinData::IpcMessage cfg;
+  OdinData::IpcMessage reply;
+  
+  cfg.set_param<string>("fr_setup/fr_shared_mem", vm["sharedbuf"].as<string>());
+  cfg.set_param<string>("fr_setup/fr_ready_cnxn", vm["ready"].as<string>());
+  cfg.set_param<string>("fr_setup/fr_release_cnxn", vm["release"].as<string>());
+  cfg.set_param<string>("output", vm["output"].as<string>());
+  
+  fwc->configure(cfg, reply);
+}
+
+void configurePercival(boost::shared_ptr<filewriter::FileWriterController> fwc) {
+  OdinData::IpcMessage cfg;
+  OdinData::IpcMessage reply;
+  
+  cfg.set_param<string>("plugin/load/library", "./lib/libPercivalProcessPlugin.so");
+  cfg.set_param<string>("plugin/load/index", "percival");
+  cfg.set_param<string>("plugin/load/name", "PercivalProcessPlugin");
+  cfg.set_param<string>("plugin/connect/index", "percival");
+  cfg.set_param<string>("plugin/connect/connection", "frame_receiver");
+  
+  fwc->configure(cfg, reply);
+}
+
+void configureHDF5(boost::shared_ptr<filewriter::FileWriterController> fwc) {
+  OdinData::IpcMessage cfg;
+  OdinData::IpcMessage reply;
+  
+  cfg.set_param<string>("plugin/load/library", "./lib/libHdf5Plugin.so");
+  cfg.set_param<string>("plugin/load/index", "hdf");
+  cfg.set_param<string>("plugin/load/name", "FileWriter");
+  cfg.set_param<string>("plugin/connect/index", "hdf");
+  cfg.set_param<string>("plugin/connect/connection", "percival");
+  
+  fwc->configure(cfg, reply);
+}
+
+void configureDataset(boost::shared_ptr<filewriter::FileWriterController> fwc, string name, bool master=false) {
+  OdinData::IpcMessage cfg;
+  OdinData::IpcMessage reply;
+  
+  rapidjson::Document jsonDoc;
+  rapidjson::Value dims(rapidjson::kArrayType);
+  rapidjson::Document::AllocatorType& dimAllocator = jsonDoc.GetAllocator();
+  jsonDoc.SetObject();
+  dims.PushBack(1484, dimAllocator);
+  dims.PushBack(1408, dimAllocator);
+  
+  rapidjson::Document::AllocatorType& chunkAllocator = jsonDoc.GetAllocator();
+  rapidjson::Value chunks(rapidjson::kArrayType);
+  chunks.PushBack(1, chunkAllocator);
+  chunks.PushBack(1484, chunkAllocator);
+  chunks.PushBack(704, chunkAllocator);
+  
+  cfg.set_param<string>("hdf/dataset/cmd", "create");
+  cfg.set_param<string>("hdf/dataset/name", name);
+  cfg.set_param<int>("hdf/dataset/datatype", 1);
+  cfg.set_param<rapidjson::Value>("hdf/dataset/dims", dims);
+  cfg.set_param<rapidjson::Value>("hdf/dataset/chunks", chunks);
+  if (master) {
+    cfg.set_param<string>("hdf/master", name);
+  }
+  
+  fwc->configure(cfg, reply);
+}
+
+void configureFileWriter(boost::shared_ptr<filewriter::FileWriterController> fwc, po::variables_map vm) {
+  OdinData::IpcMessage cfg;
+  OdinData::IpcMessage reply;
+  
+  cfg.set_param<string>("hdf/file/name", vm["output"].as<string>());
+  cfg.set_param<string>("hdf/file/path", "/tmp/");
+  cfg.set_param<unsigned int>("hdf/frames", vm["frames"].as<unsigned int>());
+  cfg.set_param<bool>("hdf/write", true);
+  
+  fwc->configure(cfg, reply);
+}
+
 int main(int argc, char** argv)
 {
+  LoggerPtr logger(Logger::getLogger("FW.App"));
+  
   try {
 
     // Create a default basic logger configuration, which can be overridden by command-line option later
     BasicConfigurator::configure();
 
-    LoggerPtr logger(Logger::getLogger("FW.fileWriterApp"));
     po::variables_map vm;
     parse_arguments(argc, argv, vm, logger);
 
@@ -196,9 +285,19 @@ int main(int argc, char** argv)
     // Configure the control channel for the filewriter
     OdinData::IpcMessage cfg;
     OdinData::IpcMessage reply;
-    cfg.set_param<unsigned int>("frames", vm["frames"].as<unsigned int>());
     cfg.set_param<std::string>("ctrl_endpoint", vm["ctrl"].as<string>());
+    cfg.set_param<unsigned int>("frames", vm["frames"].as<unsigned int>());
     fwc->configure(cfg, reply);
+    
+    if (vm["no-client"].as<bool>()) {
+      LOG4CXX_DEBUG(logger, "Adding configuration options to work without a client controller");
+      configureDefaults(fwc, vm);
+      configurePercival(fwc);
+      configureHDF5(fwc);
+      configureDataset(fwc, "data", true);
+      configureDataset(fwc, "reset");
+      configureFileWriter(fwc, vm);
+    }
 
     // Start worker thread to monitor frames passed through
     fwc->start();
@@ -209,6 +308,7 @@ int main(int argc, char** argv)
     LOG4CXX_DEBUG(logger, "Shutting Down.")
 
   } catch (const std::exception& e){
+    LOG4CXX_ERROR(logger, e.what())
     // Nothing to do, terminate gracefully(?)
   }
   return 0;
