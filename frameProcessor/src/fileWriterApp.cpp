@@ -298,14 +298,10 @@ int main(int argc, char** argv)
       configureDataset(fwc, "reset");
       configureFileWriter(fwc, vm);
     }
-
-    // Start worker thread to monitor frames passed through
-    fwc->start();
     
-    // Now wait for the shutdown
-    fwc->waitForShutdown();
+    fwc->run();
     
-    LOG4CXX_DEBUG(logger, "Shutting Down.")
+    LOG4CXX_DEBUG(logger, "FileWriterController run finished. Stopping app.")
 
   } catch (const std::exception& e){
     LOG4CXX_ERROR(logger, e.what())

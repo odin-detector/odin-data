@@ -42,6 +42,7 @@ namespace filewriter
     void loadPlugin(const std::string& index, const std::string& name, const std::string& library);
     void connectPlugin(const std::string& index, const std::string& connectTo);
     void disconnectPlugin(const std::string& index, const std::string& disconnectFrom);
+    void run();
     void waitForShutdown();
   private:
     /** Configuration constant to shutdown the file writer process **/

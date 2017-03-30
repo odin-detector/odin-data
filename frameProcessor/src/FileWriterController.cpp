@@ -359,15 +359,15 @@ namespace filewriter
       throw std::runtime_error(is.str().c_str());
     }
   }
-
-  /**
-   * Wait for the exit condition before returning.
-   */
-  void FileWriterController::waitForShutdown()
-  {
-    boost::unique_lock<boost::mutex> lock(exitMutex_);
-    exitCondition_.wait(lock);
   
+  void FileWriterController::run() {
+    
+    // Start worker thread to monitor frames passed through
+    start();
+    
+    // Now wait for the shutdown
+    waitForShutdown();
+    
     // Stop all plugin worker threads
     LOG4CXX_DEBUG(logger_, "Stopping plugin worker threads.\n")
     std::map<std::string, boost::shared_ptr<FileWriterPlugin> >::iterator it;
@@ -387,9 +387,19 @@ namespace filewriter
     closeFrameReceiverInterface();
     
     // Destroy any allocated DataBlocks
-    LOG4CXX_DEBUG(logger_, "Tearing down DataBlockPool class.\n")
+    LOG4CXX_DEBUG(logger_, "Tearing down DataBlockPool.\n")
     DataBlockPool::tearDownClass();
     
+    LOG4CXX_DEBUG(logger_, "Shutting Down.")
+  }
+
+  /**
+   * Wait for the exit condition before returning.
+   */
+  void FileWriterController::waitForShutdown()
+  {
+    boost::unique_lock<boost::mutex> lock(exitMutex_);
+    exitCondition_.wait(lock);
   }
 
   /** Set up the frame receiver interface.
@@ -439,7 +449,6 @@ namespace filewriter
   void FileWriterController::closeFrameReceiverInterface()
   {
     LOG4CXX_DEBUG(logger_, "Closing FrameReceiver interface.");
-    
     try
     {
       // Release current shared memory parser if one exists
