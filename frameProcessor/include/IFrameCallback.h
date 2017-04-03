@@ -40,6 +40,15 @@ namespace filewriter
     void stop();
     void confirmRegistration(const std::string& name);
     void confirmRemoval(const std::string& name);
+  
+    /** Callback for when ever a new Frame is available.
+     *
+     * Pure virtual method, must be implemented by subclass.  This will be called
+     * whenever a new Frame is placed onto the WorkQueue.
+     *
+     * \param[in] frame - pointer to Frame object ready for processing by the IFrameCallback subclass.
+     */
+    virtual void callback(boost::shared_ptr<Frame> frame) = 0;
 
   private:
     /** Pointer to logger */
@@ -54,15 +63,6 @@ namespace filewriter
     std::map<std::string, std::string> registrations_;
 
     void workerTask();
-
-    /** Callback for when ever a new Frame is available.
-     *
-     * Pure virtual method, must be implemented by subclass.  This will be called
-     * whenever a new Frame is placed onto the WorkQueue.
-     *
-     * \param[in] frame - pointer to Frame object ready for processing by the IFrameCallback subclass.
-     */
-    virtual void callback(boost::shared_ptr<Frame> frame) = 0;
   };
 
 } /* namespace filewriter */

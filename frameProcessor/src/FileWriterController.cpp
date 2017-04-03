@@ -288,7 +288,7 @@ namespace filewriter
       
       // Register callback to FWC with FileWriter plugin
       if (name == "FileWriter") {
-        plugin->registerCallback("controller", this->shared_from_this());
+        plugin->registerCallback("controller", this->shared_from_this(), true);
       }
       
       // Start the plugin worker thread

@@ -16,6 +16,7 @@ namespace filewriter
   FileWriterPlugin::FileWriterPlugin() :
       name_("")
   {
+    logger_ = log4cxx::Logger::getLogger("FW.FileWriterPlugin");
   }
 
   /**
@@ -85,19 +86,38 @@ namespace filewriter
    * \param[in] name - Index of the callback (plugin index).
    * \param[in] cb - Pointer to an IFrameCallback interface (plugin).
    */
-  void FileWriterPlugin::registerCallback(const std::string& name, boost::shared_ptr<IFrameCallback> cb)
+  void FileWriterPlugin::registerCallback(const std::string& name, boost::shared_ptr<IFrameCallback> cb, bool blocking)
   {
-    // Check if we own the callback already
-    if (callbacks_.count(name) == 0){
-      // Record the callback pointer
-      callbacks_[name] = cb;
-      // Confirm registration
-      cb->confirmRegistration(name_);
+    if (blocking) {
+      if (callbacks_.count(name) != 0) {
+        LOG4CXX_WARN(logger_, "Non-blocking callback " << name << " already registered with " << name_ << ". Must be removed before adding blocking callback");
+      }
+      // Check if we own the callback already
+      else if (blockingCallbacks_.count(name) == 0) {
+        LOG4CXX_DEBUG(logger_, "Registering blocking callback " << name << " with " << name_);
+        // Record the callback pointer
+        blockingCallbacks_[name] = cb;
+        // Confirm registration
+        cb->confirmRegistration(name_);
+      }
+    }
+    else {
+      if (blockingCallbacks_.count(name) != 0) {
+        LOG4CXX_WARN(logger_, "Blocking callback " << name << " already registered with " << name_ << ". Must be removed before adding non-blocking callback");
+      }
+      // Check if we own the callback already
+      else if (callbacks_.count(name) == 0) {
+        LOG4CXX_DEBUG(logger_, "Registering non-blocking callback " << name << " with " << name_);
+        // Record the callback pointer
+        callbacks_[name] = cb;
+        // Confirm registration
+        cb->confirmRegistration(name_);
+      }
     }
   }
 
   /**
-   * Removes another plugin from our callback map.
+   * Remove a plugin from our callback map.
    *
    * \param[in] name - Index of the callback (plugin index) to remove.
    */
@@ -109,6 +129,14 @@ namespace filewriter
       cb = callbacks_[name];
       // Remove the callback from the map
       callbacks_.erase(name);
+      // Confirm removal
+      cb->confirmRemoval(name_);
+    }
+    else if (blockingCallbacks_.count(name) > 0) {
+      // Get the pointer
+      cb = blockingCallbacks_[name];
+      // Remove the callback from the map
+      blockingCallbacks_.erase(name);
       // Confirm removal
       cb->confirmRemoval(name_);
     }
@@ -136,9 +164,14 @@ namespace filewriter
    */
   void FileWriterPlugin::push(boost::shared_ptr<Frame> frame)
   {
-    // Loop over callbacks, placing frame onto each queue
+    // Loop over blocking callbacks, calling each function and waiting for return
+    std::map<std::string, boost::shared_ptr<IFrameCallback> >::iterator bcbIter;
+    for (bcbIter = blockingCallbacks_.begin(); bcbIter != blockingCallbacks_.end(); ++bcbIter) {
+      bcbIter->second->callback(frame);
+    }
+    // Loop over non-blocking callbacks, placing frame onto each queue
     std::map<std::string, boost::shared_ptr<IFrameCallback> >::iterator cbIter;
-    for (cbIter = callbacks_.begin(); cbIter != callbacks_.end(); ++cbIter){
+    for (cbIter = callbacks_.begin(); cbIter != callbacks_.end(); ++cbIter) {
       cbIter->second->getWorkQueue()->add(frame);
     }
   }

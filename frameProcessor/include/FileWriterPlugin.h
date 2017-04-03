@@ -30,13 +30,15 @@ namespace filewriter
     std::string getName();
     virtual void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
     virtual void status(OdinData::IpcMessage& status);
-    void registerCallback(const std::string& name, boost::shared_ptr<IFrameCallback> cb);
+    void registerCallback(const std::string& name, boost::shared_ptr<IFrameCallback> cb, bool blocking=false);
     void removeCallback(const std::string& name);
 
   protected:
     void push(boost::shared_ptr<Frame> frame);
 
   private:
+    /** Pointer to logger */
+    LoggerPtr logger_;
     void callback(boost::shared_ptr<Frame> frame);
 
     /**
@@ -51,6 +53,8 @@ namespace filewriter
     std::string name_;
     /** Map of registered plugins for callbacks, indexed by name */
     std::map<std::string, boost::shared_ptr<IFrameCallback> > callbacks_;
+    /** Map of registered plugins for blocking callbacks, indexed by name */
+    std::map<std::string, boost::shared_ptr<IFrameCallback> > blockingCallbacks_;
   };
 
 } /* namespace filewriter */
