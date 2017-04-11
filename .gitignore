@@ -9,3 +9,7 @@
 /.pydevproject
 .project
 venv*
+
+.idea/
+cmake-build*/
+
