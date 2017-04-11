@@ -135,7 +135,7 @@ namespace filewriter
       // Set exit condition so main thread can continue and shutdown
       exitCondition_.notify_all();
       // Wait until the main thread has sent stop commands to the plugins
-      LOG4CXX_DEBUG(logger_, "Exit condition set. Waiting for main thread to stop plugins...");
+      LOG4CXX_DEBUG(logger_, "Exit condition set. Waiting for main thread to stop plugins.");
       while(!pluginShutdownSent);
       // Return so they can shutdown
     }
@@ -391,14 +391,14 @@ namespace filewriter
     waitForShutdown();
     
     // Stop all plugin worker threads
-    LOG4CXX_DEBUG(logger_, "Stopping plugin worker threads.\n")
+    LOG4CXX_DEBUG(logger_, "Stopping plugin worker threads");
     std::map<std::string, boost::shared_ptr<FileWriterPlugin> >::iterator it;
     for (it = plugins_.begin(); it != plugins_.end(); it++) {
       it->second->stop();
     }
-    // Worker thread callback will wait until pluginsShutdown is set
+    // Worker thread callback will wait until pluginShutdownSent is set
     pluginShutdownSent = true;
-    LOG4CXX_DEBUG(logger_, "Plugin shutdown sent. Removing plugins once stopped.")
+    LOG4CXX_DEBUG(logger_, "Plugin shutdown sent. Removing plugins once stopped.");
     // Then we wait until the each plugin has stopped and then erase them
     for (it = plugins_.begin(); it != plugins_.end(); it++) {
       LOG4CXX_DEBUG(logger_, "Removing " << it->first);
@@ -407,7 +407,7 @@ namespace filewriter
     }
     
     // Stop worker thread (for IFrameCallback) and reactor
-    LOG4CXX_DEBUG(logger_, "Stopping FileWriterController worker thread and IPCReactor.\n")
+    LOG4CXX_DEBUG(logger_, "Stopping FileWriterController worker thread and IPCReactor");
     stop();
     reactor_->stop();
     
@@ -417,10 +417,10 @@ namespace filewriter
     closeFrameReceiverInterface();
     
     // Destroy any allocated DataBlocks
-    LOG4CXX_DEBUG(logger_, "Tearing down DataBlockPool.\n")
+    LOG4CXX_DEBUG(logger_, "Tearing down DataBlockPool");
     DataBlockPool::tearDownClass();
     
-    LOG4CXX_DEBUG(logger_, "Shutting Down.")
+    LOG4CXX_DEBUG(logger_, "Shutting Down.");
   }
 
   /**
