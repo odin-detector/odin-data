@@ -38,6 +38,7 @@ namespace filewriter
     boost::shared_ptr<WorkQueue<boost::shared_ptr<Frame> > > getWorkQueue();
     void start();
     void stop();
+    bool isWorking() const;
     void confirmRegistration(const std::string& name);
     void confirmRemoval(const std::string& name);
   

@@ -145,13 +145,31 @@ namespace OdinData {
       {
         // No params block so we will not find the parameter
         param_found = false;
-      } else {
-        // Attempt to locate parameter within block
-        rapidjson::Value::ConstMemberIterator param_itr = itr->value.FindMember(param_name.c_str());
-        if (param_itr == itr->value.MemberEnd())
+      }
+      else
+      {
+        if (param_name.find("/") != param_name.npos)
         {
-          // Couldn't find the parameter
-          param_found = false;
+          std::string nodeName = param_name.substr(0, param_name.find("/"));
+          std::string subParam = param_name.substr(param_name.find("/") + 1, param_name.npos);
+          if (this->has_param(nodeName))
+          {
+            OdinData::IpcMessage node(this->get_param<const rapidjson::Value &>(nodeName));
+            param_found = node.has_param(subParam);
+          }
+          else
+          {
+            param_found = false;
+          }
+        } else
+          {
+          // Attempt to locate parameter within block
+          rapidjson::Value::ConstMemberIterator param_itr = itr->value.FindMember(param_name.c_str());
+          if (param_itr == itr->value.MemberEnd())
+          {
+            // Couldn't find the parameter
+            param_found = false;
+          }
         }
       }
       return param_found;
@@ -536,42 +554,42 @@ namespace OdinData {
     // Explicit specialisations of the the get_value method, mapping native attribute types to the
     // appropriate RapidJSON storage type.
 
-    template<> int IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr)
+    template<> int IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
     {
         return itr->value.GetInt();
     }
 
-    template<> unsigned int IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr)
+    template<> unsigned int IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
     {
         return itr->value.GetUint();
     }
 
-    template<> int64_t IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr)
+    template<> int64_t IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
     {
         return itr->value.GetInt64();
     }
 
-    template<> uint64_t IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr)
+    template<> uint64_t IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
     {
         return itr->value.GetUint64();
     }
 
-    template<> double IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr)
+    template<> double IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
     {
         return itr->value.GetDouble();
     }
 
-    template<> std::string IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr)
+    template<> std::string IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
     {
         return itr->value.GetString();
     }
 
-    template<> bool IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr)
+    template<> bool IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
     {
         return itr->value.GetBool();
     }
 
-    template<> const rapidjson::Value& IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr)
+    template<> const rapidjson::Value& IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
     {
         const rapidjson::Value& val = itr->value;
         return val;

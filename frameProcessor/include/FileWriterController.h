@@ -106,6 +106,8 @@ namespace filewriter
     int                                                         datasetSize;
     /** Total frames processed */
     int                                                         totalFrames;
+    /** Master frame specifier - Frame to include in count of total frames processed */
+    std::string                                                 masterFrame;
     /** Mutex used for locking the exitCondition */
     boost::mutex                                                exitMutex_;
     /** Used to check for Ipc tick timer termination */
@@ -114,6 +116,8 @@ namespace filewriter
     bool                                                        threadRunning_;
     /** Did an error occur during the thread initialisation */
     bool                                                        threadInitError_;
+    /** Have we sent sent the shutdown command to the plugins */
+    bool                                                        pluginShutdownSent;
     /** Main thread used for control message handling */
     boost::thread                                               ctrlThread_;
     /** Store for any messages occurring during thread initialisation */

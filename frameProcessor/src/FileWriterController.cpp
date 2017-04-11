@@ -42,6 +42,7 @@ namespace filewriter
     runThread_(true),
     threadRunning_(false),
     threadInitError_(false),
+    pluginShutdownSent(false),
     ctrlThread_(boost::bind(&FileWriterController::runIpcService, this)),
     ctrlChannel_(ZMQ_REP)
   {
@@ -114,14 +115,29 @@ namespace filewriter
 
   /**
    * Count frames passed through plugin chain and trigger shutdown when expected datasets received.
+   *
+   * This is registered as a blocking callback from the end of the plugin chain.
+   * It will check for shutdown conditions and then return once all plugins have been
+   * notified to shutdown by the main thread.
+   *
    * @param frame - Pointer to the frame
    */
   void FileWriterController::callback(boost::shared_ptr<Frame> frame) {
     
-    totalFrames++;
+    // If frame is a master frame, or all frames are included (no master frames), increment frame count
+    if (masterFrame == "" || frame->get_dataset_name() == masterFrame) {
+      totalFrames++;
+      LOG4CXX_DEBUG(logger_, "Frame " << totalFrames << " complete.");
+    }
+    
     if (totalFrames == datasetSize) {
       LOG4CXX_DEBUG(logger_, "Dataset complete. Shutting down.");
+      // Set exit condition so main thread can continue and shutdown
       exitCondition_.notify_all();
+      // Wait until the main thread has sent stop commands to the plugins
+      LOG4CXX_DEBUG(logger_, "Exit condition set. Waiting for main thread to stop plugins...");
+      while(!pluginShutdownSent);
+      // Return so they can shutdown
     }
   }
 
@@ -147,10 +163,16 @@ namespace filewriter
   void FileWriterController::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
   {
     LOG4CXX_DEBUG(logger_, "Configuration submitted: " << config.encode());
+    
+    // Check if we are being given the master frame specifier
+    if (config.has_param("hdf/master")) {
+      masterFrame = config.get_param<std::string>("hdf/master");
+      LOG4CXX_DEBUG(logger_, "Master frame specifier set to: " << masterFrame);
+    }
   
     // If frames given then we are running for defined number and then stopping
     if (config.has_param("frames") && config.get_param<unsigned int>("frames") != 0) {
-      datasetSize = 2 * config.get_param<unsigned int>("frames");
+      datasetSize = config.get_param<unsigned int>("frames");
       LOG4CXX_DEBUG(logger_, "Dataset size: " << datasetSize);
     }
 
@@ -373,6 +395,14 @@ namespace filewriter
     std::map<std::string, boost::shared_ptr<FileWriterPlugin> >::iterator it;
     for (it = plugins_.begin(); it != plugins_.end(); it++) {
       it->second->stop();
+    }
+    // Worker thread callback will wait until pluginsShutdown is set
+    pluginShutdownSent = true;
+    LOG4CXX_DEBUG(logger_, "Plugin shutdown sent. Removing plugins once stopped.")
+    // Then we wait until the each plugin has stopped and then erase them
+    for (it = plugins_.begin(); it != plugins_.end(); it++) {
+      LOG4CXX_DEBUG(logger_, "Removing " << it->first);
+      while(it->second->isWorking());
       plugins_.erase(it);
     }
     

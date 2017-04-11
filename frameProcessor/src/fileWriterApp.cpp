@@ -68,6 +68,8 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
                         "Release frame ZMQ endpoint from frameReceiver")
                 ("frames,f",     po::value<unsigned int>()->default_value(0),
                     "Set the number of frames to be notified about before terminating")
+                ("detector,d",   po::value<std::string>()->default_value("excalibur"),
+                    "Detector type to confugre for")
                 ("sharedbuf",    po::value<std::string>()->default_value("FrameReceiverBuffer"),
                     "Set the control endpoint")
                 ("ctrl",    po::value<std::string>()->default_value("tcp://127.0.0.1:5004"),
@@ -145,6 +147,11 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
         {
             LOG4CXX_DEBUG(logger, "Setting number of frames to receive to " << vm["frames"].as<unsigned int>());
         }
+        
+        if (no_client && vm.count("detector"))
+        {
+          LOG4CXX_DEBUG(logger, "Configuring for " << vm["detector"].as<string>() << " detector");
+        }
 
         if (no_client && vm.count("ctrl"))
         {
@@ -213,7 +220,21 @@ void configurePercival(boost::shared_ptr<filewriter::FileWriterController> fwc) 
   fwc->configure(cfg, reply);
 }
 
-void configureHDF5(boost::shared_ptr<filewriter::FileWriterController> fwc) {
+void configureExcalibur(boost::shared_ptr<filewriter::FileWriterController> fwc) {
+  OdinData::IpcMessage cfg;
+  OdinData::IpcMessage reply;
+  
+  cfg.set_param<string>("plugin/load/library", "./lib/libExcaliburReorderPlugin.so");
+  cfg.set_param<string>("plugin/load/index", "excalibur");
+  cfg.set_param<string>("plugin/load/name", "ExcaliburReorderPlugin");
+  cfg.set_param<string>("plugin/connect/index", "excalibur");
+  cfg.set_param<string>("plugin/connect/connection", "frame_receiver");
+  cfg.set_param<string>("excalibur/bitdepth", "12-bit");
+  
+  fwc->configure(cfg, reply);
+}
+
+void configureHDF5(boost::shared_ptr<filewriter::FileWriterController> fwc, string detector) {
   OdinData::IpcMessage cfg;
   OdinData::IpcMessage reply;
   
@@ -221,12 +242,12 @@ void configureHDF5(boost::shared_ptr<filewriter::FileWriterController> fwc) {
   cfg.set_param<string>("plugin/load/index", "hdf");
   cfg.set_param<string>("plugin/load/name", "FileWriter");
   cfg.set_param<string>("plugin/connect/index", "hdf");
-  cfg.set_param<string>("plugin/connect/connection", "percival");
+  cfg.set_param<string>("plugin/connect/connection", detector);
   
   fwc->configure(cfg, reply);
 }
 
-void configureDataset(boost::shared_ptr<filewriter::FileWriterController> fwc, string name, bool master=false) {
+void configurePercivalDataset(boost::shared_ptr<filewriter::FileWriterController> fwc, string name, bool master=false) {
   OdinData::IpcMessage cfg;
   OdinData::IpcMessage reply;
   
@@ -255,6 +276,25 @@ void configureDataset(boost::shared_ptr<filewriter::FileWriterController> fwc, s
   fwc->configure(cfg, reply);
 }
 
+void configureExcaliburDataset(boost::shared_ptr<filewriter::FileWriterController> fwc, string name) {
+  OdinData::IpcMessage cfg;
+  OdinData::IpcMessage reply;
+  
+  rapidjson::Document jsonDoc;
+  rapidjson::Value dims(rapidjson::kArrayType);
+  rapidjson::Document::AllocatorType& dimAllocator = jsonDoc.GetAllocator();
+  jsonDoc.SetObject();
+  dims.PushBack(256, dimAllocator);
+  dims.PushBack(2048, dimAllocator);
+  
+  cfg.set_param<string>("hdf/dataset/cmd", "create");
+  cfg.set_param<string>("hdf/dataset/name", name);
+  cfg.set_param<int>("hdf/dataset/datatype", 1);
+  cfg.set_param<rapidjson::Value>("hdf/dataset/dims", dims);
+  
+  fwc->configure(cfg, reply);
+}
+
 void configureFileWriter(boost::shared_ptr<filewriter::FileWriterController> fwc, po::variables_map vm) {
   OdinData::IpcMessage cfg;
   OdinData::IpcMessage reply;
@@ -265,6 +305,20 @@ void configureFileWriter(boost::shared_ptr<filewriter::FileWriterController> fwc
   cfg.set_param<bool>("hdf/write", true);
   
   fwc->configure(cfg, reply);
+}
+
+void configurePlugins(boost::shared_ptr<filewriter::FileWriterController> fwc, string detector) {
+  if (detector == "excalibur") {
+    configureExcalibur(fwc);
+    configureHDF5(fwc, detector);
+    configureExcaliburDataset(fwc, "data");
+  }
+  else if (detector == "percival") {
+    configurePercival(fwc);
+    configureHDF5(fwc, detector);
+    configurePercivalDataset(fwc, "data", true);
+    configurePercivalDataset(fwc, "reset");
+  }
 }
 
 int main(int argc, char** argv)
@@ -292,19 +346,16 @@ int main(int argc, char** argv)
     if (vm["no-client"].as<bool>()) {
       LOG4CXX_DEBUG(logger, "Adding configuration options to work without a client controller");
       configureDefaults(fwc, vm);
-      configurePercival(fwc);
-      configureHDF5(fwc);
-      configureDataset(fwc, "data", true);
-      configureDataset(fwc, "reset");
+      configurePlugins(fwc, vm["detector"].as<string>());
       configureFileWriter(fwc, vm);
     }
     
     fwc->run();
     
-    LOG4CXX_DEBUG(logger, "FileWriterController run finished. Stopping app.")
+    LOG4CXX_DEBUG(logger, "FileWriterController run finished. Stopping app.");
 
   } catch (const std::exception& e){
-    LOG4CXX_ERROR(logger, e.what())
+    LOG4CXX_ERROR(logger, e.what());
     // Nothing to do, terminate gracefully(?)
   }
   return 0;

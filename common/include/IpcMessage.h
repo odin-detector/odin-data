@@ -117,7 +117,7 @@ namespace OdinData
 		//! \param param_name - string name of the parameter to return
 		//! \return The value of the parameter if present, otherwise an exception is thrown
 
-		template<typename T> T get_param(std::string const& param_name)
+		template<typename T> T get_param(std::string const& param_name) const
 		{
 			// Locate the params block and throw exception if absent
 			rapidjson::Value::ConstMemberIterator itr = doc_.FindMember("params");
@@ -125,16 +125,25 @@ namespace OdinData
 			{
 				throw IpcMessageException("Missing params block in message");
 			}
-
-			// Locate parameter within block and throw exception if absent, otherwise return value
-			rapidjson::Value::ConstMemberIterator param_itr = itr->value.FindMember(param_name.c_str());
-			if (param_itr == itr->value.MemberEnd())
-			{
-				std::stringstream ss;
-				ss << "Missing parameter " << param_name;
-				throw IpcMessageException(ss.str());
-			}
-			return get_value<T>(param_itr);
+      
+      if (param_name.find("/") != param_name.npos) {
+        std::string nodeName = param_name.substr(0, param_name.find("/"));
+        std::string subParam = param_name.substr(param_name.find("/") + 1, param_name.npos);
+        
+        OdinData::IpcMessage node(this->get_param<const rapidjson::Value &>(nodeName));
+        return node.get_param<T>(subParam);
+      }
+      else {
+        // Locate parameter within block and throw exception if absent, otherwise return value
+        rapidjson::Value::ConstMemberIterator param_itr = itr->value.FindMember(param_name.c_str());
+        if (param_itr == itr->value.MemberEnd())
+        {
+          std::stringstream ss;
+          throw IpcMessageException(ss.str());
+        }
+        return get_value<T>(param_itr);
+      }
+			
 		}
 
 		//! Gets the value of a named parameter in the message.
@@ -384,7 +393,7 @@ namespace OdinData
 		//! \param itr - RapidJSON const member iterator referencing the attribute to access
 		//! \return - value of the attribute, with the appropriate type
 
-		template<typename T> T get_value(rapidjson::Value::ConstMemberIterator& itr);
+		template<typename T> T get_value(rapidjson::Value::ConstMemberIterator& itr) const;
 
 		//! Sets the value of a message attribute.
 		//!

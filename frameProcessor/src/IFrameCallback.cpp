@@ -70,6 +70,14 @@ namespace filewriter
     }
   }
 
+  /** Return whether our main thread is running.
+   *
+   */
+  bool IFrameCallback::isWorking() const
+  {
+    return working_;
+  }
+
   /** Record the name of an object that this IFrameCallback has registered with.
    *
    * Add the name to the map of registrations.

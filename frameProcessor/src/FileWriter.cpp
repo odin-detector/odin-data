@@ -78,10 +78,8 @@ FileWriter::FileWriter() :
  */
 FileWriter::~FileWriter()
 {
-    if (this->hdf5_fileid_ > 0) {
-        LOG4CXX_TRACE(logger_, "destructor closing file");
-        H5Fclose(this->hdf5_fileid_);
-        this->hdf5_fileid_ = 0;
+    if (writing_) {
+      stopWriting();
     }
 }
 
@@ -449,6 +447,10 @@ void FileWriter::processFrame(boost::shared_ptr<Frame> frame)
     // are true then increment the number of frames written.
     if (masterFrame_ == "" || masterFrame_ == frame->get_dataset_name()){
       framesWritten_++;
+      LOG4CXX_DEBUG(logger_, "Master frame processed");
+    }
+    else {
+      LOG4CXX_DEBUG(logger_, "Non-master frame processed");
     }
 
     // Check if we have written enough frames and stop
