@@ -94,6 +94,11 @@ namespace FrameReceiver
 
         virtual void monitor_buffers(void) = 0;
 
+        virtual void frame_meta_data(int meta)
+        {
+        	LOG4CXX_DEBUG_LEVEL(1, logger_, "frame_meta_data not implemented for this decoder");
+        };
+
         void push_empty_buffer(int buffer_id)
         {
         	empty_buffer_queue_.push(buffer_id);

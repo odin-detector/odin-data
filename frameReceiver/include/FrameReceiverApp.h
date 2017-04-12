@@ -32,6 +32,8 @@ using namespace log4cxx::helpers;
 #include "IpcReactor.h"
 #include "FrameReceiverConfig.h"
 #include "FrameReceiverRxThread.h"
+#include "FrameReceiverUDPRxThread.h"
+#include "FrameReceiverZMQRxThread.h"
 #include "FrameDecoder.h"
 #include "OdinDataException.h"
 #include "ClassLoader.h"

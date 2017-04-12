@@ -25,7 +25,7 @@ namespace FrameReceiver
 
 		FrameReceiverConfig() :
 		    max_buffer_mem_(Defaults::default_max_buffer_mem),
-		    sensor_type_(Defaults::SensorTypeIllegal),
+		    sensor_type_(Defaults::default_sensor_type),
 		    rx_address_(Defaults::default_rx_address),
 		    rx_recv_buffer_size_(Defaults::default_rx_recv_buffer_size),
 		    rx_channel_endpoint_(Defaults::default_rx_chan_endpoint),
@@ -58,7 +58,7 @@ namespace FrameReceiver
             }
 		}
 
-		Defaults::SensorType map_sensor_name_to_type(std::string& sensor_name)
+/*		Defaults::SensorType map_sensor_name_to_type(std::string& sensor_name)
 		{
 
 		    Defaults::SensorType sensor_type = Defaults::SensorTypeIllegal;
@@ -71,6 +71,7 @@ namespace FrameReceiver
 		        sensor_name_map["percival2m"]  = Defaults::SensorTypePercival2M;
 		        sensor_name_map["percival13m"] = Defaults::SensorTypePercival13M;
 		        sensor_name_map["excalibur"]   = Defaults::SensorTypeExcalibur;
+		        sensor_name_map["latrd"]       = Defaults::SensorTypeLATRD;
 		    }
 
 		    if (sensor_name_map.count(sensor_name))
@@ -79,12 +80,13 @@ namespace FrameReceiver
 		    }
 
 		    return sensor_type;
-		}
+		}*/
 
 	private:
 
 		std::size_t           max_buffer_mem_;         //!< Amount of shared buffer memory to allocate for frame buffers
-		Defaults::SensorType  sensor_type_;            //!< Sensor type receiving data for - drives frame size
+		std::string           sensor_path_;            //!< Path to decoder library
+		std::string           sensor_type_;            //!< Sensor type receiving data for - drives frame size
 		std::vector<uint16_t> rx_ports_;               //!< Port(s) to receive frame data on
 		std::string           rx_address_;             //!< IP address to receive frame data on
 		int                   rx_recv_buffer_size_;    //!< Receive socket buffer size
@@ -99,6 +101,8 @@ namespace FrameReceiver
 
 		friend class FrameReceiverApp;
 		friend class FrameReceiverRxThread;
+		friend class FrameReceiverUDPRxThread;
+		friend class FrameReceiverZMQRxThread;
 		friend class FrameReceiverConfigTestProxy;
 		friend class FrameReceiverRxThreadTestProxy;
 	};

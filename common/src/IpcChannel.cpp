@@ -80,7 +80,7 @@ void IpcChannel::send(const char* message)
 
 }
 
-const std::string IpcChannel::recv(void)
+const std::string IpcChannel::recv(int trim)
 {
     std::size_t msg_size;
     zmq::message_t msg;
@@ -88,7 +88,19 @@ const std::string IpcChannel::recv(void)
     socket_.recv(&msg);
     msg_size = msg.size();
 
-    return std::string(reinterpret_cast<char*>(msg.data()), msg_size-1);
+    return std::string(reinterpret_cast<char*>(msg.data()), msg_size-trim);
+}
+
+bool IpcChannel::eom(void)
+{
+	bool eom = true;
+	int64_t more;
+	size_t more_size = sizeof(more);
+	socket_.getsockopt(ZMQ_RCVMORE, &more, &more_size);
+	if (more){
+		eom = false;
+	}
+	return eom;
 }
 
 bool IpcChannel::poll(long timeout_ms)

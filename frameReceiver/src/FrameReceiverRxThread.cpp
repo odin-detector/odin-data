@@ -21,9 +21,38 @@ FrameReceiverRxThread::FrameReceiverRxThread(FrameReceiverConfig& config, Logger
    recv_socket_(0),
    run_thread_(true),
    thread_running_(false),
-   thread_init_error_(false),
-   rx_thread_(boost::bind(&FrameReceiverRxThread::run_service, this))
+   thread_init_error_(false)
+//   rx_thread_(boost::bind(&FrameReceiverRxThread::run_service, this))
 {
+    // Wait for the thread service to initialise and be running properly, so that
+    // this constructor only returns once the object is fully initialised (RAII).
+    // Monitor the thread error flag and throw an exception if initialisation fails
+
+/*    while (!thread_running_)
+    {
+        if (thread_init_error_) {
+            rx_thread_.join();
+            throw OdinData::OdinDataException(thread_init_msg_);
+            break;
+        }
+    }*/
+}
+
+FrameReceiverRxThread::~FrameReceiverRxThread()
+{
+    run_thread_ = false;
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Waiting for RX thread to stop....");
+    if (rx_thread_){
+    	rx_thread_->join();
+    }
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "RX thread stopped....");
+
+}
+
+void FrameReceiverRxThread::start()
+{
+	rx_thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&FrameReceiverRxThread::run_service, this)));
+
     // Wait for the thread service to initialise and be running properly, so that
     // this constructor only returns once the object is fully initialised (RAII).
     // Monitor the thread error flag and throw an exception if initialisation fails
@@ -31,20 +60,11 @@ FrameReceiverRxThread::FrameReceiverRxThread(FrameReceiverConfig& config, Logger
     while (!thread_running_)
     {
         if (thread_init_error_) {
-            rx_thread_.join();
+            rx_thread_->join();
             throw OdinData::OdinDataException(thread_init_msg_);
             break;
         }
     }
-}
-
-FrameReceiverRxThread::~FrameReceiverRxThread()
-{
-    run_thread_ = false;
-    LOG4CXX_DEBUG_LEVEL(1, logger_, "Waiting for RX thread to stop....");
-    rx_thread_.join();
-    LOG4CXX_DEBUG_LEVEL(1, logger_, "RX thread stopped....");
-
 }
 
 void FrameReceiverRxThread::run_service(void)
@@ -66,71 +86,8 @@ void FrameReceiverRxThread::run_service(void)
     // Add the RX channel to the reactor
     reactor_.register_channel(rx_channel_, boost::bind(&FrameReceiverRxThread::handle_rx_channel, this));
 
-    for (std::vector<uint16_t>::iterator rx_port_itr = config_.rx_ports_.begin(); rx_port_itr != config_.rx_ports_.end(); rx_port_itr++)
-    {
-
-        uint16_t rx_port = *rx_port_itr;
-
-        // Create the receive socket
-        int recv_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-        if (recv_socket < 0)
-        {
-            std::stringstream ss;
-            ss << "RX channel failed to create receive socket for port " << rx_port << " : " << strerror(errno);
-            thread_init_msg_ = ss.str();
-            thread_init_error_ = true;
-            return;
-        }
-
-        // Set the socket receive buffer size
-        if (setsockopt(recv_socket, SOL_SOCKET, SO_RCVBUF, &config_.rx_recv_buffer_size_, sizeof(config_.rx_recv_buffer_size_)) < 0)
-        {
-            std::stringstream ss;
-            ss << "RX channel failed to set receive socket buffer size for port " << rx_port << " : " << strerror(errno);
-            thread_init_msg_ = ss.str();
-            thread_init_error_ = true;
-            return;
-        }
-
-        // Read it back and display
-        int buffer_size;
-        socklen_t len = sizeof(buffer_size);
-        getsockopt(recv_socket, SOL_SOCKET, SO_RCVBUF, &buffer_size, &len);
-        LOG4CXX_DEBUG_LEVEL(1, logger_, "RX thread receive buffer size for port " << rx_port << " is " << buffer_size);
-
-        // Bind the socket to the specified port
-        struct sockaddr_in recv_addr;
-        memset(&recv_addr, 0, sizeof(recv_addr));
-
-        recv_addr.sin_family      = AF_INET;
-        recv_addr.sin_port        = htons(rx_port);
-        recv_addr.sin_addr.s_addr = inet_addr(config_.rx_address_.c_str());
-
-        if (recv_addr.sin_addr.s_addr == INADDR_NONE)
-        {
-            std::stringstream ss;
-             ss <<  "Illegal receive address specified: " << config_.rx_address_;
-             thread_init_msg_ = ss.str();
-             thread_init_error_ = true;
-             return;
-        }
-
-        if (bind(recv_socket, (struct sockaddr*)&recv_addr, sizeof(recv_addr)) == -1)
-        {
-            std::stringstream ss;
-            ss <<  "RX channel failed to bind receive socket for address " << config_.rx_address_ << " port " << rx_port << " : " << strerror(errno);
-            thread_init_msg_ = ss.str();
-            thread_init_error_ = true;
-            return;
-        }
-
-        if (thread_init_error_) break;
-
-        // Add the receive socket to the reactor
-        reactor_.register_socket(recv_socket, boost::bind(&FrameReceiverRxThread::handle_receive_socket, this, recv_socket, (int)rx_port));
-
-        recv_sockets_.push_back(recv_socket);
-    }
+    // Run the specific service setup implemented in subclass
+    run_specific_service();
 
     // Add the tick timer to the reactor
     int tick_timer_id = reactor_.register_timer(tick_period_ms_, 0, boost::bind(&FrameReceiverRxThread::tick_timer, this));
@@ -281,4 +238,18 @@ void FrameReceiverRxThread::frame_ready(int buffer_id, int frame_number)
 
     rx_channel_.send(ready_msg.encode());
 
+}
+
+void FrameReceiverRxThread::set_thread_init_error(const std::string& msg)
+{
+    thread_init_msg_ = msg;
+    thread_init_error_ = true;
+}
+
+void FrameReceiverRxThread::register_socket(int socket_fd, ReactorCallback callback)
+{
+    // Add the receive socket to the reactor
+    reactor_.register_socket(socket_fd, callback);
+
+    recv_sockets_.push_back(socket_fd);
 }
