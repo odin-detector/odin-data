@@ -62,6 +62,8 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
                     "Set the log4cxx logging configuration file")
                 ("no-client,N",  po::bool_switch(),
                     "Enable full initial configuration to run without any client controller")
+                ("single-shot,S",  po::bool_switch(),
+                    "Shutdown after one dataset written")
                 ("ready",       po::value<std::string>()->default_value("tcp://127.0.0.1:5001"),
                     "Ready ZMQ endpoint from frameReceiver")
                 ("release",       po::value<std::string>()->default_value("tcp://127.0.0.1:5002"),
@@ -341,6 +343,7 @@ int main(int argc, char** argv)
     OdinData::IpcMessage reply;
     cfg.set_param<std::string>("ctrl_endpoint", vm["ctrl"].as<string>());
     cfg.set_param<unsigned int>("frames", vm["frames"].as<unsigned int>());
+    cfg.set_param<bool>("single-shot", vm["single-shot"].as<bool>());
     fwc->configure(cfg, reply);
     
     if (vm["no-client"].as<bool>()) {

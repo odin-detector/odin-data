@@ -170,8 +170,9 @@ namespace filewriter
       LOG4CXX_DEBUG(logger_, "Master frame specifier set to: " << masterFrame);
     }
   
-    // If frames given then we are running for defined number and then stopping
-    if (config.has_param("frames") && config.get_param<unsigned int>("frames") != 0) {
+    // If single-shot and frames given then we are running for defined number and then shutting down
+    if (config.has_param("single-shot") && config.get_param<bool>("single-shot") &&
+        config.has_param("frames") && config.get_param<unsigned int>("frames") != 0) {
       datasetSize = config.get_param<unsigned int>("frames");
       LOG4CXX_DEBUG(logger_, "Dataset size: " << datasetSize);
     }
