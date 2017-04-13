@@ -113,6 +113,8 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
 					"Set the sensor type to receive frame data from")
 				("path",         po::value<std::string>()->default_value(""),
 					"Path to load the decoder library from")
+				("rxtype",       po::value<std::string>()->default_value("udp"),
+                    "Set the interface to use for receiving frame data (udp or zmq)")
 				("port,p",       po::value<std::string>()->default_value(FrameReceiver::Defaults::default_rx_port_list),
                     "Set the port to receive frame data on")
                 ("ipaddress,i",  po::value<std::string>()->default_value(FrameReceiver::Defaults::default_rx_address),
@@ -213,6 +215,13 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
 		{
 			config_.sensor_path_ = vm["path"].as<std::string>();
 		    LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting decoder path to " << config_.sensor_path_);
+		}
+
+		if (vm.count("rxtype"))
+		{
+		    std::string rx_name = vm["rxtype"].as<std::string>();
+		    config_.rx_type_ = config_.map_rx_name_to_type(rx_name);
+		    LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting rx type to " << rx_name << " (" << config_.rx_type_ << ")");
 		}
 
 		if (vm.count("port"))
@@ -326,7 +335,20 @@ void FrameReceiverApp::run(void)
         initialise_buffer_manager();
 
         // Create the RX thread object
-        rx_thread_.reset(new FrameReceiverZMQRxThread( config_, logger_, buffer_manager_, frame_decoder_));
+        switch(config_.rx_type_)
+        {
+        case Defaults::RxTypeUDP:
+            rx_thread_.reset(new FrameReceiverUDPRxThread( config_, logger_, buffer_manager_, frame_decoder_));
+        	break;
+
+        case Defaults::RxTypeZMQ:
+            rx_thread_.reset(new FrameReceiverZMQRxThread( config_, logger_, buffer_manager_, frame_decoder_));
+            break;
+
+        default:
+            throw OdinData::OdinDataException("Cannot create RX thread - RX type not recognised");
+            break;
+        }
         rx_thread_->start();
 
         // Pre-charge all frame buffers onto the RX thread queue ready for use
@@ -336,6 +358,9 @@ void FrameReceiverApp::run(void)
 
         // Run the reactor event loop
         reactor_.run();
+
+        // Call cleanup on the RxThread
+        rx_thread_->stop();
 
         // Destroy the RX thread
         rx_thread_.reset();
@@ -412,6 +437,10 @@ void FrameReceiverApp::initialise_frame_decoder(void)
 	libDir += "/lib/";
 	if (config_.sensor_path_ != ""){
 		libDir = config_.sensor_path_;
+		// Check if the last character is '/', if not append it
+		if (*libDir.rbegin() != '/'){
+			libDir += "/";
+		}
 	}
     LOG4CXX_INFO(logger_, "Loading decoder libraries from " + libDir);
     std::string libName = "lib" + config_.sensor_type_ + "FrameDecoder.so";

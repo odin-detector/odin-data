@@ -20,9 +20,7 @@ FrameReceiverUDPRxThread::FrameReceiverUDPRxThread(FrameReceiverConfig& config, 
 
 FrameReceiverUDPRxThread::~FrameReceiverUDPRxThread()
 {
-    LOG4CXX_DEBUG_LEVEL(1, logger_, "Waiting for RX thread to stop....");
-    LOG4CXX_DEBUG_LEVEL(1, logger_, "RX thread stopped....");
-
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Destroying FrameReceiverUDPRxThread....");
 }
 
 void FrameReceiverUDPRxThread::run_specific_service(void)
@@ -86,6 +84,10 @@ void FrameReceiverUDPRxThread::run_specific_service(void)
         // Register this socket
         this->register_socket(recv_socket, boost::bind(&FrameReceiverUDPRxThread::handle_receive_socket, this, recv_socket, (int)rx_port));
     }
+}
+
+void FrameReceiverUDPRxThread::cleanup_specific_service(void)
+{
 }
 
 void FrameReceiverUDPRxThread::handle_receive_socket(int recv_socket, int recv_port)

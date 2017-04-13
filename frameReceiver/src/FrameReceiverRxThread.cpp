@@ -22,31 +22,12 @@ FrameReceiverRxThread::FrameReceiverRxThread(FrameReceiverConfig& config, Logger
    run_thread_(true),
    thread_running_(false),
    thread_init_error_(false)
-//   rx_thread_(boost::bind(&FrameReceiverRxThread::run_service, this))
 {
-    // Wait for the thread service to initialise and be running properly, so that
-    // this constructor only returns once the object is fully initialised (RAII).
-    // Monitor the thread error flag and throw an exception if initialisation fails
-
-/*    while (!thread_running_)
-    {
-        if (thread_init_error_) {
-            rx_thread_.join();
-            throw OdinData::OdinDataException(thread_init_msg_);
-            break;
-        }
-    }*/
 }
 
 FrameReceiverRxThread::~FrameReceiverRxThread()
 {
-    run_thread_ = false;
-    LOG4CXX_DEBUG_LEVEL(1, logger_, "Waiting for RX thread to stop....");
-    if (rx_thread_){
-    	rx_thread_->join();
-    }
-    LOG4CXX_DEBUG_LEVEL(1, logger_, "RX thread stopped....");
-
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Destroying FrameReceiverRxThread....");
 }
 
 void FrameReceiverRxThread::start()
@@ -65,6 +46,19 @@ void FrameReceiverRxThread::start()
             break;
         }
     }
+}
+
+void FrameReceiverRxThread::stop()
+{
+    run_thread_ = false;
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Waiting for RX thread to stop....");
+    if (rx_thread_){
+    	rx_thread_->join();
+    }
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "RX thread stopped....");
+
+    // Run the specific service cleanup implemented in subclass
+    cleanup_specific_service();
 }
 
 void FrameReceiverRxThread::run_service(void)

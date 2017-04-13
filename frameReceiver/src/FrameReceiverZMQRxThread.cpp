@@ -21,9 +21,7 @@ FrameReceiverZMQRxThread::FrameReceiverZMQRxThread(FrameReceiverConfig& config, 
 
 FrameReceiverZMQRxThread::~FrameReceiverZMQRxThread()
 {
-    LOG4CXX_DEBUG_LEVEL(1, logger_, "Waiting for RX thread to stop....");
-    LOG4CXX_DEBUG_LEVEL(1, logger_, "RX thread stopped....");
-
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Destroying FrameReceiverZMQRxThread....");
 }
 
 void FrameReceiverZMQRxThread::run_specific_service(void)
@@ -35,13 +33,22 @@ void FrameReceiverZMQRxThread::run_specific_service(void)
         uint16_t rx_port = *rx_port_itr;
 
         std::stringstream ss;
-        ss << "tcp://127.0.0.1:" << rx_port;
+        ss << "tcp://" << config_.rx_address_ << ":" << rx_port;
         skt_channel_.connect(ss.str().c_str());
 
         // Register the IPC channel with the reactor
         reactor_.register_channel(skt_channel_, boost::bind(&FrameReceiverZMQRxThread::handle_receive_socket, this));
 
     }
+}
+
+void FrameReceiverZMQRxThread::cleanup_specific_service(void)
+{
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Cleaning up ZMQ RX thread service");
+
+    // Remove the IPC channel from the reactor
+    reactor_.remove_channel(skt_channel_);
+    skt_channel_.close();
 }
 
 void FrameReceiverZMQRxThread::handle_receive_socket()

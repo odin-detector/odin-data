@@ -51,6 +51,7 @@ namespace FrameReceiver
 
     protected:
         virtual void run_specific_service(void) = 0;
+        virtual void cleanup_specific_service(void) = 0;
 
         void set_thread_init_error(const std::string& msg);
 
