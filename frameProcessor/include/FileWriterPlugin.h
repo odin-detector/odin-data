@@ -15,6 +15,7 @@
 
 #include <log4cxx/logger.h>
 #include <hdf5.h>
+#include "H5Zpublic.h"
 
 using namespace log4cxx;
 
@@ -58,6 +59,8 @@ class FileWriterPlugin : public FrameProcessorPlugin
       std::vector<long long unsigned int> frame_dimensions;
       /** Array of chunking dimensions of the dataset **/
       std::vector<long long unsigned int> chunks;
+      /** Compression state of data **/
+      std::string compression;
     };
 
     /**
@@ -124,6 +127,8 @@ class FileWriterPlugin : public FrameProcessorPlugin
     static const std::string CONFIG_DATASET_DIMS;
     /** Configuration constant for chunking dimensions */
     static const std::string CONFIG_DATASET_CHUNKS;
+    /** Configuration constant for data compression */
+    static const std::string CONFIG_DATASET_COMPRESSION;
 
     /** Configuration constant for number of frames to write */
     static const std::string CONFIG_FRAMES;
@@ -131,6 +136,11 @@ class FileWriterPlugin : public FrameProcessorPlugin
     static const std::string CONFIG_MASTER_DATASET;
     /** Configuration constant for starting and stopping writing of frames */
     static const std::string CONFIG_WRITE;
+    
+    /** Filter definition to write datasets with LZ4 compressed data */
+    static const H5Z_filter_t LZ4_FILTER = (H5Z_filter_t)32004;
+    /** Filter definition to write datasets with bitshuffle processed data */
+    static const H5Z_filter_t BS_FILTER = (H5Z_filter_t)32008;
 
     /**
      * Prevent a copy of the FileWriterPlugin plugin.

@@ -12,24 +12,25 @@
 namespace FrameProcessor
 {
 
-const std::string FileWriterPlugin::CONFIG_PROCESS        = "process";
-const std::string FileWriterPlugin::CONFIG_PROCESS_NUMBER = "number";
-const std::string FileWriterPlugin::CONFIG_PROCESS_RANK   = "rank";
+const std::string FileWriterPlugin::CONFIG_PROCESS             = "process";
+const std::string FileWriterPlugin::CONFIG_PROCESS_NUMBER      = "number";
+const std::string FileWriterPlugin::CONFIG_PROCESS_RANK        = "rank";
 
-const std::string FileWriterPlugin::CONFIG_FILE           = "file";
-const std::string FileWriterPlugin::CONFIG_FILE_NAME      = "name";
-const std::string FileWriterPlugin::CONFIG_FILE_PATH      = "path";
+const std::string FileWriterPlugin::CONFIG_FILE                = "file";
+const std::string FileWriterPlugin::CONFIG_FILE_NAME           = "name";
+const std::string FileWriterPlugin::CONFIG_FILE_PATH           = "path";
 
-const std::string FileWriterPlugin::CONFIG_DATASET        = "dataset";
-const std::string FileWriterPlugin::CONFIG_DATASET_CMD    = "cmd";
-const std::string FileWriterPlugin::CONFIG_DATASET_NAME   = "name";
-const std::string FileWriterPlugin::CONFIG_DATASET_TYPE   = "datatype";
-const std::string FileWriterPlugin::CONFIG_DATASET_DIMS   = "dims";
-const std::string FileWriterPlugin::CONFIG_DATASET_CHUNKS = "chunks";
+const std::string FileWriterPlugin::CONFIG_DATASET             = "dataset";
+const std::string FileWriterPlugin::CONFIG_DATASET_CMD         = "cmd";
+const std::string FileWriterPlugin::CONFIG_DATASET_NAME        = "name";
+const std::string FileWriterPlugin::CONFIG_DATASET_TYPE        = "datatype";
+const std::string FileWriterPlugin::CONFIG_DATASET_DIMS        = "dims";
+const std::string FileWriterPlugin::CONFIG_DATASET_CHUNKS      = "chunks";
+const std::string FileWriterPlugin::CONFIG_DATASET_COMPRESSION = "compression";
 
-const std::string FileWriterPlugin::CONFIG_FRAMES         = "frames";
-const std::string FileWriterPlugin::CONFIG_MASTER_DATASET = "master";
-const std::string FileWriterPlugin::CONFIG_WRITE          = "write";
+const std::string FileWriterPlugin::CONFIG_FRAMES              = "frames";
+const std::string FileWriterPlugin::CONFIG_MASTER_DATASET      = "master";
+const std::string FileWriterPlugin::CONFIG_WRITE               = "write";
 
 herr_t hdf5_error_cb(unsigned n, const H5E_error2_t *err_desc, void* client_data)
 {
@@ -240,6 +241,31 @@ void FileWriterPlugin::createDataset(const FileWriterPlugin::DatasetDefinition& 
                        << chunk_dims[1] << ","
                        << chunk_dims[2]);
     prop = H5Pcreate(H5P_DATASET_CREATE);
+
+    /* Enable writing of compressed data */
+    if (definition.compression == "lz4" or definition.compression == "bslz4") {
+      if (definition.compression == "bslz4") {
+        LOG4CXX_DEBUG(logger_, "Adding bit shuffle filter");
+        // Create cd_values with extra data describing the compression. Here there is none.
+        unsigned int cd_values_bs[0];
+        size_t cd_values_bs_length = 0;
+        status = H5Pset_filter(prop, BS_FILTER, H5Z_FLAG_MANDATORY,
+                               cd_values_bs_length, cd_values_bs);
+        LOG4CXX_DEBUG(logger_, "Status: " << status);
+        LOG4CXX_DEBUG(logger_, "Filter avail: " << H5Zfilter_avail(BS_FILTER))
+        assert(status >= 0);
+      }
+      LOG4CXX_DEBUG(logger_, "Adding lz4 compression filter");
+      // Create cd_values with extra data describing the compression. Here we only have one; the LZ4 compression level
+      unsigned int cd_values = 3;
+      size_t cd_values_length = 1;
+      status = H5Pset_filter(prop, LZ4_FILTER, H5Z_FLAG_MANDATORY,
+                             cd_values_length, &cd_values);
+      LOG4CXX_DEBUG(logger_, "Status: " << status);
+      LOG4CXX_DEBUG(logger_, "Filter avail: " << H5Zfilter_avail(LZ4_FILTER))
+      assert(status >= 0);
+    }
+
     status = H5Pset_chunk(prop, dset_dims.size(), &chunk_dims.front());
     assert(status >= 0);
 
@@ -639,6 +665,7 @@ void FileWriterPlugin::configureFile(OdinData::IpcMessage& config, OdinData::Ipc
  * CONFIG_DATASET_TYPE - Datatype of the dataset
  * CONFIG_DATASET_DIMS - Dimensions of the dataset
  * CONFIG_DATASET_CHUNKS - Chunking parameters of the dataset
+ * CONFIG_DATASET_COMPRESSION - Compression of raw data
  *
  * The configuration is not applied if the writer is currently writing.
  *
@@ -702,6 +729,12 @@ void FileWriterPlugin::configureDataset(OdinData::IpcMessage& config, OdinData::
           chunks[i] = dim.GetUint64();
         }
         dset_def.chunks = chunks;
+      }
+
+      // Check if compression has been specified for the raw data
+      if (config.has_param(FileWriterPlugin::CONFIG_DATASET_COMPRESSION)){
+        dset_def.compression = config.get_param<std::string>(FileWriterPlugin::CONFIG_DATASET_COMPRESSION);
+        LOG4CXX_DEBUG(logger_, "Enabling compression: " << dset_def.compression);
       }
 
       LOG4CXX_DEBUG(logger_, "Creating dataset [" << dset_def.name << "] (" << dset_def.frame_dimensions[0] << ", " << dset_def.frame_dimensions[1] << ")");
