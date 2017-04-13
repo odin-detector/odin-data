@@ -236,7 +236,7 @@ void configureExcalibur(boost::shared_ptr<filewriter::FileWriterController> fwc)
   fwc->configure(cfg, reply);
 }
 
-void configureHDF5(boost::shared_ptr<filewriter::FileWriterController> fwc, string detector) {
+void configureHDF5(boost::shared_ptr<filewriter::FileWriterController> fwc, string input) {
   OdinData::IpcMessage cfg;
   OdinData::IpcMessage reply;
   
@@ -244,7 +244,7 @@ void configureHDF5(boost::shared_ptr<filewriter::FileWriterController> fwc, stri
   cfg.set_param<string>("plugin/load/index", "hdf");
   cfg.set_param<string>("plugin/load/name", "FileWriter");
   cfg.set_param<string>("plugin/connect/index", "hdf");
-  cfg.set_param<string>("plugin/connect/connection", detector);
+  cfg.set_param<string>("plugin/connect/connection", input);
   
   fwc->configure(cfg, reply);
 }
@@ -297,6 +297,26 @@ void configureExcaliburDataset(boost::shared_ptr<filewriter::FileWriterControlle
   fwc->configure(cfg, reply);
 }
 
+void configureEigerDataset(boost::shared_ptr<filewriter::FileWriterController> fwc, string name) {
+  OdinData::IpcMessage cfg;
+  OdinData::IpcMessage reply;
+  
+  rapidjson::Document jsonDoc;
+  rapidjson::Value dims(rapidjson::kArrayType);
+  rapidjson::Document::AllocatorType& dimAllocator = jsonDoc.GetAllocator();
+  jsonDoc.SetObject();
+  dims.PushBack(2167, dimAllocator);
+  dims.PushBack(2070, dimAllocator);
+  
+  cfg.set_param<string>("hdf/dataset/cmd", "create");
+  cfg.set_param<string>("hdf/dataset/name", name);
+  cfg.set_param<int>("hdf/dataset/datatype", 1);
+  cfg.set_param<rapidjson::Value>("hdf/dataset/dims", dims);
+  cfg.set_param<string>("hdf/dataset/compression", "lz4");
+  
+  fwc->configure(cfg, reply);
+}
+
 void configureFileWriter(boost::shared_ptr<filewriter::FileWriterController> fwc, po::variables_map vm) {
   OdinData::IpcMessage cfg;
   OdinData::IpcMessage reply;
@@ -320,6 +340,10 @@ void configurePlugins(boost::shared_ptr<filewriter::FileWriterController> fwc, s
     configureHDF5(fwc, detector);
     configurePercivalDataset(fwc, "data", true);
     configurePercivalDataset(fwc, "reset");
+  }
+  else if (detector == "eiger") {
+    configureHDF5(fwc, "frame_receiver");
+    configureEigerDataset(fwc, "data");
   }
 }
 
