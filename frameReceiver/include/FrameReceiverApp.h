@@ -33,9 +33,8 @@ using namespace log4cxx::helpers;
 #include "FrameReceiverConfig.h"
 #include "FrameReceiverRxThread.h"
 #include "FrameDecoder.h"
-#include "PercivalEmulatorFrameDecoder.h"
-#include "ExcaliburFrameDecoder.h"
 #include "OdinDataException.h"
+#include "ClassLoader.h"
 
 using namespace OdinData;
 

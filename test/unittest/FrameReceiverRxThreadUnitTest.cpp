@@ -48,9 +48,10 @@ public:
         rx_channel(ZMQ_PAIR),
         logger(log4cxx::Logger::getLogger("FrameReceiverRxThreadUnitTest")),
         proxy(config),
-        frame_decoder(new FrameReceiver::PercivalEmulatorFrameDecoder(logger)),
+        frame_decoder(new FrameReceiver::PercivalEmulatorFrameDecoder()),
         buffer_manager(new OdinData::SharedBufferManager("TestSharedBuffer", 10000, 1000))
     {
+    	frame_decoder->init(logger);
 
         BOOST_TEST_MESSAGE("Setup test fixture");
 

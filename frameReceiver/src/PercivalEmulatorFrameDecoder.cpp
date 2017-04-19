@@ -14,19 +14,25 @@
 
 using namespace FrameReceiver;
 
-PercivalEmulatorFrameDecoder::PercivalEmulatorFrameDecoder(LoggerPtr& logger,
-        bool enable_packet_logging, unsigned int frame_timeout_ms) :
-        FrameDecoder(logger, enable_packet_logging),
+PercivalEmulatorFrameDecoder::PercivalEmulatorFrameDecoder() :
+        FrameDecoder(),
 		current_frame_seen_(-1),
 		current_frame_buffer_id_(-1),
 		current_frame_buffer_(0),
 		current_frame_header_(0),
-		dropping_frame_data_(false),
-		frame_timeout_ms_(frame_timeout_ms),
-		frames_timedout_(0)
+		dropping_frame_data_(false)
 {
     current_packet_header_.reset(new uint8_t[sizeof(PercivalEmulator::PacketHeader)]);
     dropped_frame_buffer_.reset(new uint8_t[PercivalEmulator::total_frame_size]);
+}
+
+PercivalEmulatorFrameDecoder::~PercivalEmulatorFrameDecoder()
+{
+}
+
+void PercivalEmulatorFrameDecoder::init(LoggerPtr& logger, bool enable_packet_logging, unsigned int frame_timeout_ms)
+{
+	FrameDecoder::init(logger, enable_packet_logging, frame_timeout_ms);
 
     if (enable_packet_logging_) {
         LOG4CXX_INFO(packet_logger_, "PktHdr: SourceAddress");
@@ -39,10 +45,6 @@ PercivalEmulatorFrameDecoder::PercivalEmulatorFrameDecoder(LoggerPtr& logger,
         LOG4CXX_INFO(packet_logger_, "PktHdr: |               |     |      |  |  |           |       Info [14 Bytes]");
         LOG4CXX_INFO(packet_logger_, "PktHdr: |               |     |      |  |  |           |       |");
     }
-}
-
-PercivalEmulatorFrameDecoder::~PercivalEmulatorFrameDecoder()
-{
 }
 
 const size_t PercivalEmulatorFrameDecoder::get_frame_buffer_size(void) const
