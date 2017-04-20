@@ -5,16 +5,16 @@
  *      Author: gnx91527
  */
 
-#ifndef TOOLS_FILEWRITER_CLASSLOADER_H_
-#define TOOLS_FILEWRITER_CLASSLOADER_H_
+#ifndef ODIN_DATA_CLASSLOADER_H_
+#define ODIN_DATA_CLASSLOADER_H_
 
 #include <dlfcn.h>
 #include <stdio.h>
 #include <unistd.h>
 
-#define REGISTER(Base,Class,Name) filewriter::ClassLoader<Base> cl(Name, filewriter::maker<Base,Class>);
+#define REGISTER(Base,Class,Name) OdinData::ClassLoader<Base> cl(Name, OdinData::maker<Base,Class>);
 
-namespace filewriter
+namespace OdinData
 {
   /**
    * Function template to instantiate a class.
@@ -116,7 +116,7 @@ namespace filewriter
     }
   };
 
-} /* namespace filewriter */
+} /* namespace OdinData */
 
 
-#endif /* TOOLS_FILEWRITER_CLASSLOADER_H_ */
+#endif /* ODIN_DATA_CLASSLOADER_H_ */
