@@ -8,7 +8,7 @@
 #ifndef INCLUDE_PERCIVALEMULATORFRAMEDECODER_H_
 #define INCLUDE_PERCIVALEMULATORFRAMEDECODER_H_
 
-#include "FrameDecoder.h"
+#include "FrameDecoderUDP.h"
 #include "PercivalEmulatorDefinitions.h"
 #include <iostream>
 #include <stdint.h>
@@ -17,7 +17,7 @@
 
 namespace FrameReceiver
 {
-    class PercivalEmulatorFrameDecoder : public FrameDecoder
+    class PercivalEmulatorFrameDecoder : public FrameDecoderUDP
     {
     public:
 

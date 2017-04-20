@@ -16,6 +16,9 @@ FrameReceiverUDPRxThread::FrameReceiverUDPRxThread(FrameReceiverConfig& config, 
 				logger_(logger)
 {
     LOG4CXX_DEBUG_LEVEL(1, logger_, "FrameReceiverUDPRxThread constructor entered....");
+
+    // Store the frame decoder as a UDP type frame decoder
+    frame_decoder_ = boost::shared_dynamic_cast<FrameDecoderUDP>(frame_decoder);
 }
 
 FrameReceiverUDPRxThread::~FrameReceiverUDPRxThread()

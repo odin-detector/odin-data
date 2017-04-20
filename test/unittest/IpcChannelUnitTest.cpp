@@ -17,13 +17,21 @@ struct TestFixture
 
     {
         BOOST_TEST_MESSAGE("Setup test fixture");
-        send_channel.bind("inproc://rx_channel");
-        recv_channel.connect("inproc://rx_channel");
+        std::stringstream channel_string;
+        channel_string << "inproc://rx_channel" << unique_id();
+        send_channel.bind(channel_string.str().c_str());
+        recv_channel.connect(channel_string.str().c_str());
     }
 
     ~TestFixture()
     {
         BOOST_TEST_MESSAGE("Tear down test fixture");
+    }
+
+    int unique_id()
+    {
+    	static int id = 0;
+    	return id++;
     }
 
     OdinData::IpcChannel send_channel;

@@ -20,7 +20,7 @@ using namespace log4cxx::helpers;
 #include "IpcMessage.h"
 #include "IpcReactor.h"
 #include "SharedBufferManager.h"
-#include "FrameDecoder.h"
+#include "FrameDecoderUDP.h"
 
 #include "FrameReceiverConfig.h"
 #include "FrameReceiverRxThread.h"
@@ -46,6 +46,7 @@ namespace FrameReceiver
         void handle_receive_socket(int socket_fd, int recv_port);
 
         LoggerPtr              logger_;
+        FrameDecoderUDPPtr     frame_decoder_;
 
     };
 

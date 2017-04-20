@@ -17,6 +17,9 @@ FrameReceiverZMQRxThread::FrameReceiverZMQRxThread(FrameReceiverConfig& config, 
 				skt_channel_(ZMQ_PULL)
 {
     LOG4CXX_DEBUG_LEVEL(1, logger_, "FrameReceiverZMQRxThread constructor entered....");
+
+    // Store the frame decoder as a UDP type frame decoder
+    frame_decoder_ = boost::shared_dynamic_cast<FrameDecoderZMQ>(frame_decoder);
 }
 
 FrameReceiverZMQRxThread::~FrameReceiverZMQRxThread()
@@ -56,16 +59,16 @@ void FrameReceiverZMQRxThread::handle_receive_socket()
     // Receive a message from the main thread channel
     std::string rx_msg = skt_channel_.recv(0);
 
-	char *buffer_ptr_ = (char *)frame_decoder_->get_next_payload_buffer();
+	char *buffer_ptr_ = (char *)frame_decoder_->get_next_message_buffer();
 
 	// Copy the message into the buffer
 	int msg_len = rx_msg.length();
-	strncpy(buffer_ptr_, rx_msg.c_str(), msg_len);
+	memcpy(buffer_ptr_, rx_msg.c_str(), msg_len);
 
 	LOG4CXX_DEBUG_LEVEL(3, logger_, "RX thread received " << msg_len << " bytes on IPC channel, payload buffer address "
-			<< frame_decoder_->get_next_payload_buffer());
+			<< frame_decoder_->get_next_message_buffer());
 
-	FrameDecoder::FrameReceiveState frame_receive_state = frame_decoder_->process_packet(msg_len);
+	FrameDecoder::FrameReceiveState frame_receive_state = frame_decoder_->process_message(msg_len);
 
 	// Now check for end of messsage
 	if (skt_channel_.eom()){

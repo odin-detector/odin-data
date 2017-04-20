@@ -7,7 +7,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "FrameReceiverRxThread.h"
+#include "FrameReceiverUDPRxThread.h"
 #include "IpcMessage.h"
 #include "SharedBufferManager.h"
 #include "FrameDecoder.h"
@@ -87,8 +87,8 @@ BOOST_AUTO_TEST_CASE( CreateAndPingRxThread )
     bool initOK = true;
 
     try {
-    	/*FrameReceiver::FrameReceiverRxThread rxThread(config, logger, buffer_manager, frame_decoder, 1);
-
+    	FrameReceiver::FrameReceiverUDPRxThread rxThread(config, logger, buffer_manager, frame_decoder, 1);
+    	rxThread.start();
         OdinData::IpcMessage::MsgType msg_type = OdinData::IpcMessage::MsgTypeCmd;
         OdinData::IpcMessage::MsgVal  msg_val =  OdinData::IpcMessage::MsgValCmdStatus;
 
@@ -122,10 +122,10 @@ BOOST_AUTO_TEST_CASE( CreateAndPingRxThread )
                 timeoutCount++;
             }
         }
-
+        rxThread.stop();
         BOOST_CHECK_EQUAL(msgMatch, true);
         BOOST_CHECK_EQUAL(loopCount, replyCount);
-        BOOST_CHECK_EQUAL(timeoutCount, 0);*/
+        BOOST_CHECK_EQUAL(timeoutCount, 0);
         }
     catch (OdinData::OdinDataException& e)
     {

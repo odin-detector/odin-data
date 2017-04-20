@@ -8,7 +8,7 @@
 #ifndef INCLUDE_EXCALIBURFRAMEDECODER_H_
 #define INCLUDE_EXCALIBURFRAMEDECODER_H_
 
-#include "FrameDecoder.h"
+#include "FrameDecoderUDP.h"
 #include "ExcaliburDefinitions.h"
 #include <iostream>
 #include <stdint.h>
@@ -17,7 +17,7 @@
 
 namespace FrameReceiver
 {
-    class ExcaliburFrameDecoder : public FrameDecoder
+    class ExcaliburFrameDecoder : public FrameDecoderUDP
     {
     public:
 

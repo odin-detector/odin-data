@@ -173,6 +173,7 @@ void FrameReceiverRxThread::handle_rx_channel(void)
 
 }
 
+/*
 void FrameReceiverRxThread::handle_receive_socket(int recv_socket, int recv_port)
 {
 
@@ -206,6 +207,7 @@ void FrameReceiverRxThread::handle_receive_socket(int recv_socket, int recv_port
 
 	FrameDecoder::FrameReceiveState frame_receive_state = frame_decoder_->process_packet(bytes_received);
 }
+*/
 
 void FrameReceiverRxThread::tick_timer(void)
 {

@@ -58,7 +58,6 @@ namespace FrameReceiver
         void register_socket(int socket_fd, ReactorCallback callback);
 
         FrameReceiverConfig&   config_;
-        FrameDecoderPtr        frame_decoder_;
         IpcReactor             reactor_;
 
     private:
@@ -66,13 +65,14 @@ namespace FrameReceiver
         void run_service(void);
 
         void handle_rx_channel(void);
-        void handle_receive_socket(int socket_fd, int recv_port);
+//        void handle_receive_socket(int socket_fd, int recv_port);
         void tick_timer(void);
         void buffer_monitor_timer(void);
 
         LoggerPtr              logger_;
         SharedBufferManagerPtr buffer_manager_;
         unsigned int           tick_period_ms_;
+        FrameDecoderPtr        frame_decoder_;
 
         IpcChannel             rx_channel_;
         int                    recv_socket_;
