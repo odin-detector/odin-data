@@ -25,7 +25,8 @@ namespace FrameReceiver
 
 		FrameReceiverConfig() :
 		    max_buffer_mem_(Defaults::default_max_buffer_mem),
-		    sensor_type_(Defaults::SensorTypeIllegal),
+		    sensor_type_(Defaults::default_sensor_type),
+			rx_type_(Defaults::default_rx_type),
 		    rx_address_(Defaults::default_rx_address),
 		    rx_recv_buffer_size_(Defaults::default_rx_recv_buffer_size),
 		    rx_channel_endpoint_(Defaults::default_rx_chan_endpoint),
@@ -58,33 +59,32 @@ namespace FrameReceiver
             }
 		}
 
-		Defaults::SensorType map_sensor_name_to_type(std::string& sensor_name)
+		Defaults::RxType map_rx_name_to_type(std::string& rx_name)
 		{
+		    Defaults::RxType rx_type = Defaults::RxTypeIllegal;
 
-		    Defaults::SensorType sensor_type = Defaults::SensorTypeIllegal;
+			    static std::map<std::string, Defaults::RxType> rx_name_map;
 
-		    static std::map<std::string, Defaults::SensorType> sensor_name_map;
+			    if (rx_name_map.empty()){
+			        rx_name_map["udp"] = Defaults::RxTypeUDP;
+			        rx_name_map["UDP"] = Defaults::RxTypeUDP;
+			        rx_name_map["zmq"]  = Defaults::RxTypeZMQ;
+			        rx_name_map["ZMQ"]  = Defaults::RxTypeZMQ;
+			    }
 
-		    if (sensor_name_map.empty())
-		    {
-		        sensor_name_map["percivalemulator"] = Defaults::SensorTypePercivalEmulator;
-		        sensor_name_map["percival2m"]  = Defaults::SensorTypePercival2M;
-		        sensor_name_map["percival13m"] = Defaults::SensorTypePercival13M;
-		        sensor_name_map["excalibur"]   = Defaults::SensorTypeExcalibur;
-		    }
+			    if (rx_name_map.count(rx_name)){
+			        rx_type = rx_name_map[rx_name];
+			    }
 
-		    if (sensor_name_map.count(sensor_name))
-		    {
-		        sensor_type = sensor_name_map[sensor_name];
-		    }
-
-		    return sensor_type;
-		}
+			    return rx_type;
+			}
 
 	private:
 
 		std::size_t           max_buffer_mem_;         //!< Amount of shared buffer memory to allocate for frame buffers
-		Defaults::SensorType  sensor_type_;            //!< Sensor type receiving data for - drives frame size
+		std::string           sensor_path_;            //!< Path to decoder library
+		std::string           sensor_type_;            //!< Sensor type receiving data for - drives frame size
+		Defaults::RxType      rx_type_;                //!< Type of receiver interface (UDP or ZMQ)
 		std::vector<uint16_t> rx_ports_;               //!< Port(s) to receive frame data on
 		std::string           rx_address_;             //!< IP address to receive frame data on
 		int                   rx_recv_buffer_size_;    //!< Receive socket buffer size
@@ -99,6 +99,8 @@ namespace FrameReceiver
 
 		friend class FrameReceiverApp;
 		friend class FrameReceiverRxThread;
+		friend class FrameReceiverUDPRxThread;
+		friend class FrameReceiverZMQRxThread;
 		friend class FrameReceiverConfigTestProxy;
 		friend class FrameReceiverRxThreadTestProxy;
 	};

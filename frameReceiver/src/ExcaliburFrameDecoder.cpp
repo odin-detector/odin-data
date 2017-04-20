@@ -15,7 +15,7 @@
 using namespace FrameReceiver;
 
 ExcaliburFrameDecoder::ExcaliburFrameDecoder() :
-        FrameDecoder(),
+        FrameDecoderUDP(),
 		current_frame_seen_(-1),
 		current_frame_buffer_id_(-1),
 		current_frame_buffer_(0),

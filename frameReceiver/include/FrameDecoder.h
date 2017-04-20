@@ -69,6 +69,9 @@ namespace FrameReceiver
         	frame_timeout_ms_ = frame_timeout_ms;
         };
 
+        virtual const size_t get_frame_buffer_size(void) const = 0;
+        virtual const size_t get_frame_header_size(void) const = 0;
+
         void register_buffer_manager(OdinData::SharedBufferManagerPtr buffer_manager)
         {
             buffer_manager_ = buffer_manager;
@@ -78,21 +81,6 @@ namespace FrameReceiver
         {
         	ready_callback_ = callback;
         }
-
-        virtual const size_t get_frame_buffer_size(void) const = 0;
-        virtual const size_t get_frame_header_size(void) const = 0;
-
-        virtual const bool requires_header_peek(void) const = 0;
-
-        virtual const size_t get_packet_header_size(void) const = 0;
-        virtual void* get_packet_header_buffer(void) = 0;
-		virtual void process_packet_header(size_t bytes_received, int port, struct sockaddr_in* from_addr) = 0;
-
-        virtual void* get_next_payload_buffer(void) const = 0;
-        virtual size_t get_next_payload_size(void) const = 0;
-        virtual FrameReceiveState process_packet(size_t bytes_received) = 0;
-
-        virtual void monitor_buffers(void) = 0;
 
         void push_empty_buffer(int buffer_id)
         {
@@ -108,6 +96,8 @@ namespace FrameReceiver
         {
             return frame_buffer_map_.size();
         }
+
+        virtual void monitor_buffers(void) = 0;
 
     protected:
         LoggerPtr logger_;

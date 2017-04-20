@@ -261,7 +261,7 @@ namespace filewriter
     if (plugins_.count(index) == 0){
       // Dynamically class load the plugin
       // Add the plugin to the map, indexed by the name
-      boost::shared_ptr<FileWriterPlugin> plugin = ClassLoader<FileWriterPlugin>::load_class(name, library);
+      boost::shared_ptr<FileWriterPlugin> plugin = OdinData::ClassLoader<FileWriterPlugin>::load_class(name, library);
       plugin->setName(index);
       plugins_[index] = plugin;
       // Start the plugin worker thread

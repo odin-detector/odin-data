@@ -111,6 +111,10 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
 					"Set the maximum amount of shared memory to allocate for frame buffers")
 				("sensortype,s", po::value<std::string>()->default_value("unknown"),
 					"Set the sensor type to receive frame data from")
+				("path",         po::value<std::string>()->default_value(""),
+					"Path to load the decoder library from")
+				("rxtype",       po::value<std::string>()->default_value("udp"),
+                    "Set the interface to use for receiving frame data (udp or zmq)")
 				("port,p",       po::value<std::string>()->default_value(FrameReceiver::Defaults::default_rx_port_list),
                     "Set the port to receive frame data on")
                 ("ipaddress,i",  po::value<std::string>()->default_value(FrameReceiver::Defaults::default_rx_address),
@@ -203,9 +207,21 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
 
 		if (vm.count("sensortype"))
 		{
-		    std::string sensor_name = vm["sensortype"].as<std::string>();
-		    config_.sensor_type_ = config_.map_sensor_name_to_type(sensor_name);
-		    LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting sensor type to " << sensor_name << " (" << config_.sensor_type_ << ")");
+			config_.sensor_type_ = vm["sensortype"].as<std::string>();
+		    LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting sensor type to " << config_.sensor_type_);
+		}
+
+		if (vm.count("path"))
+		{
+			config_.sensor_path_ = vm["path"].as<std::string>();
+		    LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting decoder path to " << config_.sensor_path_);
+		}
+
+		if (vm.count("rxtype"))
+		{
+		    std::string rx_name = vm["rxtype"].as<std::string>();
+		    config_.rx_type_ = config_.map_rx_name_to_type(rx_name);
+		    LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting rx type to " << rx_name << " (" << config_.rx_type_ << ")");
 		}
 
 		if (vm.count("port"))
@@ -319,7 +335,21 @@ void FrameReceiverApp::run(void)
         initialise_buffer_manager();
 
         // Create the RX thread object
-        rx_thread_.reset(new FrameReceiverRxThread( config_, logger_, buffer_manager_, frame_decoder_));
+        switch(config_.rx_type_)
+        {
+        case Defaults::RxTypeUDP:
+            rx_thread_.reset(new FrameReceiverUDPRxThread( config_, logger_, buffer_manager_, frame_decoder_));
+        	break;
+
+        case Defaults::RxTypeZMQ:
+            rx_thread_.reset(new FrameReceiverZMQRxThread( config_, logger_, buffer_manager_, frame_decoder_));
+            break;
+
+        default:
+            throw OdinData::OdinDataException("Cannot create RX thread - RX type not recognised");
+            break;
+        }
+        rx_thread_->start();
 
         // Pre-charge all frame buffers onto the RX thread queue ready for use
         precharge_buffers();
@@ -328,6 +358,9 @@ void FrameReceiverApp::run(void)
 
         // Run the reactor event loop
         reactor_.run();
+
+        // Call cleanup on the RxThread
+        rx_thread_->stop();
 
         // Destroy the RX thread
         rx_thread_.reset();
@@ -402,32 +435,23 @@ void FrameReceiverApp::initialise_frame_decoder(void)
 {
 	std::string libDir(BUILD_DIR);
 	libDir += "/lib/";
+	if (config_.sensor_path_ != ""){
+		libDir = config_.sensor_path_;
+		// Check if the last character is '/', if not append it
+		if (*libDir.rbegin() != '/'){
+			libDir += "/";
+		}
+	}
     LOG4CXX_INFO(logger_, "Loading decoder libraries from " + libDir);
-    switch (config_.sensor_type_)
-    {
-    case Defaults::SensorTypePercivalEmulator:
-    	frame_decoder_ = filewriter::ClassLoader<FrameDecoder>::load_class("PercivalEmulatorFrameDecoder", libDir + "libPercivalEmulatorFrameDecoder.so");
-        LOG4CXX_INFO(logger_, "Created PERCIVAL emulator frame decoder instance");
-        break;
+    std::string libName = "lib" + config_.sensor_type_ + "FrameDecoder.so";
+    std::string clsName = config_.sensor_type_ + "FrameDecoder";
+	frame_decoder_ = OdinData::ClassLoader<FrameDecoder>::load_class(clsName, libDir + libName);
+	if (!frame_decoder_){
+        throw OdinData::OdinDataException("Cannot initialise frame decoder - sensor type not recognised");
+	} else {
+		LOG4CXX_INFO(logger_, "Created " << clsName << " frame decoder instance");
+	}
 
-    case Defaults::SensorTypePercival2M:
-    case Defaults::SensorTypePercival13M:
-        throw OdinData::OdinDataException("Cannot initialize frame decoder - sensor type not yet implemented");
-        break;
-
-    case Defaults::SensorTypeExcalibur:
-    	frame_decoder_ = filewriter::ClassLoader<FrameDecoder>::load_class("ExcaliburFrameDecoder", libDir + "libExcaliburFrameDecoder.so");
-    	LOG4CXX_INFO(logger_, "Created EXCALIBUR frame decoder instance");
-    	break;
-
-    case Defaults::SensorTypeIllegal:
-        throw OdinData::OdinDataException("Cannot initialize frame decoder - illegal sensor type specified");
-        break;
-
-    default:
-        throw OdinData::OdinDataException("Cannot initialize frame decoder - sensor type not recognised");
-        break;
-    }
     // Initialise the decoder object
 	frame_decoder_->init(logger_, config_.enable_packet_logging_, config_.frame_timeout_ms_);
 }
