@@ -25,6 +25,12 @@ set(COMMON_LIBRARY ${PROJECT_NAME})
 # directories of additional CMake modules (ie. MacroOutOfSourceBuild.cmake):
 set(CMAKE_MODULE_PATH ${odinData_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
+# Allow macOS shared (dynamic) libraries to link with undefined symbols
+if (APPLE)
+	message("Allowing undefined symbols in macOS shared library linking")
+    set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -undefined dynamic_lookup")
+endif(APPLE)
+
 # Find and add external packages required for application and test
 find_package( Boost 1.41.0
 	      REQUIRED
@@ -47,7 +53,7 @@ IF (HDF5_ROOT)
              PATHS ${HDF5_ROOT}/include
              NO_DEFAULT_PATH )
   find_library( HDF5_LIBRARIES
-                NAMES hdf5 
+                NAMES hdf5
                 PATHS ${HDF5_ROOT}/lib
                 NO_DEFAULT_PATH )
   find_library( HDF5HL_LIBRARIES
@@ -62,7 +68,7 @@ IF (HDF5_ROOT)
 ELSE(HDF5_ROOT)
     # If no HDF5_ROOT variable has been set then we just
     # use the built-in FindHDF5.cmake...
-    find_package(HDF5 1.8.14 
+    find_package(HDF5 1.8.14
                  COMPONENTS C HL)
 ENDIF(HDF5_ROOT)
 
@@ -81,7 +87,6 @@ ELSE (NOT HDF5_FOUND)
     add_subdirectory(${FRAMEPROCESSOR_DIR})
 ENDIF (NOT HDF5_FOUND)
 
-
 # Add the tools subdirectory
 add_subdirectory(tools)
 
@@ -93,4 +98,3 @@ add_subdirectory(doc)
 
 # Add the config subdirectory (config files used for integration testing)
 add_subdirectory(config)
-
