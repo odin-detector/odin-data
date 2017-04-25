@@ -445,13 +445,20 @@ void FrameReceiverApp::initialise_frame_decoder(void)
     LOG4CXX_INFO(logger_, "Loading decoder libraries from " + libDir);
     std::string libName = "lib" + config_.sensor_type_ + "FrameDecoder.so";
     std::string clsName = config_.sensor_type_ + "FrameDecoder";
-	frame_decoder_ = OdinData::ClassLoader<FrameDecoder>::load_class(clsName, libDir + libName);
-	if (!frame_decoder_){
-        throw OdinData::OdinDataException("Cannot initialise frame decoder - sensor type not recognised");
-	} else {
-		LOG4CXX_INFO(logger_, "Created " << clsName << " frame decoder instance");
-	}
 
+    try {
+		frame_decoder_ = OdinData::ClassLoader<FrameDecoder>::load_class(clsName, libDir + libName);
+		if (!frame_decoder_){
+			throw OdinData::OdinDataException("Cannot initialise frame decoder: sensor type not recognised");
+		} else {
+			LOG4CXX_INFO(logger_, "Created " << clsName << " frame decoder instance");
+		}
+    }
+	catch (const std::runtime_error& e) {
+		std::stringstream sstr;
+		sstr << "Cannot initialise frame decoder: " << e.what();
+		throw OdinData::OdinDataException(sstr.str());
+	}
     // Initialise the decoder object
 	frame_decoder_->init(logger_, config_.enable_packet_logging_, config_.frame_timeout_ms_);
 }
