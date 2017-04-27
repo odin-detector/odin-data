@@ -377,6 +377,10 @@ void FrameReceiverApp::run(void)
     {
         LOG4CXX_ERROR(logger_, "Frame receiver run failed: " << e.what());
     }
+    catch (exception& e)
+    {
+      LOG4CXX_ERROR(logger_, "Generic exception during frame receiver run:\n" << e.what());
+    }
     catch (...)
     {
         LOG4CXX_ERROR(logger_, "Unexpected exception during frame receiver run");
