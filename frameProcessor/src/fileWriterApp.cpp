@@ -77,7 +77,7 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
                 ("ctrl",    po::value<std::string>()->default_value("tcp://127.0.0.1:5004"),
                     "Set the name of the shared memory frame buffer")
                 ("output,o",     po::value<std::string>()->default_value("test.hdf5"),
-                    "Name of HDF5 file to write frames to (default: no file writing)")
+                    "Name of HDF5 file to write frames to (default: test.hdf5)")
                 ("processes,p",  po::value<unsigned int>()->default_value(1),
                     "Number of concurrent file writer processes"   )
                 ("rank,r",       po::value<unsigned int>()->default_value(0),
