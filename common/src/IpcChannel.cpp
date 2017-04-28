@@ -88,6 +88,17 @@ const std::string IpcChannel::recv()
     return std::string(static_cast<char*>(msg.data()), msg.size());
 }
 
+const std::size_t IpcChannel::recv_raw(void *dPtr)
+{
+    std::size_t msg_size;
+    zmq::message_t msg;
+
+    socket_.recv(&msg);
+    msg_size = msg.size();
+    memcpy(dPtr, msg.data(), msg_size);
+    return msg_size;
+}
+
 bool IpcChannel::eom(void)
 {
 	bool eom = true;
