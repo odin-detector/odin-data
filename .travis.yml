@@ -30,12 +30,12 @@ install:
 - mkdir -p build
 - cd build
 - cmake -DHDF5_ROOT=$HDF5_ROOT ..
-- make -j VERBOSE=1
+- make -j 4 VERBOSE=1
 - HDF5_DIR=$HDF5_ROOT pip install --user h5py
 - pip install --user -r $PYTHONPATH/requirements-travis.txt
 script:
 - bin/frameReceiverTest --log_level=all
-- bin/fileWriterTest --log_level=all
+- bin/frameProcessorTest --log_level=all
 notifications:
   slack:
     secure: co/PaEjGldADmPdZVg66Ry2IZMwA/ttadneZ+LaA+nzT/heAfIOjCBLngHGe2zp1lzSi49IiZ0uKJPBq5ugrxzXwj7OD7RNH54033dAXTP0FOwM/HKppRqTNsRUANs+zQn/jyUI6EL7Mmf0WbS22aVP7EwyL4ogCLv3ZoqufYRPN4aefVRREK3JoUNAERb9I8npFeeBcvdYl1zpzJu9DaKOWuX7V/X6fBC/nvoq5LRWYkGaSUkkHS3bJsM77YG9aKKVY7XbBy2TlYvIPzE1lPjb+j3ZhRcuElPWgM4JtX4iYb7mb1+jDTQ0GFMDUuy75NFpNRjo4exYRZhJPkgY27yoUGloyXPbzqI/cI9e2cItTURVB1580cCY9JN6Ry5n25aGJT0joLkohYT9/s2cbcFREdE+rbDl7Ny2CxNzvHkt5hT4bYF+KKAaZzg/ckDAhzTMaHLAgJzdEQTDotw9hcai3inB6CSkR+wABVEEEeePwrt5JmRpW0Q8YLjrfkbLsStz0WlJ/UQ+RFGI/0igAVj7M/5qGRcRZ1spkF6EUvw3f09MYNHAhjcYPhypv+I9pZB8yIW4GVd+a9mhyYdB1ccfJXz0WXamG5z9EXLB02ucp6i+YgiILdUVsYk1uKo53lKQbcJlDl43WalqumcgfwSBVve/WjDlqEjOu7VlN5+4=

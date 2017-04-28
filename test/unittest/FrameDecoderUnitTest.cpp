@@ -29,7 +29,8 @@ BOOST_FIXTURE_TEST_SUITE(FrameDecoderUnitTest, FrameDecoderTestFixture);
 
 BOOST_AUTO_TEST_CASE( PercivalEmulatorDecoderTest )
 {
-    boost::shared_ptr<FrameReceiver::FrameDecoder> decoder(new FrameReceiver::PercivalEmulatorFrameDecoder(logger));
+    boost::shared_ptr<FrameReceiver::FrameDecoderUDP> decoder(new FrameReceiver::PercivalEmulatorFrameDecoder());
+    decoder->init(logger);
 
     BOOST_TEST_MESSAGE("Emulator buffer size is specified as " << decoder->get_frame_buffer_size());
     BOOST_TEST_MESSAGE("Emulator frame header size is specified as " << decoder->get_frame_header_size());

@@ -7,7 +7,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "FrameReceiverRxThread.h"
+#include "FrameReceiverUDPRxThread.h"
 #include "IpcMessage.h"
 #include "SharedBufferManager.h"
 #include "FrameDecoder.h"
@@ -48,9 +48,10 @@ public:
         rx_channel(ZMQ_PAIR),
         logger(log4cxx::Logger::getLogger("FrameReceiverRxThreadUnitTest")),
         proxy(config),
-        frame_decoder(new FrameReceiver::PercivalEmulatorFrameDecoder(logger)),
-        buffer_manager(new FrameReceiver::SharedBufferManager("TestSharedBuffer", 10000, 1000))
+        frame_decoder(new FrameReceiver::PercivalEmulatorFrameDecoder()),
+        buffer_manager(new OdinData::SharedBufferManager("TestSharedBuffer", 10000, 1000))
     {
+    	frame_decoder->init(logger);
 
         BOOST_TEST_MESSAGE("Setup test fixture");
 
@@ -70,12 +71,12 @@ public:
         BOOST_TEST_MESSAGE("Tear down test fixture");
     }
 
-    FrameReceiver::IpcChannel rx_channel;
+    OdinData::IpcChannel rx_channel;
     FrameReceiver::FrameReceiverConfig config;
     log4cxx::LoggerPtr logger;
     FrameReceiver::FrameReceiverRxThreadTestProxy proxy;
     FrameReceiver::FrameDecoderPtr frame_decoder;
-    FrameReceiver::SharedBufferManagerPtr buffer_manager;
+    OdinData::SharedBufferManagerPtr buffer_manager;
 };
 
 BOOST_FIXTURE_TEST_SUITE(FrameReceiverRxThreadUnitTest, FrameReceiverRxThreadTestFixture);
@@ -86,10 +87,10 @@ BOOST_AUTO_TEST_CASE( CreateAndPingRxThread )
     bool initOK = true;
 
     try {
-        FrameReceiver::FrameReceiverRxThread rxThread(config, logger, buffer_manager, frame_decoder, 1);
-
-        FrameReceiver::IpcMessage::MsgType msg_type = FrameReceiver::IpcMessage::MsgTypeCmd;
-        FrameReceiver::IpcMessage::MsgVal  msg_val =  FrameReceiver::IpcMessage::MsgValCmdStatus;
+    	FrameReceiver::FrameReceiverUDPRxThread rxThread(config, logger, buffer_manager, frame_decoder, 1);
+    	rxThread.start();
+        OdinData::IpcMessage::MsgType msg_type = OdinData::IpcMessage::MsgTypeCmd;
+        OdinData::IpcMessage::MsgVal  msg_val =  OdinData::IpcMessage::MsgValCmdStatus;
 
         int loopCount = 500;
         int replyCount = 0;
@@ -98,7 +99,7 @@ BOOST_AUTO_TEST_CASE( CreateAndPingRxThread )
 
         for (int loop = 0; loop < loopCount; loop++)
         {
-            FrameReceiver::IpcMessage message(msg_type, msg_val);
+            OdinData::IpcMessage message(msg_type, msg_val);
             message.set_param<int>("count", loop);
             rx_channel.send(message.encode());
         }
@@ -109,9 +110,9 @@ BOOST_AUTO_TEST_CASE( CreateAndPingRxThread )
             {
                 std::string reply = rx_channel.recv();
 
-                FrameReceiver::IpcMessage response(reply.c_str());
-                msgMatch &= (response.get_msg_type() == FrameReceiver::IpcMessage::MsgTypeAck);
-                msgMatch &= (response.get_msg_val() == FrameReceiver::IpcMessage::MsgValCmdStatus);
+                OdinData::IpcMessage response(reply.c_str());
+                msgMatch &= (response.get_msg_type() == OdinData::IpcMessage::MsgTypeAck);
+                msgMatch &= (response.get_msg_val() == OdinData::IpcMessage::MsgValCmdStatus);
                 msgMatch &= (response.get_param<int>("count", -1) == replyCount);
                 replyCount++;
                 timeoutCount = 0;
@@ -121,12 +122,12 @@ BOOST_AUTO_TEST_CASE( CreateAndPingRxThread )
                 timeoutCount++;
             }
         }
-
+        rxThread.stop();
         BOOST_CHECK_EQUAL(msgMatch, true);
         BOOST_CHECK_EQUAL(loopCount, replyCount);
         BOOST_CHECK_EQUAL(timeoutCount, 0);
         }
-    catch (FrameReceiver::FrameReceiverException& e)
+    catch (OdinData::OdinDataException& e)
     {
         initOK = false;
         BOOST_TEST_MESSAGE("Creation of FrameReceiverRxThread failed: " << e.what());
