@@ -86,7 +86,7 @@ class FileWriterPlugin : public FrameProcessorPlugin
     void closeFile();
 
     size_t getFrameOffset(size_t frame_no) const;
-    void setStartFrameOffset(size_t frame_no);
+    void setFrameOffsetAdjustment(size_t frame_no);
 
     void startWriting();
     void stopWriting();
@@ -136,7 +136,9 @@ class FileWriterPlugin : public FrameProcessorPlugin
     static const std::string CONFIG_MASTER_DATASET;
     /** Configuration constant for starting and stopping writing of frames */
     static const std::string CONFIG_WRITE;
-    
+    /** Configuration constant for the frame offset */
+    static const std::string CONFIG_OFFSET_ADJUSTMENT;
+
     /** Filter definition to write datasets with LZ4 compressed data */
     static const H5Z_filter_t LZ4_FILTER = (H5Z_filter_t)32004;
     /** Filter definition to write datasets with bitshuffle processed data */
@@ -154,6 +156,7 @@ class FileWriterPlugin : public FrameProcessorPlugin
     size_t adjustFrameOffset(size_t frame_no) const;
 
     void processFrame(boost::shared_ptr<Frame> frame);
+    size_t getDatasetFrames(const std::string dset_name);
 
     /** Pointer to logger */
     LoggerPtr logger_;
@@ -175,8 +178,8 @@ class FileWriterPlugin : public FrameProcessorPlugin
     size_t concurrent_processes_;
     /** Rank of this file writer */
     size_t concurrent_rank_;
-    /** Starting frame offset */
-    size_t start_frame_offset_;
+    /** Offset between raw frame ID and position in dataset */
+    size_t frame_offset_adjustment_;
     /** Internal ID of the file being written to */
     hid_t hdf5_fileid_;
     /** Internal HDF5 error flag */

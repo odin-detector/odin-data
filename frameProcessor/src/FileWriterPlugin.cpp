@@ -30,6 +30,7 @@ const std::string FileWriterPlugin::CONFIG_DATASET_COMPRESSION = "compression";
 
 const std::string FileWriterPlugin::CONFIG_FRAMES              = "frames";
 const std::string FileWriterPlugin::CONFIG_MASTER_DATASET      = "master";
+const std::string FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT   = "offset";
 const std::string FileWriterPlugin::CONFIG_WRITE               = "write";
 
 herr_t hdf5_error_cb(unsigned n, const H5E_error2_t *err_desc, void* client_data)
@@ -60,7 +61,7 @@ FileWriterPlugin::FileWriterPlugin() :
   concurrent_rank_(0),
   hdf5_fileid_(0),
   hdf5ErrorFlag_(false),
-  start_frame_offset_(0)
+  frame_offset_adjustment_(0)
 {
     this->logger_ = Logger::getLogger("FW.FileWriterPlugin");
     this->logger_->setLevel(Level::getTrace());
@@ -69,9 +70,6 @@ FileWriterPlugin::FileWriterPlugin() :
     H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
     H5Ewalk2(H5E_DEFAULT, H5E_WALK_DOWNWARD, hdf5_error_cb, this);
     //H5Eset_auto2(H5E_DEFAULT, my_hdf5_error_handler, NULL);
-
-    this->hdf5_fileid_ = 0;
-    this->start_frame_offset_ = 0;
 }
 
 /**
@@ -175,6 +173,7 @@ void FileWriterPlugin::writeSubFrames(const Frame& frame) {
 
     hsize_t frame_offset = 0;
     frame_offset = this->getFrameOffset(frame_no);
+    LOG4CXX_DEBUG(logger_, "Frame offset: " << frame_offset);
 
     this->extend_dataset(dset, frame_offset + 1);
 
@@ -243,27 +242,25 @@ void FileWriterPlugin::createDataset(const FileWriterPlugin::DatasetDefinition& 
     prop = H5Pcreate(H5P_DATASET_CREATE);
 
     /* Enable writing of compressed data */
-    if (definition.compression == "lz4" or definition.compression == "bslz4") {
-      if (definition.compression == "bslz4") {
-        LOG4CXX_DEBUG(logger_, "Adding bit shuffle filter");
-        // Create cd_values with extra data describing the compression. Here there is none.
-        unsigned int cd_values_bs[0];
-        size_t cd_values_bs_length = 0;
-        status = H5Pset_filter(prop, BS_FILTER, H5Z_FLAG_MANDATORY,
-                               cd_values_bs_length, cd_values_bs);
-        LOG4CXX_DEBUG(logger_, "Status: " << status);
-        LOG4CXX_DEBUG(logger_, "Filter avail: " << H5Zfilter_avail(BS_FILTER))
-        assert(status >= 0);
-      }
+    if (definition.compression == "lz4") {
       LOG4CXX_DEBUG(logger_, "Adding lz4 compression filter");
-      // Create cd_values with extra data describing the compression. Here we only have one; the LZ4 compression level
+      // Create cd_values for filter to set the LZ4 compression level
       unsigned int cd_values = 3;
       size_t cd_values_length = 1;
       status = H5Pset_filter(prop, LZ4_FILTER, H5Z_FLAG_MANDATORY,
                              cd_values_length, &cd_values);
-      LOG4CXX_DEBUG(logger_, "Status: " << status);
-      LOG4CXX_DEBUG(logger_, "Filter avail: " << H5Zfilter_avail(LZ4_FILTER))
       assert(status >= 0);
+      LOG4CXX_DEBUG(logger_, "Filter avail: " << H5Zfilter_avail(LZ4_FILTER))
+    }
+    else if (definition.compression == "bslz4") {
+      LOG4CXX_DEBUG(logger_, "Adding bit shuffle + lz4 filter");
+      // Create cd_values for filter to set default block size and to enable LZ4
+      unsigned int cd_values[2] = {0, 2};
+      size_t cd_values_length = 2;
+      status = H5Pset_filter(prop, BS_FILTER, H5Z_FLAG_MANDATORY,
+                             cd_values_length, cd_values);
+      assert(status >= 0);
+      LOG4CXX_DEBUG(logger_, "Filter avail: " << H5Zfilter_avail(BS_FILTER))
     }
 
     status = H5Pset_chunk(prop, dset_dims.size(), &chunk_dims.front());
@@ -403,22 +400,24 @@ size_t FileWriterPlugin::getFrameOffset(size_t frame_no) const {
  */
 size_t FileWriterPlugin::adjustFrameOffset(size_t frame_no) const {
     size_t frame_offset = 0;
-    if (frame_no < this->start_frame_offset_) {
+    if (frame_no < this->frame_offset_adjustment_) {
         // Deal with a frame arriving after the very first frame
         // which was used to set the offset: throw a range error
         throw std::range_error("Frame out of order at start causing negative file offset");
     }
 
     // Normal case: apply offset
-    frame_offset = frame_no - this->start_frame_offset_;
+    LOG4CXX_DEBUG(logger_, "Raw frame number: " << frame_no);
+    LOG4CXX_DEBUG(logger_, "Frame offset adjustment: " << frame_offset_adjustment_);
+    frame_offset = frame_no - this->frame_offset_adjustment_;
     return frame_offset;
 }
 
-/** Part of big nasty work-around for the missing frame counter reset in FW
+/** Set frame offset
  *
  */
-void FileWriterPlugin::setStartFrameOffset(size_t frame_no) {
-    this->start_frame_offset_ = frame_no;
+void FileWriterPlugin::setFrameOffsetAdjustment(size_t frame_no) {
+    this->frame_offset_adjustment_ = frame_no;
 }
 
 /** Extend the HDF5 dataset ready for new data
@@ -471,8 +470,14 @@ void FileWriterPlugin::processFrame(boost::shared_ptr<Frame> frame)
     // Check if this is a master frame (for multi dataset acquisitions)
     // or if no master frame has been defined.  If either of these conditions
     // are true then increment the number of frames written.
-    if (masterFrame_ == "" || masterFrame_ == frame->get_dataset_name()){
-      framesWritten_++;
+    if (masterFrame_ == "" || masterFrame_ == frame->get_dataset_name()) {
+      size_t datasetFrames = this->getDatasetFrames(frame->get_dataset_name());
+      if (datasetFrames == framesWritten_) {
+        LOG4CXX_DEBUG(logger_, "Frame " << datasetFrames << " rewritten");
+      }
+      else {
+        framesWritten_ = datasetFrames;
+      }
       LOG4CXX_DEBUG(logger_, "Master frame processed");
     }
     else {
@@ -480,13 +485,27 @@ void FileWriterPlugin::processFrame(boost::shared_ptr<Frame> frame)
     }
 
     // Check if we have written enough frames and stop
-    if (framesWritten_ == framesToWrite_){
+    if (framesWritten_ == framesToWrite_) {
       this->stopWriting();
     }
     
     // Push frame to any registered callbacks
     this->push(frame);
   }
+}
+
+/** Read the current number of frames in a HDF5 dataset
+ *
+ * \param[in] dataset - HDF5 dataset
+ */
+size_t FileWriterPlugin::getDatasetFrames(const std::string dset_name)
+{
+  hid_t dspace = H5Dget_space(this->get_hdf5_dataset(dset_name).datasetid);
+  const int ndims = H5Sget_simple_extent_ndims(dspace);
+  hsize_t dims[ndims];
+  H5Sget_simple_extent_dims(dspace, dims, NULL);
+
+  return (size_t)dims[0];
 }
 
 /** Start writing frames to file.
@@ -578,6 +597,13 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
   // Check to see if the master dataset is being set
   if (config.has_param(FileWriterPlugin::CONFIG_MASTER_DATASET)){
     masterFrame_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_MASTER_DATASET);
+  }
+
+  // Check if we are setting the frame offset adjustment
+  if (config.has_param(FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT)) {
+    LOG4CXX_DEBUG(logger_, "Setting frame offset adjustment to "
+                           << config.get_param<int>(FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT));
+    frame_offset_adjustment_ = (size_t)config.get_param<int>(FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT);
   }
 
   // Final check is to start or stop writing
