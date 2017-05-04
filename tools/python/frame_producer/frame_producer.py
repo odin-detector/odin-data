@@ -52,6 +52,8 @@ class FrameProducer(object):
                             help="list destination host(s) IP address:port (e.g. 0.0.0.1:8081)")
         parser.add_argument('--frames', '-n', type=int, default=1,
                             help='select number of frames to transmit')
+        parser.add_argument('--start_frame', '-s', type=int, default=0,
+                            help='select number of frames to transmit')
         parser.add_argument('--interval', '-t', type=float, default=0.1,
                             help="select frame interval in seconds")
         parser.add_argument('--display', "-d", action='store_true',
@@ -64,6 +66,7 @@ class FrameProducer(object):
         
         self.destaddr = args.destaddr
         self.frames   = args.frames
+        self.start    = args.start_frame
         self.interval = args.interval
         self.display  = args.display
         
@@ -154,7 +157,7 @@ class FrameProducer(object):
         # Number of destination(s)
         index = len(self.host)
 
-        for frame in range(self.frames):
+        for frame in range(self.start, self.start + self.frames):
             
             print "frame: ", frame
             info_offset = (frame % 16)*16
