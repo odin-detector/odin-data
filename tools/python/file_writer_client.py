@@ -30,6 +30,7 @@ class PercivalClientApp(npyscreen.NPSAppManaged):
         self.registerForm("LOAD_PLUGIN", LoadPlugin())
         self.registerForm("SETUP_PROCESS", SetupFileProcess())
         self.registerForm("SETUP_FILE", SetupFileWriting())
+        self.registerForm("REWIND", Rewind())
         self.registerForm("SETUP_EXCALIBUR", SetupExcalibur())
         
     def send_message(self, ipc_message):
@@ -86,9 +87,10 @@ class MainMenu(npyscreen.FormBaseNew):
         
         self.t2.values = ["List plugins",
                           "Load new plugin", 
-                          "Setup File Process", 
-                          "Setup File Writing", 
-                          "Start Writing", 
+                          "Setup File Process",
+                          "Setup File Writing",
+                          "Start Writing",
+                          "Rewind",
                           "Stop Writing",
                           "Read Status",
                           "Setup For Percival",
@@ -125,17 +127,21 @@ class MainMenu(npyscreen.FormBaseNew):
           msg.set_param("hdf", config)
           self.parentApp.send_message(msg)
         if selected == 5:
+            self.parentApp.setNextForm("REWIND")
+            self.editing = False
+            self.parentApp.switchFormNow()
+        if selected == 6:
           msg = IpcMessage("cmd", "configure")
           config = {
                      "write": False
                    }
           msg.set_param("hdf", config)
           self.parentApp.send_message(msg)
-        if selected == 6:
+        if selected == 7:
           msg = IpcMessage("cmd", "configure")
           msg.set_param("status", True)
           self.parentApp.send_message(msg)
-        if selected == 7:
+        if selected == 8:
           msg = IpcMessage("cmd", "configure")
           config = {
                      "fr_release_cnxn": "tcp://127.0.0.1:5002",
@@ -207,11 +213,11 @@ class MainMenu(npyscreen.FormBaseNew):
                    }
           msg.set_param("hdf", config)
           self.parentApp.send_message(msg)
-        if selected == 8:
+        if selected == 9:
           self.parentApp.setNextForm("SETUP_EXCALIBUR")
           self.editing = False
           self.parentApp.switchFormNow()
-        if selected == 9:
+        if selected == 10:
           self.parentApp.setNextForm(None)
           self.parentApp.switchFormNow()
           
@@ -411,6 +417,28 @@ class SetupFileWriting(npyscreen.ActionForm):
         self.parentApp.setNextForm("MAIN_MENU")
         self.editing = False
         self.parentApp.switchFormNow()
+
+
+class Rewind(npyscreen.ActionForm):
+
+    def create(self):
+        self.name = "ODIN File Writer Client"
+        self.add(npyscreen.TitleText, labelColor="LABELBOLD", name="Setup file writing", value="", editable=False)
+        self.ctrl1 = self.add(npyscreen.TitleText, name="Rewind by (number of frames):        ", value="0")
+
+    def on_ok(self):
+        msg = IpcMessage("cmd", "configure")
+        config = {
+            "offset": int(self.ctrl1.value)
+        }
+        msg.set_param("hdf", config)
+        self.parentApp.send_message(msg)
+
+    def afterEditing(self):
+        self.parentApp.setNextForm("MAIN_MENU")
+        self.editing = False
+        self.parentApp.switchFormNow()
+
 
 def options():
     parser = argparse.ArgumentParser()

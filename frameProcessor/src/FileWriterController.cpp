@@ -385,10 +385,10 @@ namespace filewriter
   
   void FileWriterController::run() {
     
-    // Start worker thread to monitor frames passed through
+    // Start worker thread (for IFrameCallback) to monitor frames passed through
     start();
     
-    // Now wait for the shutdown
+    // Now wait for the shutdown command from either the control interface or the worker thread
     waitForShutdown();
     
     // Stop all plugin worker threads
@@ -397,10 +397,10 @@ namespace filewriter
     for (it = plugins_.begin(); it != plugins_.end(); it++) {
       it->second->stop();
     }
-    // Worker thread callback will wait until pluginShutdownSent is set
+    // Worker thread callback will block caller until pluginShutdownSent is set
     pluginShutdownSent = true;
     LOG4CXX_DEBUG(logger_, "Plugin shutdown sent. Removing plugins once stopped.");
-    // Then we wait until the each plugin has stopped and then erase them
+    // Wait until the each plugin has stopped and erase it from our map
     for (it = plugins_.begin(); it != plugins_.end(); it++) {
       LOG4CXX_DEBUG(logger_, "Removing " << it->first);
       while(it->second->isWorking());
