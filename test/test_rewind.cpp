@@ -21,7 +21,9 @@ int main(int argc, char *argv[]) {
   hid_t dataspace = H5Screate_simple(dset_dims.size(), &dset_dims.front(), &max_dims.front());
 
   /* Create a new file */
-  hid_t file = H5Fcreate("/tmp/rewind.hdf5", H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+  hid_t fapl = H5Pcreate(H5P_FILE_ACCESS);
+  H5Pset_libver_bounds(fapl, H5F_LIBVER_LATEST, H5F_LIBVER_LATEST);
+  hid_t file = H5Fcreate("/tmp/rewind.hdf5", H5F_ACC_TRUNC, H5P_DEFAULT, fapl);
 
   /* Create properties */
   hid_t prop = H5Pcreate(H5P_DATASET_CREATE);
