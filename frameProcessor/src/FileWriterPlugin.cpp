@@ -53,7 +53,7 @@ herr_t hdf5_error_cb(unsigned n, const H5E_error2_t *err_desc, void* client_data
 FileWriterPlugin::FileWriterPlugin() :
   writing_(false),
   masterFrame_(""),
-  framesToWrite_(3),
+  framesToWrite_(0),
   framesWritten_(0),
   filePath_("./"),
   fileName_("test_file.h5"),
@@ -488,7 +488,7 @@ void FileWriterPlugin::processFrame(boost::shared_ptr<Frame> frame)
       }
 
       // Check if we have written enough frames and stop
-      if (framesWritten_ == framesToWrite_) {
+      if (framesToWrite_ > 0 && framesWritten_ == framesToWrite_) {
         this->stopWriting();
       }
     }
@@ -594,8 +594,8 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
   }
 
   // Check to see if we are being told how many frames to write
-  if (config.has_param(FileWriterPlugin::CONFIG_FRAMES)){
-    framesToWrite_ = config.get_param<int>(FileWriterPlugin::CONFIG_FRAMES);
+  if (config.has_param(FileWriterPlugin::CONFIG_FRAMES) && config.get_param<size_t>(FileWriterPlugin::CONFIG_FRAMES) > 0) {
+    framesToWrite_ = config.get_param<size_t>(FileWriterPlugin::CONFIG_FRAMES);
   }
 
   // Check to see if the master dataset is being set
