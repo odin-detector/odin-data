@@ -458,36 +458,40 @@ void FileWriter::processFrame(boost::shared_ptr<Frame> frame)
 
   if (writing_){
 
-    // Check if the frame has defined subframes
-    if (frame->has_parameter("subframe_count")){
-      // The frame has subframes so write them out
-      this->writeSubFrames(*frame);
-    } else {
-      // The frame has no subframes so write the whole frame
-      this->writeFrame(*frame);
-    }
+	if (frame->has_parameter("stop")) {
+	  this->stopWriting();
+	} else {
+      // Check if the frame has defined subframes
+      if (frame->has_parameter("subframe_count")){
+        // The frame has subframes so write them out
+        this->writeSubFrames(*frame);
+      } else {
+        // The frame has no subframes so write the whole frame
+        this->writeFrame(*frame);
+      }
 
-    // Check if this is a master frame (for multi dataset acquisitions)
-    // or if no master frame has been defined.  If either of these conditions
-    // are true then increment the number of frames written.
-    if (masterFrame_ == "" || masterFrame_ == frame->get_dataset_name()) {
-      size_t datasetFrames = this->getDatasetFrames(frame->get_dataset_name());
-      if (datasetFrames == framesWritten_) {
-        LOG4CXX_DEBUG(logger_, "Frame " << datasetFrames << " rewritten");
+      // Check if this is a master frame (for multi dataset acquisitions)
+      // or if no master frame has been defined.  If either of these conditions
+      // are true then increment the number of frames written.
+      if (masterFrame_ == "" || masterFrame_ == frame->get_dataset_name()) {
+        size_t datasetFrames = this->getDatasetFrames(frame->get_dataset_name());
+        if (datasetFrames == framesWritten_) {
+          LOG4CXX_DEBUG(logger_, "Frame " << datasetFrames << " rewritten");
+        }
+        else {
+          framesWritten_ = datasetFrames;
+        }
+        LOG4CXX_DEBUG(logger_, "Master frame processed");
       }
       else {
-        framesWritten_ = datasetFrames;
+        LOG4CXX_DEBUG(logger_, "Non-master frame processed");
       }
-      LOG4CXX_DEBUG(logger_, "Master frame processed");
-    }
-    else {
-      LOG4CXX_DEBUG(logger_, "Non-master frame processed");
-    }
 
-    // Check if we have written enough frames and stop
-    if (framesWritten_ == framesToWrite_) {
-      this->stopWriting();
-    }
+      // Check if we have written enough frames and stop
+      if (framesWritten_ == framesToWrite_) {
+        this->stopWriting();
+      }
+	}
     
     // Push frame to any registered callbacks
     this->push(frame);

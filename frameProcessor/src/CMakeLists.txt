@@ -40,6 +40,10 @@ target_link_libraries(ExcaliburReorderPlugin ${Boost_LIBRARIES} ${LOG4CXX_LIBRAR
 # Add library for percival process plugin
 add_library(PercivalProcessPlugin SHARED PercivalProcessPlugin.cpp FileWriterPlugin.cpp IFrameCallback.cpp Frame.cpp DataBlock.cpp DataBlockPool.cpp)
 target_link_libraries(PercivalProcessPlugin ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${COMMON_LIBRARY})
+              
+# Add library for eiger process plugin
+add_library(EigerProcessPlugin SHARED EigerProcessPlugin.cpp FileWriterPlugin.cpp IFrameCallback.cpp Frame.cpp DataBlock.cpp DataBlockPool.cpp)
+target_link_libraries(EigerProcessPlugin ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${COMMON_LIBRARY})
             
 # Add test and project source files to executable
 file(GLOB TESTABLE_SOURCES DataBlock.cpp DataBlockPool.cpp IFrameCallback.cpp FileWriterPlugin.cpp Frame.cpp)
