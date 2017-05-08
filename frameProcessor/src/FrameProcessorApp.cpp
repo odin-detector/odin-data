@@ -236,6 +236,19 @@ void configureExcalibur(boost::shared_ptr<FrameProcessorController> fwc) {
   fwc->configure(cfg, reply);
 }
 
+void configureEiger(boost::shared_ptr<filewriter::FileWriterController> fwc) {
+  OdinData::IpcMessage cfg;
+  OdinData::IpcMessage reply;
+
+  cfg.set_param<string>("plugin/load/library", "./lib/libEigerProcessPlugin.so");
+  cfg.set_param<string>("plugin/load/index", "eiger");
+  cfg.set_param<string>("plugin/load/name", "EigerProcessPlugin");
+  cfg.set_param<string>("plugin/connect/index", "eiger");
+  cfg.set_param<string>("plugin/connect/connection", "frame_receiver");
+
+  fwc->configure(cfg, reply);
+}
+
 void configureHDF5(boost::shared_ptr<FrameProcessorController> fwc, string input) {
   OdinData::IpcMessage cfg;
   OdinData::IpcMessage reply;
@@ -310,7 +323,7 @@ void configureEigerDataset(boost::shared_ptr<FrameProcessorController> fwc, stri
 
   cfg.set_param<string>("hdf/dataset/cmd", "create");
   cfg.set_param<string>("hdf/dataset/name", name);
-  cfg.set_param<int>("hdf/dataset/datatype", 1);
+  cfg.set_param<int>("hdf/dataset/datatype", 2);
   cfg.set_param<rapidjson::Value>("hdf/dataset/dims", dims);
   cfg.set_param<string>("hdf/dataset/compression", "lz4");
 
@@ -342,7 +355,8 @@ void configurePlugins(boost::shared_ptr<FrameProcessorController> fwc, string de
     configurePercivalDataset(fwc, "reset");
   }
   else if (detector == "eiger") {
-    configureHDF5(fwc, "frame_receiver");
+	configureEiger(fwc);
+    configureHDF5(fwc, detector);
     configureEigerDataset(fwc, "data");
   }
 }

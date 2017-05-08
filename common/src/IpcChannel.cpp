@@ -102,7 +102,7 @@ const std::size_t IpcChannel::recv_raw(void *dPtr)
 bool IpcChannel::eom(void)
 {
 	bool eom = true;
-	int64_t more;
+	int more;
 	size_t more_size = sizeof(more);
 	socket_.getsockopt(ZMQ_RCVMORE, &more, &more_size);
 	if (more){
