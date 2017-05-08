@@ -43,8 +43,9 @@ namespace OdinData
 
         void subscribe(const char* topic);
 
-        void send(std::string& message_str);
-        void send(const char* message);
+        void send(std::string& message_str, int flags = 0);
+        void send(const char* message, int flags = 0);
+        void send(size_t msg_size, void *message, int flags = 0);
 
         const std::string recv();
         const std::size_t recv_raw(void *dPtr);

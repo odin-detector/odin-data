@@ -63,20 +63,28 @@ void IpcChannel::subscribe(const char* topic)
     socket_.setsockopt(ZMQ_SUBSCRIBE, topic, strlen(topic));
 }
 
-void IpcChannel::send(std::string& message_str)
+void IpcChannel::send(std::string& message_str, int flags)
 {
     size_t msg_size = message_str.size();
     zmq::message_t msg(msg_size);
     memcpy(msg.data(), message_str.data(), msg_size);
-    socket_.send(msg);
+    socket_.send(msg, flags);
 }
 
-void IpcChannel::send(const char* message)
+void IpcChannel::send(const char* message, int flags)
 {
     size_t msg_size = strlen(message);
     zmq::message_t msg(msg_size);
     memcpy(msg.data(), message, msg_size);
-    socket_.send(msg);
+    socket_.send(msg, flags);
+
+}
+
+void IpcChannel::send(size_t msg_size, void *message, int flags)
+{
+    zmq::message_t msg(msg_size);
+    memcpy(msg.data(), message, msg_size);
+    socket_.send(msg, flags);
 
 }
 
