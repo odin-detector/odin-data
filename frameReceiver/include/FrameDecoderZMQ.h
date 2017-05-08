@@ -38,7 +38,7 @@ namespace FrameReceiver
 
         virtual ~FrameDecoderZMQ() = 0;
 
-        virtual void* get_next_message_buffer(void) const = 0;
+        virtual void* get_next_message_buffer(void) = 0;
         virtual FrameReceiveState process_message(size_t bytes_received) = 0;
         virtual void frame_meta_data(int meta) = 0;
 

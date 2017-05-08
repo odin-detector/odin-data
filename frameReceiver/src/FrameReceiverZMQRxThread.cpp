@@ -56,14 +56,9 @@ void FrameReceiverZMQRxThread::cleanup_specific_service(void)
 
 void FrameReceiverZMQRxThread::handle_receive_socket()
 {
-    // Receive a message from the main thread channel
-    std::string rx_msg = skt_channel_.recv(0);
-
-	char *buffer_ptr_ = (char *)frame_decoder_->get_next_message_buffer();
-
-	// Copy the message into the buffer
-	int msg_len = rx_msg.length();
-	memcpy(buffer_ptr_, rx_msg.c_str(), msg_len);
+    // Receive a message from the main thread channel and place it directly into the
+	// provided memory buffer
+    size_t msg_len = skt_channel_.recv_raw(frame_decoder_->get_next_message_buffer());
 
 	LOG4CXX_DEBUG_LEVEL(3, logger_, "RX thread received " << msg_len << " bytes on IPC channel, payload buffer address "
 			<< frame_decoder_->get_next_message_buffer());

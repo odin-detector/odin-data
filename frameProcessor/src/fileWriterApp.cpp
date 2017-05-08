@@ -77,7 +77,7 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
                 ("ctrl",    po::value<std::string>()->default_value("tcp://127.0.0.1:5004"),
                     "Set the name of the shared memory frame buffer")
                 ("output,o",     po::value<std::string>()->default_value("test.hdf5"),
-                    "Name of HDF5 file to write frames to (default: no file writing)")
+                    "Name of HDF5 file to write frames to (default: test.hdf5)")
                 ("processes,p",  po::value<unsigned int>()->default_value(1),
                     "Number of concurrent file writer processes"   )
                 ("rank,r",       po::value<unsigned int>()->default_value(0),
@@ -236,7 +236,20 @@ void configureExcalibur(boost::shared_ptr<filewriter::FileWriterController> fwc)
   fwc->configure(cfg, reply);
 }
 
-void configureHDF5(boost::shared_ptr<filewriter::FileWriterController> fwc, string detector) {
+void configureEiger(boost::shared_ptr<filewriter::FileWriterController> fwc) {
+  OdinData::IpcMessage cfg;
+  OdinData::IpcMessage reply;
+
+  cfg.set_param<string>("plugin/load/library", "./lib/libEigerProcessPlugin.so");
+  cfg.set_param<string>("plugin/load/index", "eiger");
+  cfg.set_param<string>("plugin/load/name", "EigerProcessPlugin");
+  cfg.set_param<string>("plugin/connect/index", "eiger");
+  cfg.set_param<string>("plugin/connect/connection", "frame_receiver");
+
+  fwc->configure(cfg, reply);
+}
+
+void configureHDF5(boost::shared_ptr<filewriter::FileWriterController> fwc, string input) {
   OdinData::IpcMessage cfg;
   OdinData::IpcMessage reply;
   
@@ -244,7 +257,7 @@ void configureHDF5(boost::shared_ptr<filewriter::FileWriterController> fwc, stri
   cfg.set_param<string>("plugin/load/index", "hdf");
   cfg.set_param<string>("plugin/load/name", "FileWriter");
   cfg.set_param<string>("plugin/connect/index", "hdf");
-  cfg.set_param<string>("plugin/connect/connection", detector);
+  cfg.set_param<string>("plugin/connect/connection", input);
   
   fwc->configure(cfg, reply);
 }
@@ -297,6 +310,26 @@ void configureExcaliburDataset(boost::shared_ptr<filewriter::FileWriterControlle
   fwc->configure(cfg, reply);
 }
 
+void configureEigerDataset(boost::shared_ptr<filewriter::FileWriterController> fwc, string name) {
+  OdinData::IpcMessage cfg;
+  OdinData::IpcMessage reply;
+  
+  rapidjson::Document jsonDoc;
+  rapidjson::Value dims(rapidjson::kArrayType);
+  rapidjson::Document::AllocatorType& dimAllocator = jsonDoc.GetAllocator();
+  jsonDoc.SetObject();
+  dims.PushBack(2167, dimAllocator);
+  dims.PushBack(2070, dimAllocator);
+  
+  cfg.set_param<string>("hdf/dataset/cmd", "create");
+  cfg.set_param<string>("hdf/dataset/name", name);
+  cfg.set_param<int>("hdf/dataset/datatype", 2);
+  cfg.set_param<rapidjson::Value>("hdf/dataset/dims", dims);
+  cfg.set_param<string>("hdf/dataset/compression", "lz4");
+  
+  fwc->configure(cfg, reply);
+}
+
 void configureFileWriter(boost::shared_ptr<filewriter::FileWriterController> fwc, po::variables_map vm) {
   OdinData::IpcMessage cfg;
   OdinData::IpcMessage reply;
@@ -320,6 +353,11 @@ void configurePlugins(boost::shared_ptr<filewriter::FileWriterController> fwc, s
     configureHDF5(fwc, detector);
     configurePercivalDataset(fwc, "data", true);
     configurePercivalDataset(fwc, "reset");
+  }
+  else if (detector == "eiger") {
+	configureEiger(fwc);
+    configureHDF5(fwc, detector);
+    configureEigerDataset(fwc, "data");
   }
 }
 

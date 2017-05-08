@@ -12,24 +12,26 @@
 namespace filewriter
 {
 
-const std::string FileWriter::CONFIG_PROCESS        = "process";
-const std::string FileWriter::CONFIG_PROCESS_NUMBER = "number";
-const std::string FileWriter::CONFIG_PROCESS_RANK   = "rank";
+const std::string FileWriter::CONFIG_PROCESS             = "process";
+const std::string FileWriter::CONFIG_PROCESS_NUMBER      = "number";
+const std::string FileWriter::CONFIG_PROCESS_RANK        = "rank";
 
-const std::string FileWriter::CONFIG_FILE           = "file";
-const std::string FileWriter::CONFIG_FILE_NAME      = "name";
-const std::string FileWriter::CONFIG_FILE_PATH      = "path";
+const std::string FileWriter::CONFIG_FILE                = "file";
+const std::string FileWriter::CONFIG_FILE_NAME           = "name";
+const std::string FileWriter::CONFIG_FILE_PATH           = "path";
 
-const std::string FileWriter::CONFIG_DATASET        = "dataset";
-const std::string FileWriter::CONFIG_DATASET_CMD    = "cmd";
-const std::string FileWriter::CONFIG_DATASET_NAME   = "name";
-const std::string FileWriter::CONFIG_DATASET_TYPE   = "datatype";
-const std::string FileWriter::CONFIG_DATASET_DIMS   = "dims";
-const std::string FileWriter::CONFIG_DATASET_CHUNKS = "chunks";
+const std::string FileWriter::CONFIG_DATASET             = "dataset";
+const std::string FileWriter::CONFIG_DATASET_CMD         = "cmd";
+const std::string FileWriter::CONFIG_DATASET_NAME        = "name";
+const std::string FileWriter::CONFIG_DATASET_TYPE        = "datatype";
+const std::string FileWriter::CONFIG_DATASET_DIMS        = "dims";
+const std::string FileWriter::CONFIG_DATASET_CHUNKS      = "chunks";
+const std::string FileWriter::CONFIG_DATASET_COMPRESSION = "compression";
 
-const std::string FileWriter::CONFIG_FRAMES         = "frames";
-const std::string FileWriter::CONFIG_MASTER_DATASET = "master";
-const std::string FileWriter::CONFIG_WRITE          = "write";
+const std::string FileWriter::CONFIG_FRAMES              = "frames";
+const std::string FileWriter::CONFIG_MASTER_DATASET      = "master";
+const std::string FileWriter::CONFIG_OFFSET_ADJUSTMENT   = "offset";
+const std::string FileWriter::CONFIG_WRITE               = "write";
 
 herr_t hdf5_error_cb(unsigned n, const H5E_error2_t *err_desc, void* client_data)
 {
@@ -59,7 +61,7 @@ FileWriter::FileWriter() :
   concurrent_rank_(0),
   hdf5_fileid_(0),
   hdf5ErrorFlag_(false),
-  start_frame_offset_(0)
+  frame_offset_adjustment_(0)
 {
     this->logger_ = Logger::getLogger("FW.FileWriter");
     this->logger_->setLevel(Level::getTrace());
@@ -68,9 +70,6 @@ FileWriter::FileWriter() :
     H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
     H5Ewalk2(H5E_DEFAULT, H5E_WALK_DOWNWARD, hdf5_error_cb, this);
     //H5Eset_auto2(H5E_DEFAULT, my_hdf5_error_handler, NULL);
-
-    this->hdf5_fileid_ = 0;
-    this->start_frame_offset_ = 0;
 }
 
 /**
@@ -174,6 +173,7 @@ void FileWriter::writeSubFrames(const Frame& frame) {
 
     hsize_t frame_offset = 0;
     frame_offset = this->getFrameOffset(frame_no);
+    LOG4CXX_DEBUG(logger_, "Frame offset: " << frame_offset);
 
     this->extend_dataset(dset, frame_offset + 1);
 
@@ -240,6 +240,29 @@ void FileWriter::createDataset(const FileWriter::DatasetDefinition& definition)
                        << chunk_dims[1] << ","
                        << chunk_dims[2]);
     prop = H5Pcreate(H5P_DATASET_CREATE);
+    
+    /* Enable writing of compressed data */
+    if (definition.compression == "lz4") {
+      LOG4CXX_DEBUG(logger_, "Adding lz4 compression filter");
+      // Create cd_values for filter to set the LZ4 compression level
+      unsigned int cd_values = 3;
+      size_t cd_values_length = 1;
+      status = H5Pset_filter(prop, LZ4_FILTER, H5Z_FLAG_MANDATORY,
+                             cd_values_length, &cd_values);
+      assert(status >= 0);
+      LOG4CXX_DEBUG(logger_, "Filter avail: " << H5Zfilter_avail(LZ4_FILTER))
+    }
+    else if (definition.compression == "bslz4") {
+      LOG4CXX_DEBUG(logger_, "Adding bit shuffle + lz4 filter");
+      // Create cd_values for filter to set default block size and to enable LZ4
+      unsigned int cd_values[2] = {0, 2};
+      size_t cd_values_length = 2;
+      status = H5Pset_filter(prop, BS_FILTER, H5Z_FLAG_MANDATORY,
+                             cd_values_length, cd_values);
+      assert(status >= 0);
+      LOG4CXX_DEBUG(logger_, "Filter avail: " << H5Zfilter_avail(BS_FILTER))
+    }
+  
     status = H5Pset_chunk(prop, dset_dims.size(), &chunk_dims.front());
     assert(status >= 0);
 
@@ -377,22 +400,24 @@ size_t FileWriter::getFrameOffset(size_t frame_no) const {
  */
 size_t FileWriter::adjustFrameOffset(size_t frame_no) const {
     size_t frame_offset = 0;
-    if (frame_no < this->start_frame_offset_) {
+    if (frame_no < this->frame_offset_adjustment_) {
         // Deal with a frame arriving after the very first frame
         // which was used to set the offset: throw a range error
         throw std::range_error("Frame out of order at start causing negative file offset");
     }
 
     // Normal case: apply offset
-    frame_offset = frame_no - this->start_frame_offset_;
+    LOG4CXX_DEBUG(logger_, "Raw frame number: " << frame_no);
+    LOG4CXX_DEBUG(logger_, "Frame offset adjustment: " << frame_offset_adjustment_);
+    frame_offset = frame_no - this->frame_offset_adjustment_;
     return frame_offset;
 }
 
-/** Part of big nasty work-around for the missing frame counter reset in FW
+/** Set frame offset
  *
  */
-void FileWriter::setStartFrameOffset(size_t frame_no) {
-    this->start_frame_offset_ = frame_no;
+void FileWriter::setFrameOffsetAdjustment(size_t frame_no) {
+    this->frame_offset_adjustment_ = frame_no;
 }
 
 /** Extend the HDF5 dataset ready for new data
@@ -433,34 +458,58 @@ void FileWriter::processFrame(boost::shared_ptr<Frame> frame)
 
   if (writing_){
 
-    // Check if the frame has defined subframes
-    if (frame->has_parameter("subframe_count")){
-      // The frame has subframes so write them out
-      this->writeSubFrames(*frame);
-    } else {
-      // The frame has no subframes so write the whole frame
-      this->writeFrame(*frame);
-    }
+	if (frame->has_parameter("stop")) {
+	  this->stopWriting();
+	} else {
+      // Check if the frame has defined subframes
+      if (frame->has_parameter("subframe_count")){
+        // The frame has subframes so write them out
+        this->writeSubFrames(*frame);
+      } else {
+        // The frame has no subframes so write the whole frame
+        this->writeFrame(*frame);
+      }
 
-    // Check if this is a master frame (for multi dataset acquisitions)
-    // or if no master frame has been defined.  If either of these conditions
-    // are true then increment the number of frames written.
-    if (masterFrame_ == "" || masterFrame_ == frame->get_dataset_name()){
-      framesWritten_++;
-      LOG4CXX_DEBUG(logger_, "Master frame processed");
-    }
-    else {
-      LOG4CXX_DEBUG(logger_, "Non-master frame processed");
-    }
+      // Check if this is a master frame (for multi dataset acquisitions)
+      // or if no master frame has been defined.  If either of these conditions
+      // are true then increment the number of frames written.
+      if (masterFrame_ == "" || masterFrame_ == frame->get_dataset_name()) {
+        size_t datasetFrames = this->getDatasetFrames(frame->get_dataset_name());
+        if (datasetFrames == framesWritten_) {
+          LOG4CXX_DEBUG(logger_, "Frame " << datasetFrames << " rewritten");
+        }
+        else {
+          framesWritten_ = datasetFrames;
+        }
+        LOG4CXX_DEBUG(logger_, "Master frame processed");
+      }
+      else {
+        LOG4CXX_DEBUG(logger_, "Non-master frame processed");
+      }
 
-    // Check if we have written enough frames and stop
-    if (framesWritten_ == framesToWrite_){
-      this->stopWriting();
-    }
+      // Check if we have written enough frames and stop
+      if (framesWritten_ == framesToWrite_) {
+        this->stopWriting();
+      }
+	}
     
     // Push frame to any registered callbacks
     this->push(frame);
   }
+}
+
+/** Read the current number of frames in a HDF5 dataset
+ *
+ * \param[in] dataset - HDF5 dataset
+ */
+size_t FileWriter::getDatasetFrames(const std::string dset_name)
+{
+  hid_t dspace = H5Dget_space(this->get_hdf5_dataset(dset_name).datasetid);
+  const int ndims = H5Sget_simple_extent_ndims(dspace);
+  hsize_t dims[ndims];
+  H5Sget_simple_extent_dims(dspace, dims, NULL);
+
+  return (size_t)dims[0];
 }
 
 /** Start writing frames to file.
@@ -554,6 +603,13 @@ void FileWriter::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& r
     masterFrame_ = config.get_param<std::string>(FileWriter::CONFIG_MASTER_DATASET);
   }
 
+  // Check if we are setting the frame offset adjustment
+  if (config.has_param(FileWriter::CONFIG_OFFSET_ADJUSTMENT)) {
+    LOG4CXX_DEBUG(logger_, "Setting frame offset adjustment to "
+                           << config.get_param<int>(FileWriter::CONFIG_OFFSET_ADJUSTMENT));
+    frame_offset_adjustment_ = (size_t)config.get_param<int>(FileWriter::CONFIG_OFFSET_ADJUSTMENT);
+  }
+
   // Final check is to start or stop writing
   if (config.has_param(FileWriter::CONFIG_WRITE)){
     if (config.get_param<bool>(FileWriter::CONFIG_WRITE) == true){
@@ -639,6 +695,7 @@ void FileWriter::configureFile(OdinData::IpcMessage& config, OdinData::IpcMessag
  * CONFIG_DATASET_TYPE - Datatype of the dataset
  * CONFIG_DATASET_DIMS - Dimensions of the dataset
  * CONFIG_DATASET_CHUNKS - Chunking parameters of the dataset
+ * CONFIG_DATASET_COMPRESSION - Compression of raw data
  *
  * The configuration is not applied if the writer is currently writing.
  *
@@ -702,6 +759,12 @@ void FileWriter::configureDataset(OdinData::IpcMessage& config, OdinData::IpcMes
           chunks[i] = dim.GetUint64();
         }
         dset_def.chunks = chunks;
+      }
+  
+      // Check if compression has been specified for the raw data
+      if (config.has_param(FileWriter::CONFIG_DATASET_COMPRESSION)){
+        dset_def.compression = config.get_param<std::string>(FileWriter::CONFIG_DATASET_COMPRESSION);
+        LOG4CXX_DEBUG(logger_, "Enabling compression: " << dset_def.compression);
       }
 
       LOG4CXX_DEBUG(logger_, "Creating dataset [" << dset_def.name << "] (" << dset_def.frame_dimensions[0] << ", " << dset_def.frame_dimensions[1] << ")");
