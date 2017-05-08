@@ -458,9 +458,9 @@ void FileWriterPlugin::processFrame(boost::shared_ptr<Frame> frame)
 
   if (writing_){
 
-	if (frame->has_parameter("stop")) {
-	  this->stopWriting();
-	} else {
+    if (frame->has_parameter("stop")) {
+      this->stopWriting();
+    } else {
       // Check if the frame has defined subframes
       if (frame->has_parameter("subframe_count")){
         // The frame has subframes so write them out
@@ -491,7 +491,7 @@ void FileWriterPlugin::processFrame(boost::shared_ptr<Frame> frame)
       if (framesWritten_ == framesToWrite_) {
         this->stopWriting();
       }
-	}
+    }
     
     // Push frame to any registered callbacks
     this->push(frame);
