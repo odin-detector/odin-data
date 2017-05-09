@@ -305,16 +305,23 @@ namespace FrameProcessor
       // Dynamically class load the plugin
       // Add the plugin to the map, indexed by the name
       boost::shared_ptr<FrameProcessorPlugin> plugin = OdinData::ClassLoader<FrameProcessorPlugin>::load_class(name, library);
-      plugin->setName(index);
-      plugins_[index] = plugin;
-      
-      // Register callback to FWC with FileWriter plugin
-      if (name == "FileWriter") {
-        plugin->registerCallback("controller", this->shared_from_this(), true);
+      if (plugin){
+		  plugin->setName(index);
+		  plugins_[index] = plugin;
+
+		  // Register callback to FWC with FileWriter plugin
+		  if (name == "FileWriter") {
+			plugin->registerCallback("controller", this->shared_from_this(), true);
+		  }
+
+		  // Start the plugin worker thread
+		  plugin->start();
+      } else {
+          LOG4CXX_ERROR(logger_, "Could not load plugin with index [" << index << "], name [" << name << "], check library");
+          std::stringstream is;
+          is << "Cannot load plugin with index [" << index << "], name [" << name << "], check library";
+          throw std::runtime_error(is.str().c_str());
       }
-      
-      // Start the plugin worker thread
-      plugin->start();
     } else {
       LOG4CXX_ERROR(logger_, "Cannot load plugin with index = " << index << ", already loaded");
       std::stringstream is;

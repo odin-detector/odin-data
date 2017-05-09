@@ -159,7 +159,7 @@ class MainMenu(npyscreen.FormBaseNew):
                      "load": {
                                "library": "./lib/libHdf5Plugin.so",
                                "index": "hdf",
-                               "name": "FileWriter"
+                               "name": "FileWriterPlugin"
                              }
                    }
           msg.set_param("plugin", config)
@@ -269,7 +269,7 @@ class SetupExcalibur(npyscreen.FormBaseNew):
                      "load": {
                                "library": "./lib/libHdf5Plugin.so",
                                "index": "hdf",
-                               "name": "FileWriter"
+                               "name": "FileWriterPlugin"
                              }
                    }
           msg.set_param("plugin", config)
