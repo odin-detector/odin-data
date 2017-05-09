@@ -3,7 +3,7 @@
  * FileWriterTest.cpp
  *
  */
-#define BOOST_TEST_MODULE "FileWriterUnitTests"
+#define BOOST_TEST_MODULE "FrameProcessorUnitTests"
 #define BOOST_TEST_MAIN
 #include <boost/test/unit_test.hpp>
 #include <boost/shared_ptr.hpp>
