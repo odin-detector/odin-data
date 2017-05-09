@@ -1,3 +1,4 @@
+
 /*
  * FileWriterTest.cpp
  *
@@ -19,7 +20,7 @@ using namespace log4cxx::xml;
 
 #include "DataBlock.h"
 #include "DataBlockPool.h"
-#include "FileWriter.h"
+#include "FileWriterPlugin.h"
 #include "Frame.h"
 
 class GlobalConfig {
@@ -146,10 +147,10 @@ BOOST_AUTO_TEST_SUITE_END(); //FrameUnitTest
 
 
 
-class FileWriterTestFixture
+class FileWriterPluginTestFixture
 {
 public:
-    FileWriterTestFixture()
+    FileWriterPluginTestFixture()
     {
         unsigned short img[12] =  { 1, 2, 3, 4,
                                     5, 6, 7, 8,
@@ -160,7 +161,7 @@ public:
 
         dset_def.name = "data";
         dset_def.num_frames = 2; //unused?
-        dset_def.pixel = FrameProcessor::FileWriter::pixel_raw_16bit;
+        dset_def.pixel = FrameProcessor::FileWriterPlugin::pixel_raw_16bit;
         dset_def.frame_dimensions = dimensions_t(2);
         dset_def.frame_dimensions[0] = 3;
         dset_def.frame_dimensions[1] = 4;
@@ -183,16 +184,16 @@ public:
             frames.push_back(tmp_frame);
         }
     }
-    ~FileWriterTestFixture(){}
+    ~FileWriterPluginTestFixture(){}
     boost::shared_ptr<FrameProcessor::Frame> frame;
     std::vector< boost::shared_ptr<FrameProcessor::Frame> >frames;
-    FrameProcessor::FileWriter fw;
-    FrameProcessor::FileWriter::DatasetDefinition dset_def;
+    FrameProcessor::FileWriterPlugin fw;
+    FrameProcessor::FileWriterPlugin::DatasetDefinition dset_def;
 };
 
-BOOST_FIXTURE_TEST_SUITE(FileWriterUnitTest, FileWriterTestFixture);
+BOOST_FIXTURE_TEST_SUITE(FileWriterPluginUnitTest, FileWriterPluginTestFixture);
 
-BOOST_AUTO_TEST_CASE( FileWriterTest )
+BOOST_AUTO_TEST_CASE( FileWriterPluginTest )
 {
     BOOST_REQUIRE_NO_THROW(fw.createFile("/tmp/blah.h5"));
     BOOST_REQUIRE_NO_THROW(fw.createDataset(dset_def));
@@ -202,7 +203,7 @@ BOOST_AUTO_TEST_CASE( FileWriterTest )
     BOOST_REQUIRE_NO_THROW(fw.closeFile());
 }
 
-BOOST_AUTO_TEST_CASE( FileWriterMultiDatasetTest )
+BOOST_AUTO_TEST_CASE( FileWriterPluginMultiDatasetTest )
 {
     BOOST_REQUIRE_NO_THROW(fw.createFile("/tmp/blah_multidataset.h5"));
 
@@ -232,19 +233,19 @@ BOOST_AUTO_TEST_CASE( FileWriterMultiDatasetTest )
     BOOST_REQUIRE_NO_THROW(fw.closeFile());
 }
 
-BOOST_AUTO_TEST_CASE( FileWriterBadFileTest )
+BOOST_AUTO_TEST_CASE( FileWriterPluginBadFileTest )
 {
   // Check for an error when a bad file path is provided
   BOOST_CHECK_THROW(fw.createFile("/non/existent/path/blah_throw.h5"), std::runtime_error);
 }
 
-BOOST_AUTO_TEST_CASE( FileWriterDatasetWithoutOpenFileTest )
+BOOST_AUTO_TEST_CASE( FileWriterPluginDatasetWithoutOpenFileTest )
 {
   // Check for an error when a dataset is created without a file open
   BOOST_CHECK_THROW(fw.createDataset(dset_def), std::runtime_error);
 }
 
-BOOST_AUTO_TEST_CASE( FileWriterNoDatasetDefinitionsTest )
+BOOST_AUTO_TEST_CASE( FileWriterPluginNoDatasetDefinitionsTest )
 {
   // Create a file ready for writing
   BOOST_REQUIRE_NO_THROW(fw.createFile("/tmp/blah_throw.h5"));
@@ -256,7 +257,7 @@ BOOST_AUTO_TEST_CASE( FileWriterNoDatasetDefinitionsTest )
   BOOST_REQUIRE_NO_THROW(fw.closeFile());
 }
 
-BOOST_AUTO_TEST_CASE( FileWriterInvalidDatasetTest )
+BOOST_AUTO_TEST_CASE( FileWriterPluginInvalidDatasetTest )
 {
     BOOST_REQUIRE_NO_THROW(fw.createFile("/tmp/blah_throw.h5"));
     BOOST_REQUIRE_NO_THROW(fw.createDataset(dset_def));
@@ -266,7 +267,7 @@ BOOST_AUTO_TEST_CASE( FileWriterInvalidDatasetTest )
     BOOST_REQUIRE_NO_THROW(fw.closeFile());
 }
 
-BOOST_AUTO_TEST_CASE( FileWriterMultipleFramesTest )
+BOOST_AUTO_TEST_CASE( FileWriterPluginMultipleFramesTest )
 {
     BOOST_REQUIRE_NO_THROW(fw.createFile("/tmp/blah_multiple.h5"));
     BOOST_REQUIRE_NO_THROW(fw.createDataset(dset_def));
@@ -279,7 +280,7 @@ BOOST_AUTO_TEST_CASE( FileWriterMultipleFramesTest )
     BOOST_REQUIRE_NO_THROW(fw.closeFile());
 }
 
-BOOST_AUTO_TEST_CASE( FileWriterMultipleReverseTest )
+BOOST_AUTO_TEST_CASE( FileWriterPluginMultipleReverseTest )
 {
     // Just reverse through the list of frames and write them out.
     // The frames should still appear in the file in the original order...
@@ -300,7 +301,7 @@ BOOST_AUTO_TEST_CASE( FileWriterMultipleReverseTest )
     BOOST_REQUIRE_NO_THROW(fw.closeFile());
 }
 
-BOOST_AUTO_TEST_CASE( FileWriterSubframesTest )
+BOOST_AUTO_TEST_CASE( FileWriterPluginSubframesTest )
 {
 	dset_def.chunks = dimensions_t(3);
 	dset_def.chunks[0] = 1; dset_def.chunks[1] = 3; dset_def.chunks[2] = 2;
@@ -320,7 +321,7 @@ BOOST_AUTO_TEST_CASE( FileWriterSubframesTest )
     BOOST_REQUIRE_NO_THROW(fw.closeFile());
 }
 
-BOOST_AUTO_TEST_CASE( FileWriterAdjustHugeOffset )
+BOOST_AUTO_TEST_CASE( FileWriterPluginAdjustHugeOffset )
 {
     BOOST_REQUIRE_NO_THROW(fw.createFile("/tmp/test_huge_offset.h5"));
     BOOST_REQUIRE_NO_THROW(fw.createDataset(dset_def));
@@ -343,13 +344,13 @@ BOOST_AUTO_TEST_CASE( FileWriterAdjustHugeOffset )
     BOOST_REQUIRE_NO_THROW(fw.closeFile());
 }
 
-BOOST_AUTO_TEST_CASE( FileWriterSubProcess )
+BOOST_AUTO_TEST_CASE( FileWriterPluginSubProcess )
 {
     // Frame numbers start from 1: 1,2,3,4,5  - but are indexed from 0 in the frames vector.
     // Process numbers start from 0: 0,1,2 - this process pretends to be process 1.
     OdinData::IpcMessage reply;
 
-    FrameProcessor::FileWriter fw1;
+    FrameProcessor::FileWriterPlugin fw1;
     {
       OdinData::IpcMessage cfg;
       cfg.set_param("process/number", 3);
@@ -376,7 +377,7 @@ BOOST_AUTO_TEST_CASE( FileWriterSubProcess )
 
     BOOST_REQUIRE_NO_THROW(fw1.closeFile());
 
-    FrameProcessor::FileWriter fw0;
+    FrameProcessor::FileWriterPlugin fw0;
     {
       OdinData::IpcMessage cfg;
       cfg.set_param("process/number", 3);

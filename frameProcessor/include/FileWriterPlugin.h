@@ -1,10 +1,10 @@
 /*
- * FileWriter.h
+ * FileWriterPlugin.h
  *
  */
 
-#ifndef TOOLS_FILEWRITER_FILEWRITER_H_
-#define TOOLS_FILEWRITER_FILEWRITER_H_
+#ifndef TOOLS_FileWriterPlugin_FileWriterPlugin_H_
+#define TOOLS_FileWriterPlugin_FileWriterPlugin_H_
 
 #include <string>
 #include <vector>
@@ -31,11 +31,11 @@ class Frame;
  *
  * This plugin processes Frame objects and can write them to HDF5 files.
  * The plugin can be configured through the Ipc control interface defined
- * in the FileWriterController class.  Currently only the raw data is written
+ * in the FileWriterPluginController class.  Currently only the raw data is written
  * into datasets.  Multiple datasets can be created and the raw data is stored
  * according to the Frame index (or name).
  */
-class FileWriter : public FrameProcessorPlugin
+class FileWriterPlugin : public FrameProcessorPlugin
 {
   public:
     /**
@@ -51,7 +51,7 @@ class FileWriter : public FrameProcessorPlugin
       /** Name of the dataset **/
       std::string name;
       /** Data type for the dataset **/
-      FileWriter::PixelType pixel;
+      FileWriterPlugin::PixelType pixel;
       /** Numer of frames expected to capture **/
       size_t num_frames;
       /** Array of dimensions of the dataset **/
@@ -73,11 +73,11 @@ class FileWriter : public FrameProcessorPlugin
       std::vector<hsize_t> dataset_offsets;
     };
 
-    explicit FileWriter();
-    virtual ~FileWriter();
+    explicit FileWriterPlugin();
+    virtual ~FileWriterPlugin();
 
     void createFile(std::string filename, size_t chunk_align=1024 * 1024);
-    void createDataset(const FileWriter::DatasetDefinition & definition);
+    void createDataset(const FileWriterPlugin::DatasetDefinition & definition);
     void writeFrame(const Frame& frame);
     void writeSubFrames(const Frame& frame);
     void closeFile();
@@ -133,14 +133,14 @@ class FileWriter : public FrameProcessorPlugin
     static const std::string CONFIG_WRITE;
 
     /**
-     * Prevent a copy of the FileWriter plugin.
+     * Prevent a copy of the FileWriterPlugin plugin.
      *
      * \param[in] src
      */
-    FileWriter(const FileWriter& src); // prevent copying one of these
-    hid_t pixelToHdfType(FileWriter::PixelType pixel) const;
+    FileWriterPlugin(const FileWriterPlugin& src); // prevent copying one of these
+    hid_t pixelToHdfType(FileWriterPlugin::PixelType pixel) const;
     HDF5Dataset_t& get_hdf5_dataset(const std::string dset_name);
-    void extend_dataset(FileWriter::HDF5Dataset_t& dset, size_t frame_no) const;
+    void extend_dataset(FileWriterPlugin::HDF5Dataset_t& dset, size_t frame_no) const;
     size_t adjustFrameOffset(size_t frame_no) const;
 
     void processFrame(boost::shared_ptr<Frame> frame);
@@ -174,16 +174,16 @@ class FileWriter : public FrameProcessorPlugin
     /** Internal HDF5 error recording */
     std::vector<std::string> hdf5Errors_;
     /** Map of datasets that are being written to */
-    std::map<std::string, FileWriter::HDF5Dataset_t> hdf5_datasets_;
+    std::map<std::string, FileWriterPlugin::HDF5Dataset_t> hdf5_datasets_;
     /** Map of dataset definitions for this file writer instance */
-    std::map<std::string, FileWriter::DatasetDefinition> dataset_defs_;
+    std::map<std::string, FileWriterPlugin::DatasetDefinition> dataset_defs_;
 };
 
 /**
  * Registration of this plugin through the ClassLoader.  This macro
  * registers the class without needing to worry about name mangling
  */
-REGISTER(FrameProcessorPlugin, FileWriter, "FileWriter");
+REGISTER(FrameProcessorPlugin, FileWriterPlugin, "FileWriterPlugin");
 
 }
-#endif /* TOOLS_FILEWRITER_FILEWRITER_H_ */
+#endif /* TOOLS_FileWriterPlugin_FileWriterPlugin_H_ */

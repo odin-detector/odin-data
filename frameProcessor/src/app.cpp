@@ -34,7 +34,7 @@ using namespace rapidjson;
 #include "zmq/zmq.hpp"
 
 #include "Frame.h"
-#include "FileWriter.h"
+#include "FileWriterPlugin.h"
 
 static bool has_suffix(const std::string &str, const std::string &suffix)
 {
