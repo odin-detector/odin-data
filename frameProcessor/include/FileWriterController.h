@@ -99,7 +99,7 @@ namespace FrameProcessor
     /** Pointer to the shared buffer manager instance for this process */
     boost::shared_ptr<OdinData::SharedBufferManager>            sharedBufferManager_;
     /** Map of plugins loaded, indexed by plugin index */
-    std::map<std::string, boost::shared_ptr<FileWriterPlugin> > plugins_;
+    std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> > plugins_;
     /** Condition for exiting this file writing process */
     boost::condition_variable                                   exitCondition_;
     /** Frames per dataset */

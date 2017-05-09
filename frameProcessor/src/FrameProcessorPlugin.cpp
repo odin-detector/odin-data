@@ -1,5 +1,5 @@
 /*
- * FileWriterPlugin.cpp
+ * FrameProcessorPlugin.cpp
  *
  *  Created on: 2 Jun 2016
  *      Author: gnx91527
@@ -13,16 +13,16 @@ namespace FrameProcessor
   /**
    * Constructor, initialises name_.
    */
-  FileWriterPlugin::FileWriterPlugin() :
+  FrameProcessorPlugin::FrameProcessorPlugin() :
       name_("")
   {
-    logger_ = log4cxx::Logger::getLogger("FW.FileWriterPlugin");
+    logger_ = log4cxx::Logger::getLogger("FW.FrameProcessorPlugin");
   }
 
   /**
    * Destructor
    */
-  FileWriterPlugin::~FileWriterPlugin()
+  FrameProcessorPlugin::~FrameProcessorPlugin()
   {
     // TODO Auto-generated destructor stub
   }
@@ -32,7 +32,7 @@ namespace FrameProcessor
    *
    * \param[in] name - The name.
    */
-  void FileWriterPlugin::setName(const std::string& name)
+  void FrameProcessorPlugin::setName(const std::string& name)
   {
     // Record our name
     name_ = name;
@@ -43,7 +43,7 @@ namespace FrameProcessor
    *
    * \return The name.
    */
-  std::string FileWriterPlugin::getName()
+  std::string FrameProcessorPlugin::getName()
   {
     // Return our name
     return name_;
@@ -57,7 +57,7 @@ namespace FrameProcessor
    * \param[in] config - IpcMessage containing configuration data.
    * \param[out] reply - Response IpcMessage.
    */
-  void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
+  void FrameProcessorPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
   {
     // Default method simply does nothing
   }
@@ -71,7 +71,7 @@ namespace FrameProcessor
    *
    * \param[out] status - Reference to an IpcMessage value to store the status.
    */
-  void FileWriterPlugin::status(OdinData::IpcMessage& status)
+  void FrameProcessorPlugin::status(OdinData::IpcMessage& status)
   {
     // Default method simply does nothing
   }
@@ -86,7 +86,7 @@ namespace FrameProcessor
    * \param[in] name - Index of the callback (plugin index).
    * \param[in] cb - Pointer to an IFrameCallback interface (plugin).
    */
-  void FileWriterPlugin::registerCallback(const std::string& name, boost::shared_ptr<IFrameCallback> cb, bool blocking)
+  void FrameProcessorPlugin::registerCallback(const std::string& name, boost::shared_ptr<IFrameCallback> cb, bool blocking)
   {
     if (blocking) {
       if (callbacks_.count(name) != 0) {
@@ -121,7 +121,7 @@ namespace FrameProcessor
    *
    * \param[in] name - Index of the callback (plugin index) to remove.
    */
-  void FileWriterPlugin::removeCallback(const std::string& name)
+  void FrameProcessorPlugin::removeCallback(const std::string& name)
   {
     boost::shared_ptr<IFrameCallback> cb;
     if (callbacks_.count(name) > 0){
@@ -149,7 +149,7 @@ namespace FrameProcessor
    *
    * \param[in] frame - Pointer to the frame.
    */
-  void FileWriterPlugin::callback(boost::shared_ptr<Frame> frame)
+  void FrameProcessorPlugin::callback(boost::shared_ptr<Frame> frame)
   {
     // Calls process frame
     this->processFrame(frame);
@@ -162,7 +162,7 @@ namespace FrameProcessor
    *
    * \param[in] frame - Pointer to the frame.
    */
-  void FileWriterPlugin::push(boost::shared_ptr<Frame> frame)
+  void FrameProcessorPlugin::push(boost::shared_ptr<Frame> frame)
   {
     // Loop over blocking callbacks, calling each function and waiting for return
     std::map<std::string, boost::shared_ptr<IFrameCallback> >::iterator bcbIter;

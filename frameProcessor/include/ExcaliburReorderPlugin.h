@@ -55,7 +55,7 @@ namespace FrameProcessor
    * Frame object and reordering the data into valid Excalibur frames according to the selected
    * bit depth.
    */
-  class ExcaliburReorderPlugin : public FileWriterPlugin
+  class ExcaliburReorderPlugin : public FrameProcessorPlugin
   {
   public:
     ExcaliburReorderPlugin();
@@ -106,7 +106,7 @@ namespace FrameProcessor
    * Registration of this plugin through the ClassLoader.  This macro
    * registers the class without needing to worry about name mangling
    */
-  REGISTER(FileWriterPlugin, ExcaliburReorderPlugin, "ExcaliburReorderPlugin");
+  REGISTER(FrameProcessorPlugin, ExcaliburReorderPlugin, "ExcaliburReorderPlugin");
 
 } /* namespace FrameProcessor */
 

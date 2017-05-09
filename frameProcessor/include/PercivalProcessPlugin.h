@@ -28,7 +28,7 @@ namespace FrameProcessor
    * Frame object and parsing the header information, before splitting the raw data into
    * the two "data" and "reset" Frame objects.
    */
-  class PercivalProcessPlugin : public FileWriterPlugin
+  class PercivalProcessPlugin : public FrameProcessorPlugin
   {
   public:
     PercivalProcessPlugin();
@@ -45,7 +45,7 @@ namespace FrameProcessor
    * Registration of this plugin through the ClassLoader.  This macro
    * registers the class without needing to worry about name mangling
    */
-  REGISTER(FileWriterPlugin, PercivalProcessPlugin, "PercivalProcessPlugin");
+  REGISTER(FrameProcessorPlugin, PercivalProcessPlugin, "PercivalProcessPlugin");
 
 } /* namespace FrameProcessor */
 

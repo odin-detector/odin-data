@@ -35,7 +35,7 @@ class Frame;
  * into datasets.  Multiple datasets can be created and the raw data is stored
  * according to the Frame index (or name).
  */
-class FileWriter : public FileWriterPlugin
+class FileWriter : public FrameProcessorPlugin
 {
   public:
     /**
@@ -183,7 +183,7 @@ class FileWriter : public FileWriterPlugin
  * Registration of this plugin through the ClassLoader.  This macro
  * registers the class without needing to worry about name mangling
  */
-REGISTER(FileWriterPlugin, FileWriter, "FileWriter");
+REGISTER(FrameProcessorPlugin, FileWriter, "FileWriter");
 
 }
 #endif /* TOOLS_FILEWRITER_FILEWRITER_H_ */

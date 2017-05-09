@@ -1,12 +1,12 @@
 /*
- * FileWriterPlugin.h
+ * FrameProcessorPlugin.h
  *
  *  Created on: 2 Jun 2016
  *      Author: gnx91527
  */
 
-#ifndef TOOLS_FILEWRITER_FILEWRITERPLUGIN_H_
-#define TOOLS_FILEWRITER_FILEWRITERPLUGIN_H_
+#ifndef TOOLS_FILEWRITER_FrameProcessorPlugin_H_
+#define TOOLS_FILEWRITER_FrameProcessorPlugin_H_
 
 #include "IFrameCallback.h"
 #include "IpcMessage.h"
@@ -21,11 +21,11 @@ namespace FrameProcessor
    * Frame objects between plugins.  It also provides methods for configuring
    * plugins and for retrieving status from plugins.
    */
-  class FileWriterPlugin : public IFrameCallback
+  class FrameProcessorPlugin : public IFrameCallback
   {
   public:
-    FileWriterPlugin();
-    virtual ~FileWriterPlugin();
+    FrameProcessorPlugin();
+    virtual ~FrameProcessorPlugin();
     void setName(const std::string& name);
     std::string getName();
     virtual void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
@@ -59,4 +59,4 @@ namespace FrameProcessor
 
 } /* namespace FrameProcessor */
 
-#endif /* TOOLS_FILEWRITER_FILEWRITERPLUGIN_H_ */
+#endif /* TOOLS_FILEWRITER_FrameProcessorPlugin_H_ */

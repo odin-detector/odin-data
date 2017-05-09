@@ -29,7 +29,7 @@ namespace FrameProcessor
    * When this plugin receives a frame, processFrame is called and the class
    * simply logs that a frame has been passed to it.
    */
-  class DummyPlugin : public FileWriterPlugin
+  class DummyPlugin : public FrameProcessorPlugin
   {
   public:
     DummyPlugin();
@@ -46,7 +46,7 @@ namespace FrameProcessor
    * Registration of this plugin through the ClassLoader.  This macro
    * registers the class without needing to worry about name mangling
    */
-  REGISTER(FileWriterPlugin, DummyPlugin, "DummyPlugin");
+  REGISTER(FrameProcessorPlugin, DummyPlugin, "DummyPlugin");
 
 } /* namespace FrameProcessor */
 

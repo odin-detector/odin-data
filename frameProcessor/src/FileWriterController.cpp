@@ -185,7 +185,7 @@ namespace FrameProcessor
     // Check if we are being asked to shutdown
     if (config.has_param(FileWriterController::CONFIG_STATUS)){
       // Loop over plugins, checking for configuration messages
-      std::map<std::string, boost::shared_ptr<FileWriterPlugin> >::iterator iter;
+      std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
       for (iter = plugins_.begin(); iter != plugins_.end(); ++iter){
         iter->second->status(reply);
       }
@@ -215,7 +215,7 @@ namespace FrameProcessor
     }
 
     // Loop over plugins, checking for configuration messages
-    std::map<std::string, boost::shared_ptr<FileWriterPlugin> >::iterator iter;
+    std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
     for (iter = plugins_.begin(); iter != plugins_.end(); ++iter){
       if (config.has_param(iter->first)){
         OdinData::IpcMessage subConfig(config.get_param<const rapidjson::Value&>(iter->first));
@@ -245,7 +245,7 @@ namespace FrameProcessor
   {
     if (config.has_param(FileWriterController::CONFIG_PLUGIN_LIST)){
       // We have been asked to list the loaded plugins
-      std::map<std::string, boost::shared_ptr<FileWriterPlugin> >::iterator iter;
+      std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
       for (iter = plugins_.begin(); iter != plugins_.end(); ++iter){
         reply.set_param("plugins/names[]", iter->first);
       }
@@ -305,7 +305,7 @@ namespace FrameProcessor
     if (plugins_.count(index) == 0){
       // Dynamically class load the plugin
       // Add the plugin to the map, indexed by the name
-      boost::shared_ptr<FileWriterPlugin> plugin = OdinData::ClassLoader<FileWriterPlugin>::load_class(name, library);
+      boost::shared_ptr<FrameProcessorPlugin> plugin = OdinData::ClassLoader<FrameProcessorPlugin>::load_class(name, library);
       plugin->setName(index);
       plugins_[index] = plugin;
       
@@ -393,7 +393,7 @@ namespace FrameProcessor
     
     // Stop all plugin worker threads
     LOG4CXX_DEBUG(logger_, "Stopping plugin worker threads");
-    std::map<std::string, boost::shared_ptr<FileWriterPlugin> >::iterator it;
+    std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator it;
     for (it = plugins_.begin(); it != plugins_.end(); it++) {
       it->second->stop();
     }
