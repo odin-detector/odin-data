@@ -17,7 +17,7 @@ file(GLOB APP_SOURCES DataBlock.cpp
 
 file(GLOB TEST_SOURCES *Test*.cpp)
 
-add_executable(frameProcessor ${APP_SOURCES} fileWriterApp.cpp)
+add_executable(frameProcessor ${APP_SOURCES} FrameProcessorApp.cpp)
 
 message(STATUS "HDF5 include files:  " ${HDF5_INCLUDE_DIRS})
 message(STATUS "HDF5 libs:           " ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES})
