@@ -1,12 +1,12 @@
 /*
- * FileWriterController.h
+ * FrameProcessorController.h
  *
  *  Created on: 27 May 2016
  *      Author: gnx91527
  */
 
-#ifndef TOOLS_FILEWRITER_FILEWRITERCONTROLLER_H_
-#define TOOLS_FILEWRITER_FILEWRITERCONTROLLER_H_
+#ifndef TOOLS_FILEWRITER_FrameProcessorController_H_
+#define TOOLS_FILEWRITER_FrameProcessorController_H_
 
 #include <boost/shared_ptr.hpp>
 #include <log4cxx/logger.h>
@@ -22,7 +22,7 @@ namespace FrameProcessor
 {
 
  /**
-  * The FileWriterController class has overall responsibility for management of the
+  * The FrameProcessorController class has overall responsibility for management of the
   * core classes and plugins present within the file writer application.  This class
   * maintains the SharedMemoryController and SharedMemoryParser classes.  The class
   * also manages the control IpcChannel, and accepts configuration IpcMessages.  The
@@ -31,11 +31,11 @@ namespace FrameProcessor
   *
   * The class uses an IpcReactor to manage connections and status updates.
   */
-  class FileWriterController : public IFrameCallback, public boost::enable_shared_from_this<FileWriterController>
+  class FrameProcessorController : public IFrameCallback, public boost::enable_shared_from_this<FrameProcessorController>
   {
   public:
-    FileWriterController();
-    virtual ~FileWriterController();
+    FrameProcessorController();
+    virtual ~FrameProcessorController();
     void handleCtrlChannel();
     void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
     void configurePlugin(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
@@ -130,4 +130,4 @@ namespace FrameProcessor
 
 } /* namespace FrameProcessor */
 
-#endif /* TOOLS_FILEWRITER_FILEWRITERCONTROLLER_H_ */
+#endif /* TOOLS_FILEWRITER_FrameProcessorController_H_ */

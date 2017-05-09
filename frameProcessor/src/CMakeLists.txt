@@ -7,7 +7,7 @@ add_definitions(${HDF5_DEFINITIONS})
 
 file(GLOB APP_SOURCES DataBlock.cpp 
                       DataBlockPool.cpp 
-                      FileWriterController.cpp 
+                      FrameProcessorController.cpp 
                       FrameProcessorPlugin.cpp 
                       Frame.cpp 
                       IFrameCallback.cpp 

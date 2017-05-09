@@ -33,7 +33,7 @@ using namespace rapidjson;
 
 #include "zmq/zmq.hpp"
 
-#include "FileWriterController.h"
+#include "FrameProcessorController.h"
 #include "IpcMessage.h"
 #include "SharedMemoryController.h"
 
@@ -197,7 +197,7 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
     }
 }
 
-void configureDefaults(boost::shared_ptr<FileWriterController> fwc, po::variables_map vm) {
+void configureDefaults(boost::shared_ptr<FrameProcessorController> fwc, po::variables_map vm) {
   OdinData::IpcMessage cfg;
   OdinData::IpcMessage reply;
   
@@ -209,7 +209,7 @@ void configureDefaults(boost::shared_ptr<FileWriterController> fwc, po::variable
   fwc->configure(cfg, reply);
 }
 
-void configurePercival(boost::shared_ptr<FileWriterController> fwc) {
+void configurePercival(boost::shared_ptr<FrameProcessorController> fwc) {
   OdinData::IpcMessage cfg;
   OdinData::IpcMessage reply;
   
@@ -222,7 +222,7 @@ void configurePercival(boost::shared_ptr<FileWriterController> fwc) {
   fwc->configure(cfg, reply);
 }
 
-void configureExcalibur(boost::shared_ptr<FileWriterController> fwc) {
+void configureExcalibur(boost::shared_ptr<FrameProcessorController> fwc) {
   OdinData::IpcMessage cfg;
   OdinData::IpcMessage reply;
   
@@ -236,7 +236,7 @@ void configureExcalibur(boost::shared_ptr<FileWriterController> fwc) {
   fwc->configure(cfg, reply);
 }
 
-void configureHDF5(boost::shared_ptr<FileWriterController> fwc, string detector) {
+void configureHDF5(boost::shared_ptr<FrameProcessorController> fwc, string detector) {
   OdinData::IpcMessage cfg;
   OdinData::IpcMessage reply;
   
@@ -249,7 +249,7 @@ void configureHDF5(boost::shared_ptr<FileWriterController> fwc, string detector)
   fwc->configure(cfg, reply);
 }
 
-void configurePercivalDataset(boost::shared_ptr<FileWriterController> fwc, string name, bool master=false) {
+void configurePercivalDataset(boost::shared_ptr<FrameProcessorController> fwc, string name, bool master=false) {
   OdinData::IpcMessage cfg;
   OdinData::IpcMessage reply;
   
@@ -278,7 +278,7 @@ void configurePercivalDataset(boost::shared_ptr<FileWriterController> fwc, strin
   fwc->configure(cfg, reply);
 }
 
-void configureExcaliburDataset(boost::shared_ptr<FileWriterController> fwc, string name) {
+void configureExcaliburDataset(boost::shared_ptr<FrameProcessorController> fwc, string name) {
   OdinData::IpcMessage cfg;
   OdinData::IpcMessage reply;
   
@@ -297,7 +297,7 @@ void configureExcaliburDataset(boost::shared_ptr<FileWriterController> fwc, stri
   fwc->configure(cfg, reply);
 }
 
-void configureFileWriter(boost::shared_ptr<FileWriterController> fwc, po::variables_map vm) {
+void configureFileWriter(boost::shared_ptr<FrameProcessorController> fwc, po::variables_map vm) {
   OdinData::IpcMessage cfg;
   OdinData::IpcMessage reply;
   
@@ -309,7 +309,7 @@ void configureFileWriter(boost::shared_ptr<FileWriterController> fwc, po::variab
   fwc->configure(cfg, reply);
 }
 
-void configurePlugins(boost::shared_ptr<FileWriterController> fwc, string detector) {
+void configurePlugins(boost::shared_ptr<FrameProcessorController> fwc, string detector) {
   if (detector == "excalibur") {
     configureExcalibur(fwc);
     configureHDF5(fwc, detector);
@@ -335,8 +335,8 @@ int main(int argc, char** argv)
     po::variables_map vm;
     parse_arguments(argc, argv, vm, logger);
 
-    boost::shared_ptr<FileWriterController> fwc;
-    fwc = boost::shared_ptr<FileWriterController>(new FileWriterController());
+    boost::shared_ptr<FrameProcessorController> fwc;
+    fwc = boost::shared_ptr<FrameProcessorController>(new FrameProcessorController());
 
     // Configure the control channel for the filewriter
     OdinData::IpcMessage cfg;
@@ -355,7 +355,7 @@ int main(int argc, char** argv)
     
     fwc->run();
     
-    LOG4CXX_DEBUG(logger, "FileWriterController run finished. Stopping app.");
+    LOG4CXX_DEBUG(logger, "FrameProcessorController run finished. Stopping app.");
 
   } catch (const std::exception& e){
     LOG4CXX_ERROR(logger, e.what());
