@@ -6,7 +6,7 @@
  */
 #include <Frame.h>
 
-namespace filewriter
+namespace FrameProcessor
 {
 
   /** Construct a new Frame object.

@@ -9,7 +9,7 @@
 
 #include <stdio.h>
 
-namespace filewriter
+namespace FrameProcessor
 {
   const std::string FileWriterController::CONFIG_SHUTDOWN          = "shutdown";
 

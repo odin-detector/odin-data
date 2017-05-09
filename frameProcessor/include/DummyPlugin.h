@@ -16,10 +16,10 @@ using namespace log4cxx;
 using namespace log4cxx::helpers;
 
 
-#include "FileWriterPlugin.h"
+#include "FrameProcessorPlugin.h"
 #include "ClassLoader.h"
 
-namespace filewriter
+namespace FrameProcessor
 {
 
   /**
@@ -48,6 +48,6 @@ namespace filewriter
    */
   REGISTER(FileWriterPlugin, DummyPlugin, "DummyPlugin");
 
-} /* namespace filewriter */
+} /* namespace FrameProcessor */
 
 #endif /* TOOLS_FILEWRITER_DUMMYPLUGIN_H_ */

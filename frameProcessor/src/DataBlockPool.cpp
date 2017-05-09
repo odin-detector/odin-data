@@ -7,7 +7,7 @@
 
 #include <DataBlockPool.h>
 
-namespace filewriter
+namespace FrameProcessor
 {
 
   /**

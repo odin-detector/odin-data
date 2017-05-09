@@ -46,12 +46,12 @@ BOOST_AUTO_TEST_CASE(DataBlockTest)
 {
   char data1[1024];
   char data2[2048];
-  boost::shared_ptr<filewriter::DataBlock> block1;
-  boost::shared_ptr<filewriter::DataBlock> block2;
-  BOOST_CHECK_NO_THROW(block1 = boost::shared_ptr<filewriter::DataBlock>(new filewriter::DataBlock(1024)));
+  boost::shared_ptr<FrameProcessor::DataBlock> block1;
+  boost::shared_ptr<FrameProcessor::DataBlock> block2;
+  BOOST_CHECK_NO_THROW(block1 = boost::shared_ptr<FrameProcessor::DataBlock>(new FrameProcessor::DataBlock(1024)));
   BOOST_CHECK_EQUAL(block1->getIndex(), 0);
   BOOST_CHECK_EQUAL(block1->getSize(), 1024);
-  BOOST_CHECK_NO_THROW(block2 = boost::shared_ptr<filewriter::DataBlock>(new filewriter::DataBlock(2048)));
+  BOOST_CHECK_NO_THROW(block2 = boost::shared_ptr<FrameProcessor::DataBlock>(new FrameProcessor::DataBlock(2048)));
   BOOST_CHECK_EQUAL(block2->getIndex(), 1);
   BOOST_CHECK_EQUAL(block2->getSize(), 2048);
   memset(data1, 1, 1024);
@@ -71,47 +71,47 @@ BOOST_AUTO_TEST_CASE(DataBlockTest)
 
 BOOST_AUTO_TEST_CASE(DataBlockPoolTest)
 {
-  boost::shared_ptr<filewriter::DataBlock> block1;
-  boost::shared_ptr<filewriter::DataBlock> block2;
+  boost::shared_ptr<FrameProcessor::DataBlock> block1;
+  boost::shared_ptr<FrameProcessor::DataBlock> block2;
   // Allocate 100 blocks
-  BOOST_CHECK_NO_THROW(filewriter::DataBlockPool::allocate("test1", 100, 1024));
+  BOOST_CHECK_NO_THROW(FrameProcessor::DataBlockPool::allocate("test1", 100, 1024));
   // Check pool statistics
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getFreeBlocks("test1"), 100);
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getUsedBlocks("test1"), 0);
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getTotalBlocks("test1"), 100);
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getMemoryAllocated("test1"), 102400);
+  BOOST_CHECK_EQUAL(FrameProcessor::DataBlockPool::getFreeBlocks("test1"), 100);
+  BOOST_CHECK_EQUAL(FrameProcessor::DataBlockPool::getUsedBlocks("test1"), 0);
+  BOOST_CHECK_EQUAL(FrameProcessor::DataBlockPool::getTotalBlocks("test1"), 100);
+  BOOST_CHECK_EQUAL(FrameProcessor::DataBlockPool::getMemoryAllocated("test1"), 102400);
   // Take 2 blocks
-  BOOST_CHECK_NO_THROW(block1 = filewriter::DataBlockPool::take("test1", 1024));
-  BOOST_CHECK_NO_THROW(block2 = filewriter::DataBlockPool::take("test1", 1024));
+  BOOST_CHECK_NO_THROW(block1 = FrameProcessor::DataBlockPool::take("test1", 1024));
+  BOOST_CHECK_NO_THROW(block2 = FrameProcessor::DataBlockPool::take("test1", 1024));
   // Check pool statistics
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getFreeBlocks("test1"), 98);
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getUsedBlocks("test1"), 2);
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getTotalBlocks("test1"), 100);
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getMemoryAllocated("test1"), 102400);
+  BOOST_CHECK_EQUAL(FrameProcessor::DataBlockPool::getFreeBlocks("test1"), 98);
+  BOOST_CHECK_EQUAL(FrameProcessor::DataBlockPool::getUsedBlocks("test1"), 2);
+  BOOST_CHECK_EQUAL(FrameProcessor::DataBlockPool::getTotalBlocks("test1"), 100);
+  BOOST_CHECK_EQUAL(FrameProcessor::DataBlockPool::getMemoryAllocated("test1"), 102400);
   // Check the taken blocks have different index values
   BOOST_CHECK_NE(block1->getIndex(), block2->getIndex());
   // Release 1 block
-  BOOST_CHECK_NO_THROW(filewriter::DataBlockPool::release("test1", block1));
+  BOOST_CHECK_NO_THROW(FrameProcessor::DataBlockPool::release("test1", block1));
   // Check pool statistics
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getFreeBlocks("test1"), 99);
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getUsedBlocks("test1"), 1);
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getTotalBlocks("test1"), 100);
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getMemoryAllocated("test1"), 102400);
+  BOOST_CHECK_EQUAL(FrameProcessor::DataBlockPool::getFreeBlocks("test1"), 99);
+  BOOST_CHECK_EQUAL(FrameProcessor::DataBlockPool::getUsedBlocks("test1"), 1);
+  BOOST_CHECK_EQUAL(FrameProcessor::DataBlockPool::getTotalBlocks("test1"), 100);
+  BOOST_CHECK_EQUAL(FrameProcessor::DataBlockPool::getMemoryAllocated("test1"), 102400);
   // Allocate another 100 blocks
-  BOOST_CHECK_NO_THROW(filewriter::DataBlockPool::allocate("test1", 100, 1024));
+  BOOST_CHECK_NO_THROW(FrameProcessor::DataBlockPool::allocate("test1", 100, 1024));
   // Check pool statistics
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getFreeBlocks("test1"), 199);
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getUsedBlocks("test1"), 1);
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getTotalBlocks("test1"), 200);
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getMemoryAllocated("test1"), 204800);
+  BOOST_CHECK_EQUAL(FrameProcessor::DataBlockPool::getFreeBlocks("test1"), 199);
+  BOOST_CHECK_EQUAL(FrameProcessor::DataBlockPool::getUsedBlocks("test1"), 1);
+  BOOST_CHECK_EQUAL(FrameProcessor::DataBlockPool::getTotalBlocks("test1"), 200);
+  BOOST_CHECK_EQUAL(FrameProcessor::DataBlockPool::getMemoryAllocated("test1"), 204800);
   // Now take a block of a different size
-  BOOST_CHECK_NO_THROW(block2 = filewriter::DataBlockPool::take("test1", 1025));
+  BOOST_CHECK_NO_THROW(block2 = FrameProcessor::DataBlockPool::take("test1", 1025));
   // Check pool statistics
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getFreeBlocks("test1"), 198);
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getUsedBlocks("test1"), 2);
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getTotalBlocks("test1"), 200);
+  BOOST_CHECK_EQUAL(FrameProcessor::DataBlockPool::getFreeBlocks("test1"), 198);
+  BOOST_CHECK_EQUAL(FrameProcessor::DataBlockPool::getUsedBlocks("test1"), 2);
+  BOOST_CHECK_EQUAL(FrameProcessor::DataBlockPool::getTotalBlocks("test1"), 200);
   // Memory allocated should have increased by 1 byte
-  BOOST_CHECK_EQUAL(filewriter::DataBlockPool::getMemoryAllocated("test1"), 204801);
+  BOOST_CHECK_EQUAL(FrameProcessor::DataBlockPool::getMemoryAllocated("test1"), 204801);
   // Check the blocks have different index values
   BOOST_CHECK_NE(block1->getIndex(), block2->getIndex());
   // Check the blocks have different sizes
@@ -129,7 +129,7 @@ BOOST_AUTO_TEST_CASE( FrameTest )
                                 9,10,11,12 };
     dimensions_t img_dims(2); img_dims[0] = 3; img_dims[1] = 4;
 
-    filewriter::Frame frame("raw");
+    FrameProcessor::Frame frame("raw");
     frame.set_dimensions("frame", img_dims);
     frame.set_frame_number(7);
     BOOST_CHECK_NO_THROW(frame.copy_data(static_cast<void*>(img), 24));
@@ -160,12 +160,12 @@ public:
 
         dset_def.name = "data";
         dset_def.num_frames = 2; //unused?
-        dset_def.pixel = filewriter::FileWriter::pixel_raw_16bit;
+        dset_def.pixel = FrameProcessor::FileWriter::pixel_raw_16bit;
         dset_def.frame_dimensions = dimensions_t(2);
         dset_def.frame_dimensions[0] = 3;
         dset_def.frame_dimensions[1] = 4;
 
-        frame = boost::shared_ptr<filewriter::Frame>(new filewriter::Frame("data"));
+        frame = boost::shared_ptr<FrameProcessor::Frame>(new FrameProcessor::Frame("data"));
         frame->set_frame_number(7);
 //        frame->
 //        2, img_dims));
@@ -174,7 +174,7 @@ public:
 
         for (int i = 1; i<6; i++)
         {
-            boost::shared_ptr<filewriter::Frame> tmp_frame(new filewriter::Frame("data")); //2, img_dims));
+            boost::shared_ptr<FrameProcessor::Frame> tmp_frame(new FrameProcessor::Frame("data")); //2, img_dims));
             tmp_frame->set_frame_number(i);
 //            img_header.frame_number = i;
 //            tmp_frame->copy_header(&img_header);
@@ -184,10 +184,10 @@ public:
         }
     }
     ~FileWriterTestFixture(){}
-    boost::shared_ptr<filewriter::Frame> frame;
-    std::vector< boost::shared_ptr<filewriter::Frame> >frames;
-    filewriter::FileWriter fw;
-    filewriter::FileWriter::DatasetDefinition dset_def;
+    boost::shared_ptr<FrameProcessor::Frame> frame;
+    std::vector< boost::shared_ptr<FrameProcessor::Frame> >frames;
+    FrameProcessor::FileWriter fw;
+    FrameProcessor::FileWriter::DatasetDefinition dset_def;
 };
 
 BOOST_FIXTURE_TEST_SUITE(FileWriterUnitTest, FileWriterTestFixture);
@@ -271,7 +271,7 @@ BOOST_AUTO_TEST_CASE( FileWriterMultipleFramesTest )
     BOOST_REQUIRE_NO_THROW(fw.createFile("/tmp/blah_multiple.h5"));
     BOOST_REQUIRE_NO_THROW(fw.createDataset(dset_def));
 
-    std::vector<boost::shared_ptr<filewriter::Frame> >::iterator it;
+    std::vector<boost::shared_ptr<FrameProcessor::Frame> >::iterator it;
     for (it = frames.begin(); it != frames.end(); ++it){
         BOOST_TEST_MESSAGE("Writing frame: " <<  (*it)->get_frame_number());
         BOOST_REQUIRE_NO_THROW(fw.writeFrame(*(*it)));
@@ -292,7 +292,7 @@ BOOST_AUTO_TEST_CASE( FileWriterMultipleReverseTest )
     BOOST_TEST_MESSAGE("Writing frame: " << frame->get_frame_number());
     BOOST_REQUIRE_NO_THROW(fw.writeFrame(*frame));
 
-    std::vector<boost::shared_ptr<filewriter::Frame> >::reverse_iterator rit;
+    std::vector<boost::shared_ptr<FrameProcessor::Frame> >::reverse_iterator rit;
     for (rit = frames.rbegin(); rit != frames.rend(); ++rit){
         BOOST_TEST_MESSAGE("Writing frame: " <<  (*rit)->get_frame_number());
         BOOST_REQUIRE_NO_THROW(fw.writeFrame(*(*rit)));
@@ -309,7 +309,7 @@ BOOST_AUTO_TEST_CASE( FileWriterSubframesTest )
     BOOST_REQUIRE_NO_THROW(fw.createFile("/tmp/blah_subframes.h5"));
     BOOST_REQUIRE_NO_THROW(fw.createDataset(dset_def));
 
-    std::vector<boost::shared_ptr<filewriter::Frame> >::iterator it;
+    std::vector<boost::shared_ptr<FrameProcessor::Frame> >::iterator it;
     for (it = frames.begin(); it != frames.end(); ++it){
       (*it)->set_dimensions("subframe", subdims);
       (*it)->set_parameter("subframe_count", 2);
@@ -328,7 +328,7 @@ BOOST_AUTO_TEST_CASE( FileWriterAdjustHugeOffset )
     hsize_t huge_offset = 100000;
     BOOST_REQUIRE_NO_THROW(fw.setStartFrameOffset(huge_offset));
 
-    std::vector<boost::shared_ptr<filewriter::Frame> >::iterator it;
+    std::vector<boost::shared_ptr<FrameProcessor::Frame> >::iterator it;
     for (it = frames.begin(); it != frames.end(); ++it){
         size_t frame_no = (*it)->get_frame_number();
         //PercivalEmulator::FrameHeader img_header = *((*it)->get_header());
@@ -349,7 +349,7 @@ BOOST_AUTO_TEST_CASE( FileWriterSubProcess )
     // Process numbers start from 0: 0,1,2 - this process pretends to be process 1.
     OdinData::IpcMessage reply;
 
-    filewriter::FileWriter fw1;
+    FrameProcessor::FileWriter fw1;
     {
       OdinData::IpcMessage cfg;
       cfg.set_param("process/number", 3);
@@ -376,7 +376,7 @@ BOOST_AUTO_TEST_CASE( FileWriterSubProcess )
 
     BOOST_REQUIRE_NO_THROW(fw1.closeFile());
 
-    filewriter::FileWriter fw0;
+    FrameProcessor::FileWriter fw0;
     {
       OdinData::IpcMessage cfg;
       cfg.set_param("process/number", 3);

@@ -14,7 +14,7 @@
 
 #include "DataBlock.h"
 
-namespace filewriter
+namespace FrameProcessor
 {
 
   /**
@@ -73,6 +73,6 @@ namespace filewriter
     static std::map<std::string, DataBlockPool*> instanceMap_;
   };
 
-} /* namespace filewriter */
+} /* namespace FrameProcessor */
 
 #endif /* TOOLS_FILEWRITER_DATABLOCKPOOL_H_ */

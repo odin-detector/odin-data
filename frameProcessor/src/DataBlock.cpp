@@ -7,7 +7,7 @@
 
 #include <DataBlock.h>
 
-namespace filewriter
+namespace FrameProcessor
 {
   int DataBlock::indexCounter_ = 0;
 

@@ -18,10 +18,10 @@
 
 using namespace log4cxx;
 
-#include "FileWriterPlugin.h"
+#include "FrameProcessorPlugin.h"
 #include "ClassLoader.h"
 
-namespace filewriter
+namespace FrameProcessor
 {
 
 // Forward declarations
@@ -35,7 +35,7 @@ class Frame;
  * into datasets.  Multiple datasets can be created and the raw data is stored
  * according to the Frame index (or name).
  */
-class FileWriter : public filewriter::FileWriterPlugin
+class FileWriter : public FileWriterPlugin
 {
   public:
     /**

@@ -8,7 +8,7 @@ add_definitions(${HDF5_DEFINITIONS})
 file(GLOB APP_SOURCES DataBlock.cpp 
                       DataBlockPool.cpp 
                       FileWriterController.cpp 
-                      FileWriterPlugin.cpp 
+                      FrameProcessorPlugin.cpp 
                       Frame.cpp 
                       IFrameCallback.cpp 
                       SharedMemoryController.cpp 
@@ -26,23 +26,23 @@ message(STATUS "HDF5 defs:           " ${HDF5_DEFINITIONS})
 target_link_libraries(frameProcessor ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${COMMON_LIBRARY})
 
 # Add library for dummy plugin
-add_library(DummyPlugin SHARED DummyPlugin.cpp FileWriterPlugin.cpp IFrameCallback.cpp Frame.cpp DataBlock.cpp DataBlockPool.cpp)
+add_library(DummyPlugin SHARED DummyPlugin.cpp FrameProcessorPlugin.cpp IFrameCallback.cpp Frame.cpp DataBlock.cpp DataBlockPool.cpp)
 target_link_libraries(DummyPlugin ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${COMMON_LIBRARY})
 
 # Add library for HDF5 writer plugin
-add_library(Hdf5Plugin SHARED FileWriter.cpp FileWriterPlugin.cpp IFrameCallback.cpp Frame.cpp DataBlock.cpp DataBlockPool.cpp)
+add_library(Hdf5Plugin SHARED FileWriter.cpp FrameProcessorPlugin.cpp IFrameCallback.cpp Frame.cpp DataBlock.cpp DataBlockPool.cpp)
 target_link_libraries(Hdf5Plugin ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${COMMON_LIBRARY})
 
 # Add library for excalibur plugin
-add_library(ExcaliburReorderPlugin SHARED ExcaliburReorderPlugin.cpp FileWriterPlugin.cpp IFrameCallback.cpp Frame.cpp DataBlock.cpp DataBlockPool.cpp)
+add_library(ExcaliburReorderPlugin SHARED ExcaliburReorderPlugin.cpp FrameProcessorPlugin.cpp IFrameCallback.cpp Frame.cpp DataBlock.cpp DataBlockPool.cpp)
 target_link_libraries(ExcaliburReorderPlugin ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${COMMON_LIBRARY})
 
 # Add library for percival process plugin
-add_library(PercivalProcessPlugin SHARED PercivalProcessPlugin.cpp FileWriterPlugin.cpp IFrameCallback.cpp Frame.cpp DataBlock.cpp DataBlockPool.cpp)
+add_library(PercivalProcessPlugin SHARED PercivalProcessPlugin.cpp FrameProcessorPlugin.cpp IFrameCallback.cpp Frame.cpp DataBlock.cpp DataBlockPool.cpp)
 target_link_libraries(PercivalProcessPlugin ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${COMMON_LIBRARY})
             
 # Add test and project source files to executable
-file(GLOB TESTABLE_SOURCES DataBlock.cpp DataBlockPool.cpp IFrameCallback.cpp FileWriterPlugin.cpp Frame.cpp)
+file(GLOB TESTABLE_SOURCES DataBlock.cpp DataBlockPool.cpp IFrameCallback.cpp FrameProcessorPlugin.cpp Frame.cpp)
 add_executable(frameProcessorTest ${TEST_SOURCES} ${TESTABLE_SOURCES})
 
 # Define libraries to link against

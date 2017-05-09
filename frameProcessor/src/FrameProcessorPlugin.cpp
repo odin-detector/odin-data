@@ -5,9 +5,9 @@
  *      Author: gnx91527
  */
 
-#include <FileWriterPlugin.h>
+#include "FrameProcessorPlugin.h"
 
-namespace filewriter
+namespace FrameProcessor
 {
 
   /**
@@ -176,4 +176,4 @@ namespace filewriter
     }
   }
 
-} /* namespace filewriter */
+} /* namespace FrameProcessor */

@@ -11,14 +11,14 @@
 #include <boost/shared_ptr.hpp>
 #include <log4cxx/logger.h>
 
-#include "FileWriterPlugin.h"
 #include "IpcReactor.h"
 #include "IpcChannel.h"
 #include "SharedMemoryController.h"
 #include "SharedBufferManager.h"
 #include "ClassLoader.h"
+#include "FrameProcessorPlugin.h"
 
-namespace filewriter
+namespace FrameProcessor
 {
 
  /**
@@ -128,6 +128,6 @@ namespace filewriter
     OdinData::IpcChannel                                   ctrlChannel_;
   };
 
-} /* namespace filewriter */
+} /* namespace FrameProcessor */
 
 #endif /* TOOLS_FILEWRITER_FILEWRITERCONTROLLER_H_ */

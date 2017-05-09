@@ -9,7 +9,7 @@
 #include "Frame.h"
 #include <stdio.h>
 
-namespace filewriter
+namespace FrameProcessor
 {
 
 const std::string FileWriter::CONFIG_PROCESS        = "process";
@@ -671,7 +671,7 @@ void FileWriter::configureDataset(OdinData::IpcMessage& config, OdinData::IpcMes
 
       // There must be a type present for the dataset
       if (config.has_param(FileWriter::CONFIG_DATASET_TYPE)){
-        dset_def.pixel = (filewriter::FileWriter::PixelType)config.get_param<int>(FileWriter::CONFIG_DATASET_TYPE);
+        dset_def.pixel = (FileWriter::PixelType)config.get_param<int>(FileWriter::CONFIG_DATASET_TYPE);
       } else {
         LOG4CXX_ERROR(logger_, "Cannot create a dataset without a data type");
         throw std::runtime_error("Cannot create a dataset without a data type");

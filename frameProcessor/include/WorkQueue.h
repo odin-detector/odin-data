@@ -11,7 +11,7 @@
 #include <cstddef>
 #include <list>
 
-namespace filewriter
+namespace FrameProcessor
 {
 
 /** Thread safe producer consumer work queue.
@@ -102,6 +102,6 @@ namespace filewriter
 
   };
 
-} /* namespace filewriter */
+} /* namespace FrameProcessor */
 
 #endif /* TOOLS_FILEWRITER_WORKQUEUE_H_ */

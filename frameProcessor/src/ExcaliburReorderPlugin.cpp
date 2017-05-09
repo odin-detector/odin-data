@@ -7,7 +7,7 @@
 
 #include <ExcaliburReorderPlugin.h>
 
-namespace filewriter
+namespace FrameProcessor
 {
 
   const std::string ExcaliburReorderPlugin::CONFIG_ASIC_COUNTER_DEPTH = "bitdepth";

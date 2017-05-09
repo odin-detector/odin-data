@@ -7,7 +7,7 @@
 
 #include <IFrameCallback.h>
 
-namespace filewriter
+namespace FrameProcessor
 {
 
   /** Construct a new IFrameCallback object.
@@ -123,4 +123,4 @@ namespace filewriter
     }
   }
 
-} /* namespace filewriter */
+} /* namespace FrameProcessor */

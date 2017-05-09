@@ -11,7 +11,7 @@
 #include "IFrameCallback.h"
 #include "IpcMessage.h"
 
-namespace filewriter
+namespace FrameProcessor
 {
 
   /** Abstract plugin class, providing the IFrameCallback interface.
@@ -57,6 +57,6 @@ namespace filewriter
     std::map<std::string, boost::shared_ptr<IFrameCallback> > blockingCallbacks_;
   };
 
-} /* namespace filewriter */
+} /* namespace FrameProcessor */
 
 #endif /* TOOLS_FILEWRITER_FILEWRITERPLUGIN_H_ */

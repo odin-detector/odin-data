@@ -15,11 +15,11 @@
 using namespace log4cxx;
 using namespace log4cxx::helpers;
 
-#include "FileWriterPlugin.h"
+#include "FrameProcessorPlugin.h"
 #include "PercivalEmulatorDefinitions.h"
 #include "ClassLoader.h"
 
-namespace filewriter
+namespace FrameProcessor
 {
 
   /** Processing of Percival Frame objects.
@@ -47,6 +47,6 @@ namespace filewriter
    */
   REGISTER(FileWriterPlugin, PercivalProcessPlugin, "PercivalProcessPlugin");
 
-} /* namespace filewriter */
+} /* namespace FrameProcessor */
 
 #endif /* TOOLS_FILEWRITER_PERCIVALPROCESSPLUGIN_H_ */
