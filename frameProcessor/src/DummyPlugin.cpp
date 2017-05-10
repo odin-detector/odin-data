@@ -7,7 +7,7 @@
 
 #include "DummyPlugin.h"
 
-namespace filewriter
+namespace FrameProcessor
 {
 
   /**

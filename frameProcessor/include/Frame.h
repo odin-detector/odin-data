@@ -38,7 +38,7 @@ typedef std::vector<dimsize_t> dimensions_t;
 
 //============== end of stolen bits ============================================================
 
-namespace filewriter
+namespace FrameProcessor
 {
 
   /** Store a raw dataset and associated parameters (meta data).
@@ -119,6 +119,6 @@ namespace filewriter
     boost::shared_ptr<DataBlock> raw_;
   };
 
-} /* namespace filewriter */
+} /* namespace FrameProcessor */
 
 #endif /* TOOLS_CLIENT_FRAMENOTIFIER_DATA_H_ */

@@ -16,7 +16,7 @@ using namespace log4cxx;
 using namespace log4cxx::helpers;
 
 
-#include "FileWriterPlugin.h"
+#include "FrameProcessorPlugin.h"
 #include "ExcaliburDefinitions.h"
 #include "ClassLoader.h"
 
@@ -46,7 +46,7 @@ using namespace log4cxx::helpers;
 #define FEM_PIXELS_PER_SUPERCOLUMN_X (FEM_PIXELS_PER_CHIP_X / FEM_SUPERCOLUMNS_PER_CHIP)
 #define FEM_SUPERCOLUMNS_PER_BLOCK_X (FEM_SUPERCOLUMNS_PER_CHIP * FEM_CHIPS_PER_BLOCK_X)
 
-namespace filewriter
+namespace FrameProcessor
 {
 
   /** Processing of Excalibur Frame objects.
@@ -55,7 +55,7 @@ namespace filewriter
    * Frame object and reordering the data into valid Excalibur frames according to the selected
    * bit depth.
    */
-  class ExcaliburReorderPlugin : public FileWriterPlugin
+  class ExcaliburReorderPlugin : public FrameProcessorPlugin
   {
   public:
     ExcaliburReorderPlugin();
@@ -106,8 +106,8 @@ namespace filewriter
    * Registration of this plugin through the ClassLoader.  This macro
    * registers the class without needing to worry about name mangling
    */
-  REGISTER(FileWriterPlugin, ExcaliburReorderPlugin, "ExcaliburReorderPlugin");
+  REGISTER(FrameProcessorPlugin, ExcaliburReorderPlugin, "ExcaliburReorderPlugin");
 
-} /* namespace filewriter */
+} /* namespace FrameProcessor */
 
 #endif /* TOOLS_FILEWRITER_EXCALIBURREORDERPLUGIN_H_ */

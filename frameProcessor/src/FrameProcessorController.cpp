@@ -1,52 +1,51 @@
 /*
- * FileWriterController.cpp
+ * FrameProcessorController.cpp
  *
  *  Created on: 27 May 2016
  *      Author: gnx91527
  */
 
-#include <FileWriterController.h>
-
 #include <stdio.h>
+#include "FrameProcessorController.h"
 
-namespace filewriter
+namespace FrameProcessor
 {
-  const std::string FileWriterController::CONFIG_SHUTDOWN          = "shutdown";
+  const std::string FrameProcessorController::CONFIG_SHUTDOWN          = "shutdown";
 
-  const std::string FileWriterController::CONFIG_STATUS            = "status";
+  const std::string FrameProcessorController::CONFIG_STATUS            = "status";
 
-  const std::string FileWriterController::CONFIG_FR_SHARED_MEMORY  = "fr_shared_mem";
-  const std::string FileWriterController::CONFIG_FR_RELEASE        = "fr_release_cnxn";
-  const std::string FileWriterController::CONFIG_FR_READY          = "fr_ready_cnxn";
-  const std::string FileWriterController::CONFIG_FR_SETUP          = "fr_setup";
+  const std::string FrameProcessorController::CONFIG_FR_SHARED_MEMORY  = "fr_shared_mem";
+  const std::string FrameProcessorController::CONFIG_FR_RELEASE        = "fr_release_cnxn";
+  const std::string FrameProcessorController::CONFIG_FR_READY          = "fr_ready_cnxn";
+  const std::string FrameProcessorController::CONFIG_FR_SETUP          = "fr_setup";
 
-  const std::string FileWriterController::CONFIG_CTRL_ENDPOINT     = "ctrl_endpoint";
+  const std::string FrameProcessorController::CONFIG_CTRL_ENDPOINT     = "ctrl_endpoint";
 
-  const std::string FileWriterController::CONFIG_PLUGIN            = "plugin";
-  const std::string FileWriterController::CONFIG_PLUGIN_LIST       = "list";
-  const std::string FileWriterController::CONFIG_PLUGIN_LOAD       = "load";
-  const std::string FileWriterController::CONFIG_PLUGIN_CONNECT    = "connect";
-  const std::string FileWriterController::CONFIG_PLUGIN_DISCONNECT = "disconnect";
-  const std::string FileWriterController::CONFIG_PLUGIN_NAME       = "name";
-  const std::string FileWriterController::CONFIG_PLUGIN_INDEX      = "index";
-  const std::string FileWriterController::CONFIG_PLUGIN_LIBRARY    = "library";
-  const std::string FileWriterController::CONFIG_PLUGIN_CONNECTION = "connection";
+  const std::string FrameProcessorController::CONFIG_PLUGIN            = "plugin";
+  const std::string FrameProcessorController::CONFIG_PLUGIN_LIST       = "list";
+  const std::string FrameProcessorController::CONFIG_PLUGIN_LOAD       = "load";
+  const std::string FrameProcessorController::CONFIG_PLUGIN_CONNECT    = "connect";
+  const std::string FrameProcessorController::CONFIG_PLUGIN_DISCONNECT = "disconnect";
+  const std::string FrameProcessorController::CONFIG_PLUGIN_NAME       = "name";
+  const std::string FrameProcessorController::CONFIG_PLUGIN_INDEX      = "index";
+  const std::string FrameProcessorController::CONFIG_PLUGIN_LIBRARY    = "library";
+  const std::string FrameProcessorController::CONFIG_PLUGIN_CONNECTION = "connection";
 
-  /** Construct a new FileWriterController class.
+  /** Construct a new FrameProcessorController class.
    *
    * The constructor sets up logging used within the class, and starts the
    * IpcReactor thread.
    */
-  FileWriterController::FileWriterController() :
-    logger_(log4cxx::Logger::getLogger("FW.FileWriterController")),
+  FrameProcessorController::FrameProcessorController() :
+    logger_(log4cxx::Logger::getLogger("FW.FrameProcessorController")),
     runThread_(true),
     threadRunning_(false),
     threadInitError_(false),
     pluginShutdownSent(false),
-    ctrlThread_(boost::bind(&FileWriterController::runIpcService, this)),
+    ctrlThread_(boost::bind(&FrameProcessorController::runIpcService, this)),
     ctrlChannel_(ZMQ_REP)
   {
-    LOG4CXX_DEBUG(logger_, "Constructing FileWriterController");
+    LOG4CXX_DEBUG(logger_, "Constructing FrameProcessorController");
     
     totalFrames = 0;
 
@@ -66,7 +65,7 @@ namespace filewriter
   /**
    * Destructor.
    */
-  FileWriterController::~FileWriterController()
+  FrameProcessorController::~FrameProcessorController()
   {
     // TODO Auto-generated destructor stub
   }
@@ -79,7 +78,7 @@ namespace filewriter
    * configuration has completed a response IpcMessage is sent back on the
    * control channel.
    */
-  void FileWriterController::handleCtrlChannel()
+  void FrameProcessorController::handleCtrlChannel()
   {
     // Receive a message from the main thread channel
     std::string ctrlMsgEncoded = ctrlChannel_.recv();
@@ -122,7 +121,7 @@ namespace filewriter
    *
    * @param frame - Pointer to the frame
    */
-  void FileWriterController::callback(boost::shared_ptr<Frame> frame) {
+  void FrameProcessorController::callback(boost::shared_ptr<Frame> frame) {
     
     // If frame is a master frame, or all frames are included (no master frames), increment frame count
     if (masterFrame == "" || frame->get_dataset_name() == masterFrame) {
@@ -142,7 +141,7 @@ namespace filewriter
   }
 
   /**
-   * Set configuration options for the FileWriterController.
+   * Set configuration options for the FrameProcessorController.
    *
    * Sets up the overall FileWriter application according to the
    * configuration IpcMessage objects that are received.  The objects
@@ -160,7 +159,7 @@ namespace filewriter
    * \param[in] config - IpcMessage containing configuration data.
    * \param[out] reply - Response IpcMessage.
    */
-  void FileWriterController::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
+  void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
   {
     LOG4CXX_DEBUG(logger_, "Configuration submitted: " << config.encode());
     
@@ -178,44 +177,44 @@ namespace filewriter
     }
 
     // Check if we are being asked to shutdown
-    if (config.has_param(FileWriterController::CONFIG_SHUTDOWN)){
+    if (config.has_param(FrameProcessorController::CONFIG_SHUTDOWN)){
       exitCondition_.notify_all();
     }
 
     // Check if we are being asked to shutdown
-    if (config.has_param(FileWriterController::CONFIG_STATUS)){
+    if (config.has_param(FrameProcessorController::CONFIG_STATUS)){
       // Loop over plugins, checking for configuration messages
-      std::map<std::string, boost::shared_ptr<FileWriterPlugin> >::iterator iter;
+      std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
       for (iter = plugins_.begin(); iter != plugins_.end(); ++iter){
         iter->second->status(reply);
       }
     }
 
-    if (config.has_param(FileWriterController::CONFIG_CTRL_ENDPOINT)){
-      std::string endpoint = config.get_param<std::string>(FileWriterController::CONFIG_CTRL_ENDPOINT);
+    if (config.has_param(FrameProcessorController::CONFIG_CTRL_ENDPOINT)){
+      std::string endpoint = config.get_param<std::string>(FrameProcessorController::CONFIG_CTRL_ENDPOINT);
       this->setupControlInterface(endpoint);
     }
 
-    if (config.has_param(FileWriterController::CONFIG_PLUGIN)){
-      OdinData::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FileWriterController::CONFIG_PLUGIN));
+    if (config.has_param(FrameProcessorController::CONFIG_PLUGIN)){
+      OdinData::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FrameProcessorController::CONFIG_PLUGIN));
       this->configurePlugin(pluginConfig, reply);
     }
 
     // Check if we are being passed the shared memory configuration
-    if (config.has_param(FileWriterController::CONFIG_FR_SETUP)){
-      OdinData::IpcMessage frConfig(config.get_param<const rapidjson::Value&>(FileWriterController::CONFIG_FR_SETUP));
-      if (frConfig.has_param(FileWriterController::CONFIG_FR_SHARED_MEMORY) &&
-          frConfig.has_param(FileWriterController::CONFIG_FR_RELEASE) &&
-          frConfig.has_param(FileWriterController::CONFIG_FR_READY)){
-        std::string shMemName = frConfig.get_param<std::string>(FileWriterController::CONFIG_FR_SHARED_MEMORY);
-        std::string pubString = frConfig.get_param<std::string>(FileWriterController::CONFIG_FR_RELEASE);
-        std::string subString = frConfig.get_param<std::string>(FileWriterController::CONFIG_FR_READY);
+    if (config.has_param(FrameProcessorController::CONFIG_FR_SETUP)){
+      OdinData::IpcMessage frConfig(config.get_param<const rapidjson::Value&>(FrameProcessorController::CONFIG_FR_SETUP));
+      if (frConfig.has_param(FrameProcessorController::CONFIG_FR_SHARED_MEMORY) &&
+          frConfig.has_param(FrameProcessorController::CONFIG_FR_RELEASE) &&
+          frConfig.has_param(FrameProcessorController::CONFIG_FR_READY)){
+        std::string shMemName = frConfig.get_param<std::string>(FrameProcessorController::CONFIG_FR_SHARED_MEMORY);
+        std::string pubString = frConfig.get_param<std::string>(FrameProcessorController::CONFIG_FR_RELEASE);
+        std::string subString = frConfig.get_param<std::string>(FrameProcessorController::CONFIG_FR_READY);
         this->setupFrameReceiverInterface(shMemName, pubString, subString);
       }
     }
 
     // Loop over plugins, checking for configuration messages
-    std::map<std::string, boost::shared_ptr<FileWriterPlugin> >::iterator iter;
+    std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
     for (iter = plugins_.begin(); iter != plugins_.end(); ++iter){
       if (config.has_param(iter->first)){
         OdinData::IpcMessage subConfig(config.get_param<const rapidjson::Value&>(iter->first));
@@ -241,11 +240,11 @@ namespace filewriter
    * \param[in] config - IpcMessage containing configuration data.
    * \param[out] reply - Response IpcMessage.
    */
-  void FileWriterController::configurePlugin(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
+  void FrameProcessorController::configurePlugin(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
   {
-    if (config.has_param(FileWriterController::CONFIG_PLUGIN_LIST)){
+    if (config.has_param(FrameProcessorController::CONFIG_PLUGIN_LIST)){
       // We have been asked to list the loaded plugins
-      std::map<std::string, boost::shared_ptr<FileWriterPlugin> >::iterator iter;
+      std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
       for (iter = plugins_.begin(); iter != plugins_.end(); ++iter){
         reply.set_param("plugins/names[]", iter->first);
       }
@@ -253,36 +252,36 @@ namespace filewriter
 
 
     // Check if we are being asked to load a plugin
-    if (config.has_param(FileWriterController::CONFIG_PLUGIN_LOAD)){
-      OdinData::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FileWriterController::CONFIG_PLUGIN_LOAD));
-      if (pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_NAME) &&
-          pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_INDEX) &&
-          pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_LIBRARY)){
-        std::string index = pluginConfig.get_param<std::string>(FileWriterController::CONFIG_PLUGIN_INDEX);
-        std::string name = pluginConfig.get_param<std::string>(FileWriterController::CONFIG_PLUGIN_NAME);
-        std::string library = pluginConfig.get_param<std::string>(FileWriterController::CONFIG_PLUGIN_LIBRARY);
+    if (config.has_param(FrameProcessorController::CONFIG_PLUGIN_LOAD)){
+      OdinData::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FrameProcessorController::CONFIG_PLUGIN_LOAD));
+      if (pluginConfig.has_param(FrameProcessorController::CONFIG_PLUGIN_NAME) &&
+          pluginConfig.has_param(FrameProcessorController::CONFIG_PLUGIN_INDEX) &&
+          pluginConfig.has_param(FrameProcessorController::CONFIG_PLUGIN_LIBRARY)){
+        std::string index = pluginConfig.get_param<std::string>(FrameProcessorController::CONFIG_PLUGIN_INDEX);
+        std::string name = pluginConfig.get_param<std::string>(FrameProcessorController::CONFIG_PLUGIN_NAME);
+        std::string library = pluginConfig.get_param<std::string>(FrameProcessorController::CONFIG_PLUGIN_LIBRARY);
         this->loadPlugin(index, name, library);
       }
     }
 
     // Check if we are being asked to connect a plugin
-    if (config.has_param(FileWriterController::CONFIG_PLUGIN_CONNECT)){
-      OdinData::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FileWriterController::CONFIG_PLUGIN_CONNECT));
-      if (pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_CONNECTION) &&
-          pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_INDEX)){
-        std::string index = pluginConfig.get_param<std::string>(FileWriterController::CONFIG_PLUGIN_INDEX);
-        std::string cnxn = pluginConfig.get_param<std::string>(FileWriterController::CONFIG_PLUGIN_CONNECTION);
+    if (config.has_param(FrameProcessorController::CONFIG_PLUGIN_CONNECT)){
+      OdinData::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FrameProcessorController::CONFIG_PLUGIN_CONNECT));
+      if (pluginConfig.has_param(FrameProcessorController::CONFIG_PLUGIN_CONNECTION) &&
+          pluginConfig.has_param(FrameProcessorController::CONFIG_PLUGIN_INDEX)){
+        std::string index = pluginConfig.get_param<std::string>(FrameProcessorController::CONFIG_PLUGIN_INDEX);
+        std::string cnxn = pluginConfig.get_param<std::string>(FrameProcessorController::CONFIG_PLUGIN_CONNECTION);
         this->connectPlugin(index, cnxn);
       }
     }
 
     // Check if we are being asked to disconnect a plugin
-    if (config.has_param(FileWriterController::CONFIG_PLUGIN_DISCONNECT)){
-      OdinData::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FileWriterController::CONFIG_PLUGIN_DISCONNECT));
-      if (pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_CONNECTION) &&
-          pluginConfig.has_param(FileWriterController::CONFIG_PLUGIN_INDEX)){
-        std::string index = pluginConfig.get_param<std::string>(FileWriterController::CONFIG_PLUGIN_INDEX);
-        std::string cnxn = pluginConfig.get_param<std::string>(FileWriterController::CONFIG_PLUGIN_CONNECTION);
+    if (config.has_param(FrameProcessorController::CONFIG_PLUGIN_DISCONNECT)){
+      OdinData::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FrameProcessorController::CONFIG_PLUGIN_DISCONNECT));
+      if (pluginConfig.has_param(FrameProcessorController::CONFIG_PLUGIN_CONNECTION) &&
+          pluginConfig.has_param(FrameProcessorController::CONFIG_PLUGIN_INDEX)){
+        std::string index = pluginConfig.get_param<std::string>(FrameProcessorController::CONFIG_PLUGIN_INDEX);
+        std::string cnxn = pluginConfig.get_param<std::string>(FrameProcessorController::CONFIG_PLUGIN_CONNECTION);
         this->disconnectPlugin(index, cnxn);
       }
     }
@@ -299,23 +298,30 @@ namespace filewriter
    * \param[in] name - Name of the plugin class.
    * \param[in] library - Full path of shared library file for the plugin.
    */
-  void FileWriterController::loadPlugin(const std::string& index, const std::string& name, const std::string& library)
+  void FrameProcessorController::loadPlugin(const std::string& index, const std::string& name, const std::string& library)
   {
     // Verify a plugin of the same name doesn't already exist
     if (plugins_.count(index) == 0){
       // Dynamically class load the plugin
       // Add the plugin to the map, indexed by the name
-      boost::shared_ptr<FileWriterPlugin> plugin = OdinData::ClassLoader<FileWriterPlugin>::load_class(name, library);
-      plugin->setName(index);
-      plugins_[index] = plugin;
-      
-      // Register callback to FWC with FileWriter plugin
-      if (name == "FileWriter") {
-        plugin->registerCallback("controller", this->shared_from_this(), true);
+      boost::shared_ptr<FrameProcessorPlugin> plugin = OdinData::ClassLoader<FrameProcessorPlugin>::load_class(name, library);
+      if (plugin){
+		  plugin->setName(index);
+		  plugins_[index] = plugin;
+
+		  // Register callback to FWC with FileWriter plugin
+		  if (name == "FileWriter") {
+			plugin->registerCallback("controller", this->shared_from_this(), true);
+		  }
+
+		  // Start the plugin worker thread
+		  plugin->start();
+      } else {
+          LOG4CXX_ERROR(logger_, "Could not load plugin with index [" << index << "], name [" << name << "], check library");
+          std::stringstream is;
+          is << "Cannot load plugin with index [" << index << "], name [" << name << "], check library";
+          throw std::runtime_error(is.str().c_str());
       }
-      
-      // Start the plugin worker thread
-      plugin->start();
     } else {
       LOG4CXX_ERROR(logger_, "Cannot load plugin with index = " << index << ", already loaded");
       std::stringstream is;
@@ -331,7 +337,7 @@ namespace filewriter
    * \param[in] index - Index of the plugin wanting to connect.
    * \param[in] connectTo - Index of the plugin to connect to.
    */
-  void FileWriterController::connectPlugin(const std::string& index, const std::string& connectTo)
+  void FrameProcessorController::connectPlugin(const std::string& index, const std::string& connectTo)
   {
     // Check that the plugin is loaded
     if (plugins_.count(index) > 0){
@@ -363,7 +369,7 @@ namespace filewriter
    * \param[in] index - Index of the plugin wanting to disconnect.
    * \param[in] disconnectFrom - Index of the plugin to disconnect from.
    */
-  void FileWriterController::disconnectPlugin(const std::string& index, const std::string& disconnectFrom)
+  void FrameProcessorController::disconnectPlugin(const std::string& index, const std::string& disconnectFrom)
   {
     // Check that the plugin is loaded
     if (plugins_.count(index) > 0){
@@ -383,7 +389,7 @@ namespace filewriter
     }
   }
   
-  void FileWriterController::run() {
+  void FrameProcessorController::run() {
     
     // Start worker thread to monitor frames passed through
     start();
@@ -393,7 +399,7 @@ namespace filewriter
     
     // Stop all plugin worker threads
     LOG4CXX_DEBUG(logger_, "Stopping plugin worker threads");
-    std::map<std::string, boost::shared_ptr<FileWriterPlugin> >::iterator it;
+    std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator it;
     for (it = plugins_.begin(); it != plugins_.end(); it++) {
       it->second->stop();
     }
@@ -408,7 +414,7 @@ namespace filewriter
     }
     
     // Stop worker thread (for IFrameCallback) and reactor
-    LOG4CXX_DEBUG(logger_, "Stopping FileWriterController worker thread and IPCReactor");
+    LOG4CXX_DEBUG(logger_, "Stopping FrameProcessorController worker thread and IPCReactor");
     stop();
     reactor_->stop();
     
@@ -427,7 +433,7 @@ namespace filewriter
   /**
    * Wait for the exit condition before returning.
    */
-  void FileWriterController::waitForShutdown()
+  void FrameProcessorController::waitForShutdown()
   {
     boost::unique_lock<boost::mutex> lock(exitMutex_);
     exitCondition_.wait(lock);
@@ -444,7 +450,7 @@ namespace filewriter
    * \param[in] frPublisherString - Endpoint for sending frame release notifications.
    * \param[in] frSubscriberString - Endpoint for receiving frame ready notifications.
    */
-  void FileWriterController::setupFrameReceiverInterface(const std::string& sharedMemName,
+  void FrameProcessorController::setupFrameReceiverInterface(const std::string& sharedMemName,
                                                          const std::string& frPublisherString,
                                                          const std::string& frSubscriberString)
   {
@@ -477,7 +483,7 @@ namespace filewriter
 
   /** Close the frame receiver interface.
    */
-  void FileWriterController::closeFrameReceiverInterface()
+  void FrameProcessorController::closeFrameReceiverInterface()
   {
     LOG4CXX_DEBUG(logger_, "Closing FrameReceiver interface.");
     try
@@ -506,7 +512,7 @@ namespace filewriter
    *
    * \param[in] ctrlEndpointString - Name of the control endpoint.
    */
-  void FileWriterController::setupControlInterface(const std::string& ctrlEndpointString)
+  void FrameProcessorController::setupControlInterface(const std::string& ctrlEndpointString)
   {
     try {
       LOG4CXX_DEBUG(logger_, "Connecting control channel to endpoint: " << ctrlEndpointString);
@@ -520,12 +526,12 @@ namespace filewriter
     }
 
     // Add the control channel to the reactor
-    reactor_->register_channel(ctrlChannel_, boost::bind(&FileWriterController::handleCtrlChannel, this));
+    reactor_->register_channel(ctrlChannel_, boost::bind(&FrameProcessorController::handleCtrlChannel, this));
   }
 
   /** Close the control interface.
    */
-  void FileWriterController::closeControlInterface()
+  void FrameProcessorController::closeControlInterface()
   {
     try {
       LOG4CXX_DEBUG(logger_, "Closing control endpoint socket.");
@@ -544,7 +550,7 @@ namespace filewriter
    * Sets up a tick timer and runs the Ipc reactor.
    * Currently the tick timer does not perform any processing.
    */
-  void FileWriterController::runIpcService(void)
+  void FrameProcessorController::runIpcService(void)
   {
     LOG4CXX_DEBUG(logger_, "Running IPC thread service");
 
@@ -552,7 +558,7 @@ namespace filewriter
     reactor_ = boost::shared_ptr<OdinData::IpcReactor>(new OdinData::IpcReactor());
 
     // Add the tick timer to the reactor
-    int tick_timer_id = reactor_->register_timer(1000, 0, boost::bind(&FileWriterController::tickTimer, this));
+    int tick_timer_id = reactor_->register_timer(1000, 0, boost::bind(&FrameProcessorController::tickTimer, this));
 
     // Set thread state to running, allows constructor to return
     threadRunning_ = true;
@@ -568,7 +574,7 @@ namespace filewriter
    *
    * This currently performs no processing.
    */
-  void FileWriterController::tickTimer(void)
+  void FrameProcessorController::tickTimer(void)
   {
     if (!runThread_)
     {

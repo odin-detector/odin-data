@@ -1,62 +1,189 @@
 /*
  * FileWriterPlugin.h
  *
- *  Created on: 2 Jun 2016
- *      Author: gnx91527
  */
 
-#ifndef TOOLS_FILEWRITER_FILEWRITERPLUGIN_H_
-#define TOOLS_FILEWRITER_FILEWRITERPLUGIN_H_
+#ifndef TOOLS_FileWriterPlugin_FileWriterPlugin_H_
+#define TOOLS_FileWriterPlugin_FileWriterPlugin_H_
 
-#include "IFrameCallback.h"
-#include "IpcMessage.h"
+#include <string>
+#include <vector>
+#include <map>
 
-namespace filewriter
+#include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
+
+#include <log4cxx/logger.h>
+#include <hdf5.h>
+
+using namespace log4cxx;
+
+#include "FrameProcessorPlugin.h"
+#include "ClassLoader.h"
+
+namespace FrameProcessor
 {
 
-  /** Abstract plugin class, providing the IFrameCallback interface.
-   *
-   * All file writer plugins must subclass this class.  It provides the
-   * IFrameCallback interface and associated WorkQueue for transferring
-   * Frame objects between plugins.  It also provides methods for configuring
-   * plugins and for retrieving status from plugins.
-   */
-  class FileWriterPlugin : public IFrameCallback
-  {
+// Forward declarations
+class Frame;
+
+/** Plugin that writes Frame objects to HDF5 files.
+ *
+ * This plugin processes Frame objects and can write them to HDF5 files.
+ * The plugin can be configured through the Ipc control interface defined
+ * in the FileWriterPluginController class.  Currently only the raw data is written
+ * into datasets.  Multiple datasets can be created and the raw data is stored
+ * according to the Frame index (or name).
+ */
+class FileWriterPlugin : public FrameProcessorPlugin
+{
   public:
-    FileWriterPlugin();
-    virtual ~FileWriterPlugin();
-    void setName(const std::string& name);
-    std::string getName();
-    virtual void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
-    virtual void status(OdinData::IpcMessage& status);
-    void registerCallback(const std::string& name, boost::shared_ptr<IFrameCallback> cb, bool blocking=false);
-    void removeCallback(const std::string& name);
-
-  protected:
-    void push(boost::shared_ptr<Frame> frame);
-
-  private:
-    /** Pointer to logger */
-    LoggerPtr logger_;
-    void callback(boost::shared_ptr<Frame> frame);
+    /**
+     * Enumeration to store the pixel type of the incoming image
+     */
+    enum PixelType { pixel_raw_8bit, pixel_raw_16bit, pixel_float32 };
 
     /**
-     * This is called by the callback method when any new frames have
-     * arrived and must be overridden by child classes.
-     *
-     * \param[in] frame - Pointer to the frame.
+     * Defines a dataset to be saved in HDF5 format.
      */
-    virtual void processFrame(boost::shared_ptr<Frame> frame) = 0;
+    struct DatasetDefinition
+    {
+      /** Name of the dataset **/
+      std::string name;
+      /** Data type for the dataset **/
+      FileWriterPlugin::PixelType pixel;
+      /** Numer of frames expected to capture **/
+      size_t num_frames;
+      /** Array of dimensions of the dataset **/
+      std::vector<long long unsigned int> frame_dimensions;
+      /** Array of chunking dimensions of the dataset **/
+      std::vector<long long unsigned int> chunks;
+    };
 
-    /** Name of this plugin */
-    std::string name_;
-    /** Map of registered plugins for callbacks, indexed by name */
-    std::map<std::string, boost::shared_ptr<IFrameCallback> > callbacks_;
-    /** Map of registered plugins for blocking callbacks, indexed by name */
-    std::map<std::string, boost::shared_ptr<IFrameCallback> > blockingCallbacks_;
-  };
+    /**
+     * Struct to keep track of an HDF5 dataset handle and dimensions.
+     */
+    struct HDF5Dataset_t
+    {
+      /** Handle of the dataset **/
+      hid_t datasetid;
+      /** Array of dimensions of the dataset **/
+      std::vector<hsize_t> dataset_dimensions;
+      /** Array of offsets of the dataset **/
+      std::vector<hsize_t> dataset_offsets;
+    };
 
-} /* namespace filewriter */
+    explicit FileWriterPlugin();
+    virtual ~FileWriterPlugin();
 
-#endif /* TOOLS_FILEWRITER_FILEWRITERPLUGIN_H_ */
+    void createFile(std::string filename, size_t chunk_align=1024 * 1024);
+    void createDataset(const FileWriterPlugin::DatasetDefinition & definition);
+    void writeFrame(const Frame& frame);
+    void writeSubFrames(const Frame& frame);
+    void closeFile();
+
+    size_t getFrameOffset(size_t frame_no) const;
+    void setStartFrameOffset(size_t frame_no);
+
+    void startWriting();
+    void stopWriting();
+    void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
+    void configureProcess(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
+    void configureFile(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
+    void configureDataset(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
+    void status(OdinData::IpcMessage& status);
+    void hdfErrorHandler(unsigned n, const H5E_error2_t *err_desc);
+    bool checkForHdfErrors();
+    std::vector<std::string> readHdfErrors();
+    void clearHdfErrors();
+
+  private:
+    /** Configuration constant for process related items */
+    static const std::string CONFIG_PROCESS;
+    /** Configuration constant for number of processes */
+    static const std::string CONFIG_PROCESS_NUMBER;
+    /** Configuration constant for this process rank */
+    static const std::string CONFIG_PROCESS_RANK;
+
+    /** Configuration constant for file related items */
+    static const std::string CONFIG_FILE;
+    /** Configuration constant for file name */
+    static const std::string CONFIG_FILE_NAME;
+    /** Configuration constant for file path */
+    static const std::string CONFIG_FILE_PATH;
+
+    /** Configuration constant for dataset related items */
+    static const std::string CONFIG_DATASET;
+    /** Configuration constant for dataset command */
+    static const std::string CONFIG_DATASET_CMD;
+    /** Configuration constant for dataset name */
+    static const std::string CONFIG_DATASET_NAME;
+    /** Configuration constant for dataset datatype */
+    static const std::string CONFIG_DATASET_TYPE;
+    /** Configuration constant for dataset dimensions */
+    static const std::string CONFIG_DATASET_DIMS;
+    /** Configuration constant for chunking dimensions */
+    static const std::string CONFIG_DATASET_CHUNKS;
+
+    /** Configuration constant for number of frames to write */
+    static const std::string CONFIG_FRAMES;
+    /** Configuration constant for master dataset name */
+    static const std::string CONFIG_MASTER_DATASET;
+    /** Configuration constant for starting and stopping writing of frames */
+    static const std::string CONFIG_WRITE;
+
+    /**
+     * Prevent a copy of the FileWriterPlugin plugin.
+     *
+     * \param[in] src
+     */
+    FileWriterPlugin(const FileWriterPlugin& src); // prevent copying one of these
+    hid_t pixelToHdfType(FileWriterPlugin::PixelType pixel) const;
+    HDF5Dataset_t& get_hdf5_dataset(const std::string dset_name);
+    void extend_dataset(FileWriterPlugin::HDF5Dataset_t& dset, size_t frame_no) const;
+    size_t adjustFrameOffset(size_t frame_no) const;
+
+    void processFrame(boost::shared_ptr<Frame> frame);
+
+    /** Pointer to logger */
+    LoggerPtr logger_;
+    /** Mutex used to make this class thread safe */
+    boost::recursive_mutex mutex_;
+    /** Is this plugin writing frames to file? */
+    bool writing_;
+    /** Name of master frame.  When a master frame is received frame numbers increment */
+    std::string masterFrame_;
+    /** Number of frames to write to file */
+    size_t framesToWrite_;
+    /** Number of frames that have been written to file */
+    size_t framesWritten_;
+    /** Path of the file to write to */
+    std::string filePath_;
+    /** Name of the file to write to */
+    std::string fileName_;
+    /** Number of concurrent file writers executing */
+    size_t concurrent_processes_;
+    /** Rank of this file writer */
+    size_t concurrent_rank_;
+    /** Starting frame offset */
+    size_t start_frame_offset_;
+    /** Internal ID of the file being written to */
+    hid_t hdf5_fileid_;
+    /** Internal HDF5 error flag */
+    bool hdf5ErrorFlag_;
+    /** Internal HDF5 error recording */
+    std::vector<std::string> hdf5Errors_;
+    /** Map of datasets that are being written to */
+    std::map<std::string, FileWriterPlugin::HDF5Dataset_t> hdf5_datasets_;
+    /** Map of dataset definitions for this file writer instance */
+    std::map<std::string, FileWriterPlugin::DatasetDefinition> dataset_defs_;
+};
+
+/**
+ * Registration of this plugin through the ClassLoader.  This macro
+ * registers the class without needing to worry about name mangling
+ */
+REGISTER(FrameProcessorPlugin, FileWriterPlugin, "FileWriterPlugin");
+
+}
+#endif /* TOOLS_FileWriterPlugin_FileWriterPlugin_H_ */

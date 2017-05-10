@@ -7,7 +7,7 @@
 
 #include <PercivalProcessPlugin.h>
 
-namespace filewriter
+namespace FrameProcessor
 {
 
   PercivalProcessPlugin::PercivalProcessPlugin()
@@ -65,4 +65,4 @@ namespace filewriter
 
   }
 
-} /* namespace filewriter */
+} /* namespace FrameProcessor */
