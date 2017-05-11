@@ -91,7 +91,7 @@ ENDIF (NOT HDF5_FOUND)
 add_subdirectory(tools)
 
 # Add the test subdirectory
-add_subdirectory(test)
+#add_subdirectory(test)
 
 # Add the doc subdirectory
 add_subdirectory(doc)
