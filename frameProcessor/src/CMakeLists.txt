@@ -37,10 +37,6 @@ target_link_libraries(DummyPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_
 add_library(Hdf5Plugin SHARED FileWriterPlugin.cpp)
 target_link_libraries(Hdf5Plugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${COMMON_LIBRARY})
 
-# Add library for excalibur plugin
-add_library(ExcaliburReorderPlugin SHARED ExcaliburReorderPlugin.cpp)
-target_link_libraries(ExcaliburReorderPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${COMMON_LIBRARY})
-
 # Add library for percival process plugin
 add_library(PercivalProcessPlugin SHARED PercivalProcessPlugin.cpp)
 target_link_libraries(PercivalProcessPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${COMMON_LIBRARY})

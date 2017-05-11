@@ -18,6 +18,3 @@ target_link_libraries(frameReceiver ${COMMON_LIBRARY} ${Boost_LIBRARIES} ${LOG4C
 add_library(PercivalEmulatorFrameDecoder SHARED PercivalEmulatorFrameDecoder.cpp PercivalEmulatorFrameDecoderLib.cpp)
 target_link_libraries(PercivalEmulatorFrameDecoder ${COMMON_LIBRARY} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES})
 
-# Add library for Excalibur frame decoder
-add_library(ExcaliburFrameDecoder SHARED ExcaliburFrameDecoder.cpp ExcaliburFrameDecoderLib.cpp)
-target_link_libraries(ExcaliburFrameDecoder ${COMMON_LIBRARY} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES})
