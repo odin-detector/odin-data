@@ -14,7 +14,4 @@ add_executable(frameReceiver ${APP_SOURCES})
 
 target_link_libraries(frameReceiver ${COMMON_LIBRARY} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES})
 
-# Add library for Percival frame decoder
-add_library(PercivalEmulatorFrameDecoder SHARED PercivalEmulatorFrameDecoder.cpp PercivalEmulatorFrameDecoderLib.cpp)
-target_link_libraries(PercivalEmulatorFrameDecoder ${COMMON_LIBRARY} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES})
 
