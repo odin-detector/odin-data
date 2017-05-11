@@ -7,6 +7,8 @@
 
 #include <boost/test/unit_test.hpp>
 
+#ifdef FRAMERECEIVER_HAS_DUMMY_DECODER
+
 #include "FrameReceiverUDPRxThread.h"
 #include "IpcMessage.h"
 #include "SharedBufferManager.h"
@@ -137,6 +139,8 @@ BOOST_AUTO_TEST_CASE( CreateAndPingRxThread )
 }
 
 BOOST_AUTO_TEST_SUITE_END();
-
+#else
+#warning No RxThread unit tests being compiled due to absence of dummy decoder
+#endif
 
 
