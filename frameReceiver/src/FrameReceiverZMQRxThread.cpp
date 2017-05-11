@@ -57,7 +57,7 @@ void FrameReceiverZMQRxThread::cleanup_specific_service(void)
 void FrameReceiverZMQRxThread::handle_receive_socket()
 {
     // Receive a message from the main thread channel
-    std::string rx_msg = skt_channel_.recv(0);
+    std::string rx_msg = skt_channel_.recv();
 
 	char *buffer_ptr_ = (char *)frame_decoder_->get_next_message_buffer();
 

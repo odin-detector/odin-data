@@ -46,7 +46,7 @@ namespace OdinData
         void send(std::string& message_str);
         void send(const char* message);
 
-        const std::string recv(int trim=1);
+        const std::string recv();
 
         bool eom(void);
         bool poll(long timeout_ms = -1);

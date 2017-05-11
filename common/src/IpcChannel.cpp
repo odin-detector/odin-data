@@ -65,7 +65,7 @@ void IpcChannel::subscribe(const char* topic)
 
 void IpcChannel::send(std::string& message_str)
 {
-    size_t msg_size = message_str.size() + 1;
+    size_t msg_size = message_str.size();
     zmq::message_t msg(msg_size);
     memcpy(msg.data(), message_str.data(), msg_size);
     socket_.send(msg);
@@ -73,22 +73,19 @@ void IpcChannel::send(std::string& message_str)
 
 void IpcChannel::send(const char* message)
 {
-    size_t msg_size = strlen(message) + 1;
+    size_t msg_size = strlen(message);
     zmq::message_t msg(msg_size);
     memcpy(msg.data(), message, msg_size);
     socket_.send(msg);
 
 }
 
-const std::string IpcChannel::recv(int trim)
+const std::string IpcChannel::recv()
 {
-    std::size_t msg_size;
     zmq::message_t msg;
-
     socket_.recv(&msg);
-    msg_size = msg.size();
 
-    return std::string(reinterpret_cast<char*>(msg.data()), msg_size-trim);
+    return std::string(static_cast<char*>(msg.data()), msg.size());
 }
 
 bool IpcChannel::eom(void)
