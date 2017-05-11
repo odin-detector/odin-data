@@ -21,8 +21,6 @@ file(GLOB APP_SOURCES FrameProcessorController.cpp
                       SharedMemoryParser.cpp 
                       SocketHandler.cpp )
 
-file(GLOB TEST_SOURCES *Test*.cpp)
-
 add_executable(frameProcessor ${APP_SOURCES} FrameProcessorApp.cpp)
 
 message(STATUS "HDF5 include files:  " ${HDF5_INCLUDE_DIRS})
@@ -48,24 +46,10 @@ add_library(PercivalProcessPlugin SHARED PercivalProcessPlugin.cpp)
 target_link_libraries(PercivalProcessPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${COMMON_LIBRARY})
             
 # Add test and project source files to executable
-file(GLOB TESTABLE_SOURCES DataBlock.cpp DataBlockPool.cpp IFrameCallback.cpp FrameProcessorPlugin.cpp Frame.cpp)
-add_executable(frameProcessorTest ${TEST_SOURCES} ${TESTABLE_SOURCES})
-
-# Define libraries to link against
-target_link_libraries(frameProcessorTest 
-        ${Boost_LIBRARIES}
-        ${LOG4CXX_LIBRARIES}
-        ${ZEROMQ_LIBRARIES}
-        ${HDF5_LIBRARIES} 
-        ${HDF5HL_LIBRARIES}
-        Hdf5Plugin
-        ${COMMON_LIBRARY}) 
-
 if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
   # librt required for timing functions
   find_library(REALTIME_LIBRARY 
 	  	NAMES rt)
   target_link_libraries( frameProcessor ${REALTIME_LIBRARY} )
-  target_link_libraries( frameProcessorTest ${REALTIME_LIBRARY} )
 endif()
         
