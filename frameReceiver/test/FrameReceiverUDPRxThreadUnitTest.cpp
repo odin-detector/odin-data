@@ -7,13 +7,10 @@
 
 #include <boost/test/unit_test.hpp>
 
-#ifdef FRAMERECEIVER_HAS_DUMMY_DECODER
-
 #include "FrameReceiverUDPRxThread.h"
 #include "IpcMessage.h"
 #include "SharedBufferManager.h"
-#include "FrameDecoder.h"
-#include "PercivalEmulatorFrameDecoder.h"
+#include "DummyFrameDecoderUDP.h"
 
 #include <log4cxx/logger.h>
 #include <log4cxx/consoleappender.h>
@@ -50,15 +47,11 @@ public:
         rx_channel(ZMQ_PAIR),
         logger(log4cxx::Logger::getLogger("FrameReceiverRxThreadUnitTest")),
         proxy(config),
-        frame_decoder(new FrameReceiver::PercivalEmulatorFrameDecoder()),
+        frame_decoder(new FrameReceiver::DummyFrameDecoderUDP()),
         buffer_manager(new OdinData::SharedBufferManager("TestSharedBuffer", 10000, 1000))
     {
-    	frame_decoder->init(logger);
 
         BOOST_TEST_MESSAGE("Setup test fixture");
-
-        // Bind the endpoint of the channel to communicate with the RX thread
-        rx_channel.bind(proxy.get_rx_channel_endpoint());
 
         // Create a log4cxx console appender so that thread messages can be printed, suppress debug messages
         log4cxx::ConsoleAppender* consoleAppender = new log4cxx::ConsoleAppender(log4cxx::LayoutPtr(new log4cxx::SimpleLayout()));
@@ -66,6 +59,12 @@ public:
         consoleAppender->activateOptions(p);
         log4cxx::BasicConfigurator::configure(log4cxx::AppenderPtr(consoleAppender));
         log4cxx::Logger::getRootLogger()->setLevel(log4cxx::Level::getInfo());
+
+    	frame_decoder->init(logger);
+
+        // Bind the endpoint of the channel to communicate with the RX thread
+        rx_channel.bind(proxy.get_rx_channel_endpoint());
+
     }
 
     ~FrameReceiverRxThreadTestFixture()
@@ -139,8 +138,4 @@ BOOST_AUTO_TEST_CASE( CreateAndPingRxThread )
 }
 
 BOOST_AUTO_TEST_SUITE_END();
-#else
-#warning No RxThread unit tests being compiled due to absence of dummy decoder
-#endif
-
 
