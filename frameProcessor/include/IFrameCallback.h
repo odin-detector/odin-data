@@ -21,7 +21,7 @@ using namespace log4cxx::helpers;
 #include "Frame.h"
 #include "WorkQueue.h"
 
-namespace filewriter
+namespace FrameProcessor
 {
   /** Interface to provide producer/consumer base processing of Frame objects.
    *
@@ -66,6 +66,6 @@ namespace filewriter
     void workerTask();
   };
 
-} /* namespace filewriter */
+} /* namespace FrameProcessor */
 
 #endif /* TOOLS_FILEWRITER_IFRAMECALLBACK_H_ */

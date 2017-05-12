@@ -7,7 +7,7 @@
 
 #include <SharedMemoryController.h>
 
-namespace filewriter
+namespace FrameProcessor
 {
 
   /** Constructor.
@@ -201,4 +201,4 @@ namespace filewriter
     }
   }
 
-} /* namespace filewriter */
+} /* namespace FrameProcessor */

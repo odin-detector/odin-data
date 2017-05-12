@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-namespace filewriter
+namespace FrameProcessor
 {
 
   /**
@@ -54,6 +54,6 @@ namespace filewriter
     static int indexCounter_;
   };
 
-} /* namespace filewriter */
+} /* namespace FrameProcessor */
 
 #endif /* TOOLS_FILEWRITER_DATABLOCK_H_ */

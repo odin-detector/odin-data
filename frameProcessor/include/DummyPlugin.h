@@ -16,10 +16,10 @@ using namespace log4cxx;
 using namespace log4cxx::helpers;
 
 
-#include "FileWriterPlugin.h"
+#include "FrameProcessorPlugin.h"
 #include "ClassLoader.h"
 
-namespace filewriter
+namespace FrameProcessor
 {
 
   /**
@@ -29,7 +29,7 @@ namespace filewriter
    * When this plugin receives a frame, processFrame is called and the class
    * simply logs that a frame has been passed to it.
    */
-  class DummyPlugin : public FileWriterPlugin
+  class DummyPlugin : public FrameProcessorPlugin
   {
   public:
     DummyPlugin();
@@ -46,8 +46,8 @@ namespace filewriter
    * Registration of this plugin through the ClassLoader.  This macro
    * registers the class without needing to worry about name mangling
    */
-  REGISTER(FileWriterPlugin, DummyPlugin, "DummyPlugin");
+  REGISTER(FrameProcessorPlugin, DummyPlugin, "DummyPlugin");
 
-} /* namespace filewriter */
+} /* namespace FrameProcessor */
 
 #endif /* TOOLS_FILEWRITER_DUMMYPLUGIN_H_ */

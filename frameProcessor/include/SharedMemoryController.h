@@ -23,7 +23,7 @@ using namespace log4cxx::helpers;
 #include "IpcMessage.h"
 #include "SharedBufferManager.h"
 
-namespace filewriter
+namespace FrameProcessor
 {
 
   /**
@@ -61,6 +61,6 @@ namespace filewriter
     OdinData::IpcChannel             txChannel_;
   };
 
-} /* namespace filewriter */
+} /* namespace FrameProcessor */
 
 #endif /* TOOLS_FILEWRITER_SHAREDMEMORYCONTROLLER_H_ */
