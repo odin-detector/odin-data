@@ -2,30 +2,26 @@ language: cpp
 sudo: false
 matrix:
   include:
-    - os: linux
-      compiler: gcc
-      addons:
-        apt:
-          packages: ['liblog4cxx10-dev','libboost-program-options-dev','libboost-filesystem-dev','libboost-date-time-dev','libboost-system-dev','libboost-test-dev','libboost-thread-dev','libzmq3-dev']
-      env: PYTHONPATH=./lib/python FR_TEST_CONFIG=test_config/fr_test.config FP_TEST_CONFIG=test_config/fp_test.config HDF5_ROOT=$HOME/hdf5-1.8.16
-      before_install:
-        - bash .travis-install-hdf5.sh 
-      cache:
-        directories:
-          - $HOME/hdf5-1.8.16
-
-    # - os: osx
-    #   osx_image: xcode7.3
-    #   compiler: clang
-    #   before_install: 
-    #     - brew update || brew update
-    #     - brew list
-    #     - brew install log4cxx zeromq homebrew/science/hdf5
-    #     - brew outdated cmake || brew upgrade cmake
-    #     - brew outdated python || brew upgrade python
-    #     - brew outdated boost || brew upgrade boost 
-    #   env: PYTHONPATH=./lib/python FR_TEST_CONFIG=test_config/fr_test_osx.config FP_TEST_CONFIG=test_config/fp_test_osx.config HDF5_ROOT=/usr/local/
-
+  - os: linux
+    compiler: gcc
+    addons:
+      apt:
+        packages:
+        - liblog4cxx10-dev
+        - libboost-program-options-dev
+        - libboost-filesystem-dev
+        - libboost-date-time-dev
+        - libboost-system-dev
+        - libboost-test-dev
+        - libboost-thread-dev
+        - libzmq3-dev
+    env: PYTHONPATH=./lib/python FR_TEST_CONFIG=test_config/fr_test.config FP_TEST_CONFIG=test_config/fp_test.config
+      HDF5_ROOT=$HOME/hdf5-1.8.16
+    before_install:
+    - bash .travis-install-hdf5.sh
+    cache:
+      directories:
+      - "$HOME/hdf5-1.8.16"
 install:
 - mkdir -p build
 - cd build
@@ -38,4 +34,4 @@ script:
 - bin/frameProcessorTest --log_level=all
 notifications:
   slack:
-    secure: co/PaEjGldADmPdZVg66Ry2IZMwA/ttadneZ+LaA+nzT/heAfIOjCBLngHGe2zp1lzSi49IiZ0uKJPBq5ugrxzXwj7OD7RNH54033dAXTP0FOwM/HKppRqTNsRUANs+zQn/jyUI6EL7Mmf0WbS22aVP7EwyL4ogCLv3ZoqufYRPN4aefVRREK3JoUNAERb9I8npFeeBcvdYl1zpzJu9DaKOWuX7V/X6fBC/nvoq5LRWYkGaSUkkHS3bJsM77YG9aKKVY7XbBy2TlYvIPzE1lPjb+j3ZhRcuElPWgM4JtX4iYb7mb1+jDTQ0GFMDUuy75NFpNRjo4exYRZhJPkgY27yoUGloyXPbzqI/cI9e2cItTURVB1580cCY9JN6Ry5n25aGJT0joLkohYT9/s2cbcFREdE+rbDl7Ny2CxNzvHkt5hT4bYF+KKAaZzg/ckDAhzTMaHLAgJzdEQTDotw9hcai3inB6CSkR+wABVEEEeePwrt5JmRpW0Q8YLjrfkbLsStz0WlJ/UQ+RFGI/0igAVj7M/5qGRcRZ1spkF6EUvw3f09MYNHAhjcYPhypv+I9pZB8yIW4GVd+a9mhyYdB1ccfJXz0WXamG5z9EXLB02ucp6i+YgiILdUVsYk1uKo53lKQbcJlDl43WalqumcgfwSBVve/WjDlqEjOu7VlN5+4=
+    secure: brPUW4TCnMf3qFpBF+zc+AgFYgfUmPRoXOya7u1ByTV5414tFiKi/uAF70GhE903DG6J1SSp8nxmSdanFs2gts03KkfAnrX8ObeA8Osj5QE1XR/X3GLk55oBEj1cgOa77jgTc9FD4mh7WTkH/uGYWQwpl53P5G66kLqnAyt3uwhaf0GN7rkb6m7LKi1zH3NV5Oka/HCyKI538oXKVrUK5xyUZ7w8cwbZUPQ2+gMkIvhYrOr/7r6Hdqg5JzbdDdeDWUta3X3A1Ow0EY9e9GPVVUCFjnq+Oh0M7Qrh6uwNQJ/7h81jeGuKRou2soK69skUUnusbEmhdHKuz3G2L3mrlxlyyBgTR6i0iF++XMfE+qmpWRix64KqDcwaZ/M+s/vfihHwqj+GcjROdsOaPGaza95XYwELVS7OAhLqsa/Xu5a+U8I65K7WqCenA2f3je96Z5q1vyPE1QAVx9Pxf3kr6xue4I6G6LvH4+fbrAUqOY2xhiFC+YULA2WjrUqgrWKrAldfsIGM8u45/PbsDu9/1FIY7NbsNP+lJrzSgVKYaS8DtDVoXbphvoSCecPO4S2McRqYhax3OM9u+ht2ymgCCL1+tBpwYcNLKGAhZwsAX8QRWbG0C9y+jSFP/FC1SFzVR765Cxao9S/AjYjZcLl3rgSC4Sg+of+RLR471IaggwI=
