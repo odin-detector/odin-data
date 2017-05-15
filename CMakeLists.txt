@@ -1,5 +1,5 @@
 # Project name
-project(odinData)
+project(OdinData)
 
 # Require CMake version >=2.8
 cmake_minimum_required(VERSION 2.8)
@@ -20,6 +20,13 @@ set(FRAMEPROCESSOR_DIR ${odinData_SOURCE_DIR}/frameProcessor)
 
 # Set the name of the common library
 set(COMMON_LIBRARY ${PROJECT_NAME})
+
+# Set the name of the frameProcessor library
+if (NOT APPLE)
+    set(LIB_PROCESSOR FrameProcessor)
+else(NOT APPLE)
+    set(LIB_PROCESSOR OdinFrameProcessor)
+endif(NOT APPLE)
 
 # Appends the cmake/modules path inside the MAKE_MODULE_PATH variable which stores the
 # directories of additional CMake modules (ie. MacroOutOfSourceBuild.cmake):
