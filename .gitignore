@@ -5,11 +5,11 @@
 /.settings
 /.metadata
 /.cproject
-/.project 
+/.project
 /.pydevproject
 .project
 venv*
 
 .idea/
 cmake-build*/
-
+.vscode/
