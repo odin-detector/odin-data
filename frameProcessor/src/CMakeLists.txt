@@ -14,6 +14,7 @@ file(GLOB LIB_SOURCES DataBlock.cpp
 # Add library for common plugin code
 add_library(${LIB_PROCESSOR} SHARED ${LIB_SOURCES})
 target_link_libraries(${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${COMMON_LIBRARY})
+install(TARGETS ${LIB_PROCESSOR} DESTINATION lib)
 
 file(GLOB APP_SOURCES FrameProcessorController.cpp
                       SharedMemoryController.cpp
@@ -27,14 +28,17 @@ message(STATUS "HDF5 libs:           " ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES})
 message(STATUS "HDF5 defs:           " ${HDF5_DEFINITIONS})
 
 target_link_libraries(frameProcessor ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${COMMON_LIBRARY})
+install(TARGETS frameProcessor RUNTIME DESTINATION bin)
 
 # Add library for dummy plugin
 add_library(DummyPlugin SHARED DummyPlugin.cpp)
 target_link_libraries(DummyPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${COMMON_LIBRARY})
+install(TARGETS DummyPlugin DESTINATION lib)
 
 # Add library for HDF5 writer plugin
 add_library(Hdf5Plugin SHARED FileWriterPlugin.cpp)
 target_link_libraries(Hdf5Plugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${COMMON_LIBRARY})
+install(TARGETS Hdf5Plugin DESTINATION lib)
 
 # Add test and project source files to executable
 if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
@@ -43,3 +47,4 @@ if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
 	  	NAMES rt)
   target_link_libraries( frameProcessor ${REALTIME_LIBRARY} )
 endif()
+

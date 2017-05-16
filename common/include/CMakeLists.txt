@@ -1,7 +1,7 @@
-# Install header files
-SET(HEADERS ClassLoader.h gettime.h IpcChannel.h IpcMessage.h IpcReactor.h OdinDataException.h SharedBufferManager.h)
-INSTALL(FILES ${HEADERS} DESTINATION ${CMAKE_BINARY_DIR}/include)
+# Install header files into installation prefix
 
+SET(HEADERS ClassLoader.h gettime.h IpcChannel.h IpcMessage.h IpcReactor.h OdinDataException.h SharedBufferManager.h)
 SET(RAPIDJSON_INCLUDE_DIR rapidjson)
-message("RAPIDJSON_INCLUDE_DIR ${RAPIDJSON_INCLUDE_DIR}")
-INSTALL(DIRECTORY ${RAPIDJSON_INCLUDE_DIR} DESTINATION ${CMAKE_BINARY_DIR}/include)
+
+INSTALL(FILES ${HEADERS} DESTINATION include)
+INSTALL(DIRECTORY ${RAPIDJSON_INCLUDE_DIR} DESTINATION include)
