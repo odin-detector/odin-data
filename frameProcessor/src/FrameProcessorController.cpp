@@ -66,6 +66,8 @@ namespace FrameProcessor
         }
     }
 
+    // The meta interface should only be setup once confirmation of the thread startup
+    // has been recevied.  The reactor is created within the thread startup method.
     this->setupMetaRxInterface();
  }
 
