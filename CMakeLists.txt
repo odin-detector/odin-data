@@ -1,5 +1,5 @@
 # Project name
-project(odinData)
+project(OdinData)
 
 # Require CMake version >=2.8
 cmake_minimum_required(VERSION 2.8)
@@ -10,20 +10,27 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_CONFIG_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/test_config)
 
 # Set the common directory
-set(COMMON_DIR ${odinData_SOURCE_DIR}/common)
+set(COMMON_DIR ${OdinData_SOURCE_DIR}/common)
 
 # Set the frameReceiver directory
-set(FRAMERECEIVER_DIR ${odinData_SOURCE_DIR}/frameReceiver)
+set(FRAMERECEIVER_DIR ${OdinData_SOURCE_DIR}/frameReceiver)
 
 # Set the frameProcessor directory
-set(FRAMEPROCESSOR_DIR ${odinData_SOURCE_DIR}/frameProcessor)
+set(FRAMEPROCESSOR_DIR ${OdinData_SOURCE_DIR}/frameProcessor)
 
 # Set the name of the common library
 set(COMMON_LIBRARY ${PROJECT_NAME})
 
+# Set the name of the frameProcessor library
+if (NOT APPLE)
+    set(LIB_PROCESSOR FrameProcessor)
+else(NOT APPLE)
+    set(LIB_PROCESSOR OdinFrameProcessor)
+endif(NOT APPLE)
+
 # Appends the cmake/modules path inside the MAKE_MODULE_PATH variable which stores the
 # directories of additional CMake modules (ie. MacroOutOfSourceBuild.cmake):
-set(CMAKE_MODULE_PATH ${odinData_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH ${OdinData_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
 # Allow macOS shared (dynamic) libraries to link with undefined symbols
 if (APPLE)

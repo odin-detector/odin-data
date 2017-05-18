@@ -63,9 +63,9 @@ find_library(LOG4CXX_LIBRARY
     PATHS 
 		${LOG4CXX_ROOT_DIR}/lib 
         ${PC_LOG4CXX_LIBDIR} 
-        ${PC_LOG4CXX_LIBRARY_DIRS}         
+        ${PC_LOG4CXX_LIBRARY_DIRS}
 )
-			 
+
 include(FindPackageHandleStandardArgs)
 
 # handle the QUIETLY and REQUIRED arguments and set LOG4CXX_FOUND to TRUE
