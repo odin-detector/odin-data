@@ -39,7 +39,7 @@ namespace FrameProcessor
     void publishMeta(const std::string& item, int32_t value, const std::string& header = "");
     void publishMeta(const std::string& item, double value, const std::string& header = "");
     void publishMeta(const std::string& item, const std::string& value, const std::string& header = "");
-    void publishMeta(const std::string& item, void *pValue, size_t length, const std::string& header = "");
+    void publishMeta(const std::string& item, const void *pValue, size_t length, const std::string& header = "");
 
   protected:
     void push(boost::shared_ptr<Frame> frame);

@@ -207,7 +207,7 @@ namespace FrameProcessor
    * \param[in] length - The size (in bytes) of the meta data value.
    * \param[in] header - Optional additional header data to publish.
    */
-  void FrameProcessorPlugin::publishMeta(const std::string& item, void *pValue, size_t length, const std::string& header)
+  void FrameProcessorPlugin::publishMeta(const std::string& item, const void *pValue, size_t length, const std::string& header)
   {
 	  // Create a new MetaMessage object and send to the consumer
 	  FrameProcessor::MetaMessage *meta = new FrameProcessor::MetaMessage(name_, item, "raw", header, length, pValue);
