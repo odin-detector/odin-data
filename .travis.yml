@@ -16,7 +16,7 @@ matrix:
         - libboost-thread-dev
         - libzmq3-dev
     env: PYTHONPATH=./lib/python FR_TEST_CONFIG=test_config/fr_test.config FP_TEST_CONFIG=test_config/fp_test.config
-      HDF5_ROOT=$HOME/hdf5-1.8.16
+      HDF5_ROOT=$HOME/hdf5-1.8.16 INSTALL_PREFIX=$HOME/install_prefix
     before_install:
     - bash .travis-install-hdf5.sh
     cache:
@@ -24,14 +24,17 @@ matrix:
       - "$HOME/hdf5-1.8.16"
 install:
 - mkdir -p build
+- mkdir -p $INSTALL_PREFIX
 - cd build
-- cmake -DHDF5_ROOT=$HDF5_ROOT ..
+- cmake _DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX -DHDF5_ROOT=$HDF5_ROOT ..
 - make -j 4 VERBOSE=1
+- make install
 - HDF5_DIR=$HDF5_ROOT pip install --user h5py
 - pip install --user -r $PYTHONPATH/requirements-travis.txt
 script:
 - bin/frameReceiverTest --log_level=all
 - bin/frameProcessorTest --log_level=all
+- ls -R $INSTALL_PREFIX
 notifications:
   slack:
     secure: PP2SJEUoE2XKAiEuZgDosjpHF4N7UF+jyXKHvR3mjpixykXgHFAN6Aj/tVHoymSZ82tJOWxetahLz+NglsEVkpwnzQpTv7+0zBFROtUQOn5VW6nE9cMJAz6v+vQE5CEkyeqEg4eJ1PR6CWX3jbZ/TEWWVTkMfoS1U8lMErI7lRmMo6gsdVaRqkDnnjSqrLgKxJaCEHNEZcihXhT1OfmDHT9B19b6FSfd7+rJKuhGNFhgRb2zbbgfPIIRzAzyQihClXqlCe5GzNhELTMmygS/q1MHFAYihEqxgEe8U4l+GVC1oEa10JNPSJWv3H/JeDK245OZZMNKX/Cj4//hT3CdZ8Vra8LogHbcNfJwN50bff1C+uJY0Msz6cocqLLu7prizAYpx50EKZuV9nOQxo6XDaUQvfD4XAoQdlWwmKM9bdQI13kFnUK/J7bZw/g5l3QMvQgCGsnJCeyoBUTJCq+URg4GNuYN44rqUs3gWCmmcFvPxtmignXz6PVZ7DhMYxQGb5vHE3B4J3B7zPoFTp6IGMtht/tHiX9LRctlaYej5V4Ml6ffNJtTfeEpQ3eBD2hIS2kwktdTf15boUbq2k35s7RD0/S5JSGyVCC1ymoWd5mz+Trq4T6Gu6hg7Mcf+hVpjKYmdI9lT8HkjWCIoOrhg4zUneekT/g0VGPTqRA0ZEI=
