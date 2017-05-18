@@ -19,7 +19,6 @@ namespace FrameProcessor
 	  metaChannel_(ZMQ_PUSH)
   {
     logger_ = log4cxx::Logger::getLogger("FW.FrameProcessorPlugin");
-    metaChannel_.connect(META_RX_INTERFACE.c_str());
   }
 
   /**
@@ -143,6 +142,11 @@ namespace FrameProcessor
       // Confirm removal
       cb->confirmRemoval(name_);
     }
+  }
+
+  void FrameProcessorPlugin::connectMetaChannel()
+  {
+    metaChannel_.connect(META_RX_INTERFACE.c_str());
   }
 
   /** Publish meta data from this plugin.

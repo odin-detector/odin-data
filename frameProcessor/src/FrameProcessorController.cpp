@@ -362,6 +362,7 @@ namespace FrameProcessor
       boost::shared_ptr<FrameProcessorPlugin> plugin = OdinData::ClassLoader<FrameProcessorPlugin>::load_class(name, library);
       if (plugin){
 		  plugin->setName(index);
+		  plugin->connectMetaChannel();
 		  plugins_[index] = plugin;
 
 		  // Register callback to FWC with FileWriter plugin

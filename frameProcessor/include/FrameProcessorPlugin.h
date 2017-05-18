@@ -35,6 +35,7 @@ namespace FrameProcessor
     void registerCallback(const std::string& name, boost::shared_ptr<IFrameCallback> cb, bool blocking=false);
     void removeCallback(const std::string& name);
 
+    void connectMetaChannel();
     void publishMeta(const std::string& item, int32_t value, const std::string& header = "");
     void publishMeta(const std::string& item, double value, const std::string& header = "");
     void publishMeta(const std::string& item, const std::string& value, const std::string& header = "");
