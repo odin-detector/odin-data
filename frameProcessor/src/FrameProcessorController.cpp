@@ -139,8 +139,17 @@ namespace FrameProcessor
 	itemValue.SetString(rPtr->getItem().c_str(), rPtr->getItem().length(), doc.GetAllocator());
 	rapidjson::Value typeValue;
 	typeValue.SetString(rPtr->getType().c_str(), rPtr->getType().length(), doc.GetAllocator());
+
 	rapidjson::Value headerValue;
-	headerValue.SetString(rPtr->getHeader().c_str(), rPtr->getHeader().length(), doc.GetAllocator());
+    rapidjson::Document headerDoc;
+    // Attempt to parse the header
+    if (headerDoc.Parse(rPtr->getHeader().c_str()).HasParseError()){
+    	// Unable to parse the header, so copy it as a string
+    	headerValue.SetString(rPtr->getHeader().c_str(), rPtr->getHeader().length(), doc.GetAllocator());
+    } else {
+    	// Copy the parsed document to the header value
+    	headerValue.CopyFrom(headerDoc, doc.GetAllocator());
+    }
 
 	// Create the information to the JSON doc
 	doc.AddMember("plugin", nameValue, doc.GetAllocator());
