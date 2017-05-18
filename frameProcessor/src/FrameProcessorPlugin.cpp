@@ -9,14 +9,17 @@
 
 namespace FrameProcessor
 {
+  const std::string FrameProcessorPlugin::META_RX_INTERFACE        = "inproc://meta_rx";
 
   /**
    * Constructor, initialises name_.
    */
   FrameProcessorPlugin::FrameProcessorPlugin() :
-      name_("")
+      name_(""),
+	  metaChannel_(ZMQ_PUSH)
   {
     logger_ = log4cxx::Logger::getLogger("FW.FrameProcessorPlugin");
+    metaChannel_.connect(META_RX_INTERFACE.c_str());
   }
 
   /**
@@ -141,6 +144,75 @@ namespace FrameProcessor
       cb->confirmRemoval(name_);
     }
   }
+
+  /** Publish meta data from this plugin.
+   *
+   * \param[in] item - Name of the meta data item to publish.
+   * \param[in] value - The value of the meta data item to publish.
+   * \param[in] header - Optional additional header data to publish.
+   */
+  void FrameProcessorPlugin::publishMeta(const std::string& item, int32_t value, const std::string &header)
+  {
+	  // Create a new MetaMessage object and send to the consumer
+	  FrameProcessor::MetaMessage *meta = new FrameProcessor::MetaMessage(name_, item, "integer", header, sizeof(int32_t), &value);
+	  // We need the pointer to the object cast to be able to pass it through ZMQ
+	  uintptr_t addr = reinterpret_cast<uintptr_t>(&(*meta));
+	  // Send the pointer value to the listener
+	  metaChannel_.send(sizeof(uintptr_t), &addr);
+  }
+
+  /**
+   * Publish meta data from this plugin.
+   *
+   * \param[in] item - Name of the meta data item to publish.
+   * \param[in] value - The value of the meta data item to publish.
+   * \param[in] header - Optional additional header data to publish.
+   */
+  void FrameProcessorPlugin::publishMeta(const std::string& item, double value, const std::string& header)
+  {
+	  // Create a new MetaMessage object and send to the consumer
+	  FrameProcessor::MetaMessage *meta = new FrameProcessor::MetaMessage(name_, item, "double", header, sizeof(double), &value);
+	  // We need the pointer to the object cast to be able to pass it through ZMQ
+	  uintptr_t addr = reinterpret_cast<uintptr_t>(&(*meta));
+	  // Send the pointer value to the listener
+	  metaChannel_.send(sizeof(uintptr_t), &addr);
+  }
+
+  /**
+   * Publish meta data from this plugin.
+   *
+   * \param[in] item - Name of the meta data item to publish.
+   * \param[in] value - The value of the meta data item to publish.
+   * \param[in] header - Optional additional header data to publish.
+   */
+  void FrameProcessorPlugin::publishMeta(const std::string& item, const std::string& value, const std::string& header)
+  {
+	  // Create a new MetaMessage object and send to the consumer
+	  FrameProcessor::MetaMessage *meta = new FrameProcessor::MetaMessage(name_, item, "string", header, value.length(), value.c_str());
+	  // We need the pointer to the object cast to be able to pass it through ZMQ
+	  uintptr_t addr = reinterpret_cast<uintptr_t>(&(*meta));
+	  // Send the pointer value to the listener
+	  metaChannel_.send(sizeof(uintptr_t), &addr);
+  }
+
+  /**
+   * Publish meta data from this plugin.
+   *
+   * \param[in] item - Name of the meta data item to publish.
+   * \param[in] pValue - A pointer to the meta data value.  The memory will be copied.
+   * \param[in] length - The size (in bytes) of the meta data value.
+   * \param[in] header - Optional additional header data to publish.
+   */
+  void FrameProcessorPlugin::publishMeta(const std::string& item, void *pValue, size_t length, const std::string& header)
+  {
+	  // Create a new MetaMessage object and send to the consumer
+	  FrameProcessor::MetaMessage *meta = new FrameProcessor::MetaMessage(name_, item, "raw", header, length, pValue);
+	  // We need the pointer to the object cast to be able to pass it through ZMQ
+	  uintptr_t addr = reinterpret_cast<uintptr_t>(&(*meta));
+	  // Send the pointer value to the listener
+	  metaChannel_.send(sizeof(uintptr_t), &addr);
+  }
+
 
   /**
    * We have been called back with a frame from a plugin that we registered

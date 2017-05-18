@@ -9,6 +9,7 @@ file(GLOB LIB_SOURCES DataBlock.cpp
                       DataBlockPool.cpp
                       FrameProcessorPlugin.cpp
                       Frame.cpp
+                      MetaMessage.cpp
                       IFrameCallback.cpp )
 
 # Add library for common plugin code

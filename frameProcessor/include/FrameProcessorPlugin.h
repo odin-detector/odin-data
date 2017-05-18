@@ -9,7 +9,9 @@
 #define TOOLS_FILEWRITER_FrameProcessorPlugin_H_
 
 #include "IFrameCallback.h"
+#include "MetaMessage.h"
 #include "IpcMessage.h"
+#include "IpcChannel.h"
 
 namespace FrameProcessor
 {
@@ -33,12 +35,20 @@ namespace FrameProcessor
     void registerCallback(const std::string& name, boost::shared_ptr<IFrameCallback> cb, bool blocking=false);
     void removeCallback(const std::string& name);
 
+    void publishMeta(const std::string& item, int32_t value, const std::string& header = "");
+    void publishMeta(const std::string& item, double value, const std::string& header = "");
+    void publishMeta(const std::string& item, const std::string& value, const std::string& header = "");
+    void publishMeta(const std::string& item, void *pValue, size_t length, const std::string& header = "");
+
   protected:
     void push(boost::shared_ptr<Frame> frame);
 
   private:
     /** Pointer to logger */
     LoggerPtr logger_;
+    /** Configuration constant for the meta-data Rx interface **/
+    static const std::string META_RX_INTERFACE;
+
     void callback(boost::shared_ptr<Frame> frame);
 
     /**
@@ -55,6 +65,8 @@ namespace FrameProcessor
     std::map<std::string, boost::shared_ptr<IFrameCallback> > callbacks_;
     /** Map of registered plugins for blocking callbacks, indexed by name */
     std::map<std::string, boost::shared_ptr<IFrameCallback> > blockingCallbacks_;
+    /** IpcChannel for meta-data messages */
+    OdinData::IpcChannel metaChannel_;
   };
 
 } /* namespace FrameProcessor */

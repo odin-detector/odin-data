@@ -37,6 +37,7 @@ namespace FrameProcessor
     FrameProcessorController();
     virtual ~FrameProcessorController();
     void handleCtrlChannel();
+    void handleMetaRxChannel();
     void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
     void configurePlugin(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
     void loadPlugin(const std::string& index, const std::string& name, const std::string& library);
@@ -45,6 +46,9 @@ namespace FrameProcessor
     void run();
     void waitForShutdown();
   private:
+    /** Configuration constant for the meta-data Rx interface **/
+    static const std::string META_RX_INTERFACE;
+
     /** Configuration constant to shutdown the file writer process **/
     static const std::string CONFIG_SHUTDOWN;
 
@@ -62,6 +66,8 @@ namespace FrameProcessor
 
     /** Configuration constant for control socket endpoint **/
     static const std::string CONFIG_CTRL_ENDPOINT;
+    /** Configuration constant for meta data endpoint **/
+    static const std::string CONFIG_META_ENDPOINT;
 
     /** Configuration constant for plugin related items **/
     static const std::string CONFIG_PLUGIN;
@@ -88,6 +94,10 @@ namespace FrameProcessor
     void closeFrameReceiverInterface();
     void setupControlInterface(const std::string& ctrlEndpointString);
     void closeControlInterface();
+    void setupMetaRxInterface();
+    void closeMetaRxInterface();
+    void setupMetaTxInterface(const std::string& metaEndpointString);
+    void closeMetaTxInterface();
     void runIpcService(void);
     void tickTimer(void);
     void callback(boost::shared_ptr<Frame> frame);
@@ -123,9 +133,13 @@ namespace FrameProcessor
     /** Store for any messages occurring during thread initialisation */
     std::string                                                 threadInitMsg_;
     /** Pointer to the IpcReactor for incoming frame handling */
-    boost::shared_ptr<OdinData::IpcReactor>                reactor_;
+    boost::shared_ptr<OdinData::IpcReactor>		                reactor_;
     /** IpcChannel for control messages */
-    OdinData::IpcChannel                                   ctrlChannel_;
+    OdinData::IpcChannel                       		            ctrlChannel_;
+    /** IpcChannel for meta-data messages */
+    OdinData::IpcChannel                                        metaRxChannel_;
+    /** IpcChannel for publishing meta-data messages */
+    OdinData::IpcChannel 										metaTxChannel_;
   };
 
 } /* namespace FrameProcessor */
