@@ -318,15 +318,19 @@ hid_t FileWriterPlugin::pixelToHdfType(FileWriterPlugin::PixelType pixel) const 
     switch(pixel)
     {
     case pixel_float32:
+        LOG4CXX_DEBUG(logger_, "Data type: UINT32");
         dtype = H5T_NATIVE_UINT32;
         break;
     case pixel_raw_16bit:
+        LOG4CXX_DEBUG(logger_, "Data type: UINT16");
         dtype = H5T_NATIVE_UINT16;
         break;
     case pixel_raw_8bit:
+        LOG4CXX_DEBUG(logger_, "Data type: UINT8");
         dtype = H5T_NATIVE_UINT8;
         break;
     default:
+        LOG4CXX_DEBUG(logger_, "Data type: UINT16");
         dtype = H5T_NATIVE_UINT16;
     }
     return dtype;

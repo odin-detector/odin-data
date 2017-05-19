@@ -328,7 +328,7 @@ void configureDataset(boost::shared_ptr<FrameProcessorController> fwc, po::varia
 
   cfg.set_param<string>("hdf/dataset/cmd", "create");
   cfg.set_param<string>("hdf/dataset/name", name);
-  cfg.set_param<int>("hdf/dataset/datatype", 1);
+  cfg.set_param<int>("hdf/dataset/datatype", vm["dtype"].as<int>());
   cfg.set_param<rapidjson::Value>("hdf/dataset/dims", jsonDims);
 
   if (vm.count("chunk-dims")) {
