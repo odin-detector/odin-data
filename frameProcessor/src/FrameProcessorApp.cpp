@@ -91,6 +91,8 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
                     "Set the control endpoint")
                 ("ctrl",          po::value<std::string>()->default_value("tcp://127.0.0.1:5004"),
                     "Set the name of the shared memory frame buffer")
+	            ("meta",          po::value<std::string>()->default_value("tcp://*:5558"),
+	                "ZMQ meta data channel publish stream")
                 ("output,o",      po::value<std::string>()->default_value("test.hdf5"),
                     "Name of HDF5 file to write frames to (default: test.hdf5)")
                 ("processes,p",   po::value<unsigned int>()->default_value(1),
@@ -225,6 +227,11 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
             LOG4CXX_DEBUG(logger, "Setting control endpoint to: " << vm["ctrl"].as<string>());
         }
 
+        if (no_client && vm.count("meta"))
+        {
+            LOG4CXX_DEBUG(logger, "Setting meta endpoint to: " << vm["meta"].as<string>());
+        }
+
         if (no_client && vm.count("output"))
         {
             LOG4CXX_DEBUG(logger, "Writing frames to file: " << vm["output"].as<string>());
@@ -270,6 +277,7 @@ void configureDefaults(boost::shared_ptr<FrameProcessorController> fwc, po::vari
   cfg.set_param<string>("fr_setup/fr_ready_cnxn", vm["ready"].as<string>());
   cfg.set_param<string>("fr_setup/fr_release_cnxn", vm["release"].as<string>());
   cfg.set_param<string>("output", vm["output"].as<string>());
+  cfg.set_param<string>("meta_endpoint", vm["meta"].as<string>());
   
   fwc->configure(cfg, reply);
 }
