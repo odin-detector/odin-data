@@ -302,7 +302,7 @@ void configureHDF5(boost::shared_ptr<FrameProcessorController> fwc, string input
   
   cfg.set_param<string>("plugin/load/library", "./lib/libHdf5Plugin.so");
   cfg.set_param<string>("plugin/load/index", "hdf");
-  cfg.set_param<string>("plugin/load/name", "FileWriter");
+  cfg.set_param<string>("plugin/load/name", "FileWriterPlugin");
   cfg.set_param<string>("plugin/connect/index", "hdf");
   cfg.set_param<string>("plugin/connect/connection", input);
   
