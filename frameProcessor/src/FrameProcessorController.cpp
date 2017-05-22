@@ -10,6 +10,8 @@
 
 namespace FrameProcessor
 {
+  const std::string FrameProcessorController::META_RX_INTERFACE        = "inproc://meta_rx";
+
   const std::string FrameProcessorController::CONFIG_SHUTDOWN          = "shutdown";
 
   const std::string FrameProcessorController::CONFIG_STATUS            = "status";
@@ -20,6 +22,7 @@ namespace FrameProcessor
   const std::string FrameProcessorController::CONFIG_FR_SETUP          = "fr_setup";
 
   const std::string FrameProcessorController::CONFIG_CTRL_ENDPOINT     = "ctrl_endpoint";
+  const std::string FrameProcessorController::CONFIG_META_ENDPOINT     = "meta_endpoint";
 
   const std::string FrameProcessorController::CONFIG_PLUGIN            = "plugin";
   const std::string FrameProcessorController::CONFIG_PLUGIN_LIST       = "list";
@@ -43,7 +46,9 @@ namespace FrameProcessor
     threadInitError_(false),
     pluginShutdownSent(false),
     ctrlThread_(boost::bind(&FrameProcessorController::runIpcService, this)),
-    ctrlChannel_(ZMQ_REP)
+    ctrlChannel_(ZMQ_REP),
+	metaRxChannel_(ZMQ_PULL),
+	metaTxChannel_(ZMQ_PUB)
   {
     LOG4CXX_DEBUG(logger_, "Constructing FrameProcessorController");
     
@@ -60,7 +65,11 @@ namespace FrameProcessor
             break;
         }
     }
-  }
+
+    // The meta interface should only be setup once confirmation of the thread startup
+    // has been recevied.  The reactor is created within the thread startup method.
+    this->setupMetaRxInterface();
+ }
 
   /**
    * Destructor.
@@ -110,6 +119,58 @@ namespace FrameProcessor
         replyMsg.set_param<std::string>("error", std::string(e.what()));
         ctrlChannel_.send(replyMsg.encode());
     }
+  }
+
+  void FrameProcessorController::handleMetaRxChannel()
+  {
+	uintptr_t pValue;
+	FrameProcessor::MetaMessage *rPtr;
+
+	// Receive a message from the main thread channel
+	metaRxChannel_.recv_raw(&pValue);
+	// Message contains the pointer value, cast back into MetaMessage object
+	rPtr = reinterpret_cast<FrameProcessor::MetaMessage *>(pValue);
+
+	// Create the two part message ready to publish.  First part contains
+	// header information and second part contains the actual data
+	rapidjson::Document doc;
+	doc.SetObject();
+	rapidjson::Value nameValue;
+	nameValue.SetString(rPtr->getName().c_str(), rPtr->getName().length(), doc.GetAllocator());
+	rapidjson::Value itemValue;
+	itemValue.SetString(rPtr->getItem().c_str(), rPtr->getItem().length(), doc.GetAllocator());
+	rapidjson::Value typeValue;
+	typeValue.SetString(rPtr->getType().c_str(), rPtr->getType().length(), doc.GetAllocator());
+
+	rapidjson::Value headerValue;
+    rapidjson::Document headerDoc;
+    // Attempt to parse the header
+    if (headerDoc.Parse(rPtr->getHeader().c_str()).HasParseError()){
+    	// Unable to parse the header, so copy it as a string
+    	headerValue.SetString(rPtr->getHeader().c_str(), rPtr->getHeader().length(), doc.GetAllocator());
+    } else {
+    	// Copy the parsed document to the header value
+    	headerValue.CopyFrom(headerDoc, doc.GetAllocator());
+    }
+
+	// Create the information to the JSON doc
+	doc.AddMember("plugin", nameValue, doc.GetAllocator());
+	doc.AddMember("parameter", itemValue, doc.GetAllocator());
+	doc.AddMember("type", typeValue, doc.GetAllocator());
+	doc.AddMember("header", headerValue, doc.GetAllocator());
+
+	rapidjson::StringBuffer buffer;
+	rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+	doc.Accept(writer);
+
+	LOG4CXX_DEBUG(logger_, "Meta RX thread called: " << buffer.GetString());
+
+
+	metaTxChannel_.send(buffer.GetString(), ZMQ_SNDMORE);
+	metaTxChannel_.send(rPtr->getSize(), rPtr->getDataPtr());
+
+	// Delete the meta message
+	delete rPtr;
   }
 
   /**
@@ -193,6 +254,11 @@ namespace FrameProcessor
     if (config.has_param(FrameProcessorController::CONFIG_CTRL_ENDPOINT)){
       std::string endpoint = config.get_param<std::string>(FrameProcessorController::CONFIG_CTRL_ENDPOINT);
       this->setupControlInterface(endpoint);
+    }
+
+    if (config.has_param(FrameProcessorController::CONFIG_META_ENDPOINT)){
+      std::string endpoint = config.get_param<std::string>(FrameProcessorController::CONFIG_META_ENDPOINT);
+      this->setupMetaTxInterface(endpoint);
     }
 
     if (config.has_param(FrameProcessorController::CONFIG_PLUGIN)){
@@ -307,6 +373,7 @@ namespace FrameProcessor
       boost::shared_ptr<FrameProcessorPlugin> plugin = OdinData::ClassLoader<FrameProcessorPlugin>::load_class(name, library);
       if (plugin){
 		  plugin->setName(index);
+		  plugin->connectMetaChannel();
 		  plugins_[index] = plugin;
 
 		  // Register callback to FWC with FileWriter plugin
@@ -391,10 +458,10 @@ namespace FrameProcessor
   
   void FrameProcessorController::run() {
     
-    // Start worker thread to monitor frames passed through
+    // Start worker thread (for IFrameCallback) to monitor frames passed through
     start();
     
-    // Now wait for the shutdown
+    // Now wait for the shutdown command from either the control interface or the worker thread
     waitForShutdown();
     
     // Stop all plugin worker threads
@@ -403,10 +470,10 @@ namespace FrameProcessor
     for (it = plugins_.begin(); it != plugins_.end(); it++) {
       it->second->stop();
     }
-    // Worker thread callback will wait until pluginShutdownSent is set
+    // Worker thread callback will block caller until pluginShutdownSent is set
     pluginShutdownSent = true;
     LOG4CXX_DEBUG(logger_, "Plugin shutdown sent. Removing plugins once stopped.");
-    // Then we wait until the each plugin has stopped and then erase them
+    // Wait until the each plugin has stopped and erase it from our map
     for (it = plugins_.begin(); it != plugins_.end(); it++) {
       LOG4CXX_DEBUG(logger_, "Removing " << it->first);
       while(it->second->isWorking());
@@ -543,6 +610,54 @@ namespace FrameProcessor
       // TODO: What to do here, I think throw it up
       throw std::runtime_error(e.what());
     }
+  }
+
+  void FrameProcessorController::setupMetaRxInterface()
+  {
+	try {
+	  LOG4CXX_DEBUG(logger_, "Connecting meta RX channel to endpoint: " << META_RX_INTERFACE);
+	  metaRxChannel_.bind(META_RX_INTERFACE.c_str());
+	}
+	catch (zmq::error_t& e) {
+	  throw std::runtime_error(e.what());
+	}
+
+	// Add the control channel to the reactor
+	reactor_->register_channel(metaRxChannel_, boost::bind(&FrameProcessorController::handleMetaRxChannel, this));
+  }
+
+  void FrameProcessorController::closeMetaRxInterface()
+  {
+	try {
+	  LOG4CXX_DEBUG(logger_, "Closing meta RX endpoint.");
+	  reactor_->remove_channel(metaRxChannel_);
+	  metaRxChannel_.close();
+	}
+	catch (zmq::error_t& e) {
+	  throw std::runtime_error(e.what());
+	}
+  }
+
+  void FrameProcessorController::setupMetaTxInterface(const std::string& metaEndpointString)
+  {
+	try {
+	  LOG4CXX_DEBUG(logger_, "Connecting meta TX channel to endpoint: " << metaEndpointString);
+	  metaTxChannel_.bind(metaEndpointString.c_str());
+	}
+	catch (zmq::error_t& e) {
+	  throw std::runtime_error(e.what());
+	}
+  }
+
+  void FrameProcessorController::closeMetaTxInterface()
+  {
+	try {
+	  LOG4CXX_DEBUG(logger_, "Closing meta TX endpoint.");
+	  metaTxChannel_.close();
+	}
+	catch (zmq::error_t& e) {
+	  throw std::runtime_error(e.what());
+	}
   }
 
   /** Start the Ipc service running.
