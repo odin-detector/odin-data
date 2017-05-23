@@ -128,6 +128,8 @@ void FileWriterPlugin::createFile(std::string filename, size_t chunk_align)
     }
     // Close file access property list
     assert(H5Pclose(fapl) >= 0);
+    // Send meta data message to notify of file creation
+    publishMeta("createfile", filename);
 }
 
 /**
@@ -304,6 +306,8 @@ void FileWriterPlugin::closeFile() {
     if (this->hdf5_fileid_ >= 0) {
         assert(H5Fclose(this->hdf5_fileid_) >= 0);
         this->hdf5_fileid_ = 0;
+        // Send meta data message to notify of file creation
+        publishMeta("closefile", "");
     }
 }
 
