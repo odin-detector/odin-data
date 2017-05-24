@@ -158,6 +158,29 @@ void FileWriterPlugin::writeFrame(const Frame& frame) {
     status = H5DOwrite_chunk(dset.datasetid, H5P_DEFAULT,
                              filter_mask, &offset.front(),
                              frame.get_data_size(), frame.get_data());
+
+    // Send the meta message containing the frame written and the offset written to
+    rapidjson::Document document;
+    document.SetObject();
+
+    // Add Frame number
+    rapidjson::Value keyFrame("frame", document.GetAllocator());
+	rapidjson::Value valueFrame;
+	valueFrame.SetUint64(frame_no);
+	document.AddMember(keyFrame, valueFrame, document.GetAllocator());
+
+	// Add offset
+	rapidjson::Value keySeries("offset", document.GetAllocator());
+	rapidjson::Value valueOffsset;
+	valueOffsset.SetUint64(frame_offset);
+	document.AddMember(keySeries, valueOffsset, document.GetAllocator());
+
+    rapidjson::StringBuffer buffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+    document.Accept(writer);
+
+    publishMeta("writeframe", buffer.GetString());
+
     assert(status >= 0);
 }
 
