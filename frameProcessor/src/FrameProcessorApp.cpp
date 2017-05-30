@@ -85,18 +85,18 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
                     "Data type of raw detector data (0: 8bit, 1: 16bit, 2: 32bit)")
                 ("compression",   po::value<string>(),
                     "Compression type of input data (lz4 or bsls4)")
-                ("path,p",        po::value<std::string>(),
+                ("path",          po::value<std::string>(),
                     "Path to detector shared library with format 'lib<detector>ProcessPlugin.so'")
                 ("sharedbuf",     po::value<std::string>()->default_value("FrameReceiverBuffer"),
                     "Set the control endpoint")
                 ("ctrl",          po::value<std::string>()->default_value("tcp://127.0.0.1:5004"),
                     "Set the name of the shared memory frame buffer")
-	            ("meta",          po::value<std::string>()->default_value("tcp://*:5558"),
-	                "ZMQ meta data channel publish stream")
+                ("meta",          po::value<std::string>()->default_value("tcp://*:5558"),
+                    "ZMQ meta data channel publish stream")
                 ("output,o",      po::value<std::string>()->default_value("test.hdf5"),
                     "Name of HDF5 file to write frames to (default: test.hdf5)")
                 ("processes,p",   po::value<unsigned int>()->default_value(1),
-                    "Number of concurrent file writer processes"   )
+                    "Number of concurrent file writer processes")
                 ("rank,r",        po::value<unsigned int>()->default_value(0),
                     "The rank (index number) of the current file writer process in relation to the other concurrent ones")
                 ;
