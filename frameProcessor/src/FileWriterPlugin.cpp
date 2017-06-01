@@ -674,11 +674,11 @@ void FileWriterPlugin::configureProcess(OdinData::IpcMessage& config, OdinData::
 
   // Check for process number and rank number
   if (config.has_param(FileWriterPlugin::CONFIG_PROCESS_NUMBER)){
-    this->concurrent_processes_ = config.get_param<int>(FileWriterPlugin::CONFIG_PROCESS_NUMBER);
+    this->concurrent_processes_ = config.get_param<size_t>(FileWriterPlugin::CONFIG_PROCESS_NUMBER);
     LOG4CXX_DEBUG(logger_, "Concurrent processes changed to " << this->concurrent_processes_);
   }
   if (config.has_param(FileWriterPlugin::CONFIG_PROCESS_RANK)){
-    this->concurrent_rank_ = config.get_param<int>(FileWriterPlugin::CONFIG_PROCESS_RANK);
+    this->concurrent_rank_ = config.get_param<size_t>(FileWriterPlugin::CONFIG_PROCESS_RANK);
     LOG4CXX_DEBUG(logger_, "Process rank changed to " << this->concurrent_rank_);
   }
 }
