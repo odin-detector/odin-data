@@ -107,6 +107,11 @@ const std::size_t IpcChannel::recv_raw(void *dPtr)
     return msg_size;
 }
 
+void IpcChannel::setsockopt(int option_, const void *optval_, size_t optvallen_)
+{
+	socket_.setsockopt(option_, optval_, optvallen_);
+}
+
 bool IpcChannel::eom(void)
 {
 	bool eom = true;
