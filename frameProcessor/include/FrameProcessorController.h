@@ -88,6 +88,9 @@ namespace FrameProcessor
     /** Configuration constant for setting up a plugin connection **/
     static const std::string CONFIG_PLUGIN_CONNECTION;
 
+    /** Configuration constant for the meta TX channel high water mark **/
+    static const int META_TX_HWM;
+
     void setupFrameReceiverInterface(const std::string& sharedMemName,
                                      const std::string& frPublisherString,
                                      const std::string& frSubscriberString);

@@ -34,6 +34,8 @@ namespace FrameProcessor
   const std::string FrameProcessorController::CONFIG_PLUGIN_LIBRARY    = "library";
   const std::string FrameProcessorController::CONFIG_PLUGIN_CONNECTION = "connection";
 
+  const int FrameProcessorController::META_TX_HWM = 10000;
+
   /** Construct a new FrameProcessorController class.
    *
    * The constructor sets up logging used within the class, and starts the
@@ -642,6 +644,8 @@ namespace FrameProcessor
   {
 	try {
 	  LOG4CXX_DEBUG(logger_, "Connecting meta TX channel to endpoint: " << metaEndpointString);
+      int sndHwmSet = META_TX_HWM;
+      metaTxChannel_.setsockopt(ZMQ_SNDHWM, &sndHwmSet, sizeof (sndHwmSet));
 	  metaTxChannel_.bind(metaEndpointString.c_str());
 	}
 	catch (zmq::error_t& e) {
