@@ -118,7 +118,10 @@ namespace FrameProcessor
           // Create a frame object and copy in the raw frame data
           boost::shared_ptr<Frame> frame;
           frame = boost::shared_ptr<Frame>(new Frame("raw"));
-          frame->copy_data(sbm_->get_buffer_address(bufferID), sbm_->get_buffer_size());
+          frame->wrap_shared_buffer(sbm_->get_buffer_address(bufferID),
+        		  sbm_->get_buffer_size(),
+				  bufferID,rxMsg.get_param<int>("frame", 0),
+				  &txChannel_);
 
           // Set the frame number
           frame->set_frame_number(rxMsg.get_param<int>("frame", 0));
@@ -128,18 +131,6 @@ namespace FrameProcessor
           for (cbIter = callbacks_.begin(); cbIter != callbacks_.end(); ++cbIter){
             cbIter->second->getWorkQueue()->add(frame);
           }
-
-          // We want to send the notify frame release message back to the frameReceiver
-          OdinData::IpcMessage txMsg(OdinData::IpcMessage::MsgTypeNotify,
-                                          OdinData::IpcMessage::MsgValNotifyFrameRelease);
-
-          txMsg.set_param("frame", rxMsg.get_param<int>("frame"));
-          txMsg.set_param("buffer_id", rxMsg.get_param<int>("buffer_id"));
-          LOG4CXX_DEBUG(logger_, "Sending response: " << txMsg.encode());
-
-          // Now publish the release message, to notify the frame receiver that we are
-          // finished with that block of shared memory
-          txChannel_.send(txMsg.encode());
 
         } else {
           LOG4CXX_ERROR(logger_, "RX thread received empty frame notification with buffer ID");
