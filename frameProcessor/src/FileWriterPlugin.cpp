@@ -170,10 +170,22 @@ void FileWriterPlugin::writeFrame(const Frame& frame) {
 	document.AddMember(keyFrame, valueFrame, document.GetAllocator());
 
 	// Add offset
-	rapidjson::Value keySeries("offset", document.GetAllocator());
-	rapidjson::Value valueOffsset;
-	valueOffsset.SetUint64(frame_offset);
-	document.AddMember(keySeries, valueOffsset, document.GetAllocator());
+	rapidjson::Value keyOffset("offset", document.GetAllocator());
+	rapidjson::Value valueOffset;
+	valueOffset.SetUint64(frame_offset);
+	document.AddMember(keyOffset, valueOffset, document.GetAllocator());
+
+	// Add rank
+	rapidjson::Value keyRank("rank", document.GetAllocator());
+	rapidjson::Value valueRank;
+	valueRank.SetUint64(concurrent_rank_);
+	document.AddMember(keyRank, valueRank, document.GetAllocator());
+
+	// Add num consumers
+	rapidjson::Value keyNumProcesses("proc", document.GetAllocator());
+	rapidjson::Value valueNumProcesses;
+	valueNumProcesses.SetUint64(concurrent_processes_);
+	document.AddMember(keyNumProcesses, valueNumProcesses, document.GetAllocator());
 
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
