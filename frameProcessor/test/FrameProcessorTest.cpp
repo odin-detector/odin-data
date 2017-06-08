@@ -391,7 +391,7 @@ BOOST_AUTO_TEST_CASE( FileWriterPluginMultiRewind )
   checkFrames("/tmp/test_multi_rewind.h5", "data", 1);
 }
 
-BOOST_AUTO_TEST_CASE( FileWriterPluginSubProcess )
+BOOST_AUTO_TEST_CASE( FileWriterPluginSubProcessOffset )
 {
     // Frame numbers start from 1: 1,2,3,4,5  - but are indexed from 0 in the frames vector.
     // Process numbers start from 0: 0,1,2 - this process pretends to be process 1.
@@ -404,7 +404,7 @@ BOOST_AUTO_TEST_CASE( FileWriterPluginSubProcess )
       cfg.set_param("process/rank", 1);
       fw1.configure(cfg, reply);
     }
-    BOOST_REQUIRE_NO_THROW(fw1.createFile("/tmp/process_1of3.h5"));
+    BOOST_REQUIRE_NO_THROW(fw1.createFile("/tmp/offset_process_1of3.h5"));
     BOOST_REQUIRE_NO_THROW(fw1.createDataset(dset_def));
     BOOST_REQUIRE_EQUAL(dset_def.name, frame->get_dataset_name());
     BOOST_REQUIRE_NO_THROW(fw1.queueFrameOffsetAdjustment(0, frames[0]->get_frame_number()));
@@ -431,7 +431,7 @@ BOOST_AUTO_TEST_CASE( FileWriterPluginSubProcess )
       cfg.set_param("process/rank", 0);
       fw0.configure(cfg, reply);
     }
-    BOOST_REQUIRE_NO_THROW(fw0.createFile("/tmp/process_0of3.h5"));
+    BOOST_REQUIRE_NO_THROW(fw0.createFile("/tmp/offset_process_0of3.h5"));
     BOOST_REQUIRE_NO_THROW(fw0.createDataset(dset_def));
     BOOST_REQUIRE_EQUAL(dset_def.name, frame->get_dataset_name());
     BOOST_REQUIRE_NO_THROW(fw0.queueFrameOffsetAdjustment(0, frames[0]->get_frame_number()));
@@ -443,6 +443,77 @@ BOOST_AUTO_TEST_CASE( FileWriterPluginSubProcess )
     // write frame no. 4 to "data"
     BOOST_CHECK_EQUAL(frames[3]->get_frame_number(), 4);
     BOOST_REQUIRE_NO_THROW(fw0.writeFrame(*frames[3]));
+
+    BOOST_REQUIRE_NO_THROW(fw0.closeFile());
+
+}
+
+BOOST_AUTO_TEST_CASE( FileWriterPluginSubProcess )
+{
+    // Make frame numbers start from 0: 0,1,2,3,4 this time
+    unsigned short img[12] =  { 1, 2, 3, 4,
+                                5, 6, 7, 8,
+                                9,10,11,12 };
+    std::vector< boost::shared_ptr<FrameProcessor::Frame> > tmp_frames;
+    for (int i = 0; i < 5; i++)
+    {
+        boost::shared_ptr<FrameProcessor::Frame> tmp_frame(new FrameProcessor::Frame("data")); //2, img_dims));
+        tmp_frame->set_frame_number(i);
+//            img_header.frame_number = i;
+//            tmp_frame->copy_header(&img_header);
+        img[0] = i;
+        tmp_frame->copy_data(static_cast<void*>(img), 24);
+        tmp_frames.push_back(tmp_frame);
+    }
+    // Process numbers start from 0: 0,1,2 - this process pretends to be process 1.
+    OdinData::IpcMessage reply;
+
+    FrameProcessor::FileWriterPlugin fw1;
+    {
+        OdinData::IpcMessage cfg;
+        cfg.set_param("process/number", 3);
+        cfg.set_param("process/rank", 1);
+        fw1.configure(cfg, reply);
+    }
+    BOOST_REQUIRE_NO_THROW(fw1.createFile("/tmp/process_1of3.h5"));
+    BOOST_REQUIRE_NO_THROW(fw1.createDataset(dset_def));
+    BOOST_REQUIRE_EQUAL(dset_def.name, frame->get_dataset_name());
+    BOOST_REQUIRE_NO_THROW(fw1.queueFrameOffsetAdjustment(0, tmp_frames[0]->get_frame_number()));
+
+    // Write frame no. 1 to "data"
+    BOOST_CHECK_EQUAL(tmp_frames[1]->get_frame_number(), 1);
+    BOOST_REQUIRE_NO_THROW(fw1.writeFrame(*tmp_frames[1]));
+
+    // write frame no. 4 to "data"
+    BOOST_CHECK_EQUAL(tmp_frames[4]->get_frame_number(), 4);
+    BOOST_REQUIRE_NO_THROW(fw1.writeFrame(*tmp_frames[4]));
+
+    // check the edge case where the frame no. is not supposed to go into this file
+    // write frame no. 3 to "data" and watch it except!
+    BOOST_CHECK_EQUAL(tmp_frames[3]->get_frame_number(), 3);
+    BOOST_REQUIRE_THROW(fw1.writeFrame(*tmp_frames[3]), std::runtime_error);
+
+    BOOST_REQUIRE_NO_THROW(fw1.closeFile());
+
+    FrameProcessor::FileWriterPlugin fw0;
+    {
+        OdinData::IpcMessage cfg;
+        cfg.set_param("process/number", 3);
+        cfg.set_param("process/rank", 0);
+        fw0.configure(cfg, reply);
+    }
+    BOOST_REQUIRE_NO_THROW(fw0.createFile("/tmp/process_0of3.h5"));
+    BOOST_REQUIRE_NO_THROW(fw0.createDataset(dset_def));
+    BOOST_REQUIRE_EQUAL(dset_def.name, frame->get_dataset_name());
+    BOOST_REQUIRE_NO_THROW(fw0.queueFrameOffsetAdjustment(0, tmp_frames[0]->get_frame_number()));
+
+    // Write frame no. 0 to "data"
+    BOOST_CHECK_EQUAL(tmp_frames[0]->get_frame_number(), 0);
+    BOOST_REQUIRE_NO_THROW(fw0.writeFrame(*tmp_frames[0]));
+
+    // write frame no. 3 to "data"
+    BOOST_CHECK_EQUAL(tmp_frames[3]->get_frame_number(), 3);
+    BOOST_REQUIRE_NO_THROW(fw0.writeFrame(*tmp_frames[3]));
 
     BOOST_REQUIRE_NO_THROW(fw0.closeFile());
 

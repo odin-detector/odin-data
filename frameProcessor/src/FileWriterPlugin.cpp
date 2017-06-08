@@ -410,11 +410,9 @@ FileWriterPlugin::HDF5Dataset_t& FileWriterPlugin::get_hdf5_dataset(const std::s
  */
 size_t FileWriterPlugin::calculateFrameOffset(size_t frame_no) {
     size_t frame_offset = this->adjustFrameOffset(frame_no);
-
     if (this->concurrent_processes_ > 1) {
         // Check whether this frame should really be in this process
-        // Note: this expects the frame numbering from HW/FW to start at 1, not 0!
-        if ( (((frame_no-1) % this->concurrent_processes_) - this->concurrent_rank_) != 0) {
+        if (frame_offset % this->concurrent_processes_ != this->concurrent_rank_) {
             LOG4CXX_WARN(logger_, "Unexpected frame: " << frame_no
                                 << " in this process rank: "
                                 << this->concurrent_rank_);
