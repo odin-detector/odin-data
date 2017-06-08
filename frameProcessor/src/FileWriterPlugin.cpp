@@ -300,7 +300,7 @@ void FileWriterPlugin::createDataset(const FileWriterPlugin::DatasetDefinition& 
  * Close the currently open HDF5 file.
  */
 void FileWriterPlugin::closeFile() {
-    LOG4CXX_TRACE(logger_, "FileWriterPlugin closeFile");
+    LOG4CXX_TRACE(logger_, "Closing file " << this->filePath_ << "/" << this->fileName_);
     if (this->hdf5_fileid_ >= 0) {
         assert(H5Fclose(this->hdf5_fileid_) >= 0);
         this->hdf5_fileid_ = 0;
