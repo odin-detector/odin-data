@@ -23,6 +23,16 @@ using namespace log4cxx::xml;
 #include "FileWriterPlugin.h"
 #include "Frame.h"
 
+void checkFrames(const char *filename, const char *dataset, int expectedFrames) {
+  hid_t file = H5Fopen(filename, H5F_ACC_RDONLY, 0);
+  hid_t dataset_id = H5Dopen(file, dataset, H5P_DEFAULT);
+  hid_t dspace_id = H5Dget_space(dataset_id);
+  const int ndims = H5Sget_simple_extent_ndims(dspace_id);
+  hsize_t dims[ndims];
+  H5Sget_simple_extent_dims(dspace_id, dims, NULL);
+  BOOST_CHECK_EQUAL(dims[0], expectedFrames);
+}
+
 class GlobalConfig {
 public:
     GlobalConfig() {
@@ -344,6 +354,43 @@ BOOST_AUTO_TEST_CASE( FileWriterPluginAdjustHugeOffset )
     BOOST_REQUIRE_NO_THROW(fw.closeFile());
 }
 
+BOOST_AUTO_TEST_CASE( FileWriterPluginRewind )
+{
+  BOOST_REQUIRE_NO_THROW(fw.createFile("/tmp/test_rewind.h5"));
+  BOOST_REQUIRE_NO_THROW(fw.createDataset(dset_def));
+
+  BOOST_REQUIRE_NO_THROW(fw.queueFrameOffsetAdjustment(0, 1));  // Frames start at 1
+  std::vector<boost::shared_ptr<FrameProcessor::Frame> >::iterator it;
+  for (it = frames.begin(); it != frames.end() - 2; ++it) {     // Write first 3
+    BOOST_REQUIRE_NO_THROW(fw.writeFrame(*(*it)));
+  }
+  BOOST_REQUIRE_NO_THROW(fw.queueFrameOffsetAdjustment(4, 3));  // Go back 2
+  for (it = frames.begin() + 3; it != frames.end(); ++it) {     // Write last 2
+    BOOST_REQUIRE_NO_THROW(fw.writeFrame(*(*it)));
+  }
+  BOOST_REQUIRE_NO_THROW(fw.closeFile());
+  checkFrames("/tmp/test_rewind.h5", "data", 3);
+}
+
+BOOST_AUTO_TEST_CASE( FileWriterPluginMultiRewind )
+{
+  BOOST_REQUIRE_NO_THROW(fw.createFile("/tmp/test_multi_rewind.h5"));
+  BOOST_REQUIRE_NO_THROW(fw.createDataset(dset_def));
+
+  BOOST_REQUIRE_NO_THROW(fw.queueFrameOffsetAdjustment(0, 1));  // Frames start at 1
+  // Add offset adjustment to queue for every frame, increasing by one time
+  for (int i = 0; i < 6; i++) {
+    BOOST_REQUIRE_NO_THROW(fw.queueFrameOffsetAdjustment(i, i + 2));
+  }
+  // We should then write the offset=0 frame five times
+  std::vector<boost::shared_ptr<FrameProcessor::Frame> >::iterator it;
+  for (it = frames.begin(); it != frames.end(); ++it) {
+    BOOST_REQUIRE_NO_THROW(fw.writeFrame(*(*it)));
+  }
+  BOOST_REQUIRE_NO_THROW(fw.closeFile());
+  checkFrames("/tmp/test_multi_rewind.h5", "data", 1);
+}
+
 BOOST_AUTO_TEST_CASE( FileWriterPluginSubProcess )
 {
     // Frame numbers start from 1: 1,2,3,4,5  - but are indexed from 0 in the frames vector.
@@ -402,5 +449,3 @@ BOOST_AUTO_TEST_CASE( FileWriterPluginSubProcess )
 }
 
 BOOST_AUTO_TEST_SUITE_END(); //FileWriterUnitTest
-
-
