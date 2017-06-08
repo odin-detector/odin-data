@@ -327,7 +327,7 @@ BOOST_AUTO_TEST_CASE( FileWriterPluginAdjustHugeOffset )
     BOOST_REQUIRE_NO_THROW(fw.createDataset(dset_def));
 
     hsize_t huge_offset = 100000;
-    BOOST_REQUIRE_NO_THROW(fw.setFrameOffsetAdjustment(huge_offset));
+    BOOST_REQUIRE_NO_THROW(fw.queueFrameOffsetAdjustment(0, huge_offset));
 
     std::vector<boost::shared_ptr<FrameProcessor::Frame> >::iterator it;
     for (it = frames.begin(); it != frames.end(); ++it){
@@ -336,7 +336,7 @@ BOOST_AUTO_TEST_CASE( FileWriterPluginAdjustHugeOffset )
         //img_header.frame_number = frame_no + huge_offset;
         //(*it)->copy_header(&img_header);
         (*it)->set_frame_number(frame_no + huge_offset);
-        hsize_t offset = fw.getFrameOffset((*it)->get_frame_number());
+        hsize_t offset = fw.calculateFrameOffset((*it)->get_frame_number());
         BOOST_TEST_MESSAGE("Writing frame: " <<  frame_no << " offset:" <<  offset);
         BOOST_CHECK_EQUAL(offset, frame_no);
         BOOST_REQUIRE_NO_THROW(fw.writeFrame(*(*it)));
@@ -360,7 +360,7 @@ BOOST_AUTO_TEST_CASE( FileWriterPluginSubProcess )
     BOOST_REQUIRE_NO_THROW(fw1.createFile("/tmp/process_1of3.h5"));
     BOOST_REQUIRE_NO_THROW(fw1.createDataset(dset_def));
     BOOST_REQUIRE_EQUAL(dset_def.name, frame->get_dataset_name());
-    BOOST_REQUIRE_NO_THROW(fw1.setFrameOffsetAdjustment(frames[0]->get_frame_number()));
+    BOOST_REQUIRE_NO_THROW(fw1.queueFrameOffsetAdjustment(0, frames[0]->get_frame_number()));
 
     // Write frame no. 2 to "data"
     BOOST_CHECK_EQUAL(frames[1]->get_frame_number(), 2);
@@ -387,7 +387,7 @@ BOOST_AUTO_TEST_CASE( FileWriterPluginSubProcess )
     BOOST_REQUIRE_NO_THROW(fw0.createFile("/tmp/process_0of3.h5"));
     BOOST_REQUIRE_NO_THROW(fw0.createDataset(dset_def));
     BOOST_REQUIRE_EQUAL(dset_def.name, frame->get_dataset_name());
-    BOOST_REQUIRE_NO_THROW(fw0.setFrameOffsetAdjustment(frames[0]->get_frame_number()));
+    BOOST_REQUIRE_NO_THROW(fw0.queueFrameOffsetAdjustment(0, frames[0]->get_frame_number()));
 
     // Write frame no. 1 to "data"
     BOOST_CHECK_EQUAL(frames[0]->get_frame_number(), 1);
