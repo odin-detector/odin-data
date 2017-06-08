@@ -162,7 +162,7 @@ namespace FrameProcessor
 	  // We need the pointer to the object cast to be able to pass it through ZMQ
 	  uintptr_t addr = reinterpret_cast<uintptr_t>(&(*meta));
 	  // Send the pointer value to the listener
-	  metaChannel_.send(sizeof(uintptr_t), &addr);
+	  metaChannel_.send(sizeof(uintptr_t), &addr, ZMQ_DONTWAIT);
   }
 
   /**
@@ -179,7 +179,7 @@ namespace FrameProcessor
 	  // We need the pointer to the object cast to be able to pass it through ZMQ
 	  uintptr_t addr = reinterpret_cast<uintptr_t>(&(*meta));
 	  // Send the pointer value to the listener
-	  metaChannel_.send(sizeof(uintptr_t), &addr);
+	  metaChannel_.send(sizeof(uintptr_t), &addr, ZMQ_DONTWAIT);
   }
 
   /**
@@ -196,7 +196,7 @@ namespace FrameProcessor
 	  // We need the pointer to the object cast to be able to pass it through ZMQ
 	  uintptr_t addr = reinterpret_cast<uintptr_t>(&(*meta));
 	  // Send the pointer value to the listener
-	  metaChannel_.send(sizeof(uintptr_t), &addr);
+	  metaChannel_.send(sizeof(uintptr_t), &addr, ZMQ_DONTWAIT);
   }
 
   /**
@@ -214,7 +214,7 @@ namespace FrameProcessor
 	  // We need the pointer to the object cast to be able to pass it through ZMQ
 	  uintptr_t addr = reinterpret_cast<uintptr_t>(&(*meta));
 	  // Send the pointer value to the listener
-	  metaChannel_.send(sizeof(uintptr_t), &addr);
+	  metaChannel_.send(sizeof(uintptr_t), &addr, ZMQ_DONTWAIT);
   }
 
 

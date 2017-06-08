@@ -50,6 +50,8 @@ namespace OdinData
         const std::string recv();
         const std::size_t recv_raw(void *dPtr);
 
+        void setsockopt(int option_, const void *optval_, size_t optvallen_);
+
         bool eom(void);
         bool poll(long timeout_ms = -1);
         void close(void);

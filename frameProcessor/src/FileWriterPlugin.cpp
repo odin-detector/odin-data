@@ -128,6 +128,8 @@ void FileWriterPlugin::createFile(std::string filename, size_t chunk_align)
     }
     // Close file access property list
     assert(H5Pclose(fapl) >= 0);
+    // Send meta data message to notify of file creation
+    publishMeta("createfile", filename);
 }
 
 /**
@@ -156,6 +158,41 @@ void FileWriterPlugin::writeFrame(const Frame& frame) {
     status = H5DOwrite_chunk(dset.datasetid, H5P_DEFAULT,
                              filter_mask, &offset.front(),
                              frame.get_data_size(), frame.get_data());
+
+    // Send the meta message containing the frame written and the offset written to
+    rapidjson::Document document;
+    document.SetObject();
+
+    // Add Frame number
+    rapidjson::Value keyFrame("frame", document.GetAllocator());
+	rapidjson::Value valueFrame;
+	valueFrame.SetUint64(frame_no);
+	document.AddMember(keyFrame, valueFrame, document.GetAllocator());
+
+	// Add offset
+	rapidjson::Value keyOffset("offset", document.GetAllocator());
+	rapidjson::Value valueOffset;
+	valueOffset.SetUint64(frame_offset);
+	document.AddMember(keyOffset, valueOffset, document.GetAllocator());
+
+	// Add rank
+	rapidjson::Value keyRank("rank", document.GetAllocator());
+	rapidjson::Value valueRank;
+	valueRank.SetUint64(concurrent_rank_);
+	document.AddMember(keyRank, valueRank, document.GetAllocator());
+
+	// Add num consumers
+	rapidjson::Value keyNumProcesses("proc", document.GetAllocator());
+	rapidjson::Value valueNumProcesses;
+	valueNumProcesses.SetUint64(concurrent_processes_);
+	document.AddMember(keyNumProcesses, valueNumProcesses, document.GetAllocator());
+
+    rapidjson::StringBuffer buffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+    document.Accept(writer);
+
+    publishMeta("writeframe", buffer.GetString());
+
     assert(status >= 0);
 }
 
@@ -304,6 +341,8 @@ void FileWriterPlugin::closeFile() {
     if (this->hdf5_fileid_ >= 0) {
         assert(H5Fclose(this->hdf5_fileid_) >= 0);
         this->hdf5_fileid_ = 0;
+        // Send meta data message to notify of file creation
+        publishMeta("closefile", "");
     }
 }
 
@@ -647,11 +686,11 @@ void FileWriterPlugin::configureProcess(OdinData::IpcMessage& config, OdinData::
 
   // Check for process number and rank number
   if (config.has_param(FileWriterPlugin::CONFIG_PROCESS_NUMBER)){
-    this->concurrent_processes_ = config.get_param<int>(FileWriterPlugin::CONFIG_PROCESS_NUMBER);
+    this->concurrent_processes_ = config.get_param<size_t>(FileWriterPlugin::CONFIG_PROCESS_NUMBER);
     LOG4CXX_DEBUG(logger_, "Concurrent processes changed to " << this->concurrent_processes_);
   }
   if (config.has_param(FileWriterPlugin::CONFIG_PROCESS_RANK)){
-    this->concurrent_rank_ = config.get_param<int>(FileWriterPlugin::CONFIG_PROCESS_RANK);
+    this->concurrent_rank_ = config.get_param<size_t>(FileWriterPlugin::CONFIG_PROCESS_RANK);
     LOG4CXX_DEBUG(logger_, "Process rank changed to " << this->concurrent_rank_);
   }
 }

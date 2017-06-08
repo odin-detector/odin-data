@@ -17,6 +17,12 @@ namespace FrameProcessor
   Frame::Frame(const std::string& index) :
     bytes_per_pixel(0),
     frameNumber_(0),
+	shared_raw_(0),
+	shared_size_(0),
+	shared_memory_(false),
+	shared_id_(0),
+	shared_frame_id_(0),
+	shared_channel_(0),
     logger(log4cxx::Logger::getLogger("FW.Frame"))
   {
     logger->setLevel(log4cxx::Level::getAll());
@@ -34,11 +40,47 @@ namespace FrameProcessor
   Frame::~Frame()
   {
     LOG4CXX_TRACE(logger, "Frame destroyed");
-    // TODO Auto-generated destructor stub
-    // If header and raw buffers exist then we must release them
-    if (raw_){
-      DataBlockPool::release(blockIndex_, raw_);
+    if (shared_memory_){
+    	// We must notify the frame receiver that the buffer is now available
+        // We want to send the notify frame release message back to the frameReceiver
+        OdinData::IpcMessage txMsg(OdinData::IpcMessage::MsgTypeNotify,
+                                   OdinData::IpcMessage::MsgValNotifyFrameRelease);
+        txMsg.set_param("frame", shared_frame_id_);
+        txMsg.set_param("buffer_id", shared_id_);
+        LOG4CXX_DEBUG(logger, "Sending response: " << txMsg.encode());
+
+        // Now publish the release message, to notify the frame receiver that we are
+        // finished with that block of shared memory
+        shared_channel_->send(txMsg.encode());
+    } else {
+      // If header and raw buffers exist then we must release them
+      if (raw_){
+        DataBlockPool::release(blockIndex_, raw_);
+      }
     }
+  }
+
+  /** Wrap this frame around an existing shared memory buffer.
+   *
+   * This method does not need to perform any copying of memory.
+   * It simply wraps around the shared buffer.
+   *
+   * \param[in] data_src - pointer to the raw data of the shared memory buffer.
+   * \param[in] nbytes - size of the shared memory buffer.
+   * \param[in] bufferID - ID of the shared memory buffer.
+   */
+  void Frame::wrap_shared_buffer(const void* data_src,
+		  size_t nbytes,
+		  uint64_t bufferID,
+		  int frameID,
+		  OdinData::IpcChannel *relCh)
+  {
+	  shared_raw_ = data_src;
+	  shared_size_ = nbytes;
+	  shared_id_ = bufferID;
+	  shared_channel_ = relCh;
+	  shared_frame_id_ = frameID;
+	  shared_memory_ = true;
   }
 
   /** Copy raw data into the frame's data block.
@@ -52,17 +94,19 @@ namespace FrameProcessor
   void Frame::copy_data(const void* data_src, size_t nbytes)
   {
     LOG4CXX_TRACE(logger, "copy_data called with size: "<< nbytes << " bytes");
-    // If we already have a data block then release it
-    if (!raw_){
-      // Take a new data block from the pool
-      raw_ = DataBlockPool::take(blockIndex_, nbytes);
-    } else {
-      LOG4CXX_TRACE(logger, "Data block already exists");
-      DataBlockPool::release(blockIndex_, raw_);
-      raw_ = DataBlockPool::take(blockIndex_, nbytes);
-    }
-    // Copy the data into the DataBlock
-    raw_->copyData(data_src, nbytes);
+	if (!shared_memory_){
+  	  // If we already have a data block then release it
+	  if (!raw_){
+	    // Take a new data block from the pool
+	    raw_ = DataBlockPool::take(blockIndex_, nbytes);
+	  } else {
+	    LOG4CXX_TRACE(logger, "Data block already exists");
+	    DataBlockPool::release(blockIndex_, raw_);
+	    raw_ = DataBlockPool::take(blockIndex_, nbytes);
+      }
+	  // Copy the data into the DataBlock
+	  raw_->copyData(data_src, nbytes);
+	}
   }
 
   /** Return a void pointer to the raw data.
@@ -74,10 +118,16 @@ namespace FrameProcessor
    */
   const void* Frame::get_data() const
   {
-    if (!raw_){
-      throw std::runtime_error("No data allocated in DataBlock");
+    const void *rPtr = 0;
+    if (shared_memory_){
+      rPtr = shared_raw_;
+    } else {
+      if (!raw_){
+        throw std::runtime_error("No data allocated in DataBlock");
+      }
+      rPtr = raw_->get_data();
     }
-    return raw_->get_data();
+    return rPtr;
   }
 
   /** Returns the size of the raw data.
@@ -86,10 +136,16 @@ namespace FrameProcessor
    */
   size_t Frame::get_data_size() const
   {
-    if (!raw_){
-      throw std::runtime_error("No data allocated in DataBlock");
+    size_t size = 0;
+    if (shared_memory_){
+      size = shared_size_;
+    } else {
+      if (!raw_){
+        throw std::runtime_error("No data allocated in DataBlock");
+      }
+      size = raw_->getSize();
     }
-    return raw_->getSize();
+    return size;
   }
 
   /** Sets a particular set of dimension values.

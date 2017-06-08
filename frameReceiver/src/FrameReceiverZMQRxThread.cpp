@@ -58,10 +58,12 @@ void FrameReceiverZMQRxThread::handle_receive_socket()
 {
     // Receive a message from the main thread channel and place it directly into the
 	// provided memory buffer
-    size_t msg_len = skt_channel_.recv_raw(frame_decoder_->get_next_message_buffer());
+	void* nextMessageBuffer = frame_decoder_->get_next_message_buffer();
+
+    size_t msg_len = skt_channel_.recv_raw(nextMessageBuffer);
 
 	LOG4CXX_DEBUG_LEVEL(3, logger_, "RX thread received " << msg_len << " bytes on IPC channel, payload buffer address "
-			<< frame_decoder_->get_next_message_buffer());
+			<< nextMessageBuffer);
 
 	FrameDecoder::FrameReceiveState frame_receive_state = frame_decoder_->process_message(msg_len);
 

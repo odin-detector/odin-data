@@ -304,7 +304,7 @@ void configureDetector(boost::shared_ptr<FrameProcessorController> fwc, po::vari
   fwc->configure(cfg, reply);
 }
 
-void configureHDF5(boost::shared_ptr<FrameProcessorController> fwc, string input) {
+void configureHDF5(boost::shared_ptr<FrameProcessorController> fwc, po::variables_map vm) {
   OdinData::IpcMessage cfg;
   OdinData::IpcMessage reply;
   
@@ -312,7 +312,9 @@ void configureHDF5(boost::shared_ptr<FrameProcessorController> fwc, string input
   cfg.set_param<string>("plugin/load/index", "hdf");
   cfg.set_param<string>("plugin/load/name", "FileWriterPlugin");
   cfg.set_param<string>("plugin/connect/index", "hdf");
-  cfg.set_param<string>("plugin/connect/connection", input);
+  cfg.set_param<string>("plugin/connect/connection", vm["detector"].as<string>());
+  cfg.set_param<unsigned int>("hdf/process/number", vm["processes"].as<unsigned int>());
+  cfg.set_param<unsigned int>("hdf/process/rank", vm["rank"].as<unsigned int>());
   
   fwc->configure(cfg, reply);
 }
@@ -373,7 +375,7 @@ void configureFileWriter(boost::shared_ptr<FrameProcessorController> fwc, po::va
 
 void configurePlugins(boost::shared_ptr<FrameProcessorController> fwc, po::variables_map vm) {
   configureDetector(fwc, vm);
-  configureHDF5(fwc, vm["detector"].as<string>());
+  configureHDF5(fwc, vm);
 
   std::vector<string> datasets = vm["datasets"].as<std::vector<string> >();
   if (datasets.size() > 1) {
