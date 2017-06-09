@@ -27,25 +27,26 @@ using namespace log4cxx::helpers;
 
 namespace FrameReceiver
 {
-    class FrameDecoderZMQ : public FrameDecoder
-    {
-    public:
+class FrameDecoderZMQ : public FrameDecoder
+{
+public:
 
-        FrameDecoderZMQ() :
-        	FrameDecoder()
-        {
-        };
+  FrameDecoderZMQ() :
+      FrameDecoder()
+  {
+  };
 
-        virtual ~FrameDecoderZMQ() = 0;
+  virtual ~FrameDecoderZMQ() = 0;
 
-        virtual void* get_next_message_buffer(void) = 0;
-        virtual FrameReceiveState process_message(size_t bytes_received) = 0;
-        virtual void frame_meta_data(int meta) = 0;
+  virtual void* get_next_message_buffer(void) = 0;
+  virtual FrameReceiveState process_message(size_t bytes_received) = 0;
+  virtual void frame_meta_data(int meta) = 0;
 
-    };
+};
 
-    inline FrameDecoderZMQ::~FrameDecoderZMQ() {};
+inline FrameDecoderZMQ::~FrameDecoderZMQ() {};
 
-    typedef boost::shared_ptr<FrameDecoderZMQ> FrameDecoderZMQPtr;
-}
+typedef boost::shared_ptr<FrameDecoderZMQ> FrameDecoderZMQPtr;
+
+} // namespace FrameReceiver
 #endif /* INCLUDE_FRAMEDECODER_ZMQ_H_ */

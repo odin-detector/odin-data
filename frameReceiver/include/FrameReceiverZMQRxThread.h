@@ -21,7 +21,6 @@ using namespace log4cxx::helpers;
 #include "IpcReactor.h"
 #include "SharedBufferManager.h"
 #include "FrameDecoderZMQ.h"
-
 #include "FrameReceiverConfig.h"
 #include "FrameReceiverRxThread.h"
 #include "OdinDataException.h"
@@ -30,25 +29,24 @@ using namespace OdinData;
 
 namespace FrameReceiver
 {
-    class FrameReceiverZMQRxThread : public FrameReceiverRxThread
-    {
-    public:
-        FrameReceiverZMQRxThread(FrameReceiverConfig& config, LoggerPtr& logger,
-                SharedBufferManagerPtr buffer_manager, FrameDecoderPtr frame_decoder,
-                unsigned int tick_period_ms=100);
-        virtual ~FrameReceiverZMQRxThread();
+class FrameReceiverZMQRxThread : public FrameReceiverRxThread
+{
+public:
+  FrameReceiverZMQRxThread(FrameReceiverConfig& config, LoggerPtr& logger,
+                           SharedBufferManagerPtr buffer_manager, FrameDecoderPtr frame_decoder,
+                           unsigned int tick_period_ms=100);
+  virtual ~FrameReceiverZMQRxThread();
 
-    private:
-        void run_specific_service(void);
-        void cleanup_specific_service(void);
+private:
+  void run_specific_service(void);
+  void cleanup_specific_service(void);
 
-        void handle_receive_socket();
+  void handle_receive_socket();
 
-        LoggerPtr          logger_;
-        IpcChannel         skt_channel_;
-        FrameDecoderZMQPtr frame_decoder_;
-    };
+  LoggerPtr          logger_;
+  IpcChannel         skt_channel_;
+  FrameDecoderZMQPtr frame_decoder_;
+};
 
 } // namespace FrameReceiver
-
 #endif /* FRAMERECEIVERRXTHREAD_H_ */
