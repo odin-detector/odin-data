@@ -12,26 +12,27 @@
 namespace FrameProcessor
 {
 
-const std::string FileWriterPlugin::CONFIG_PROCESS             = "process";
-const std::string FileWriterPlugin::CONFIG_PROCESS_NUMBER      = "number";
-const std::string FileWriterPlugin::CONFIG_PROCESS_RANK        = "rank";
+const std::string FileWriterPlugin::CONFIG_PROCESS                        = "process";
+const std::string FileWriterPlugin::CONFIG_PROCESS_NUMBER                 = "number";
+const std::string FileWriterPlugin::CONFIG_PROCESS_RANK                   = "rank";
 
-const std::string FileWriterPlugin::CONFIG_FILE                = "file";
-const std::string FileWriterPlugin::CONFIG_FILE_NAME           = "name";
-const std::string FileWriterPlugin::CONFIG_FILE_PATH           = "path";
+const std::string FileWriterPlugin::CONFIG_FILE                           = "file";
+const std::string FileWriterPlugin::CONFIG_FILE_NAME                      = "name";
+const std::string FileWriterPlugin::CONFIG_FILE_PATH                      = "path";
 
-const std::string FileWriterPlugin::CONFIG_DATASET             = "dataset";
-const std::string FileWriterPlugin::CONFIG_DATASET_CMD         = "cmd";
-const std::string FileWriterPlugin::CONFIG_DATASET_NAME        = "name";
-const std::string FileWriterPlugin::CONFIG_DATASET_TYPE        = "datatype";
-const std::string FileWriterPlugin::CONFIG_DATASET_DIMS        = "dims";
-const std::string FileWriterPlugin::CONFIG_DATASET_CHUNKS      = "chunks";
-const std::string FileWriterPlugin::CONFIG_DATASET_COMPRESSION = "compression";
+const std::string FileWriterPlugin::CONFIG_DATASET                        = "dataset";
+const std::string FileWriterPlugin::CONFIG_DATASET_CMD                    = "cmd";
+const std::string FileWriterPlugin::CONFIG_DATASET_NAME                   = "name";
+const std::string FileWriterPlugin::CONFIG_DATASET_TYPE                   = "datatype";
+const std::string FileWriterPlugin::CONFIG_DATASET_DIMS                   = "dims";
+const std::string FileWriterPlugin::CONFIG_DATASET_CHUNKS                 = "chunks";
+const std::string FileWriterPlugin::CONFIG_DATASET_COMPRESSION            = "compression";
 
-const std::string FileWriterPlugin::CONFIG_FRAMES              = "frames";
-const std::string FileWriterPlugin::CONFIG_MASTER_DATASET      = "master";
-const std::string FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT   = "offset";
-const std::string FileWriterPlugin::CONFIG_WRITE               = "write";
+const std::string FileWriterPlugin::CONFIG_FRAMES                         = "frames";
+const std::string FileWriterPlugin::CONFIG_MASTER_DATASET                 = "master";
+const std::string FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT              = "offset/value";
+const std::string FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT_ACTIVE_FRAME = "offset/active_frame";
+const std::string FileWriterPlugin::CONFIG_WRITE                          = "write";
 
 herr_t hdf5_error_cb(unsigned n, const H5E_error2_t *err_desc, void* client_data)
 {
@@ -144,11 +145,11 @@ void FileWriterPlugin::writeFrame(const Frame& frame) {
     HDF5Dataset_t& dset = this->get_hdf5_dataset(frame.get_dataset_name());
 
     hsize_t frame_offset = 0;
-    frame_offset = this->getFrameOffset(frame_no);
+    frame_offset = this->calculateFrameOffset(frame_no);
     this->extend_dataset(dset, frame_offset + 1);
 
-    LOG4CXX_DEBUG(logger_, "Writing frame offset=" << frame_no  << " (" << frame_offset << ")"
-    		             << " dset=" << frame.get_dataset_name());
+    LOG4CXX_DEBUG(logger_, "Writing frame " << frame_no  << " to offset " << frame_offset <<
+                           " of dataset " << frame.get_dataset_name());
 
     // Set the offset
     std::vector<hsize_t>offset(dset.dataset_dimensions.size());
@@ -209,7 +210,7 @@ void FileWriterPlugin::writeSubFrames(const Frame& frame) {
     HDF5Dataset_t& dset = this->get_hdf5_dataset(frame.get_dataset_name());
 
     hsize_t frame_offset = 0;
-    frame_offset = this->getFrameOffset(frame_no);
+    frame_offset = this->calculateFrameOffset(frame_no);
     LOG4CXX_DEBUG(logger_, "Frame offset: " << frame_offset);
 
     this->extend_dataset(dset, frame_offset + 1);
@@ -407,13 +408,11 @@ FileWriterPlugin::HDF5Dataset_t& FileWriterPlugin::get_hdf5_dataset(const std::s
  * \param[in] frame_no - Frame number of the frame.
  * \return - the dataset offset for the frame number.
  */
-size_t FileWriterPlugin::getFrameOffset(size_t frame_no) const {
+size_t FileWriterPlugin::calculateFrameOffset(size_t frame_no) {
     size_t frame_offset = this->adjustFrameOffset(frame_no);
-
     if (this->concurrent_processes_ > 1) {
         // Check whether this frame should really be in this process
-        // Note: this expects the frame numbering from HW/FW to start at 1, not 0!
-        if ( (((frame_no-1) % this->concurrent_processes_) - this->concurrent_rank_) != 0) {
+        if (frame_offset % this->concurrent_processes_ != this->concurrent_rank_) {
             LOG4CXX_WARN(logger_, "Unexpected frame: " << frame_no
                                 << " in this process rank: "
                                 << this->concurrent_rank_);
@@ -426,41 +425,42 @@ size_t FileWriterPlugin::getFrameOffset(size_t frame_no) const {
     return frame_offset;
 }
 
-/** Adjust the incoming frame number with an offset
- *
- * This is a hacky work-around a missing feature in the Mezzanine
- * firmware: the frame number is never reset and is ever incrementing.
- * The file writer can deal with it, by inserting the frame right at
- * the end of a very large dataset (fortunately sparsely written to disk).
- *
- * This function latches the first frame number and subtracts this number
- * from every incoming frame.
+/** Adjust the incoming frame number with the current offset
  *
  * Throws a std::range_error if a frame is received which has a smaller
- *   frame number than the initial frame used to set the offset.
+ * frame number than the current offset.
  *
  * Returns the dataset offset for frame number (frame_no)
  */
-size_t FileWriterPlugin::adjustFrameOffset(size_t frame_no) const {
-    size_t frame_offset = 0;
+size_t FileWriterPlugin::adjustFrameOffset(size_t frame_no) {
     if (frame_no < this->frame_offset_adjustment_) {
-        // Deal with a frame arriving after the very first frame
-        // which was used to set the offset: throw a range error
-        throw std::range_error("Frame out of order at start causing negative file offset");
+        throw std::range_error("Frame offset adjustment invalid causing negative file offset");
+    }
+
+    if (!this->offset_queue_.empty() && frame_no >= this->offset_queue_.front().first) {
+        // We have reached the frame number for the next offset adjustment to be applied
+        this->applyFrameOffsetAdjustment();
+        LOG4CXX_DEBUG(logger_, "Next frame offset adjustment applied.");
     }
 
     // Normal case: apply offset
     LOG4CXX_DEBUG(logger_, "Raw frame number: " << frame_no);
     LOG4CXX_DEBUG(logger_, "Frame offset adjustment: " << frame_offset_adjustment_);
-    frame_offset = frame_no - this->frame_offset_adjustment_;
-    return frame_offset;
+    return frame_no - this->frame_offset_adjustment_;
 }
 
-/** Set frame offset
+/** Queue a frame offset adjustment
+ */
+void FileWriterPlugin::queueFrameOffsetAdjustment(size_t active_frame_no, size_t offset) {
+  this->offset_queue_.push(std::pair<size_t, size_t>(active_frame_no, offset));
+}
+
+/** Apply the next frame offset adjustment from the queue and remove it
  *
  */
-void FileWriterPlugin::setFrameOffsetAdjustment(size_t frame_no) {
-    this->frame_offset_adjustment_ = frame_no;
+void FileWriterPlugin::applyFrameOffsetAdjustment() {
+  this->frame_offset_adjustment_ = this->offset_queue_.front().second;
+  this->offset_queue_.pop();
 }
 
 /** Extend the HDF5 dataset ready for new data
@@ -646,11 +646,25 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
     masterFrame_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_MASTER_DATASET);
   }
 
-  // Check if we are setting the frame offset adjustment
+  // Check if we are setting a frame offset adjustment
   if (config.has_param(FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT)) {
-    LOG4CXX_DEBUG(logger_, "Setting frame offset adjustment to "
-                           << config.get_param<int>(FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT));
-    frame_offset_adjustment_ = (size_t)config.get_param<int>(FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT);
+    size_t adjustment = config.get_param<size_t>(FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT);
+    size_t active_frame;
+    if (config.has_param(FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT_ACTIVE_FRAME)) {
+      // This offset will start from a specific frame
+      active_frame = config.get_param<size_t>(FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT_ACTIVE_FRAME);
+      if (active_frame < adjustment) {
+          LOG4CXX_ERROR(logger_, "Invalid offset adjustment ignored."
+                                 "Adjustment of " << adjustment << " starting from " << active_frame <<
+                                 " would cause a negative offset.")
+          throw std::runtime_error("Invalid offset adjustment would cause negative offset");
+      }
+    }
+    else {
+      // This frame is the new start of the dataset - write from the beginning once we get this
+      active_frame = adjustment;
+    }
+    this->queueFrameOffsetAdjustment(active_frame, adjustment);
   }
 
   // Final check is to start or stop writing
