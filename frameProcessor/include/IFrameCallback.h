@@ -23,48 +23,48 @@ using namespace log4cxx::helpers;
 
 namespace FrameProcessor
 {
-  /** Interface to provide producer/consumer base processing of Frame objects.
+/** Interface to provide producer/consumer base processing of Frame objects.
+ *
+ * The IFrameCallback class is a pure virtual class (interface) that must be
+ * subclassed and the callback method overridden for use. It provides a WorkQueue
+ * for Frame object pointers that allow plugin chains to be created which can
+ * each process the Frame object within their own thread.
+ */
+class IFrameCallback
+{
+public:
+  IFrameCallback();
+  virtual ~IFrameCallback();
+  boost::shared_ptr<WorkQueue<boost::shared_ptr<Frame> > > getWorkQueue();
+  void start();
+  void stop();
+  bool isWorking() const;
+  void confirmRegistration(const std::string& name);
+  void confirmRemoval(const std::string& name);
+
+  /** Callback for when ever a new Frame is available.
    *
-   * The IFrameCallback class is a pure virtual class (interface) that must be
-   * subclassed and the callback method overridden for use.  It provides a WorkQueue
-   * for Frame object pointers that allow plugin chains to be created which can
-   * each process the Frame object within their own thread.
+   * Pure virtual method, must be implemented by subclass. This will be called
+   * whenever a new Frame is placed onto the WorkQueue.
+   *
+   * \param[in] frame - pointer to Frame object ready for processing by the IFrameCallback subclass.
    */
-  class IFrameCallback
-  {
-  public:
-    IFrameCallback();
-    virtual ~IFrameCallback();
-    boost::shared_ptr<WorkQueue<boost::shared_ptr<Frame> > > getWorkQueue();
-    void start();
-    void stop();
-    bool isWorking() const;
-    void confirmRegistration(const std::string& name);
-    void confirmRemoval(const std::string& name);
-  
-    /** Callback for when ever a new Frame is available.
-     *
-     * Pure virtual method, must be implemented by subclass.  This will be called
-     * whenever a new Frame is placed onto the WorkQueue.
-     *
-     * \param[in] frame - pointer to Frame object ready for processing by the IFrameCallback subclass.
-     */
-    virtual void callback(boost::shared_ptr<Frame> frame) = 0;
+  virtual void callback(boost::shared_ptr<Frame> frame) = 0;
 
-  private:
-    /** Pointer to logger */
-    LoggerPtr logger_;
-    /** Pointer to worker queue thread */
-    boost::thread *thread_;
-    /** Pointer to WorkQueue for Frame object pointers */
-    boost::shared_ptr<WorkQueue<boost::shared_ptr<Frame> > > queue_;
-    /** Is this IFrameCallback working */
-    bool working_;
-    /** Map of confirmed registrations to this worker queue */
-    std::map<std::string, std::string> registrations_;
+private:
+  /** Pointer to logger */
+  LoggerPtr logger_;
+  /** Pointer to worker queue thread */
+  boost::thread *thread_;
+  /** Pointer to WorkQueue for Frame object pointers */
+  boost::shared_ptr<WorkQueue<boost::shared_ptr<Frame> > > queue_;
+  /** Is this IFrameCallback working */
+  bool working_;
+  /** Map of confirmed registrations to this worker queue */
+  std::map<std::string, std::string> registrations_;
 
-    void workerTask();
-  };
+  void workerTask();
+};
 
 } /* namespace FrameProcessor */
 

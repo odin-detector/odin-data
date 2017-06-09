@@ -12,7 +12,7 @@ add_executable(frameProcessorTest ${TEST_SOURCES})
 
 # Define libraries to link against
 target_link_libraries(frameProcessorTest
-	    ${LIB_PROCESSOR}
+        ${LIB_PROCESSOR}
         ${Boost_LIBRARIES}
         ${LOG4CXX_LIBRARIES}
         ${ZEROMQ_LIBRARIES}
@@ -24,6 +24,6 @@ target_link_libraries(frameProcessorTest
 if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
   # librt required for timing functions
   find_library(REALTIME_LIBRARY
-	  	NAMES rt)
+               NAMES rt)
   target_link_libraries( frameProcessorTest ${REALTIME_LIBRARY} )
 endif()

@@ -45,7 +45,7 @@ install(TARGETS Hdf5Plugin DESTINATION lib)
 if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
   # librt required for timing functions
   find_library(REALTIME_LIBRARY
-	  	NAMES rt)
+               NAMES rt)
   target_link_libraries( frameProcessor ${REALTIME_LIBRARY} )
 endif()
 
