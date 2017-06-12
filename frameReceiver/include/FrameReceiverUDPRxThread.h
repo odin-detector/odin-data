@@ -21,7 +21,6 @@ using namespace log4cxx::helpers;
 #include "IpcReactor.h"
 #include "SharedBufferManager.h"
 #include "FrameDecoderUDP.h"
-
 #include "FrameReceiverConfig.h"
 #include "FrameReceiverRxThread.h"
 #include "OdinDataException.h"
@@ -30,26 +29,25 @@ using namespace OdinData;
 
 namespace FrameReceiver
 {
-    class FrameReceiverUDPRxThread : public FrameReceiverRxThread
-    {
-    public:
-        FrameReceiverUDPRxThread(FrameReceiverConfig& config, LoggerPtr& logger,
-                SharedBufferManagerPtr buffer_manager, FrameDecoderPtr frame_decoder,
-                unsigned int tick_period_ms=100);
-        virtual ~FrameReceiverUDPRxThread();
+class FrameReceiverUDPRxThread : public FrameReceiverRxThread
+{
+public:
+  FrameReceiverUDPRxThread(FrameReceiverConfig& config, LoggerPtr& logger,
+                           SharedBufferManagerPtr buffer_manager, FrameDecoderPtr frame_decoder,
+                           unsigned int tick_period_ms=100);
+  virtual ~FrameReceiverUDPRxThread();
 
-    private:
+private:
 
-        void run_specific_service(void);
-        void cleanup_specific_service(void);
+  void run_specific_service(void);
+  void cleanup_specific_service(void);
 
-        void handle_receive_socket(int socket_fd, int recv_port);
+  void handle_receive_socket(int socket_fd, int recv_port);
 
-        LoggerPtr              logger_;
-        FrameDecoderUDPPtr     frame_decoder_;
+  LoggerPtr              logger_;
+  FrameDecoderUDPPtr     frame_decoder_;
 
-    };
+};
 
 } // namespace FrameReceiver
-
 #endif /* FRAMERECEIVERRXTHREAD_H_ */
