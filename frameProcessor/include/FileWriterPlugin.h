@@ -75,6 +75,26 @@ public:
     std::vector<hsize_t> dataset_offsets;
   };
 
+  /**
+   * Struct to keep track of an acquisition's configuration.
+   */
+  struct Acquisition
+  {
+    /** Name of master frame. When a master frame is received frame numbers increment */
+    std::string masterFrame_;
+    /** Number of frames to write to file */
+    size_t framesToWrite_;
+    /** Path of the file to write to */
+    std::string filePath_;
+    /** Name of the file to write to */
+    std::string fileName_;
+    /** Identifier for the acquisition - value sent from a detector/control to be used to
+     * identify frames, config or anything else to this acquisition. Used to name the file */
+    std::string acquisitionID_;
+    /** Map of dataset definitions for this acquisition */
+    std::map<std::string, FileWriterPlugin::DatasetDefinition> dataset_defs_;
+  };
+
   explicit FileWriterPlugin();
   virtual ~FileWriterPlugin();
 
@@ -98,6 +118,7 @@ public:
   bool checkForHdfErrors();
   std::vector<std::string> readHdfErrors();
   void clearHdfErrors();
+  std::string getMetaHeader();
 
 private:
   /** Configuration constant for process related items */
@@ -137,6 +158,8 @@ private:
   static const std::string CONFIG_WRITE;
   /** Configuration constant for the frame offset */
   static const std::string CONFIG_OFFSET_ADJUSTMENT;
+  /** Configuration constant for the acquisition id */
+  static const std::string ACQUISITION_ID;
 
   /** Filter definition to write datasets with LZ4 compressed data */
   static const H5Z_filter_t LZ4_FILTER = (H5Z_filter_t)32004;
@@ -156,6 +179,7 @@ private:
 
   void processFrame(boost::shared_ptr<Frame> frame);
   size_t getDatasetFrames(const std::string dset_name);
+  void checkAcquisitionIDInFrame(boost::shared_ptr<Frame> frame);
 
   /** Pointer to logger */
   LoggerPtr logger_;
@@ -163,16 +187,8 @@ private:
   boost::recursive_mutex mutex_;
   /** Is this plugin writing frames to file? */
   bool writing_;
-  /** Name of master frame. When a master frame is received frame numbers increment */
-  std::string masterFrame_;
-  /** Number of frames to write to file */
-  size_t framesToWrite_;
   /** Number of frames that have been written to file */
   size_t framesWritten_;
-  /** Path of the file to write to */
-  std::string filePath_;
-  /** Name of the file to write to */
-  std::string fileName_;
   /** Number of concurrent file writers executing */
   size_t concurrent_processes_;
   /** Rank of this file writer */
@@ -187,8 +203,10 @@ private:
   std::vector<std::string> hdf5Errors_;
   /** Map of datasets that are being written to */
   std::map<std::string, FileWriterPlugin::HDF5Dataset_t> hdf5_datasets_;
-  /** Map of dataset definitions for this file writer instance */
-  std::map<std::string, FileWriterPlugin::DatasetDefinition> dataset_defs_;
+  /** Details of the acquisition currently being written */
+  Acquisition currentAcquisition_;
+  /** Details of the next acquisition to be written */
+  Acquisition nextAcquisition_;
 };
 
 /**
