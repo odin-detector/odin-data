@@ -15,8 +15,6 @@ const std::string FrameProcessorController::META_RX_INTERFACE        = "inproc:/
 
 const std::string FrameProcessorController::CONFIG_SHUTDOWN          = "shutdown";
 
-const std::string FrameProcessorController::CONFIG_STATUS            = "status";
-
 const std::string FrameProcessorController::CONFIG_FR_SHARED_MEMORY  = "fr_shared_mem";
 const std::string FrameProcessorController::CONFIG_FR_RELEASE        = "fr_release_cnxn";
 const std::string FrameProcessorController::CONFIG_FR_READY          = "fr_ready_cnxn";
@@ -99,15 +97,30 @@ void FrameProcessorController::handleCtrlChannel()
   // Parse and handle the message
   try {
     OdinData::IpcMessage ctrlMsg(ctrlMsgEncoded.c_str());
-    OdinData::IpcMessage replyMsg(OdinData::IpcMessage::MsgTypeAck, OdinData::IpcMessage::MsgValCmdConfigure);
+    OdinData::IpcMessage replyMsg;  // Instantiate default IpmMessage
+    replyMsg.set_msg_val(ctrlMsg.get_msg_val());
 
     if ((ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) &&
         (ctrlMsg.get_msg_val()  == OdinData::IpcMessage::MsgValCmdConfigure)) {
+      replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
       this->configure(ctrlMsg, replyMsg);
-      LOG4CXX_DEBUG(logger_, "Control thread reply message: " << replyMsg.encode());
+      LOG4CXX_DEBUG(logger_, "Control thread reply message (configure): "
+                             << replyMsg.encode());
       ctrlChannel_.send(replyMsg.encode());
-    } else {
+    }
+    else if ((ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) &&
+             (ctrlMsg.get_msg_val() == OdinData::IpcMessage::MsgValCmdStatus)) {
+      replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
+      this->provideStatus(replyMsg);
+      LOG4CXX_DEBUG(logger_, "Control thread reply message (status): "
+                             << replyMsg.encode());
+      ctrlChannel_.send(replyMsg.encode());
+    }
+    else {
       LOG4CXX_ERROR(logger_, "Control thread got unexpected message: " << ctrlMsgEncoded);
+      replyMsg.set_param("error", "Invalid control message: " + ctrlMsgEncoded);
+      replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeNack);
+      ctrlChannel_.send(replyMsg.encode());
     }
   }
   catch (OdinData::IpcMessageException& e)
@@ -203,6 +216,15 @@ void FrameProcessorController::callback(boost::shared_ptr<Frame> frame) {
   }
 }
 
+void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply)
+{
+  // Loop over plugins, checking for configuration messages
+  std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
+  for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
+    iter->second->status(reply);
+  }
+}
+
 /**
  * Set configuration options for the FrameProcessorController.
  *
@@ -242,15 +264,6 @@ void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData:
   // Check if we are being asked to shutdown
   if (config.has_param(FrameProcessorController::CONFIG_SHUTDOWN)) {
     exitCondition_.notify_all();
-  }
-
-  // Check if we are being asked to shutdown
-  if (config.has_param(FrameProcessorController::CONFIG_STATUS)) {
-    // Loop over plugins, checking for configuration messages
-    std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
-    for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
-      iter->second->status(reply);
-    }
   }
 
   if (config.has_param(FrameProcessorController::CONFIG_CTRL_ENDPOINT)) {
