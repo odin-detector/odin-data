@@ -8,66 +8,64 @@
 #ifndef IPCCHANNEL_H_
 #define IPCCHANNEL_H_
 
-#include "zmq/zmq.hpp"
 #include <iostream>
+
+#include "zmq/zmq.hpp"
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
 namespace OdinData
 {
 
-    class IpcContext
-    {
-    public:
-        static IpcContext& Instance(void);
-        zmq::context_t& get(void);
+class IpcContext
+{
+public:
+  static IpcContext& Instance(void);
+  zmq::context_t& get(void);
 
-    private:
-        IpcContext(int io_threads=1);
-        IpcContext(const IpcContext&);
-        IpcContext& operator=(const IpcContext&);
+private:
+  IpcContext(int io_threads=1);
+  IpcContext(const IpcContext&);
+  IpcContext& operator=(const IpcContext&);
 
-        zmq::context_t zmq_context_;
-    };
+  zmq::context_t zmq_context_;
+};
 
-    class IpcChannel
-    {
-    public:
+class IpcChannel
+{
+public:
 
-        IpcChannel(int type);
-        ~IpcChannel();
-        void bind(const char* endpoint);
-        void bind(std::string& endpoint);
-        void connect(const char* endpoint);
-        void connect(std::string& endpoint);
+  IpcChannel(int type);
+  ~IpcChannel();
+  void bind(const char* endpoint);
+  void bind(std::string& endpoint);
+  void connect(const char* endpoint);
+  void connect(std::string& endpoint);
 
-        void subscribe(const char* topic);
+  void subscribe(const char* topic);
 
-        void send(std::string& message_str, int flags = 0);
-        void send(const char* message, int flags = 0);
-        void send(size_t msg_size, void *message, int flags = 0);
+  void send(std::string& message_str, int flags = 0);
+  void send(const char* message, int flags = 0);
+  void send(size_t msg_size, void *message, int flags = 0);
 
-        const std::string recv();
-        const std::size_t recv_raw(void *dPtr);
+  const std::string recv();
+  const std::size_t recv_raw(void *dPtr);
 
-        void setsockopt(int option_, const void *optval_, size_t optvallen_);
+  void setsockopt(int option_, const void *optval_, size_t optvallen_);
 
-        bool eom(void);
-        bool poll(long timeout_ms = -1);
-        void close(void);
+  bool eom(void);
+  bool poll(long timeout_ms = -1);
+  void close(void);
 
-        friend class IpcReactor;
+  friend class IpcReactor;
 
-    private:
+private:
 
-        IpcContext& context_;
-        zmq::socket_t socket_;
+  IpcContext& context_;
+  zmq::socket_t socket_;
 
 
-    };
+};
 
 } // namespace OdinData
-
-
-
 #endif /* IPCCHANNEL_H_ */

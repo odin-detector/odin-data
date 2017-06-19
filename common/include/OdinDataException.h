@@ -13,39 +13,36 @@
 
 namespace OdinData
 {
-    //! OdinDataException - custom exception class implementing "what" for error string
-    class OdinDataException : public std::exception
-    {
-    public:
+//! OdinDataException - custom exception class implementing "what" for error string
+class OdinDataException : public std::exception
+{
+public:
 
-        //! Create OdinDataException with no message
-        OdinDataException(void) throw() :
-            what_("")
-        { };
+  //! Create OdinDataException with no message
+  OdinDataException(void) throw() :
+      what_("")
+  { };
 
-        //! Creates OdinDataException with informational message
-        OdinDataException(const std::string what) throw() :
-            what_(what)
-        {};
+  //! Creates OdinDataException with informational message
+  OdinDataException(const std::string what) throw() :
+      what_(what)
+  {};
 
-        //! Returns the content of the informational message
-        virtual const char* what(void) const throw()
-        {
-            return what_.c_str();
-        };
+  //! Returns the content of the informational message
+  virtual const char* what(void) const throw()
+  {
+      return what_.c_str();
+  };
 
-        //! Destructor
-        ~OdinDataException(void) throw() {};
+  //! Destructor
+  ~OdinDataException(void) throw() {};
 
-    private:
+private:
 
-        // Member variables
-        const std::string what_;  //!< Informational message about the exception
+  // Member variables
+  const std::string what_;  //!< Informational message about the exception
 
-    }; // OdinDataException
+};
 
 } // namespace OdinData
-
-
-
 #endif /* ODINDATAEXCEPTION_H_ */
