@@ -10,36 +10,36 @@
 #include <iostream>
 
 // Interrupt signal handler
-void intHandler(int sig)
+void intHandler (int sig)
 {
-	FrameReceiver::FrameReceiverApp::stop();
+  FrameReceiver::FrameReceiverApp::stop ();
 }
 
 // Main application entry point
 
-int main(int argc, char** argv)
+int main (int argc, char** argv)
 {
-	int rc = 0;
+  int rc = 0;
 
-	// Trap Ctrl-C and pass to TestThroughputMulti
-	signal(SIGINT, intHandler);
-	signal(SIGTERM, intHandler);
+  // Trap Ctrl-C and pass to TestThroughputMulti
+  signal (SIGINT, intHandler);
+  signal (SIGTERM, intHandler);
 
-	// Create a default basic logger configuration, which can be overridden by command-line option later
-	BasicConfigurator::configure();
+  // Create a default basic logger configuration, which can be overridden by command-line option later
+  BasicConfigurator::configure ();
 
-	// Create a FrameReceiverApp instance
-	FrameReceiver::FrameReceiverApp fr_instance;
+  // Create a FrameReceiverApp instance
+  FrameReceiver::FrameReceiverApp fr_instance;
 
-	// Parse command line arguments and set up node configuration
-	rc = fr_instance.parse_arguments(argc, argv);
+  // Parse command line arguments and set up node configuration
+  rc = fr_instance.parse_arguments (argc, argv);
 
-	if (rc == 0)
-	{
-        // Run the instance
-        fr_instance.run();
-	}
+  if (rc == 0)
+  {
+    // Run the instance
+    fr_instance.run ();
+  }
 
-	return rc;
+  return rc;
 
 }
