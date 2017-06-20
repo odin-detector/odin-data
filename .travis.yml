@@ -22,6 +22,7 @@ matrix:
     cache:
       directories:
       - "$HOME/hdf5-1.8.16"
+      - "$HOME/.cache/pip"
 install:
 - mkdir -p build
 - mkdir -p $INSTALL_PREFIX
