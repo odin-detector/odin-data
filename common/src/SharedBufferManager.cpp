@@ -21,6 +21,12 @@ SharedBufferManager::SharedBufferManager(const std::string& shared_mem_name, con
     manager_hdr_(0)
 {
 
+  // Check that the buffer size specified is non-zero
+  if (buffer_size == 0)
+  {
+    throw SharedBufferManagerException("Zero shared memory buffer size specified");
+  }
+
   // Set the size of the shared memory object
   shared_mem_.truncate(sizeof(Header) + shared_mem_size_);
 

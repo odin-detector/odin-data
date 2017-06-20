@@ -159,4 +159,15 @@ BOOST_AUTO_TEST_CASE( BufferBiggerThanSharedMemTest)
                     OdinData::SharedBufferManagerException);
 }
 
+BOOST_AUTO_TEST_CASE( BufferSizeSetToZeroTest)
+{
+  BOOST_CHECK_THROW(OdinData::SharedBufferManager illegal_manager("ZeroBufferSize", 100, 0),
+                    OdinData::SharedBufferManagerException);
+}
+
+BOOST_AUTO_TEST_CASE(SharedMemSizeSetToZeroTest)
+{
+  BOOST_CHECK_THROW(OdinData::SharedBufferManager illegal_manager("ZeroSharedMemSize", 0, 1000),
+                    OdinData::SharedBufferManagerException);
+}
 BOOST_AUTO_TEST_SUITE_END();

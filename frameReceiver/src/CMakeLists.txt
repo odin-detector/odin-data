@@ -16,3 +16,6 @@ target_link_libraries(frameReceiver ${COMMON_LIBRARY} ${Boost_LIBRARIES} ${LOG4C
 
 install(TARGETS frameReceiver RUNTIME DESTINATION bin)
 
+add_library(DummyUDPFrameDecoder SHARED DummyUDPFrameDecoder.cpp DummyUDPFrameDecoderLib.cpp)
+target_link_libraries(DummyUDPFrameDecoder ${COMMON_LIBRARY} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES})
+install(TARGETS DummyUDPFrameDecoder DESTINATION lib)
