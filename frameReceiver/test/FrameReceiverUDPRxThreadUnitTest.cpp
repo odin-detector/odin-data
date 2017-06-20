@@ -10,12 +10,11 @@
 #include "FrameReceiverUDPRxThread.h"
 #include "IpcMessage.h"
 #include "SharedBufferManager.h"
-#include "DummyFrameDecoderUDP.h"
-
 #include <log4cxx/logger.h>
 #include <log4cxx/consoleappender.h>
 #include <log4cxx/basicconfigurator.h>
 #include <log4cxx/simplelayout.h>
+#include "../include/DummyUDPFrameDecoder.h"
 
 namespace FrameReceiver
 {
@@ -47,7 +46,7 @@ public:
       rx_channel(ZMQ_PAIR),
       logger(log4cxx::Logger::getLogger("FrameReceiverRxThreadUnitTest")),
       proxy(config),
-      frame_decoder(new FrameReceiver::DummyFrameDecoderUDP()),
+      frame_decoder(new FrameReceiver::DummyUDPFrameDecoder()),
       buffer_manager(new OdinData::SharedBufferManager("TestSharedBuffer", 10000, 1000))
   {
 

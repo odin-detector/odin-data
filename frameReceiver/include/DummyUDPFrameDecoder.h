@@ -17,11 +17,11 @@
 namespace FrameReceiver
 {
 
-class DummyFrameDecoderUDP : public FrameDecoderUDP
+class DummyUDPFrameDecoder : public FrameDecoderUDP
 {
 public:
-  DummyFrameDecoderUDP();
-  ~DummyFrameDecoderUDP();
+  DummyUDPFrameDecoder();
+  ~DummyUDPFrameDecoder();
 
   void init(LoggerPtr& logger, bool enable_packet_logging=false, unsigned int frame_timeout_ms=1000);
 

@@ -437,9 +437,9 @@ void FrameReceiverApp::initialise_frame_decoder(void)
       libDir += "/";
     }
   }
-  LOG4CXX_INFO(logger_, "Loading decoder libraries from " + libDir);
   std::string libName = "lib" + config_.sensor_type_ + "FrameDecoder.so";
   std::string clsName = config_.sensor_type_ + "FrameDecoder";
+  LOG4CXX_INFO(logger_, "Loading decoder plugin " << clsName << " from " << libDir << libName);
 
   try {
     frame_decoder_ = OdinData::ClassLoader<FrameDecoder>::load_class(clsName, libDir + libName);
