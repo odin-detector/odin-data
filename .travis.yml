@@ -33,8 +33,6 @@ install:
 - make install
 - HDF5_DIR=$HDF5_ROOT pip install --user h5py
 - pip install --user -r $PYTHONPATH/requirements-travis.txt
-- ls -l $HOME/.cache/pip
-- ls -l $HOME/.local/lib/python2.7/site-packages
 script:
 - bin/frameReceiverTest --log_level=all
 - bin/frameProcessorTest --log_level=all
