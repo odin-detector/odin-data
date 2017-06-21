@@ -23,6 +23,7 @@ matrix:
       directories:
       - "$HOME/hdf5-1.8.16"
       - "$HOME/.cache/pip"
+      - "$HOME/.local/lib"
 install:
 - mkdir -p build
 - mkdir -p $INSTALL_PREFIX
@@ -33,6 +34,7 @@ install:
 - HDF5_DIR=$HDF5_ROOT pip install --user h5py
 - pip install --user -r $PYTHONPATH/requirements-travis.txt
 - ls -l $HOME/.cache/pip
+- ls -l $HOME/.local/lib/python2.7/site-packages
 script:
 - bin/frameReceiverTest --log_level=all
 - bin/frameProcessorTest --log_level=all
