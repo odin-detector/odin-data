@@ -281,26 +281,27 @@ void FileWriterPlugin::createDataset(const FileWriterPlugin::DatasetDefinition& 
                                      << chunk_dims[2]);
   prop = H5Pcreate(H5P_DATASET_CREATE);
 
-  /* Enable writing of compressed data */
-  if (definition.compression == "lz4") {
-    LOG4CXX_DEBUG(logger_, "Adding lz4 compression filter");
+  /* Enable defined compression mode */
+  if (definition.compression == no_compression) {
+    LOG4CXX_DEBUG(logger_, "Compression type: None");
+  }
+  else if (definition.compression == lz4){
+    LOG4CXX_DEBUG(logger_, "Compression type: LZ4");
     // Create cd_values for filter to set the LZ4 compression level
     unsigned int cd_values = 3;
     size_t cd_values_length = 1;
     status = H5Pset_filter(prop, LZ4_FILTER, H5Z_FLAG_MANDATORY,
                            cd_values_length, &cd_values);
     assert(status >= 0);
-    LOG4CXX_DEBUG(logger_, "Filter avail: " << H5Zfilter_avail(LZ4_FILTER))
   }
-  else if (definition.compression == "bslz4") {
-    LOG4CXX_DEBUG(logger_, "Adding bit shuffle + lz4 filter");
+  else if (definition.compression == bslz4) {
+    LOG4CXX_DEBUG(logger_, "Compression type: BSLZ4");
     // Create cd_values for filter to set default block size and to enable LZ4
     unsigned int cd_values[2] = {0, 2};
     size_t cd_values_length = 2;
-    status = H5Pset_filter(prop, BS_FILTER, H5Z_FLAG_MANDATORY,
+    status = H5Pset_filter(prop, BSLZ4_FILTER, H5Z_FLAG_MANDATORY,
                            cd_values_length, cd_values);
     assert(status >= 0);
-    LOG4CXX_DEBUG(logger_, "Filter avail: " << H5Zfilter_avail(BS_FILTER))
   }
 
   status = H5Pset_chunk(prop, dset_dims.size(), &chunk_dims.front());
@@ -554,13 +555,14 @@ void FileWriterPlugin::checkFrameValid(boost::shared_ptr<Frame> frame)
 {
   bool invalid = false;
   FileWriterPlugin::DatasetDefinition dataset = this->dataset_defs_[frame->get_dataset_name()];
-  if (frame->get_compression() != "" && frame->get_compression() != dataset.compression) {
+  if (frame->get_compression() >= 0 && frame->get_compression() != dataset.compression) {
     LOG4CXX_ERROR(logger_, "Frame has compression " << frame->get_compression() <<
                            ", expected " << dataset.compression <<
-                           " for dataset " << dataset.name);
+                           " for dataset " << dataset.name <<
+                           " (0: None, 1: LZ4, 2: BSLZ4)");
     invalid = true;
   }
-  if (frame->get_data_type() != -1 && frame->get_data_type() != dataset.pixel) {
+  if (frame->get_data_type() >= 0 && frame->get_data_type() != dataset.pixel) {
     LOG4CXX_ERROR(logger_, "Frame has data type " << frame->get_data_type() <<
                            ", expected " << dataset.pixel <<
                            " for dataset " << dataset.name <<
@@ -844,11 +846,11 @@ void FileWriterPlugin::configureDataset(OdinData::IpcMessage& config, OdinData::
 
       // Check if compression has been specified for the raw data
       if (config.has_param(FileWriterPlugin::CONFIG_DATASET_COMPRESSION)) {
-        dset_def.compression = config.get_param<std::string>(FileWriterPlugin::CONFIG_DATASET_COMPRESSION);
+        dset_def.compression = (FileWriterPlugin::CompressionType)config.get_param<int>(FileWriterPlugin::CONFIG_DATASET_COMPRESSION);
         LOG4CXX_DEBUG(logger_, "Enabling compression: " << dset_def.compression);
       }
       else {
-        dset_def.compression = "none";
+        dset_def.compression = no_compression;
       }
 
       LOG4CXX_DEBUG(logger_, "Creating dataset [" << dset_def.name << "] (" << dset_def.frame_dimensions[0] << ", " << dset_def.frame_dimensions[1] << ")");

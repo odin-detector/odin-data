@@ -42,6 +42,10 @@ public:
    * Enumeration to store the pixel type of the incoming image
    */
   enum PixelType { pixel_raw_8bit, pixel_raw_16bit, pixel_float32 };
+  /**
+   * Enumeration to store the compression type of the incoming image
+   */
+  enum CompressionType { no_compression, lz4, bslz4 };
 
   /**
    * Defines a dataset to be saved in HDF5 format.
@@ -59,7 +63,7 @@ public:
     /** Array of chunking dimensions of the dataset **/
     std::vector<long long unsigned int> chunks;
     /** Compression state of data **/
-    std::string compression;
+    FileWriterPlugin::CompressionType compression;
   };
 
   /**
@@ -141,7 +145,7 @@ private:
   /** Filter definition to write datasets with LZ4 compressed data */
   static const H5Z_filter_t LZ4_FILTER = (H5Z_filter_t)32004;
   /** Filter definition to write datasets with bitshuffle processed data */
-  static const H5Z_filter_t BS_FILTER = (H5Z_filter_t)32008;
+  static const H5Z_filter_t BSLZ4_FILTER = (H5Z_filter_t)32008;
 
   /**
    * Prevent a copy of the FileWriterPlugin plugin.
