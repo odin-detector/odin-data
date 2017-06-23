@@ -506,6 +506,7 @@ void FileWriterPlugin::processFrame(boost::shared_ptr<Frame> frame)
     if (frame->has_parameter("stop")) {
       this->stopWriting();
     } else {
+      checkFrameValid(frame);
       // Check if the frame has defined subframes
       if (frame->has_parameter("subframe_count")) {
         // The frame has subframes so write them out
@@ -540,6 +541,41 @@ void FileWriterPlugin::processFrame(boost::shared_ptr<Frame> frame)
 
     // Push frame to any registered callbacks
     this->push(frame);
+  }
+}
+
+/** Check incoming frame is valid for its target dataset.
+ *
+ * Check the dimensions, data type and compression of the frame data.
+ *
+ * \param[in] frame - Pointer to the Frame object.
+ */
+void FileWriterPlugin::checkFrameValid(boost::shared_ptr<Frame> frame)
+{
+  bool invalid = false;
+  FileWriterPlugin::DatasetDefinition dataset = this->dataset_defs_[frame->get_dataset_name()];
+  if (frame->get_compression() != "" && frame->get_compression() != dataset.compression) {
+    LOG4CXX_ERROR(logger_, "Frame has compression " << frame->get_compression() <<
+                           ", expected " << dataset.compression <<
+                           " for dataset " << dataset.name);
+    invalid = true;
+  }
+  if (frame->get_data_type() != -1 && frame->get_data_type() != dataset.pixel) {
+    LOG4CXX_ERROR(logger_, "Frame has data type " << frame->get_data_type() <<
+                           ", expected " << dataset.pixel <<
+                           " for dataset " << dataset.name <<
+                           " (0: UINT8, 1: UINT16, 2: UINT32)");
+    invalid = true;
+  }
+  if (frame->get_dimensions("frame") != dataset.frame_dimensions) {
+    std::vector<unsigned long long> dimensions = frame->get_dimensions("frame");
+    LOG4CXX_ERROR(logger_, "Frame has dimensions [" << dimensions[0] << ", " << dimensions[1] <<
+                           "], expected [" << dataset.frame_dimensions[0] << ", " << dataset.frame_dimensions[1] <<
+                           "] for dataset " << dataset.name);
+    invalid = true;
+  }
+  if (invalid) {
+    throw std::runtime_error("Got invalid frame");
   }
 }
 
@@ -810,6 +846,9 @@ void FileWriterPlugin::configureDataset(OdinData::IpcMessage& config, OdinData::
       if (config.has_param(FileWriterPlugin::CONFIG_DATASET_COMPRESSION)) {
         dset_def.compression = config.get_param<std::string>(FileWriterPlugin::CONFIG_DATASET_COMPRESSION);
         LOG4CXX_DEBUG(logger_, "Enabling compression: " << dset_def.compression);
+      }
+      else {
+        dset_def.compression = "none";
       }
 
       LOG4CXX_DEBUG(logger_, "Creating dataset [" << dset_def.name << "] (" << dset_def.frame_dimensions[0] << ", " << dset_def.frame_dimensions[1] << ")");

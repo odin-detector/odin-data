@@ -97,9 +97,13 @@ public:
 
   void set_dimensions(const std::string& type, const std::vector<unsigned long long>& dimensions);
   dimensions_t get_dimensions(const std::string& type) const;
+  std::string get_compression() const;
+  int get_data_type() const;
   void set_parameter(const std::string& index, size_t parameter);
   size_t get_parameter(const std::string& index) const;
   bool has_parameter(const std::string& index);
+  void set_compression(std::string compression);
+  void set_data_type(int data_type);
 
 private:
   Frame();
@@ -120,6 +124,10 @@ private:
   unsigned long long frameNumber_;
   /** Map of dimensions, indexed by name */
   std::map<std::string, dimensions_t> dimensions_;
+  /** Compression type of raw data */
+  std::string compression_;
+  /** Compression type of raw data */
+  int data_type_;
   /** General parameter map */
   std::map<std::string, size_t> parameters_;
   /** Pointer to raw data block */

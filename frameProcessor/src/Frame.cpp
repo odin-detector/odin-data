@@ -24,6 +24,8 @@ Frame::Frame(const std::string& index) :
     shared_id_(0),
     shared_frame_id_(0),
     shared_channel_(0),
+    data_type_(-1),
+    compression_(""),
     logger(log4cxx::Logger::getLogger("FW.Frame"))
 {
   logger->setLevel(log4cxx::Level::getAll());
@@ -179,6 +181,26 @@ dimensions_t Frame::get_dimensions(const std::string& type) const
   return dimensions_.find(type)->second;
 }
 
+/** Retrieves the compression type of the raw data.
+ *
+ * \return compression type.
+ */
+std::string Frame::get_compression() const
+{
+  return compression_;
+}
+
+/** Retrieves the data type of the raw data.
+ *
+ * -1: Unset 0: UINT8, 1: UINT16, 2: UINT32
+ *
+ * \return data type.
+ */
+int Frame::get_data_type() const
+{
+  return data_type_;
+}
+
 /** Set a parameter for this Frame.
  *
  * This method sets a parameter of the Frame. The parameters are
@@ -190,6 +212,26 @@ dimensions_t Frame::get_dimensions(const std::string& type) const
 void Frame::set_parameter(const std::string& index, size_t parameter)
 {
   parameters_[index] = parameter;
+}
+
+/** Set the compression type of the raw data.
+ *
+ * \param compression type.
+ */
+void Frame::set_compression(std::string value)
+{
+  compression_ = value;
+}
+
+/** Set the data type of the raw data.
+ *
+ * 0: UINT8, 1: UINT16, 2: UINT32
+ *
+ * \param data type.
+ */
+void Frame::set_data_type(int value)
+{
+  data_type_ = value;
 }
 
 /** Return a parameter for this Frame.
