@@ -944,7 +944,7 @@ void FileWriterPlugin::checkAcquisitionIDInFrame(boost::shared_ptr<Frame> frame)
         stopWriting();
         startWriting();
       } else {
-        LOG4CXX_WARN(logger_, "Unexpected acquisition ID on frame [" << frame->get_acquisition_id() << "]");
+        LOG4CXX_WARN(logger_, "Unexpected acquisition ID on frame [" << frame->get_acquisition_id() << "] for frame " << frame->get_frame_number());
         // TODO set status?
       }
     } else {
@@ -952,7 +952,7 @@ void FileWriterPlugin::checkAcquisitionIDInFrame(boost::shared_ptr<Frame> frame)
         LOG4CXX_DEBUG(logger_, "Acquisition ID sent in frame matches next acquisition ID. Starting next");
         startWriting();
       } else {
-        LOG4CXX_WARN(logger_, "Unexpected acquisition ID on frame [" << frame->get_acquisition_id() << "]");
+        LOG4CXX_WARN(logger_, "Unexpected acquisition ID on frame [" << frame->get_acquisition_id() << "] for frame " << frame->get_frame_number());
       }
     }
   }
