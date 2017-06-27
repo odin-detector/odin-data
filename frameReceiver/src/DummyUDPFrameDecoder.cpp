@@ -1,33 +1,33 @@
 /*
- * DumyFrameDecoderUDP.cpp
+ * DummyUDPFrameDecoder.cpp
  *
  *  Created on: May 12, 2017
  *      Author: Tim Nicholls, STFC Application Engineering Group
  */
 
-#include "DummyFrameDecoderUDP.h"
+#include "../include/DummyUDPFrameDecoder.h"
 
 using namespace FrameReceiver;
 
-DummyFrameDecoderUDP::DummyFrameDecoderUDP() :
+DummyUDPFrameDecoder::DummyUDPFrameDecoder() :
     FrameDecoderUDP()
 {
 
 }
 
-DummyFrameDecoderUDP::~DummyFrameDecoderUDP()
+DummyUDPFrameDecoder::~DummyUDPFrameDecoder()
 {
   LOG4CXX_TRACE(logger_, "DummyFrameDecoderUDP destructor");
 }
 
-void DummyFrameDecoderUDP::init(LoggerPtr& logger, bool enable_packet_logging, unsigned int frame_timeout_ms)
+void DummyUDPFrameDecoder::init(LoggerPtr& logger, bool enable_packet_logging, unsigned int frame_timeout_ms)
 {
   FrameDecoderUDP::init(logger, enable_packet_logging, frame_timeout_ms);
 
   LOG4CXX_TRACE(logger_, "DummyFrameDecoderUDP init called");
 }
 
-FrameDecoder::FrameReceiveState DummyFrameDecoderUDP::process_packet(size_t bytes_received)
+FrameDecoder::FrameReceiveState DummyUDPFrameDecoder::process_packet(size_t bytes_received)
 {
   LOG4CXX_TRACE(logger_, "DummyFrameDecoderUDP process_packet called");
   return FrameDecoder::FrameReceiveStateComplete;

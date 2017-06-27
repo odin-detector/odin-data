@@ -17,15 +17,15 @@
 namespace FrameReceiver
 {
 
-class DummyFrameDecoderUDP : public FrameDecoderUDP
+class DummyUDPFrameDecoder : public FrameDecoderUDP
 {
 public:
-  DummyFrameDecoderUDP();
-  ~DummyFrameDecoderUDP();
+  DummyUDPFrameDecoder();
+  ~DummyUDPFrameDecoder();
 
   void init(LoggerPtr& logger, bool enable_packet_logging=false, unsigned int frame_timeout_ms=1000);
 
-  const size_t get_frame_buffer_size(void) const { return static_cast<const size_t>(0); };
+  const size_t get_frame_buffer_size(void) const { return static_cast<const size_t>(1000000); };
   const size_t get_frame_header_size(void) const { return static_cast<const size_t>(0); };
 
   inline const bool requires_header_peek(void) const { return false; };
