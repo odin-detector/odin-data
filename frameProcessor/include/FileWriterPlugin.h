@@ -184,7 +184,7 @@ private:
   void processFrame(boost::shared_ptr<Frame> frame);
   void checkFrameValid(boost::shared_ptr<Frame> frame);
   size_t getDatasetFrames(const std::string dset_name);
-  void checkAcquisitionIDInFrame(boost::shared_ptr<Frame> frame);
+  void checkAcquisitionID(boost::shared_ptr<Frame> frame);
 
   /** Pointer to logger */
   LoggerPtr logger_;

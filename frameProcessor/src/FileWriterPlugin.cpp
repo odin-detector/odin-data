@@ -33,7 +33,7 @@ const std::string FileWriterPlugin::CONFIG_FRAMES              = "frames";
 const std::string FileWriterPlugin::CONFIG_MASTER_DATASET      = "master";
 const std::string FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT   = "offset";
 const std::string FileWriterPlugin::CONFIG_WRITE               = "write";
-const std::string FileWriterPlugin::ACQUISITION_ID             = "acquisitionid";
+const std::string FileWriterPlugin::ACQUISITION_ID             = "acquisition_id";
 
 herr_t hdf5_error_cb(unsigned n, const H5E_error2_t *err_desc, void* client_data)
 {
@@ -501,7 +501,7 @@ void FileWriterPlugin::processFrame(boost::shared_ptr<Frame> frame)
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
 
   // Start a new file if the frame object contains a different acquisition ID from the current one
-  checkAcquisitionIDInFrame(frame);
+  checkAcquisitionID(frame);
 
   if (writing_) {
     checkFrameValid(frame);
@@ -534,8 +534,10 @@ void FileWriterPlugin::processFrame(boost::shared_ptr<Frame> frame)
     // Check if we have written enough frames and stop
     if (currentAcquisition_.framesToWrite_ > 0 && framesWritten_ == currentAcquisition_.framesToWrite_) {
       this->stopWriting();
-      // Start next acquisition
-      this->startWriting();
+      // Start next acquisition if we have a filename or acquisition ID to use
+      if (!nextAcquisition_.fileName_.empty() || !nextAcquisition_.acquisitionID_.empty()) {
+        this->startWriting();
+      }
     }
 
     // Push frame to any registered callbacks
@@ -607,14 +609,14 @@ void FileWriterPlugin::startWriting()
     this->nextAcquisition_ = Acquisition();
 
     // If filename hasn't been explicitly specified, create it from the acquisition ID and rank
-    if (this->currentAcquisition_.fileName_.empty() && (false == this->currentAcquisition_.acquisitionID_.empty())) {
-      std::stringstream filenameWithRank;
-      filenameWithRank << this->currentAcquisition_.acquisitionID_ << "_r" << this->concurrent_rank_ << ".hdf5";
-      this->currentAcquisition_.fileName_ = filenameWithRank.str();
+    if (this->currentAcquisition_.fileName_.empty() && (!this->currentAcquisition_.acquisitionID_.empty())) {
+      std::stringstream generatedFilename;
+      generatedFilename << this->currentAcquisition_.acquisitionID_ << "_r" << this->concurrent_rank_ << ".hdf5";
+      this->currentAcquisition_.fileName_ = generatedFilename.str();
     }
 
     if (this->currentAcquisition_.fileName_.empty()) {
-      LOG4CXX_WARN(logger_, "Unable to start writing - no filename to write to");
+      LOG4CXX_ERROR(logger_, "Unable to start writing - no filename to write to");
       return;
     }
 
@@ -980,27 +982,22 @@ void FileWriterPlugin::clearHdfErrors()
  *
  * \param[in] frame - Pointer to the Frame object.
  */
-void FileWriterPlugin::checkAcquisitionIDInFrame(boost::shared_ptr<Frame> frame) {
-  if (false == frame->get_acquisition_id().empty()) {
+void FileWriterPlugin::checkAcquisitionID(boost::shared_ptr<Frame> frame) {
+  if (!frame->get_acquisition_id().empty()) {
     if (writing_) {
       if (frame->get_acquisition_id() == currentAcquisition_.acquisitionID_) {
         // On same file, take no action
     	return;
-      } else if (frame->get_acquisition_id() == nextAcquisition_.acquisitionID_) {
-        LOG4CXX_DEBUG(logger_, "Acquisition ID sent in frame matches next acquisition ID. Closing current file and starting next");
-        stopWriting();
-        startWriting();
-      } else {
-        LOG4CXX_WARN(logger_, "Unexpected acquisition ID on frame [" << frame->get_acquisition_id() << "] for frame " << frame->get_frame_number());
-        // TODO set status?
       }
+    }
+
+    if (frame->get_acquisition_id() == nextAcquisition_.acquisitionID_) {
+      LOG4CXX_DEBUG(logger_, "Acquisition ID sent in frame matches next acquisition ID. Closing current file and starting next");
+      stopWriting();
+      startWriting();
     } else {
-      if (frame->get_acquisition_id() == nextAcquisition_.acquisitionID_) {
-        LOG4CXX_DEBUG(logger_, "Acquisition ID sent in frame matches next acquisition ID. Starting next");
-        startWriting();
-      } else {
-        LOG4CXX_WARN(logger_, "Unexpected acquisition ID on frame [" << frame->get_acquisition_id() << "] for frame " << frame->get_frame_number());
-      }
+      LOG4CXX_WARN(logger_, "Unexpected acquisition ID on frame [" << frame->get_acquisition_id() << "] for frame " << frame->get_frame_number());
+      // TODO set status? (There's currently no mechanism to report this in the status message)
     }
   }
 }
