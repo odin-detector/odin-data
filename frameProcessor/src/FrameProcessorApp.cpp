@@ -76,7 +76,7 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
         ("bit-depth",     po::value<std::string>(),
            "Bit-depth mode of detector")
         ("dtype",         po::value<int>(),
-           "Data type of raw detector data (0: 8bit, 1: 16bit, 2: 32bit)")
+           "Data type of raw detector data (0: 8bit, 1: 16bit, 2: 32bit, 3: 64bit)")
         ("compression",   po::value<string>(),
            "Compression type of input data (lz4 or bsls4)")
         ("path",          po::value<std::string>(),
