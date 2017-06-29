@@ -569,8 +569,8 @@ void FileWriterPlugin::checkFrameValid(boost::shared_ptr<Frame> frame)
                            " (0: UINT8, 1: UINT16, 2: UINT32)");
     invalid = true;
   }
-  if (frame->get_dimensions("frame") != dataset.frame_dimensions) {
-    std::vector<unsigned long long> dimensions = frame->get_dimensions("frame");
+  if (frame->get_dimensions(frame->get_dataset_name()) != dataset.frame_dimensions) {
+    std::vector<unsigned long long> dimensions = frame->get_dimensions(frame->get_dataset_name());
     LOG4CXX_ERROR(logger_, "Frame has dimensions [" << dimensions[0] << ", " << dimensions[1] <<
                            "], expected [" << dataset.frame_dimensions[0] << ", " << dataset.frame_dimensions[1] <<
                            "] for dataset " << dataset.name);
