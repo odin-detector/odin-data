@@ -358,6 +358,10 @@ hid_t FileWriterPlugin::pixelToHdfType(FileWriterPlugin::PixelType pixel) const 
   hid_t dtype = 0;
   switch(pixel)
   {
+    case pixel_raw_64bit:
+    LOG4CXX_DEBUG(logger_, "Data type: UINT64");
+      dtype = H5T_NATIVE_UINT64;
+      break;
     case pixel_float32:
     LOG4CXX_DEBUG(logger_, "Data type: UINT32");
       dtype = H5T_NATIVE_UINT32;
@@ -566,7 +570,7 @@ void FileWriterPlugin::checkFrameValid(boost::shared_ptr<Frame> frame)
     LOG4CXX_ERROR(logger_, "Frame has data type " << frame->get_data_type() <<
                            ", expected " << dataset.pixel <<
                            " for dataset " << dataset.name <<
-                           " (0: UINT8, 1: UINT16, 2: UINT32)");
+                           " (0: UINT8, 1: UINT16, 2: UINT32, 3: UINT64)");
     invalid = true;
   }
   if (frame->get_dimensions("frame") != dataset.frame_dimensions) {

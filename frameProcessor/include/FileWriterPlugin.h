@@ -41,7 +41,7 @@ public:
   /**
    * Enumeration to store the pixel type of the incoming image
    */
-  enum PixelType { pixel_raw_8bit, pixel_raw_16bit, pixel_float32 };
+  enum PixelType { pixel_raw_8bit, pixel_raw_16bit, pixel_float32, pixel_raw_64bit };
   /**
    * Enumeration to store the compression type of the incoming image
    */
