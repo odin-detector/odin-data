@@ -33,6 +33,7 @@ const std::string FileWriterPlugin::CONFIG_FRAMES              = "frames";
 const std::string FileWriterPlugin::CONFIG_MASTER_DATASET      = "master";
 const std::string FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT   = "offset";
 const std::string FileWriterPlugin::CONFIG_WRITE               = "write";
+const std::string FileWriterPlugin::ACQUISITION_ID             = "acquisition_id";
 
 herr_t hdf5_error_cb(unsigned n, const H5E_error2_t *err_desc, void* client_data)
 {
@@ -52,11 +53,7 @@ herr_t hdf5_error_cb(unsigned n, const H5E_error2_t *err_desc, void* client_data
  */
 FileWriterPlugin::FileWriterPlugin() :
     writing_(false),
-    masterFrame_(""),
-    framesToWrite_(0),
     framesWritten_(0),
-    filePath_("./"),
-    fileName_("test_file.h5"),
     concurrent_processes_(1),
     concurrent_rank_(0),
     hdf5_fileid_(0),
@@ -128,8 +125,9 @@ void FileWriterPlugin::createFile(std::string filename, size_t chunk_align)
   }
   // Close file access property list
   assert(H5Pclose(fapl) >= 0);
+
   // Send meta data message to notify of file creation
-  publishMeta("createfile", filename);
+  publishMeta("createfile", filename, getMetaHeader());
 }
 
 /**
@@ -192,7 +190,7 @@ void FileWriterPlugin::writeFrame(const Frame& frame) {
   rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
   document.Accept(writer);
 
-  publishMeta("writeframe", buffer.GetString());
+  publishMeta("writeframe", buffer.GetString(), getMetaHeader());
 
   assert(status >= 0);
 }
@@ -341,12 +339,12 @@ void FileWriterPlugin::createDataset(const FileWriterPlugin::DatasetDefinition& 
  * Close the currently open HDF5 file.
  */
 void FileWriterPlugin::closeFile() {
-  LOG4CXX_TRACE(logger_, "Closing file " << this->filePath_ << "/" << this->fileName_);
+  LOG4CXX_TRACE(logger_, "Closing file " << this->currentAcquisition_.filePath_ << "/" << this->currentAcquisition_.fileName_);
   if (this->hdf5_fileid_ >= 0) {
     assert(H5Fclose(this->hdf5_fileid_) >= 0);
     this->hdf5_fileid_ = 0;
     // Send meta data message to notify of file creation
-    publishMeta("closefile", "");
+    publishMeta("closefile", "", getMetaHeader());
   }
 }
 
@@ -502,41 +500,43 @@ void FileWriterPlugin::processFrame(boost::shared_ptr<Frame> frame)
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
 
+  // Start a new file if the frame object contains a different acquisition ID from the current one
+  checkAcquisitionID(frame);
+
   if (writing_) {
-
-    if (frame->has_parameter("stop")) {
-      this->stopWriting();
+    checkFrameValid(frame);
+    // Check if the frame has defined subframes
+    if (frame->has_parameter("subframe_count")) {
+      // The frame has subframes so write them out
+      this->writeSubFrames(*frame);
     } else {
-      checkFrameValid(frame);
-      // Check if the frame has defined subframes
-      if (frame->has_parameter("subframe_count")) {
-        // The frame has subframes so write them out
-        this->writeSubFrames(*frame);
-      } else {
-        // The frame has no subframes so write the whole frame
-        this->writeFrame(*frame);
-      }
+      // The frame has no subframes so write the whole frame
+      this->writeFrame(*frame);
+    }
 
-      // Check if this is a master frame (for multi dataset acquisitions)
-      // or if no master frame has been defined. If either of these conditions
-      // are true then increment the number of frames written.
-      if (masterFrame_ == "" || masterFrame_ == frame->get_dataset_name()) {
-        size_t datasetFrames = this->getDatasetFrames(frame->get_dataset_name());
-        if (datasetFrames == framesWritten_) {
-          LOG4CXX_DEBUG(logger_, "Frame " << datasetFrames << " rewritten");
-        }
-        else {
-          framesWritten_ = datasetFrames;
-        }
-        LOG4CXX_DEBUG(logger_, "Master frame processed");
+    // Check if this is a master frame (for multi dataset acquisitions)
+    // or if no master frame has been defined. If either of these conditions
+    // are true then increment the number of frames written.
+    if (currentAcquisition_.masterFrame_ == "" || currentAcquisition_.masterFrame_ == frame->get_dataset_name()) {
+      size_t datasetFrames = this->getDatasetFrames(frame->get_dataset_name());
+      if (datasetFrames == framesWritten_) {
+        LOG4CXX_DEBUG(logger_, "Frame " << datasetFrames << " rewritten");
       }
       else {
-        LOG4CXX_DEBUG(logger_, "Non-master frame processed");
+        framesWritten_ = datasetFrames;
       }
+      LOG4CXX_DEBUG(logger_, "Master frame processed");
+    }
+    else {
+      LOG4CXX_DEBUG(logger_, "Non-master frame processed");
+    }
 
-      // Check if we have written enough frames and stop
-      if (framesToWrite_ > 0 && framesWritten_ == framesToWrite_) {
-        this->stopWriting();
+    // Check if we have written enough frames and stop
+    if (currentAcquisition_.framesToWrite_ > 0 && framesWritten_ == currentAcquisition_.framesToWrite_) {
+      this->stopWriting();
+      // Start next acquisition if we have a filename or acquisition ID to use
+      if (!nextAcquisition_.fileName_.empty() || !nextAcquisition_.acquisitionID_.empty()) {
+        this->startWriting();
       }
     }
 
@@ -554,7 +554,7 @@ void FileWriterPlugin::processFrame(boost::shared_ptr<Frame> frame)
 void FileWriterPlugin::checkFrameValid(boost::shared_ptr<Frame> frame)
 {
   bool invalid = false;
-  FileWriterPlugin::DatasetDefinition dataset = this->dataset_defs_[frame->get_dataset_name()];
+  FileWriterPlugin::DatasetDefinition dataset = this->currentAcquisition_.dataset_defs_[frame->get_dataset_name()];
   if (frame->get_compression() >= 0 && frame->get_compression() != dataset.compression) {
     LOG4CXX_ERROR(logger_, "Frame has compression " << frame->get_compression() <<
                            ", expected " << dataset.compression <<
@@ -603,15 +603,31 @@ size_t FileWriterPlugin::getDatasetFrames(const std::string dset_name)
  */
 void FileWriterPlugin::startWriting()
 {
+  // Set the current acquisition details to the ones held for the next acquisition and reset the next ones
   if (!writing_) {
+    this->currentAcquisition_ = nextAcquisition_;
+    this->nextAcquisition_ = Acquisition();
+
+    // If filename hasn't been explicitly specified, create it from the acquisition ID and rank
+    if (this->currentAcquisition_.fileName_.empty() && (!this->currentAcquisition_.acquisitionID_.empty())) {
+      std::stringstream generatedFilename;
+      generatedFilename << this->currentAcquisition_.acquisitionID_ << "_r" << this->concurrent_rank_ << ".hdf5";
+      this->currentAcquisition_.fileName_ = generatedFilename.str();
+    }
+
+    if (this->currentAcquisition_.fileName_.empty()) {
+      LOG4CXX_ERROR(logger_, "Unable to start writing - no filename to write to");
+      return;
+    }
+
     // Create the file
-    this->createFile(filePath_ + fileName_);
+    this->createFile(currentAcquisition_.filePath_ + currentAcquisition_.fileName_);
 
     // Create the datasets from the definitions
     std::map<std::string, FileWriterPlugin::DatasetDefinition>::iterator iter;
-    for (iter = this->dataset_defs_.begin(); iter != this->dataset_defs_.end(); ++iter) {
+    for (iter = this->currentAcquisition_.dataset_defs_.begin(); iter != this->currentAcquisition_.dataset_defs_.end(); ++iter) {
       FileWriterPlugin::DatasetDefinition dset_def = iter->second;
-      dset_def.num_frames = framesToWrite_;
+      dset_def.num_frames = currentAcquisition_.framesToWrite_;
       this->createDataset(dset_def);
     }
 
@@ -678,12 +694,18 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
 
   // Check to see if we are being told how many frames to write
   if (config.has_param(FileWriterPlugin::CONFIG_FRAMES) && config.get_param<size_t>(FileWriterPlugin::CONFIG_FRAMES) > 0) {
-    framesToWrite_ = config.get_param<size_t>(FileWriterPlugin::CONFIG_FRAMES);
+    size_t totalFrames = config.get_param<size_t>(FileWriterPlugin::CONFIG_FRAMES);
+    nextAcquisition_.framesToWrite_ = totalFrames / this->concurrent_processes_;
+    if (totalFrames % this->concurrent_processes_ > this->concurrent_rank_) {
+      nextAcquisition_.framesToWrite_++;
+    }
+    LOG4CXX_DEBUG(logger_, "Expecting " << nextAcquisition_.framesToWrite_ << " frames "
+                           "(total " << totalFrames << ")");
   }
 
   // Check to see if the master dataset is being set
   if (config.has_param(FileWriterPlugin::CONFIG_MASTER_DATASET)) {
-    masterFrame_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_MASTER_DATASET);
+    nextAcquisition_.masterFrame_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_MASTER_DATASET);
   }
 
   // Check if we are setting the frame offset adjustment
@@ -691,6 +713,12 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
     LOG4CXX_DEBUG(logger_, "Setting frame offset adjustment to "
                            << config.get_param<int>(FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT));
     frame_offset_adjustment_ = (size_t)config.get_param<int>(FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT);
+  }
+
+  // Check to see if the acquisition id is being set
+  if (config.has_param(FileWriterPlugin::ACQUISITION_ID)) {
+    nextAcquisition_.acquisitionID_ = config.get_param<std::string>(FileWriterPlugin::ACQUISITION_ID);
+	LOG4CXX_DEBUG(logger_, "Setting next Acquisition ID to " << nextAcquisition_.acquisitionID_);
   }
 
   // Final check is to start or stop writing
@@ -750,21 +778,15 @@ void FileWriterPlugin::configureProcess(OdinData::IpcMessage& config, OdinData::
  */
 void FileWriterPlugin::configureFile(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
-  // If we are writing a file then we cannot change these items
-  if (this->writing_) {
-    LOG4CXX_ERROR(logger_, "Cannot change file path or name whilst writing");
-    throw std::runtime_error("Cannot change file path or name whilst writing");
-  }
-
   LOG4CXX_DEBUG(logger_, "Configure file name and path");
   // Check for file path and file name
   if (config.has_param(FileWriterPlugin::CONFIG_FILE_PATH)) {
-    this->filePath_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_PATH);
-    LOG4CXX_DEBUG(logger_, "File path changed to " << this->filePath_);
+    this->nextAcquisition_.filePath_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_PATH);
+    LOG4CXX_DEBUG(logger_, "Next file path changed to " << this->nextAcquisition_.filePath_);
   }
   if (config.has_param(FileWriterPlugin::CONFIG_FILE_NAME)) {
-    this->fileName_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_NAME);
-    LOG4CXX_DEBUG(logger_, "File name changed to " << this->fileName_);
+    this->nextAcquisition_.fileName_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_NAME);
+    LOG4CXX_DEBUG(logger_, "Next file name changed to " << this->nextAcquisition_.fileName_);
   }
 }
 
@@ -787,12 +809,6 @@ void FileWriterPlugin::configureFile(OdinData::IpcMessage& config, OdinData::Ipc
  */
 void FileWriterPlugin::configureDataset(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
-  // If we are writing a file then we cannot change these items
-  if (this->writing_) {
-    LOG4CXX_ERROR(logger_, "Cannot update datasets whilst writing");
-    throw std::runtime_error("Cannot update datasets whilst writing");
-  }
-
   LOG4CXX_DEBUG(logger_, "Configure dataset");
   // Read the dataset command
   if (config.has_param(FileWriterPlugin::CONFIG_DATASET_CMD)) {
@@ -855,7 +871,7 @@ void FileWriterPlugin::configureDataset(OdinData::IpcMessage& config, OdinData::
 
       LOG4CXX_DEBUG(logger_, "Creating dataset [" << dset_def.name << "] (" << dset_def.frame_dimensions[0] << ", " << dset_def.frame_dimensions[1] << ")");
       // Add the dataset definition to the store
-      this->dataset_defs_[dset_def.name] = dset_def;
+      this->nextAcquisition_.dataset_defs_[dset_def.name] = dset_def;
     }
   }
 }
@@ -871,19 +887,20 @@ void FileWriterPlugin::status(OdinData::IpcMessage& status)
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
 
   // Record the plugin's status items
-  LOG4CXX_DEBUG(logger_, "File name " << this->fileName_);
+  LOG4CXX_DEBUG(logger_, "File name " << this->currentAcquisition_.fileName_);
 
   status.set_param(getName() + "/writing", this->writing_);
-  status.set_param(getName() + "/frames_max", (int)this->framesToWrite_);
+  status.set_param(getName() + "/frames_max", (int)this->currentAcquisition_.framesToWrite_);
   status.set_param(getName() + "/frames_written", (int)this->framesWritten_);
-  status.set_param(getName() + "/file_path", this->filePath_);
-  status.set_param(getName() + "/file_name", this->fileName_);
+  status.set_param(getName() + "/file_path", this->currentAcquisition_.filePath_);
+  status.set_param(getName() + "/file_name", this->currentAcquisition_.fileName_);
+  status.set_param(getName() + "/acquisition_id", this->currentAcquisition_.acquisitionID_);
   status.set_param(getName() + "/processes", (int)this->concurrent_processes_);
   status.set_param(getName() + "/rank", (int)this->concurrent_rank_);
 
   // Check for datasets
   std::map<std::string, FileWriterPlugin::DatasetDefinition>::iterator iter;
-  for (iter = this->dataset_defs_.begin(); iter != this->dataset_defs_.end(); ++iter) {
+  for (iter = this->currentAcquisition_.dataset_defs_.begin(); iter != this->currentAcquisition_.dataset_defs_.end(); ++iter) {
     // Add the dataset type
     status.set_param(getName() + "/datasets/" + iter->first + "/type", (int)iter->second.pixel);
 
@@ -955,6 +972,57 @@ void FileWriterPlugin::clearHdfErrors()
   hdf5Errors_.clear();
   // Now reset the error flag
   hdf5ErrorFlag_ = false;
+}
+
+/** Check if the frame contains an acquisition ID and start a new file if it does and it's different from the current one
+ *
+ * If the frame object contains an acquisition ID, then we need to check if the current acquisition we are writing has
+ * the same ID. If it is different, then we close the current file and create a new one and start writing.
+ * If we are not currently writing then we just create a new file and start writing.
+ *
+ * \param[in] frame - Pointer to the Frame object.
+ */
+void FileWriterPlugin::checkAcquisitionID(boost::shared_ptr<Frame> frame) {
+  if (!frame->get_acquisition_id().empty()) {
+    if (writing_) {
+      if (frame->get_acquisition_id() == currentAcquisition_.acquisitionID_) {
+        // On same file, take no action
+    	return;
+      }
+    }
+
+    if (frame->get_acquisition_id() == nextAcquisition_.acquisitionID_) {
+      LOG4CXX_DEBUG(logger_, "Acquisition ID sent in frame matches next acquisition ID. Closing current file and starting next");
+      stopWriting();
+      startWriting();
+    } else {
+      LOG4CXX_WARN(logger_, "Unexpected acquisition ID on frame [" << frame->get_acquisition_id() << "] for frame " << frame->get_frame_number());
+      // TODO set status? (There's currently no mechanism to report this in the status message)
+    }
+  }
+}
+
+/** Creates and returns the Meta Header json string to be sent out over the meta data channel
+ *
+ * This will typically include details about the current acquisition (e.g. the ID)
+ *
+ * \return - a string containing the json meta data header
+ */
+std::string FileWriterPlugin::getMetaHeader() {
+  rapidjson::Document metaDocument;
+  metaDocument.SetObject();
+
+  // Add Acquisition ID
+  rapidjson::Value keyAcqID("acqID", metaDocument.GetAllocator());
+  rapidjson::Value valueAcqID;
+  valueAcqID.SetString(currentAcquisition_.acquisitionID_.c_str(), currentAcquisition_.acquisitionID_.length(), metaDocument.GetAllocator());
+  metaDocument.AddMember(keyAcqID, valueAcqID, metaDocument.GetAllocator());
+
+  rapidjson::StringBuffer buffer;
+  rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+  metaDocument.Accept(writer);
+
+  return buffer.GetString();
 }
 
 } /* namespace FrameProcessor */

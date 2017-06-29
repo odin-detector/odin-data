@@ -95,6 +95,24 @@ public:
    */
   unsigned long long get_frame_number() const { return this->frameNumber_; }
 
+  /** Get the acquisition id for this Frame
+   *
+   * This method gets the id of the parent acquisition of this frame
+   *
+   * \return the id of the acquisition that this frame belongs to
+   *
+   */
+  const std::string& get_acquisition_id() const { return acquisitionID_; }
+
+  /** Set the acquisition id for this Frame
+   *
+   * This method sets the id of the parent acquisition of this frame
+   *
+   * \param[in] acquisitionID - the id of the acquisition that this frame belongs to
+   *
+   */
+  void set_acquisition_id(const std::string& acquisitionID) { this->acquisitionID_ = acquisitionID; }
+
   void set_dimensions(const std::string& type, const std::vector<unsigned long long>& dimensions);
   dimensions_t get_dimensions(const std::string& type) const;
   int get_compression() const;
@@ -144,6 +162,8 @@ private:
   int shared_frame_id_;
   /** ZMQ release channel for the shared buffer **/
   OdinData::IpcChannel *shared_channel_;
+  /** Acquisition ID of the acquisition of this frame **/
+  std::string acquisitionID_;
 };
 
 } /* namespace FrameProcessor */
