@@ -146,6 +146,11 @@ class FrameProcessor(object):
                     
                     self.frames_received += 1
                     
+                elif ready_decoded.get_msg_type() == 'notify' and ready_decoded.get_msg_val() == 'buffer_config':
+                    
+                    shared_buffer_name = ready_decoded.get_param('shared_buffer_name')
+                    self.logger.debug('Got shared buffer config notification with name %s' % (shared_buffer_name))
+                    
                 else:
                     
                     self.logger.error("Got unexpected message on ready notification channel: %s" % (ready_decoded))
