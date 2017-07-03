@@ -88,6 +88,8 @@ public:
     std::string masterFrame_;
     /** Number of frames to write to file */
     size_t framesToWrite_;
+    /** Total number of frames in acquisition */
+    size_t totalFrames_;
     /** Path of the file to write to */
     std::string filePath_;
     /** Name of the file to write to */
@@ -122,6 +124,7 @@ public:
   bool checkForHdfErrors();
   std::vector<std::string> readHdfErrors();
   void clearHdfErrors();
+  std::string getCreateMetaHeader();
   std::string getMetaHeader();
 
 private:
