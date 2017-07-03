@@ -148,7 +148,7 @@ class FrameProcessor(object):
                     
                 else:
                     
-                    self.logger.error("Got unexpected message on ready notification channel:", ready_decoded)
+                    self.logger.error("Got unexpected message on ready notification channel: %s" % (ready_decoded))
         
         self.logger.info("Frame processing thread interrupted, terminating")
         
