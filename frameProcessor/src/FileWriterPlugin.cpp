@@ -127,7 +127,7 @@ void FileWriterPlugin::createFile(std::string filename, size_t chunk_align)
   assert(H5Pclose(fapl) >= 0);
 
   // Send meta data message to notify of file creation
-  publishMeta("createfile", filename, getMetaHeader());
+  publishMeta("createfile", filename, getCreateMetaHeader());
 }
 
 /**
@@ -699,6 +699,7 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
   // Check to see if we are being told how many frames to write
   if (config.has_param(FileWriterPlugin::CONFIG_FRAMES) && config.get_param<size_t>(FileWriterPlugin::CONFIG_FRAMES) > 0) {
     size_t totalFrames = config.get_param<size_t>(FileWriterPlugin::CONFIG_FRAMES);
+    nextAcquisition_.totalFrames_ = totalFrames;
     nextAcquisition_.framesToWrite_ = totalFrames / this->concurrent_processes_;
     if (totalFrames % this->concurrent_processes_ > this->concurrent_rank_) {
       nextAcquisition_.framesToWrite_++;
@@ -1004,6 +1005,35 @@ void FileWriterPlugin::checkAcquisitionID(boost::shared_ptr<Frame> frame) {
       // TODO set status? (There's currently no mechanism to report this in the status message)
     }
   }
+}
+
+/** Creates and returns the Meta Header json string to be sent out over the meta data channel when a file is created
+ *
+ * This will typically include details about the current acquisition (e.g. the ID)
+ *
+ * \return - a string containing the json meta data header
+ */
+std::string FileWriterPlugin::getCreateMetaHeader() {
+  rapidjson::Document metaDocument;
+  metaDocument.SetObject();
+
+  // Add Acquisition ID
+  rapidjson::Value keyAcqID("acqID", metaDocument.GetAllocator());
+  rapidjson::Value valueAcqID;
+  valueAcqID.SetString(currentAcquisition_.acquisitionID_.c_str(), currentAcquisition_.acquisitionID_.length(), metaDocument.GetAllocator());
+  metaDocument.AddMember(keyAcqID, valueAcqID, metaDocument.GetAllocator());
+
+  // Add Number of Frames
+  rapidjson::Value keyNumFrames("totalFrames", metaDocument.GetAllocator());
+  rapidjson::Value valueNumFrames;
+  valueNumFrames.SetUint64(currentAcquisition_.totalFrames_);
+  metaDocument.AddMember(keyNumFrames, valueNumFrames, metaDocument.GetAllocator());
+
+  rapidjson::StringBuffer buffer;
+  rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+  metaDocument.Accept(writer);
+
+  return buffer.GetString();
 }
 
 /** Creates and returns the Meta Header json string to be sent out over the meta data channel
