@@ -599,6 +599,12 @@ void FrameReceiverApp::handle_frame_release_channel(void)
         reactor_.stop();
       }
     }
+    else if ((frame_release.get_msg_type() == IpcMessage::MsgTypeCmd) &&
+             (frame_release.get_msg_val() == IpcMessage::MsgValCmdBufferConfigRequest))
+    {
+      LOG4CXX_DEBUG_LEVEL(2, logger_, "Got shared buffer config request from processor");
+      notify_buffer_config(false);
+    }
     else
     {
       LOG4CXX_ERROR(logger_, "Got unexpected message on frame release channel: " << frame_release_encoded);
