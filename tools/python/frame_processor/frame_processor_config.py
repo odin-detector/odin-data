@@ -10,7 +10,7 @@ class FrameProcessorConfig(object):
         defaults['ctrl_endpoint']    = "tcp://127.0.0.1:5000"
         defaults['ready_endpoint']   = "tcp://127.0.0.1:5001"
         defaults['release_endpoint'] = "tcp://127.0.0.1:5002"
-        defaults['sharedbuf']        = "FrameReceiverBuffer"
+        defaults['sharedbuf']        = None
         defaults['bypass_mode']      = False
         defaults['packet_state']     = False
         defaults['frames']           = 0
