@@ -96,6 +96,8 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
            "Shutdown after one dataset completed")
         ("frames,f",      po::value<unsigned int>()->default_value(0),
            "Set the number of frames to write into dataset")
+        ("acqid",     po::value<std::string>(),
+           "Set the Acquisition Id of the acquisition")
     ;
 
     // Group the variables for parsing at the command line and/or from the configuration file
@@ -244,6 +246,11 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
       LOG4CXX_DEBUG(logger, "This process rank (index): " << vm["rank"].as<unsigned int>());
     }
 
+    if (no_client && vm.count("acqid"))
+    {
+      LOG4CXX_DEBUG(logger, "Setting acquisition ID to " << vm["acqid"].as<string>());
+    }
+
   }
   catch (po::unknown_option &e)
   {
@@ -370,6 +377,7 @@ void configureFileWriter(boost::shared_ptr<FrameProcessorController> fwc, po::va
   cfg.set_param<string>("hdf/file/name", vm["output"].as<string>());
   cfg.set_param<string>("hdf/file/path", vm["output-dir"].as<string>());
   cfg.set_param<unsigned int>("hdf/frames", vm["frames"].as<unsigned int>());
+  cfg.set_param<string>("hdf/acquisition_id", vm["acqid"].as<string>());
   cfg.set_param<bool>("hdf/write", true);
 
   fwc->configure(cfg, reply);
