@@ -65,6 +65,8 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
            "Release frame ZMQ endpoint from frameReceiver")
         ("meta",          po::value<std::string>()->default_value("tcp://*:5558"),
            "ZMQ meta data channel publish stream")
+        ("init,I",        po::bool_switch(),
+           "Initialise frame receiver and meta interfaces.")
         ("no-client,N",   po::bool_switch(),
            "Enable full initial configuration to run without any client controller."
            "You must also be provide: detector, path, datasets, dtype and dims.")
@@ -399,6 +401,14 @@ void configurePlugins(boost::shared_ptr<FrameProcessorController> fwc, po::varia
   }
 }
 
+void checkNoClientArgs(po::variables_map vm) {
+  if (!(vm.count("detector") && vm.count("path") && vm.count("datasets")
+        && vm.count("dtype") && vm.count("dims"))) {
+    throw runtime_error("Must provide detector, path, datasets, dtype and "
+                            "dims to run no client mode.");
+  }
+}
+
 int main(int argc, char** argv)
 {
   LoggerPtr logger(Logger::getLogger("FW.App"));
@@ -420,17 +430,13 @@ int main(int argc, char** argv)
     cfg.set_param<std::string>("ctrl_endpoint", vm["ctrl"].as<string>());
     fwc->configure(cfg, reply);
 
-    if (vm["no-client"].as<bool>()) {
-      if (vm.count("detector") && vm.count("path") && vm.count("datasets") &&
-          vm.count("dtype") && vm.count("dims")) {
+    if (vm["init"].as<bool>() || vm["no-client"].as<bool>()) {
+      configureController(fwc, vm);
+      if (vm["no-client"].as<bool>()) {
+        checkNoClientArgs(vm);
         LOG4CXX_DEBUG(logger, "Adding configuration options to work without a client");
-        configureController(fwc, vm);
         configurePlugins(fwc, vm);
         configureFileWriter(fwc, vm);
-      }
-      else {
-        throw runtime_error("Must provide detector, path, datasets, dtype and "
-                            "dims to run no client mode.");
       }
     }
 
