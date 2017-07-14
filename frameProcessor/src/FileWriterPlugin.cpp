@@ -419,10 +419,10 @@ size_t FileWriterPlugin::getFrameOffset(size_t frame_no) const {
 
   if (this->concurrent_processes_ > 1) {
     // Check whether this frame should really be in this process
-    // Note: this expects the frame numbering from HW/FW to start at 1, not 0!
-    if ( (((frame_no-1) % this->concurrent_processes_) - this->concurrent_rank_) != 0) {
-      LOG4CXX_WARN(logger_, "Unexpected frame: " << frame_no <<
-                                                 " in this process rank: " << this->concurrent_rank_);
+    // Note: this expects the frame numbering from HW/FW to start at 0, not 1!
+    if (frame_offset % this->concurrent_processes_ != this->concurrent_rank_) {
+      LOG4CXX_WARN(logger_,"Unexpected frame: " << frame_no <<
+                           " in this process rank: " << this->concurrent_rank_);
       throw std::runtime_error("Unexpected frame in this process rank");
     }
 
