@@ -5,6 +5,7 @@
 
 #include <assert.h>
 
+#include <boost/filesystem.hpp>
 #include <hdf5_hl.h>
 
 #include "Frame.h"
@@ -625,7 +626,9 @@ void FileWriterPlugin::startWriting()
     }
 
     // Create the file
-    this->createFile(currentAcquisition_.filePath_ + currentAcquisition_.fileName_);
+    boost::filesystem::path full_path =
+        boost::filesystem::path(currentAcquisition_.filePath_) / boost::filesystem::path(currentAcquisition_.fileName_);
+    this->createFile(full_path.string());
 
     // Create the datasets from the definitions
     std::map<std::string, FileWriterPlugin::DatasetDefinition>::iterator iter;
