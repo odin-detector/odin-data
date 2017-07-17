@@ -55,44 +55,49 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
     config.add_options()
         ("logconfig,l",   po::value<string>(),
            "Set the log4cxx logging configuration file")
-        ("no-client,N",   po::bool_switch(),
-           "Enable full initial configuration to run without any client controller")
-        ("single-shot,S", po::bool_switch(),
-           "Shutdown after one dataset written")
+        ("ctrl",          po::value<std::string>()->default_value("tcp://127.0.0.1:5004"),
+           "Set the control endpoint")
+        ("sharedbuf",     po::value<std::string>()->default_value("FrameReceiverBuffer"),
+           "Set the name of the shared memory frame buffer")
         ("ready",         po::value<std::string>()->default_value("tcp://127.0.0.1:5001"),
            "Ready ZMQ endpoint from frameReceiver")
         ("release",       po::value<std::string>()->default_value("tcp://127.0.0.1:5002"),
            "Release frame ZMQ endpoint from frameReceiver")
-        ("frames,f",      po::value<unsigned int>()->default_value(0),
-           "Set the number of frames to be notified about before terminating")
-        ("datasets",      po::value<std::vector<string> >()->multitoken(),
-           "Name(s) of datasets to write")
-        ("dims",          po::value<std::vector<int> >()->multitoken(),
-           "Dimensions of each frame")
-        ("chunk-dims,C",  po::value<std::vector<int> >()->multitoken(),
-           "Chunk size of each sub-frame")
-        ("detector,d",    po::value<std::string>(),
-           "Detector to configure for")
-        ("bit-depth",     po::value<std::string>(),
-           "Bit-depth mode of detector")
-        ("dtype",         po::value<int>(),
-           "Data type of raw detector data (0: 8bit, 1: 16bit, 2: 32bit, 3: 64bit)")
-        ("compression",   po::value<string>(),
-           "Compression type of input data (lz4 or bsls4)")
-        ("path",          po::value<std::string>(),
-           "Path to detector shared library with format 'lib<detector>ProcessPlugin.so'")
-        ("sharedbuf",     po::value<std::string>()->default_value("FrameReceiverBuffer"),
-           "Set the control endpoint")
-        ("ctrl",          po::value<std::string>()->default_value("tcp://127.0.0.1:5004"),
-           "Set the name of the shared memory frame buffer")
         ("meta",          po::value<std::string>()->default_value("tcp://*:5558"),
            "ZMQ meta data channel publish stream")
-        ("output,o",      po::value<std::string>()->default_value("test.hdf5"),
-           "Name of HDF5 file to write frames to (default: test.hdf5)")
+        ("no-client,N",   po::bool_switch(),
+           "Enable full initial configuration to run without any client controller."
+           "You must also be provide: detector, path, datasets, dtype and dims.")
         ("processes,p",   po::value<unsigned int>()->default_value(1),
            "Number of concurrent file writer processes")
         ("rank,r",        po::value<unsigned int>()->default_value(0),
            "The rank (index number) of the current file writer process in relation to the other concurrent ones")
+        ("detector,d",    po::value<std::string>(),
+           "Detector to configure for")
+        ("path",          po::value<std::string>(),
+           "Path to detector shared library with format 'lib<detector>ProcessPlugin.so'")
+        ("datasets",      po::value<std::vector<string> >()->multitoken(),
+           "Name(s) of datasets to write (space separated)")
+        ("dtype",         po::value<int>(),
+           "Data type of raw detector data (0: 8bit, 1: 16bit, 2: 32bit, 3:64bit)")
+        ("dims",          po::value<std::vector<int> >()->multitoken(),
+           "Dimensions of each frame (space separated)")
+        ("chunk-dims,C",  po::value<std::vector<int> >()->multitoken(),
+           "Chunk size of each sub-frame (space separated)")
+        ("bit-depth",     po::value<std::string>(),
+           "Bit-depth mode of detector")
+        ("compression",   po::value<int>(),
+           "Compression type of input data (0: None, 1: LZ4, 2: BSLZ4)")
+        ("output,o",      po::value<std::string>()->default_value("test.hdf5"),
+           "Name of HDF5 file to write frames to (default: test.hdf5)")
+        ("output-dir",    po::value<std::string>()->default_value("/tmp/"),
+           "Directory to write HDF5 file to (default: /tmp/)")
+        ("single-shot,S", po::bool_switch(),
+           "Shutdown after one dataset completed")
+        ("frames,f",      po::value<unsigned int>()->default_value(0),
+           "Set the number of frames to write into dataset")
+        ("acqid",     po::value<std::string>(),
+           "Set the Acquisition Id of the acquisition")
     ;
 
     // Group the variables for parsing at the command line and/or from the configuration file
@@ -203,7 +208,7 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
 
     if (no_client && vm.count("dtype"))
     {
-      LOG4CXX_DEBUG(logger, "Setting datatype to " << vm["dtype"].as<int>());
+      LOG4CXX_DEBUG(logger, "Setting data type to " << vm["dtype"].as<int>());
     }
 
     if (no_client && vm.count("path"))
@@ -213,7 +218,7 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
 
     if (no_client && vm.count("compression"))
     {
-      LOG4CXX_DEBUG(logger, "Setting compression type to " << vm["compression"].as<string>());
+      LOG4CXX_DEBUG(logger, "Setting compression type to " << vm["compression"].as<int>());
     }
 
     if (no_client && vm.count("ctrl"))
@@ -241,6 +246,11 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
       LOG4CXX_DEBUG(logger, "This process rank (index): " << vm["rank"].as<unsigned int>());
     }
 
+    if (no_client && vm.count("acqid"))
+    {
+      LOG4CXX_DEBUG(logger, "Setting acquisition ID to " << vm["acqid"].as<string>());
+    }
+
   }
   catch (po::unknown_option &e)
   {
@@ -263,15 +273,20 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
   }
 }
 
-void configureDefaults(boost::shared_ptr<FrameProcessorController> fwc, po::variables_map vm) {
+void configureController(boost::shared_ptr<FrameProcessorController> fwc,
+                         po::variables_map vm) {
   OdinData::IpcMessage cfg;
   OdinData::IpcMessage reply;
 
+  // Configure ZMQ channels
   cfg.set_param<string>("fr_setup/fr_shared_mem", vm["sharedbuf"].as<string>());
   cfg.set_param<string>("fr_setup/fr_ready_cnxn", vm["ready"].as<string>());
   cfg.set_param<string>("fr_setup/fr_release_cnxn", vm["release"].as<string>());
-  cfg.set_param<string>("output", vm["output"].as<string>());
   cfg.set_param<string>("meta_endpoint", vm["meta"].as<string>());
+
+  // Configure single-shot mode
+  cfg.set_param<bool>("single-shot", vm["single-shot"].as<bool>());
+  cfg.set_param<unsigned int>("frames", vm["frames"].as<unsigned int>());
 
   fwc->configure(cfg, reply);
 }
@@ -349,7 +364,7 @@ void configureDataset(boost::shared_ptr<FrameProcessorController> fwc, po::varia
     cfg.set_param<string>("hdf/master", name);
   }
   if (vm.count("compression")) {
-    cfg.set_param<string>("hdf/dataset/compression", vm["compression"].as<string>());
+    cfg.set_param<int>("hdf/dataset/compression", vm["compression"].as<int>());
   }
 
   fwc->configure(cfg, reply);
@@ -360,8 +375,9 @@ void configureFileWriter(boost::shared_ptr<FrameProcessorController> fwc, po::va
   OdinData::IpcMessage reply;
 
   cfg.set_param<string>("hdf/file/name", vm["output"].as<string>());
-  cfg.set_param<string>("hdf/file/path", "/tmp/");
+  cfg.set_param<string>("hdf/file/path", vm["output-dir"].as<string>());
   cfg.set_param<unsigned int>("hdf/frames", vm["frames"].as<unsigned int>());
+  cfg.set_param<string>("hdf/acquisition_id", vm["acqid"].as<string>());
   cfg.set_param<bool>("hdf/write", true);
 
   fwc->configure(cfg, reply);
@@ -402,15 +418,20 @@ int main(int argc, char** argv)
     OdinData::IpcMessage cfg;
     OdinData::IpcMessage reply;
     cfg.set_param<std::string>("ctrl_endpoint", vm["ctrl"].as<string>());
-    cfg.set_param<unsigned int>("frames", vm["frames"].as<unsigned int>());
-    cfg.set_param<bool>("single-shot", vm["single-shot"].as<bool>());
     fwc->configure(cfg, reply);
 
     if (vm["no-client"].as<bool>()) {
-      LOG4CXX_DEBUG(logger, "Adding configuration options to work without a client controller");
-      configureDefaults(fwc, vm);
-      configurePlugins(fwc, vm);
-      configureFileWriter(fwc, vm);
+      if (vm.count("detector") && vm.count("path") && vm.count("datasets") &&
+          vm.count("dtype") && vm.count("dims")) {
+        LOG4CXX_DEBUG(logger, "Adding configuration options to work without a client");
+        configureController(fwc, vm);
+        configurePlugins(fwc, vm);
+        configureFileWriter(fwc, vm);
+      }
+      else {
+        throw runtime_error("Must provide detector, path, datasets, dtype and "
+                            "dims to run no client mode.");
+      }
     }
 
     fwc->run();
