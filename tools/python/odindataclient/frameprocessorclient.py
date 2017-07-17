@@ -32,7 +32,7 @@ class FrameProcessorClient(ZMQClient):
 
     def request_status(self):
         response = self.send_request("status")
-        return response.attrs["params"]
+        return response["params"]
 
     def request_frames_written(self):
         status = self.request_status()
@@ -41,6 +41,10 @@ class FrameProcessorClient(ZMQClient):
     def request_frames_expected(self):
         status = self.request_status()
         return status[self.FILE_WRITER]["frames_max"]
+
+    def request_plugins(self):
+        status = self.request_status()
+        return status[self.FILE_WRITER]["plugins"]["names"]
 
     def stop(self):
         config = {
@@ -62,6 +66,7 @@ class FrameProcessorClient(ZMQClient):
     def load_plugin(self, plugin):
         library, name = self.parse_plugin_definition(plugin,
                                                      self.LIBRARIES[plugin])
+        self.request_status()
         config = {
             "load": {
                 "library": library,
@@ -69,7 +74,9 @@ class FrameProcessorClient(ZMQClient):
                 "name": name,
             }
         }
-        self.send_configuration(self.PLUGIN, config)
+        self.send_configuration(self.PLUGIN, config,
+                                valid_error="Cannot load plugin with index = "
+                                            "{}, already loaded".format(plugin))
 
     def load_file_writer_plugin(self, index):
         config = {
@@ -79,7 +86,9 @@ class FrameProcessorClient(ZMQClient):
                 "name": "FileWriterPlugin",
             },
         }
-        self.send_configuration(self.PLUGIN, config)
+        self.send_configuration(self.PLUGIN, config,
+                                valid_error="Cannot load plugin with index = "
+                                            "{}, already loaded".format(index))
 
     def connect_plugins(self, source, sink):
         config = {
@@ -93,8 +102,8 @@ class FrameProcessorClient(ZMQClient):
     def disconnect_plugins(self, source, sink):
         config = {
             "disconnect": {
-                "index": source,
-                "connection": sink
+                "connection": source,
+                "index": sink
             }
         }
         self.send_configuration(self.PLUGIN, config)

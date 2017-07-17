@@ -1,6 +1,6 @@
 import zmq
 
-from common import IpcChannel, IpcMessage
+from common import IpcChannel, IpcMessage, IpcMessageException
 
 
 class ZMQClient(object):
@@ -19,30 +19,54 @@ class ZMQClient(object):
 
         self._lock = lock
 
-    def _send_message(self, msg):
+    def _send_message(self, msg, timeout=1000):
         with self._lock:
             self.ctrl_channel.send(msg.encode())
-            pollevts = self.ctrl_channel.poll(1000)
-            if pollevts == zmq.POLLIN:
-                reply = IpcMessage(from_str=self.ctrl_channel.recv())
-                if reply.is_valid() and reply.get_msg_type() == IpcMessage.ACK:
-                    return reply
-        return False
+            pollevts = self.ctrl_channel.poll(timeout)
+
+        if pollevts == zmq.POLLIN:
+            reply = IpcMessage(from_str=self.ctrl_channel.recv())
+            if reply.is_valid() \
+               and reply.get_msg_type() == IpcMessage.ACK:
+                return True, reply.attrs
+            else:
+                return False, reply.attrs
+        else:
+            return False, None
+
+    @staticmethod
+    def _raise_reply_error(msg, reply):
+        if reply is not None:
+            raise IpcMessageException(
+                "Request\n%s\nunsuccessful."
+                " Got invalid response: %s" % (msg, reply))
+        else:
+            raise IpcMessageException(
+                "Request\n%s\nunsuccessful."
+                " Got no response." % msg)
 
     def send_request(self, value):
         msg = IpcMessage("cmd", value)
-        return self._send_message(msg)
+        success, reply = self._send_message(msg)
+        if success:
+            return reply
+        else:
+            self._raise_reply_error(msg, reply)
 
-    def send_configuration(self, target, content):
+    def send_configuration(self, target, content, valid_error=None):
         msg = IpcMessage("cmd", "configure")
         msg.set_param(target, content)
-        return bool(self._send_message(msg))
+        success, reply = self._send_message(msg)
+        if not success:
+            if reply["params"]["error"] != valid_error:
+                self._raise_reply_error(msg, reply)
+        return success, reply
 
     def send_configuration_dict(self, **kwargs):
         msg = IpcMessage("cmd", "configure")
         for key, value in kwargs.items():
             msg.set_param(key, value)
-        self._send_message(msg)
+        return self._send_message(msg)
 
     def _read_message(self, timeout):
         pollevts = self.ctrl_channel.poll(timeout)
