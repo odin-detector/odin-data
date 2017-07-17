@@ -1,6 +1,13 @@
+import logging
+
 import zmq
 
 from common import IpcChannel, IpcMessage, IpcMessageException
+
+from pkg_resources import require
+require('pygelf==0.2.11')
+
+from logconfig import setup_logging
 
 
 class ZMQClient(object):
@@ -10,16 +17,21 @@ class ZMQClient(object):
     ENDPOINT_TEMPLATE = "tcp://{IP}:{PORT}"
 
     def __init__(self, ip_address, lock, server_rank=0):
+        self.logger = logging.getLogger(self.__class__.__name__)
+        setup_logging()
+
         port = self.CTRL_PORT + server_rank * 1000
 
         self.ctrl_endpoint = self.ENDPOINT_TEMPLATE.format(IP=ip_address,
                                                            PORT=port)
+        self.logger.info("Connecting to client at %s", self.ctrl_endpoint)
         self.ctrl_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_REQ)
         self.ctrl_channel.connect(self.ctrl_endpoint)
 
         self._lock = lock
 
     def _send_message(self, msg, timeout=1000):
+        self.logger.info("Sending control message:\n%s", msg.encode())
         with self._lock:
             self.ctrl_channel.send(msg.encode())
             pollevts = self.ctrl_channel.poll(timeout)
@@ -28,10 +40,13 @@ class ZMQClient(object):
             reply = IpcMessage(from_str=self.ctrl_channel.recv())
             if reply.is_valid() \
                and reply.get_msg_type() == IpcMessage.ACK:
+                self.logger.info("Request successful")
                 return True, reply.attrs
             else:
+                self.logger.info("Request unsuccessful")
                 return False, reply.attrs
         else:
+            self.logger.warning("Received no response")
             return False, None
 
     @staticmethod
@@ -60,6 +75,9 @@ class ZMQClient(object):
         if not success:
             if reply["params"]["error"] != valid_error:
                 self._raise_reply_error(msg, reply)
+            else:
+                self.logger.info("Got valid error for message %s: %s",
+                                 msg, reply)
         return success, reply
 
     def send_configuration_dict(self, **kwargs):
