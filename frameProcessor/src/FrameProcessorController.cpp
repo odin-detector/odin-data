@@ -24,7 +24,6 @@ const std::string FrameProcessorController::CONFIG_CTRL_ENDPOINT     = "ctrl_end
 const std::string FrameProcessorController::CONFIG_META_ENDPOINT     = "meta_endpoint";
 
 const std::string FrameProcessorController::CONFIG_PLUGIN            = "plugin";
-const std::string FrameProcessorController::CONFIG_PLUGIN_LIST       = "list";
 const std::string FrameProcessorController::CONFIG_PLUGIN_LOAD       = "load";
 const std::string FrameProcessorController::CONFIG_PLUGIN_CONNECT    = "connect";
 const std::string FrameProcessorController::CONFIG_PLUGIN_DISCONNECT = "disconnect";
@@ -218,9 +217,10 @@ void FrameProcessorController::callback(boost::shared_ptr<Frame> frame) {
 
 void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply)
 {
-  // Loop over plugins, checking for configuration messages
+  // Loop over plugins, list names and request status from each
   std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
   for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
+    reply.set_param("plugins/names[]", iter->first);
     iter->second->status(reply);
   }
 }
@@ -323,15 +323,6 @@ void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData:
  */
 void FrameProcessorController::configurePlugin(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
-  if (config.has_param(FrameProcessorController::CONFIG_PLUGIN_LIST)) {
-    // We have been asked to list the loaded plugins
-    std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
-    for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
-      reply.set_param("plugins/names[]", iter->first);
-    }
-  }
-
-
   // Check if we are being asked to load a plugin
   if (config.has_param(FrameProcessorController::CONFIG_PLUGIN_LOAD)) {
     OdinData::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FrameProcessorController::CONFIG_PLUGIN_LOAD));

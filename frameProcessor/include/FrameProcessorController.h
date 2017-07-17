@@ -71,8 +71,6 @@ private:
   /** Configuration constant for plugin related items **/
   static const std::string CONFIG_PLUGIN;
   /** Configuration constant for listing loaded plugins **/
-  static const std::string CONFIG_PLUGIN_LIST;
-  /** Configuration constant for loading a plugin **/
   static const std::string CONFIG_PLUGIN_LOAD;
   /** Configuration constant for connecting plugins **/
   static const std::string CONFIG_PLUGIN_CONNECT;
