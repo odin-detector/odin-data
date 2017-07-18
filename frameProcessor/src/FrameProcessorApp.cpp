@@ -16,6 +16,7 @@ using namespace std;
 #include <log4cxx/basicconfigurator.h>
 #include <log4cxx/propertyconfigurator.h>
 #include <log4cxx/helpers/exception.h>
+#include <log4cxx/xml/domconfigurator.h>
 using namespace log4cxx;
 using namespace log4cxx::helpers;
 
@@ -33,6 +34,12 @@ using namespace rapidjson;
 #include "FrameProcessorController.h"
 
 using namespace FrameProcessor;
+
+static bool has_suffix(const std::string &str, const std::string &suffix)
+{
+  return str.size() >= suffix.size() &&
+      str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
+}
 
 void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& logger)
 {
@@ -140,7 +147,12 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
 
     if (vm.count("logconfig"))
     {
-      PropertyConfigurator::configure(vm["logconfig"].as<string>());
+      std::string logconf_fname = vm["logconfig"].as<string>();
+      if (has_suffix(logconf_fname, ".xml")) {
+        log4cxx::xml::DOMConfigurator::configure(logconf_fname);
+      } else {
+        PropertyConfigurator::configure(logconf_fname);
+      }
       LOG4CXX_DEBUG(logger, "log4cxx config file is set to " << vm["logconfig"].as<string>());
     }
 
