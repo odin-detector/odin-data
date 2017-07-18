@@ -1,14 +1,16 @@
 set(TEST_CONFIGS
-  fw_log4cxx.xml
+  fp_log4cxx.xml
   fr_log4cxx.xml
   fr_test.config
-  fr_test_osx.config
   fp_test.config
-  fp_test_osx.config
+  fr_test_osx.config
+  fp_py_test.config
+  fp_py_test_osx.config
+  fp_py_test_excalibur.config
   fr_excalibur1.config
   fr_excalibur2.config
-  fw_excalibur1.config
-  fw_excalibur2.config
+  fp_excalibur1.config
+  fp_excalibur2.config
 )
 
 foreach(test_config ${TEST_CONFIGS})
@@ -19,9 +21,7 @@ foreach(test_config ${TEST_CONFIGS})
 			"${CMAKE_CONFIG_OUTPUT_DIRECTORY}/${test_config}"
 		DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${test_config}"
 	)
-	list(APPEND TEST_CONFIGS_DEST "${test_config}")
+	list(APPEND TEST_CONFIGS_DEST "${CMAKE_CONFIG_OUTPUT_DIRECTORY}/${test_config}")
 endforeach(test_config)
 
 add_custom_target(CopyTestConfigs ALL DEPENDS ${TEST_CONFIGS_DEST} )
-
-
