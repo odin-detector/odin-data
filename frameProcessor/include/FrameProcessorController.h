@@ -11,6 +11,7 @@
 #include <boost/shared_ptr.hpp>
 #include <log4cxx/logger.h>
 
+#include "logging.h"
 #include "IpcReactor.h"
 #include "IpcChannel.h"
 #include "SharedMemoryController.h"

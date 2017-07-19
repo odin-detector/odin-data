@@ -1,5 +1,5 @@
 # Add library for odin-data shared functionality
-include_directories(${Boost_INCLUDE_DIRS} ${ZEROMQ_INCLUDE_DIRS})
+include_directories(${Boost_INCLUDE_DIRS} ${ZEROMQ_INCLUDE_DIRS} ${LOG4CXX_INCLUDE_DIRS}/..)
 
 file(GLOB LIB_SOURCES *.cpp)
 

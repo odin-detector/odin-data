@@ -1,6 +1,6 @@
 # Install header files into installation prefix
 
-SET(HEADERS ClassLoader.h gettime.h IpcChannel.h IpcMessage.h IpcReactor.h OdinDataException.h SharedBufferManager.h)
+SET(HEADERS ClassLoader.h gettime.h IpcChannel.h IpcMessage.h IpcReactor.h logging.h OdinDataException.h SharedBufferManager.h)
 SET(RAPIDJSON_INCLUDE_DIR rapidjson)
 SET(ZMQ_INCLUDE_DIR zmq)
 
