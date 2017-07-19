@@ -65,7 +65,7 @@ FileWriterPlugin::FileWriterPlugin() :
     hdf5ErrorFlag_(false),
     frame_offset_adjustment_(0)
 {
-  this->logger_ = Logger::getLogger("FW.FileWriterPlugin");
+  this->logger_ = Logger::getLogger("FP.FileWriterPlugin");
   this->logger_->setLevel(Level::getTrace());
   LOG4CXX_TRACE(logger_, "FileWriterPlugin constructor.");
 

@@ -39,7 +39,7 @@ const int FrameProcessorController::META_TX_HWM = 10000;
  * IpcReactor thread.
  */
 FrameProcessorController::FrameProcessorController() :
-    logger_(log4cxx::Logger::getLogger("FW.FrameProcessorController")),
+    logger_(log4cxx::Logger::getLogger("FP.FrameProcessorController")),
     runThread_(true),
     threadRunning_(false),
     threadInitError_(false),
@@ -49,6 +49,7 @@ FrameProcessorController::FrameProcessorController() :
     metaRxChannel_(ZMQ_PULL),
     metaTxChannel_(ZMQ_PUB)
 {
+  OdinData::configure_logging_mdc(OdinData::app_path.c_str());
   LOG4CXX_DEBUG(logger_, "Constructing FrameProcessorController");
 
   totalFrames = 0;
