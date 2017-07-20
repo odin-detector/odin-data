@@ -123,3 +123,5 @@ add_subdirectory(doc)
 
 # Add the config subdirectory (config files used for integration testing)
 add_subdirectory(config)
+
+configure_file(log4cxx.xml log4cxx.xml COPYONLY)

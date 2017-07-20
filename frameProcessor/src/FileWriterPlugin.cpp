@@ -5,6 +5,7 @@
 
 #include <assert.h>
 
+#include <boost/filesystem.hpp>
 #include <hdf5_hl.h>
 
 #include "Frame.h"
@@ -60,7 +61,7 @@ FileWriterPlugin::FileWriterPlugin() :
     hdf5ErrorFlag_(false),
     frame_offset_adjustment_(0)
 {
-  this->logger_ = Logger::getLogger("FW.FileWriterPlugin");
+  this->logger_ = Logger::getLogger("FP.FileWriterPlugin");
   this->logger_->setLevel(Level::getTrace());
   LOG4CXX_TRACE(logger_, "FileWriterPlugin constructor.");
 
@@ -145,7 +146,7 @@ void FileWriterPlugin::writeFrame(const Frame& frame) {
   frame_offset = this->getFrameOffset(frame_no);
   this->extend_dataset(dset, frame_offset + 1);
 
-  LOG4CXX_DEBUG(logger_, "Writing frame offset=" << frame_no  <<
+  LOG4CXX_TRACE(logger_, "Writing frame offset=" << frame_no  <<
                          " (" << frame_offset << ")" <<
                          " dset=" << frame.get_dataset_name());
 
@@ -418,10 +419,10 @@ size_t FileWriterPlugin::getFrameOffset(size_t frame_no) const {
 
   if (this->concurrent_processes_ > 1) {
     // Check whether this frame should really be in this process
-    // Note: this expects the frame numbering from HW/FW to start at 1, not 0!
-    if ( (((frame_no-1) % this->concurrent_processes_) - this->concurrent_rank_) != 0) {
-      LOG4CXX_WARN(logger_, "Unexpected frame: " << frame_no <<
-                                                 " in this process rank: " << this->concurrent_rank_);
+    // Note: this expects the frame numbering from HW/FW to start at 0, not 1!
+    if (frame_offset % this->concurrent_processes_ != this->concurrent_rank_) {
+      LOG4CXX_WARN(logger_,"Unexpected frame: " << frame_no <<
+                           " in this process rank: " << this->concurrent_rank_);
       throw std::runtime_error("Unexpected frame in this process rank");
     }
 
@@ -524,15 +525,15 @@ void FileWriterPlugin::processFrame(boost::shared_ptr<Frame> frame)
     if (currentAcquisition_.masterFrame_ == "" || currentAcquisition_.masterFrame_ == frame->get_dataset_name()) {
       size_t datasetFrames = this->getDatasetFrames(frame->get_dataset_name());
       if (datasetFrames == framesWritten_) {
-        LOG4CXX_DEBUG(logger_, "Frame " << datasetFrames << " rewritten");
+        LOG4CXX_TRACE(logger_, "Frame " << datasetFrames << " rewritten");
       }
       else {
         framesWritten_ = datasetFrames;
       }
-      LOG4CXX_DEBUG(logger_, "Master frame processed");
+      LOG4CXX_TRACE(logger_, "Master frame processed");
     }
     else {
-      LOG4CXX_DEBUG(logger_, "Non-master frame processed");
+      LOG4CXX_TRACE(logger_, "Non-master frame processed");
     }
 
     // Check if we have written enough frames and stop
@@ -625,7 +626,9 @@ void FileWriterPlugin::startWriting()
     }
 
     // Create the file
-    this->createFile(currentAcquisition_.filePath_ + currentAcquisition_.fileName_);
+    boost::filesystem::path full_path =
+        boost::filesystem::path(currentAcquisition_.filePath_) / boost::filesystem::path(currentAcquisition_.fileName_);
+    this->createFile(full_path.string());
 
     // Create the datasets from the definitions
     std::map<std::string, FileWriterPlugin::DatasetDefinition>::iterator iter;

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+    <!-- Output the log message to system console -->
+    <appender name="ApplicationConsoleAppender" class="org.apache.log4j.ConsoleAppender">
+        <param name="Target" value="System.out" />
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%F:%L:%n %d{HH:mm:ss,SSS} %-14c %-5p - %m%n"/>
+            <!-- <param name="ConversionPattern" value="%d{HH:mm:ss,SSS} %-14c %-5p - %m%n" /> -->
+        </layout>
+    </appender>
+
+    <appender name="FileWriterAppender" class="org.apache.log4j.FileAppender">
+        <param name="file" value="OdinData.log" />
+        <param name="append" value="false" />
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%F:%L - %d{HH:mm:ss,SSS} %-14c %-5p - %m%n" />
+        </layout>
+    </appender>
+
+    <appender name="graylog" class="org.apache.log4j.net.SyslogAppender">
+        <param name="Facility" value="LOCAL1"/>
+        <param name="SyslogHost" value="cs04r-sc-serv-14.diamond.ac.uk:5566"/>
+        <param name="Threshold" value="DEBUG"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <!-- syslog standard RFC 5424 formatting. Unfortunately the log4cxx SyslogAppender does not do this automatically -->
+            <param name="ConversionPattern" value="1 %d{yyyy-MM-ddTHH:mm:ss.SSS} %X{host} %X{app} %X{pid} %c [dlsdaq@32121 log_level=&quot;%p&quot; thread=&quot;%X{thread}&quot; user=&quot;%X{user}&quot; file_line=&quot;%F:%L&quot;] %m%n" />
+        </layout>
+    </appender>
+
+    <!-- all of the loggers inherit settings from the root and print to stdout -->
+    <root>
+        <priority value="all" />
+        <appender-ref ref="ApplicationConsoleAppender" />
+    </root>
+
+    <!-- The FrameProcessor applications logger hierarchy -->
+    <logger name="FP">
+        <priority value="all" />
+        <appender-ref ref="FileWriterAppender" />
+        <appender-ref ref="graylog" />
+    </logger>
+    <logger name="FP.App"></logger>
+    <logger name="FP.FrameProcessorController"></logger>
+    <logger name="FP.DataBlock"></logger>
+    <logger name="FP.DataBlockPool"></logger>
+    <logger name="FP.FrameProcessorPlugin"></logger>
+    <logger name="FP.FileWriterPlugin"></logger>
+    <logger name="FP.EigerProcessPlugin"></logger>
+
+    <!-- The FrameReceiver applications logger hierarchy -->
+    <logger name="FR">
+        <priority value="all" />
+        <appender-ref ref="FileWriterAppender" />
+        <appender-ref ref="graylog" />
+    </logger>
+    <logger name="FR.APP"></logger>
+
+</log4j:configuration>
