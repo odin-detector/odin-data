@@ -149,7 +149,7 @@ void FileWriterPlugin::writeFrame(const Frame& frame) {
   frame_offset = this->getFrameOffset(frame_no);
   this->extend_dataset(dset, frame_offset + 1);
 
-  LOG4CXX_DEBUG(logger_, "Writing frame offset=" << frame_no  <<
+  LOG4CXX_TRACE(logger_, "Writing frame offset=" << frame_no  <<
                          " (" << frame_offset << ")" <<
                          " dset=" << frame.get_dataset_name());
 
@@ -523,15 +523,15 @@ void FileWriterPlugin::processFrame(boost::shared_ptr<Frame> frame)
     if (currentAcquisition_.masterFrame_ == "" || currentAcquisition_.masterFrame_ == frame->get_dataset_name()) {
       size_t datasetFrames = this->getDatasetFrames(frame->get_dataset_name());
       if (datasetFrames == framesWritten_) {
-        LOG4CXX_DEBUG(logger_, "Frame " << datasetFrames << " rewritten");
+        LOG4CXX_TRACE(logger_, "Frame " << datasetFrames << " rewritten");
       }
       else {
         framesWritten_ = datasetFrames;
       }
-      LOG4CXX_DEBUG(logger_, "Master frame processed");
+      LOG4CXX_TRACE(logger_, "Master frame processed");
     }
     else {
-      LOG4CXX_DEBUG(logger_, "Non-master frame processed");
+      LOG4CXX_TRACE(logger_, "Non-master frame processed");
     }
 
     // Check if we have written enough frames and stop
