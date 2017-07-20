@@ -52,6 +52,21 @@ class FrameProcessorClient(ZMQClient):
         }
         self.send_configuration(self.FILE_WRITER, config)
 
+    def initialise(self):
+        status = self.request_status()
+        if self.FILE_WRITER not in status.keys():
+            raise RuntimeError("Cannot initialise unless hdf plugin is loaded")
+
+        hdf_status = status[self.FILE_WRITER]
+        if ("processes" not in hdf_status.keys()
+                or hdf_status["processes"] != self.processes) \
+                and ("rank" not in hdf_status.keys()
+                     or hdf_status["rank"] != self.rank):
+            if hdf_status["writing"]:
+                raise RuntimeError(
+                    "Cannot initialise while writing - Abort scan and restart")
+            self.configure_file_process()
+
     def configure_shared_memory(self, shared_memory, ready, release):
         config = {
             "fr_shared_mem": shared_memory,

@@ -29,14 +29,14 @@ default_config = {
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
-            "level": "DEBUG",
+            "level": "INFO",
             "formatter": "simple",
             "stream": "ext://sys.stdout"
         },
 
         "graylog_gelf": {
             "class": "pygelf.GelfUdpHandler",
-            "level": "INFO",
+            "level": "DEBUG",
             # Obviously a DLS-specific configuration: the graylog server address and port
             "host": "cs04r-sc-serv-14.diamond.ac.uk",
             "port": 12202,
@@ -53,7 +53,15 @@ default_config = {
         # Fine-grained logging configuration for individual modules or classes
         # Use this to set different log levels without changing 'real' code.
         "ZMQClient": {
-            "level": "INFO",
+            "level": "DEBUG",
+            "propagate": True
+        },
+        "EigerDetector": {
+            "level": "DEBUG",
+            "propagate": True
+        },
+        "EigerDetectorIOC": {
+            "level": "DEBUG",
             "propagate": True
         }
     },

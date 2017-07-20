@@ -24,14 +24,14 @@ class ZMQClient(object):
 
         self.ctrl_endpoint = self.ENDPOINT_TEMPLATE.format(IP=ip_address,
                                                            PORT=port)
-        self.logger.info("Connecting to client at %s", self.ctrl_endpoint)
+        self.logger.debug("Connecting to client at %s", self.ctrl_endpoint)
         self.ctrl_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_REQ)
         self.ctrl_channel.connect(self.ctrl_endpoint)
 
         self._lock = lock
 
     def _send_message(self, msg, timeout=1000):
-        self.logger.info("Sending control message:\n%s", msg.encode())
+        self.logger.debug("Sending control message:\n%s", msg.encode())
         with self._lock:
             self.ctrl_channel.send(msg.encode())
             pollevts = self.ctrl_channel.poll(timeout)
@@ -40,10 +40,10 @@ class ZMQClient(object):
             reply = IpcMessage(from_str=self.ctrl_channel.recv())
             if reply.is_valid() \
                and reply.get_msg_type() == IpcMessage.ACK:
-                self.logger.info("Request successful")
+                self.logger.debug("Request successful")
                 return True, reply.attrs
             else:
-                self.logger.info("Request unsuccessful")
+                self.logger.debug("Request unsuccessful")
                 return False, reply.attrs
         else:
             self.logger.warning("Received no response")
@@ -76,8 +76,8 @@ class ZMQClient(object):
             if reply["params"]["error"] != valid_error:
                 self._raise_reply_error(msg, reply)
             else:
-                self.logger.info("Got valid error for message %s: %s",
-                                 msg, reply)
+                self.logger.debug("Got valid error for request %s: %s",
+                                  msg, reply)
         return success, reply
 
     def send_configuration_dict(self, **kwargs):
