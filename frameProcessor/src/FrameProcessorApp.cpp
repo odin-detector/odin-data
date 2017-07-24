@@ -64,8 +64,6 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
            "Set the log4cxx logging configuration file")
         ("ctrl",          po::value<std::string>()->default_value("tcp://127.0.0.1:5004"),
            "Set the control endpoint")
-        ("sharedbuf",     po::value<std::string>()->default_value("FrameReceiverBuffer"),
-           "Set the name of the shared memory frame buffer")
         ("ready",         po::value<std::string>()->default_value("tcp://127.0.0.1:5001"),
            "Ready ZMQ endpoint from frameReceiver")
         ("release",       po::value<std::string>()->default_value("tcp://127.0.0.1:5002"),
@@ -291,7 +289,6 @@ void configureController(boost::shared_ptr<FrameProcessorController> fwc,
   OdinData::IpcMessage reply;
 
   // Configure ZMQ channels
-  cfg.set_param<string>("fr_setup/fr_shared_mem", vm["sharedbuf"].as<string>());
   cfg.set_param<string>("fr_setup/fr_ready_cnxn", vm["ready"].as<string>());
   cfg.set_param<string>("fr_setup/fr_release_cnxn", vm["release"].as<string>());
   cfg.set_param<string>("meta_endpoint", vm["meta"].as<string>());

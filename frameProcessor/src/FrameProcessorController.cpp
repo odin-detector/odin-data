@@ -17,7 +17,6 @@ const std::string FrameProcessorController::CONFIG_SHUTDOWN          = "shutdown
 
 const std::string FrameProcessorController::CONFIG_STATUS            = "status";
 
-const std::string FrameProcessorController::CONFIG_FR_SHARED_MEMORY  = "fr_shared_mem";
 const std::string FrameProcessorController::CONFIG_FR_RELEASE        = "fr_release_cnxn";
 const std::string FrameProcessorController::CONFIG_FR_READY          = "fr_ready_cnxn";
 const std::string FrameProcessorController::CONFIG_FR_SETUP          = "fr_setup";
