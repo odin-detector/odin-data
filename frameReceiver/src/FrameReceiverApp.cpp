@@ -490,7 +490,7 @@ void FrameReceiverApp::precharge_buffers(void)
   }
 }
 
-void FrameReceiverApp::notify_buffer_config(bool deferred)
+void FrameReceiverApp::notify_buffer_config(const bool deferred)
 {
   // Notify downstream applications listening on the frame ready channel of the current shared buffer
   // configuration.
