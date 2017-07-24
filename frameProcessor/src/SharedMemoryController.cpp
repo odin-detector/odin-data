@@ -135,6 +135,24 @@ void SharedMemoryController::handleRxChannel()
       } else {
         LOG4CXX_ERROR(logger_, "RX thread received empty frame notification with buffer ID");
       }
+    } else if ((rxMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeNotify) &&
+               (rxMsg.get_msg_val()  == OdinData::IpcMessage::MsgValNotifyBufferConfig))
+    {
+      try
+      {
+        std::string shared_buffer_name = rxMsg.get_param<std::string>("shared_buffer_name");
+        LOG4CXX_DEBUG(logger_, "Shared buffer config notification received for " << shared_buffer_name);
+        if (sbm_) {
+          sbm_.reset();
+        }
+        sbm_ = boost::shared_ptr<OdinData::SharedBufferManager>(
+            new OdinData::SharedBufferManager(shared_buffer_name)
+        );
+      }
+      catch (OdinData::IpcMessageException& e)
+      {
+        LOG4CXX_ERROR(logger_, "Received shared buffer config notification with no name parameter");
+      }
     } else {
       LOG4CXX_ERROR(logger_, "RX thread got unexpected message: " << rxMsgEncoded);
 
