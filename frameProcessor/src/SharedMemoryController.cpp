@@ -62,6 +62,10 @@ SharedMemoryController::SharedMemoryController(boost::shared_ptr<OdinData::IpcRe
     // TODO: What to do here, I think throw it up
     throw std::runtime_error(e.what());
   }
+
+  // Request the shared buffer configuration from the upstream frame receiver process. This is deferred
+  // with a one-shot reactor timer to allow the background channel conneciton to take place.
+  this->requestSharedBufferConfig(true);
 }
 
 /**
@@ -79,11 +83,10 @@ SharedMemoryController::~SharedMemoryController()
   reactor_->stop();
 }
 
-/** setSharedMemoryParser
- * Takes a shared pointer to a shared memory parser and stores it in
- * a member variable.
+/** setSharedBufferManager
+ * Takes a name of shared buffer manager and initialises a SharedBufferManager object
  *
- * \param[in] smp - shared pointer to a SharedMemoryParser object.
+ * \param[in] shared_buffer_name - name of the shared buffer manager
  */
 void SharedMemoryController::setSharedBufferManager(const std::string& shared_buffer_name)
 {
@@ -98,6 +101,31 @@ void SharedMemoryController::setSharedBufferManager(const std::string& shared_bu
   );
 
   LOG4CXX_DEBUG(logger_, "Initialised shared buffer manager for buffer " << shared_buffer_name);
+}
+
+/** Request the shared buffer configuration information from the upstream frame receiver process
+ *
+ * Requests the name of the shared buffer manager from the upstream frame receiver process by
+ * sending an IpcMessage over the frame notification channel. This can be deferred to allow
+ * time for the notification channels to be connected, using a single-shot timer registered on
+ * the reactor.
+ *
+ * \param[in] deferred - true if the request should be deferred
+ */
+void SharedMemoryController::requestSharedBufferConfig(const bool deferred)
+{
+  if (deferred)
+  {
+    reactor_->register_timer(1000, 1, boost::bind(&SharedMemoryController::requestSharedBufferConfig, this, false));
+  }
+  else
+  {
+    LOG4CXX_DEBUG(logger_, "Requesting shared buffer configuration from frame receiver");
+
+    OdinData::IpcMessage config_request(OdinData::IpcMessage::MsgTypeCmd, OdinData::IpcMessage::MsgValCmdBufferConfigRequest);
+
+    txChannel_.send(config_request.encode());
+  }
 }
 
 /** Called whenever a new IpcMessage is received to notify that a frame is ready.
@@ -122,24 +150,32 @@ void SharedMemoryController::handleRxChannel()
 
     if ((rxMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeNotify) &&
         (rxMsg.get_msg_val()  == OdinData::IpcMessage::MsgValNotifyFrameReady)) {
+
       int bufferID = rxMsg.get_param<int>("buffer_id", -1);
-
       if (bufferID != -1) {
-        // Create a frame object and copy in the raw frame data
-        boost::shared_ptr<Frame> frame;
-        frame = boost::shared_ptr<Frame>(new Frame("raw"));
-        frame->wrap_shared_buffer(sbm_->get_buffer_address(bufferID),
-                                  sbm_->get_buffer_size(),
-                                  bufferID,rxMsg.get_param<int>("frame", 0),
-                                  &txChannel_);
 
-        // Set the frame number
-        frame->set_frame_number(rxMsg.get_param<int>("frame", 0));
+        if (sbm_) {
 
-        // Loop over registered callbacks, placing the frame onto each queue
-        std::map<std::string, boost::shared_ptr<IFrameCallback> >::iterator cbIter;
-        for (cbIter = callbacks_.begin(); cbIter != callbacks_.end(); ++cbIter) {
-          cbIter->second->getWorkQueue()->add(frame);
+          // Create a frame object and copy in the raw frame data
+          boost::shared_ptr<Frame> frame;
+          frame = boost::shared_ptr<Frame>(new Frame("raw"));
+          frame->wrap_shared_buffer(sbm_->get_buffer_address(bufferID),
+                                    sbm_->get_buffer_size(),
+                                    bufferID,rxMsg.get_param<int>("frame", 0),
+                                    &txChannel_);
+
+          // Set the frame number
+          frame->set_frame_number(rxMsg.get_param<int>("frame", 0));
+
+          // Loop over registered callbacks, placing the frame onto each queue
+          std::map<std::string, boost::shared_ptr<IFrameCallback> >::iterator cbIter;
+          for (cbIter = callbacks_.begin(); cbIter != callbacks_.end(); ++cbIter) {
+            cbIter->second->getWorkQueue()->add(frame);
+          }
+
+        } else {
+          LOG4CXX_WARN(logger_, "RX thread got notification for buffer " << bufferID
+                         << " with no shared buffer config - ignoring");
         }
 
       } else {
