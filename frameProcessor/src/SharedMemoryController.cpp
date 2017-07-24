@@ -85,9 +85,19 @@ SharedMemoryController::~SharedMemoryController()
  *
  * \param[in] smp - shared pointer to a SharedMemoryParser object.
  */
-void SharedMemoryController::setSharedBufferManager(boost::shared_ptr<OdinData::SharedBufferManager> sbm)
+void SharedMemoryController::setSharedBufferManager(const std::string& shared_buffer_name)
 {
-  sbm_ = sbm;
+  // Reset the shared buffer manager if already existing
+  if (sbm_) {
+    sbm_.reset();
+  }
+
+  // Create a new shared buffer manager
+  sbm_ =  boost::shared_ptr<OdinData::SharedBufferManager>(
+      new OdinData::SharedBufferManager(shared_buffer_name)
+  );
+
+  LOG4CXX_DEBUG(logger_, "Initialised shared buffer manager for buffer " << shared_buffer_name);
 }
 
 /** Called whenever a new IpcMessage is received to notify that a frame is ready.
@@ -142,12 +152,7 @@ void SharedMemoryController::handleRxChannel()
       {
         std::string shared_buffer_name = rxMsg.get_param<std::string>("shared_buffer_name");
         LOG4CXX_DEBUG(logger_, "Shared buffer config notification received for " << shared_buffer_name);
-        if (sbm_) {
-          sbm_.reset();
-        }
-        sbm_ = boost::shared_ptr<OdinData::SharedBufferManager>(
-            new OdinData::SharedBufferManager(shared_buffer_name)
-        );
+        this->setSharedBufferManager(shared_buffer_name);
       }
       catch (OdinData::IpcMessageException& e)
       {

@@ -271,13 +271,11 @@ void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData:
   // Check if we are being passed the shared memory configuration
   if (config.has_param(FrameProcessorController::CONFIG_FR_SETUP)) {
     OdinData::IpcMessage frConfig(config.get_param<const rapidjson::Value&>(FrameProcessorController::CONFIG_FR_SETUP));
-    if (frConfig.has_param(FrameProcessorController::CONFIG_FR_SHARED_MEMORY) &&
-        frConfig.has_param(FrameProcessorController::CONFIG_FR_RELEASE) &&
+    if (frConfig.has_param(FrameProcessorController::CONFIG_FR_RELEASE) &&
         frConfig.has_param(FrameProcessorController::CONFIG_FR_READY)) {
-      std::string shMemName = frConfig.get_param<std::string>(FrameProcessorController::CONFIG_FR_SHARED_MEMORY);
       std::string pubString = frConfig.get_param<std::string>(FrameProcessorController::CONFIG_FR_RELEASE);
       std::string subString = frConfig.get_param<std::string>(FrameProcessorController::CONFIG_FR_READY);
-      this->setupFrameReceiverInterface(shMemName, pubString, subString);
+      this->setupFrameReceiverInterface(pubString, subString);
     }
   }
 
@@ -521,23 +519,13 @@ void FrameProcessorController::waitForShutdown()
  * \param[in] frPublisherString - Endpoint for sending frame release notifications.
  * \param[in] frSubscriberString - Endpoint for receiving frame ready notifications.
  */
-void FrameProcessorController::setupFrameReceiverInterface(const std::string& sharedMemName,
-                                                           const std::string& frPublisherString,
+void FrameProcessorController::setupFrameReceiverInterface(const std::string& frPublisherString,
                                                            const std::string& frSubscriberString)
 {
-  LOG4CXX_DEBUG(logger_, "Shared Memory Config: Name=" << sharedMemName <<
-                                                       " Publisher=" << frPublisherString << " Subscriber=" << frSubscriberString);
+  LOG4CXX_DEBUG(logger_, "Shared Memory Config: Publisher=" << frPublisherString << " Subscriber=" << frSubscriberString);
 
   try
   {
-    // Release current shared memory parser if one exists
-    if (sharedBufferManager_) {
-      sharedBufferManager_.reset();
-    }
-    // Create the new shared memory parser
-    sharedBufferManager_ = boost::shared_ptr<OdinData::SharedBufferManager>(
-        new OdinData::SharedBufferManager(sharedMemName));
-
     // Release the current shared memory controller if one exists
     if (sharedMemController_) {
       sharedMemController_.reset();
@@ -545,7 +533,6 @@ void FrameProcessorController::setupFrameReceiverInterface(const std::string& sh
     // Create the new shared memory controller and give it the parser and publisher
     sharedMemController_ = boost::shared_ptr<SharedMemoryController>(
         new SharedMemoryController(reactor_, frSubscriberString, frPublisherString));
-    sharedMemController_->setSharedBufferManager(sharedBufferManager_);
 
   } catch (const boost::interprocess::interprocess_exception& e)
   {
@@ -561,11 +548,6 @@ void FrameProcessorController::closeFrameReceiverInterface()
   LOG4CXX_DEBUG(logger_, "Closing FrameReceiver interface.");
   try
   {
-    // Release current shared memory parser if one exists
-    if (sharedBufferManager_) {
-      sharedBufferManager_.reset();
-    }
-
     // Release the current shared memory controller if one exists
     if (sharedMemController_) {
       sharedMemController_.reset();

@@ -92,8 +92,7 @@ private:
   /** Configuration constant for the meta TX channel high water mark **/
   static const int META_TX_HWM;
 
-  void setupFrameReceiverInterface(const std::string& sharedMemName,
-                                   const std::string& frPublisherString,
+  void setupFrameReceiverInterface(const std::string& frPublisherString,
                                    const std::string& frSubscriberString);
   void closeFrameReceiverInterface();
   void setupControlInterface(const std::string& ctrlEndpointString);
@@ -110,8 +109,6 @@ private:
   log4cxx::LoggerPtr                                              logger_;
   /** Pointer to the shared memory controller instance for this process */
   boost::shared_ptr<SharedMemoryController>                       sharedMemController_;
-  /** Pointer to the shared buffer manager instance for this process */
-  boost::shared_ptr<OdinData::SharedBufferManager>                sharedBufferManager_;
   /** Map of plugins loaded, indexed by plugin index */
   std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> > plugins_;
   /** Condition for exiting this file writing process */
