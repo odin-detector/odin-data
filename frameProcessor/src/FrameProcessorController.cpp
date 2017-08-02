@@ -49,7 +49,6 @@ FrameProcessorController::FrameProcessorController() :
     metaRxChannel_(ZMQ_PULL),
     metaTxChannel_(ZMQ_PUB)
 {
-  OdinData::configure_logging_mdc(OdinData::app_path.c_str());
   LOG4CXX_DEBUG(logger_, "Constructing FrameProcessorController");
 
   totalFrames = 0;
@@ -657,6 +656,9 @@ void FrameProcessorController::closeMetaTxInterface()
  */
 void FrameProcessorController::runIpcService(void)
 {
+  // Configure logging for this thread
+  OdinData::configure_logging_mdc(OdinData::app_path.c_str());
+
   LOG4CXX_DEBUG(logger_, "Running IPC thread service");
 
   // Create the reactor

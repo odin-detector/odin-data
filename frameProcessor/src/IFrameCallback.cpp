@@ -5,6 +5,7 @@
  *      Author: gnx91527
  */
 
+#include "logging.h"
 #include <IFrameCallback.h>
 
 namespace FrameProcessor
@@ -112,6 +113,9 @@ void IFrameCallback::confirmRemoval(const std::string& name)
  */
 void IFrameCallback::workerTask()
 {
+  // Configure logging for this thread
+  OdinData::configure_logging_mdc(OdinData::app_path.c_str());
+
   // Main worker task of this callback
   // Check the queue for messages
   while (working_) {

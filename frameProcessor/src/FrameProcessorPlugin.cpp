@@ -5,7 +5,6 @@
  *      Author: gnx91527
  */
 
-#include "logging.h"
 #include "FrameProcessorPlugin.h"
 
 namespace FrameProcessor
@@ -19,7 +18,6 @@ FrameProcessorPlugin::FrameProcessorPlugin() :
     name_(""),
     metaChannel_(ZMQ_PUSH)
 {
-  OdinData::configure_logging_mdc(OdinData::app_path.c_str());
   logger_ = log4cxx::Logger::getLogger("FP.FrameProcessorPlugin");
 }
 
