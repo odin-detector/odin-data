@@ -757,20 +757,37 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
  */
 void FileWriterPlugin::configureProcess(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
-  // If we are writing a file then we cannot change these items
-  if (this->writing_) {
-    LOG4CXX_ERROR(logger_, "Cannot change concurrent processes or rank whilst writing");
-    throw std::runtime_error("Cannot change concurrent processes or rank whilst writing");
-  }
-
-  // Check for process number and rank number
+  // Check for process number
   if (config.has_param(FileWriterPlugin::CONFIG_PROCESS_NUMBER)) {
-    this->concurrent_processes_ = config.get_param<size_t>(FileWriterPlugin::CONFIG_PROCESS_NUMBER);
-    LOG4CXX_DEBUG(logger_, "Concurrent processes changed to " << this->concurrent_processes_);
+    size_t processes = config.get_param<size_t>(FileWriterPlugin::CONFIG_PROCESS_NUMBER);
+    if (this->concurrent_processes_ != processes) {
+      // If we are writing a file then we cannot change concurrent processes
+      if (this->writing_) {
+        LOG4CXX_ERROR(logger_, "Cannot change concurrent processes whilst writing");
+        throw std::runtime_error("Cannot change concurrent processes whilst writing");
+      }
+      this->concurrent_processes_ = processes;
+      LOG4CXX_DEBUG(logger_, "Concurrent processes changed to " << this->concurrent_processes_);
+    }
+    else {
+      LOG4CXX_DEBUG(logger_, "Concurrent processes is already " << this->concurrent_processes_);
+    }
   }
+  // Check for rank number
   if (config.has_param(FileWriterPlugin::CONFIG_PROCESS_RANK)) {
-    this->concurrent_rank_ = config.get_param<size_t>(FileWriterPlugin::CONFIG_PROCESS_RANK);
-    LOG4CXX_DEBUG(logger_, "Process rank changed to " << this->concurrent_rank_);
+    size_t rank = config.get_param<size_t>(FileWriterPlugin::CONFIG_PROCESS_RANK);
+    if (this->concurrent_rank_ != rank) {
+      // If we are writing a file then we cannot change concurrent rank
+      if (this->writing_) {
+        LOG4CXX_ERROR(logger_, "Cannot change process rank whilst writing");
+        throw std::runtime_error("Cannot change process rank whilst writing");
+      }
+      this->concurrent_rank_ = rank;
+      LOG4CXX_DEBUG(logger_, "Process rank changed to " << this->concurrent_rank_);
+    }
+    else {
+      LOG4CXX_DEBUG(logger_, "Process rank is already " << this->concurrent_rank_);
+    }
   }
 }
 
