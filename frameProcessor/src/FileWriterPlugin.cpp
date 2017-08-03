@@ -580,7 +580,8 @@ void FileWriterPlugin::checkFrameValid(boost::shared_ptr<Frame> frame)
     invalid = true;
   }
   if (invalid) {
-    throw std::runtime_error("Got invalid frame");
+    LOG4CXX_ERROR(logger_, "Frame invalid. Stopping write");
+    this->stopWriting();
   }
 }
 
