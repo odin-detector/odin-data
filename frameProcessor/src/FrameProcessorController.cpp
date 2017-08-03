@@ -394,10 +394,7 @@ void FrameProcessorController::loadPlugin(const std::string& index, const std::s
       throw std::runtime_error(is.str().c_str());
     }
   } else {
-    LOG4CXX_ERROR(logger_, "Cannot load plugin with index = " << index << ", already loaded");
-    std::stringstream is;
-    is << "Cannot load plugin with index = " << index << ", already loaded";
-    throw std::runtime_error(is.str().c_str());
+    LOG4CXX_INFO(logger_, "Plugin with index = " << index << ", already loaded");
   }
 }
 
