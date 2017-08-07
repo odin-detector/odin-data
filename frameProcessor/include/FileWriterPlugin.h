@@ -186,7 +186,7 @@ private:
   size_t adjustFrameOffset(size_t frame_no) const;
 
   void processFrame(boost::shared_ptr<Frame> frame);
-  void checkFrameValid(boost::shared_ptr<Frame> frame);
+  bool checkFrameValid(boost::shared_ptr<Frame> frame);
   size_t getDatasetFrames(const std::string dset_name);
   void checkAcquisitionID(boost::shared_ptr<Frame> frame);
 
