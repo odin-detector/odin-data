@@ -277,7 +277,7 @@ void FileWriterPlugin::createDataset(const FileWriterPlugin::DatasetDefinition& 
   ensureH5result(dataspace, "H5Screate_simple failed to create the dataspace");
 
   /* Enable chunking  */
-  LOG4CXX_DEBUG(logger_, "Chunking=" << chunk_dims[0] << ","
+  LOG4CXX_INFO(logger_, "Chunking=" << chunk_dims[0] << ","
                                      << chunk_dims[1] << ","
                                      << chunk_dims[2]);
   prop = H5Pcreate(H5P_DATASET_CREATE);
@@ -285,10 +285,10 @@ void FileWriterPlugin::createDataset(const FileWriterPlugin::DatasetDefinition& 
 
   /* Enable defined compression mode */
   if (definition.compression == no_compression) {
-    LOG4CXX_DEBUG(logger_, "Compression type: None");
+    LOG4CXX_INFO(logger_, "Compression type: None");
   }
   else if (definition.compression == lz4){
-    LOG4CXX_DEBUG(logger_, "Compression type: LZ4");
+    LOG4CXX_INFO(logger_, "Compression type: LZ4");
     // Create cd_values for filter to set the LZ4 compression level
     unsigned int cd_values = 3;
     size_t cd_values_length = 1;
@@ -296,7 +296,7 @@ void FileWriterPlugin::createDataset(const FileWriterPlugin::DatasetDefinition& 
                            cd_values_length, &cd_values), "H5Pset_filter failed to set the LZ4 filter");
   }
   else if (definition.compression == bslz4) {
-    LOG4CXX_DEBUG(logger_, "Compression type: BSLZ4");
+    LOG4CXX_INFO(logger_, "Compression type: BSLZ4");
     // Create cd_values for filter to set default block size and to enable LZ4
     unsigned int cd_values[2] = {0, 2};
     size_t cd_values_length = 2;
@@ -313,7 +313,7 @@ void FileWriterPlugin::createDataset(const FileWriterPlugin::DatasetDefinition& 
   ensureH5result(dapl, "H5Pcreate failed to create the dataset access property list");
 
   /* Create dataset  */
-  LOG4CXX_DEBUG(logger_, "Creating dataset: " << definition.name);
+  LOG4CXX_INFO(logger_, "Creating dataset: " << definition.name);
   FileWriterPlugin::HDF5Dataset_t dset;
   dset.datasetid = H5Dcreate2(this->hdf5_fileid_, definition.name.c_str(),
                               dtype, dataspace,
@@ -340,7 +340,7 @@ void FileWriterPlugin::createDataset(const FileWriterPlugin::DatasetDefinition& 
  * Close the currently open HDF5 file.
  */
 void FileWriterPlugin::closeFile() {
-  LOG4CXX_TRACE(logger_, "Closing file " << this->currentAcquisition_.filePath_ << "/" << this->currentAcquisition_.fileName_);
+  LOG4CXX_INFO(logger_, "Closing file " << this->currentAcquisition_.filePath_ << "/" << this->currentAcquisition_.fileName_);
   if (this->hdf5_fileid_ >= 0) {
     ensureH5result(H5Fclose(this->hdf5_fileid_), "H5Fclose failed to close the file");
     this->hdf5_fileid_ = 0;
@@ -686,7 +686,7 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
 
-  LOG4CXX_DEBUG(logger_, config.encode());
+  LOG4CXX_INFO(logger_, config.encode());
 
   // Check to see if we are configuring the process number and rank
   if (config.has_param(FileWriterPlugin::CONFIG_PROCESS)) {
@@ -714,7 +714,7 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
     if (totalFrames % this->concurrent_processes_ > this->concurrent_rank_) {
       nextAcquisition_.framesToWrite_++;
     }
-    LOG4CXX_DEBUG(logger_, "Expecting " << nextAcquisition_.framesToWrite_ << " frames "
+    LOG4CXX_INFO(logger_, "Expecting " << nextAcquisition_.framesToWrite_ << " frames "
                            "(total " << totalFrames << ")");
   }
 
@@ -725,7 +725,7 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
 
   // Check if we are setting the frame offset adjustment
   if (config.has_param(FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT)) {
-    LOG4CXX_DEBUG(logger_, "Setting frame offset adjustment to "
+    LOG4CXX_INFO(logger_, "Setting frame offset adjustment to "
                            << config.get_param<int>(FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT));
     frame_offset_adjustment_ = (size_t)config.get_param<int>(FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT);
   }
@@ -733,7 +733,7 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
   // Check to see if the acquisition id is being set
   if (config.has_param(FileWriterPlugin::ACQUISITION_ID)) {
     nextAcquisition_.acquisitionID_ = config.get_param<std::string>(FileWriterPlugin::ACQUISITION_ID);
-	LOG4CXX_DEBUG(logger_, "Setting next Acquisition ID to " << nextAcquisition_.acquisitionID_);
+	LOG4CXX_INFO(logger_, "Setting next Acquisition ID to " << nextAcquisition_.acquisitionID_);
   }
 
   // Final check is to start or stop writing
@@ -902,13 +902,13 @@ void FileWriterPlugin::configureDataset(OdinData::IpcMessage& config, OdinData::
       // Check if compression has been specified for the raw data
       if (config.has_param(FileWriterPlugin::CONFIG_DATASET_COMPRESSION)) {
         dset_def.compression = (FileWriterPlugin::CompressionType)config.get_param<int>(FileWriterPlugin::CONFIG_DATASET_COMPRESSION);
-        LOG4CXX_DEBUG(logger_, "Enabling compression: " << dset_def.compression);
+        LOG4CXX_INFO(logger_, "Enabling compression: " << dset_def.compression);
       }
       else {
         dset_def.compression = no_compression;
       }
 
-      LOG4CXX_DEBUG(logger_, "Creating dataset [" << dset_def.name << "] (" << dset_def.frame_dimensions[0] << ", " << dset_def.frame_dimensions[1] << ")");
+      LOG4CXX_INFO(logger_, "Creating dataset [" << dset_def.name << "] (" << dset_def.frame_dimensions[0] << ", " << dset_def.frame_dimensions[1] << ")");
       // Add the dataset definition to the store
       this->nextAcquisition_.dataset_defs_[dset_def.name] = dset_def;
     }

@@ -37,7 +37,7 @@
  <logger name="FR">
   <priority value="all" />
  </logger>
- <logger name="FR.APP">
+ <logger name="FR.App">
   <appender-ref ref="FrameReceiverAppender" />
  </logger>
  <logger name="FR.PacketLogger" additivity="false">

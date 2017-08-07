@@ -12,6 +12,7 @@ using namespace std;
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
 
+#include "logging.h"
 #include "FrameReceiverApp.h"
 
 using namespace FrameReceiver;
@@ -44,7 +45,8 @@ FrameReceiverApp::FrameReceiverApp(void) :
 {
 
   // Retrieve a logger instance
-  logger_ = Logger::getLogger("FR.APP");
+  OdinData::configure_logging_mdc(OdinData::app_path.c_str());
+  logger_ = Logger::getLogger("FR.App");
 
 }
 
