@@ -157,6 +157,7 @@ void FileWriterPlugin::writeFrame(const Frame& frame) {
   status = H5DOwrite_chunk(dset.datasetid, H5P_DEFAULT,
                            filter_mask, &offset.front(),
                            frame.get_data_size(), frame.get_data());
+  H5Dflush(dset.datasetid);
 
   // Send the meta message containing the frame written and the offset written to
   rapidjson::Document document;
@@ -634,6 +635,9 @@ void FileWriterPlugin::startWriting()
       dset_def.num_frames = currentAcquisition_.framesToWrite_;
       this->createDataset(dset_def);
     }
+
+    // Start SWMR writing
+    assert(H5Fstart_swmr_write(this->hdf5_fileid_) >= 0);
 
     // Reset counters
     framesWritten_ = 0;
