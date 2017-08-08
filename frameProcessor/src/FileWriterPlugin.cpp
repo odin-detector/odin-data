@@ -157,7 +157,14 @@ void FileWriterPlugin::writeFrame(const Frame& frame) {
   status = H5DOwrite_chunk(dset.datasetid, H5P_DEFAULT,
                            filter_mask, &offset.front(),
                            frame.get_data_size(), frame.get_data());
-  H5Dflush(dset.datasetid);
+  if (status < 0) {
+    throw RuntimeException("Failed to write chunk");
+  }
+
+  status = H5Dflush(dset.datasetid);
+  if (status < 0) {
+    throw RuntimeException("Failed to flush data to disk");
+  }
 
   // Send the meta message containing the frame written and the offset written to
   rapidjson::Document document;
@@ -192,8 +199,6 @@ void FileWriterPlugin::writeFrame(const Frame& frame) {
   document.Accept(writer);
 
   publishMeta("writeframe", buffer.GetString(), getMetaHeader());
-
-  assert(status >= 0);
 }
 
 /**
@@ -637,7 +642,10 @@ void FileWriterPlugin::startWriting()
     }
 
     // Start SWMR writing
-    assert(H5Fstart_swmr_write(this->hdf5_fileid_) >= 0);
+    herr_t status = H5Fstart_swmr_write(this->hdf5_fileid_);
+    if (status < 0) {
+      throw RuntimeException("Failed to enable SWMR writing");
+    }
 
     // Reset counters
     framesWritten_ = 0;
