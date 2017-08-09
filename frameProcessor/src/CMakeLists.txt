@@ -37,7 +37,7 @@ target_link_libraries(DummyPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_
 install(TARGETS DummyPlugin DESTINATION lib)
 
 # Add library for HDF5 writer plugin
-add_library(Hdf5Plugin SHARED FileWriterPlugin.cpp)
+add_library(Hdf5Plugin SHARED FileWriterPlugin.cpp FileWriterPluginLib.cpp)
 target_link_libraries(Hdf5Plugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${COMMON_LIBRARY})
 install(TARGETS Hdf5Plugin DESTINATION lib)
 
