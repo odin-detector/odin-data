@@ -161,10 +161,12 @@ void FileWriterPlugin::writeFrame(const Frame& frame) {
     throw RuntimeException("Failed to write chunk");
   }
 
+#if H5_VERSION_GE(1,9,178)
   status = H5Dflush(dset.datasetid);
   if (status < 0) {
     throw RuntimeException("Failed to flush data to disk");
   }
+#endif
 
   // Send the meta message containing the frame written and the offset written to
   rapidjson::Document document;
@@ -641,11 +643,13 @@ void FileWriterPlugin::startWriting()
       this->createDataset(dset_def);
     }
 
+#if H5_VERSION_GE(1,9,178)
     // Start SWMR writing
     herr_t status = H5Fstart_swmr_write(this->hdf5_fileid_);
     if (status < 0) {
       throw RuntimeException("Failed to enable SWMR writing");
     }
+#endif
 
     // Reset counters
     framesWritten_ = 0;
