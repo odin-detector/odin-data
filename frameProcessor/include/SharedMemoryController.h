@@ -41,7 +41,8 @@ class SharedMemoryController
 public:
   SharedMemoryController(boost::shared_ptr<OdinData::IpcReactor> reactor, const std::string& rxEndPoint, const std::string& txEndPoint);
   virtual ~SharedMemoryController();
-  void setSharedBufferManager(boost::shared_ptr<OdinData::SharedBufferManager> sbm);
+  void setSharedBufferManager(const std::string& shared_buffer_name);
+  void requestSharedBufferConfig(const bool deferred=false);
   void registerCallback(const std::string& name, boost::shared_ptr<IFrameCallback> cb);
   void removeCallback(const std::string& name);
   void handleRxChannel();

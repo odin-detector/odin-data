@@ -318,7 +318,7 @@ void FrameReceiverApp::run(void)
 
     // Add timers to the reactor
     //int rxPingTimer = reactor_.add_timer(1000, 0, boost::bind(&FrameReceiverApp::rxPingTimerHandler, this));
-    //int timer2 = reactor_.add_timer(1500, 0, boost::bind(&FrameReceiverApp::timerHandler2, this));
+    //int timer2 = reactor_.register_timer(1500, 0, boost::bind(&FrameReceiverApp::timer_handler2, this));
 
     // Create the appropriate frame decoder
     initialise_frame_decoder();
@@ -344,6 +344,9 @@ void FrameReceiverApp::run(void)
 
     // Pre-charge all frame buffers onto the RX thread queue ready for use
     precharge_buffers();
+
+    // Notify downstream processes of current buffer configuration
+    notify_buffer_config(true);
 
     LOG4CXX_DEBUG_LEVEL(1, logger_, "Main thread entering reactor loop");
 
@@ -487,6 +490,26 @@ void FrameReceiverApp::precharge_buffers(void)
   }
 }
 
+void FrameReceiverApp::notify_buffer_config(const bool deferred)
+{
+  // Notify downstream applications listening on the frame ready channel of the current shared buffer
+  // configuration.
+
+  if (deferred)
+  {
+    reactor_.register_timer(1000, 1, boost::bind(&FrameReceiverApp::notify_buffer_config, this, false));
+  }
+  else
+  {
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Notifying downstream processes of shared buffer configuration");
+
+    IpcMessage config_msg(IpcMessage::MsgTypeNotify, IpcMessage::MsgValNotifyBufferConfig);
+    config_msg.set_param("shared_buffer_name", config_.shared_buffer_name_);
+
+    frame_ready_channel_.send(config_msg.encode());
+  }
+}
+
 void FrameReceiverApp::handle_ctrl_channel(void)
 {
   // Receive a request message from the control channel
@@ -575,6 +598,12 @@ void FrameReceiverApp::handle_frame_release_channel(void)
         stop();
         reactor_.stop();
       }
+    }
+    else if ((frame_release.get_msg_type() == IpcMessage::MsgTypeCmd) &&
+             (frame_release.get_msg_val() == IpcMessage::MsgValCmdBufferConfigRequest))
+    {
+      LOG4CXX_DEBUG_LEVEL(2, logger_, "Got shared buffer config request from processor");
+      notify_buffer_config(false);
     }
     else
     {
