@@ -46,14 +46,95 @@ class FrameProcessor(object):
         self.ctrl_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_REQ)
         self.ready_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_SUB)
         self.release_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_PUB)
+
+        # Zero frames recevied counter
+        self.frames_received = 0
         
+        # Create the thread to handle frame processing
+        self.frame_processor = threading.Thread(target=self.process_frames)
+        self.frame_processor.daemon = True
+    
+        self._run = True
+        
+    def map_shared_buffer(self):
+        
+        success = False
+        
+        # Check if the current configuration object has a shared buffer name defined, otherwise request one from the
+        # upstream frameReceiver
+        if self.config.sharedbuf is None:
+            if not self.request_shared_buffer_config():
+                return success
+            
         # Map the shared buffer manager
         try:
             self.shared_buffer_manager = SharedBufferManager(self.config.sharedbuf, boost_mmap_mode=self.config.boost_mmap_mode)
+            success = True
         except SharedBufferManagerException as e:
             self.logger.error("Failed to create shared buffer manager: %s" % str(e))
-            sys.exit(1)
+            
+        return success
+                
+    def request_shared_buffer_config(self):
         
+        success = False
+
+        max_request_retries = 10
+        max_reply_retries = 10
+        
+        request_retries = 0
+        config_request = IpcMessage(msg_type='cmd', msg_val='request_buffer_config')        
+        
+        while success is False and request_retries < max_request_retries:
+
+            self.logger.debug("Sending buffer config request {}".format(request_retries + 1))
+            self.release_channel.send(config_request.encode())
+            reply_retries = 0
+            
+            while success is False and reply_retries < max_reply_retries:
+                if self.ready_channel.poll(100):
+                    config_msg = self.ready_channel.recv()
+                    config_decoded = IpcMessage(from_str = config_msg)
+                    self.logger.debug(
+                        'Got buffer configuration response with shared buffer name: {}'.format(
+                            config_decoded.get_param('shared_buffer_name')
+                        )
+                    )
+                    self.config.sharedbuf = config_decoded.get_param('shared_buffer_name')
+                    success = True
+                else:
+                    reply_retries += 1
+                    
+            request_retries += 1
+                    
+        # temp hack
+        if not success:
+            self.logger.error("Failed to obtain shared buffer configuration")
+            
+        return success
+    
+    def run(self):
+        
+        self.logger.info("Frame processor starting up")
+
+        # Connect the IPC channels
+        self.ctrl_channel.connect(self.config.ctrl_endpoint)
+        self.ready_channel.connect(self.config.ready_endpoint)
+        self.release_channel.connect(self.config.release_endpoint)
+
+        # Ready channel subscribes to all topics
+        self.ready_channel.subscribe(b'')
+                                  
+        # Map the shared buffer manager - quit if this fails       
+        if not self.map_shared_buffer():
+            self._run = False
+            return
+        
+        self.logger.info("Mapped shared buffer manager ID %d with %d buffers of size %d" % 
+                     (self.shared_buffer_manager.get_manager_id(), 
+                      self.shared_buffer_manager.get_num_buffers(),
+                      self.shared_buffer_manager.get_buffer_size()))
+                 
         if self.config.sensortype == 'percivalemulator':    
             self.frame_decoder = PercivalEmulatorFrameDecoder(self.shared_buffer_manager)
             self.logger.debug('Loaded frame decoder for PERCIVAL emulator sensor type')
@@ -63,34 +144,9 @@ class FrameProcessor(object):
         else:
             self.frame_decoder = None
             self.logger.error("Unrecognised sensor type specified: %s" % self.config.sensortype)
-            sys.exit(1)
+            return
         
-        # Zero frames recevied counter
-        self.frames_received = 0
-        
-        # Create the thread to handle frame processing
-        self.frame_processor = threading.Thread(target=self.process_frames)
-        self.frame_processor.daemon = True
-    
-        self._run = True
-                
-    def run(self):
-        
-        self.logger.info("Frame processor starting up")
-        
-        self.logger.info("Mapped shared buffer manager ID %d with %d buffers of size %d" % 
-                     (self.shared_buffer_manager.get_manager_id(), 
-                      self.shared_buffer_manager.get_num_buffers(),
-                      self.shared_buffer_manager.get_buffer_size()))
 
-        # Connect the IPC channels
-        self.ctrl_channel.connect(self.config.ctrl_endpoint)
-        self.ready_channel.connect(self.config.ready_endpoint)
-        self.release_channel.connect(self.config.release_endpoint)
-        
-        # Ready channel subscribes to all topics
-        self.ready_channel.subscribe(b'')
-        
         # Launch the frame processing thread
         self.frame_processor.start()
         
@@ -114,7 +170,7 @@ class FrameProcessor(object):
         except KeyboardInterrupt:
             
             self.logger.info("Got interrupt, terminating")
-            self._run = False;
+            self._run = False
             
         self.frame_processor.join()
         self.logger.info("Frame processor shutting down")
@@ -146,9 +202,14 @@ class FrameProcessor(object):
                     
                     self.frames_received += 1
                     
+                elif ready_decoded.get_msg_type() == 'notify' and ready_decoded.get_msg_val() == 'buffer_config':
+                    
+                    shared_buffer_name = ready_decoded.get_param('shared_buffer_name')
+                    self.logger.debug('Got shared buffer config notification with name %s' % (shared_buffer_name))
+                    
                 else:
                     
-                    self.logger.error("Got unexpected message on ready notification channel:", ready_decoded)
+                    self.logger.error("Got unexpected message on ready notification channel: %s" % (ready_decoded))
         
         self.logger.info("Frame processing thread interrupted, terminating")
         

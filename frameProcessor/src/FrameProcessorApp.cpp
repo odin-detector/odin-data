@@ -16,6 +16,7 @@ using namespace std;
 #include <log4cxx/basicconfigurator.h>
 #include <log4cxx/propertyconfigurator.h>
 #include <log4cxx/helpers/exception.h>
+#include <log4cxx/xml/domconfigurator.h>
 using namespace log4cxx;
 using namespace log4cxx::helpers;
 
@@ -33,6 +34,12 @@ using namespace rapidjson;
 #include "FrameProcessorController.h"
 
 using namespace FrameProcessor;
+
+static bool has_suffix(const std::string &str, const std::string &suffix)
+{
+  return str.size() >= suffix.size() &&
+      str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
+}
 
 void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& logger)
 {
@@ -57,8 +64,6 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
            "Set the log4cxx logging configuration file")
         ("ctrl",          po::value<std::string>()->default_value("tcp://127.0.0.1:5004"),
            "Set the control endpoint")
-        ("sharedbuf",     po::value<std::string>()->default_value("FrameReceiverBuffer"),
-           "Set the name of the shared memory frame buffer")
         ("ready",         po::value<std::string>()->default_value("tcp://127.0.0.1:5001"),
            "Ready ZMQ endpoint from frameReceiver")
         ("release",       po::value<std::string>()->default_value("tcp://127.0.0.1:5002"),
@@ -140,7 +145,12 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
 
     if (vm.count("logconfig"))
     {
-      PropertyConfigurator::configure(vm["logconfig"].as<string>());
+      std::string logconf_fname = vm["logconfig"].as<string>();
+      if (has_suffix(logconf_fname, ".xml")) {
+        log4cxx::xml::DOMConfigurator::configure(logconf_fname);
+      } else {
+        PropertyConfigurator::configure(logconf_fname);
+      }
       LOG4CXX_DEBUG(logger, "log4cxx config file is set to " << vm["logconfig"].as<string>());
     }
 
@@ -279,7 +289,6 @@ void configureController(boost::shared_ptr<FrameProcessorController> fwc,
   OdinData::IpcMessage reply;
 
   // Configure ZMQ channels
-  cfg.set_param<string>("fr_setup/fr_shared_mem", vm["sharedbuf"].as<string>());
   cfg.set_param<string>("fr_setup/fr_ready_cnxn", vm["ready"].as<string>());
   cfg.set_param<string>("fr_setup/fr_release_cnxn", vm["release"].as<string>());
   cfg.set_param<string>("meta_endpoint", vm["meta"].as<string>());

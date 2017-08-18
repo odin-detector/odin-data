@@ -69,6 +69,7 @@ private:
   void initialise_frame_decoder(void);
   void initialise_buffer_manager(void);
   void precharge_buffers(void);
+  void notify_buffer_config(const bool deferred=false);
 
   void handle_ctrl_channel(void);
   void handle_rx_channel(void);
