@@ -122,6 +122,7 @@ public:
   void status(OdinData::IpcMessage& status);
   void hdfErrorHandler(unsigned n, const H5E_error2_t *err_desc);
   bool checkForHdfErrors();
+  void handleH5error(std::string message, std::string function, std::string filename, int line, bool throwException=true) const;
   std::vector<std::string> readHdfErrors();
   void clearHdfErrors();
   std::string getCreateMetaHeader();
