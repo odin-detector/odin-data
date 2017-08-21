@@ -217,12 +217,6 @@ private:
   Acquisition nextAcquisition_;
 };
 
-/**
- * Registration of this plugin through the ClassLoader. This macro
- * registers the class without needing to worry about name mangling
- */
-REGISTER(FrameProcessorPlugin, FileWriterPlugin, "FileWriterPlugin");
-
 } /* namespace FrameProcessor */
 
 #endif /* TOOLS_FileWriterPlugin_FileWriterPlugin_H_ */
