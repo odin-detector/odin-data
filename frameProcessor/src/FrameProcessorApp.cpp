@@ -101,7 +101,7 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
            "Shutdown after one dataset completed")
         ("frames,f",      po::value<unsigned int>()->default_value(0),
            "Set the number of frames to write into dataset")
-        ("acqid",     po::value<std::string>(),
+        ("acqid",         po::value<std::string>()->default_value(""),
            "Set the Acquisition Id of the acquisition")
     ;
 
