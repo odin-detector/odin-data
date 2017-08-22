@@ -1071,13 +1071,11 @@ std::string FileWriterPlugin::getMetaHeader() {
  * \param[in] line - The line number of the call
  * \param[in] throwException - Whether to throw an exception or not
  */
-void FileWriterPlugin::handleH5error(std::string message, std::string function, std::string filename, int line, bool throwException) const {
+void FileWriterPlugin::handleH5error(std::string message, std::string function, std::string filename, int line) const {
   std::stringstream err;
   err << "H5 function error: (" << message << ") in " << filename << ":" << line << ": " << function;
   LOG4CXX_ERROR(logger_, err.str());
-  if (throwException) {
-    throw std::runtime_error(err.str().c_str());
-  }
+  throw std::runtime_error(err.str().c_str());
 }
 
 } /* namespace FrameProcessor */
