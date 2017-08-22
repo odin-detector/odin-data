@@ -143,11 +143,19 @@ void FileWriterPlugin::createFile(std::string filename, size_t chunk_align)
 void FileWriterPlugin::writeFrame(const Frame& frame) {
   hsize_t frame_no = frame.get_frame_number();
 
+  LOG4CXX_TRACE(logger_, "Writing frame [" << frame.get_frame_number()
+		  << "] size [" << frame.get_data_size()
+		  << "] type [" << frame.get_data_type()
+		  << "] name [" << frame.get_dataset_name() << "]");
   HDF5Dataset_t& dset = this->get_hdf5_dataset(frame.get_dataset_name());
 
   hsize_t frame_offset = 0;
   frame_offset = this->getFrameOffset(frame_no);
-  this->extend_dataset(dset, frame_offset + 1);
+  // We will need to extend the dataset in 1 dimension by the outer chunk dimension
+  // For 3D datasets this would normally be 1 (a 2D image)
+  // For 1D datasets this would normally be the quantity of data items present in a single chunk
+  uint64_t outer_chunk_dimension = this->currentAcquisition_.dataset_defs_[frame.get_dataset_name()].chunks[0];
+  this->extend_dataset(dset, ((frame_offset + 1) * outer_chunk_dimension));
 
   LOG4CXX_TRACE(logger_, "Writing frame offset=" << frame_no  <<
                          " (" << frame_offset << ")" <<
@@ -155,7 +163,7 @@ void FileWriterPlugin::writeFrame(const Frame& frame) {
 
   // Set the offset
   std::vector<hsize_t>offset(dset.dataset_dimensions.size());
-  offset[0] = frame_offset;
+  offset[0] = frame_offset * outer_chunk_dimension;
 
   uint32_t filter_mask = 0x0;
   ensureH5result(H5DOwrite_chunk(dset.datasetid, H5P_DEFAULT,
@@ -277,9 +285,12 @@ void FileWriterPlugin::createDataset(const FileWriterPlugin::DatasetDefinition& 
   ensureH5result(dataspace, "H5Screate_simple failed to create the dataspace");
 
   /* Enable chunking  */
-  LOG4CXX_INFO(logger_, "Chunking=" << chunk_dims[0] << ","
-                                     << chunk_dims[1] << ","
-                                     << chunk_dims[2]);
+  std::stringstream ss;
+  ss << "Chunking = " << chunk_dims[0];
+  for (int index = 1; index < chunk_dims.size(); index++){
+	  ss << "," << chunk_dims[index];
+  }
+  LOG4CXX_DEBUG(logger_, ss.str());
   prop = H5Pcreate(H5P_DATASET_CREATE);
   ensureH5result(prop, "H5Pcreate failed to create the dataset");
 
@@ -872,7 +883,7 @@ void FileWriterPlugin::configureDataset(OdinData::IpcMessage& config, OdinData::
         throw std::runtime_error("Cannot create a dataset without a data type");
       }
 
-      // There must be dimensions present for the dataset
+      // There may be dimensions present for the dataset
       if (config.has_param(FileWriterPlugin::CONFIG_DATASET_DIMS)) {
         const rapidjson::Value& val = config.get_param<const rapidjson::Value&>(FileWriterPlugin::CONFIG_DATASET_DIMS);
         // Loop over the dimension values
@@ -883,8 +894,10 @@ void FileWriterPlugin::configureDataset(OdinData::IpcMessage& config, OdinData::
         }
         dset_def.frame_dimensions = dims;
       } else {
-        LOG4CXX_ERROR(logger_, "Cannot create a dataset without dimensions");
-        throw std::runtime_error("Cannot create a dataset without dimensions");
+    	  // This is a single dimensioned dataset so store dimensions as NULL
+          dimensions_t dims(0);
+    	  dset_def.frame_dimensions = dims;
+          //throw std::runtime_error("Cannot create a dataset without dimensions");
       }
 
       // There might be chunking dimensions present for the dataset, this is not required
@@ -908,7 +921,11 @@ void FileWriterPlugin::configureDataset(OdinData::IpcMessage& config, OdinData::
         dset_def.compression = no_compression;
       }
 
-      LOG4CXX_INFO(logger_, "Creating dataset [" << dset_def.name << "] (" << dset_def.frame_dimensions[0] << ", " << dset_def.frame_dimensions[1] << ")");
+      if (dset_def.frame_dimensions.size() > 0){
+          LOG4CXX_DEBUG(logger_, "Creating dataset [" << dset_def.name << "] (" << dset_def.frame_dimensions[0] << ", " << dset_def.frame_dimensions[1] << ")");
+      } else {
+          LOG4CXX_DEBUG(logger_, "Creating 1D dataset [" << dset_def.name << "] with no additional dimensions");
+      }
       // Add the dataset definition to the store
       this->nextAcquisition_.dataset_defs_[dset_def.name] = dset_def;
     }
