@@ -35,20 +35,16 @@ const std::string FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT   = "offset";
 const std::string FileWriterPlugin::CONFIG_WRITE               = "write";
 const std::string FileWriterPlugin::ACQUISITION_ID             = "acquisition_id";
 
+#define ensureH5result(success, message) ((success >= 0)                          \
+  ? static_cast<void> (0)                                                    \
+  : handleH5error(message, __PRETTY_FUNCTION__, __FILE__, __LINE__))
+
 herr_t hdf5_error_cb(unsigned n, const H5E_error2_t *err_desc, void* client_data)
 {
   FileWriterPlugin *fwPtr = (FileWriterPlugin *)client_data;
   fwPtr->hdfErrorHandler(n, err_desc);
   return 0;
 }
-
-#define ensureH5result(success, message) ((success >= 0)                          \
-  ? static_cast<void> (0)                                                    \
-  : handleH5error(message, __PRETTY_FUNCTION__, __FILE__, __LINE__))
-
-#define checkH5result(success, message) ((success >= 0)                           \
-  ? static_cast<void> (0)                                                    \
-  : handleH5error(message, __PRETTY_FUNCTION__, __FILE__, __LINE__, false))
 
 /**
  * Create a FileWriterPlugin with default values.
@@ -72,8 +68,8 @@ FileWriterPlugin::FileWriterPlugin() :
   this->logger_->setLevel(Level::getTrace());
   LOG4CXX_TRACE(logger_, "FileWriterPlugin constructor.");
 
-  checkH5result(H5Eset_auto2(H5E_DEFAULT, NULL, NULL), "H5Eset_auto2 failed");
-  checkH5result(H5Ewalk2(H5E_DEFAULT, H5E_WALK_DOWNWARD, hdf5_error_cb, this), "H5Ewalk2 failed");
+  ensureH5result(H5Eset_auto2(H5E_DEFAULT, NULL, NULL), "H5Eset_auto2 failed");
+  ensureH5result(H5Ewalk2(H5E_DEFAULT, H5E_WALK_DOWNWARD, hdf5_error_cb, this), "H5Ewalk2 failed");
   //H5Eset_auto2(H5E_DEFAULT, my_hdf5_error_handler, NULL);
 }
 
