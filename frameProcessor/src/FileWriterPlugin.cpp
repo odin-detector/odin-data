@@ -35,7 +35,7 @@ const std::string FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT   = "offset";
 const std::string FileWriterPlugin::CONFIG_WRITE               = "write";
 const std::string FileWriterPlugin::ACQUISITION_ID             = "acquisition_id";
 
-#define ensureH5result(success, message) ((success >= 0)                          \
+#define ensureH5result(success, message) ((success >= 0)                     \
   ? static_cast<void> (0)                                                    \
   : handleH5error(message, __PRETTY_FUNCTION__, __FILE__, __LINE__))
 
@@ -1063,13 +1063,12 @@ std::string FileWriterPlugin::getMetaHeader() {
 }
 
 /**
- * Handles an HDF5 error. Logs the error, and throws a runtime exception if required
+ * Handles an HDF5 error. Logs the error and throws a runtime exception
  *
  * \param[in] message - The error message to log
  * \param[in] function - The function that had the error
  * \param[in] filename - The filename
  * \param[in] line - The line number of the call
- * \param[in] throwException - Whether to throw an exception or not
  */
 void FileWriterPlugin::handleH5error(std::string message, std::string function, std::string filename, int line) const {
   std::stringstream err;
