@@ -42,11 +42,11 @@ herr_t hdf5_error_cb(unsigned n, const H5E_error2_t *err_desc, void* client_data
   return 0;
 }
 
-#define ensureH5result(success, message) ((success)                          \
+#define ensureH5result(success, message) ((success >= 0)                          \
   ? static_cast<void> (0)                                                    \
   : handleH5error(message, __PRETTY_FUNCTION__, __FILE__, __LINE__))
 
-#define checkH5result(success, message) ((success)                           \
+#define checkH5result(success, message) ((success >= 0)                           \
   ? static_cast<void> (0)                                                    \
   : handleH5error(message, __PRETTY_FUNCTION__, __FILE__, __LINE__, false))
 
@@ -72,8 +72,8 @@ FileWriterPlugin::FileWriterPlugin() :
   this->logger_->setLevel(Level::getTrace());
   LOG4CXX_TRACE(logger_, "FileWriterPlugin constructor.");
 
-  checkH5result(H5Eset_auto2(H5E_DEFAULT, NULL, NULL) >= 0, "H5Eset_auto2 failed");
-  checkH5result(H5Ewalk2(H5E_DEFAULT, H5E_WALK_DOWNWARD, hdf5_error_cb, this) >= 0, "H5Ewalk2 failed");
+  checkH5result(H5Eset_auto2(H5E_DEFAULT, NULL, NULL), "H5Eset_auto2 failed");
+  checkH5result(H5Ewalk2(H5E_DEFAULT, H5E_WALK_DOWNWARD, hdf5_error_cb, this), "H5Ewalk2 failed");
   //H5Eset_auto2(H5E_DEFAULT, my_hdf5_error_handler, NULL);
 }
 
@@ -105,19 +105,19 @@ void FileWriterPlugin::createFile(std::string filename, size_t chunk_align)
 
   // Create file access property list
   fapl = H5Pcreate(H5P_FILE_ACCESS);
-  ensureH5result(fapl >= 0, "H5Pcreate failed to create the file access property list");
+  ensureH5result(fapl, "H5Pcreate failed to create the file access property list");
 
-  ensureH5result(H5Pset_fclose_degree(fapl, H5F_CLOSE_STRONG) >= 0, "H5Pset_fclose_degree failed");
+  ensureH5result(H5Pset_fclose_degree(fapl, H5F_CLOSE_STRONG), "H5Pset_fclose_degree failed");
 
   // Set chunk boundary alignment to 4MB
-  ensureH5result( H5Pset_alignment( fapl, 65536, 4*1024*1024 ) >= 0, "H5Pset_alignment failed");
+  ensureH5result( H5Pset_alignment( fapl, 65536, 4*1024*1024 ), "H5Pset_alignment failed");
 
   // Set to use the latest library format
-  ensureH5result(H5Pset_libver_bounds(fapl, H5F_LIBVER_LATEST, H5F_LIBVER_LATEST) >= 0, "H5Pset_libver_bounds failed");
+  ensureH5result(H5Pset_libver_bounds(fapl, H5F_LIBVER_LATEST, H5F_LIBVER_LATEST), "H5Pset_libver_bounds failed");
 
   // Create file creation property list
   fcpl = H5Pcreate(H5P_FILE_CREATE);
-  ensureH5result(fcpl >= 0, "H5Pcreate failed to create the file creation property list");
+  ensureH5result(fcpl, "H5Pcreate failed to create the file creation property list");
 
   // Creating the file with SWMR write access
   LOG4CXX_INFO(logger_, "Creating file: " << filename);
@@ -125,14 +125,14 @@ void FileWriterPlugin::createFile(std::string filename, size_t chunk_align)
   this->hdf5_fileid_ = H5Fcreate(filename.c_str(), flags, fcpl, fapl);
   if (this->hdf5_fileid_ < 0) {
     // Close file access property list
-	ensureH5result(H5Pclose(fapl) >= 0, "H5Pclose failed after create file failed");
+	ensureH5result(H5Pclose(fapl), "H5Pclose failed after create file failed");
     // Now throw a runtime error to explain that the file could not be created
     std::stringstream err;
     err << "Could not create file " << filename;
     throw std::runtime_error(err.str().c_str());
   }
   // Close file access property list
-  ensureH5result(H5Pclose(fapl) >= 0, "H5Pclose failed to close the file access property list");
+  ensureH5result(H5Pclose(fapl), "H5Pclose failed to close the file access property list");
 
   // Send meta data message to notify of file creation
   publishMeta("createfile", filename, getCreateMetaHeader());
@@ -163,10 +163,10 @@ void FileWriterPlugin::writeFrame(const Frame& frame) {
   uint32_t filter_mask = 0x0;
   ensureH5result(H5DOwrite_chunk(dset.datasetid, H5P_DEFAULT,
                            filter_mask, &offset.front(),
-                           frame.get_data_size(), frame.get_data()) >= 0, "H5DOwrite_chunk failed");
+                           frame.get_data_size(), frame.get_data()), "H5DOwrite_chunk failed");
 
 #if H5_VERSION_GE(1,9,178)
-  ensureH5result(H5Dflush(dset.datasetid) >= 0, "Failed to flush data to disk");
+  ensureH5result(H5Dflush(dset.datasetid), "Failed to flush data to disk");
 #endif
 
   // Send the meta message containing the frame written and the offset written to
@@ -241,7 +241,7 @@ void FileWriterPlugin::writeSubFrames(const Frame& frame) {
     ensureH5result(H5DOwrite_chunk(dset.datasetid, H5P_DEFAULT,
                              filter_mask, &offset.front(),
                              frame.get_parameter("subframe_size"),
-                             (static_cast<const char*>(frame.get_data())+(i*frame.get_parameter("subframe_size")))) >= 0, "H5DOwrite_chunk failed");
+                             (static_cast<const char*>(frame.get_data())+(i*frame.get_parameter("subframe_size")))), "H5DOwrite_chunk failed");
   }
 }
 
@@ -277,14 +277,14 @@ void FileWriterPlugin::createDataset(const FileWriterPlugin::DatasetDefinition& 
 
   /* Create the dataspace with the given dimensions - and max dimensions */
   dataspace = H5Screate_simple(dset_dims.size(), &dset_dims.front(), &max_dims.front());
-  ensureH5result(dataspace >= 0, "H5Screate_simple failed to create the dataspace");
+  ensureH5result(dataspace, "H5Screate_simple failed to create the dataspace");
 
   /* Enable chunking  */
   LOG4CXX_DEBUG(logger_, "Chunking=" << chunk_dims[0] << ","
                                      << chunk_dims[1] << ","
                                      << chunk_dims[2]);
   prop = H5Pcreate(H5P_DATASET_CREATE);
-  checkH5result(prop >= 0, "H5Pcreate failed to create the dataset");
+  ensureH5result(prop, "H5Pcreate failed to create the dataset");
 
   /* Enable defined compression mode */
   if (definition.compression == no_compression) {
@@ -296,7 +296,7 @@ void FileWriterPlugin::createDataset(const FileWriterPlugin::DatasetDefinition& 
     unsigned int cd_values = 3;
     size_t cd_values_length = 1;
     ensureH5result(H5Pset_filter(prop, LZ4_FILTER, H5Z_FLAG_MANDATORY,
-                           cd_values_length, &cd_values) >= 0, "H5Pset_filter failed to set the LZ4 filter");
+                           cd_values_length, &cd_values), "H5Pset_filter failed to set the LZ4 filter");
   }
   else if (definition.compression == bslz4) {
     LOG4CXX_DEBUG(logger_, "Compression type: BSLZ4");
@@ -304,16 +304,16 @@ void FileWriterPlugin::createDataset(const FileWriterPlugin::DatasetDefinition& 
     unsigned int cd_values[2] = {0, 2};
     size_t cd_values_length = 2;
     ensureH5result(H5Pset_filter(prop, BSLZ4_FILTER, H5Z_FLAG_MANDATORY,
-                           cd_values_length, cd_values) >= 0, "H5Pset_filter failed to set the BSLZ4 filter");
+                           cd_values_length, cd_values), "H5Pset_filter failed to set the BSLZ4 filter");
   }
 
-  ensureH5result(H5Pset_chunk(prop, dset_dims.size(), &chunk_dims.front()) >= 0, "H5Pset_chunk failed");
+  ensureH5result(H5Pset_chunk(prop, dset_dims.size(), &chunk_dims.front()), "H5Pset_chunk failed");
 
   char fill_value[8] = {0,0,0,0,0,0,0,0};
-  ensureH5result(H5Pset_fill_value(prop, dtype, fill_value) >= 0, "H5Pset_fill_value failed");
+  ensureH5result(H5Pset_fill_value(prop, dtype, fill_value), "H5Pset_fill_value failed");
 
   dapl = H5Pcreate(H5P_DATASET_ACCESS);
-  checkH5result(dapl >= 0, "H5Pcreate failed to create the dataset access property list");
+  ensureH5result(dapl, "H5Pcreate failed to create the dataset access property list");
 
   /* Create dataset  */
   LOG4CXX_DEBUG(logger_, "Creating dataset: " << definition.name);
@@ -323,9 +323,9 @@ void FileWriterPlugin::createDataset(const FileWriterPlugin::DatasetDefinition& 
                               H5P_DEFAULT, prop, dapl);
   if (dset.datasetid < 0) {
     // Unable to create the dataset, clean up resources
-    ensureH5result( H5Pclose(prop) >= 0, "H5Pclose failed to close the prop after failing to create the dataset");
-    ensureH5result( H5Pclose(dapl) >= 0, "H5Pclose failed to close the dapl after failing to create the dataset");
-    ensureH5result( H5Sclose(dataspace) >= 0, "H5Pclose failed to close the dataspace after failing to create the dataset");
+    ensureH5result( H5Pclose(prop), "H5Pclose failed to close the prop after failing to create the dataset");
+    ensureH5result( H5Pclose(dapl), "H5Pclose failed to close the dapl after failing to create the dataset");
+    ensureH5result( H5Sclose(dataspace), "H5Pclose failed to close the dataspace after failing to create the dataset");
     // Now throw a runtime error to notify that the dataset could not be created
     throw std::runtime_error("Unable to create the dataset");
   }
@@ -334,9 +334,9 @@ void FileWriterPlugin::createDataset(const FileWriterPlugin::DatasetDefinition& 
   this->hdf5_datasets_[definition.name] = dset;
 
   LOG4CXX_DEBUG(logger_, "Closing intermediate open HDF objects");
-  ensureH5result( H5Pclose(prop) >= 0, "H5Pclose failed to close the prop");
-  ensureH5result( H5Pclose(dapl) >= 0, "H5Pclose failed to close the dapl");
-  ensureH5result( H5Sclose(dataspace) >= 0, "H5Pclose failed to close the dataspace");
+  ensureH5result( H5Pclose(prop), "H5Pclose failed to close the prop");
+  ensureH5result( H5Pclose(dapl), "H5Pclose failed to close the dapl");
+  ensureH5result( H5Sclose(dataspace), "H5Pclose failed to close the dataspace");
 }
 
 /**
@@ -345,7 +345,7 @@ void FileWriterPlugin::createDataset(const FileWriterPlugin::DatasetDefinition& 
 void FileWriterPlugin::closeFile() {
   LOG4CXX_TRACE(logger_, "Closing file " << this->currentAcquisition_.filePath_ << "/" << this->currentAcquisition_.fileName_);
   if (this->hdf5_fileid_ >= 0) {
-    ensureH5result(H5Fclose(this->hdf5_fileid_) >= 0, "H5Fclose failed to close the file");
+    ensureH5result(H5Fclose(this->hdf5_fileid_), "H5Fclose failed to close the file");
     this->hdf5_fileid_ = 0;
     // Send meta data message to notify of file creation
     publishMeta("closefile", "", getMetaHeader());
@@ -486,7 +486,7 @@ void FileWriterPlugin::extend_dataset(HDF5Dataset_t& dset, size_t frame_no) cons
     LOG4CXX_DEBUG(logger_, "Extending dataset_dimensions[0] = " << frame_no);
     dset.dataset_dimensions[0] = frame_no;
     ensureH5result(H5Dset_extent( dset.datasetid,
-                            &dset.dataset_dimensions.front()) >= 0, "H5Dset_extent failed to extend the dataset");
+                            &dset.dataset_dimensions.front()), "H5Dset_extent failed to extend the dataset");
   }
 }
 
@@ -639,7 +639,7 @@ void FileWriterPlugin::startWriting()
 
 #if H5_VERSION_GE(1,9,178)
     // Start SWMR writing
-    ensureH5result(H5Fstart_swmr_write(this->hdf5_fileid_) >= 0, "Failed to enable SWMR writing");
+    ensureH5result(H5Fstart_swmr_write(this->hdf5_fileid_), "Failed to enable SWMR writing");
 #endif
 
     // Reset counters
