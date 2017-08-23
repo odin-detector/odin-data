@@ -154,8 +154,11 @@ void FileWriterPlugin::writeFrame(const Frame& frame) {
   // We will need to extend the dataset in 1 dimension by the outer chunk dimension
   // For 3D datasets this would normally be 1 (a 2D image)
   // For 1D datasets this would normally be the quantity of data items present in a single chunk
-  uint64_t outer_chunk_dimension = this->currentAcquisition_.dataset_defs_[frame.get_dataset_name()].chunks[0];
-  this->extend_dataset(dset, ((frame_offset + 1) * outer_chunk_dimension));
+  uint64_t outer_chunk_dimension = 1;
+  if (this->currentAcquisition_.dataset_defs_.size() != 0){
+	  outer_chunk_dimension = this->currentAcquisition_.dataset_defs_[frame.get_dataset_name()].chunks[0];
+  }
+  this->extend_dataset(dset, (frame_offset + 1) * outer_chunk_dimension);
 
   LOG4CXX_TRACE(logger_, "Writing frame offset=" << frame_no  <<
                          " (" << frame_offset << ")" <<
@@ -897,7 +900,6 @@ void FileWriterPlugin::configureDataset(OdinData::IpcMessage& config, OdinData::
     	  // This is a single dimensioned dataset so store dimensions as NULL
           dimensions_t dims(0);
     	  dset_def.frame_dimensions = dims;
-          //throw std::runtime_error("Cannot create a dataset without dimensions");
       }
 
       // There might be chunking dimensions present for the dataset, this is not required
@@ -908,6 +910,17 @@ void FileWriterPlugin::configureDataset(OdinData::IpcMessage& config, OdinData::
         for (rapidjson::SizeType i = 0; i < val.Size(); i++) {
           const rapidjson::Value& dim = val[i];
           chunks[i] = dim.GetUint64();
+        }
+        dset_def.chunks = chunks;
+      } else {
+        // No chunks were specified, creating defaults from the dataset dimensions
+        // Chunk number of dimensions will be 1 greater than dataset (to include n dimension)
+        dimensions_t chunks(dset_def.frame_dimensions.size()+1);
+        // Set first chunk dimension (n dimension) to a single frame or item
+        chunks[0] = 1;
+        // Set the remaining chunk dimensions to the same as the dataset dimensions
+        for (int index = 0; index < dset_def.frame_dimensions.size(); index++){
+          chunks[index+1] = dset_def.frame_dimensions[index];
         }
         dset_def.chunks = chunks;
       }
