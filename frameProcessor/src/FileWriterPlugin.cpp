@@ -272,13 +272,11 @@ void FileWriterPlugin::createDataset(const FileWriterPlugin::DatasetDefinition& 
   std::vector<hsize_t> dset_dims(1,1);
   dset_dims.insert(dset_dims.end(), frame_dims.begin(), frame_dims.end());
 
-  // If chunking has not been defined it defaults to a single full frame
-  std::vector<hsize_t> chunk_dims(1, 1);
-  if (definition.chunks.size() != dset_dims.size()) {
-    chunk_dims = dset_dims;
-  } else {
-    chunk_dims = definition.chunks;
+  // If chunking has not been defined then throw an error
+  if (definition.chunks.size() != dset_dims.size()){
+    throw std::runtime_error("Dataset chunk size not defined correctly");
   }
+  std::vector<hsize_t> chunk_dims = definition.chunks;
 
   std::vector<hsize_t> max_dims = dset_dims;
   max_dims[0] = H5S_UNLIMITED;
