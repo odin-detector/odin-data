@@ -171,6 +171,16 @@ void FrameProcessorPlugin::publishMeta(const std::string& item, int32_t value, c
   metaChannel_.send(sizeof(uintptr_t), &addr, ZMQ_DONTWAIT);
 }
 
+void FrameProcessorPlugin::publishMeta(const std::string& item, uint64_t value, const std::string &header)
+{
+  // Create a new MetaMessage object and send to the consumer
+  FrameProcessor::MetaMessage *meta = new FrameProcessor::MetaMessage(name_, item, "uint64", header, sizeof(uint64_t), &value);
+  // We need the pointer to the object cast to be able to pass it through ZMQ
+  uintptr_t addr = reinterpret_cast<uintptr_t>(&(*meta));
+  // Send the pointer value to the listener
+  metaChannel_.send(sizeof(uintptr_t), &addr, ZMQ_DONTWAIT);
+}
+
 void FrameProcessorPlugin::publishMeta(const std::string& item, double value, const std::string& header)
 {
   // Create a new MetaMessage object and send to the consumer
