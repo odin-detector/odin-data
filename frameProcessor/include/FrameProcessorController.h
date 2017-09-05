@@ -39,6 +39,7 @@ public:
   virtual ~FrameProcessorController();
   void handleCtrlChannel();
   void handleMetaRxChannel();
+  void provideStatus(OdinData::IpcMessage& reply);
   void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   void configurePlugin(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   void loadPlugin(const std::string& index, const std::string& name, const std::string& library);
@@ -52,9 +53,6 @@ private:
 
   /** Configuration constant to shutdown the frame processor **/
   static const std::string CONFIG_SHUTDOWN;
-
-  /** Configuration constant for retrieving the status **/
-  static const std::string CONFIG_STATUS;
 
   /** Configuration constant for name of shared memory storage **/
   static const std::string CONFIG_FR_SHARED_MEMORY;
@@ -73,8 +71,6 @@ private:
   /** Configuration constant for plugin related items **/
   static const std::string CONFIG_PLUGIN;
   /** Configuration constant for listing loaded plugins **/
-  static const std::string CONFIG_PLUGIN_LIST;
-  /** Configuration constant for loading a plugin **/
   static const std::string CONFIG_PLUGIN_LOAD;
   /** Configuration constant for connecting plugins **/
   static const std::string CONFIG_PLUGIN_CONNECT;

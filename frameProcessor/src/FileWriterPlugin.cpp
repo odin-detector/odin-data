@@ -5,6 +5,7 @@
 
 #include <assert.h>
 
+#include <boost/filesystem.hpp>
 #include <hdf5_hl.h>
 
 #include "Frame.h"
@@ -148,7 +149,7 @@ void FileWriterPlugin::writeFrame(const Frame& frame) {
   frame_offset = this->getFrameOffset(frame_no);
   this->extend_dataset(dset, frame_offset + 1);
 
-  LOG4CXX_DEBUG(logger_, "Writing frame offset=" << frame_no  <<
+  LOG4CXX_TRACE(logger_, "Writing frame offset=" << frame_no  <<
                          " (" << frame_offset << ")" <<
                          " dset=" << frame.get_dataset_name());
 
@@ -418,10 +419,10 @@ size_t FileWriterPlugin::getFrameOffset(size_t frame_no) const {
 
   if (this->concurrent_processes_ > 1) {
     // Check whether this frame should really be in this process
-    // Note: this expects the frame numbering from HW/FW to start at 1, not 0!
-    if ( (((frame_no-1) % this->concurrent_processes_) - this->concurrent_rank_) != 0) {
-      LOG4CXX_WARN(logger_, "Unexpected frame: " << frame_no <<
-                                                 " in this process rank: " << this->concurrent_rank_);
+    // Note: this expects the frame numbering from HW/FW to start at 0, not 1!
+    if (frame_offset % this->concurrent_processes_ != this->concurrent_rank_) {
+      LOG4CXX_WARN(logger_,"Unexpected frame: " << frame_no <<
+                           " in this process rank: " << this->concurrent_rank_);
       throw std::runtime_error("Unexpected frame in this process rank");
     }
 
@@ -506,44 +507,45 @@ void FileWriterPlugin::processFrame(boost::shared_ptr<Frame> frame)
   checkAcquisitionID(frame);
 
   if (writing_) {
-    checkFrameValid(frame);
-    // Check if the frame has defined subframes
-    if (frame->has_parameter("subframe_count")) {
-      // The frame has subframes so write them out
-      this->writeSubFrames(*frame);
-    } else {
-      // The frame has no subframes so write the whole frame
-      this->writeFrame(*frame);
-    }
+    if (checkFrameValid(frame)) {
+      // Check if the frame has defined subframes
+      if (frame->has_parameter("subframe_count")) {
+        // The frame has subframes so write them out
+        this->writeSubFrames(*frame);
+      } else {
+        // The frame has no subframes so write the whole frame
+        this->writeFrame(*frame);
+      }
 
-    // Check if this is a master frame (for multi dataset acquisitions)
-    // or if no master frame has been defined. If either of these conditions
-    // are true then increment the number of frames written.
-    if (currentAcquisition_.masterFrame_ == "" || currentAcquisition_.masterFrame_ == frame->get_dataset_name()) {
-      size_t datasetFrames = this->getDatasetFrames(frame->get_dataset_name());
-      if (datasetFrames == framesWritten_) {
-        LOG4CXX_DEBUG(logger_, "Frame " << datasetFrames << " rewritten");
+      // Check if this is a master frame (for multi dataset acquisitions)
+      // or if no master frame has been defined. If either of these conditions
+      // are true then increment the number of frames written.
+      if (currentAcquisition_.masterFrame_ == "" || currentAcquisition_.masterFrame_ == frame->get_dataset_name()) {
+        size_t datasetFrames = this->getDatasetFrames(frame->get_dataset_name());
+        if (datasetFrames == framesWritten_) {
+          LOG4CXX_TRACE(logger_, "Frame " << datasetFrames << " rewritten");
+        }
+        else {
+          framesWritten_ = datasetFrames;
+        }
+        LOG4CXX_TRACE(logger_, "Master frame processed");
       }
       else {
-        framesWritten_ = datasetFrames;
+        LOG4CXX_TRACE(logger_, "Non-master frame processed");
       }
-      LOG4CXX_DEBUG(logger_, "Master frame processed");
-    }
-    else {
-      LOG4CXX_DEBUG(logger_, "Non-master frame processed");
-    }
 
-    // Check if we have written enough frames and stop
-    if (currentAcquisition_.framesToWrite_ > 0 && framesWritten_ == currentAcquisition_.framesToWrite_) {
-      this->stopWriting();
-      // Start next acquisition if we have a filename or acquisition ID to use
-      if (!nextAcquisition_.fileName_.empty() || !nextAcquisition_.acquisitionID_.empty()) {
-        this->startWriting();
+      // Check if we have written enough frames and stop
+      if (currentAcquisition_.framesToWrite_ > 0 && framesWritten_ == currentAcquisition_.framesToWrite_) {
+        this->stopWriting();
+        // Start next acquisition if we have a filename or acquisition ID to use
+        if (!nextAcquisition_.fileName_.empty() || !nextAcquisition_.acquisitionID_.empty()) {
+          this->startWriting();
+        }
       }
-    }
 
-    // Push frame to any registered callbacks
-    this->push(frame);
+      // Push frame to any registered callbacks
+      this->push(frame);
+    }
   }
 }
 
@@ -552,8 +554,9 @@ void FileWriterPlugin::processFrame(boost::shared_ptr<Frame> frame)
  * Check the dimensions, data type and compression of the frame data.
  *
  * \param[in] frame - Pointer to the Frame object.
+ * \return - true if the frame was valid
  */
-void FileWriterPlugin::checkFrameValid(boost::shared_ptr<Frame> frame)
+bool FileWriterPlugin::checkFrameValid(boost::shared_ptr<Frame> frame)
 {
   bool invalid = false;
   FileWriterPlugin::DatasetDefinition dataset = this->currentAcquisition_.dataset_defs_[frame->get_dataset_name()];
@@ -579,8 +582,10 @@ void FileWriterPlugin::checkFrameValid(boost::shared_ptr<Frame> frame)
     invalid = true;
   }
   if (invalid) {
-    throw std::runtime_error("Got invalid frame");
+    LOG4CXX_ERROR(logger_, "Frame invalid. Stopping write");
+    this->stopWriting();
   }
+  return !invalid;
 }
 
 /** Read the current number of frames in a HDF5 dataset
@@ -623,7 +628,9 @@ void FileWriterPlugin::startWriting()
     }
 
     // Create the file
-    this->createFile(currentAcquisition_.filePath_ + currentAcquisition_.fileName_);
+    boost::filesystem::path full_path =
+        boost::filesystem::path(currentAcquisition_.filePath_) / boost::filesystem::path(currentAcquisition_.fileName_);
+    this->createFile(full_path.string());
 
     // Create the datasets from the definitions
     std::map<std::string, FileWriterPlugin::DatasetDefinition>::iterator iter;
@@ -754,20 +761,37 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
  */
 void FileWriterPlugin::configureProcess(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
-  // If we are writing a file then we cannot change these items
-  if (this->writing_) {
-    LOG4CXX_ERROR(logger_, "Cannot change concurrent processes or rank whilst writing");
-    throw std::runtime_error("Cannot change concurrent processes or rank whilst writing");
-  }
-
-  // Check for process number and rank number
+  // Check for process number
   if (config.has_param(FileWriterPlugin::CONFIG_PROCESS_NUMBER)) {
-    this->concurrent_processes_ = config.get_param<size_t>(FileWriterPlugin::CONFIG_PROCESS_NUMBER);
-    LOG4CXX_DEBUG(logger_, "Concurrent processes changed to " << this->concurrent_processes_);
+    size_t processes = config.get_param<size_t>(FileWriterPlugin::CONFIG_PROCESS_NUMBER);
+    if (this->concurrent_processes_ != processes) {
+      // If we are writing a file then we cannot change concurrent processes
+      if (this->writing_) {
+        LOG4CXX_ERROR(logger_, "Cannot change concurrent processes whilst writing");
+        throw std::runtime_error("Cannot change concurrent processes whilst writing");
+      }
+      this->concurrent_processes_ = processes;
+      LOG4CXX_DEBUG(logger_, "Concurrent processes changed to " << this->concurrent_processes_);
+    }
+    else {
+      LOG4CXX_DEBUG(logger_, "Concurrent processes is already " << this->concurrent_processes_);
+    }
   }
+  // Check for rank number
   if (config.has_param(FileWriterPlugin::CONFIG_PROCESS_RANK)) {
-    this->concurrent_rank_ = config.get_param<size_t>(FileWriterPlugin::CONFIG_PROCESS_RANK);
-    LOG4CXX_DEBUG(logger_, "Process rank changed to " << this->concurrent_rank_);
+    size_t rank = config.get_param<size_t>(FileWriterPlugin::CONFIG_PROCESS_RANK);
+    if (this->concurrent_rank_ != rank) {
+      // If we are writing a file then we cannot change concurrent rank
+      if (this->writing_) {
+        LOG4CXX_ERROR(logger_, "Cannot change process rank whilst writing");
+        throw std::runtime_error("Cannot change process rank whilst writing");
+      }
+      this->concurrent_rank_ = rank;
+      LOG4CXX_DEBUG(logger_, "Process rank changed to " << this->concurrent_rank_);
+    }
+    else {
+      LOG4CXX_DEBUG(logger_, "Process rank is already " << this->concurrent_rank_);
+    }
   }
 }
 

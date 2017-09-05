@@ -15,8 +15,6 @@ const std::string FrameProcessorController::META_RX_INTERFACE        = "inproc:/
 
 const std::string FrameProcessorController::CONFIG_SHUTDOWN          = "shutdown";
 
-const std::string FrameProcessorController::CONFIG_STATUS            = "status";
-
 const std::string FrameProcessorController::CONFIG_FR_RELEASE        = "fr_release_cnxn";
 const std::string FrameProcessorController::CONFIG_FR_READY          = "fr_ready_cnxn";
 const std::string FrameProcessorController::CONFIG_FR_SETUP          = "fr_setup";
@@ -25,7 +23,6 @@ const std::string FrameProcessorController::CONFIG_CTRL_ENDPOINT     = "ctrl_end
 const std::string FrameProcessorController::CONFIG_META_ENDPOINT     = "meta_endpoint";
 
 const std::string FrameProcessorController::CONFIG_PLUGIN            = "plugin";
-const std::string FrameProcessorController::CONFIG_PLUGIN_LIST       = "list";
 const std::string FrameProcessorController::CONFIG_PLUGIN_LOAD       = "load";
 const std::string FrameProcessorController::CONFIG_PLUGIN_CONNECT    = "connect";
 const std::string FrameProcessorController::CONFIG_PLUGIN_DISCONNECT = "disconnect";
@@ -98,15 +95,30 @@ void FrameProcessorController::handleCtrlChannel()
   // Parse and handle the message
   try {
     OdinData::IpcMessage ctrlMsg(ctrlMsgEncoded.c_str());
-    OdinData::IpcMessage replyMsg(OdinData::IpcMessage::MsgTypeAck, OdinData::IpcMessage::MsgValCmdConfigure);
+    OdinData::IpcMessage replyMsg;  // Instantiate default IpmMessage
+    replyMsg.set_msg_val(ctrlMsg.get_msg_val());
 
     if ((ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) &&
         (ctrlMsg.get_msg_val()  == OdinData::IpcMessage::MsgValCmdConfigure)) {
+      replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
       this->configure(ctrlMsg, replyMsg);
-      LOG4CXX_DEBUG(logger_, "Control thread reply message: " << replyMsg.encode());
+      LOG4CXX_DEBUG(logger_, "Control thread reply message (configure): "
+                             << replyMsg.encode());
       ctrlChannel_.send(replyMsg.encode());
-    } else {
+    }
+    else if ((ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) &&
+             (ctrlMsg.get_msg_val() == OdinData::IpcMessage::MsgValCmdStatus)) {
+      replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
+      this->provideStatus(replyMsg);
+      LOG4CXX_DEBUG(logger_, "Control thread reply message (status): "
+                             << replyMsg.encode());
+      ctrlChannel_.send(replyMsg.encode());
+    }
+    else {
       LOG4CXX_ERROR(logger_, "Control thread got unexpected message: " << ctrlMsgEncoded);
+      replyMsg.set_param("error", "Invalid control message: " + ctrlMsgEncoded);
+      replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeNack);
+      ctrlChannel_.send(replyMsg.encode());
     }
   }
   catch (OdinData::IpcMessageException& e)
@@ -202,6 +214,16 @@ void FrameProcessorController::callback(boost::shared_ptr<Frame> frame) {
   }
 }
 
+void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply)
+{
+  // Loop over plugins, list names and request status from each
+  std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
+  for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
+    reply.set_param("plugins/names[]", iter->first);
+    iter->second->status(reply);
+  }
+}
+
 /**
  * Set configuration options for the FrameProcessorController.
  *
@@ -241,15 +263,6 @@ void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData:
   // Check if we are being asked to shutdown
   if (config.has_param(FrameProcessorController::CONFIG_SHUTDOWN)) {
     exitCondition_.notify_all();
-  }
-
-  // Check if we are being asked to shutdown
-  if (config.has_param(FrameProcessorController::CONFIG_STATUS)) {
-    // Loop over plugins, checking for configuration messages
-    std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
-    for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
-      iter->second->status(reply);
-    }
   }
 
   if (config.has_param(FrameProcessorController::CONFIG_CTRL_ENDPOINT)) {
@@ -307,15 +320,6 @@ void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData:
  */
 void FrameProcessorController::configurePlugin(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
-  if (config.has_param(FrameProcessorController::CONFIG_PLUGIN_LIST)) {
-    // We have been asked to list the loaded plugins
-    std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
-    for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
-      reply.set_param("plugins/names[]", iter->first);
-    }
-  }
-
-
   // Check if we are being asked to load a plugin
   if (config.has_param(FrameProcessorController::CONFIG_PLUGIN_LOAD)) {
     OdinData::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FrameProcessorController::CONFIG_PLUGIN_LOAD));
@@ -390,10 +394,7 @@ void FrameProcessorController::loadPlugin(const std::string& index, const std::s
       throw std::runtime_error(is.str().c_str());
     }
   } else {
-    LOG4CXX_ERROR(logger_, "Cannot load plugin with index = " << index << ", already loaded");
-    std::stringstream is;
-    is << "Cannot load plugin with index = " << index << ", already loaded";
-    throw std::runtime_error(is.str().c_str());
+    LOG4CXX_INFO(logger_, "Plugin with index = " << index << ", already loaded");
   }
 }
 
