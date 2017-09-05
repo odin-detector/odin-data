@@ -1,3 +1,10 @@
+"""Implementation of odin_data ipc_channel.
+
+This module implements the ODIN data IpcChannel class for inter-process
+communication via ZeroMQ sockets.
+
+Tim Nicholls, STFC Application Engineering Group
+"""
 import sys
 import zmq
 from zmq.utils.strtypes import unicode, cast_bytes
@@ -5,12 +12,23 @@ import uuid
 
 
 class IpcChannelException(Exception):
+    """Exception class for IpcChannel.
+
+    This class implements a simple exception for use with IpcChannel, providing
+    a readable message and optionsal error code.
+    """
 
     def __init__(self, msg, errno=None):
+        """Initalise the exception.
+
+        :param msg: readable message associated with the exception
+        :param errno: optional error number assocated with the exception
+        """
         self.msg = msg
         self.errno = errno
 
     def __str__(self):
+        """Return string representation of the exception message."""
         return str(self.msg)
 
 
