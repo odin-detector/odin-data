@@ -9,6 +9,8 @@
 /.pydevproject
 .project
 venv*
+tools/python/.coverage
+*.egg-info/
 
 .idea/
 cmake-build*/
