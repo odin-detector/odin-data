@@ -80,7 +80,6 @@ class SharedBufferManager(object):
 
         self.mapfile = mmap.mmap(mmap_fd, mmap_size, access=mmap.ACCESS_WRITE)
 
-
         self.manager_id = ctypes.c_int64.from_buffer(self.mapfile)
         self.num_buffers = ctypes.c_int64.from_buffer(self.mapfile, 8)
         self.buffer_size = ctypes.c_int64.from_buffer(self.mapfile, 16)
@@ -91,7 +90,6 @@ class SharedBufferManager(object):
             self.__class__._last_manager_id += 1
             self.num_buffers.value = int(shared_mem_size / buffer_size)
             self.buffer_size.value = buffer_size
-
 
         self.mapfile.seek(0)
 
@@ -137,8 +135,17 @@ class SharedBufferManager(object):
 
     def __del__(self):
 
+        for mapped_ctype_name in ('manager_id', 'num_buffers', 'buffer_size'):
+            mapped_ctype = getattr(self, mapped_ctype_name, None)
+            if mapped_ctype is not None:
+                del(mapped_ctype)
+
         if self.mapfile:
-            self.mapfile.close()
+            try:
+                self.mapfile.close()
+            except BufferError:
+                # Trap bug in python3 mmap that doesn't release all ctypes pointers
+                pass
 
         if self.mmap_file:
             self.mmap_file.close()
