@@ -45,6 +45,10 @@ class IpcChannel(object):
     CHANNEL_TYPE_PUB = zmq.PUB
     CHANNEL_TYPE_DEALER = zmq.DEALER
     CHANNEL_TYPE_ROUTER = zmq.ROUTER
+    
+    POLLIN = zmq.POLLIN
+    POLLOUT = zmq.POLLOUT
+    POLLERR =zmq.POLLERR
 
     def __init__(self, channel_type, endpoint=None, context=None, identity=None):
         """Initalise the IpcChannel object.

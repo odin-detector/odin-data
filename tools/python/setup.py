@@ -24,7 +24,7 @@ setup(name='odin_data',
             'emulator_client = emulator_client.emulator_client:main',
             'frame_processor = frame_processor.frame_processor:main',
             'frame_producer = frame_producer.frame_producer:main',
-            'frame_receiver_client = frame_receiver_client.frame_receiver_client:main',
+            'frame_receiver_client = odin_data.frame_receiver.client:main',
             'port_counters = port_counters.port_counters:main',
             'decode_raw_frames_hdf5 = tools.decode_raw_frames_hdf5:main',
          ]

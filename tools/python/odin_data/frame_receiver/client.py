@@ -1,5 +1,5 @@
-from frame_receiver.ipc_channel import IpcChannel, IpcChannelException
-from frame_receiver.ipc_message import IpcMessage, IpcMessageException
+from odin_data.ipc_channel import IpcChannel, IpcChannelException
+from odin_data.ipc_message import IpcMessage, IpcMessageException
 
 import time
 import datetime
@@ -13,13 +13,8 @@ class FrameReceiverClient(object):
     
     def __init__(self):
 
-        # Initialise the logging module with log messages directed to stdout
-        #logging.basicConfig(format='%(asctime)s %(levelname)s FrameProcessor - %(message)s', level=logging.DEBUG)
-        #ch = logging.StreamHandler(sys.stdout)
-        #logging.addHandler(ch)
-
         # create logger
-        self.logger = logging.getLogger('frame_processor')
+        self.logger = logging.getLogger('frame_receiver_client')
         self.logger.setLevel(logging.DEBUG)
         
         # create console handler and set level to debug
@@ -35,10 +30,6 @@ class FrameReceiverClient(object):
         # add ch to logger
         self.logger.addHandler(ch)
 
-        # Instantiate a configuration container object, which will be populated
-        # with sensible default values
-        #self.config = FrameProcessorConfig("FrameProcessor", "FrameProcessor - test harness to simulate operation of FrameProcessor application")
-                
         # Create the appropriate IPC channels
         self.ctrl_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_REQ)
         self.ctrl_channel.connect('tcp://127.0.0.1:5000')
