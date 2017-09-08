@@ -1,6 +1,6 @@
-from frame_receiver.ipc_channel import IpcChannel, IpcChannelException
-from frame_receiver.ipc_message import IpcMessage, IpcMessageException
-from frame_receiver.shared_buffer_manager import SharedBufferManager, SharedBufferManagerException
+from odin_data.ipc_channel import IpcChannel, IpcChannelException
+from odin_data.ipc_message import IpcMessage, IpcMessageException
+from odin_data.shared_buffer_manager import SharedBufferManager, SharedBufferManagerException
 from frame_processor_config import FrameProcessorConfig
 from percival_emulator_frame_decoder import PercivalEmulatorFrameDecoder, PercivalFrameHeader, PercivalFrameData
 from excalibur_frame_decoder import ExcaliburFrameDecoder, ExcaliburFrameHeader, ExcaliburFrameData
