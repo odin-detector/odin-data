@@ -8,8 +8,8 @@ import curses
 
 import os
 import npyscreen
-from ipc_channel import IpcChannel
-from ipc_message import IpcMessage
+from odin_data.ipc_channel import IpcChannel
+from odin_data.ipc_message import IpcMessage
 
 class PercivalClientApp(npyscreen.NPSAppManaged):
     def __init__(self, ctrl_endpoint, ready_endpoint, release_endpoint, shared_buffer):
