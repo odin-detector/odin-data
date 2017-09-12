@@ -36,6 +36,7 @@ class IpcChannel
 public:
 
   IpcChannel(int type);
+  IpcChannel(int type, const std::string identity);
   ~IpcChannel();
   void bind(const char* endpoint);
   void bind(std::string& endpoint);
@@ -48,8 +49,8 @@ public:
   void send(const char* message, int flags = 0);
   void send(size_t msg_size, void *message, int flags = 0);
 
-  const std::string recv();
-  const std::size_t recv_raw(void *dPtr);
+  const std::string recv(std::string* identity=0);
+  const std::size_t recv_raw(void *dPtr, std::string* identity=0);
 
   void setsockopt(int option_, const void *optval_, size_t optvallen_);
 
@@ -63,6 +64,7 @@ private:
 
   IpcContext& context_;
   zmq::socket_t socket_;
+  int socket_type_;
 
 
 };
