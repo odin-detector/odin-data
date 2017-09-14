@@ -73,8 +73,10 @@ class IpcChannel(object):
         # UUID4 value if not specified
         if self.channel_type == self.CHANNEL_TYPE_DEALER:
             if identity is None:
-                identity = str(uuid.uuid4())
-            self.socket.setsockopt(zmq.IDENTITY, cast_bytes(identity))
+                identity = "{:04x}-{:04x}".format(
+                    random.randrange(0x10000), random.randrange(0x10000)
+                )
+            self.socket.setsockopt(zmq.IDENTITY, cast_bytes(identity))  # pylint: disable=no-member
 
     def bind(self, endpoint=None):
         """Bind the IpcChannel to an endpoint.
