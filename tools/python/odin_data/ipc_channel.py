@@ -78,6 +78,7 @@ class IpcChannel(object):
                 identity = "{:04x}-{:04x}".format(
                     random.randrange(0x10000), random.randrange(0x10000)
                 )
+            self.identity = identity
             self.socket.setsockopt(zmq.IDENTITY, cast_bytes(identity))  # pylint: disable=no-member
 
     def bind(self, endpoint=None):
