@@ -82,28 +82,44 @@ void IpcChannel::subscribe(const char* topic)
   socket_.setsockopt(ZMQ_SUBSCRIBE, topic, strlen(topic));
 }
 
-void IpcChannel::send(std::string& message_str, int flags)
+void IpcChannel::send(std::string& message_str, int flags, const std::string& identity_str)
 {
+  if (socket_type_ == ZMQ_ROUTER) {
+    router_send_identity(identity_str);
+  }
   size_t msg_size = message_str.size();
   zmq::message_t msg(msg_size);
   memcpy(msg.data(), message_str.data(), msg_size);
   socket_.send(msg, flags);
 }
 
-void IpcChannel::send(const char* message, int flags)
+void IpcChannel::send(const char* message, int flags, const std::string& identity_str)
 {
+  if (socket_type_ == ZMQ_ROUTER) {
+    router_send_identity(identity_str);
+  }
   size_t msg_size = strlen(message);
   zmq::message_t msg(msg_size);
   memcpy(msg.data(), message, msg_size);
   socket_.send(msg, flags);
 }
 
-void IpcChannel::send(size_t msg_size, void *message, int flags)
+void IpcChannel::send(size_t msg_size, void *message, int flags, const std::string& identity_str)
 {
+  if (socket_type_ == ZMQ_ROUTER) {
+    router_send_identity(identity_str);
+  }
   zmq::message_t msg(msg_size);
   memcpy(msg.data(), message, msg_size);
   socket_.send(msg, flags);
+}
 
+void IpcChannel::router_send_identity(const std::string& identity_str)
+{
+  size_t identity_size = identity_str.size();
+  zmq::message_t identity_msg(identity_size);
+  memcpy(identity_msg.data(), identity_str.data(), identity_size);
+  socket_.send(identity_msg, ZMQ_SNDMORE);
 }
 
 const std::string IpcChannel::recv(std::string* identity)
@@ -171,3 +187,4 @@ void IpcChannel::close(void)
 {
   socket_.close();
 }
+

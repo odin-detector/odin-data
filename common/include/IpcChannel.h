@@ -45,9 +45,12 @@ public:
 
   void subscribe(const char* topic);
 
-  void send(std::string& message_str, int flags = 0);
-  void send(const char* message, int flags = 0);
-  void send(size_t msg_size, void *message, int flags = 0);
+  void send(std::string& message_str, int flags = 0,
+    const std::string& identity_str = std::string());
+  void send(const char* message, int flags = 0,
+    const std::string& identity_str = std::string());
+  void send(size_t msg_size, void *message, int flags = 0,
+    const std::string& identity_str = std::string());
 
   const std::string recv(std::string* identity=0);
   const std::size_t recv_raw(void *dPtr, std::string* identity=0);
@@ -61,6 +64,8 @@ public:
   friend class IpcReactor;
 
 private:
+
+  void router_send_identity(const std::string& identity_str);
 
   IpcContext& context_;
   zmq::socket_t socket_;
