@@ -31,7 +31,7 @@ class FrameReceiverClient(object):
         self.logger.addHandler(ch)
 
         # Create the appropriate IPC channels
-        self.ctrl_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_REQ)
+        self.ctrl_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_DEALER)
         self.ctrl_channel.connect('tcp://127.0.0.1:5000')
         
         self._run = True
@@ -39,6 +39,8 @@ class FrameReceiverClient(object):
     def run(self):
         
         self.logger.info("Frame receiver client starting up")
+        
+        self.logger.debug("Control IPC channel has identity {}".format(self.ctrl_channel.identity))
         
         msg = IpcMessage('cmd', 'configure')
         msg.set_param('test', {'list': True})
