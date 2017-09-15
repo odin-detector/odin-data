@@ -739,7 +739,13 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
   // Final check is to start or stop writing
   if (config.has_param(FileWriterPlugin::CONFIG_WRITE)) {
     if (config.get_param<bool>(FileWriterPlugin::CONFIG_WRITE) == true) {
-      this->startWriting();
+      if (nextAcquisition_.totalFrames_ > 0 && nextAcquisition_.framesToWrite_ == 0) {
+    	// We're not expecting any frames, so just clear out the nextAcquisition for the next one and don't start writing
+    	this->nextAcquisition_ = Acquisition();
+    	LOG4CXX_INFO(logger_, "Not expecting any frames so not starting new acquisition writing");
+      } else {
+        this->startWriting();
+      }
     } else {
       this->stopWriting();
     }
