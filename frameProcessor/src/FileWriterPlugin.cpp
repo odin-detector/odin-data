@@ -743,7 +743,7 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
       if (nextAcquisition_.totalFrames_ > 0 && nextAcquisition_.framesToWrite_ == 0) {
     	// We're not expecting any frames, so just clear out the nextAcquisition for the next one and don't start writing
     	this->nextAcquisition_ = Acquisition();
-    	LOG4CXX_INFO(logger_, "Not expecting any frames so not starting new acquisition writing");
+    	LOG4CXX_INFO(logger_, "FrameProcessor will not receive any frames from this acquisition and so no output file will be created");
       } else {
         this->startWriting();
       }
