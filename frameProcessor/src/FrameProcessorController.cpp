@@ -45,7 +45,7 @@ FrameProcessorController::FrameProcessorController() :
     threadInitError_(false),
     pluginShutdownSent(false),
     ctrlThread_(boost::bind(&FrameProcessorController::runIpcService, this)),
-    ctrlChannel_(ZMQ_REP),
+    ctrlChannel_(ZMQ_ROUTER),
     metaRxChannel_(ZMQ_PULL),
     metaTxChannel_(ZMQ_PUB)
 {
@@ -88,7 +88,8 @@ FrameProcessorController::~FrameProcessorController()
 void FrameProcessorController::handleCtrlChannel()
 {
   // Receive a message from the main thread channel
-  std::string ctrlMsgEncoded = ctrlChannel_.recv();
+  std::string clientIdentity;
+  std::string ctrlMsgEncoded = ctrlChannel_.recv(&clientIdentity);
 
   LOG4CXX_DEBUG(logger_, "Control thread called with message: " << ctrlMsgEncoded);
 
@@ -104,7 +105,6 @@ void FrameProcessorController::handleCtrlChannel()
       this->configure(ctrlMsg, replyMsg);
       LOG4CXX_DEBUG(logger_, "Control thread reply message (configure): "
                              << replyMsg.encode());
-      ctrlChannel_.send(replyMsg.encode());
     }
     else if ((ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) &&
              (ctrlMsg.get_msg_val() == OdinData::IpcMessage::MsgValCmdStatus)) {
@@ -112,14 +112,13 @@ void FrameProcessorController::handleCtrlChannel()
       this->provideStatus(replyMsg);
       LOG4CXX_DEBUG(logger_, "Control thread reply message (status): "
                              << replyMsg.encode());
-      ctrlChannel_.send(replyMsg.encode());
     }
     else {
       LOG4CXX_ERROR(logger_, "Control thread got unexpected message: " << ctrlMsgEncoded);
       replyMsg.set_param("error", "Invalid control message: " + ctrlMsgEncoded);
       replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeNack);
-      ctrlChannel_.send(replyMsg.encode());
     }
+    ctrlChannel_.send(replyMsg.encode(), 0, clientIdentity);
   }
   catch (OdinData::IpcMessageException& e)
   {
