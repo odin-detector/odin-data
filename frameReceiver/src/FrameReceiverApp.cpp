@@ -191,6 +191,8 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
         PropertyConfigurator::configure(logconf_fname);
       }
       LOG4CXX_DEBUG_LEVEL(1, logger_, "log4cxx config file is set to " << logconf_fname);
+    } else {
+      BasicConfigurator::configure();
     }
 
     if (vm.count("maxmem"))

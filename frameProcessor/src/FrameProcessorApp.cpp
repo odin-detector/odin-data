@@ -155,6 +155,8 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
         PropertyConfigurator::configure(logconf_fname);
       }
       LOG4CXX_DEBUG(logger, "log4cxx config file is set to " << vm["logconfig"].as<string>());
+    } else {
+      BasicConfigurator::configure();
     }
 
     bool no_client = vm["no-client"].as<bool>();
