@@ -8,12 +8,12 @@ import curses
 
 import os
 import npyscreen
-from ipc_channel import IpcChannel
-from ipc_message import IpcMessage
+from odin_data.ipc_channel import IpcChannel
+from odin_data.ipc_message import IpcMessage
 
-class PercivalClientApp(npyscreen.NPSAppManaged):
+class FrameProcessorClientApp(npyscreen.NPSAppManaged):
     def __init__(self, ctrl_endpoint, ready_endpoint, release_endpoint, shared_buffer):
-        super(PercivalClientApp, self).__init__()
+        super(FrameProcessorClientApp, self).__init__()
         self.ctrl_endpoint = ctrl_endpoint
         self.ready_endpoint = ready_endpoint
         self.release_endpoint = release_endpoint
@@ -73,7 +73,7 @@ class IntroForm(npyscreen.Form):
         self.parentApp.release_endpoint = self.release.value
         self.parentApp.shared_buffer = self.buffer.value
 
-        self.parentApp._ctrl_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_REQ)
+        self.parentApp._ctrl_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_DEALER)
         self.parentApp._ctrl_channel.connect(self.ctrl.value)
         self.parentApp.setNextForm("MAIN_MENU")
 
@@ -453,7 +453,7 @@ def options():
 def main():
     args = options()
 
-    app = PercivalClientApp(args.control, args.ready, args.release, args.buffer)
+    app = FrameProcessorClientApp(args.control, args.ready, args.release, args.buffer)
     app.run()
 
 

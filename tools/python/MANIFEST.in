@@ -1,0 +1,2 @@
+include versioneer.py
+include odin_data/_version.py

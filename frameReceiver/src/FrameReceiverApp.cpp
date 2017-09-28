@@ -36,7 +36,7 @@ static bool has_suffix(const std::string &str, const std::string &suffix)
 
 FrameReceiverApp::FrameReceiverApp(void) :
     rx_channel_(ZMQ_PAIR),
-    ctrl_channel_(ZMQ_REP),
+    ctrl_channel_(ZMQ_ROUTER),
     frame_ready_channel_(ZMQ_PUB),
     frame_release_channel_(ZMQ_SUB),
     frames_received_(0),
@@ -513,7 +513,8 @@ void FrameReceiverApp::notify_buffer_config(const bool deferred)
 void FrameReceiverApp::handle_ctrl_channel(void)
 {
   // Receive a request message from the control channel
-  std::string ctrl_req_encoded = ctrl_channel_.recv();
+  std::string client_identity;
+  std::string ctrl_req_encoded = ctrl_channel_.recv(&client_identity);
 
   // Construct a default reply
   IpcMessage ctrl_reply;
@@ -527,7 +528,7 @@ void FrameReceiverApp::handle_ctrl_channel(void)
     {
       case IpcMessage::MsgTypeCmd:
 
-      LOG4CXX_DEBUG_LEVEL(3, logger_, "Got control channel command request");
+      LOG4CXX_DEBUG_LEVEL(3, logger_, "Got control channel command request from client " << client_identity);
         ctrl_reply.set_msg_type(IpcMessage::MsgTypeAck);
         ctrl_reply.set_msg_val(ctrl_req.get_msg_val());
         break;
@@ -543,7 +544,7 @@ void FrameReceiverApp::handle_ctrl_channel(void)
   {
     LOG4CXX_ERROR(logger_, "Error decoding control channel request: " << e.what());
   }
-  ctrl_channel_.send(ctrl_reply.encode());
+  ctrl_channel_.send(ctrl_reply.encode(), 0, client_identity);
 
 }
 
