@@ -2,8 +2,8 @@ import logging
 
 import zmq
 from threading import RLock
-from odin_data.ipc_channel import IpcChannel
-from odin_data.ipc_message import IpcMessage, IpcMessageException
+from ipc_channel import IpcChannel
+from ipc_message import IpcMessage, IpcMessageException
 
 
 class ZMQClient(object):
