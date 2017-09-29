@@ -6,7 +6,7 @@ from ipc_channel import IpcChannel
 from ipc_message import IpcMessage, IpcMessageException
 
 
-class ZMQClient(object):
+class IpcClient(object):
 
     ENDPOINT_TEMPLATE = "tcp://{IP}:{PORT}"
 
