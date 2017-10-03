@@ -3,6 +3,7 @@
 
 #include <pwd.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <log4cxx/basicconfigurator.h>
 #include <log4cxx/propertyconfigurator.h>
