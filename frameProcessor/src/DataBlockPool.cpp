@@ -133,7 +133,7 @@ DataBlockPool::DataBlockPool() :
     usedBlocks_(0),
     totalBlocks_(0),
     memoryAllocated_(0),
-    logger_(log4cxx::Logger::getLogger("FW.DataBlockPool"))
+    logger_(log4cxx::Logger::getLogger("FP.DataBlockPool"))
 {
 }
 

@@ -31,6 +31,7 @@ namespace po = boost::program_options;
 #include "rapidjson/prettywriter.h"
 using namespace rapidjson;
 
+#include "logging.h"
 #include "FrameProcessorController.h"
 
 using namespace FrameProcessor;
@@ -154,6 +155,8 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
         PropertyConfigurator::configure(logconf_fname);
       }
       LOG4CXX_DEBUG(logger, "log4cxx config file is set to " << vm["logconfig"].as<string>());
+    } else {
+      BasicConfigurator::configure();
     }
 
     bool no_client = vm["no-client"].as<bool>();
@@ -420,12 +423,12 @@ void checkNoClientArgs(po::variables_map vm) {
 
 int main(int argc, char** argv)
 {
-  LoggerPtr logger(Logger::getLogger("FW.App"));
+  setlocale(LC_CTYPE, "UTF-8");
+  OdinData::app_path = argv[0];
+  OdinData::configure_logging_mdc(OdinData::app_path.c_str());
+  LoggerPtr logger(Logger::getLogger("FP.App"));
 
   try {
-
-    // Create a default basic logger configuration, which can be overridden by command-line option later
-    BasicConfigurator::configure();
 
     po::variables_map vm;
     parse_arguments(argc, argv, vm, logger);

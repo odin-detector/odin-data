@@ -18,7 +18,7 @@ FrameProcessorPlugin::FrameProcessorPlugin() :
     name_(""),
     metaChannel_(ZMQ_PUSH)
 {
-  logger_ = log4cxx::Logger::getLogger("FW.FrameProcessorPlugin");
+  logger_ = log4cxx::Logger::getLogger("FP.FrameProcessorPlugin");
 }
 
 /**

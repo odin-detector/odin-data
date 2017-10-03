@@ -39,7 +39,7 @@ const int FrameProcessorController::META_TX_HWM = 10000;
  * IpcReactor thread.
  */
 FrameProcessorController::FrameProcessorController() :
-    logger_(log4cxx::Logger::getLogger("FW.FrameProcessorController")),
+    logger_(log4cxx::Logger::getLogger("FP.FrameProcessorController")),
     runThread_(true),
     threadRunning_(false),
     threadInitError_(false),
@@ -656,6 +656,9 @@ void FrameProcessorController::closeMetaTxInterface()
  */
 void FrameProcessorController::runIpcService(void)
 {
+  // Configure logging for this thread
+  OdinData::configure_logging_mdc(OdinData::app_path.c_str());
+
   LOG4CXX_DEBUG(logger_, "Running IPC thread service");
 
   // Create the reactor

@@ -6,6 +6,7 @@
  */
 
 #include "FrameReceiverApp.h"
+#include "logging.h"
 #include <signal.h>
 #include <iostream>
 
@@ -25,8 +26,9 @@ int main (int argc, char** argv)
   signal (SIGINT, intHandler);
   signal (SIGTERM, intHandler);
 
-  // Create a default basic logger configuration, which can be overridden by command-line option later
-  BasicConfigurator::configure ();
+  // Set the application path and locale for logging
+  setlocale(LC_CTYPE, "UTF-8");
+  OdinData::app_path = argv[0];
 
   // Create a FrameReceiverApp instance
   FrameReceiver::FrameReceiverApp fr_instance;
