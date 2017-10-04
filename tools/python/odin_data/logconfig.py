@@ -1,7 +1,8 @@
 """ logconfig
-This is essentially a template which can be copied into a python project and
-used to easily achieve a good practice of logging. Modify the local copy as per
-the project or site requirements.
+This contains a default logging configuration dictionary with a standard
+set of logging options that can be used to produce consistent logs across
+python applications.  A set of helper methods are also provided to make
+extending the default configuration simple.
 """
 
 import os
@@ -32,27 +33,13 @@ default_config = {
             "level": "DEBUG",
             "formatter": "simple",
             "stream": "ext://sys.stdout"
-        },
-
-        "graylog_gelf": {
-            "class": "pygelf.GelfUdpHandler",
-            "level": "INFO",
-            # Obviously a DLS-specific configuration: the graylog server address and port
-            "host": "cs04r-sc-serv-14.diamond.ac.uk",
-            "port": 12202,
-            "debug": True,
-            "formatter": "extended",
-            #  The following custom fields will be disabled if setting this False
-            "include_extra_fields": True,
-            "username": getpass.getuser(),
-            "pid": os.getpid()
         }
     },
 
     "loggers": {
         # Fine-grained logging configuration for individual modules or classes
         # Use this to set different log levels without changing 'real' code.
-        "ZMQClient": {
+        "ipc_client": {
             "level": "INFO",
             "propagate": True
         }
@@ -63,7 +50,7 @@ default_config = {
         # If you set a handler to level DEBUG you will need to set either this level, or
         # the level of one of the loggers above to DEBUG or you won't see any DEBUG messages
         "level": "INFO",
-        "handlers": ["console", "graylog_gelf"],
+        "handlers": ["console"],
     }
 }
 
@@ -76,11 +63,73 @@ class ThreadContextFilter(logging.Filter):
         return True
 
 
-def setup_logging(
-        default_log_config=None,
-        default_level=logging.INFO,
-        env_key='LOG_CFG'
-):
+def add_handler(handler_name, handler_description):
+    """Add a new handler to the default logging configuration dictionary
+
+    Call this before calling setup_logging
+
+    This adds the handler description dictionary to the handlers.
+
+    Args:
+        handler_name (str): Name of the handler to add to the default configuration.
+        handler_description (dict): Dictionary that describes the handler configuration.
+
+    Returns: None
+    """
+    default_config["handlers"][handler_name] = handler_description
+    default_config["root"]["handlers"].append(handler_name)
+
+
+def add_graylog_handler(host, port, level="INFO", debug=True):
+    """Add a graylog handler to the default logging configuration dictionary
+
+    Call this before calling setup_logging
+
+    This is a helper method to add a graylog hanlder to the logging configuration.  Only
+    the IP address and port number are required to setup the graylog handler when using
+    this function.
+
+    Args:
+        host (str): Host name of the graylog server.
+        port (int): Port number that the graylog server is bound to.
+        level (Optional[str]): Set the default log level for the handler.
+        debug (Optional[bool]): If True, each log message includes debug info.
+
+    Returns: None
+    """
+    graylog_config = {
+        "class": "pygelf.GelfUdpHandler",
+        "level": level,
+        # Obviously a DLS-specific configuration: the graylog server address and port
+        "host": host,
+        "port": port,
+        "debug": debug,
+        "formatter": "extended",
+        #  The following custom fields will be disabled if setting this False
+        "include_extra_fields": True,
+        "username": getpass.getuser(),
+        "pid": os.getpid()
+    }
+    add_handler("graylog_gelf", graylog_config)
+
+
+def add_logger(logger_name, logger_description):
+    """Add fine grained logging configuration for individual modules or classes
+
+        Call this before calling setup_logging
+
+    Args:
+        logger_name (str): Name of the logger to add to the default configuration.
+        logger_description (dict): Dictionary that describes the logger configuration.
+
+    Returns: None
+    """
+    default_config["loggers"][logger_name] = logger_description
+
+
+def setup_logging(default_log_config=None,
+                  default_level=logging.INFO,
+                  env_key='LOG_CFG'):
     """Setup logging configuration
 
     Call this only once from the application main() function or __main__ module!
