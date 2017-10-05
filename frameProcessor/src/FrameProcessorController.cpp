@@ -49,6 +49,7 @@ FrameProcessorController::FrameProcessorController() :
     metaRxChannel_(ZMQ_PULL),
     metaTxChannel_(ZMQ_PUB)
 {
+  OdinData::configure_logging_mdc(OdinData::app_path.c_str());
   LOG4CXX_DEBUG(logger_, "Constructing FrameProcessorController");
 
   totalFrames = 0;
