@@ -151,6 +151,7 @@ public:
                                 5, 6, 7, 8,
                                 9,10,11,12 };
     dimensions_t img_dims(2); img_dims[0] = 3; img_dims[1] = 4;
+    dimensions_t chunk_dims(3); chunk_dims[0] = 1; chunk_dims[1] = 3; chunk_dims[2] = 4;
     //PercivalEmulator::FrameHeader img_header;
     //img_header.frame_number = 7;
 
@@ -160,6 +161,7 @@ public:
     dset_def.frame_dimensions = dimensions_t(2);
     dset_def.frame_dimensions[0] = 3;
     dset_def.frame_dimensions[1] = 4;
+    dset_def.chunks = chunk_dims;
 
     frame = boost::shared_ptr<FrameProcessor::Frame>(new FrameProcessor::Frame("data"));
     frame->set_frame_number(7);

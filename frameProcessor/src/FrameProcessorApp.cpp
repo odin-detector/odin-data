@@ -106,6 +106,8 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
            "Set the number of frames to write into dataset")
         ("acqid",         po::value<std::string>()->default_value(""),
            "Set the Acquisition Id of the acquisition")
+        ("timeout",       po::value<size_t>()->default_value(0),
+           "Set the timeout period for closing the file (milliseconds)")
     ;
 
     // Group the variables for parsing at the command line and/or from the configuration file
@@ -266,6 +268,11 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
       LOG4CXX_DEBUG(logger, "Setting acquisition ID to " << vm["acqid"].as<string>());
     }
 
+    if (no_client && vm.count("timeout"))
+    {
+      LOG4CXX_DEBUG(logger, "Setting close file timeout period to " << vm["timeout"].as<size_t>());
+    }
+
   }
   catch (po::unknown_option &e)
   {
@@ -392,6 +399,7 @@ void configureFileWriter(boost::shared_ptr<FrameProcessorController> fwc, po::va
   cfg.set_param<string>("hdf/file/path", vm["output-dir"].as<string>());
   cfg.set_param<unsigned int>("hdf/frames", vm["frames"].as<unsigned int>());
   cfg.set_param<string>("hdf/acquisition_id", vm["acqid"].as<string>());
+  cfg.set_param<size_t>("hdf/timeout_timer_period", vm["timeout"].as<size_t>());
   cfg.set_param<bool>("hdf/write", true);
 
   fwc->configure(cfg, reply);

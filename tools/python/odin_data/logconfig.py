@@ -20,7 +20,7 @@ default_config = {
             "format": "%(message)s"
         },
         "extended": {
-            "format": "%(asctime)s - %(name)20s - %(levelname)6s - %(message)s"
+            "format": "%(asctime)s - %(name)20s - %(levelname)7s - %(message)s"
         },
         "json": {
             "format": "name: %(name)s, level: %(levelname)s, time: %(asctime)s, message: %(message)s"
@@ -31,7 +31,7 @@ default_config = {
         "console": {
             "class": "logging.StreamHandler",
             "level": "DEBUG",
-            "formatter": "simple",
+            "formatter": "extended",
             "stream": "ext://sys.stdout"
         }
     },

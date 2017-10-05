@@ -20,7 +20,7 @@ class IpcClient(object):
         self.ctrl_endpoint = self.ENDPOINT_TEMPLATE.format(
             IP=ip_address, PORT=port)
         self.logger.debug("Connecting to client at %s", self.ctrl_endpoint)
-        self.ctrl_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_REQ)
+        self.ctrl_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_DEALER)
         self.ctrl_channel.connect(self.ctrl_endpoint)
 
         self._lock = RLock()
