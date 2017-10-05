@@ -895,9 +895,9 @@ void FileWriterPlugin::configureDataset(OdinData::IpcMessage& config, OdinData::
         }
         dset_def.frame_dimensions = dims;
       } else {
-    	  // This is a single dimensioned dataset so store dimensions as NULL
-          dimensions_t dims(0);
-    	  dset_def.frame_dimensions = dims;
+        // This is a single dimensioned dataset so store dimensions as NULL
+        dimensions_t dims(0);
+        dset_def.frame_dimensions = dims;
       }
 
       // There might be chunking dimensions present for the dataset, this is not required
