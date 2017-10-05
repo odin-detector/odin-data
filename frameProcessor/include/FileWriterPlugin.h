@@ -127,6 +127,9 @@ public:
   void clearHdfErrors();
   std::string getCreateMetaHeader();
   std::string getMetaHeader();
+  void stopAcquisition();
+  void startCloseFileTimeout();
+  void runCloseFileTimeout();
 
 private:
   /** Configuration constant for process related items */
@@ -168,6 +171,10 @@ private:
   static const std::string CONFIG_OFFSET_ADJUSTMENT;
   /** Configuration constant for the acquisition id */
   static const std::string ACQUISITION_ID;
+  /** Configuration constant for the close file timeout */
+  static const std::string CLOSE_TIMEOUT_PERIOD;
+  /** Configuration constant for starting the close file timeout */
+  static const std::string START_CLOSE_TIMEOUT;
 
   /** Filter definition to write datasets with LZ4 compressed data */
   static const H5Z_filter_t LZ4_FILTER = (H5Z_filter_t)32004;
@@ -198,6 +205,8 @@ private:
   bool writing_;
   /** Number of frames that have been written to file */
   size_t framesWritten_;
+  /** Number of frames that have been processed */
+  size_t framesProcessed_;
   /** Number of concurrent file writers executing */
   size_t concurrent_processes_;
   /** Rank of this file writer */
@@ -216,6 +225,22 @@ private:
   Acquisition currentAcquisition_;
   /** Details of the next acquisition to be written */
   Acquisition nextAcquisition_;
+  /** Timeout for closing the file after receiving no data */
+  size_t timeoutPeriod;
+  /** Mutex used to make starting the close file timeout thread safe */
+  boost::mutex m_startTimeoutMutex;
+  /** Mutex used to make running the close file timeout thread safe */
+  boost::mutex m_closeFileMutex;
+  /** Condition variable used to start the close file timeout */
+  boost::condition_variable m_startCondition;
+  /** Condition variable used to run the close file timeout */
+  boost::condition_variable m_timeoutCondition;
+  /** Close file timeout active switch */
+  bool timeoutActive;
+  /** Close file timeout thread running */
+  bool timeoutThreadRunning;
+  /** The close file timeout thread */
+  boost::thread timeoutThread;
 };
 
 } /* namespace FrameProcessor */

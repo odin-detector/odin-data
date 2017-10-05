@@ -35,6 +35,8 @@ const std::string FileWriterPlugin::CONFIG_MASTER_DATASET      = "master";
 const std::string FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT   = "offset";
 const std::string FileWriterPlugin::CONFIG_WRITE               = "write";
 const std::string FileWriterPlugin::ACQUISITION_ID             = "acquisition_id";
+const std::string FileWriterPlugin::CLOSE_TIMEOUT_PERIOD       = "timeout_timer_period";
+const std::string FileWriterPlugin::START_CLOSE_TIMEOUT        = "start_timeout_timer";
 
 #define ensureH5result(success, message) ((success >= 0)                     \
   ? static_cast<void> (0)                                                    \
@@ -59,11 +61,15 @@ herr_t hdf5_error_cb(unsigned n, const H5E_error2_t *err_desc, void* client_data
 FileWriterPlugin::FileWriterPlugin() :
     writing_(false),
     framesWritten_(0),
+    framesProcessed_(0),
     concurrent_processes_(1),
     concurrent_rank_(0),
     hdf5_fileid_(0),
     hdf5ErrorFlag_(false),
-    frame_offset_adjustment_(0)
+    frame_offset_adjustment_(0),
+    timeoutPeriod(0),
+    timeoutThreadRunning(true),
+	timeoutThread(boost::bind(&FileWriterPlugin::runCloseFileTimeout, this))
 {
   this->logger_ = Logger::getLogger("FP.FileWriterPlugin");
   this->logger_->setLevel(Level::getTrace());
@@ -79,6 +85,18 @@ FileWriterPlugin::FileWriterPlugin() :
  */
 FileWriterPlugin::~FileWriterPlugin()
 {
+  timeoutThreadRunning = false;
+  timeoutActive = false;
+  // Notify the close timeout thread to clean up resources
+  {
+    boost::mutex::scoped_lock lock2(m_closeFileMutex);
+    m_timeoutCondition.notify_all();
+  }
+  {
+    boost::mutex::scoped_lock lock(m_startTimeoutMutex);
+    m_startCondition.notify_all();
+  }
+  timeoutThread.join();
   if (writing_) {
     stopWriting();
   }
@@ -546,18 +564,28 @@ void FileWriterPlugin::processFrame(boost::shared_ptr<Frame> frame)
         LOG4CXX_TRACE(logger_, "Non-master frame processed");
       }
 
+      framesProcessed_++;
+
       // Check if we have written enough frames and stop
       if (currentAcquisition_.framesToWrite_ > 0 && framesWritten_ == currentAcquisition_.framesToWrite_) {
-        this->stopWriting();
-        // Start next acquisition if we have a filename or acquisition ID to use
-        if (!nextAcquisition_.fileName_.empty() || !nextAcquisition_.acquisitionID_.empty()) {
-          this->startWriting();
+        if (framesProcessed_ == currentAcquisition_.framesToWrite_) {
+          stopAcquisition();
+          // Prevent the timeout from closing the file as it's just been closed. This will also stop the timer if it's running
+          timeoutActive = false;
+        } else {
+          LOG4CXX_INFO(logger_, "Starting close file timeout as number of frames processed (" <<
+                  framesProcessed_ << ") doesn't match expected (" << currentAcquisition_.framesToWrite_ << ")");
+          startCloseFileTimeout();
         }
       }
 
       // Push frame to any registered callbacks
       this->push(frame);
     }
+
+    // Notify the close timeout thread that a frame has been processed
+    boost::mutex::scoped_lock lock(m_closeFileMutex);
+    m_timeoutCondition.notify_all();
   }
 }
 
@@ -659,6 +687,7 @@ void FileWriterPlugin::startWriting()
 
     // Reset counters
     framesWritten_ = 0;
+    framesProcessed_ = 0;
 
     // Set writing flag to true
     writing_ = true;
@@ -746,6 +775,20 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
   if (config.has_param(FileWriterPlugin::ACQUISITION_ID)) {
     nextAcquisition_.acquisitionID_ = config.get_param<std::string>(FileWriterPlugin::ACQUISITION_ID);
 	LOG4CXX_INFO(logger_, "Setting next Acquisition ID to " << nextAcquisition_.acquisitionID_);
+  }
+
+  // Check to see if the close file timeout period is being set
+  if (config.has_param(FileWriterPlugin::CLOSE_TIMEOUT_PERIOD)) {
+    timeoutPeriod = config.get_param<size_t>(FileWriterPlugin::CLOSE_TIMEOUT_PERIOD);
+    LOG4CXX_INFO(logger_, "Setting close file timeout to " << timeoutPeriod);
+  }
+
+  // Check to see if the close file timeout is being started
+  if (config.has_param(FileWriterPlugin::START_CLOSE_TIMEOUT)) {
+    if (config.get_param<bool>(FileWriterPlugin::START_CLOSE_TIMEOUT) == true) {
+      LOG4CXX_INFO(logger_, "Configure call to start close file timeout");
+      startCloseFileTimeout();
+    }
   }
 
   // Final check is to start or stop writing
@@ -1134,6 +1177,74 @@ void FileWriterPlugin::handleH5error(std::string message, std::string function, 
   err << "H5 function error: (" << message << ") in " << filename << ":" << line << ": " << function;
   LOG4CXX_ERROR(logger_, err.str());
   throw std::runtime_error(err.str().c_str());
+}
+
+/**
+ * Stops the current acquisition and starts the next if it is configured
+ *
+ */
+void FileWriterPlugin::stopAcquisition() {
+  this->stopWriting();
+  // Start next acquisition if we have a filename or acquisition ID to use
+  if (!nextAcquisition_.fileName_.empty() || !nextAcquisition_.acquisitionID_.empty()) {
+    if (nextAcquisition_.totalFrames_ > 0 && nextAcquisition_.framesToWrite_ == 0) {
+      // We're not expecting any frames, so just clear out the nextAcquisition for the next one and don't start writing
+      this->nextAcquisition_ = Acquisition();
+      LOG4CXX_INFO(logger_, "FrameProcessor will not receive any frames from this acquisition and so no output file will be created");
+    } else {
+      this->startWriting();
+    }
+  }
+}
+
+/**
+ * Starts the close file timeout
+ *
+ */
+void FileWriterPlugin::startCloseFileTimeout()
+{
+  if (timeoutActive == false) {
+    LOG4CXX_DEBUG(logger_, "Starting close file timeout");
+    boost::mutex::scoped_lock lock(m_startTimeoutMutex);
+    m_startCondition.notify_all();
+  } else {
+	  LOG4CXX_DEBUG(logger_, "Close file timeout already active");
+  }
+}
+
+/**
+ * Function that is run by the close file timeout thread
+ *
+ * This waits until notified to start, and then runs a timer. If the timer times out,
+ * then the current acquisition is stopped. If the timer is notified before timing out
+ * (by a frame being written) then no action is taken, as it will either start the timer
+ * again or go back to the wait for start state, depending on the value of timeoutActive.
+ *
+ */
+void FileWriterPlugin::runCloseFileTimeout()
+{
+  boost::mutex::scoped_lock startLock(m_startTimeoutMutex);
+  while (timeoutThreadRunning) {
+    m_startCondition.wait(startLock);
+    if (timeoutThreadRunning) {
+      timeoutActive = true;
+      boost::mutex::scoped_lock lock(m_closeFileMutex);
+      while (timeoutActive) {
+        if (!m_timeoutCondition.timed_wait(lock, boost::posix_time::milliseconds(timeoutPeriod))) {
+          // Timeout
+          LOG4CXX_DEBUG(logger_, "Close file Timeout timed out");
+          boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+          if (writing_ && timeoutActive) {
+            LOG4CXX_INFO(logger_, "Timed out waiting for frames, stopping writing");
+            stopAcquisition();
+          }
+          timeoutActive = false;
+        } else {
+          // Event - No need to do anything. The timeout will either wait for another period if active or wait until it is restarted
+        }
+      }
+    }
+  }
 }
 
 } /* namespace FrameProcessor */
