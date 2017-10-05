@@ -1,7 +1,8 @@
 import logging
+from threading import RLock
 
 import zmq
-from threading import RLock
+
 from ipc_channel import IpcChannel
 from ipc_message import IpcMessage, IpcMessageException
 
@@ -16,7 +17,8 @@ class IpcClient(object):
         self._ip_address = ip_address
         self._port = port
 
-        self.ctrl_endpoint = self.ENDPOINT_TEMPLATE.format(IP=ip_address, PORT=port)
+        self.ctrl_endpoint = self.ENDPOINT_TEMPLATE.format(
+            IP=ip_address, PORT=port)
         self.logger.debug("Connecting to client at %s", self.ctrl_endpoint)
         self.ctrl_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_REQ)
         self.ctrl_channel.connect(self.ctrl_endpoint)
@@ -31,8 +33,7 @@ class IpcClient(object):
 
         if pollevts == zmq.POLLIN:
             reply = IpcMessage(from_str=self.ctrl_channel.recv())
-            if reply.is_valid() \
-               and reply.get_msg_type() == IpcMessage.ACK:
+            if reply.is_valid() and reply.get_msg_type() == IpcMessage.ACK:
                 self.logger.debug("Request successful")
                 return True, reply.attrs
             else:
