@@ -61,13 +61,15 @@ class IpcClient(object):
         else:
             self._raise_reply_error(msg, reply)
 
-    def send_configuration(self, target, content, valid_error=None):
+    def send_configuration(self, content, target=None, valid_error=None):
         msg = IpcMessage("cmd", "configure")
-        if not target:
-            for key in content:
-                msg.set_param(key, content[key])
-        else:
+
+        if target is not None:
             msg.set_param(target, content)
+        else:
+            for parameter, value in content.items():
+                msg.set_param(parameter, value)
+
         success, reply = self._send_message(msg)
         if not success and None not in [reply, valid_error]:
             if reply["params"]["error"] != valid_error:
@@ -76,12 +78,6 @@ class IpcClient(object):
                 self.logger.debug("Got valid error for request %s: %s",
                                   msg, reply)
         return success, reply
-
-    def send_configuration_dict(self, **kwargs):
-        msg = IpcMessage("cmd", "configure")
-        for key, value in kwargs.items():
-            msg.set_param(key, value)
-        return self._send_message(msg)
 
     def _read_message(self, timeout):
         pollevts = self.ctrl_channel.poll(timeout)
