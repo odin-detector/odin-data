@@ -49,6 +49,7 @@ FrameProcessorController::FrameProcessorController() :
     metaRxChannel_(ZMQ_PULL),
     metaTxChannel_(ZMQ_PUB)
 {
+  OdinData::configure_logging_mdc(OdinData::app_path.c_str());
   LOG4CXX_DEBUG(logger_, "Constructing FrameProcessorController");
 
   totalFrames = 0;
@@ -175,8 +176,7 @@ void FrameProcessorController::handleMetaRxChannel()
   rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
   doc.Accept(writer);
 
-  LOG4CXX_DEBUG(logger_, "Meta RX thread called: " << buffer.GetString());
-
+  LOG4CXX_TRACE(logger_, "Meta RX thread called: " << buffer.GetString());
 
   metaTxChannel_.send(buffer.GetString(), ZMQ_SNDMORE);
   metaTxChannel_.send(rPtr->getSize(), rPtr->getDataPtr());
