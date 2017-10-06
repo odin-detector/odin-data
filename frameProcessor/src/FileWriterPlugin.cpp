@@ -558,13 +558,13 @@ void FileWriterPlugin::processFrame(boost::shared_ptr<Frame> frame)
         else {
           framesWritten_ = datasetFrames;
         }
+        framesProcessed_++;
         LOG4CXX_TRACE(logger_, "Master frame processed");
       }
       else {
         LOG4CXX_TRACE(logger_, "Non-master frame processed");
       }
 
-      framesProcessed_++;
 
       // Check if we have written enough frames and stop
       if (currentAcquisition_.framesToWrite_ > 0 && framesWritten_ == currentAcquisition_.framesToWrite_) {
