@@ -109,7 +109,7 @@ protected:
   FrameReadyCallback   ready_callback_;
 
   std::queue<int>    empty_buffer_queue_;
-  std::map<uint32_t, int> frame_buffer_map_;
+  std::map<int, int> frame_buffer_map_;
 
   unsigned int frame_timeout_ms_;
   unsigned int frames_timedout_;
