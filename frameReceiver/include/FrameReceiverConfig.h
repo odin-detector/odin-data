@@ -17,6 +17,7 @@
 #include <iostream>
 
 #include "FrameReceiverDefaults.h"
+#include "IpcMessage.h"
 
 namespace FrameReceiver
 {
@@ -78,6 +79,59 @@ public:
     }
 
     return rx_type;
+  }
+
+  std::string map_rx_type_to_name(Defaults::RxType rx_type)
+  {
+    std::string rx_name;
+
+    static std::map<Defaults::RxType, std::string> rx_type_map;
+
+    if (rx_type_map.empty())
+    {
+      rx_type_map[Defaults::RxTypeUDP] = "udp";
+      rx_type_map[Defaults::RxTypeZMQ] = "zmq";
+      rx_type_map[Defaults::RxTypeIllegal] = "unknown";
+    }
+
+    if (rx_type_map.count(rx_type))
+    {
+      rx_name = rx_type_map[rx_type];
+    }
+    else
+    {
+      rx_name = rx_type_map[Defaults::RxTypeIllegal];
+    }
+
+    return rx_name;
+
+  }
+
+  void as_ipc_message(OdinData::IpcMessage& config_msg)
+  {
+
+    config_msg.set_param<std::size_t>("max_buffer_mem", max_buffer_mem_);
+    config_msg.set_param<std::string>("sensor_path", sensor_path_);
+    config_msg.set_param<std::string>("sensor_type", sensor_type_);
+    config_msg.set_param<std::string>("rx_type", this->map_rx_type_to_name(rx_type_));
+
+    std::stringstream rx_ports_stream;
+    std::copy(rx_ports_.begin(), rx_ports_.end(), std::ostream_iterator<uint16_t>(rx_ports_stream, ","));
+    std::string rx_ports_list = rx_ports_stream.str();
+    rx_ports_list.erase(rx_ports_list.length()-1);
+    config_msg.set_param<std::string>("rx_ports", rx_ports_list);
+
+    config_msg.set_param<std::string>("rx_address", rx_address_);
+    config_msg.set_param<int>("rx_recv_buffer_size", rx_recv_buffer_size_);
+    config_msg.set_param<std::string>("rx_channel_endpoint", rx_channel_endpoint_);
+    config_msg.set_param<std::string>("ctrl_channel_endpoint", ctrl_channel_endpoint_);
+    config_msg.set_param<std::string>("frame_ready_endpoint", frame_ready_endpoint_);
+    config_msg.set_param<std::string>("frame_release_endpoint", frame_release_endpoint_);
+    config_msg.set_param<std::string>("shared_buffer_name", shared_buffer_name_);
+    config_msg.set_param<unsigned int>("frame_timeout_ms", frame_timeout_ms_);
+    config_msg.set_param<unsigned int>("frame_count", frame_count_);
+    config_msg.set_param<bool>("enable_package_logging", enable_packet_logging_);
+
   }
 
 private:
