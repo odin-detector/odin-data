@@ -14,6 +14,7 @@ namespace po = boost::program_options;
 
 #include "logging.h"
 #include "FrameReceiverApp.h"
+#include "FrameReceiverController.h"
 
 using namespace FrameReceiver;
 
@@ -316,6 +317,14 @@ void FrameReceiverApp::run(void)
   LOG4CXX_INFO(logger_,  "Running frame receiver");
 
   try {
+
+    boost::shared_ptr<FrameReceiverController> controller =
+        boost::shared_ptr<FrameReceiverController>(new FrameReceiverController());
+
+    OdinData::IpcMessage config_msg, config_reply;
+    config_.as_ipc_message(config_msg);
+
+    controller->configure(config_msg, config_reply);
 
     // Initialise IPC channels
     initialise_ipc_channels();
