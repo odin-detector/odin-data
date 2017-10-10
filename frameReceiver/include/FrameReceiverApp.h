@@ -34,10 +34,8 @@ namespace FrameReceiver
 
 //! Frame receiver application class/
 //!
-//! This class implements the main functionality of the FrameReceiver application, providing
-//! the overall framework for running the frame receiver, capturing frames of incoming data and
-//! handing them off to a processing application via shared memory. The application communicates
-//! with the downstream processing (and internally) via ZeroMQ inter-process channels.
+//! This class implements the main functionality of the FrameReceiver application, parsing command line
+//! and configuraiton file options before creating, configuring and running the controller.
 
 class FrameReceiverApp
 {

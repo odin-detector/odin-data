@@ -52,6 +52,7 @@ FrameReceiverApp::FrameReceiverApp(void)
 }
 
 //! Destructor for FrameReceiverApp class
+
 FrameReceiverApp::~FrameReceiverApp()
 {
   controller_.reset();
@@ -306,6 +307,12 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
 
 }
 
+//! Run the FrameReceiverApp.
+//!
+//! This method runs the frame receiver. The controller is initialised from
+//! the input configuration parameters and then run, blocking until completion
+//! of execution.
+
 void FrameReceiverApp::run(void)
 {
 
@@ -334,6 +341,10 @@ void FrameReceiverApp::run(void)
     LOG4CXX_ERROR(logger_, "Unexpected exception during frame receiver run");
   }
 }
+
+//! Stop the FrameRecevierApp.
+//!
+//! This method stops the frame receiver by signalling to the controller to stop.
 
 void FrameReceiverApp::stop(void)
 {
