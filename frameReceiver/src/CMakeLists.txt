@@ -6,6 +6,7 @@ include_directories(${FRAMERECEIVER_DIR}/include ${Boost_INCLUDE_DIRS} ${LOG4CXX
 
 file(GLOB APP_SOURCES appMain.cpp
                       FrameReceiverApp.cpp
+                      FrameReceiverController.cpp
                       FrameReceiverRxThread.cpp
                       FrameReceiverUDPRxThread.cpp
                       FrameReceiverZMQRxThread.cpp)
