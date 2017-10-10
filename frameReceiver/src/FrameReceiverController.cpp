@@ -16,7 +16,7 @@ bool FrameReceiverController::terminate_controller_ = false;
 #endif
 
 FrameReceiverController::FrameReceiverController () :
-    logger_(log4cxx::Logger::getLogger("FR.FrameReceiverController")),
+    logger_(log4cxx::Logger::getLogger("FR.Controller")),
     rx_channel_(ZMQ_PAIR),
     ctrl_channel_(ZMQ_ROUTER),
     frame_ready_channel_(ZMQ_PUB),
