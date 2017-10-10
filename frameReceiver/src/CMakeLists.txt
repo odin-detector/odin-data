@@ -4,8 +4,7 @@ ADD_DEFINITIONS(-DBUILD_DIR="${CMAKE_BINARY_DIR}")
 
 include_directories(${FRAMERECEIVER_DIR}/include ${Boost_INCLUDE_DIRS} ${LOG4CXX_INCLUDE_DIRS}/.. ${ZEROMQ_INCLUDE_DIRS})
 
-file(GLOB APP_SOURCES appMain.cpp
-                      FrameReceiverApp.cpp
+file(GLOB APP_SOURCES FrameReceiverApp.cpp
                       FrameReceiverController.cpp
                       FrameReceiverRxThread.cpp
                       FrameReceiverUDPRxThread.cpp
