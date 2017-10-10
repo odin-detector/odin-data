@@ -153,6 +153,7 @@ private:
   bool                  enable_packet_logging_;  //!< Enable packet diagnostic logging
 
   friend class FrameReceiverApp;
+  friend class FrameReceiverController; // TODO REMOVE THIS
   friend class FrameReceiverRxThread;
   friend class FrameReceiverUDPRxThread;
   friend class FrameReceiverZMQRxThread;
