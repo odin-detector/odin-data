@@ -47,6 +47,9 @@ void FrameReceiverController::configure(FrameReceiverConfig& config, OdinData::I
     // Configure IPC channels
     this->configure_ipc_channels(config_msg);
 
+    // Configure the appropriate frame decoder
+    this->configure_frame_decoder(config_msg);
+
   }
   catch (FrameReceiverException& e) {
     LOG4CXX_ERROR(logger_, "Configuration error: " << e.what());
@@ -64,7 +67,7 @@ void FrameReceiverController::run(void)
   //configure_ipc_channels();
 
   // Create the appropriate frame decoder
-  initialise_frame_decoder();
+  // configure_frame_decoder();
 
   // Initialise the frame buffer buffer manager
   initialise_buffer_manager();
@@ -261,36 +264,68 @@ void FrameReceiverController::cleanup_ipc_channels(void)
 
 }
 
-void FrameReceiverController::initialise_frame_decoder(void)
+//! Configure the frame decoder
+//!
+//! This method configures a frame decoder by loading the resolving the appropriate
+//! library and class based on the input configuration.
+//!
+//! \param[in] config_msg - IPC message containing configuration parameters
+//!
+void FrameReceiverController::configure_frame_decoder(OdinData::IpcMessage& config_msg)
 {
-  std::string libDir(BUILD_DIR);
-  libDir += "/lib/";
-  if (config_.sensor_path_ != ""){
-    libDir = config_.sensor_path_;
-    // Check if the last character is '/', if not append it
-    if (*libDir.rbegin() != '/'){
-      libDir += "/";
-    }
-  }
-  std::string libName = "lib" + config_.sensor_type_ + "FrameDecoder.so";
-  std::string clsName = config_.sensor_type_ + "FrameDecoder";
-  LOG4CXX_INFO(logger_, "Loading decoder plugin " << clsName << " from " << libDir << libName);
 
-  try {
-    frame_decoder_ = OdinData::ClassLoader<FrameDecoder>::load_class(clsName, libDir + libName);
-    if (!frame_decoder_){
-      throw OdinData::OdinDataException("Cannot initialise frame decoder: sensor type not recognised");
-    } else {
-      LOG4CXX_INFO(logger_, "Created " << clsName << " frame decoder instance");
+  // Resolve the library path if specified in the config message, otherwise default
+  // to the current BUILD_DIR parameter.
+  std::string lib_dir(BUILD_DIR);
+  lib_dir += "/lib/";
+
+  if (config_msg.has_param(CONFIG_DECODER_PATH))
+  {
+    lib_dir = config_msg.get_param<std::string>(CONFIG_DECODER_PATH);
+
+    // Check if the last character is '/', if not append it
+    if (*lib_dir.rbegin() != '/')
+    {
+      lib_dir += "/";
     }
   }
-  catch (const std::runtime_error& e) {
-    std::stringstream sstr;
-    sstr << "Cannot initialise frame decoder: " << e.what();
-    throw OdinData::OdinDataException(sstr.str());
+
+  if (config_msg.has_param(CONFIG_DECODER_TYPE))
+  {
+
+    std::string decoder_type = config_msg.get_param<std::string>(CONFIG_DECODER_TYPE);
+    if (decoder_type != Defaults::default_decoder_type)
+    {
+      std::string lib_name = "lib" + decoder_type + "FrameDecoder.so";
+      std::string cls_name = decoder_type + "FrameDecoder";
+      LOG4CXX_INFO(logger_, "Loading decoder plugin " << cls_name << " from " << lib_dir << lib_name);
+
+      try {
+
+        frame_decoder_ = OdinData::ClassLoader<FrameDecoder>::load_class(cls_name, lib_dir + lib_name);
+        if (!frame_decoder_)
+        {
+          throw FrameReceiverException("Cannot configure frame decoder: plugin type not recognised");
+        }
+        else
+        {
+          LOG4CXX_INFO(logger_, "Created " << cls_name << " frame decoder instance");
+        }
+      }
+      catch (const std::runtime_error& e) {
+        std::stringstream sstr;
+        sstr << "Cannot configure frame decoder: " << e.what();
+        throw FrameReceiverException(sstr.str());
+      }
+
+      // Initialise the decoder object
+      frame_decoder_->init(logger_, config_.enable_packet_logging_, config_.frame_timeout_ms_);
+    }
+    else
+    {
+      LOG4CXX_INFO(logger_, "No frame decoder loaded: type not specified");
+    }
   }
-  // Initialise the decoder object
-  frame_decoder_->init(logger_, config_.enable_packet_logging_, config_.frame_timeout_ms_);
 }
 
 
