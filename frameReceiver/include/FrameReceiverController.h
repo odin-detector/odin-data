@@ -21,6 +21,7 @@
 #include "IpcChannel.h"
 #include "IpcMessage.h"
 #include "IpcReactor.h"
+#include "FrameReceiverException.h"
 #include "FrameReceiverConfig.h" // TODO REMOVE THIS
 #include "FrameReceiverRxThread.h"
 #include "FrameReceiverUDPRxThread.h"
@@ -34,6 +35,13 @@ using namespace OdinData;
 namespace FrameReceiver
 {
 
+  //! Frame receiver controller class/
+  //!
+  //! This class implements the main controller of the FrameReceiver application, providing
+  //! the overall framework for running the frame receiver, capturing frames of incoming data and
+  //! handing them off to a processing application via shared memory. The controller communicates
+  //! with the downstream processing (and internally) via ZeroMQ inter-process channels.
+
   class FrameReceiverController
   {
 
@@ -41,11 +49,16 @@ namespace FrameReceiver
 
     FrameReceiverController ();
     virtual ~FrameReceiverController ();
-    void configure(FrameReceiverConfig& config, OdinData::IpcMessage& config_msg, OdinData::IpcMessage& config_reply);
+    void configure(FrameReceiverConfig& config,
+        OdinData::IpcMessage& config_msg, OdinData::IpcMessage& config_reply);
     void run(void);
     void stop(void);
 
-    void initialise_ipc_channels(void);
+    void configure_ipc_channels(OdinData::IpcMessage& config_msg);
+    void setup_control_channel(const std::string& ctrl_endpoint);
+    void setup_rx_channel(const std::string& ctrl_endpoint);
+    void setup_frame_ready_channel(const std::string& ctrl_endpoint);
+    void setup_frame_release_channel(const std::string& ctrl_endpoint);
     void cleanup_ipc_channels(void);
     void initialise_frame_decoder(void);
     void initialise_buffer_manager(void);
@@ -59,25 +72,23 @@ namespace FrameReceiver
 
   private:
 
-    /** Pointer to the logging facility */
-    log4cxx::LoggerPtr logger_;
+    log4cxx::LoggerPtr                       logger_;          //!< Pointer to the logging facility
     boost::scoped_ptr<FrameReceiverRxThread> rx_thread_;       //!< Receiver thread object
     FrameDecoderPtr                          frame_decoder_;   //!< Frame decoder object
     SharedBufferManagerPtr                   buffer_manager_;  //!< Buffer manager object
 
     FrameReceiverConfig config_;          //!< Configuration storage object TODO REMOVE THIS!
+    bool terminate_controller_;           //!< Flag to signal temination of the controller
 
-    static bool terminate_controller_;
+    IpcChannel rx_channel_;               //!< Channel for communication with receiver thread
+    IpcChannel ctrl_channel_;             //!< Channel for communication with external control clients
+    IpcChannel frame_ready_channel_;      //!< Channel for signalling frames ready to downstream processes
+    IpcChannel frame_release_channel_;    //!< Channel for receiving notification of released frames
 
-    IpcChannel rx_channel_;
-    IpcChannel ctrl_channel_;
-    IpcChannel frame_ready_channel_;
-    IpcChannel frame_release_channel_;
+    IpcReactor reactor_;                  //!< Reactor for multiplexing all communications
 
-    IpcReactor reactor_;
-
-    unsigned int frames_received_;
-    unsigned int frames_released_;
+    unsigned int frames_received_;        //!< Counter for frames received
+    unsigned int frames_released_;        //!< Counter for frames released
 
   };
 
