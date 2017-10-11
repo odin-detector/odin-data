@@ -21,6 +21,12 @@
 
 namespace FrameReceiver
 {
+
+  const std::string CONFIG_CTRL_ENDPOINT = "ctrl_endpoint";
+  const std::string CONFIG_RX_ENDPOINT = "rx_endpoint";
+  const std::string CONFIG_FRAME_READY_ENDPOINT = "frame_ready_endpoint";
+  const std::string CONFIG_FRAME_RELEASE_ENDPOINT = "frame_release_endpoint";
+
 class FrameReceiverConfig
 {
 public:
@@ -123,10 +129,10 @@ public:
 
     config_msg.set_param<std::string>("rx_address", rx_address_);
     config_msg.set_param<int>("rx_recv_buffer_size", rx_recv_buffer_size_);
-    config_msg.set_param<std::string>("rx_channel_endpoint", rx_channel_endpoint_);
-    config_msg.set_param<std::string>("ctrl_channel_endpoint", ctrl_channel_endpoint_);
-    config_msg.set_param<std::string>("frame_ready_endpoint", frame_ready_endpoint_);
-    config_msg.set_param<std::string>("frame_release_endpoint", frame_release_endpoint_);
+    config_msg.set_param<std::string>(CONFIG_RX_ENDPOINT, rx_channel_endpoint_);
+    config_msg.set_param<std::string>(CONFIG_CTRL_ENDPOINT, ctrl_channel_endpoint_);
+    config_msg.set_param<std::string>(CONFIG_FRAME_READY_ENDPOINT, frame_ready_endpoint_);
+    config_msg.set_param<std::string>(CONFIG_FRAME_RELEASE_ENDPOINT, frame_release_endpoint_);
     config_msg.set_param<std::string>("shared_buffer_name", shared_buffer_name_);
     config_msg.set_param<unsigned int>("frame_timeout_ms", frame_timeout_ms_);
     config_msg.set_param<unsigned int>("frame_count", frame_count_);

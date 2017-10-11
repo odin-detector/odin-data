@@ -9,14 +9,13 @@
 
 using namespace FrameReceiver;
 
-bool FrameReceiverController::terminate_controller_ = false;
-
 #ifndef BUILD_DIR
 #define BUILD_DIR "."
 #endif
 
 FrameReceiverController::FrameReceiverController () :
     logger_(log4cxx::Logger::getLogger("FR.Controller")),
+    terminate_controller_(false),
     rx_channel_(ZMQ_PAIR),
     ctrl_channel_(ZMQ_ROUTER),
     frame_ready_channel_(ZMQ_PUB),
@@ -40,8 +39,20 @@ FrameReceiverController::~FrameReceiverController ()
 
 void FrameReceiverController::configure(FrameReceiverConfig& config, OdinData::IpcMessage& config_msg, OdinData::IpcMessage& config_reply)
 {
-  LOG4CXX_DEBUG(logger_, "Configuration submitted: " << config_msg.encode());
+  LOG4CXX_DEBUG_LEVEL(2, logger_, "Configuration submitted: " << config_msg.encode());
   config_ = config; // TODO REMOVE THIS!
+
+  try {
+
+    // Configure IPC channels
+    this->configure_ipc_channels(config_msg);
+
+  }
+  catch (FrameReceiverException& e) {
+    LOG4CXX_ERROR(logger_, "Configuration error: " << e.what());
+    config_reply.set_msg_type(OdinData::IpcMessage::MsgTypeNack);
+    config_reply.set_param<std::string>("error", std::string(e.what()));
+  }
 }
 
 void FrameReceiverController::run(void)
@@ -50,7 +61,7 @@ void FrameReceiverController::run(void)
   terminate_controller_ = false;
 
   // Initialise IPC channels
-  initialise_ipc_channels();
+  //configure_ipc_channels();
 
   // Create the appropriate frame decoder
   initialise_frame_decoder();
@@ -107,30 +118,130 @@ void FrameReceiverController::stop(void)
 }
 
 
-void FrameReceiverController::initialise_ipc_channels(void)
+void FrameReceiverController::configure_ipc_channels(OdinData::IpcMessage& config_msg)
 {
-  // Bind the control channel
-  ctrl_channel_.bind(config_.ctrl_channel_endpoint_);
-
-  // Bind the RX thread channel
-  rx_channel_.bind(config_.rx_channel_endpoint_);
-
-  // Bind the frame ready and release channels
-  try {
-    frame_ready_channel_.bind(config_.frame_ready_endpoint_);
-    frame_release_channel_.bind(config_.frame_release_endpoint_);
+  // If a control endpoint is specified, bind the control channel
+  if (config_msg.has_param(CONFIG_CTRL_ENDPOINT)) {
+    std::string endpoint = config_msg.get_param<std::string>(CONFIG_CTRL_ENDPOINT);
+    this->setup_control_channel(endpoint);
   }
-  catch (std::exception& e)
-  {
-    LOG4CXX_ERROR(logger_, "Got exception binding IPC channels: " << e.what());
+
+  // If the endpoint is specified, bind the RX thread channel
+  if (config_msg.has_param(CONFIG_RX_ENDPOINT)) {
+    std::string endpoint = config_msg.get_param<std::string>(CONFIG_RX_ENDPOINT);
+    this->setup_rx_channel(endpoint);
+  }
+
+  // If the endpoint is specified, bind the frame ready notification channel
+  if (config_msg.has_param(CONFIG_FRAME_READY_ENDPOINT)) {
+    std::string endpoint = config_msg.get_param<std::string>(CONFIG_FRAME_READY_ENDPOINT);
+    this->setup_frame_ready_channel(endpoint);
+  }
+
+  // If the endpoint is specified, bind the frame release notification channel
+  if (config_msg.has_param(CONFIG_FRAME_RELEASE_ENDPOINT)) {
+    std::string endpoint = config_msg.get_param<std::string>(CONFIG_FRAME_RELEASE_ENDPOINT);
+    this->setup_frame_release_channel(endpoint);
+
+  }
+}
+
+//! Set up the control channel.
+//!
+//! This method sets up the control channel, binding to the specified endpoint and adding
+//! the channel to the reactor.
+//!
+//! \param[in] control_endpoint - string URI of endpoint
+//!
+void FrameReceiverController::setup_control_channel(const std::string& endpoint)
+{
+  LOG4CXX_DEBUG_LEVEL(1, logger_, "Binding control channel to endpoint: " << endpoint);
+
+  try {
+    ctrl_channel_.bind(endpoint.c_str());
+  }
+  catch (zmq::error_t& e) {
+    std::stringstream sstr;
+    sstr << "Binding control channel endpoint " << endpoint << " failed: " << e.what();
+    throw FrameReceiverException(sstr.str());
+  }
+
+  // Add channel to the reactor
+  reactor_.register_channel(ctrl_channel_, boost::bind(&FrameReceiverController::handle_ctrl_channel, this));
+
+}
+
+//! Set up the receiver thread channel.
+//!
+//! This method sets up the receiver thread channel, binding to the specified endpoint and adding
+//! the channel to the reactor.
+//!
+//! \param[in] control_endpoint - string URI of endpoint
+//!
+void FrameReceiverController::setup_rx_channel(const std::string& endpoint)
+{
+  LOG4CXX_DEBUG_LEVEL(1, logger_, "Binding receiver thread channel to endpoint: " << endpoint);
+
+  try {
+    rx_channel_.bind(endpoint.c_str());
+  }
+  catch (zmq::error_t& e) {
+    std::stringstream sstr;
+    sstr << "Binding receiver thread channel endpoint " << endpoint << " failed: " << e.what();
+    throw FrameReceiverException(sstr.str());
+  }
+
+  // Add channel to the reactor
+  reactor_.register_channel(rx_channel_, boost::bind(&FrameReceiverController::handle_rx_channel, this));
+
+}
+
+//! Set up the frame ready notification channel.
+//!
+//! This method sets up the frame ready notification, binding to the specified endpoint and adding
+//! the channel to the reactor.
+//!
+//! \param[in] control_endpoint - string URI of endpoint
+//!
+void FrameReceiverController::setup_frame_ready_channel(const std::string& endpoint)
+{
+  LOG4CXX_DEBUG_LEVEL(1, logger_, "Binding frame ready notification channel to endpoint: " << endpoint);
+
+  try {
+    frame_ready_channel_.bind(endpoint.c_str());
+  }
+  catch (zmq::error_t& e) {
+    std::stringstream sstr;
+    sstr << "Binding frame ready notification channel endpoint " << endpoint << " failed: " << e.what();
+    throw FrameReceiverException(sstr.str());
+  }
+
+}
+
+//! Set up the frame release notification channel.
+//!
+//! This method sets up the frame release notification, binding to the specified endpoint and adding
+//! the channel to the reactor.
+//!
+//! \param[in] control_endpoint - string URI of endpoint
+//!
+void FrameReceiverController::setup_frame_release_channel(const std::string& endpoint)
+{
+  LOG4CXX_DEBUG_LEVEL(1, logger_, "Binding frame release notification channel to endpoint: " << endpoint);
+
+  try {
+    frame_release_channel_.bind(endpoint.c_str());
+  }
+  catch (zmq::error_t& e) {
+    std::stringstream sstr;
+    sstr << "Binding frame release notification channel endpoint " << endpoint << " failed: " << e.what();
+    throw FrameReceiverException(sstr.str());
   }
 
   // Set default subscription on frame release channel
   frame_release_channel_.subscribe("");
 
-  // Add IPC channels to the reactor
-  reactor_.register_channel(ctrl_channel_, boost::bind(&FrameReceiverController::handle_ctrl_channel, this));
-  reactor_.register_channel(rx_channel_, boost::bind(&FrameReceiverController::handle_rx_channel, this));
+  // Add channel to the reactor
   reactor_.register_channel(frame_release_channel_, boost::bind(&FrameReceiverController::handle_frame_release_channel, this));
 
 }
