@@ -13,6 +13,12 @@ using namespace FrameReceiver;
 #define BUILD_DIR "."
 #endif
 
+//! Constructor for the FrameReceiverController class.
+//!
+//! This constructor initialises the logger, IPC channels and state
+//! of the controller. Configuration and running are deferred to the
+//! configure() and run() methods respectively.
+//!
 FrameReceiverController::FrameReceiverController () :
     logger_(log4cxx::Logger::getLogger("FR.Controller")),
     terminate_controller_(false),
@@ -28,6 +34,7 @@ FrameReceiverController::FrameReceiverController () :
 }
 
 //! Destructor for the FrameReceiverController
+//!
 FrameReceiverController::~FrameReceiverController ()
 {
 
@@ -37,7 +44,17 @@ FrameReceiverController::~FrameReceiverController ()
 
 }
 
-void FrameReceiverController::configure(FrameReceiverConfig& config, OdinData::IpcMessage& config_msg, OdinData::IpcMessage& config_reply)
+//! Configure the FrameReceiverController
+//!
+//! This method configures the controller based on configuration parameters received as
+//! an IpcMessage. Depending on the parameters present in that message, IPC channels
+//! the frame decoder, frame buffer manager and RX thread are conditionally configured.
+//!
+//! \param[in] config_msg - IpcMessage containing configuration parameters
+//! `param[out] reply_msg - Reply IpcMessage indicating success or failure of actions.
+//!
+void FrameReceiverController::configure(FrameReceiverConfig& config,
+    OdinData::IpcMessage& config_msg, OdinData::IpcMessage& config_reply)
 {
   LOG4CXX_DEBUG_LEVEL(2, logger_, "Configuration submitted: " << config_msg.encode());
   config_ = config; // TODO REMOVE THIS!
@@ -58,6 +75,9 @@ void FrameReceiverController::configure(FrameReceiverConfig& config, OdinData::I
   }
 }
 
+//! Run the FrameReceiverController
+//!
+//! This method runs the FrameReceiverController
 void FrameReceiverController::run(void)
 {
   LOG4CXX_TRACE(logger_, "FrameReceiverController::run()");
@@ -105,6 +125,9 @@ void FrameReceiverController::run(void)
   // Destroy the RX thread
   rx_thread_.reset();
 
+  // Destroy the frame decoder
+  frame_decoder_.reset();
+
   // Clean up IPC channels
   cleanup_ipc_channels();
 
@@ -118,6 +141,7 @@ void FrameReceiverController::stop(void)
 {
   LOG4CXX_TRACE(logger_, "FrameReceiverController::stop()");
   terminate_controller_ = true;
+  reactor_.stop();
 }
 
 
