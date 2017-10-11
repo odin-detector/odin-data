@@ -32,9 +32,8 @@ namespace FrameReceiver
 class FrameReceiverUDPRxThread : public FrameReceiverRxThread
 {
 public:
-  FrameReceiverUDPRxThread(FrameReceiverConfig& config, LoggerPtr& logger,
-                           SharedBufferManagerPtr buffer_manager, FrameDecoderPtr frame_decoder,
-                           unsigned int tick_period_ms=100);
+  FrameReceiverUDPRxThread(FrameReceiverConfig& config, SharedBufferManagerPtr buffer_manager,
+      FrameDecoderPtr frame_decoder, unsigned int tick_period_ms=100);
   virtual ~FrameReceiverUDPRxThread();
 
 private:

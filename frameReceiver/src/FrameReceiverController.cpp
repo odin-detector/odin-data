@@ -96,11 +96,11 @@ void FrameReceiverController::run(void)
   switch(config_.rx_type_)
   {
     case Defaults::RxTypeUDP:
-      rx_thread_.reset(new FrameReceiverUDPRxThread( config_, logger_, buffer_manager_, frame_decoder_));
+      rx_thread_.reset(new FrameReceiverUDPRxThread( config_, buffer_manager_, frame_decoder_));
       break;
 
     case Defaults::RxTypeZMQ:
-      rx_thread_.reset(new FrameReceiverZMQRxThread( config_, logger_, buffer_manager_, frame_decoder_));
+      rx_thread_.reset(new FrameReceiverZMQRxThread( config_, buffer_manager_, frame_decoder_));
       break;
 
     default:

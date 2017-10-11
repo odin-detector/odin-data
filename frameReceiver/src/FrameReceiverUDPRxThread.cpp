@@ -11,12 +11,12 @@
 
 using namespace FrameReceiver;
 
-FrameReceiverUDPRxThread::FrameReceiverUDPRxThread(FrameReceiverConfig& config, LoggerPtr& logger,
+FrameReceiverUDPRxThread::FrameReceiverUDPRxThread(FrameReceiverConfig& config,
                                                    SharedBufferManagerPtr buffer_manager,
                                                    FrameDecoderPtr frame_decoder,
                                                    unsigned int tick_period_ms) :
-    FrameReceiverRxThread(config, logger, buffer_manager, frame_decoder, tick_period_ms),
-    logger_(logger)
+    FrameReceiverRxThread(config, buffer_manager, frame_decoder, tick_period_ms),
+    logger_(log4cxx::Logger::getLogger("FR.UDPRxThread"))
 {
   LOG4CXX_DEBUG_LEVEL(1, logger_, "FrameReceiverUDPRxThread constructor entered....");
 

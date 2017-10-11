@@ -9,12 +9,12 @@
 
 using namespace FrameReceiver;
 
-FrameReceiverRxThread::FrameReceiverRxThread(FrameReceiverConfig& config, LoggerPtr& logger,
+FrameReceiverRxThread::FrameReceiverRxThread(FrameReceiverConfig& config,
                                              SharedBufferManagerPtr buffer_manager,
                                              FrameDecoderPtr frame_decoder,
                                              unsigned int tick_period_ms) :
     config_(config),
-    logger_(logger),
+    logger_(log4cxx::Logger::getLogger("FR.RxThread")),
     buffer_manager_(buffer_manager),
     frame_decoder_(frame_decoder),
     tick_period_ms_(tick_period_ms),
