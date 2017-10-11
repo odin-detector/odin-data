@@ -22,10 +22,21 @@
 namespace FrameReceiver
 {
 
+  const std::string CONFIG_MAX_BUFFER_MEM = "max_buffer_mem";
+  const std::string CONFIG_DECODER_PATH = "decoder_path";
+  const std::string CONFIG_DECODER_TYPE = "decoder_type";
+  const std::string CONFIG_RX_TYPE = "rx_type";
   const std::string CONFIG_CTRL_ENDPOINT = "ctrl_endpoint";
   const std::string CONFIG_RX_ENDPOINT = "rx_endpoint";
   const std::string CONFIG_FRAME_READY_ENDPOINT = "frame_ready_endpoint";
   const std::string CONFIG_FRAME_RELEASE_ENDPOINT = "frame_release_endpoint";
+  const std::string CONFIG_RX_PORTS = "rx_ports";
+  const std::string CONFIG_RX_ADDRESS = "rx_address";
+  const std::string CONFIG_RX_RECV_BUFFER_SIZE = "rx_recv_buffer_size";
+  const std::string CONFIG_SHARED_BUFFER_NAME = "shared_buffer_name";
+  const std::string CONFIG_FRAME_TIMEOUT_MS = "frame_timeout_ms";
+  const std::string CONFIG_FRAME_COUNT = "frame_count";
+  const std::string CONFIG_ENABLE_PACKET_LOGGING = "enable_package_logging";
 
 class FrameReceiverConfig
 {
@@ -33,7 +44,7 @@ public:
 
   FrameReceiverConfig() :
       max_buffer_mem_(Defaults::default_max_buffer_mem),
-      sensor_type_(Defaults::default_sensor_type),
+      decoder_type_(Defaults::default_decoder_type),
       rx_type_(Defaults::default_rx_type),
       rx_address_(Defaults::default_rx_address),
       rx_recv_buffer_size_(Defaults::default_rx_recv_buffer_size),
@@ -116,35 +127,35 @@ public:
   void as_ipc_message(OdinData::IpcMessage& config_msg)
   {
 
-    config_msg.set_param<std::size_t>("max_buffer_mem", max_buffer_mem_);
-    config_msg.set_param<std::string>("sensor_path", sensor_path_);
-    config_msg.set_param<std::string>("sensor_type", sensor_type_);
-    config_msg.set_param<std::string>("rx_type", this->map_rx_type_to_name(rx_type_));
+    config_msg.set_param<std::size_t>(CONFIG_MAX_BUFFER_MEM, max_buffer_mem_);
+    config_msg.set_param<std::string>(CONFIG_DECODER_PATH, decoder_path_);
+    config_msg.set_param<std::string>(CONFIG_DECODER_TYPE, decoder_type_);
+    config_msg.set_param<std::string>(CONFIG_RX_TYPE, this->map_rx_type_to_name(rx_type_));
 
     std::stringstream rx_ports_stream;
     std::copy(rx_ports_.begin(), rx_ports_.end(), std::ostream_iterator<uint16_t>(rx_ports_stream, ","));
     std::string rx_ports_list = rx_ports_stream.str();
     rx_ports_list.erase(rx_ports_list.length()-1);
-    config_msg.set_param<std::string>("rx_ports", rx_ports_list);
+    config_msg.set_param<std::string>(CONFIG_RX_PORTS, rx_ports_list);
 
-    config_msg.set_param<std::string>("rx_address", rx_address_);
-    config_msg.set_param<int>("rx_recv_buffer_size", rx_recv_buffer_size_);
+    config_msg.set_param<std::string>(CONFIG_RX_ADDRESS, rx_address_);
+    config_msg.set_param<int>(CONFIG_RX_RECV_BUFFER_SIZE, rx_recv_buffer_size_);
     config_msg.set_param<std::string>(CONFIG_RX_ENDPOINT, rx_channel_endpoint_);
     config_msg.set_param<std::string>(CONFIG_CTRL_ENDPOINT, ctrl_channel_endpoint_);
     config_msg.set_param<std::string>(CONFIG_FRAME_READY_ENDPOINT, frame_ready_endpoint_);
     config_msg.set_param<std::string>(CONFIG_FRAME_RELEASE_ENDPOINT, frame_release_endpoint_);
-    config_msg.set_param<std::string>("shared_buffer_name", shared_buffer_name_);
-    config_msg.set_param<unsigned int>("frame_timeout_ms", frame_timeout_ms_);
-    config_msg.set_param<unsigned int>("frame_count", frame_count_);
-    config_msg.set_param<bool>("enable_package_logging", enable_packet_logging_);
+    config_msg.set_param<std::string>(CONFIG_SHARED_BUFFER_NAME, shared_buffer_name_);
+    config_msg.set_param<unsigned int>(CONFIG_FRAME_TIMEOUT_MS, frame_timeout_ms_);
+    config_msg.set_param<unsigned int>(CONFIG_FRAME_COUNT, frame_count_);
+    config_msg.set_param<bool>(CONFIG_ENABLE_PACKET_LOGGING, enable_packet_logging_);
 
   }
 
 private:
 
   std::size_t           max_buffer_mem_;         //!< Amount of shared buffer memory to allocate for frame buffers
-  std::string           sensor_path_;            //!< Path to decoder library
-  std::string           sensor_type_;            //!< Sensor type receiving data for - drives frame size
+  std::string           decoder_path_;           //!< Path to decoder library
+  std::string           decoder_type_;           //!< Decoder type receiving data for - drives frame size
   Defaults::RxType      rx_type_;                //!< Type of receiver interface (UDP or ZMQ)
   std::vector<uint16_t> rx_ports_;               //!< Port(s) to receive frame data on
   std::string           rx_address_;             //!< IP address to receive frame data on
