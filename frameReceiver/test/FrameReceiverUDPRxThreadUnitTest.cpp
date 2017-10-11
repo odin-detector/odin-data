@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE( CreateAndPingRxThread )
   bool initOK = true;
 
   try {
-    FrameReceiver::FrameReceiverUDPRxThread rxThread(config, logger, buffer_manager, frame_decoder, 1);
+    FrameReceiver::FrameReceiverUDPRxThread rxThread(config, buffer_manager, frame_decoder, 1);
     rxThread.start();
     OdinData::IpcMessage::MsgType msg_type = OdinData::IpcMessage::MsgTypeCmd;
     OdinData::IpcMessage::MsgVal  msg_val =  OdinData::IpcMessage::MsgValCmdStatus;

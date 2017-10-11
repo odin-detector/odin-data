@@ -38,9 +38,8 @@ public:
 class FrameReceiverRxThread
 {
 public:
-  FrameReceiverRxThread(FrameReceiverConfig& config, LoggerPtr& logger,
-                        SharedBufferManagerPtr buffer_manager, FrameDecoderPtr frame_decoder,
-                        unsigned int tick_period_ms=100);
+  FrameReceiverRxThread(FrameReceiverConfig& config, SharedBufferManagerPtr buffer_manager,
+      FrameDecoderPtr frame_decoder, unsigned int tick_period_ms=100);
   virtual ~FrameReceiverRxThread();
 
   void start();
