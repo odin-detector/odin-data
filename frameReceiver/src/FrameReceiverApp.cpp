@@ -340,6 +340,8 @@ void FrameReceiverApp::run(void)
   {
     LOG4CXX_ERROR(logger_, "Unexpected exception during frame receiver run");
   }
+
+  LOG4CXX_INFO(logger_, "Frame receiver stopped");
 }
 
 //! Stop the FrameRecevierApp.
