@@ -61,7 +61,8 @@ namespace FrameReceiver
     void setup_frame_release_channel(const std::string& ctrl_endpoint);
     void cleanup_ipc_channels(void);
     void configure_frame_decoder(OdinData::IpcMessage& config_msg);
-    void initialise_buffer_manager(void);
+    void configure_buffer_manager(OdinData::IpcMessage& config_msg);
+    void configure_rx_thread(OdinData::IpcMessage& config_msg);
     void precharge_buffers(void);
     void notify_buffer_config(const bool deferred=false);
 

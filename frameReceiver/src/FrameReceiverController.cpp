@@ -67,6 +67,12 @@ void FrameReceiverController::configure(FrameReceiverConfig& config,
     // Configure the appropriate frame decoder
     this->configure_frame_decoder(config_msg);
 
+    // Configure the buffer manager
+    this->configure_buffer_manager(config_msg);
+
+    // Configure the RX thread
+    this->configure_rx_thread(config_msg);
+
   }
   catch (FrameReceiverException& e) {
     LOG4CXX_ERROR(logger_, "Configuration error: " << e.what());
@@ -77,66 +83,47 @@ void FrameReceiverController::configure(FrameReceiverConfig& config,
 
 //! Run the FrameReceiverController
 //!
-//! This method runs the FrameReceiverController
+//! This method runs the FrameReceiverController reactor event loop. Configuration
+//! of the controller and associated objects is performed by calls to the
+//! configure() method, either prior to calling run(), or in response to
+//! appropriate messages being received on the appropriate IPC channel.
+//!
 void FrameReceiverController::run(void)
 {
   LOG4CXX_TRACE(logger_, "FrameReceiverController::run()");
   terminate_controller_ = false;
 
-  // Initialise IPC channels
-  //configure_ipc_channels();
-
-  // Create the appropriate frame decoder
-  // configure_frame_decoder();
-
-  // Initialise the frame buffer buffer manager
-  initialise_buffer_manager();
-
-  // Create the RX thread object
-  switch(config_.rx_type_)
-  {
-    case Defaults::RxTypeUDP:
-      rx_thread_.reset(new FrameReceiverUDPRxThread( config_, buffer_manager_, frame_decoder_));
-      break;
-
-    case Defaults::RxTypeZMQ:
-      rx_thread_.reset(new FrameReceiverZMQRxThread( config_, buffer_manager_, frame_decoder_));
-      break;
-
-    default:
-      throw OdinData::OdinDataException("Cannot create RX thread - RX type not recognised");
-  }
-  rx_thread_->start();
-
   // Pre-charge all frame buffers onto the RX thread queue ready for use
   precharge_buffers();
-
-  // Notify downstream processes of current buffer configuration
-  notify_buffer_config(true);
 
   LOG4CXX_DEBUG_LEVEL(1, logger_, "Main thread entering reactor loop");
 
   // Run the reactor event loop
   reactor_.run();
 
-  // Call cleanup on the RxThread
-  rx_thread_->stop();
+  if (rx_thread_)
+  {
+    // Call cleanup on the RxThread
+    rx_thread_->stop();
 
-  // Destroy the RX thread
-  rx_thread_.reset();
+    // Destroy the RX thread
+    rx_thread_.reset();
+  }
 
   // Destroy the frame decoder
-  frame_decoder_.reset();
+  if (frame_decoder_) {
+    frame_decoder_.reset();
+  }
 
   // Clean up IPC channels
   cleanup_ipc_channels();
 
-  // Remove timers and channels from the reactor
-  //reactor_.remove_timer(rxPingTimer);
-  //reactor_.remove_timer(timer2);
-
 }
 
+//! Stop the FrameReceiverController
+//
+//! This method stops the controller by telling the reactor to stop.
+//!
 void FrameReceiverController::stop(void)
 {
   LOG4CXX_TRACE(logger_, "FrameReceiverController::stop()");
@@ -269,10 +256,16 @@ void FrameReceiverController::setup_frame_release_channel(const std::string& end
   frame_release_channel_.subscribe("");
 
   // Add channel to the reactor
-  reactor_.register_channel(frame_release_channel_, boost::bind(&FrameReceiverController::handle_frame_release_channel, this));
+  reactor_.register_channel(frame_release_channel_,
+            boost::bind(&FrameReceiverController::handle_frame_release_channel, this));
 
 }
 
+//! Clean up FrameReceiverController IPC channels
+//!
+//! This method cleans up controller IPC channels, removing them from the reactor and closing
+//! the channels as appropriate.
+//!
 void FrameReceiverController::cleanup_ipc_channels(void)
 {
   // Remove IPC channels from the reactor
@@ -314,6 +307,8 @@ void FrameReceiverController::configure_frame_decoder(OdinData::IpcMessage& conf
     }
   }
 
+  // If the incoming configuration specifies a frame decoder type, attempt to resolve and load
+  // it from the appropriate library
   if (config_msg.has_param(CONFIG_DECODER_TYPE))
   {
 
@@ -352,32 +347,109 @@ void FrameReceiverController::configure_frame_decoder(OdinData::IpcMessage& conf
   }
 }
 
-
-void FrameReceiverController::initialise_buffer_manager(void)
+//! Configure the frame buffer manager
+//!
+//! This method configures the shared frame buffer manager used by the FrameReceiver to
+//! store incoming frame data and hand over to downstream processing. The manager can only
+//! be configured if a frame decoder has been loaded and can be interrogated for the
+//! appropriate buffer information.
+//!
+//! \parmam[in] config_msg - IpcMessage containing configuration parameters
+//!
+void FrameReceiverController::configure_buffer_manager(OdinData::IpcMessage& config_msg)
 {
-  // Create a shared buffer manager
-  buffer_manager_.reset(new SharedBufferManager(config_.shared_buffer_name_, config_.max_buffer_mem_,
-                                                frame_decoder_->get_frame_buffer_size(), false));
-  LOG4CXX_DEBUG_LEVEL(1, logger_, "Initialised frame buffer manager of total size " << config_.max_buffer_mem_ <<
-                                                                                    " with " << buffer_manager_->get_num_buffers() << " buffers");
 
-  // Register buffer manager with the frame decoder
-  frame_decoder_->register_buffer_manager(buffer_manager_);
+  if (frame_decoder_)
+  {
+    if (config_msg.has_param(CONFIG_SHARED_BUFFER_NAME) &&
+        config_msg.has_param(CONFIG_MAX_BUFFER_MEM))
+    {
 
+      std::string shared_buffer_name = config_msg.get_param<std::string>(CONFIG_SHARED_BUFFER_NAME);
+      std::size_t max_buffer_mem = config_msg.get_param<std::size_t>(CONFIG_MAX_BUFFER_MEM);
+
+      // Create a shared buffer manager
+      buffer_manager_.reset(new SharedBufferManager(shared_buffer_name, max_buffer_mem,
+                                                    frame_decoder_->get_frame_buffer_size(), false));
+
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Configured frame buffer manager of total size " <<
+          max_buffer_mem << " with " << buffer_manager_->get_num_buffers() << " buffers");
+
+      // Register buffer manager with the frame decoder
+      frame_decoder_->register_buffer_manager(buffer_manager_);
+
+      // Notify downstream processes of current buffer configuration
+      this->notify_buffer_config(true);
+
+    }
+  }
+  else
+  {
+    LOG4CXX_INFO(logger_, "Shared frame buffer manager not configured as no frame decoder configured");
+  }
+}
+
+//! Configure the receiver thread
+//!
+//! This method configures and launches the appropriate type of receiver thread based on
+//! the configuration information specified in an IpcMessage.
+//!
+//! \parmam[in] config_msg - IpcMessage containing configuration parameters
+//!
+void FrameReceiverController::configure_rx_thread(OdinData::IpcMessage& config_msg)
+{
+  if (frame_decoder_ && buffer_manager_)
+  {
+
+    if (config_msg.has_param(CONFIG_RX_TYPE))
+    {
+      std::string rx_type_str = config_msg.get_param<std::string>(CONFIG_RX_TYPE);
+      Defaults::RxType rx_type = FrameReceiverConfig::map_rx_name_to_type(rx_type_str);
+
+      // Create the RX thread object
+      switch(rx_type)
+      {
+        case Defaults::RxTypeUDP:
+          rx_thread_.reset(new FrameReceiverUDPRxThread( config_, buffer_manager_, frame_decoder_));
+          break;
+
+        case Defaults::RxTypeZMQ:
+          rx_thread_.reset(new FrameReceiverZMQRxThread( config_, buffer_manager_, frame_decoder_));
+          break;
+
+        default:
+          throw FrameReceiverException("Cannot create RX thread - RX type not recognised");
+      }
+      rx_thread_->start();
+    }
+  }
+  else
+  {
+    LOG4CXX_INFO(logger_, "RX thread not configured as frame decoder and/or buffer manager configured");
+  }
 }
 
 void FrameReceiverController::precharge_buffers(void)
 {
-  // Push the IDs of all of the empty buffers onto the RX thread channel
-  // TODO if the number of buffers is so big that the RX thread channel would reach HWM (in either direction)
-  // before the reactor has time to start, we could consider putting this pre-charge into a timer handler
-  // that runs as soon as the reactor starts, but need to think about how this might block. Need non-blocking
-  // send on channels??
-  for (int buf = 0; buf < buffer_manager_->get_num_buffers(); buf++)
+  if (buffer_manager_ && rx_thread_)
   {
-    IpcMessage buf_msg(IpcMessage::MsgTypeNotify, IpcMessage::MsgValNotifyFrameRelease);
-    buf_msg.set_param("buffer_id", buf);
-    rx_channel_.send(buf_msg.encode());
+
+    // Push the IDs of all of the empty buffers onto the RX thread channel
+    // TODO if the number of buffers is so big that the RX thread channel would reach HWM (in either direction)
+    // before the reactor has time to start, we could consider putting this pre-charge into a timer handler
+    // that runs as soon as the reactor starts, but need to think about how this might block. Need non-blocking
+    // send on channels??
+
+    for (int buf = 0; buf < buffer_manager_->get_num_buffers(); buf++)
+    {
+      IpcMessage buf_msg(IpcMessage::MsgTypeNotify, IpcMessage::MsgValNotifyFrameRelease);
+      buf_msg.set_param("buffer_id", buf);
+      rx_channel_.send(buf_msg.encode());
+    }
+  }
+  else
+  {
+    LOG4CXX_INFO(logger_, "Buffer precharge not done as no buffer manager and/or RX thread configured");
   }
 }
 
