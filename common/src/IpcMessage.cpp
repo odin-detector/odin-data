@@ -566,6 +566,11 @@ template<> unsigned int IpcMessage::get_value(rapidjson::Value::ConstMemberItera
   return itr->value.GetUint();
 }
 
+template<> unsigned long IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
+{
+  return itr->value.GetUint64();
+}
+
 template<> int64_t IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
 {
   return itr->value.GetInt64();
@@ -641,6 +646,12 @@ template<> void IpcMessage::set_value(rapidjson::Value& value_obj, unsigned int 
 {
   value_obj.SetUint(value);
 }
+
+template<> void IpcMessage::set_value(rapidjson::Value& value_obj, unsigned long const& value)
+{
+  value_obj.SetUint64(value);
+}
+
 
 //! Sets the value of a message attribute.
 //!

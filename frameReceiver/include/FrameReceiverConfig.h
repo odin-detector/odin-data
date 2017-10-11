@@ -145,8 +145,8 @@ public:
     config_msg.set_param<std::string>(CONFIG_FRAME_READY_ENDPOINT, frame_ready_endpoint_);
     config_msg.set_param<std::string>(CONFIG_FRAME_RELEASE_ENDPOINT, frame_release_endpoint_);
     config_msg.set_param<std::string>(CONFIG_SHARED_BUFFER_NAME, shared_buffer_name_);
-    config_msg.set_param<unsigned int>(CONFIG_FRAME_TIMEOUT_MS, frame_timeout_ms_);
-    config_msg.set_param<unsigned int>(CONFIG_FRAME_COUNT, frame_count_);
+    config_msg.set_param<int>(CONFIG_FRAME_TIMEOUT_MS, frame_timeout_ms_);
+    config_msg.set_param<int>(CONFIG_FRAME_COUNT, frame_count_);
     config_msg.set_param<bool>(CONFIG_ENABLE_PACKET_LOGGING, enable_packet_logging_);
 
   }
