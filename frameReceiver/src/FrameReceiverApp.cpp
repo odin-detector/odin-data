@@ -101,8 +101,8 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
         "Set the log4cxx logging configuration file")
         ("maxmem,m",     po::value<std::size_t>()->default_value(FrameReceiver::Defaults::default_max_buffer_mem),
          "Set the maximum amount of shared memory to allocate for frame buffers")
-        ("sensortype,s", po::value<std::string>()->default_value("unknown"),
-         "Set the sensor type to receive frame data from")
+        ("decodertype,t", po::value<std::string>()->default_value(FrameReceiver::Defaults::default_decoder_type),
+         "Set the decoder type to to handle data reception")
         ("path",         po::value<std::string>()->default_value(""),
          "Path to load the decoder library from")
         ("rxtype",       po::value<std::string>()->default_value("udp"),
@@ -199,16 +199,16 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
       LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting frame buffer maximum memory size to " << config_.max_buffer_mem_);
     }
 
-    if (vm.count("sensortype"))
+    if (vm.count("decodertype"))
     {
-      config_.sensor_type_ = vm["sensortype"].as<std::string>();
-      LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting sensor type to " << config_.sensor_type_);
+      config_.decoder_type_ = vm["decodertype"].as<std::string>();
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting decoder type to " << config_.decoder_type_);
     }
 
     if (vm.count("path"))
     {
-      config_.sensor_path_ = vm["path"].as<std::string>();
-      LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting decoder path to " << config_.sensor_path_);
+      config_.decoder_path_ = vm["path"].as<std::string>();
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting decoder path to " << config_.decoder_path_);
     }
 
     if (vm.count("rxtype"))
