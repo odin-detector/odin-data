@@ -60,7 +60,7 @@ namespace FrameReceiver
     void setup_frame_ready_channel(const std::string& ctrl_endpoint);
     void setup_frame_release_channel(const std::string& ctrl_endpoint);
     void cleanup_ipc_channels(void);
-    void initialise_frame_decoder(void);
+    void configure_frame_decoder(OdinData::IpcMessage& config_msg);
     void initialise_buffer_manager(void);
     void precharge_buffers(void);
     void notify_buffer_config(const bool deferred=false);
