@@ -78,7 +78,7 @@ public:
     }
   }
 
-  Defaults::RxType map_rx_name_to_type(std::string& rx_name)
+  static Defaults::RxType map_rx_name_to_type(std::string& rx_name)
   {
     Defaults::RxType rx_type = Defaults::RxTypeIllegal;
 
@@ -98,7 +98,7 @@ public:
     return rx_type;
   }
 
-  std::string map_rx_type_to_name(Defaults::RxType rx_type)
+  static std::string map_rx_type_to_name(Defaults::RxType rx_type)
   {
     std::string rx_name;
 
