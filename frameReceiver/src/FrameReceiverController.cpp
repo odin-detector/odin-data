@@ -13,6 +13,12 @@ using namespace FrameReceiver;
 #define BUILD_DIR "."
 #endif
 
+#ifdef __APPLE__
+#define SHARED_LIBRARY_SUFFIX ".dylib"
+#else
+#define SHARED_LIBRARY_SUFFIX ".so"
+#endif
+
 //! Constructor for the FrameReceiverController class.
 //!
 //! This constructor initialises the logger, IPC channels and state
@@ -315,7 +321,7 @@ void FrameReceiverController::configure_frame_decoder(OdinData::IpcMessage& conf
     std::string decoder_type = config_msg.get_param<std::string>(CONFIG_DECODER_TYPE);
     if (decoder_type != Defaults::default_decoder_type)
     {
-      std::string lib_name = "lib" + decoder_type + "FrameDecoder.so";
+      std::string lib_name = "lib" + decoder_type + "FrameDecoder" + SHARED_LIBRARY_SUFFIX;
       std::string cls_name = decoder_type + "FrameDecoder";
       LOG4CXX_INFO(logger_, "Loading decoder plugin " << cls_name << " from " << lib_dir << lib_name);
 
@@ -443,7 +449,7 @@ void FrameReceiverController::precharge_buffers(void)
     for (int buf = 0; buf < buffer_manager_->get_num_buffers(); buf++)
     {
       IpcMessage buf_msg(IpcMessage::MsgTypeNotify, IpcMessage::MsgValNotifyFrameRelease);
-      buf_msg.set_param("buffer_id", buf);
+      buf_msg.set_param<int>("buffer_id", buf);
       rx_channel_.send(buf_msg.encode());
     }
   }
