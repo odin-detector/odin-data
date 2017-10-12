@@ -95,6 +95,9 @@ void FrameReceiverRxThread::run_service(void)
   // Set thread state to running, allows constructor to return
   thread_running_ = true;
 
+  // Send a buffer precharge request to the main thread
+  this->request_buffer_precharge();
+
   // Run the reactor event loop
   reactor_.run();
 
@@ -112,6 +115,17 @@ void FrameReceiverRxThread::run_service(void)
 
   LOG4CXX_DEBUG_LEVEL(1, logger_, "Terminating RX thread service");
 
+}
+
+void FrameReceiverRxThread::request_buffer_precharge(void)
+{
+  IpcMessage precharge_msg;
+
+  LOG4CXX_DEBUG_LEVEL(3, logger_, "Requesting buffer precharge");
+  precharge_msg.set_msg_type(IpcMessage::MsgTypeCmd);
+  precharge_msg.set_msg_val(IpcMessage::MsgValCmdBufferPrechargeRequest);
+
+  rx_channel_.send(precharge_msg.encode());
 }
 
 void FrameReceiverRxThread::handle_rx_channel(void)
