@@ -566,10 +566,15 @@ template<> unsigned int IpcMessage::get_value(rapidjson::Value::ConstMemberItera
   return itr->value.GetUint();
 }
 
+#ifdef __APPLE__
+
+// OS X clang compiler seems to base uint64 on a different base type than gcc on Linux, causing
+// linker errors with templated specialisations of get_value and set_value for unsigned long.
 template<> unsigned long IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
 {
   return itr->value.GetUint64();
 }
+#endif
 
 template<> int64_t IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
 {
@@ -647,11 +652,15 @@ template<> void IpcMessage::set_value(rapidjson::Value& value_obj, unsigned int 
   value_obj.SetUint(value);
 }
 
+#ifdef __APPLE__
+
+// OS X clang compiler seems to base uint64 on a different base type than gcc on Linux, causing
+// linker errors with templated specialisations of get_value and set_value for unsigned long.
 template<> void IpcMessage::set_value(rapidjson::Value& value_obj, unsigned long const& value)
 {
   value_obj.SetUint64(value);
 }
-
+#endif
 
 //! Sets the value of a message attribute.
 //!
