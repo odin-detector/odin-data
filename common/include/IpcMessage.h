@@ -82,14 +82,15 @@ public:
 
   //! Value attribute of IPC message
   enum MsgVal {
-    MsgValIllegal = -1,           //!< Illegal value
-    MsgValCmdReset,               //!< Reset command message
-    MsgValCmdStatus,              //!< Status command message
-    MsgValCmdConfigure,           //!< Configure command message
-    MsgValCmdBufferConfigRequest, //!< Buffer configuration request
-    MsgValNotifyFrameReady,       //!< Frame ready notification message
-    MsgValNotifyFrameRelease,     //!< Frame release notification message
-    MsgValNotifyBufferConfig,     //!< Buffer configuration notification
+    MsgValIllegal = -1,              //!< Illegal value
+    MsgValCmdReset,                  //!< Reset command message
+    MsgValCmdStatus,                 //!< Status command message
+    MsgValCmdConfigure,              //!< Configure command message
+    MsgValCmdBufferConfigRequest,    //!< Buffer configuration request
+    MsgValCmdBufferPrechargeRequest, //!< Buffer precharge request
+    MsgValNotifyFrameReady,          //!< Frame ready notification message
+    MsgValNotifyFrameRelease,        //!< Frame release notification message
+    MsgValNotifyBufferConfig,        //!< Buffer configuration notification
   };
 
   //! Internal bi-directional mapping of message type from string to enumerated MsgType

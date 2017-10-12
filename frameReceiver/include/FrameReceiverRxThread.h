@@ -62,6 +62,7 @@ private:
 
   void run_service(void);
 
+  void request_buffer_precharge(void);
   void handle_rx_channel(void);
 //        void handle_receive_socket(int socket_fd, int recv_port);
   void tick_timer(void);

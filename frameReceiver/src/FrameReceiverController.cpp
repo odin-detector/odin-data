@@ -100,7 +100,7 @@ void FrameReceiverController::run(void)
   terminate_controller_ = false;
 
   // Pre-charge all frame buffers onto the RX thread queue ready for use
-  precharge_buffers();
+  //precharge_buffers();
 
   LOG4CXX_DEBUG_LEVEL(1, logger_, "Main thread entering reactor loop");
 
@@ -521,8 +521,10 @@ void FrameReceiverController::handle_rx_channel(void)
 {
   std::string rx_reply_encoded = rx_channel_.recv();
   try {
+
+    // LOG4CXX_DEBUG_LEVEL(1, logger_, "Got reply from RX thread : " << rx_reply_encoded);
+
     IpcMessage rx_reply(rx_reply_encoded.c_str());
-    //LOG4CXX_DEBUG_LEVEL(1, logger_, "Got reply from RX thread : " << rx_reply_encoded);
 
     if ((rx_reply.get_msg_type() == IpcMessage::MsgTypeNotify) &&
         (rx_reply.get_msg_val() == IpcMessage::MsgValNotifyFrameReady))
@@ -533,6 +535,12 @@ void FrameReceiverController::handle_rx_channel(void)
       frame_ready_channel_.send(rx_reply_encoded);
 
       frames_received_++;
+    }
+    else if ((rx_reply.get_msg_type() == IpcMessage::MsgTypeCmd) &&
+        (rx_reply.get_msg_val() == IpcMessage::MsgValCmdBufferPrechargeRequest))
+    {
+      LOG4CXX_DEBUG_LEVEL(2, logger_, "Got buffer precharge request from RX thread");
+      this->precharge_buffers();
     }
     else
     {
