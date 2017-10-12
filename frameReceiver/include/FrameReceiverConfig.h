@@ -45,6 +45,7 @@ public:
 
   FrameReceiverConfig() :
       max_buffer_mem_(Defaults::default_max_buffer_mem),
+      decoder_path_(Defaults::default_decoder_path),
       decoder_type_(Defaults::default_decoder_type),
       rx_type_(Defaults::default_rx_type),
       rx_address_(Defaults::default_rx_address),

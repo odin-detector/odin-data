@@ -23,10 +23,6 @@ boost::shared_ptr<FrameReceiverController> FrameReceiverApp::controller_;
 
 IMPLEMENT_DEBUG_LEVEL;
 
-#ifndef BUILD_DIR
-#define BUILD_DIR "."
-#endif
-
 static bool has_suffix(const std::string &str, const std::string &suffix)
 {
   return str.size() >= suffix.size() &&
@@ -95,17 +91,18 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
     config.add_options()
         ("debug,d",      po::value<unsigned int>()->default_value(debug_level),
         "Set the debug level")
-    ("node,n",       po::value<unsigned int>()->default_value(FrameReceiver::Defaults::default_node),
+        ("node,n",       po::value<unsigned int>()->default_value(FrameReceiver::Defaults::default_node),
         "Set the frame receiver node ID")
-    ("logconfig,l",  po::value<string>(),
+        ("logconfig,l",  po::value<string>(),
         "Set the log4cxx logging configuration file")
         ("maxmem,m",     po::value<std::size_t>()->default_value(FrameReceiver::Defaults::default_max_buffer_mem),
          "Set the maximum amount of shared memory to allocate for frame buffers")
         ("decodertype,t", po::value<std::string>()->default_value(FrameReceiver::Defaults::default_decoder_type),
          "Set the decoder type to to handle data reception")
-        ("path",         po::value<std::string>()->default_value(""),
+        ("path",         po::value<std::string>()->default_value(FrameReceiver::Defaults::default_decoder_path),
          "Path to load the decoder library from")
-        ("rxtype",       po::value<std::string>()->default_value("udp"),
+        ("rxtype",       po::value<std::string>()->default_value(
+            FrameReceiverConfig::map_rx_type_to_name(FrameReceiver::Defaults::default_rx_type)),
          "Set the interface to use for receiving frame data (udp or zmq)")
         ("port,p",       po::value<std::string>()->default_value(FrameReceiver::Defaults::default_rx_port_list),
          "Set the port to receive frame data on")
@@ -115,13 +112,13 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
          "Set the name of the shared memory frame buffer")
         ("frametimeout", po::value<unsigned int>()->default_value(FrameReceiver::Defaults::default_frame_timeout_ms),
         "Set the incomplete frame timeout in ms")
-    ("frames,f",     po::value<unsigned int>()->default_value(FrameReceiver::Defaults::default_frame_count),
+        ("frames,f",     po::value<unsigned int>()->default_value(FrameReceiver::Defaults::default_frame_count),
         "Set the number of frames to receive before terminating")
-    ("packetlog",    po::value<bool>()->default_value(FrameReceiver::Defaults::default_enable_packet_logging),
+        ("packetlog",    po::value<bool>()->default_value(FrameReceiver::Defaults::default_enable_packet_logging),
         "Enable logging of packet diagnostics to file")
         ("rxbuffer",     po::value<unsigned int>()->default_value(FrameReceiver::Defaults::default_rx_recv_buffer_size),
         "Set UDP receive buffer size")
-    ("ctrl",         po::value<std::string>()->default_value(FrameReceiver::Defaults::default_ctrl_chan_endpoint),
+        ("ctrl",         po::value<std::string>()->default_value(FrameReceiver::Defaults::default_ctrl_chan_endpoint),
         "Set the control channel endpoint")
         ("ready",        po::value<std::string>()->default_value(FrameReceiver::Defaults::default_frame_ready_endpoint),
          "Set the frame ready channel endpoint")
