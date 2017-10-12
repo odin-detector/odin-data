@@ -47,10 +47,9 @@ namespace FrameReceiver
 
   public:
 
-    FrameReceiverController ();
+    FrameReceiverController (FrameReceiverConfig& config);
     virtual ~FrameReceiverController ();
-    void configure(FrameReceiverConfig& config,
-        OdinData::IpcMessage& config_msg, OdinData::IpcMessage& config_reply);
+    void configure(OdinData::IpcMessage& config_msg, OdinData::IpcMessage& config_reply);
     void run(void);
     void stop(void);
 
@@ -78,7 +77,7 @@ namespace FrameReceiver
     FrameDecoderPtr                          frame_decoder_;   //!< Frame decoder object
     SharedBufferManagerPtr                   buffer_manager_;  //!< Buffer manager object
 
-    FrameReceiverConfig config_;          //!< Configuration storage object TODO REMOVE THIS!
+    FrameReceiverConfig& config_;         //!< Configuration storage object
     bool terminate_controller_;           //!< Flag to signal temination of the controller
 
     IpcChannel rx_channel_;               //!< Channel for communication with receiver thread

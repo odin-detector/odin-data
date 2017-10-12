@@ -37,6 +37,7 @@ namespace FrameReceiver
   const std::string CONFIG_FRAME_TIMEOUT_MS = "frame_timeout_ms";
   const std::string CONFIG_FRAME_COUNT = "frame_count";
   const std::string CONFIG_ENABLE_PACKET_LOGGING = "enable_package_logging";
+  const std::string CONFIG_FORCE_RECONFIG = "force_reconfig";
 
 class FrameReceiverConfig
 {
@@ -54,7 +55,8 @@ public:
       frame_release_endpoint_(Defaults::default_frame_release_endpoint),
       shared_buffer_name_(Defaults::default_shared_buffer_name),
       frame_timeout_ms_(Defaults::default_frame_timeout_ms),
-      enable_packet_logging_(Defaults::default_enable_packet_logging)
+      enable_packet_logging_(Defaults::default_enable_packet_logging),
+      force_reconfig_(Defaults::default_force_reconfig)
   {
     tokenize_port_list(rx_ports_, Defaults::default_rx_port_list);
   };
@@ -127,6 +129,9 @@ public:
   void as_ipc_message(OdinData::IpcMessage& config_msg)
   {
 
+    config_msg.set_msg_type(OdinData::IpcMessage::MsgTypeCmd);
+    config_msg.set_msg_val(OdinData::IpcMessage::MsgValCmdConfigure);
+
     config_msg.set_param<std::size_t>(CONFIG_MAX_BUFFER_MEM, max_buffer_mem_);
     config_msg.set_param<std::string>(CONFIG_DECODER_PATH, decoder_path_);
     config_msg.set_param<std::string>(CONFIG_DECODER_TYPE, decoder_type_);
@@ -148,7 +153,7 @@ public:
     config_msg.set_param<int>(CONFIG_FRAME_TIMEOUT_MS, frame_timeout_ms_);
     config_msg.set_param<int>(CONFIG_FRAME_COUNT, frame_count_);
     config_msg.set_param<bool>(CONFIG_ENABLE_PACKET_LOGGING, enable_packet_logging_);
-
+    config_msg.set_param<bool>(CONFIG_FORCE_RECONFIG, force_reconfig_);
   }
 
 private:
@@ -168,6 +173,7 @@ private:
   unsigned int          frame_timeout_ms_;       //!< Incomplete frame timeout in milliseconds
   unsigned int          frame_count_;            //!< Number of frames to receive before terminating
   bool                  enable_packet_logging_;  //!< Enable packet diagnostic logging
+  bool                  force_reconfig_;         //!< Force a comlete reconfigure of the frame receiver
 
   friend class FrameReceiverApp;
   friend class FrameReceiverController; // TODO REMOVE THIS
