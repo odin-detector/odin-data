@@ -38,6 +38,7 @@ const std::string  default_shared_buffer_name     = "FrameReceiverBuffer";
 const unsigned int default_frame_timeout_ms       = 1000;
 const unsigned int default_frame_count            = 0;
 const bool         default_enable_packet_logging  = false;
+const bool         default_force_reconfig         = false;
 
 }
 

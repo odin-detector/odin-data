@@ -25,8 +25,9 @@ using namespace FrameReceiver;
 //! of the controller. Configuration and running are deferred to the
 //! configure() and run() methods respectively.
 //!
-FrameReceiverController::FrameReceiverController () :
+FrameReceiverController::FrameReceiverController (FrameReceiverConfig& config) :
     logger_(log4cxx::Logger::getLogger("FR.Controller")),
+    config_(config),
     terminate_controller_(false),
     rx_channel_(ZMQ_PAIR),
     ctrl_channel_(ZMQ_ROUTER),
@@ -59,11 +60,10 @@ FrameReceiverController::~FrameReceiverController ()
 //! \param[in] config_msg - IpcMessage containing configuration parameters
 //! `param[out] reply_msg - Reply IpcMessage indicating success or failure of actions.
 //!
-void FrameReceiverController::configure(FrameReceiverConfig& config,
-    OdinData::IpcMessage& config_msg, OdinData::IpcMessage& config_reply)
+void FrameReceiverController::configure(OdinData::IpcMessage& config_msg,
+    OdinData::IpcMessage& config_reply)
 {
   LOG4CXX_DEBUG_LEVEL(2, logger_, "Configuration submitted: " << config_msg.encode());
-  config_ = config; // TODO REMOVE THIS!
 
   try {
 
@@ -439,12 +439,6 @@ void FrameReceiverController::precharge_buffers(void)
 {
   if (buffer_manager_ && rx_thread_)
   {
-
-    // Push the IDs of all of the empty buffers onto the RX thread channel
-    // TODO if the number of buffers is so big that the RX thread channel would reach HWM (in either direction)
-    // before the reactor has time to start, we could consider putting this pre-charge into a timer handler
-    // that runs as soon as the reactor starts, but need to think about how this might block. Need non-blocking
-    // send on channels??
 
     for (int buf = 0; buf < buffer_manager_->get_num_buffers(); buf++)
     {

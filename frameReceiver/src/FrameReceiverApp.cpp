@@ -46,7 +46,7 @@ FrameReceiverApp::FrameReceiverApp(void)
 
   // Instantiate a controller
   controller_ = boost::shared_ptr<FrameReceiverController>(
-      new FrameReceiverController()
+      new FrameReceiverController(config_)
   );
 
 }
@@ -322,8 +322,9 @@ void FrameReceiverApp::run(void)
 
     OdinData::IpcMessage config_msg, config_reply;
     config_.as_ipc_message(config_msg);
+    config_msg.set_param<bool>(CONFIG_FORCE_RECONFIG, true);
 
-    controller_->configure(config_, config_msg, config_reply);
+    controller_->configure(config_msg, config_reply);
 
     controller_->run();
 
