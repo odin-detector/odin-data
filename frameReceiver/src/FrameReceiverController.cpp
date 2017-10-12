@@ -480,6 +480,9 @@ void FrameReceiverController::handle_ctrl_channel(void)
 
   // Construct a default reply
   IpcMessage ctrl_reply;
+  IpcMessage::MsgVal ctrl_reply_val = IpcMessage::MsgValIllegal;
+
+  bool request_ok = true;
 
   // Parse and handle the message
   try {
@@ -490,14 +493,26 @@ void FrameReceiverController::handle_ctrl_channel(void)
     {
       case IpcMessage::MsgTypeCmd:
 
-      LOG4CXX_DEBUG_LEVEL(3, logger_, "Got control channel command request from client " << client_identity);
-        ctrl_reply.set_msg_type(IpcMessage::MsgTypeAck);
-        ctrl_reply.set_msg_val(ctrl_req.get_msg_val());
+        ctrl_reply_val = ctrl_req.get_msg_val();
+
+        switch (ctrl_req.get_msg_val())
+        {
+          case IpcMessage::MsgValCmdConfigure:
+            LOG4CXX_DEBUG_LEVEL(3, logger_, "Got control channel configure request from client " << client_identity);
+            this->configure(ctrl_req, ctrl_reply);
+            break;
+
+          default:
+            LOG4CXX_ERROR(logger_, "Got control channel command request with unexpected value "
+                          << ctrl_req.get_msg_val() << " from client  " << client_identity);
+            request_ok = false;
+            break;
+        }
         break;
 
       default:
-      LOG4CXX_ERROR(logger_, "Got unexpected command on control channel with type " << ctrl_req.get_msg_type());
-        ctrl_reply.set_msg_type(IpcMessage::MsgTypeNack);
+        LOG4CXX_ERROR(logger_, "Got control channel request with unexpected type " << ctrl_req.get_msg_type());
+        request_ok = false;
         ctrl_reply.set_msg_val(ctrl_req.get_msg_val());
         break;
     }
@@ -505,7 +520,11 @@ void FrameReceiverController::handle_ctrl_channel(void)
   catch (IpcMessageException& e)
   {
     LOG4CXX_ERROR(logger_, "Error decoding control channel request: " << e.what());
+    request_ok = false;
   }
+
+  ctrl_reply.set_msg_type(request_ok ? IpcMessage::MsgTypeAck : IpcMessage::MsgTypeNack);
+  ctrl_reply.set_msg_val(ctrl_reply_val);
   ctrl_channel_.send(ctrl_reply.encode(), 0, client_identity);
 
 }
