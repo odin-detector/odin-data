@@ -12,6 +12,10 @@
 #include <stdint.h>
 #include <string>
 
+#ifndef BUILD_DIR
+#define BUILD_DIR "."
+#endif
+
 namespace FrameReceiver
 {
 namespace Defaults
@@ -25,6 +29,7 @@ enum RxType
 
 const int          default_node                   = 1;
 const std::size_t  default_max_buffer_mem         = 1048576;
+const std::string  default_decoder_path           = std::string(BUILD_DIR) + "/lib/";
 const std::string  default_decoder_type           = "unknown";
 const RxType       default_rx_type                = RxTypeUDP;
 const std::string  default_rx_port_list           = "8989,8990";

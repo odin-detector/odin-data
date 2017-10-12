@@ -9,10 +9,6 @@
 
 using namespace FrameReceiver;
 
-#ifndef BUILD_DIR
-#define BUILD_DIR "."
-#endif
-
 #ifdef __APPLE__
 #define SHARED_LIBRARY_SUFFIX ".dylib"
 #else
@@ -299,18 +295,21 @@ void FrameReceiverController::configure_frame_decoder(OdinData::IpcMessage& conf
 
   // Resolve the library path if specified in the config message, otherwise default
   // to the current BUILD_DIR parameter.
-  std::string lib_dir(BUILD_DIR);
-  lib_dir += "/lib/";
+  std::string lib_dir; //(BUILD_DIR);
+  //lib_dir += "/lib/";
 
   if (config_msg.has_param(CONFIG_DECODER_PATH))
   {
     lib_dir = config_msg.get_param<std::string>(CONFIG_DECODER_PATH);
+  }
+  else {
+    lib_dir = config_.decoder_path_;
+  }
 
-    // Check if the last character is '/', if not append it
-    if (*lib_dir.rbegin() != '/')
-    {
-      lib_dir += "/";
-    }
+  // Check if the last character is '/', if not append it
+  if (*lib_dir.rbegin() != '/')
+  {
+    lib_dir += "/";
   }
 
   // If the incoming configuration specifies a frame decoder type, attempt to resolve and load
