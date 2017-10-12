@@ -11,6 +11,8 @@
 #include "Frame.h"
 #include "FileWriterPlugin.h"
 
+#include "logging.h"
+
 namespace FrameProcessor
 {
 
@@ -1227,6 +1229,7 @@ void FileWriterPlugin::startCloseFileTimeout()
  */
 void FileWriterPlugin::runCloseFileTimeout()
 {
+  OdinData::configure_logging_mdc(OdinData::app_path.c_str());
   boost::mutex::scoped_lock startLock(m_startTimeoutMutex);
   while (timeoutThreadRunning) {
     m_startCondition.wait(startLock);
