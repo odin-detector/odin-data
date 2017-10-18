@@ -2,7 +2,7 @@ import json
 import datetime
 import sys
 
-'''Check the python version at runtime. VER_FLAG is True when running on python 3.5 only'''
+'''Check the python version at runtime. VER_FLAG is True when running on python 3.0 - 3.5'''
 if sys.version_info[0] == 3:
     if sys.version_info[1] <= 5:
         VER_FLAG = True
