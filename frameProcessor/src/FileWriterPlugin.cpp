@@ -11,6 +11,8 @@
 #include "Frame.h"
 #include "FileWriterPlugin.h"
 
+#include "logging.h"
+
 namespace FrameProcessor
 {
 
@@ -558,13 +560,13 @@ void FileWriterPlugin::processFrame(boost::shared_ptr<Frame> frame)
         else {
           framesWritten_ = datasetFrames;
         }
+        framesProcessed_++;
         LOG4CXX_TRACE(logger_, "Master frame processed");
       }
       else {
         LOG4CXX_TRACE(logger_, "Non-master frame processed");
       }
 
-      framesProcessed_++;
 
       // Check if we have written enough frames and stop
       if (currentAcquisition_.framesToWrite_ > 0 && framesWritten_ == currentAcquisition_.framesToWrite_) {
@@ -787,7 +789,11 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
   if (config.has_param(FileWriterPlugin::START_CLOSE_TIMEOUT)) {
     if (config.get_param<bool>(FileWriterPlugin::START_CLOSE_TIMEOUT) == true) {
       LOG4CXX_INFO(logger_, "Configure call to start close file timeout");
-      startCloseFileTimeout();
+      if (writing_) {
+        startCloseFileTimeout();
+      } else {
+        LOG4CXX_INFO(logger_, "Not starting timeout as not currently writing");
+      }
     }
   }
 
@@ -1204,11 +1210,11 @@ void FileWriterPlugin::stopAcquisition() {
 void FileWriterPlugin::startCloseFileTimeout()
 {
   if (timeoutActive == false) {
-    LOG4CXX_DEBUG(logger_, "Starting close file timeout");
+    LOG4CXX_INFO(logger_, "Starting close file timeout");
     boost::mutex::scoped_lock lock(m_startTimeoutMutex);
     m_startCondition.notify_all();
   } else {
-	  LOG4CXX_DEBUG(logger_, "Close file timeout already active");
+    LOG4CXX_INFO(logger_, "Close file timeout already active");
   }
 }
 
@@ -1223,6 +1229,7 @@ void FileWriterPlugin::startCloseFileTimeout()
  */
 void FileWriterPlugin::runCloseFileTimeout()
 {
+  OdinData::configure_logging_mdc(OdinData::app_path.c_str());
   boost::mutex::scoped_lock startLock(m_startTimeoutMutex);
   while (timeoutThreadRunning) {
     m_startCondition.wait(startLock);
