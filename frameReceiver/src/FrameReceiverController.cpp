@@ -141,10 +141,18 @@ void FrameReceiverController::stop(void)
 
 void FrameReceiverController::configure_ipc_channels(OdinData::IpcMessage& config_msg)
 {
+
+  bool force_reconfig = config_msg.get_param<bool>(CONFIG_FORCE_RECONFIG, false);
+
   // If a control endpoint is specified, bind the control channel
-  if (config_msg.has_param(CONFIG_CTRL_ENDPOINT)) {
+  if (config_msg.has_param(CONFIG_CTRL_ENDPOINT))
+  {
     std::string endpoint = config_msg.get_param<std::string>(CONFIG_CTRL_ENDPOINT);
-    this->setup_control_channel(endpoint);
+    if (force_reconfig || (endpoint != config_.ctrl_channel_endpoint_))
+    {
+      config_.ctrl_channel_endpoint_ = endpoint;
+      this->setup_control_channel(endpoint);
+    }
   }
 
   // If the endpoint is specified, bind the RX thread channel
