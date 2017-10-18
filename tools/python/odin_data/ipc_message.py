@@ -2,10 +2,10 @@ import json
 import datetime
 import sys
 
-'''Check the python version at runtime. VER_FLAG is True when running on python 3.0 - 3.5'''
+'''Check the python version at runtime. DECODE_BYTES is True when running on python 3.0 - 3.5'''
 if sys.version_info[0] == 3:
     if sys.version_info[1] <= 5:
-        VER_FLAG = True
+        DECODE_BYTES = True
 
 class IpcMessageException(Exception):
     def __init__(self, msg, errno=None):
@@ -32,7 +32,7 @@ class IpcMessage(object):
         else:
             try:
                 '''Manually decode bytes when operating in python versions 3.0 - 3.5 inclusive'''
-                if VER_FLAG:
+                if DECODE_BYTES:
                     from_str = from_str.decode("utf-8")
                 self.attrs = json.loads(from_str)
             except ValueError as e:
