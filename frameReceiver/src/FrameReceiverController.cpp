@@ -59,7 +59,10 @@ FrameReceiverController::~FrameReceiverController ()
 void FrameReceiverController::configure(OdinData::IpcMessage& config_msg,
     OdinData::IpcMessage& config_reply)
 {
+
   LOG4CXX_DEBUG_LEVEL(2, logger_, "Configuration submitted: " << config_msg.encode());
+
+  config_reply.set_msg_val(config_msg.get_msg_val());
 
   try {
 
@@ -74,6 +77,8 @@ void FrameReceiverController::configure(OdinData::IpcMessage& config_msg,
 
     // Configure the RX thread
     this->configure_rx_thread(config_msg);
+
+    config_reply.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
 
   }
   catch (FrameReceiverException& e) {
@@ -483,19 +488,22 @@ void FrameReceiverController::handle_ctrl_channel(void)
   IpcMessage::MsgVal ctrl_reply_val = IpcMessage::MsgValIllegal;
 
   bool request_ok = true;
+  std::ostringstream error_ss;
 
   // Parse and handle the message
   try {
 
-    IpcMessage ctrl_req(ctrl_req_encoded.c_str());
+    IpcMessage ctrl_req(ctrl_req_encoded.c_str(), false);
+    IpcMessage::MsgType req_type = ctrl_req.get_msg_type();
+    IpcMessage::MsgVal req_val = ctrl_req.get_msg_val();
 
-    switch (ctrl_req.get_msg_type())
+    switch (req_type)
     {
       case IpcMessage::MsgTypeCmd:
 
-        ctrl_reply_val = ctrl_req.get_msg_val();
+        ctrl_reply.set_msg_val(req_val);
 
-        switch (ctrl_req.get_msg_val())
+        switch (req_val)
         {
           case IpcMessage::MsgValCmdConfigure:
             LOG4CXX_DEBUG_LEVEL(3, logger_, "Got control channel configure request from client " << client_identity);
@@ -503,28 +511,31 @@ void FrameReceiverController::handle_ctrl_channel(void)
             break;
 
           default:
-            LOG4CXX_ERROR(logger_, "Got control channel command request with unexpected value "
-                          << ctrl_req.get_msg_val() << " from client  " << client_identity);
             request_ok = false;
+            error_ss << "Illegal command request value: " << req_val;
             break;
         }
         break;
 
       default:
-        LOG4CXX_ERROR(logger_, "Got control channel request with unexpected type " << ctrl_req.get_msg_type());
         request_ok = false;
-        ctrl_reply.set_msg_val(ctrl_req.get_msg_val());
+        error_ss << "Illegal request type: " << req_type;
         break;
     }
   }
   catch (IpcMessageException& e)
   {
-    LOG4CXX_ERROR(logger_, "Error decoding control channel request: " << e.what());
     request_ok = false;
+    error_ss << e.what();
   }
 
-  ctrl_reply.set_msg_type(request_ok ? IpcMessage::MsgTypeAck : IpcMessage::MsgTypeNack);
-  ctrl_reply.set_msg_val(ctrl_reply_val);
+  if (!request_ok) {
+    LOG4CXX_ERROR(logger_, "Error handling control channel request from client "
+                  << client_identity << ": " << error_ss.str());
+    ctrl_reply.set_msg_type(IpcMessage::MsgTypeNack);
+    ctrl_reply.set_param<std::string>("error", error_ss.str());
+  }
+
   ctrl_channel_.send(ctrl_reply.encode(), 0, client_identity);
 
 }
