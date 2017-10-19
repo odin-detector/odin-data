@@ -2,10 +2,11 @@ import json
 import datetime
 import sys
 
-#   Check the python version at runtime. DECODE_BYTES is True when running on python 3.0 - 3.5
+# Check the python version at runtime. DECODE_BYTES is True when running on python 3.0 - 3.5
 if sys.version_info[0] == 3:
     if sys.version_info[1] <= 5:
         DECODE_BYTES = True
+
 
 class IpcMessageException(Exception):
     def __init__(self, msg, errno=None):
@@ -31,7 +32,7 @@ class IpcMessage(object):
             self.attrs['params'] = {}
         else:
             try:
-                #   Manually decode bytes when operating in python versions 3.0 - 3.5 inclusive
+                # Manually decode bytes when operating in python versions 3.0 - 3.5 inclusive
                 if DECODE_BYTES:
                     from_str = from_str.decode("utf-8")
                 self.attrs = json.loads(from_str)
