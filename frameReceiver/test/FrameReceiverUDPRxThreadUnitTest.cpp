@@ -89,10 +89,19 @@ BOOST_AUTO_TEST_CASE( CreateAndPingRxThread )
   try {
     FrameReceiver::FrameReceiverUDPRxThread rxThread(config, buffer_manager, frame_decoder, 1);
     rxThread.start();
+
+    // The RX thread will, immediately on startup, send a buffer precharge request, so check
+    // this is received with the correct parameters
+
+    std::string precharge_request = rx_channel.recv();
+    OdinData::IpcMessage precharge_msg(precharge_request.c_str());
+    BOOST_CHECK_EQUAL(precharge_msg.get_msg_type(), OdinData::IpcMessage::MsgTypeCmd);
+    BOOST_CHECK_EQUAL(precharge_msg.get_msg_val(), OdinData::IpcMessage::MsgValCmdBufferPrechargeRequest);
+
     OdinData::IpcMessage::MsgType msg_type = OdinData::IpcMessage::MsgTypeCmd;
     OdinData::IpcMessage::MsgVal  msg_val =  OdinData::IpcMessage::MsgValCmdStatus;
 
-    int loopCount = 500;
+    int loopCount = 1;
     int replyCount = 0;
     int timeoutCount = 0;
     bool msgMatch = true;
