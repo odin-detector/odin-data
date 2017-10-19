@@ -3,6 +3,7 @@ import datetime
 import sys
 
 # Check the python version at runtime. DECODE_BYTES is True when running on python 3.0 - 3.5
+DECODE_BYTES = False
 if sys.version_info[0] == 3:
     if sys.version_info[1] <= 5:
         DECODE_BYTES = True
