@@ -150,6 +150,7 @@ void FrameReceiverController::configure_ipc_channels(OdinData::IpcMessage& confi
     std::string endpoint = config_msg.get_param<std::string>(CONFIG_CTRL_ENDPOINT);
     if (force_reconfig || (endpoint != config_.ctrl_channel_endpoint_))
     {
+      this->unbind_channel(&ctrl_channel_, config_.ctrl_channel_endpoint_, true);
       config_.ctrl_channel_endpoint_ = endpoint;
       this->setup_control_channel(endpoint);
     }
@@ -186,8 +187,10 @@ void FrameReceiverController::setup_control_channel(const std::string& endpoint)
 {
   LOG4CXX_DEBUG_LEVEL(1, logger_, "Binding control channel to endpoint: " << endpoint);
 
-  try {
+  try
+  {
     ctrl_channel_.bind(endpoint.c_str());
+    config_.ctrl_channel_endpoint_ = endpoint;
   }
   catch (zmq::error_t& e) {
     std::stringstream sstr;
@@ -462,6 +465,26 @@ void FrameReceiverController::precharge_buffers(void)
   else
   {
     LOG4CXX_INFO(logger_, "Buffer precharge not done as no buffer manager and/or RX thread configured");
+  }
+}
+
+void FrameReceiverController::unbind_channel(OdinData::IpcChannel* channel, std::string& endpoint, const bool deferred)
+{
+  if (channel->has_bound_endpoint(endpoint))
+  {
+    if (deferred)
+    {
+      reactor_.register_timer(1000, 1, boost::bind(&FrameReceiverController::unbind_channel, this, channel, endpoint, false));
+    }
+    else
+    {
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Unbinding channel endpoint " << endpoint);
+      channel->unbind(endpoint);
+    }
+  }
+  else
+  {
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Not unbinding channel as not bound to endpoint " << endpoint);
   }
 }
 

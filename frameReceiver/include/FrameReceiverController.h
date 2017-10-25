@@ -8,6 +8,7 @@
 #ifndef FRAMERECEIVER_INCLUDE_FRAMERECEIVERCONTROLLER_H_
 #define FRAMERECEIVER_INCLUDE_FRAMERECEIVERCONTROLLER_H_
 
+#include <set>
 #include <log4cxx/logger.h>
 
 #include "logging.h"
@@ -63,6 +64,7 @@ namespace FrameReceiver
     void configure_buffer_manager(OdinData::IpcMessage& config_msg);
     void configure_rx_thread(OdinData::IpcMessage& config_msg);
     void precharge_buffers(void);
+    void unbind_channel(OdinData::IpcChannel* channel, std::string& endpoint, const bool deferred=false);
     void notify_buffer_config(const bool deferred=false);
 
     void handle_ctrl_channel(void);
@@ -71,6 +73,7 @@ namespace FrameReceiver
 
 
   private:
+
 
     log4cxx::LoggerPtr                       logger_;          //!< Pointer to the logging facility
     boost::scoped_ptr<FrameReceiverRxThread> rx_thread_;       //!< Receiver thread object
