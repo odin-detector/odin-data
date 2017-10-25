@@ -9,6 +9,7 @@
 #define IPCCHANNEL_H_
 
 #include <iostream>
+#include <map>
 
 #include "zmq/zmq.hpp"
 #include <boost/bind.hpp>
@@ -40,8 +41,11 @@ public:
   ~IpcChannel();
   void bind(const char* endpoint);
   void bind(std::string& endpoint);
+  void unbind(const char* endpoint);
+  void unbind(const std::string& endpoint);
   void connect(const char* endpoint);
   void connect(std::string& endpoint);
+  bool has_bound_endpoint(const std::string& endpoint);
 
   void subscribe(const char* topic);
 
@@ -56,6 +60,7 @@ public:
   const std::size_t recv_raw(void *dPtr, std::string* identity=0);
 
   void setsockopt(int option_, const void *optval_, size_t optvallen_);
+  void getsockopt(int option_, void *optval_, size_t *optvallen_);
 
   bool eom(void);
   bool poll(long timeout_ms = -1);
@@ -70,6 +75,7 @@ private:
   IpcContext& context_;
   zmq::socket_t socket_;
   int socket_type_;
+  std::map<std::string, std::string> bound_endpoints_;
 
 
 };

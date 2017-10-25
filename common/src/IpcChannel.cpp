@@ -59,12 +59,44 @@ IpcChannel::~IpcChannel()
 
 void IpcChannel::bind(const char* endpoint)
 {
+
+  // Bind the endpoint to the socket
   socket_.bind(endpoint);
+
+  // ZeroMQ resolved wildcarded endpoints to a complete address. This address
+  // MUST be used in any unbind call, so use ZMQ_LAST_ENDPOINT to determinte
+  // resolved endpoint and store both
+  char resolved_endpoint[256];
+  std::size_t endpoint_size = sizeof(resolved_endpoint);
+
+  socket_.getsockopt(ZMQ_LAST_ENDPOINT, resolved_endpoint, &endpoint_size);
+
+  bound_endpoints_[std::string(endpoint)] = std::string(resolved_endpoint);
 }
 
 void IpcChannel::bind(std::string& endpoint)
 {
   this->bind(endpoint.c_str());
+}
+
+void IpcChannel::unbind(const char *endpoint)
+{
+  std::string endpoint_str(endpoint);
+  if (bound_endpoints_.count(endpoint_str))
+  {
+    socket_.unbind(bound_endpoints_[endpoint_str].c_str());
+    bound_endpoints_.erase(endpoint_str);
+  }
+}
+
+void IpcChannel::unbind(const std::string& endpoint)
+{
+  this->unbind(endpoint.c_str());
+}
+
+bool IpcChannel::has_bound_endpoint(const std::string& endpoint)
+{
+  return (bound_endpoints_.count(endpoint) > 0);
 }
 
 void IpcChannel::connect(const char* endpoint)
@@ -160,6 +192,11 @@ const std::size_t IpcChannel::recv_raw(void *dPtr, std::string* identity)
 void IpcChannel::setsockopt(int option_, const void *optval_, size_t optvallen_)
 {
   socket_.setsockopt(option_, optval_, optvallen_);
+}
+
+void IpcChannel::getsockopt(int option_, void *optval_, size_t *optvallen_)
+{
+  socket_.getsockopt(option_, optval_, optvallen_);
 }
 
 bool IpcChannel::eom(void)
