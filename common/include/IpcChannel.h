@@ -56,11 +56,11 @@ public:
   void send(size_t msg_size, void *message, int flags = 0,
     const std::string& identity_str = std::string());
 
-  const std::string recv(std::string* identity=0);
-  const std::size_t recv_raw(void *dPtr, std::string* identity=0);
+  const std::string recv(std::string* identity_str=0);
+  const std::size_t recv_raw(void *msg_buf, std::string* identity_str=0);
 
-  void setsockopt(int option_, const void *optval_, size_t optvallen_);
-  void getsockopt(int option_, void *optval_, size_t *optvallen_);
+  void setsockopt(int option, const void *option_value, std::size_t option_len);
+  void getsockopt(int option, void *option_value, std::size_t *option_len);
 
   bool eom(void);
   bool poll(long timeout_ms = -1);
