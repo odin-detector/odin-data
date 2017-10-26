@@ -25,7 +25,7 @@ class IpcClient(object):
 
         self._lock = RLock()
 
-    def _send_message(self, msg, timeout=1000):
+    def _send_message(self, msg, timeout):
         self.logger.debug("Sending control message:\n%s", msg.encode())
         with self._lock:
             self.ctrl_channel.send(msg.encode())
@@ -54,15 +54,15 @@ class IpcClient(object):
                 "Request\n%s\nunsuccessful."
                 " Got no response." % msg)
 
-    def send_request(self, value):
+    def send_request(self, value, timeout=1000):
         msg = IpcMessage("cmd", value)
-        success, reply = self._send_message(msg)
+        success, reply = self._send_message(msg, timeout)
         if success:
             return reply
         else:
             self._raise_reply_error(msg, reply)
 
-    def send_configuration(self, content, target=None, valid_error=None):
+    def send_configuration(self, content, target=None, valid_error=None, timeout=1000):
         msg = IpcMessage("cmd", "configure")
 
         if target is not None:
@@ -71,7 +71,7 @@ class IpcClient(object):
             for parameter, value in content.items():
                 msg.set_param(parameter, value)
 
-        success, reply = self._send_message(msg)
+        success, reply = self._send_message(msg, timeout)
         if not success and None not in [reply, valid_error]:
             if reply["params"]["error"] != valid_error:
                 self._raise_reply_error(msg, reply)
