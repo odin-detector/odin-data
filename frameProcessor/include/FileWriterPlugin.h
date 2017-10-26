@@ -130,6 +130,7 @@ public:
   void stopAcquisition();
   void startCloseFileTimeout();
   void runCloseFileTimeout();
+  size_t calcNumFrames(size_t totalFrames);
 
 private:
   /** Configuration constant for process related items */
@@ -138,6 +139,8 @@ private:
   static const std::string CONFIG_PROCESS_NUMBER;
   /** Configuration constant for this process rank */
   static const std::string CONFIG_PROCESS_RANK;
+  /** Configuration constant for the number of frames per block */
+  static const std::string CONFIG_PROCESS_BLOCKSIZE;
 
   /** Configuration constant for file related items */
   static const std::string CONFIG_FILE;
@@ -225,6 +228,8 @@ private:
   Acquisition currentAcquisition_;
   /** Details of the next acquisition to be written */
   Acquisition nextAcquisition_;
+  /** Number of frames to write consecutively in a file */
+  size_t frames_per_block;
   /** Timeout for closing the file after receiving no data */
   size_t timeoutPeriod;
   /** Mutex used to make starting the close file timeout thread safe */
