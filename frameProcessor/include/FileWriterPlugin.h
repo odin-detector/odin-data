@@ -229,7 +229,7 @@ private:
   /** Details of the next acquisition to be written */
   Acquisition nextAcquisition_;
   /** Number of frames to write consecutively in a file */
-  size_t frames_per_block;
+  size_t frames_per_block_;
   /** Timeout for closing the file after receiving no data */
   size_t timeoutPeriod;
   /** Mutex used to make starting the close file timeout thread safe */
