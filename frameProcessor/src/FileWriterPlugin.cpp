@@ -68,7 +68,7 @@ FileWriterPlugin::FileWriterPlugin() :
     hdf5_fileid_(0),
     hdf5ErrorFlag_(false),
     frame_offset_adjustment_(0),
-	frames_per_block_(1),
+    frames_per_block_(1),
     timeoutPeriod(0),
     timeoutThreadRunning(true),
 	timeoutThread(boost::bind(&FileWriterPlugin::runCloseFileTimeout, this))
