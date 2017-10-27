@@ -19,6 +19,7 @@ namespace FrameProcessor
 const std::string FileWriterPlugin::CONFIG_PROCESS             = "process";
 const std::string FileWriterPlugin::CONFIG_PROCESS_NUMBER      = "number";
 const std::string FileWriterPlugin::CONFIG_PROCESS_RANK        = "rank";
+const std::string FileWriterPlugin::CONFIG_PROCESS_BLOCKSIZE   = "frames_per_block";
 
 const std::string FileWriterPlugin::CONFIG_FILE                = "file";
 const std::string FileWriterPlugin::CONFIG_FILE_NAME           = "name";
@@ -69,6 +70,7 @@ FileWriterPlugin::FileWriterPlugin() :
     hdf5_fileid_(0),
     hdf5ErrorFlag_(false),
     frame_offset_adjustment_(0),
+    frames_per_block_(1),
     timeoutPeriod(0),
     timeoutThreadRunning(true),
 	timeoutThread(boost::bind(&FileWriterPlugin::runCloseFileTimeout, this))
@@ -452,14 +454,17 @@ size_t FileWriterPlugin::getFrameOffset(size_t frame_no) const {
   if (this->concurrent_processes_ > 1) {
     // Check whether this frame should really be in this process
     // Note: this expects the frame numbering from HW/FW to start at 0, not 1!
-    if (frame_offset % this->concurrent_processes_ != this->concurrent_rank_) {
+    if ((frame_offset / frames_per_block_) % this->concurrent_processes_ != this->concurrent_rank_) {
       LOG4CXX_WARN(logger_,"Unexpected frame: " << frame_no <<
                            " in this process rank: " << this->concurrent_rank_);
       throw std::runtime_error("Unexpected frame in this process rank");
     }
 
     // Calculate the new offset based on how many concurrent processes are running
-    frame_offset = frame_offset / this->concurrent_processes_;
+    size_t block_index = frame_offset / (frames_per_block_ * this->concurrent_processes_);
+    size_t first_frame_offset_of_block = block_index * frames_per_block_;
+    size_t offset_within_block = frame_offset % frames_per_block_;
+    frame_offset = first_frame_offset_of_block + offset_within_block;
   }
   return frame_offset;
 }
@@ -753,10 +758,8 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
   if (config.has_param(FileWriterPlugin::CONFIG_FRAMES) && config.get_param<size_t>(FileWriterPlugin::CONFIG_FRAMES) > 0) {
     size_t totalFrames = config.get_param<size_t>(FileWriterPlugin::CONFIG_FRAMES);
     nextAcquisition_.totalFrames_ = totalFrames;
-    nextAcquisition_.framesToWrite_ = totalFrames / this->concurrent_processes_;
-    if (totalFrames % this->concurrent_processes_ > this->concurrent_rank_) {
-      nextAcquisition_.framesToWrite_++;
-    }
+    nextAcquisition_.framesToWrite_ = calcNumFrames(totalFrames);
+
     LOG4CXX_INFO(logger_, "Expecting " << nextAcquisition_.framesToWrite_ << " frames "
                            "(total " << totalFrames << ")");
   }
@@ -802,9 +805,11 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
     if (config.get_param<bool>(FileWriterPlugin::CONFIG_WRITE) == true) {
       // Only start writing if we have frames to write, or if the total number of frames is 0 (free running mode)
       if (nextAcquisition_.totalFrames_ > 0 && nextAcquisition_.framesToWrite_ == 0) {
-    	// We're not expecting any frames, so just clear out the nextAcquisition for the next one and don't start writing
-    	this->nextAcquisition_ = Acquisition();
-    	LOG4CXX_INFO(logger_, "FrameProcessor will not receive any frames from this acquisition and so no output file will be created");
+        // We're not expecting any frames, so just clear out the nextAcquisition for the next one and don't start writing
+        this->nextAcquisition_ = Acquisition();
+        this->currentAcquisition_ = Acquisition();
+        framesWritten_ = 0;
+        LOG4CXX_INFO(logger_, "FrameProcessor will not receive any frames from this acquisition and so no output file will be created");
       } else {
         this->startWriting();
       }
@@ -859,6 +864,23 @@ void FileWriterPlugin::configureProcess(OdinData::IpcMessage& config, OdinData::
     }
     else {
       LOG4CXX_DEBUG(logger_, "Process rank is already " << this->concurrent_rank_);
+    }
+  }
+
+  // Check to see if the frames per block is being set
+  if (config.has_param(FileWriterPlugin::CONFIG_PROCESS_BLOCKSIZE)) {
+    size_t block_size = config.get_param<size_t>(FileWriterPlugin::CONFIG_PROCESS_BLOCKSIZE);
+    if (this->frames_per_block_ != block_size) {
+      // If we are writing a file then we cannot change block size
+      if (this->writing_) {
+        LOG4CXX_ERROR(logger_, "Cannot change block size whilst writing");
+        throw std::runtime_error("Cannot change block size whilst writing");
+      }
+      this->frames_per_block_ = block_size;
+      LOG4CXX_INFO(logger_, "Setting number of frames per block to " << frames_per_block_);
+    }
+    else {
+      LOG4CXX_DEBUG(logger_, "Block size is already " << this->frames_per_block_);
     }
   }
 }
@@ -1252,6 +1274,38 @@ void FileWriterPlugin::runCloseFileTimeout()
       }
     }
   }
+}
+
+/**
+ * Calculates the number of frames that this FileWriter can expect to write based on the total number of frames
+ *
+ * \param[in] totalFrames - The total number of frames in the acquisition
+ * \return - The number of frames that this FileWriter is expected to write
+ */
+size_t FileWriterPlugin::calcNumFrames(size_t totalFrames)
+{
+  size_t num_of_frames = 0;
+
+  // Work out how many 'rounds' where all processes are writing whole blocks
+  size_t blocks_needed = totalFrames / frames_per_block_;
+  size_t num_whole_rounds_needed = blocks_needed / this->concurrent_processes_;
+  num_of_frames = num_whole_rounds_needed * frames_per_block_;
+
+  // Now work out if there are any left over half-complete rounds
+  size_t leftover = totalFrames - (num_of_frames * this->concurrent_processes_);
+
+  size_t remaining = 0;
+
+  // If there is a leftover, and this processor gets any of the remaining frames, add this to the total
+  if (leftover > (this->concurrent_rank_ * frames_per_block_))
+  {
+  	remaining = leftover - (this->concurrent_rank_ * frames_per_block_);
+    if (remaining > 0) {
+      num_of_frames += std::min(remaining, frames_per_block_);
+    }
+  }
+
+  return num_of_frames;
 }
 
 } /* namespace FrameProcessor */
