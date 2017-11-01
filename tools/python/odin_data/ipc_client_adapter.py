@@ -160,11 +160,11 @@ class IpcClientAdapter(ApiAdapter):
                             if not response:
                                 logging.debug(IpcClientAdapter.ERROR_NO_RESPONSE)
                                 status_code = 503
-                                response['error'] = IpcClientAdapter.ERROR_NO_RESPONSE
+                                response = {'error': IpcClientAdapter.ERROR_NO_RESPONSE}
                         except:
                             logging.debug(IpcClientAdapter.ERROR_FAILED_TO_SEND)
                             status_code = 503
-                            response['error'] = IpcClientAdapter.ERROR_FAILED_TO_SEND
+                            response = {'error': IpcClientAdapter.ERROR_FAILED_TO_SEND}
 
         else:
             logging.debug("Single parameter set provided: %s", parameters)
@@ -174,11 +174,11 @@ class IpcClientAdapter(ApiAdapter):
                     if not response:
                         logging.debug(IpcClientAdapter.ERROR_NO_RESPONSE)
                         status_code = 503
-                        response['error'] = IpcClientAdapter.ERROR_NO_RESPONSE
+                        response = {'error': IpcClientAdapter.ERROR_NO_RESPONSE}
                 except:
                     logging.debug(IpcClientAdapter.ERROR_FAILED_TO_SEND)
                     status_code = 503
-                    response['error'] = IpcClientAdapter.ERROR_FAILED_TO_SEND
+                    response = {'error': IpcClientAdapter.ERROR_FAILED_TO_SEND}
 
 
         return ApiAdapterResponse(response, status_code=status_code)
