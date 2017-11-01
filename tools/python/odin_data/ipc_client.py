@@ -3,8 +3,8 @@ from threading import RLock
 
 import zmq
 
-from ipc_channel import IpcChannel
-from ipc_message import IpcMessage, IpcMessageException
+from odin_data.ipc_channel import IpcChannel
+from odin_data.ipc_message import IpcMessage, IpcMessageException
 
 
 class IpcClient(object):
@@ -34,7 +34,7 @@ class IpcClient(object):
         if pollevts == zmq.POLLIN:
             reply = IpcMessage(from_str=self.ctrl_channel.recv())
             if reply.is_valid() and reply.get_msg_type() == IpcMessage.ACK:
-                self.logger.debug("Request successful")
+                self.logger.debug("Request successful: %s", reply)
                 return True, reply.attrs
             else:
                 self.logger.debug("Request unsuccessful")
