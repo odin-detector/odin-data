@@ -43,7 +43,7 @@ class FrameReceiverRxThreadTestFixture
 {
 public:
   FrameReceiverRxThreadTestFixture() :
-      rx_channel(ZMQ_PAIR),
+      rx_channel(ZMQ_ROUTER),
       logger(log4cxx::Logger::getLogger("FrameReceiverRxThreadUnitTest")),
       proxy(config),
       frame_decoder(new FrameReceiver::DummyUDPFrameDecoder()),
@@ -90,11 +90,26 @@ BOOST_AUTO_TEST_CASE( CreateAndPingRxThread )
     FrameReceiver::FrameReceiverUDPRxThread rxThread(config, buffer_manager, frame_decoder, 1);
     rxThread.start();
 
-    // The RX thread will, immediately on startup, send a buffer precharge request, so check
-    // this is received with the correct parameters
+    std::string encoded_msg;
+    std::string rx_thread_identity;
+    std::string msg_identity;
 
-    std::string precharge_request = rx_channel.recv();
-    OdinData::IpcMessage precharge_msg(precharge_request.c_str());
+    // The RX thread will, immediately on startup, send an identity notification, so check
+    // this is received with the correct parameters. Also save the identity to check later
+    // messages use the same value.
+
+    encoded_msg = rx_channel.recv(&rx_thread_identity);
+    BOOST_TEST_MESSAGE("RX thread identity: " << rx_thread_identity);;
+
+    IpcMessage identity_msg(encoded_msg.c_str());
+    BOOST_CHECK_EQUAL(identity_msg.get_msg_type(), OdinData::IpcMessage::MsgTypeNotify);
+    BOOST_CHECK_EQUAL(identity_msg.get_msg_val(), OdinData::IpcMessage::MsgValNotifyIdentity);
+
+    // The RX thread will next send a buffer precharge request, so validate that also.
+    encoded_msg = rx_channel.recv(&msg_identity);
+    OdinData::IpcMessage precharge_msg(encoded_msg.c_str());
+
+    BOOST_CHECK_EQUAL(msg_identity, rx_thread_identity);
     BOOST_CHECK_EQUAL(precharge_msg.get_msg_type(), OdinData::IpcMessage::MsgTypeCmd);
     BOOST_CHECK_EQUAL(precharge_msg.get_msg_val(), OdinData::IpcMessage::MsgValCmdBufferPrechargeRequest);
 
@@ -105,19 +120,21 @@ BOOST_AUTO_TEST_CASE( CreateAndPingRxThread )
     int replyCount = 0;
     int timeoutCount = 0;
     bool msgMatch = true;
+    bool identityMatch = true;
 
     for (int loop = 0; loop < loopCount; loop++)
     {
       OdinData::IpcMessage message(msg_type, msg_val);
       message.set_param<int>("count", loop);
-      rx_channel.send(message.encode());
+      rx_channel.send(message.encode(), 0, rx_thread_identity);
     }
 
     while ((replyCount < loopCount) && (timeoutCount < 10))
     {
       if (rx_channel.poll(100))
       {
-        std::string reply = rx_channel.recv();
+        std::string reply = rx_channel.recv(&msg_identity);
+        identityMatch &= (msg_identity == rx_thread_identity);
 
         OdinData::IpcMessage response(reply.c_str());
         msgMatch &= (response.get_msg_type() == OdinData::IpcMessage::MsgTypeAck);
@@ -132,6 +149,7 @@ BOOST_AUTO_TEST_CASE( CreateAndPingRxThread )
       }
     }
     rxThread.stop();
+    BOOST_CHECK_EQUAL(identityMatch, true);
     BOOST_CHECK_EQUAL(msgMatch, true);
     BOOST_CHECK_EQUAL(loopCount, replyCount);
     BOOST_CHECK_EQUAL(timeoutCount, 0);
