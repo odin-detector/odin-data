@@ -1,0 +1,6 @@
+{
+  "ctrl_endpoint":          "tcp://*:5010",
+  "rx_endpoint":            "inproc://rx_channel_new",
+  "frame_ready_endpoint":   "tcp://*:5011",
+  "frame_release_endpoint": "tcp://*:5012"
+}
