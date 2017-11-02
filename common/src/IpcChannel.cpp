@@ -64,7 +64,7 @@ IpcChannel::IpcChannel(int type) :
   if (type == ZMQ_DEALER)
   {
     char identity[10] = {};
-    sprintf(identity, "%04X-%04X", within(0x10000), within(0x10000));
+    sprintf(identity, "%04x-%04x", within(0x10000), within(0x10000));
     socket_.setsockopt(ZMQ_IDENTITY, identity, strlen(identity));
   }
 }
