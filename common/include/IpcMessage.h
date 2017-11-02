@@ -88,6 +88,7 @@ public:
     MsgValCmdConfigure,              //!< Configure command message
     MsgValCmdBufferConfigRequest,    //!< Buffer configuration request
     MsgValCmdBufferPrechargeRequest, //!< Buffer precharge request
+    MsgValNotifyIdentity,            //!< Identity notification message
     MsgValNotifyFrameReady,          //!< Frame ready notification message
     MsgValNotifyFrameRelease,        //!< Frame release notification message
     MsgValNotifyBufferConfig,        //!< Buffer configuration notification
