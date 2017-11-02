@@ -18,7 +18,7 @@ FrameReceiverRxThread::FrameReceiverRxThread(FrameReceiverConfig& config,
     buffer_manager_(buffer_manager),
     frame_decoder_(frame_decoder),
     tick_period_ms_(tick_period_ms),
-    rx_channel_(ZMQ_PAIR),
+    rx_channel_(ZMQ_DEALER),
     recv_socket_(0),
     run_thread_(true),
     thread_running_(false),
@@ -67,6 +67,7 @@ void FrameReceiverRxThread::run_service(void)
 
   // Connect the message channel to the main thread
   try {
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Connecting RX channel to endpoint " << config_.rx_channel_endpoint_);
     rx_channel_.connect(config_.rx_channel_endpoint_);
   }
   catch (zmq::error_t& e) {
@@ -95,8 +96,13 @@ void FrameReceiverRxThread::run_service(void)
   // Set thread state to running, allows constructor to return
   thread_running_ = true;
 
-  // Send a buffer precharge request to the main thread
-  this->request_buffer_precharge();
+  // Advertise RX thread channel identity to the main thread so it knows how to route messages back
+  this->advertise_identity();
+
+  // Send a buffer precharge request to the main thread if the frame decoder has no empty buffers queued
+  if (frame_decoder_->get_num_empty_buffers() == 0) {
+    this->request_buffer_precharge();
+  }
 
   // Run the reactor event loop
   reactor_.run();
@@ -112,18 +118,25 @@ void FrameReceiverRxThread::run_service(void)
     close(*recv_sock_it);
   }
   recv_sockets_.clear();
+  rx_channel_.close();
 
   LOG4CXX_DEBUG_LEVEL(1, logger_, "Terminating RX thread service");
 
 }
 
+void FrameReceiverRxThread::advertise_identity(void)
+{
+  LOG4CXX_DEBUG_LEVEL(3, logger_, "Advertising RX thread identity");
+  IpcMessage identity_msg(IpcMessage::MsgTypeNotify, IpcMessage::MsgValNotifyIdentity);
+
+  rx_channel_.send(identity_msg.encode());
+}
+
 void FrameReceiverRxThread::request_buffer_precharge(void)
 {
-  IpcMessage precharge_msg;
 
   LOG4CXX_DEBUG_LEVEL(3, logger_, "Requesting buffer precharge");
-  precharge_msg.set_msg_type(IpcMessage::MsgTypeCmd);
-  precharge_msg.set_msg_val(IpcMessage::MsgValCmdBufferPrechargeRequest);
+  IpcMessage precharge_msg(IpcMessage::MsgTypeCmd, IpcMessage::MsgValCmdBufferPrechargeRequest);
 
   rx_channel_.send(precharge_msg.encode());
 }
@@ -137,9 +150,14 @@ void FrameReceiverRxThread::handle_rx_channel(void)
   try {
 
     IpcMessage rx_msg(rx_msg_encoded.c_str());
+    IpcMessage::MsgType msg_type = rx_msg.get_msg_type();
+    IpcMessage::MsgVal msg_val = rx_msg.get_msg_val();
 
-    if ((rx_msg.get_msg_type() == IpcMessage::MsgTypeNotify) &&
-        (rx_msg.get_msg_val()  == IpcMessage::MsgValNotifyFrameRelease))
+    if ((msg_type == IpcMessage::MsgTypeAck) && (msg_val == IpcMessage::MsgValNotifyIdentity))
+    {
+      LOG4CXX_DEBUG_LEVEL(3, logger_, "RX thread received acknowledgement of identity notification");
+    }
+    else if ((msg_type == IpcMessage::MsgTypeNotify) && (msg_val == IpcMessage::MsgValNotifyFrameRelease))
     {
 
       int buffer_id = rx_msg.get_param<int>("buffer_id", -1);
@@ -156,8 +174,7 @@ void FrameReceiverRxThread::handle_rx_channel(void)
       }
 
     }
-    else if ((rx_msg.get_msg_type() == IpcMessage::MsgTypeCmd) &&
-        (rx_msg.get_msg_val()  == IpcMessage::MsgValCmdStatus))
+    else if ((msg_type == IpcMessage::MsgTypeCmd) && (msg_val == IpcMessage::MsgValCmdStatus))
     {
       IpcMessage rx_reply;
 
@@ -174,7 +191,7 @@ void FrameReceiverRxThread::handle_rx_channel(void)
       IpcMessage rx_reply;
 
       rx_reply.set_msg_type(IpcMessage::MsgTypeNack);
-      rx_reply.set_msg_val(rx_msg.get_msg_val());
+      rx_reply.set_msg_val(msg_val);
       //TODO add error in params
 
       rx_channel_.send(rx_reply.encode());

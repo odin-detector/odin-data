@@ -29,6 +29,8 @@ using namespace OdinData;
 namespace FrameReceiver
 {
 
+  const std::string RX_THREAD_ID = "RX_THREAD";
+
 class FrameReceiverRxThreadException : public OdinData::OdinDataException
 {
 public:
@@ -62,6 +64,7 @@ private:
 
   void run_service(void);
 
+  void advertise_identity(void);
   void request_buffer_precharge(void);
   void handle_rx_channel(void);
 //        void handle_receive_socket(int socket_fd, int recv_port);

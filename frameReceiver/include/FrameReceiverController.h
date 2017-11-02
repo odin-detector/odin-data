@@ -71,6 +71,7 @@ namespace FrameReceiver
     void handle_rx_channel(void);
     void handle_frame_release_channel(void);
 
+    void tick_timer(void);
 
   private:
 
@@ -82,6 +83,8 @@ namespace FrameReceiver
 
     FrameReceiverConfig& config_;         //!< Configuration storage object
     bool terminate_controller_;           //!< Flag to signal temination of the controller
+    bool force_reconfig_;                 //!< Flag to signal forced reconfiguration
+    bool force_rx_thread_reconfig_;       //!< Flag to signal forced restart of rx thread on reconfiguration
 
     IpcChannel rx_channel_;               //!< Channel for communication with receiver thread
     IpcChannel ctrl_channel_;             //!< Channel for communication with external control clients
@@ -92,6 +95,8 @@ namespace FrameReceiver
 
     unsigned int frames_received_;        //!< Counter for frames received
     unsigned int frames_released_;        //!< Counter for frames released
+
+    std::string rx_thread_identity_;
 
   };
 

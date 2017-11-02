@@ -25,12 +25,13 @@ FrameReceiverController::FrameReceiverController (FrameReceiverConfig& config) :
     logger_(log4cxx::Logger::getLogger("FR.Controller")),
     config_(config),
     terminate_controller_(false),
-    rx_channel_(ZMQ_PAIR),
+    rx_channel_(ZMQ_ROUTER),
     ctrl_channel_(ZMQ_ROUTER),
     frame_ready_channel_(ZMQ_PUB),
     frame_release_channel_(ZMQ_SUB),
     frames_received_(0),
-    frames_released_(0)
+    frames_released_(0),
+    rx_thread_identity_(RX_THREAD_ID)
 {
   LOG4CXX_TRACE(logger_, "FrameRecevierController constructor");
 
@@ -61,6 +62,9 @@ void FrameReceiverController::configure(OdinData::IpcMessage& config_msg,
 {
 
   LOG4CXX_DEBUG_LEVEL(2, logger_, "Configuration submitted: " << config_msg.encode());
+
+  force_reconfig_ = config_msg.get_param<bool>(CONFIG_FORCE_RECONFIG, false);
+  force_rx_thread_reconfig_ = force_reconfig_;
 
   config_reply.set_msg_val(config_msg.get_msg_val());
 
@@ -105,8 +109,12 @@ void FrameReceiverController::run(void)
 
   LOG4CXX_DEBUG_LEVEL(1, logger_, "Main thread entering reactor loop");
 
+  int tick_timer_id = reactor_.register_timer(1000, 0, boost::bind(&FrameReceiverController::tick_timer, this));
+
   // Run the reactor event loop
   reactor_.run();
+
+  reactor_.remove_timer(tick_timer_id);
 
   if (rx_thread_)
   {
@@ -142,13 +150,11 @@ void FrameReceiverController::stop(void)
 void FrameReceiverController::configure_ipc_channels(OdinData::IpcMessage& config_msg)
 {
 
-  bool force_reconfig = config_msg.get_param<bool>(CONFIG_FORCE_RECONFIG, false);
-
   // If a control endpoint is specified, bind the control channel
   if (config_msg.has_param(CONFIG_CTRL_ENDPOINT))
   {
     std::string endpoint = config_msg.get_param<std::string>(CONFIG_CTRL_ENDPOINT);
-    if (force_reconfig || (endpoint != config_.ctrl_channel_endpoint_))
+    if (force_reconfig_ || (endpoint != config_.ctrl_channel_endpoint_))
     {
       this->unbind_channel(&ctrl_channel_, config_.ctrl_channel_endpoint_, true);
       config_.ctrl_channel_endpoint_ = endpoint;
@@ -159,20 +165,37 @@ void FrameReceiverController::configure_ipc_channels(OdinData::IpcMessage& confi
   // If the endpoint is specified, bind the RX thread channel
   if (config_msg.has_param(CONFIG_RX_ENDPOINT)) {
     std::string endpoint = config_msg.get_param<std::string>(CONFIG_RX_ENDPOINT);
-    this->setup_rx_channel(endpoint);
+    if (force_reconfig_ || (endpoint != config_.rx_channel_endpoint_))
+    {
+      this->unbind_channel(&rx_channel_, config_.rx_channel_endpoint_, false);
+      config_.rx_channel_endpoint_ = endpoint;
+      this->setup_rx_channel(endpoint);
+
+      // The RX thread will have to be resconfigured if this endpoint changes
+      force_rx_thread_reconfig_ = true;
+    }
   }
 
   // If the endpoint is specified, bind the frame ready notification channel
   if (config_msg.has_param(CONFIG_FRAME_READY_ENDPOINT)) {
     std::string endpoint = config_msg.get_param<std::string>(CONFIG_FRAME_READY_ENDPOINT);
-    this->setup_frame_ready_channel(endpoint);
+    if (force_reconfig_ || (endpoint != config_.frame_ready_endpoint_))
+    {
+      this->unbind_channel(&frame_ready_channel_, config_.frame_ready_endpoint_, false);
+      config_.frame_ready_endpoint_ = endpoint;
+      this->setup_frame_ready_channel(endpoint);
+    }
   }
 
   // If the endpoint is specified, bind the frame release notification channel
   if (config_msg.has_param(CONFIG_FRAME_RELEASE_ENDPOINT)) {
     std::string endpoint = config_msg.get_param<std::string>(CONFIG_FRAME_RELEASE_ENDPOINT);
-    this->setup_frame_release_channel(endpoint);
-
+    if (force_reconfig_ || (endpoint != config_.frame_release_endpoint_))
+    {
+      this->unbind_channel(&frame_release_channel_, config_.frame_release_endpoint_, false);
+      config_.frame_release_endpoint_ = endpoint;
+      this->setup_frame_release_channel(endpoint);
+    }
   }
 }
 
@@ -422,10 +445,26 @@ void FrameReceiverController::configure_rx_thread(OdinData::IpcMessage& config_m
   if (frame_decoder_ && buffer_manager_)
   {
 
+    Defaults::RxType rx_type;
+
     if (config_msg.has_param(CONFIG_RX_TYPE))
     {
       std::string rx_type_str = config_msg.get_param<std::string>(CONFIG_RX_TYPE);
-      Defaults::RxType rx_type = FrameReceiverConfig::map_rx_name_to_type(rx_type_str);
+      rx_type = FrameReceiverConfig::map_rx_name_to_type(rx_type_str);
+    }
+    else
+    {
+      rx_type = config_.rx_type_;
+    }
+
+    if (force_rx_thread_reconfig_ || (rx_type != config_.rx_type_))
+    {
+
+      if (rx_thread_)
+      {
+        rx_thread_->stop();
+        rx_thread_.reset();
+      }
 
       // Create the RX thread object
       switch(rx_type)
@@ -441,6 +480,7 @@ void FrameReceiverController::configure_rx_thread(OdinData::IpcMessage& config_m
         default:
           throw FrameReceiverException("Cannot create RX thread - RX type not recognised");
       }
+      config_.rx_type_ = rx_type;
       rx_thread_->start();
     }
   }
@@ -459,7 +499,7 @@ void FrameReceiverController::precharge_buffers(void)
     {
       IpcMessage buf_msg(IpcMessage::MsgTypeNotify, IpcMessage::MsgValNotifyFrameRelease);
       buf_msg.set_param<int>("buffer_id", buf);
-      rx_channel_.send(buf_msg.encode());
+      rx_channel_.send(buf_msg.encode(), 0, rx_thread_identity_);
     }
   }
   else
@@ -573,37 +613,45 @@ void FrameReceiverController::handle_ctrl_channel(void)
 
 void FrameReceiverController::handle_rx_channel(void)
 {
-  std::string rx_reply_encoded = rx_channel_.recv();
+
+  std::string msg_indentity;
+  std::string rx_msg_encoded = rx_channel_.recv(&msg_indentity);
+
   try {
 
-    // LOG4CXX_DEBUG_LEVEL(1, logger_, "Got reply from RX thread : " << rx_reply_encoded);
+    IpcMessage rx_msg(rx_msg_encoded.c_str());
+    IpcMessage::MsgType msg_type = rx_msg.get_msg_type();
+    IpcMessage::MsgVal msg_val = rx_msg.get_msg_val();
 
-    IpcMessage rx_reply(rx_reply_encoded.c_str());
-
-    if ((rx_reply.get_msg_type() == IpcMessage::MsgTypeNotify) &&
-        (rx_reply.get_msg_val() == IpcMessage::MsgValNotifyFrameReady))
+    if ((msg_type == IpcMessage::MsgTypeNotify) && (msg_val == IpcMessage::MsgValNotifyFrameReady))
     {
       LOG4CXX_DEBUG_LEVEL(2, logger_, "Got frame ready notification from RX thread"
-          " for frame " << rx_reply.get_param<int>("frame", -1) <<
-                        " in buffer " << rx_reply.get_param<int>("buffer_id", -1));
-      frame_ready_channel_.send(rx_reply_encoded);
+          " for frame " << rx_msg.get_param<int>("frame", -1) <<
+                        " in buffer " << rx_msg.get_param<int>("buffer_id", -1));
+      frame_ready_channel_.send(rx_msg_encoded);
 
       frames_received_++;
     }
-    else if ((rx_reply.get_msg_type() == IpcMessage::MsgTypeCmd) &&
-        (rx_reply.get_msg_val() == IpcMessage::MsgValCmdBufferPrechargeRequest))
+    else if ((msg_type == IpcMessage::MsgTypeNotify) && (msg_val == IpcMessage::MsgValNotifyIdentity))
+    {
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Got identity announcement from RX thread: " << msg_indentity);
+      rx_thread_identity_ = msg_indentity;
+      IpcMessage rx_reply(IpcMessage::MsgTypeAck, IpcMessage::MsgValNotifyIdentity);
+      rx_channel_.send(rx_reply.encode(), 0, rx_thread_identity_);
+    }
+    else if ((msg_type == IpcMessage::MsgTypeCmd) && (msg_val == IpcMessage::MsgValCmdBufferPrechargeRequest))
     {
       LOG4CXX_DEBUG_LEVEL(2, logger_, "Got buffer precharge request from RX thread");
       this->precharge_buffers();
     }
     else
     {
-      LOG4CXX_ERROR(logger_, "Got unexpected message from RX thread: " << rx_reply_encoded);
+      LOG4CXX_ERROR(logger_, "Got unexpected message from RX thread: " << rx_msg_encoded);
     }
   }
   catch (IpcMessageException& e)
   {
-    LOG4CXX_ERROR(logger_, "Error decoding RX thread channel reply: " << e.what());
+    LOG4CXX_ERROR(logger_, "Error decoding RX thread message: " << e.what());
   }
 }
 
@@ -620,7 +668,7 @@ void FrameReceiverController::handle_frame_release_channel(void)
       LOG4CXX_DEBUG_LEVEL(2, logger_, "Got frame release notification from processor"
           " from frame " << frame_release.get_param<int>("frame", -1) <<
                          " in buffer " << frame_release.get_param<int>("buffer_id", -1));
-      rx_channel_.send(frame_release_encoded);
+      rx_channel_.send(frame_release_encoded, 0, rx_thread_identity_);
 
       frames_released_++;
 
@@ -646,4 +694,9 @@ void FrameReceiverController::handle_frame_release_channel(void)
   {
     LOG4CXX_ERROR(logger_, "Error decoding message on frame release channel: " << e.what());
   }
+}
+
+void FrameReceiverController::tick_timer(void)
+{
+  //LOG4CXX_DEBUG_LEVEL(1, logger_, "Controller tick timer fired");
 }
