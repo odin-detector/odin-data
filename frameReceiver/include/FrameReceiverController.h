@@ -31,6 +31,9 @@
 #include "OdinDataException.h"
 #include "ClassLoader.h"
 
+// Uncomment this to compile a diagnostic tick timer into the controller
+//#define FR_CONTROLLER_TICK_TIMER
+
 using namespace OdinData;
 
 namespace FrameReceiver
@@ -71,7 +74,9 @@ namespace FrameReceiver
     void handle_rx_channel(void);
     void handle_frame_release_channel(void);
 
+#ifdef FR_CONTROLLER_TICK_TIMER
     void tick_timer(void);
+#endif
 
   private:
 

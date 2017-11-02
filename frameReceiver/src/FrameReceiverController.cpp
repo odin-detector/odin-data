@@ -104,17 +104,18 @@ void FrameReceiverController::run(void)
   LOG4CXX_TRACE(logger_, "FrameReceiverController::run()");
   terminate_controller_ = false;
 
-  // Pre-charge all frame buffers onto the RX thread queue ready for use
-  //precharge_buffers();
-
   LOG4CXX_DEBUG_LEVEL(1, logger_, "Main thread entering reactor loop");
 
+#ifdef FR_CONTROLLER_TICK_TIMER
   int tick_timer_id = reactor_.register_timer(1000, 0, boost::bind(&FrameReceiverController::tick_timer, this));
+#endif
 
   // Run the reactor event loop
   reactor_.run();
 
+#ifdef FR_CONTROLLER_TICK_TIMER
   reactor_.remove_timer(tick_timer_id);
+#endif
 
   if (rx_thread_)
   {
@@ -696,7 +697,9 @@ void FrameReceiverController::handle_frame_release_channel(void)
   }
 }
 
+#ifdef FR_CONTROLLER_TICK_TIMER
 void FrameReceiverController::tick_timer(void)
 {
-  //LOG4CXX_DEBUG_LEVEL(1, logger_, "Controller tick timer fired");
+  LOG4CXX_DEBUG_LEVEL(4, logger_, "Controller tick timer fired");
 }
+#endif
