@@ -68,7 +68,7 @@ class FrameReceiverClient(object):
         if self.args.config_file is not None:
             self.do_config_cmd(self.args.config_file)
 
-        if self.args.shutdown is not None:
+        if self.args.shutdown:
             self.do_shutdown_cmd()
             
     def do_config_cmd(self, config_file):
