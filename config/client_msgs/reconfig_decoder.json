@@ -1,3 +1,7 @@
 {
-  "decoder_type": "DummyUDP"
+  "decoder_type": "DummyUDP",
+  "decoder_config": {
+    "enable_packet_logging": false,
+    "frame_timeout_ms": 1000
+  }
 }

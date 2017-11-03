@@ -25,6 +25,7 @@ namespace FrameReceiver
   const std::string CONFIG_MAX_BUFFER_MEM = "max_buffer_mem";
   const std::string CONFIG_DECODER_PATH = "decoder_path";
   const std::string CONFIG_DECODER_TYPE = "decoder_type";
+  const std::string CONFIG_DECODER_CONFIG = "decoder_config";
   const std::string CONFIG_RX_TYPE = "rx_type";
   const std::string CONFIG_CTRL_ENDPOINT = "ctrl_endpoint";
   const std::string CONFIG_RX_ENDPOINT = "rx_endpoint";

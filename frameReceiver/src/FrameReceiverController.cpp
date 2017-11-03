@@ -74,7 +74,7 @@ void FrameReceiverController::configure(OdinData::IpcMessage& config_msg,
   bool force_reconfig = config_msg.get_param<bool>(CONFIG_FORCE_RECONFIG, false);
 
   need_ipc_reconfig_ = force_reconfig;
-  need_decoder_reconfig_ = force_reconfig;
+  need_decoder_reconfig_ = true; //force_reconfig;
   need_buffer_manager_reconfig_ = force_reconfig;
   need_rx_thread_reconfig_ = force_reconfig;
 
@@ -455,6 +455,20 @@ void FrameReceiverController::configure_frame_decoder(OdinData::IpcMessage& conf
         sstr << "Cannot configure frame decoder: " << e.what();
         throw FrameReceiverException(sstr.str());
       }
+
+      // Extract any decoder parameters from the configuration message and construct an 
+      // IpcMessage to pass to the decoder initialisation
+      boost::scoped_ptr<IpcMessage> decoder_config(new IpcMessage());
+      if (config_msg.has_param(CONFIG_DECODER_CONFIG))
+      {
+        decoder_config.reset(
+          new IpcMessage(config_msg.get_param<const rapidjson::Value&>(CONFIG_DECODER_CONFIG))
+        );
+      }
+      
+      LOG4CXX_DEBUG_LEVEL(3, logger_, 
+        "Built decoder configuration message: " << decoder_config->encode()
+      );
 
       // Initialise the decoder object
       frame_decoder_->init(logger_, config_.enable_packet_logging_, config_.frame_timeout_ms_);
