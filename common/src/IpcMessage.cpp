@@ -445,6 +445,7 @@ void IpcMessage::msg_val_map_init()
   msg_val_map_.insert(MsgValMapEntry("configure",                MsgValCmdConfigure));
   msg_val_map_.insert(MsgValMapEntry("request_buffer_config",    MsgValCmdBufferConfigRequest));
   msg_val_map_.insert(MsgValMapEntry("request_buffer_precharge", MsgValCmdBufferPrechargeRequest));
+  msg_val_map_.insert(MsgValMapEntry("shutdown",                 MsgValCmdShutdown));
   msg_val_map_.insert(MsgValMapEntry("identity",                 MsgValNotifyIdentity));
   msg_val_map_.insert(MsgValMapEntry("frame_ready",              MsgValNotifyFrameReady));
   msg_val_map_.insert(MsgValMapEntry("frame_release",            MsgValNotifyFrameRelease));

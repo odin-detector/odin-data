@@ -151,13 +151,25 @@ void FrameReceiverController::run(void)
 
 //! Stop the FrameReceiverController.
 //
-//! This method stops the controller by telling the reactor to stop.
+//! This method stops the controller by telling the reactor to stop. Execution of the
+//! stop can be deferred to allow the process to respond to the shutdown request cleanly.
 //!
-void FrameReceiverController::stop(void)
+//! \param[in] deferred - optional boolean flag indicating deferred execution requested
+//!
+void FrameReceiverController::stop(const bool deferred)
 {
-  LOG4CXX_TRACE(logger_, "FrameReceiverController::stop()");
-  terminate_controller_ = true;
-  reactor_.stop();
+  if (deferred)
+  {
+    reactor_.register_timer(deferred_action_delay_ms, 1,
+      boost::bind(&FrameReceiverController::stop, this, false)
+    );
+  }
+  else 
+  {
+    LOG4CXX_TRACE(logger_, "FrameReceiverController::stop()");
+    terminate_controller_ = true;
+    reactor_.stop();
+    }
 }
 
 //! Configure the necessary IPC channels.
@@ -636,7 +648,14 @@ void FrameReceiverController::handle_ctrl_channel(void)
                 "Got control channel configure request from client " << client_identity);
             this->configure(ctrl_req, ctrl_reply);
             break;
-
+          
+          case IpcMessage::MsgValCmdShutdown:
+              LOG4CXX_DEBUG_LEVEL(3, logger_,
+                "Got shutdown command request from client " << client_identity);
+              this->stop(true);
+              ctrl_reply.set_msg_type(IpcMessage::MsgTypeAck);
+              break;
+              
           default:
             request_ok = false;
             error_ss << "Illegal command request value: " << req_val;
@@ -815,7 +834,7 @@ void FrameReceiverController::precharge_buffers(void)
 //! argument, allowing time for IPC channels to be set up and downstream applications to be
 //! responsive to notifications.
 //!
-//! \param[in] deferred - optional boolean flag indicated deferred execution requested
+//! \param[in] deferred - optional boolean flag indicating deferred execution requested
 //!
 void FrameReceiverController::notify_buffer_config(const bool deferred)
 {

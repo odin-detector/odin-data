@@ -55,7 +55,7 @@ namespace FrameReceiver
     virtual ~FrameReceiverController ();
     void configure(OdinData::IpcMessage& config_msg, OdinData::IpcMessage& config_reply);
     void run(void);
-    void stop(void);
+    void stop(const bool deferred=false);
 
   private:
 

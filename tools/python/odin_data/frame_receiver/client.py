@@ -53,6 +53,8 @@ class FrameReceiverClient(object):
         parser.add_argument('--config', type=argparse.FileType('r'), dest='config_file', nargs='?',
                             default=None, const=sys.stdin, 
                             help='Specify JSON configuration file to send as configure command')
+        parser.add_argument('--shutdown', action='store_true',
+                            help='Instruct the frame receiver to shut down')
         
         args = parser.parse_args()
         return args
@@ -65,6 +67,9 @@ class FrameReceiverClient(object):
         
         if self.args.config_file is not None:
             self.do_config_cmd(self.args.config_file)
+
+        if self.args.shutdown is not None:
+            self.do_shutdown_cmd()
             
     def do_config_cmd(self, config_file):
 
@@ -82,7 +87,15 @@ class FrameReceiverClient(object):
         except JSONDecodeError as e:
             self.logger.error("Failed to parse configuration file: {}".format(e))
             
-        
+
+    def do_shutdown_cmd(self):
+
+        shutdown_msg = IpcMessage('cmd', 'shutdown')
+        print(shutdown_msg)
+        self.logger.info("Sending shutdown command to frame receiver")
+        self.ctrl_channel.send(shutdown_msg.encode())
+        self.await_response()
+
     def await_response(self, timeout_ms=1000):
 
         pollevts = self.ctrl_channel.poll(1000)
