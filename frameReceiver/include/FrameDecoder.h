@@ -35,6 +35,8 @@ public:
 };
 
 typedef boost::function<void(int, int)> FrameReadyCallback;
+typedef std::queue<int> EmptyBufferQueue;
+typedef std::map<int, int> FrameBufferMap;
 
 class FrameDecoder
 {
@@ -97,6 +99,24 @@ public:
       return frame_buffer_map_.size();
   }
 
+  void drop_all_buffers(void)
+  {
+    if (!empty_buffer_queue_.empty())
+    {
+      LOG4CXX_INFO(logger_, "Dropping " << empty_buffer_queue_.size() << " buffers from empty buffer queue");
+      EmptyBufferQueue new_queue;
+      std::swap(empty_buffer_queue_, new_queue);
+    }
+
+    if (!frame_buffer_map_.empty())
+    {
+      LOG4CXX_WARN(logger_, "Dropping " << frame_buffer_map_.size() <<
+                   " unreleased buffers from decoder - possible data loss");
+      FrameBufferMap new_map;
+      std::swap(frame_buffer_map_, new_map);
+    }
+  }
+
   virtual void monitor_buffers(void) = 0;
 
 protected:
@@ -108,8 +128,8 @@ protected:
   OdinData::SharedBufferManagerPtr buffer_manager_;
   FrameReadyCallback   ready_callback_;
 
-  std::queue<int>    empty_buffer_queue_;
-  std::map<int, int> frame_buffer_map_;
+  EmptyBufferQueue empty_buffer_queue_;
+  FrameBufferMap   frame_buffer_map_;
 
   unsigned int frame_timeout_ms_;
   unsigned int frames_timedout_;
