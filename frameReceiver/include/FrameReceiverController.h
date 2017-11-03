@@ -64,7 +64,8 @@ namespace FrameReceiver
     void setup_rx_channel(const std::string& ctrl_endpoint);
     void setup_frame_ready_channel(const std::string& ctrl_endpoint);
     void setup_frame_release_channel(const std::string& ctrl_endpoint);
-    void unbind_channel(OdinData::IpcChannel* channel, std::string& endpoint, const bool deferred=false);
+    void unbind_channel(OdinData::IpcChannel* channel, std::string& endpoint,
+        const bool deferred=false);
     void cleanup_ipc_channels(void);
 
     void configure_frame_decoder(OdinData::IpcMessage& config_msg);
@@ -89,16 +90,16 @@ namespace FrameReceiver
     SharedBufferManagerPtr                   buffer_manager_;  //!< Buffer manager object
 
     FrameReceiverConfig& config_;         //!< Configuration storage object
-    bool terminate_controller_;           //!< Flag to signal temination of the controller
+    bool terminate_controller_;           //!< Flag to signal termination of the controller
 
     bool need_ipc_reconfig_;              //!< Flag to signal reconfiguration of IPC channels
-    bool need_decoder_reconfig_;          //!< Flag to signal reconfiguration of frame decoder needed
-    bool need_rx_thread_reconfig_;        //!< Flag to signal reconfiguration of RX thread needed
-    bool need_buffer_manager_reconfig_;   //!< Flag to signal reconfiguration of buffer manager needed
+    bool need_decoder_reconfig_;          //!< Flag to signal reconfiguration of frame decoder
+    bool need_rx_thread_reconfig_;        //!< Flag to signal reconfiguration of RX thread
+    bool need_buffer_manager_reconfig_;   //!< Flag to signal reconfiguration of buffer manager
 
     IpcChannel rx_channel_;               //!< Channel for communication with receiver thread
-    IpcChannel ctrl_channel_;             //!< Channel for communication with external control clients
-    IpcChannel frame_ready_channel_;      //!< Channel for signalling frames ready to downstream processes
+    IpcChannel ctrl_channel_;             //!< Channel for communication with  control clients
+    IpcChannel frame_ready_channel_;      //!< Channel for signalling to downstream processes
     IpcChannel frame_release_channel_;    //!< Channel for receiving notification of released frames
 
     IpcReactor reactor_;                  //!< Reactor for multiplexing all communications

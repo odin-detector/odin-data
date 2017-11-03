@@ -41,7 +41,7 @@ FrameReceiverController::FrameReceiverController (FrameReceiverConfig& config) :
 
 }
 
-//! Destructor for the FrameReceiverController
+//! Destructor for the FrameReceiverController.
 //!
 FrameReceiverController::~FrameReceiverController ()
 {
@@ -52,7 +52,7 @@ FrameReceiverController::~FrameReceiverController ()
 
 }
 
-//! Configure the FrameReceiverController
+//! Configure the FrameReceiverController.
 //!
 //! This method configures the controller based on configuration parameters received as
 //! an IpcMessage. Depending on the parameters present in that message, IPC channels
@@ -110,7 +110,7 @@ void FrameReceiverController::configure(OdinData::IpcMessage& config_msg,
   }
 }
 
-//! Run the FrameReceiverController
+//! Run the FrameReceiverController.
 //!
 //! This method runs the FrameReceiverController reactor event loop. Configuration
 //! of the controller and associated objects is performed by calls to the
@@ -149,7 +149,7 @@ void FrameReceiverController::run(void)
 
 }
 
-//! Stop the FrameReceiverController
+//! Stop the FrameReceiverController.
 //
 //! This method stops the controller by telling the reactor to stop.
 //!
@@ -240,7 +240,9 @@ void FrameReceiverController::setup_control_channel(const std::string& endpoint)
   }
 
   // Add channel to the reactor
-  reactor_.register_channel(ctrl_channel_, boost::bind(&FrameReceiverController::handle_ctrl_channel, this));
+  reactor_.register_channel(ctrl_channel_,
+    boost::bind(&FrameReceiverController::handle_ctrl_channel, this)
+  );
 
 }
 
@@ -265,7 +267,9 @@ void FrameReceiverController::setup_rx_channel(const std::string& endpoint)
   }
 
   // Add channel to the reactor
-  reactor_.register_channel(rx_channel_, boost::bind(&FrameReceiverController::handle_rx_channel, this));
+  reactor_.register_channel(rx_channel_,
+    boost::bind(&FrameReceiverController::handle_rx_channel, this)
+  );
 
 }
 
@@ -278,14 +282,16 @@ void FrameReceiverController::setup_rx_channel(const std::string& endpoint)
 //!
 void FrameReceiverController::setup_frame_ready_channel(const std::string& endpoint)
 {
-  LOG4CXX_DEBUG_LEVEL(1, logger_, "Binding frame ready notification channel to endpoint: " << endpoint);
+  LOG4CXX_DEBUG_LEVEL(1, logger_,
+                      "Binding frame ready notification channel to endpoint: " << endpoint);
 
   try {
     frame_ready_channel_.bind(endpoint.c_str());
   }
   catch (zmq::error_t& e) {
     std::stringstream sstr;
-    sstr << "Binding frame ready notification channel endpoint " << endpoint << " failed: " << e.what();
+    sstr << "Binding frame ready notification channel endpoint " << endpoint << " failed: "
+        << e.what();
     throw FrameReceiverException(sstr.str());
   }
 
@@ -300,14 +306,16 @@ void FrameReceiverController::setup_frame_ready_channel(const std::string& endpo
 //!
 void FrameReceiverController::setup_frame_release_channel(const std::string& endpoint)
 {
-  LOG4CXX_DEBUG_LEVEL(1, logger_, "Binding frame release notification channel to endpoint: " << endpoint);
+  LOG4CXX_DEBUG_LEVEL(1, logger_,
+                      "Binding frame release notification channel to endpoint: " << endpoint);
 
   try {
     frame_release_channel_.bind(endpoint.c_str());
   }
   catch (zmq::error_t& e) {
     std::stringstream sstr;
-    sstr << "Binding frame release notification channel endpoint " << endpoint << " failed: " << e.what();
+    sstr << "Binding frame release notification channel endpoint " << endpoint << " failed: "
+        << e.what();
     throw FrameReceiverException(sstr.str());
   }
 
@@ -347,7 +355,7 @@ void FrameReceiverController::unbind_channel(OdinData::IpcChannel* channel,
   }
 }
 
-//! Clean up FrameReceiverController IPC channels
+//! Clean up FrameReceiverController IPC channels.
 //!
 //! This method cleans up controller IPC channels, removing them from the reactor and closing
 //! the channels as appropriate.
@@ -367,7 +375,7 @@ void FrameReceiverController::cleanup_ipc_channels(void)
 
 }
 
-//! Configure the frame decoder
+//! Configure the frame decoder.
 //!
 //! This method configures a frame decoder by loading the resolving the appropriate
 //! library and class based on the input configuration.
@@ -378,7 +386,8 @@ void FrameReceiverController::configure_frame_decoder(OdinData::IpcMessage& conf
 {
 
   // Resolve the decoder path if specified in the config message
-  std::string decoder_path = config_msg.get_param<std::string>(CONFIG_DECODER_PATH, config_.decoder_path_);
+  std::string decoder_path = config_msg.get_param<std::string>(
+      CONFIG_DECODER_PATH, config_.decoder_path_);
   if (decoder_path != config_.decoder_path_)
   {
     config_.decoder_path_ = decoder_path;
@@ -392,7 +401,8 @@ void FrameReceiverController::configure_frame_decoder(OdinData::IpcMessage& conf
   }
 
   // Resolve the decoder type if specified in the config message
-  std::string decoder_type = config_msg.get_param<std::string>(CONFIG_DECODER_TYPE, config_.decoder_path_);
+  std::string decoder_type = config_msg.get_param<std::string>(
+      CONFIG_DECODER_TYPE, config_.decoder_path_);
   if (decoder_type != config_.decoder_path_) {
     config_.decoder_path_ = decoder_type;
     need_decoder_reconfig_ = true;
@@ -405,20 +415,23 @@ void FrameReceiverController::configure_frame_decoder(OdinData::IpcMessage& conf
     {
       std::string lib_name = "lib" + decoder_type + "FrameDecoder" + SHARED_LIBRARY_SUFFIX;
       std::string cls_name = decoder_type + "FrameDecoder";
-      LOG4CXX_INFO(logger_, "Loading decoder plugin " << cls_name << " from " << decoder_path << lib_name);
+      LOG4CXX_INFO(logger_, "Loading decoder plugin " << cls_name << " from "
+          << decoder_path << lib_name);
 
       try {
 
-        // The RX thread must be stopped and deleted first so that it releases its reference to the current
-        // frame decoder (and shared buffer manager), allowing the current decoder instance to be destroyed
-        // before reconfiguration.
+        // The RX thread must be stopped and deleted first so that it releases its reference to the
+        // current frame decoder (and shared buffer manager), allowing the current decoder instance
+        // to be destroyed before reconfiguration.
         this->stop_rx_thread();
 
         frame_decoder_.reset();
-        frame_decoder_ = OdinData::ClassLoader<FrameDecoder>::load_class(cls_name, decoder_path + lib_name);
+        frame_decoder_ = OdinData::ClassLoader<FrameDecoder>::load_class(
+            cls_name, decoder_path + lib_name);
         if (!frame_decoder_)
         {
-          throw FrameReceiverException("Cannot configure frame decoder: plugin type not recognised");
+          throw FrameReceiverException(
+              "Cannot configure frame decoder: plugin type not recognised");
         }
         else
         {
@@ -434,7 +447,8 @@ void FrameReceiverController::configure_frame_decoder(OdinData::IpcMessage& conf
       // Initialise the decoder object
       frame_decoder_->init(logger_, config_.enable_packet_logging_, config_.frame_timeout_ms_);
 
-      // The buffer manager and RX thread will need reconfiguration if the decoder has been loaded and initialised.
+      // The buffer manager and RX thread will need reconfiguration if the decoder has been loaded
+      // and initialised.
       need_buffer_manager_reconfig_ = true;
       need_rx_thread_reconfig_ = true;
 
@@ -446,7 +460,7 @@ void FrameReceiverController::configure_frame_decoder(OdinData::IpcMessage& conf
   }
 }
 
-//! Configure the frame buffer manager
+//! Configure the frame buffer manager.
 //!
 //! This method configures the shared frame buffer manager used by the FrameReceiver to
 //! store incoming frame data and hand over to downstream processing. The manager can only
@@ -479,9 +493,9 @@ void FrameReceiverController::configure_buffer_manager(OdinData::IpcMessage& con
     if (frame_decoder_)
     {
 
-      // The RX thread must be stopped and deleted first so that it releases its reference to the current
-      // frame decoder (and shared buffer manager), allowing the current decoder instance to be destroyed
-      // before reconfiguration.
+      // The RX thread must be stopped and deleted first so that it releases its reference to the
+      // current frame decoder (and shared buffer manager), allowing the current decoder instance to
+      // be destroyed before reconfiguration.
       this->stop_rx_thread();
 
       // Instruct the frame decoder to drop any buffers currently in the empty queue or mapped for
@@ -489,8 +503,9 @@ void FrameReceiverController::configure_buffer_manager(OdinData::IpcMessage& con
       frame_decoder_->drop_all_buffers();
 
       // Create a new shared buffer manager
-      buffer_manager_.reset(new SharedBufferManager(shared_buffer_name, max_buffer_mem,
-                                                    frame_decoder_->get_frame_buffer_size(), false));
+      buffer_manager_.reset(new SharedBufferManager(
+          shared_buffer_name, max_buffer_mem,frame_decoder_->get_frame_buffer_size(), false)
+      );
 
       LOG4CXX_DEBUG_LEVEL(1, logger_, "Configured frame buffer manager of total size " <<
           max_buffer_mem << " with " << buffer_manager_->get_num_buffers() << " buffers");
@@ -507,12 +522,13 @@ void FrameReceiverController::configure_buffer_manager(OdinData::IpcMessage& con
     }
     else
     {
-      LOG4CXX_INFO(logger_, "Shared frame buffer manager not configured as no frame decoder configured");
+      LOG4CXX_INFO(logger_,
+          "Shared frame buffer manager not configured as no frame decoder configured");
     }
   }
 }
 
-//! Configure the receiver thread
+//! Configure the receiver thread.
 //!
 //! This method configures and launches the appropriate type of receiver thread based on
 //! the configuration information specified in an IpcMessage.
@@ -558,11 +574,17 @@ void FrameReceiverController::configure_rx_thread(OdinData::IpcMessage& config_m
     }
     else
     {
-      LOG4CXX_INFO(logger_, "RX thread not configured as frame decoder and/or buffer manager configured");
+      LOG4CXX_INFO(logger_,
+          "RX thread not configured as frame decoder and/or buffer manager configured");
     }
   }
 }
 
+//! Stop the receiver thread.
+//!
+//! This method stops the receiver thread cleanly and deletes the object instance by resetting
+//! the scoped pointer.
+//!
 void FrameReceiverController::stop_rx_thread(void)
 {
   if (rx_thread_)
@@ -575,9 +597,15 @@ void FrameReceiverController::stop_rx_thread(void)
   }
 }
 
+//! Handle control channel messages.
+//!
+//! This method is the handler registered with the reactor to handle messages received
+//! on the client control channel. Since this channel is implemented as ROUTER-DEALER,
+//! the client identity of the incoming message is tracked and applied to the reply.
+//!
 void FrameReceiverController::handle_ctrl_channel(void)
 {
-  // Receive a request message from the control channel
+  // Receive a message from the control channel, retrieving the client identity
   std::string client_identity;
   std::string ctrl_req_encoded = ctrl_channel_.recv(&client_identity);
 
@@ -604,7 +632,8 @@ void FrameReceiverController::handle_ctrl_channel(void)
         switch (req_val)
         {
           case IpcMessage::MsgValCmdConfigure:
-            LOG4CXX_DEBUG_LEVEL(3, logger_, "Got control channel configure request from client " << client_identity);
+            LOG4CXX_DEBUG_LEVEL(3, logger_,
+                "Got control channel configure request from client " << client_identity);
             this->configure(ctrl_req, ctrl_reply);
             break;
 
@@ -634,23 +663,35 @@ void FrameReceiverController::handle_ctrl_channel(void)
     ctrl_reply.set_param<std::string>("error", error_ss.str());
   }
 
+  // Reply to the client on the control channel
   ctrl_channel_.send(ctrl_reply.encode(), 0, client_identity);
 
 }
 
+//! Handle receiver thread channel messages.
+//!
+//! This method is the handler registered with the reactor to handle messages received
+//! on the receiver thread channel. Since this channel is implemented as ROUTER-DEALER,
+//! the client identity of the incoming message is tracked and applied to the reply.
+//! Frame ready notifications from the RX thread are passed onto the frame ready channel
+//! to notify downstream processing applications that a new frame buffer is ready.
+//!
 void FrameReceiverController::handle_rx_channel(void)
 {
 
+  // Receive a message from the RX thread channel, retrieving the client identity
   std::string msg_indentity;
   std::string rx_msg_encoded = rx_channel_.recv(&msg_indentity);
 
+  // Decode the messsage and handle appropriately
   try {
 
     IpcMessage rx_msg(rx_msg_encoded.c_str());
     IpcMessage::MsgType msg_type = rx_msg.get_msg_type();
     IpcMessage::MsgVal msg_val = rx_msg.get_msg_val();
 
-    if ((msg_type == IpcMessage::MsgTypeNotify) && (msg_val == IpcMessage::MsgValNotifyFrameReady))
+    if ((msg_type == IpcMessage::MsgTypeNotify) &&
+        (msg_val == IpcMessage::MsgValNotifyFrameReady))
     {
       LOG4CXX_DEBUG_LEVEL(2, logger_, "Got frame ready notification from RX thread"
           " for frame " << rx_msg.get_param<int>("frame", -1) <<
@@ -659,14 +700,17 @@ void FrameReceiverController::handle_rx_channel(void)
 
       frames_received_++;
     }
-    else if ((msg_type == IpcMessage::MsgTypeNotify) && (msg_val == IpcMessage::MsgValNotifyIdentity))
+    else if ((msg_type == IpcMessage::MsgTypeNotify) &&
+             (msg_val == IpcMessage::MsgValNotifyIdentity))
     {
-      LOG4CXX_DEBUG_LEVEL(1, logger_, "Got identity announcement from RX thread: " << msg_indentity);
+      LOG4CXX_DEBUG_LEVEL(1, logger_,
+          "Got identity announcement from RX thread: " << msg_indentity);
       rx_thread_identity_ = msg_indentity;
       IpcMessage rx_reply(IpcMessage::MsgTypeAck, IpcMessage::MsgValNotifyIdentity);
       rx_channel_.send(rx_reply.encode(), 0, rx_thread_identity_);
     }
-    else if ((msg_type == IpcMessage::MsgTypeCmd) && (msg_val == IpcMessage::MsgValCmdBufferPrechargeRequest))
+    else if ((msg_type == IpcMessage::MsgTypeCmd) &&
+             (msg_val == IpcMessage::MsgValCmdBufferPrechargeRequest))
     {
       LOG4CXX_DEBUG_LEVEL(2, logger_, "Got buffer precharge request from RX thread");
       this->precharge_buffers();
@@ -682,6 +726,12 @@ void FrameReceiverController::handle_rx_channel(void)
   }
 }
 
+//! Handle frame release channel messages.
+//!
+//! This method is the handler registered with the reactor to handle messages received
+//! on the frame release channel. Released frames are passed on to the RX thread so the
+//! associated buffer can be queued for re-use in subsequent frame reception.
+//!
 void FrameReceiverController::handle_frame_release_channel(void)
 {
   std::string frame_release_encoded = frame_release_channel_.recv();
@@ -701,8 +751,11 @@ void FrameReceiverController::handle_frame_release_channel(void)
 
       if (config_.frame_count_ && (frames_released_ >= config_.frame_count_))
       {
-        LOG4CXX_INFO(logger_, "Specified number of frames (" << config_.frame_count_ << ") received and released, terminating");
-        stop();
+        LOG4CXX_INFO(logger_,
+            "Specified number of frames (" << config_.frame_count_
+            << ") received and released, terminating"
+        );
+        this->stop();
         reactor_.stop();
       }
     }
@@ -714,21 +767,32 @@ void FrameReceiverController::handle_frame_release_channel(void)
     }
     else
     {
-      LOG4CXX_ERROR(logger_, "Got unexpected message on frame release channel: " << frame_release_encoded);
+      LOG4CXX_ERROR(logger_,
+          "Got unexpected message on frame release channel: " << frame_release_encoded);
     }
   }
   catch (IpcMessageException& e)
   {
-    LOG4CXX_ERROR(logger_, "Error decoding message on frame release channel: " << e.what());
+    LOG4CXX_ERROR(logger_,
+        "Error decoding message on frame release channel: " << e.what());
   }
 }
 
-
+//! Precharge empty frame buffers for use by the receiver thread.
+//!
+//! This method precharges all the buffers available in the shared buffer manager onto the
+//! empty buffer queue in the receiver thread. This allows the receiver thread to obtain a pool
+//! of empty buffers at startup, and is done by sending frame release notificaitons for all buffers
+//! over the RX thread channel.
+//!
 void FrameReceiverController::precharge_buffers(void)
 {
+
+  // Only pre-charge buffers if a buffer manager and RX thread are configured
   if (buffer_manager_ && rx_thread_)
   {
 
+    // Loop over all buffers in the buffer manager and send a frame release notification for each
     for (int buf = 0; buf < buffer_manager_->get_num_buffers(); buf++)
     {
       IpcMessage buf_msg(IpcMessage::MsgTypeNotify, IpcMessage::MsgValNotifyFrameRelease);
@@ -738,15 +802,25 @@ void FrameReceiverController::precharge_buffers(void)
   }
   else
   {
-    LOG4CXX_INFO(logger_, "Buffer precharge not done as no buffer manager and/or RX thread configured");
+    LOG4CXX_INFO(logger_,
+       "Buffer precharge not done as no buffer manager and/or RX thread configured");
   }
 }
 
-
+//! Notify downstream processing applications of the current shared buffer configuration.
+//!
+//! This method notifies processing applications subscribed to the frame ready channel of the
+//! current shared buffer notification. This is done at startup and any time the shared buffer
+//! configuration changes. Execution of the notification can be deferred by setting the optional
+//! argument, allowing time for IPC channels to be set up and downstream applications to be
+//! responsive to notifications.
+//!
+//! \param[in] deferred - optional boolean flag indicated deferred execution requested
+//!
 void FrameReceiverController::notify_buffer_config(const bool deferred)
 {
-  // Notify downstream applications listening on the frame ready channel of the current shared buffer
-  // configuration.
+  // Notify downstream applications listening on the frame ready channel of the current shared
+  // buffer configuration.
 
   if (deferred)
   {
@@ -756,7 +830,8 @@ void FrameReceiverController::notify_buffer_config(const bool deferred)
   }
   else
   {
-    LOG4CXX_DEBUG_LEVEL(1, logger_, "Notifying downstream processes of shared buffer configuration");
+    LOG4CXX_DEBUG_LEVEL(1, logger_,
+        "Notifying downstream processes of shared buffer configuration");
 
     IpcMessage config_msg(IpcMessage::MsgTypeNotify, IpcMessage::MsgValNotifyBufferConfig);
     config_msg.set_param("shared_buffer_name", config_.shared_buffer_name_);
@@ -766,6 +841,11 @@ void FrameReceiverController::notify_buffer_config(const bool deferred)
 }
 
 #ifdef FR_CONTROLLER_TICK_TIMER
+//! Diagnostic tick timer for the frame controller.
+//!
+//! This ticker timer can be used for debugging the controller event loop. When compiled in it will
+//! will be registered to fire periodically in the reactor
+//!
 void FrameReceiverController::tick_timer(void)
 {
   LOG4CXX_DEBUG_LEVEL(4, logger_, "Controller tick timer fired");
