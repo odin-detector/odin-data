@@ -23,7 +23,7 @@
 #include "IpcMessage.h"
 #include "IpcReactor.h"
 #include "FrameReceiverException.h"
-#include "FrameReceiverConfig.h" // TODO REMOVE THIS
+#include "FrameReceiverConfig.h"
 #include "FrameReceiverRxThread.h"
 #include "FrameReceiverUDPRxThread.h"
 #include "FrameReceiverZMQRxThread.h"
@@ -57,29 +57,31 @@ namespace FrameReceiver
     void run(void);
     void stop(void);
 
+  private:
+
     void configure_ipc_channels(OdinData::IpcMessage& config_msg);
     void setup_control_channel(const std::string& ctrl_endpoint);
     void setup_rx_channel(const std::string& ctrl_endpoint);
     void setup_frame_ready_channel(const std::string& ctrl_endpoint);
     void setup_frame_release_channel(const std::string& ctrl_endpoint);
+    void unbind_channel(OdinData::IpcChannel* channel, std::string& endpoint, const bool deferred=false);
     void cleanup_ipc_channels(void);
+
     void configure_frame_decoder(OdinData::IpcMessage& config_msg);
     void configure_buffer_manager(OdinData::IpcMessage& config_msg);
     void configure_rx_thread(OdinData::IpcMessage& config_msg);
-    void precharge_buffers(void);
-    void unbind_channel(OdinData::IpcChannel* channel, std::string& endpoint, const bool deferred=false);
-    void notify_buffer_config(const bool deferred=false);
+    void stop_rx_thread(void);
 
     void handle_ctrl_channel(void);
     void handle_rx_channel(void);
     void handle_frame_release_channel(void);
 
+    void precharge_buffers(void);
+    void notify_buffer_config(const bool deferred=false);
+
 #ifdef FR_CONTROLLER_TICK_TIMER
     void tick_timer(void);
 #endif
-
-  private:
-
 
     log4cxx::LoggerPtr                       logger_;          //!< Pointer to the logging facility
     boost::scoped_ptr<FrameReceiverRxThread> rx_thread_;       //!< Receiver thread object
@@ -88,8 +90,11 @@ namespace FrameReceiver
 
     FrameReceiverConfig& config_;         //!< Configuration storage object
     bool terminate_controller_;           //!< Flag to signal temination of the controller
-    bool force_reconfig_;                 //!< Flag to signal forced reconfiguration
-    bool force_rx_thread_reconfig_;       //!< Flag to signal forced restart of rx thread on reconfiguration
+
+    bool need_ipc_reconfig_;              //!< Flag to signal reconfiguration of IPC channels
+    bool need_decoder_reconfig_;          //!< Flag to signal reconfiguration of frame decoder needed
+    bool need_rx_thread_reconfig_;        //!< Flag to signal reconfiguration of RX thread needed
+    bool need_buffer_manager_reconfig_;   //!< Flag to signal reconfiguration of buffer manager needed
 
     IpcChannel rx_channel_;               //!< Channel for communication with receiver thread
     IpcChannel ctrl_channel_;             //!< Channel for communication with external control clients
@@ -101,9 +106,11 @@ namespace FrameReceiver
     unsigned int frames_received_;        //!< Counter for frames received
     unsigned int frames_released_;        //!< Counter for frames released
 
-    std::string rx_thread_identity_;
+    std::string rx_thread_identity_;      //!< Identity of the RX thread dealer channel
 
   };
+
+  const std::size_t deferred_action_delay_ms = 1000; //!< Default delay in ms for deferred actions
 
 } /* namespace FrameReceiver */
 

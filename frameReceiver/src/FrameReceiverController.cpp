@@ -25,6 +25,10 @@ FrameReceiverController::FrameReceiverController (FrameReceiverConfig& config) :
     logger_(log4cxx::Logger::getLogger("FR.Controller")),
     config_(config),
     terminate_controller_(false),
+    need_ipc_reconfig_(false),
+    need_decoder_reconfig_(false),
+    need_buffer_manager_reconfig_(false),
+    need_rx_thread_reconfig_(false),
     rx_channel_(ZMQ_ROUTER),
     ctrl_channel_(ZMQ_ROUTER),
     frame_ready_channel_(ZMQ_PUB),
@@ -63,8 +67,16 @@ void FrameReceiverController::configure(OdinData::IpcMessage& config_msg,
 
   LOG4CXX_DEBUG_LEVEL(2, logger_, "Configuration submitted: " << config_msg.encode());
 
-  force_reconfig_ = config_msg.get_param<bool>(CONFIG_FORCE_RECONFIG, false);
-  force_rx_thread_reconfig_ = force_reconfig_;
+  // Determine if a forced reconfiguration of all parts of the system is requested
+  // and set up the individual reconfiguration flags appropriately. These can then
+  // be modified at each configuration step to handle interdependencies.
+
+  bool force_reconfig = config_msg.get_param<bool>(CONFIG_FORCE_RECONFIG, false);
+
+  need_ipc_reconfig_ = force_reconfig;
+  need_decoder_reconfig_ = force_reconfig;
+  need_buffer_manager_reconfig_ = force_reconfig;
+  need_rx_thread_reconfig_ = force_reconfig;
 
   config_reply.set_msg_val(config_msg.get_msg_val());
 
@@ -82,7 +94,13 @@ void FrameReceiverController::configure(OdinData::IpcMessage& config_msg,
     // Configure the RX thread
     this->configure_rx_thread(config_msg);
 
+    // Construct the acknowledgement reply, indicating in the parameters which elements
+    // have been reconfigured
     config_reply.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
+    config_reply.set_param<bool>("ipc_reconfigured", need_ipc_reconfig_);
+    config_reply.set_param<bool>("decoder_reconfigured", need_decoder_reconfig_);
+    config_reply.set_param<bool>("buffer_manager_reconfigured", need_buffer_manager_reconfig_);
+    config_reply.set_param<bool>("rx_thread_reconfigured", need_rx_thread_reconfig_);
 
   }
   catch (FrameReceiverException& e) {
@@ -107,7 +125,8 @@ void FrameReceiverController::run(void)
   LOG4CXX_DEBUG_LEVEL(1, logger_, "Main thread entering reactor loop");
 
 #ifdef FR_CONTROLLER_TICK_TIMER
-  int tick_timer_id = reactor_.register_timer(1000, 0, boost::bind(&FrameReceiverController::tick_timer, this));
+  int tick_timer_id = reactor_.register_timer(
+      deferred_action_delay_ms, 0, boost::bind(&FrameReceiverController::tick_timer, this));
 #endif
 
   // Run the reactor event loop
@@ -117,14 +136,8 @@ void FrameReceiverController::run(void)
   reactor_.remove_timer(tick_timer_id);
 #endif
 
-  if (rx_thread_)
-  {
-    // Call cleanup on the RxThread
-    rx_thread_->stop();
-
-    // Destroy the RX thread
-    rx_thread_.reset();
-  }
+  // Stop the RX thread
+  this->stop_rx_thread();
 
   // Destroy the frame decoder
   if (frame_decoder_) {
@@ -147,56 +160,60 @@ void FrameReceiverController::stop(void)
   reactor_.stop();
 }
 
-
+//! Configure the necessary IPC channels.
+//!
+//! This method conditionally configures the IPC channels used by the controller
+//! to communicate with control clients, the receiver thread and a downstream
+//! frame processing application. Each of the channels is conditionally configured
+//! if necessary or when the endpoint specified in the supplied configuration message
+//! has changed.
+//!
+//! \param[in] config_msg - IPCMessage containing configuration parameters
+//!
 void FrameReceiverController::configure_ipc_channels(OdinData::IpcMessage& config_msg)
 {
 
-  // If a control endpoint is specified, bind the control channel
-  if (config_msg.has_param(CONFIG_CTRL_ENDPOINT))
+  // If a new control endpoint is specified, bind the control channel
+  std::string ctrl_endpoint = config_msg.get_param<std::string>(
+      CONFIG_CTRL_ENDPOINT, config_.ctrl_channel_endpoint_);
+  if (need_ipc_reconfig_ || (ctrl_endpoint != config_.ctrl_channel_endpoint_))
   {
-    std::string endpoint = config_msg.get_param<std::string>(CONFIG_CTRL_ENDPOINT);
-    if (force_reconfig_ || (endpoint != config_.ctrl_channel_endpoint_))
-    {
-      this->unbind_channel(&ctrl_channel_, config_.ctrl_channel_endpoint_, true);
-      config_.ctrl_channel_endpoint_ = endpoint;
-      this->setup_control_channel(endpoint);
-    }
+    this->unbind_channel(&ctrl_channel_, config_.ctrl_channel_endpoint_, true);
+    config_.ctrl_channel_endpoint_ = ctrl_endpoint;
+    this->setup_control_channel(ctrl_endpoint);
   }
 
-  // If the endpoint is specified, bind the RX thread channel
-  if (config_msg.has_param(CONFIG_RX_ENDPOINT)) {
-    std::string endpoint = config_msg.get_param<std::string>(CONFIG_RX_ENDPOINT);
-    if (force_reconfig_ || (endpoint != config_.rx_channel_endpoint_))
-    {
-      this->unbind_channel(&rx_channel_, config_.rx_channel_endpoint_, false);
-      config_.rx_channel_endpoint_ = endpoint;
-      this->setup_rx_channel(endpoint);
+  // If a new endpoint is specified, bind the RX thread channel
+  std::string rx_endpoint = config_msg.get_param<std::string>(
+      CONFIG_RX_ENDPOINT, config_.rx_channel_endpoint_);
+  if (need_ipc_reconfig_ || (rx_endpoint != config_.rx_channel_endpoint_))
+  {
+    this->unbind_channel(&rx_channel_, config_.rx_channel_endpoint_, false);
+    config_.rx_channel_endpoint_ = rx_endpoint;
+    this->setup_rx_channel(rx_endpoint);
 
-      // The RX thread will have to be resconfigured if this endpoint changes
-      force_rx_thread_reconfig_ = true;
-    }
+    // The RX thread will have to be reconfigured if this endpoint changes
+    need_rx_thread_reconfig_ = true;
   }
 
   // If the endpoint is specified, bind the frame ready notification channel
-  if (config_msg.has_param(CONFIG_FRAME_READY_ENDPOINT)) {
-    std::string endpoint = config_msg.get_param<std::string>(CONFIG_FRAME_READY_ENDPOINT);
-    if (force_reconfig_ || (endpoint != config_.frame_ready_endpoint_))
-    {
-      this->unbind_channel(&frame_ready_channel_, config_.frame_ready_endpoint_, false);
-      config_.frame_ready_endpoint_ = endpoint;
-      this->setup_frame_ready_channel(endpoint);
-    }
+  std::string frame_ready_endpoint = config_msg.get_param<std::string>(
+      CONFIG_FRAME_READY_ENDPOINT, config_.frame_ready_endpoint_);
+  if (need_ipc_reconfig_ || (frame_ready_endpoint != config_.frame_ready_endpoint_))
+  {
+    this->unbind_channel(&frame_ready_channel_, config_.frame_ready_endpoint_, false);
+    config_.frame_ready_endpoint_ = frame_ready_endpoint;
+    this->setup_frame_ready_channel(frame_ready_endpoint);
   }
 
   // If the endpoint is specified, bind the frame release notification channel
-  if (config_msg.has_param(CONFIG_FRAME_RELEASE_ENDPOINT)) {
-    std::string endpoint = config_msg.get_param<std::string>(CONFIG_FRAME_RELEASE_ENDPOINT);
-    if (force_reconfig_ || (endpoint != config_.frame_release_endpoint_))
-    {
-      this->unbind_channel(&frame_release_channel_, config_.frame_release_endpoint_, false);
-      config_.frame_release_endpoint_ = endpoint;
-      this->setup_frame_release_channel(endpoint);
-    }
+  std::string frame_release_endpoint = config_msg.get_param<std::string>(
+      CONFIG_FRAME_RELEASE_ENDPOINT, config_.frame_release_endpoint_);
+  if (need_ipc_reconfig_ || (frame_release_endpoint != config_.frame_release_endpoint_))
+  {
+    this->unbind_channel(&frame_release_channel_, config_.frame_release_endpoint_, false);
+    config_.frame_release_endpoint_ = frame_release_endpoint;
+    this->setup_frame_release_channel(frame_release_endpoint);
   }
 }
 
@@ -303,6 +320,33 @@ void FrameReceiverController::setup_frame_release_channel(const std::string& end
 
 }
 
+//! Unbind an IpcChannel from and endpoint.
+//!
+//! This method unbinds the specified IPCChannel from an endpoint. This can be done in
+//
+void FrameReceiverController::unbind_channel(OdinData::IpcChannel* channel,
+    std::string& endpoint, const bool deferred)
+{
+  if (channel->has_bound_endpoint(endpoint))
+  {
+    if (deferred)
+    {
+      reactor_.register_timer(deferred_action_delay_ms, 1,
+          boost::bind(&FrameReceiverController::unbind_channel, this, channel, endpoint, false)
+      );
+    }
+    else
+    {
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Unbinding channel endpoint " << endpoint);
+      channel->unbind(endpoint);
+    }
+  }
+  else
+  {
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Not unbinding channel as not bound to endpoint " << endpoint);
+  }
+}
+
 //! Clean up FrameReceiverController IPC channels
 //!
 //! This method cleans up controller IPC channels, removing them from the reactor and closing
@@ -333,40 +377,45 @@ void FrameReceiverController::cleanup_ipc_channels(void)
 void FrameReceiverController::configure_frame_decoder(OdinData::IpcMessage& config_msg)
 {
 
-  // Resolve the library path if specified in the config message, otherwise default
-  // to the current BUILD_DIR parameter.
-  std::string lib_dir; //(BUILD_DIR);
-  //lib_dir += "/lib/";
-
-  if (config_msg.has_param(CONFIG_DECODER_PATH))
+  // Resolve the decoder path if specified in the config message
+  std::string decoder_path = config_msg.get_param<std::string>(CONFIG_DECODER_PATH, config_.decoder_path_);
+  if (decoder_path != config_.decoder_path_)
   {
-    lib_dir = config_msg.get_param<std::string>(CONFIG_DECODER_PATH);
-  }
-  else {
-    lib_dir = config_.decoder_path_;
+    config_.decoder_path_ = decoder_path;
+    need_decoder_reconfig_ = true;
   }
 
   // Check if the last character is '/', if not append it
-  if (*lib_dir.rbegin() != '/')
+  if (*decoder_path.rbegin() != '/')
   {
-    lib_dir += "/";
+    decoder_path += "/";
   }
 
-  // If the incoming configuration specifies a frame decoder type, attempt to resolve and load
-  // it from the appropriate library
-  if (config_msg.has_param(CONFIG_DECODER_TYPE))
-  {
+  // Resolve the decoder type if specified in the config message
+  std::string decoder_type = config_msg.get_param<std::string>(CONFIG_DECODER_TYPE, config_.decoder_path_);
+  if (decoder_type != config_.decoder_path_) {
+    config_.decoder_path_ = decoder_type;
+    need_decoder_reconfig_ = true;
+  }
 
-    std::string decoder_type = config_msg.get_param<std::string>(CONFIG_DECODER_TYPE);
+  // Resolve, load and initialise the decoder class if necessary
+  if (need_decoder_reconfig_)
+  {
     if (decoder_type != Defaults::default_decoder_type)
     {
       std::string lib_name = "lib" + decoder_type + "FrameDecoder" + SHARED_LIBRARY_SUFFIX;
       std::string cls_name = decoder_type + "FrameDecoder";
-      LOG4CXX_INFO(logger_, "Loading decoder plugin " << cls_name << " from " << lib_dir << lib_name);
+      LOG4CXX_INFO(logger_, "Loading decoder plugin " << cls_name << " from " << decoder_path << lib_name);
 
       try {
 
-        frame_decoder_ = OdinData::ClassLoader<FrameDecoder>::load_class(cls_name, lib_dir + lib_name);
+        // The RX thread must be stopped and deleted first so that it releases its reference to the current
+        // frame decoder (and shared buffer manager), allowing the current decoder instance to be destroyed
+        // before reconfiguration.
+        this->stop_rx_thread();
+
+        frame_decoder_.reset();
+        frame_decoder_ = OdinData::ClassLoader<FrameDecoder>::load_class(cls_name, decoder_path + lib_name);
         if (!frame_decoder_)
         {
           throw FrameReceiverException("Cannot configure frame decoder: plugin type not recognised");
@@ -384,6 +433,11 @@ void FrameReceiverController::configure_frame_decoder(OdinData::IpcMessage& conf
 
       // Initialise the decoder object
       frame_decoder_->init(logger_, config_.enable_packet_logging_, config_.frame_timeout_ms_);
+
+      // The buffer manager and RX thread will need reconfiguration if the decoder has been loaded and initialised.
+      need_buffer_manager_reconfig_ = true;
+      need_rx_thread_reconfig_ = true;
+
     }
     else
     {
@@ -404,16 +458,37 @@ void FrameReceiverController::configure_frame_decoder(OdinData::IpcMessage& conf
 void FrameReceiverController::configure_buffer_manager(OdinData::IpcMessage& config_msg)
 {
 
-  if (frame_decoder_)
+  std::string shared_buffer_name = config_msg.get_param<std::string>(
+      CONFIG_SHARED_BUFFER_NAME, config_.shared_buffer_name_);
+  if (shared_buffer_name != config_.shared_buffer_name_)
   {
-    if (config_msg.has_param(CONFIG_SHARED_BUFFER_NAME) &&
-        config_msg.has_param(CONFIG_MAX_BUFFER_MEM))
+    config_.shared_buffer_name_ = shared_buffer_name;
+    need_buffer_manager_reconfig_ = true;
+  }
+
+  std::size_t max_buffer_mem = config_msg.get_param<std::size_t>(
+      CONFIG_MAX_BUFFER_MEM, config_.max_buffer_mem_);
+  if (max_buffer_mem != config_.max_buffer_mem_)
+  {
+    config_.max_buffer_mem_ = max_buffer_mem;
+    need_buffer_manager_reconfig_ = true;
+  }
+
+  if (need_buffer_manager_reconfig_)
+  {
+    if (frame_decoder_)
     {
 
-      std::string shared_buffer_name = config_msg.get_param<std::string>(CONFIG_SHARED_BUFFER_NAME);
-      std::size_t max_buffer_mem = config_msg.get_param<std::size_t>(CONFIG_MAX_BUFFER_MEM);
+      // The RX thread must be stopped and deleted first so that it releases its reference to the current
+      // frame decoder (and shared buffer manager), allowing the current decoder instance to be destroyed
+      // before reconfiguration.
+      this->stop_rx_thread();
 
-      // Create a shared buffer manager
+      // Instruct the frame decoder to drop any buffers currently in the empty queue or mapped for
+      // receiving frames
+      frame_decoder_->drop_all_buffers();
+
+      // Create a new shared buffer manager
       buffer_manager_.reset(new SharedBufferManager(shared_buffer_name, max_buffer_mem,
                                                     frame_decoder_->get_frame_buffer_size(), false));
 
@@ -426,11 +501,14 @@ void FrameReceiverController::configure_buffer_manager(OdinData::IpcMessage& con
       // Notify downstream processes of current buffer configuration
       this->notify_buffer_config(true);
 
+      // The RX thread will need reconfiguration if the buffer manager has been recreated
+      need_rx_thread_reconfig_ = true;
+
     }
-  }
-  else
-  {
-    LOG4CXX_INFO(logger_, "Shared frame buffer manager not configured as no frame decoder configured");
+    else
+    {
+      LOG4CXX_INFO(logger_, "Shared frame buffer manager not configured as no frame decoder configured");
+    }
   }
 }
 
@@ -443,29 +521,24 @@ void FrameReceiverController::configure_buffer_manager(OdinData::IpcMessage& con
 //!
 void FrameReceiverController::configure_rx_thread(OdinData::IpcMessage& config_msg)
 {
-  if (frame_decoder_ && buffer_manager_)
+
+
+  std::string rx_type_str = config_msg.get_param<std::string>(
+      CONFIG_RX_TYPE, FrameReceiverConfig::map_rx_type_to_name(config_.rx_type_));
+  Defaults::RxType rx_type = FrameReceiverConfig::map_rx_name_to_type(rx_type_str);
+
+  if (rx_type != config_.rx_type_)
   {
+    config_.rx_type_ = rx_type;
+    need_rx_thread_reconfig_ = true;
+  }
 
-    Defaults::RxType rx_type;
-
-    if (config_msg.has_param(CONFIG_RX_TYPE))
-    {
-      std::string rx_type_str = config_msg.get_param<std::string>(CONFIG_RX_TYPE);
-      rx_type = FrameReceiverConfig::map_rx_name_to_type(rx_type_str);
-    }
-    else
-    {
-      rx_type = config_.rx_type_;
-    }
-
-    if (force_rx_thread_reconfig_ || (rx_type != config_.rx_type_))
+  if (need_rx_thread_reconfig_)
+  {
+    if (frame_decoder_ && buffer_manager_)
     {
 
-      if (rx_thread_)
-      {
-        rx_thread_->stop();
-        rx_thread_.reset();
-      }
+      this->stop_rx_thread();
 
       // Create the RX thread object
       switch(rx_type)
@@ -481,71 +554,24 @@ void FrameReceiverController::configure_rx_thread(OdinData::IpcMessage& config_m
         default:
           throw FrameReceiverException("Cannot create RX thread - RX type not recognised");
       }
-      config_.rx_type_ = rx_type;
       rx_thread_->start();
-    }
-  }
-  else
-  {
-    LOG4CXX_INFO(logger_, "RX thread not configured as frame decoder and/or buffer manager configured");
-  }
-}
-
-void FrameReceiverController::precharge_buffers(void)
-{
-  if (buffer_manager_ && rx_thread_)
-  {
-
-    for (int buf = 0; buf < buffer_manager_->get_num_buffers(); buf++)
-    {
-      IpcMessage buf_msg(IpcMessage::MsgTypeNotify, IpcMessage::MsgValNotifyFrameRelease);
-      buf_msg.set_param<int>("buffer_id", buf);
-      rx_channel_.send(buf_msg.encode(), 0, rx_thread_identity_);
-    }
-  }
-  else
-  {
-    LOG4CXX_INFO(logger_, "Buffer precharge not done as no buffer manager and/or RX thread configured");
-  }
-}
-
-void FrameReceiverController::unbind_channel(OdinData::IpcChannel* channel, std::string& endpoint, const bool deferred)
-{
-  if (channel->has_bound_endpoint(endpoint))
-  {
-    if (deferred)
-    {
-      reactor_.register_timer(1000, 1, boost::bind(&FrameReceiverController::unbind_channel, this, channel, endpoint, false));
     }
     else
     {
-      LOG4CXX_DEBUG_LEVEL(1, logger_, "Unbinding channel endpoint " << endpoint);
-      channel->unbind(endpoint);
+      LOG4CXX_INFO(logger_, "RX thread not configured as frame decoder and/or buffer manager configured");
     }
-  }
-  else
-  {
-    LOG4CXX_DEBUG_LEVEL(1, logger_, "Not unbinding channel as not bound to endpoint " << endpoint);
   }
 }
 
-void FrameReceiverController::notify_buffer_config(const bool deferred)
+void FrameReceiverController::stop_rx_thread(void)
 {
-  // Notify downstream applications listening on the frame ready channel of the current shared buffer
-  // configuration.
-
-  if (deferred)
+  if (rx_thread_)
   {
-    reactor_.register_timer(1000, 1, boost::bind(&FrameReceiverController::notify_buffer_config, this, false));
-  }
-  else
-  {
-    LOG4CXX_DEBUG_LEVEL(1, logger_, "Notifying downstream processes of shared buffer configuration");
+    // Signal to the RX thread to stop operation
+    rx_thread_->stop();
 
-    IpcMessage config_msg(IpcMessage::MsgTypeNotify, IpcMessage::MsgValNotifyBufferConfig);
-    config_msg.set_param("shared_buffer_name", config_.shared_buffer_name_);
-
-    frame_ready_channel_.send(config_msg.encode());
+    // Reset the scoped pointer to the RX thread
+    rx_thread_.reset();
   }
 }
 
@@ -694,6 +720,48 @@ void FrameReceiverController::handle_frame_release_channel(void)
   catch (IpcMessageException& e)
   {
     LOG4CXX_ERROR(logger_, "Error decoding message on frame release channel: " << e.what());
+  }
+}
+
+
+void FrameReceiverController::precharge_buffers(void)
+{
+  if (buffer_manager_ && rx_thread_)
+  {
+
+    for (int buf = 0; buf < buffer_manager_->get_num_buffers(); buf++)
+    {
+      IpcMessage buf_msg(IpcMessage::MsgTypeNotify, IpcMessage::MsgValNotifyFrameRelease);
+      buf_msg.set_param<int>("buffer_id", buf);
+      rx_channel_.send(buf_msg.encode(), 0, rx_thread_identity_);
+    }
+  }
+  else
+  {
+    LOG4CXX_INFO(logger_, "Buffer precharge not done as no buffer manager and/or RX thread configured");
+  }
+}
+
+
+void FrameReceiverController::notify_buffer_config(const bool deferred)
+{
+  // Notify downstream applications listening on the frame ready channel of the current shared buffer
+  // configuration.
+
+  if (deferred)
+  {
+    reactor_.register_timer(deferred_action_delay_ms, 1,
+      boost::bind(&FrameReceiverController::notify_buffer_config, this, false)
+    );
+  }
+  else
+  {
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Notifying downstream processes of shared buffer configuration");
+
+    IpcMessage config_msg(IpcMessage::MsgTypeNotify, IpcMessage::MsgValNotifyBufferConfig);
+    config_msg.set_param("shared_buffer_name", config_.shared_buffer_name_);
+
+    frame_ready_channel_.send(config_msg.encode());
   }
 }
 
