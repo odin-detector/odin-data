@@ -11,9 +11,9 @@ from tornado import escape
 from tornado.ioloop import IOLoop
 
 
-class IpcClientAdapter(ApiAdapter):
+class OdinDataAdapter(ApiAdapter):
     """
-    IpcClientAdapter class
+    OdinDataAdapter class
 
     This class provides the adapter interface between the ODIN server and the ODIN-DATA detector system,
     transforming the REST-like API HTTP verbs into the appropriate frameProcessor ZeroMQ control messages
@@ -25,11 +25,11 @@ class IpcClientAdapter(ApiAdapter):
 
     def __init__(self, **kwargs):
         """
-        Initialise the IpcClientAdapter object
+        Initialise the OdinDataAdapter object
 
         :param kwargs:
         """
-        super(IpcClientAdapter, self).__init__(**kwargs)
+        super(OdinDataAdapter, self).__init__(**kwargs)
 
         # Status dictionary read from client
         self._status = None
@@ -75,7 +75,7 @@ class IpcClientAdapter(ApiAdapter):
     def get(self, path, request):
 
         """
-        Implementation of the HTTP GET verb for IpcClientAdapter
+        Implementation of the HTTP GET verb for OdinDataAdapter
 
         :param path: URI path of the GET request
         :param request: Tornado HTTP request object
@@ -110,16 +110,17 @@ class IpcClientAdapter(ApiAdapter):
                         item_dict = paramset
                         for item in request_items:
                             item_dict = item_dict[item]
-                    except:
+                    except KeyError, ex:
+                        logging.debug("Invalid parameter request in HTTP GET: %s", request_command)
                         item_dict = None
                     response_items.append(item_dict)
 
                 logging.debug(response_items)
                 response[request_command] = response_items
             except:
-                logging.debug(IpcClientAdapter.ERROR_FAILED_GET)
+                logging.debug(OdinDataAdapter.ERROR_FAILED_GET)
                 status_code = 503
-                response['error'] = IpcClientAdapter.ERROR_FAILED_GET
+                response['error'] = OdinDataAdapter.ERROR_FAILED_GET
 
         logging.debug("Full response from FP: %s", response)
 
@@ -130,7 +131,7 @@ class IpcClientAdapter(ApiAdapter):
     def put(self, path, request):  # pylint: disable=W0613
 
         """
-        Implementation of the HTTP PUT verb for IpcClientAdapter
+        Implementation of the HTTP PUT verb for OdinDataAdapter
 
         :param path: URI path of the PUT request
         :param request: Tornado HTTP request object
@@ -150,7 +151,7 @@ class IpcClientAdapter(ApiAdapter):
             # Check the length of the list matches the number of clients
             if len(parameters) != len(self._clients):
                 status_code = 503
-                response['error'] = IpcClientAdapter.ERROR_PUT_MISMATCH
+                response['error'] = OdinDataAdapter.ERROR_PUT_MISMATCH
             else:
                 # Loop over the clients and parameters, sending each one
                 for client, param_set in zip(self._clients, parameters):
@@ -158,13 +159,13 @@ class IpcClientAdapter(ApiAdapter):
                         try:
                             response = client.send_configuration(param_set, request_command)[1]
                             if not response:
-                                logging.debug(IpcClientAdapter.ERROR_NO_RESPONSE)
+                                logging.debug(OdinDataAdapter.ERROR_NO_RESPONSE)
                                 status_code = 503
-                                response = {'error': IpcClientAdapter.ERROR_NO_RESPONSE}
+                                response = {'error': OdinDataAdapter.ERROR_NO_RESPONSE}
                         except:
-                            logging.debug(IpcClientAdapter.ERROR_FAILED_TO_SEND)
+                            logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
                             status_code = 503
-                            response = {'error': IpcClientAdapter.ERROR_FAILED_TO_SEND}
+                            response = {'error': OdinDataAdapter.ERROR_FAILED_TO_SEND}
 
         else:
             logging.debug("Single parameter set provided: %s", parameters)
@@ -172,13 +173,13 @@ class IpcClientAdapter(ApiAdapter):
                 try:
                     response = client.send_configuration(parameters, request_command)[1]
                     if not response:
-                        logging.debug(IpcClientAdapter.ERROR_NO_RESPONSE)
+                        logging.debug(OdinDataAdapter.ERROR_NO_RESPONSE)
                         status_code = 503
-                        response = {'error': IpcClientAdapter.ERROR_NO_RESPONSE}
+                        response = {'error': OdinDataAdapter.ERROR_NO_RESPONSE}
                 except:
-                    logging.debug(IpcClientAdapter.ERROR_FAILED_TO_SEND)
+                    logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
                     status_code = 503
-                    response = {'error': IpcClientAdapter.ERROR_FAILED_TO_SEND}
+                    response = {'error': OdinDataAdapter.ERROR_FAILED_TO_SEND}
 
 
         return ApiAdapterResponse(response, status_code=status_code)
@@ -187,7 +188,7 @@ class IpcClientAdapter(ApiAdapter):
     @response_types('application/json', default='application/json')
     def delete(self, path, request):  # pylint: disable=W0613
         """
-        Implementation of the HTTP DELETE verb for IpcClientAdapter
+        Implementation of the HTTP DELETE verb for OdinDataAdapter
 
         :param path: URI path of the DELETE request
         :param request: Tornado HTTP request object
