@@ -17,6 +17,13 @@
 namespace FrameReceiver
 {
 
+  const std::string CONFIG_DECODER_UDP_PACKETS_PER_FRAME = "udp_packets_per_frame";
+
+  namespace DummyUdpFrameDecoderDefaults
+  {
+    const unsigned int default_udp_packets_per_frame = 1;
+  }
+
 class DummyUDPFrameDecoder : public FrameDecoderUDP
 {
 public:
@@ -39,6 +46,10 @@ public:
   void monitor_buffers(void) { };
 
   void* get_packet_header_buffer(void){ return reinterpret_cast<void *>(0); };
+
+private:
+
+  unsigned int udp_packets_per_frame_;
 
 };
 

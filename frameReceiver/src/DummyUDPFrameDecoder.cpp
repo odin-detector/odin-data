@@ -10,7 +10,8 @@
 using namespace FrameReceiver;
 
 DummyUDPFrameDecoder::DummyUDPFrameDecoder() :
-    FrameDecoderUDP()
+    FrameDecoderUDP(),
+    udp_packets_per_frame_(DummyUdpFrameDecoderDefaults::default_udp_packets_per_frame)
 {
 
 }
@@ -23,6 +24,12 @@ DummyUDPFrameDecoder::~DummyUDPFrameDecoder()
 void DummyUDPFrameDecoder::init(LoggerPtr& logger, OdinData::IpcMessage& config_msg)
 {
   FrameDecoderUDP::init(logger,config_msg);
+
+  udp_packets_per_frame_ = config_msg.get_param<unsigned int>(
+      CONFIG_DECODER_UDP_PACKETS_PER_FRAME, udp_packets_per_frame_);
+
+  LOG4CXX_DEBUG_LEVEL(3, logger_, "DummyUDPFrameDecoder initialised with "
+      << udp_packets_per_frame_ << " UDP packets per frame");
 
   LOG4CXX_TRACE(logger_, "DummyFrameDecoderUDP init called");
 }
