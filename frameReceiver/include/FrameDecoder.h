@@ -23,11 +23,16 @@ using namespace log4cxx;
 using namespace log4cxx::helpers;
 #include <DebugLevelLogger.h>
 
+#include "IpcMessage.h"
 #include "OdinDataException.h"
 #include "SharedBufferManager.h"
 
 namespace FrameReceiver
 {
+
+  const std::string CONFIG_DECODER_ENABLE_PACKET_LOGGING = "enable_packet_logging";
+  const std::string CONFIG_DECODER_FRAME_TIMEOUT_MS = "frame_timeout_ms";
+
 class FrameDecoderException : public OdinData::OdinDataException
 {
 public:
@@ -51,88 +56,37 @@ public:
     FrameReceiveStateError
   };
 
-  FrameDecoder() :
-      logger_(0),
-      enable_packet_logging_(false),
-      frame_timeout_ms_(1000),
-      frames_timedout_(0)
-  {
-  };
+  FrameDecoder();
 
   virtual ~FrameDecoder() = 0;
 
-  virtual void init(LoggerPtr& logger, bool enable_packet_logging=false, unsigned int frame_timeout_ms=1000)
-  {
-      logger_ = logger;
-      enable_packet_logging_ = enable_packet_logging;
-      // Retrieve the packet logger instance
-      packet_logger_ = Logger::getLogger("FR.PacketLogger");
-      // Setup frame timeout
-      frame_timeout_ms_ = frame_timeout_ms;
-  };
+  virtual void init(LoggerPtr& logger, OdinData::IpcMessage& config_msg);
 
   virtual const size_t get_frame_buffer_size(void) const = 0;
   virtual const size_t get_frame_header_size(void) const = 0;
 
-  void register_buffer_manager(OdinData::SharedBufferManagerPtr buffer_manager)
-  {
-      buffer_manager_ = buffer_manager;
-  }
-
-  void register_frame_ready_callback(FrameReadyCallback callback)
-  {
-      ready_callback_ = callback;
-  }
-
-  void push_empty_buffer(int buffer_id)
-  {
-      empty_buffer_queue_.push(buffer_id);
-  }
-
-  const size_t get_num_empty_buffers(void) const
-  {
-      return empty_buffer_queue_.size();
-  }
-
-  const size_t get_num_mapped_buffers(void) const
-  {
-      return frame_buffer_map_.size();
-  }
-
-  void drop_all_buffers(void)
-  {
-    if (!empty_buffer_queue_.empty())
-    {
-      LOG4CXX_INFO(logger_, "Dropping " << empty_buffer_queue_.size() << " buffers from empty buffer queue");
-      EmptyBufferQueue new_queue;
-      std::swap(empty_buffer_queue_, new_queue);
-    }
-
-    if (!frame_buffer_map_.empty())
-    {
-      LOG4CXX_WARN(logger_, "Dropping " << frame_buffer_map_.size() <<
-                   " unreleased buffers from decoder - possible data loss");
-      FrameBufferMap new_map;
-      std::swap(frame_buffer_map_, new_map);
-    }
-  }
-
+  void register_buffer_manager(OdinData::SharedBufferManagerPtr buffer_manager);
+  void register_frame_ready_callback(FrameReadyCallback callback);
+  void push_empty_buffer(int buffer_id);
+  const size_t get_num_empty_buffers(void) const;
+  const size_t get_num_mapped_buffers(void) const;
+  void drop_all_buffers(void);
   virtual void monitor_buffers(void) = 0;
 
 protected:
-  LoggerPtr logger_;
+  LoggerPtr logger_;  //!< Pointer to the logging facility
 
-  bool enable_packet_logging_;
-  LoggerPtr packet_logger_;
+  bool enable_packet_logging_;  //!< Flag to enable packet logging by decoder
+  LoggerPtr packet_logger_;     //!< Pointer to the packet logging facility
 
-  OdinData::SharedBufferManagerPtr buffer_manager_;
-  FrameReadyCallback   ready_callback_;
+  OdinData::SharedBufferManagerPtr buffer_manager_; //!< Pointer to the shared buffer manager
+  FrameReadyCallback   ready_callback_;             //!< Callback for frames ready to be processed
 
-  EmptyBufferQueue empty_buffer_queue_;
-  FrameBufferMap   frame_buffer_map_;
+  EmptyBufferQueue empty_buffer_queue_; //!< Queue of empty buffers ready for use
+  FrameBufferMap   frame_buffer_map_;   //!< Map of buffers currently receiving frame data
 
-  unsigned int frame_timeout_ms_;
-  unsigned int frames_timedout_;
+  unsigned int frame_timeout_ms_; //!< Incomplete frame timeout in ms
+  unsigned int frames_timedout_;  //!< Number of frames timed out in decoder
 };
 
 inline FrameDecoder::~FrameDecoder() {};
