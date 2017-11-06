@@ -1,0 +1,5 @@
+{
+    "rx_address": "127.0.0.1",
+    "rx_ports": "8000,8001",
+    "rx_type": "udp"
+}

@@ -70,6 +70,8 @@ public:
 
   void tokenize_port_list(std::vector<uint16_t>& port_list, const std::string port_list_str)
   {
+
+    port_list.clear();
     const std::string delimiter(",");
     std::size_t start = 0, end = 0;
 
@@ -133,6 +135,17 @@ public:
 
   }
 
+  std::string rx_port_list(void)
+  {
+    std::stringstream rx_ports_stream;
+    std::copy(rx_ports_.begin(), rx_ports_.end(),
+        std::ostream_iterator<uint16_t>(rx_ports_stream, ","));
+    std::string rx_port_list = rx_ports_stream.str();
+    rx_port_list.erase(rx_port_list.length()-1);
+
+    return rx_port_list;
+  }
+
   void as_ipc_message(OdinData::IpcMessage& config_msg)
   {
 
@@ -144,11 +157,7 @@ public:
     config_msg.set_param<std::string>(CONFIG_DECODER_TYPE, decoder_type_);
     config_msg.set_param<std::string>(CONFIG_RX_TYPE, this->map_rx_type_to_name(rx_type_));
 
-    std::stringstream rx_ports_stream;
-    std::copy(rx_ports_.begin(), rx_ports_.end(), std::ostream_iterator<uint16_t>(rx_ports_stream, ","));
-    std::string rx_ports_list = rx_ports_stream.str();
-    rx_ports_list.erase(rx_ports_list.length()-1);
-    config_msg.set_param<std::string>(CONFIG_RX_PORTS, rx_ports_list);
+    config_msg.set_param<std::string>(CONFIG_RX_PORTS, rx_port_list());
 
     config_msg.set_param<std::string>(CONFIG_RX_ADDRESS, rx_address_);
     config_msg.set_param<int>(CONFIG_RX_RECV_BUFFER_SIZE, rx_recv_buffer_size_);
@@ -184,7 +193,7 @@ private:
   bool                  force_reconfig_;         //!< Force a comlete reconfigure of the frame receiver
 
   friend class FrameReceiverApp;
-  friend class FrameReceiverController; // TODO REMOVE THIS
+  friend class FrameReceiverController;
   friend class FrameReceiverRxThread;
   friend class FrameReceiverUDPRxThread;
   friend class FrameReceiverZMQRxThread;

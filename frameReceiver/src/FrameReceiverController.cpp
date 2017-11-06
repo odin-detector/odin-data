@@ -585,6 +585,23 @@ void FrameReceiverController::configure_rx_thread(OdinData::IpcMessage& config_m
     need_rx_thread_reconfig_ = true;
   }
 
+  std::string rx_address = config_msg.get_param<std::string>(
+      CONFIG_RX_ADDRESS, config_.rx_address_);
+  if (rx_address != config_.rx_address_)
+  {
+    config_.rx_address_ = rx_address;
+    need_rx_thread_reconfig_ = true;
+  }
+
+  std::string current_rx_port_list = config_.rx_port_list();
+  std::string rx_port_list = config_msg.get_param<std::string>(
+      CONFIG_RX_PORTS, current_rx_port_list);
+  if (rx_port_list != current_rx_port_list)
+  {
+    config_.tokenize_port_list(config_.rx_ports_, rx_port_list);
+    need_rx_thread_reconfig_ = true;
+  }
+
   if (need_rx_thread_reconfig_)
   {
     if (frame_decoder_ && buffer_manager_)
@@ -596,11 +613,11 @@ void FrameReceiverController::configure_rx_thread(OdinData::IpcMessage& config_m
       switch(rx_type)
       {
         case Defaults::RxTypeUDP:
-          rx_thread_.reset(new FrameReceiverUDPRxThread( config_, buffer_manager_, frame_decoder_));
+          rx_thread_.reset(new FrameReceiverUDPRxThread(config_, buffer_manager_, frame_decoder_));
           break;
 
         case Defaults::RxTypeZMQ:
-          rx_thread_.reset(new FrameReceiverZMQRxThread( config_, buffer_manager_, frame_decoder_));
+          rx_thread_.reset(new FrameReceiverZMQRxThread(config_, buffer_manager_, frame_decoder_));
           break;
 
         default:
