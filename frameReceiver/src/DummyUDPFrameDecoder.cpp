@@ -20,9 +20,9 @@ DummyUDPFrameDecoder::~DummyUDPFrameDecoder()
   LOG4CXX_TRACE(logger_, "DummyFrameDecoderUDP destructor");
 }
 
-void DummyUDPFrameDecoder::init(LoggerPtr& logger, bool enable_packet_logging, unsigned int frame_timeout_ms)
+void DummyUDPFrameDecoder::init(LoggerPtr& logger, OdinData::IpcMessage& config_msg)
 {
-  FrameDecoderUDP::init(logger, enable_packet_logging, frame_timeout_ms);
+  FrameDecoderUDP::init(logger,config_msg);
 
   LOG4CXX_TRACE(logger_, "DummyFrameDecoderUDP init called");
 }

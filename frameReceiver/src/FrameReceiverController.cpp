@@ -420,6 +420,23 @@ void FrameReceiverController::configure_frame_decoder(OdinData::IpcMessage& conf
     need_decoder_reconfig_ = true;
   }
 
+  // Extract any decoder parameters from the configuration message and construct an
+  // IpcMessage to pass to the decoder initialisation. Test if this differs from the current
+  // decoder configuration; swap in and force a reconfig if so
+  if (config_msg.has_param(CONFIG_DECODER_CONFIG))
+  {
+    boost::scoped_ptr<IpcMessage> new_decoder_config(
+        new IpcMessage(config_msg.get_param<const rapidjson::Value&>(CONFIG_DECODER_CONFIG)));
+    if (*new_decoder_config != *(config_.decoder_config_))
+    {
+      config_.decoder_config_.swap(new_decoder_config);
+      LOG4CXX_DEBUG_LEVEL(3, logger_,
+        "Built new decoder configuration message: " << config_.decoder_config_->encode()
+      );
+      need_decoder_reconfig_ = true;
+    }
+  }
+
   // Resolve, load and initialise the decoder class if necessary
   if (need_decoder_reconfig_)
   {
@@ -456,22 +473,15 @@ void FrameReceiverController::configure_frame_decoder(OdinData::IpcMessage& conf
         throw FrameReceiverException(sstr.str());
       }
 
-      // Extract any decoder parameters from the configuration message and construct an 
-      // IpcMessage to pass to the decoder initialisation
-      boost::scoped_ptr<IpcMessage> decoder_config(new IpcMessage());
-      if (config_msg.has_param(CONFIG_DECODER_CONFIG))
-      {
-        decoder_config.reset(
-          new IpcMessage(config_msg.get_param<const rapidjson::Value&>(CONFIG_DECODER_CONFIG))
-        );
-      }
-      
-      LOG4CXX_DEBUG_LEVEL(3, logger_, 
-        "Built decoder configuration message: " << decoder_config->encode()
-      );
-
       // Initialise the decoder object
-      frame_decoder_->init(logger_, config_.enable_packet_logging_, config_.frame_timeout_ms_);
+      try {
+        frame_decoder_->init(logger_, *(config_.decoder_config_));
+      }
+      catch (const std::exception& e){
+        std::stringstream sstr;
+        sstr << "Error initialising frame decoder: " << e.what();
+        throw FrameReceiverException(sstr.str());
+      }
 
       // The buffer manager and RX thread will need reconfiguration if the decoder has been loaded
       // and initialised.

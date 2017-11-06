@@ -59,7 +59,8 @@ public:
     log4cxx::BasicConfigurator::configure(log4cxx::AppenderPtr(consoleAppender));
     log4cxx::Logger::getRootLogger()->setLevel(log4cxx::Level::getInfo());
 
-    frame_decoder->init(logger);
+    IpcMessage decoder_config;
+    frame_decoder->init(logger, decoder_config);
 
     // Bind the endpoint of the channel to communicate with the RX thread
     rx_channel.bind(proxy.get_rx_channel_endpoint());
