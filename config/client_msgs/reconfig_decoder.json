@@ -1,5 +1,6 @@
 {
   "decoder_type": "DummyUDP",
+  "decoder_lpath": "./lib",
   "decoder_config": {
     "enable_packet_logging": false,
     "frame_timeout_ms": 1000
