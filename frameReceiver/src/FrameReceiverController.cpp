@@ -74,7 +74,7 @@ void FrameReceiverController::configure(OdinData::IpcMessage& config_msg,
   bool force_reconfig = config_msg.get_param<bool>(CONFIG_FORCE_RECONFIG, false);
 
   need_ipc_reconfig_ = force_reconfig;
-  need_decoder_reconfig_ = true; //force_reconfig;
+  need_decoder_reconfig_ = force_reconfig;
   need_buffer_manager_reconfig_ = force_reconfig;
   need_rx_thread_reconfig_ = force_reconfig;
 
@@ -414,9 +414,9 @@ void FrameReceiverController::configure_frame_decoder(OdinData::IpcMessage& conf
 
   // Resolve the decoder type if specified in the config message
   std::string decoder_type = config_msg.get_param<std::string>(
-      CONFIG_DECODER_TYPE, config_.decoder_path_);
-  if (decoder_type != config_.decoder_path_) {
-    config_.decoder_path_ = decoder_type;
+      CONFIG_DECODER_TYPE, config_.decoder_type_);
+  if (decoder_type != config_.decoder_type_) {
+    config_.decoder_type_ = decoder_type;
     need_decoder_reconfig_ = true;
   }
 
