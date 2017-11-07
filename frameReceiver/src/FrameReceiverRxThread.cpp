@@ -79,19 +79,23 @@ void FrameReceiverRxThread::run_service(void)
   }
 
   // Add the RX channel to the reactor
-  reactor_.register_channel(rx_channel_, boost::bind(&FrameReceiverRxThread::handle_rx_channel, this));
+  reactor_.register_channel(rx_channel_, 
+    boost::bind(&FrameReceiverRxThread::handle_rx_channel, this));
 
   // Run the specific service setup implemented in subclass
   run_specific_service();
 
   // Add the tick timer to the reactor
-  int tick_timer_id = reactor_.register_timer(tick_period_ms_, 0, boost::bind(&FrameReceiverRxThread::tick_timer, this));
+  int tick_timer_id = reactor_.register_timer(tick_period_ms_, 0, 
+    boost::bind(&FrameReceiverRxThread::tick_timer, this));
 
   // Add the buffer monitor timer to the reactor
-  int buffer_monitor_timer_id = reactor_.register_timer(3000, 0, boost::bind(&FrameReceiverRxThread::buffer_monitor_timer, this));
+  int buffer_monitor_timer_id = reactor_.register_timer(frame_decoder_->get_frame_timeout_ms(), 0, 
+    boost::bind(&FrameReceiverRxThread::buffer_monitor_timer, this));
 
   // Register the frame release callback with the decoder
-  frame_decoder_->register_frame_ready_callback(boost::bind(&FrameReceiverRxThread::frame_ready, this, _1, _2));
+  frame_decoder_->register_frame_ready_callback(
+    boost::bind(&FrameReceiverRxThread::frame_ready, this, _1, _2));
 
   // Set thread state to running, allows constructor to return
   thread_running_ = true;
@@ -99,7 +103,7 @@ void FrameReceiverRxThread::run_service(void)
   // Advertise RX thread channel identity to the main thread so it knows how to route messages back
   this->advertise_identity();
 
-  // Send a buffer precharge request to the main thread if the frame decoder has no empty buffers queued
+  // Send a precharge request to the main thread if the frame decoder has no empty buffers queued
   if (frame_decoder_->get_num_empty_buffers() == 0) {
     this->request_buffer_precharge();
   }
@@ -112,7 +116,8 @@ void FrameReceiverRxThread::run_service(void)
   reactor_.remove_timer(tick_timer_id);
   reactor_.remove_timer(buffer_monitor_timer_id);
 
-  for (std::vector<int>::iterator recv_sock_it = recv_sockets_.begin(); recv_sock_it != recv_sockets_.end(); recv_sock_it++)
+  for (std::vector<int>::iterator recv_sock_it = recv_sockets_.begin(); 
+        recv_sock_it != recv_sockets_.end(); recv_sock_it++)
   {
     reactor_.remove_socket(*recv_sock_it);
     close(*recv_sock_it);
@@ -205,7 +210,7 @@ void FrameReceiverRxThread::handle_rx_channel(void)
 
 void FrameReceiverRxThread::tick_timer(void)
 {
-  //LOG4CXX_DEBUG_LEVEL(1, logger_, "RX thread tick timer fired");
+  //LOG4CXX_DEBUG_LEVEL(4, logger_, "RX thread tick timer fired");
   if (!run_thread_)
   {
     LOG4CXX_DEBUG_LEVEL(1, logger_, "RX thread terminate detected in timer");
@@ -215,7 +220,16 @@ void FrameReceiverRxThread::tick_timer(void)
 
 void FrameReceiverRxThread::buffer_monitor_timer(void)
 {
+  LOG4CXX_DEBUG_LEVEL(4, logger_, "RX thread buffer monitor thread fired");
   frame_decoder_->monitor_buffers();
+
+  // Send status notification to main thread
+  IpcMessage status_msg(IpcMessage::MsgTypeNotify, IpcMessage::MsgValNotifyStatus);
+  status_msg.set_param("num_empty_buffers", frame_decoder_->get_num_empty_buffers());
+  status_msg.set_param("num_mapped_buffers", frame_decoder_->get_num_mapped_buffers());
+  status_msg.set_param("num_frames_timedout", frame_decoder_->get_num_frames_timedout());
+
+  rx_channel_.send(status_msg.encode());
 }
 
 void FrameReceiverRxThread::frame_ready(int buffer_id, int frame_number)

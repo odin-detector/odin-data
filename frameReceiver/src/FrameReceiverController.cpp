@@ -730,7 +730,6 @@ void FrameReceiverController::handle_ctrl_channel(void)
                 "Got control channel configure request from client " << client_identity);
             this->configure(ctrl_req, ctrl_reply);
             break;
-          
 
           case IpcMessage::MsgValCmdStatus:
               LOG4CXX_DEBUG_LEVEL(3, logger_,
@@ -798,34 +797,60 @@ void FrameReceiverController::handle_rx_channel(void)
     IpcMessage::MsgType msg_type = rx_msg.get_msg_type();
     IpcMessage::MsgVal msg_val = rx_msg.get_msg_val();
 
-    if ((msg_type == IpcMessage::MsgTypeNotify) &&
-        (msg_val == IpcMessage::MsgValNotifyFrameReady))
+    switch (msg_type)
     {
-      LOG4CXX_DEBUG_LEVEL(2, logger_, "Got frame ready notification from RX thread"
-          " for frame " << rx_msg.get_param<int>("frame", -1) <<
-                        " in buffer " << rx_msg.get_param<int>("buffer_id", -1));
-      frame_ready_channel_.send(rx_msg_encoded);
+      case IpcMessage::MsgTypeCmd:
+        switch (msg_val) 
+        {
+          case IpcMessage::MsgValCmdBufferPrechargeRequest:
+            LOG4CXX_DEBUG_LEVEL(2, logger_, "Got buffer precharge request from RX thread");
+            this->precharge_buffers();    
+            break;
 
-      frames_received_++;
-    }
-    else if ((msg_type == IpcMessage::MsgTypeNotify) &&
-             (msg_val == IpcMessage::MsgValNotifyIdentity))
-    {
-      LOG4CXX_DEBUG_LEVEL(1, logger_,
-          "Got identity announcement from RX thread: " << msg_indentity);
-      rx_thread_identity_ = msg_indentity;
-      IpcMessage rx_reply(IpcMessage::MsgTypeAck, IpcMessage::MsgValNotifyIdentity);
-      rx_channel_.send(rx_reply.encode(), 0, rx_thread_identity_);
-    }
-    else if ((msg_type == IpcMessage::MsgTypeCmd) &&
-             (msg_val == IpcMessage::MsgValCmdBufferPrechargeRequest))
-    {
-      LOG4CXX_DEBUG_LEVEL(2, logger_, "Got buffer precharge request from RX thread");
-      this->precharge_buffers();
-    }
-    else
-    {
-      LOG4CXX_ERROR(logger_, "Got unexpected message from RX thread: " << rx_msg_encoded);
+          default:
+            LOG4CXX_ERROR(logger_, 
+              "Got unexpected value on command message from RX thread: " << rx_msg_encoded);
+            break;
+        }
+        break;
+
+      case IpcMessage::MsgTypeNotify:
+        switch (msg_val)
+        {
+          case IpcMessage::MsgValNotifyFrameReady:
+            LOG4CXX_DEBUG_LEVEL(2, logger_, "Got frame ready notification from RX thread"
+              " for frame " << rx_msg.get_param<int>("frame", -1) <<
+              " in buffer " << rx_msg.get_param<int>("buffer_id", -1));
+              frame_ready_channel_.send(rx_msg_encoded);
+            frames_received_++;
+            break;
+
+          case IpcMessage::MsgValNotifyIdentity:
+            LOG4CXX_DEBUG_LEVEL(1, logger_,
+              "Got identity announcement from RX thread: " << msg_indentity);
+              rx_thread_identity_ = msg_indentity;
+              {
+                IpcMessage rx_reply(IpcMessage::MsgTypeAck, IpcMessage::MsgValNotifyIdentity);
+                rx_channel_.send(rx_reply.encode(), 0, rx_thread_identity_);  
+              }
+            break;
+
+          case IpcMessage::MsgValNotifyStatus:
+            LOG4CXX_DEBUG_LEVEL(4, logger_, "Got status notification from RX thread: " 
+              << rx_msg_encoded);
+            break;
+
+          default:
+            LOG4CXX_ERROR(logger_, 
+              "Got unexpected value on notification message from RX thread: " << rx_msg_encoded);
+            break;
+        }
+        break;
+
+      default:
+        LOG4CXX_ERROR(logger_, 
+          "Got unexpected type on message from RX thread: " << rx_msg_encoded);
+        break;
     }
   }
   catch (IpcMessageException& e)

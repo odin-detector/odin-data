@@ -71,6 +71,8 @@ public:
   const size_t get_num_empty_buffers(void) const;
   const size_t get_num_mapped_buffers(void) const;
   void drop_all_buffers(void);
+  const unsigned int get_frame_timeout_ms(void) const;
+  const unsigned int get_num_frames_timedout(void) const;
   virtual void monitor_buffers(void) = 0;
 
 protected:

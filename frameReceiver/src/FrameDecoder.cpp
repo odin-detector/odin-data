@@ -106,6 +106,30 @@ const size_t FrameDecoder::get_num_mapped_buffers(void) const
     return frame_buffer_map_.size();
 }
 
+//! Get the current frame timeout value.
+//!
+//! This method returns the frame timeout in milliseconds currently configured in the decoder.
+//!
+//! \return - current frame timeout in milliseconds
+//!
+const unsigned int FrameDecoder::get_frame_timeout_ms(void) const
+{
+    return frame_timeout_ms_;
+}
+
+//! Get the number of frames timed out in the decoder
+//!
+//! This method returns the number of frames that have timed out during reception
+//! by the frame decoder. This is typically determined by specialised decoders subclassed
+//! from this class.
+//!
+//! \return - number of frames timed out
+//!
+const unsigned int FrameDecoder::get_num_frames_timedout(void) const
+{
+    return frames_timedout_;
+}
+
 //! Drop all buffers currently held by the decoder.
 //!
 //! This method forces the decoder to drop all buffers currently held either in the empty
@@ -117,7 +141,8 @@ void FrameDecoder::drop_all_buffers(void)
 {
   if (!empty_buffer_queue_.empty())
   {
-    LOG4CXX_INFO(logger_, "Dropping " << empty_buffer_queue_.size() << " buffers from empty buffer queue");
+    LOG4CXX_INFO(logger_, "Dropping " << empty_buffer_queue_.size() 
+        << " buffers from empty buffer queue");
     EmptyBufferQueue new_queue;
     std::swap(empty_buffer_queue_, new_queue);
   }
