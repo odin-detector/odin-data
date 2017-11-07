@@ -5,7 +5,8 @@ Created on 6th September 2017
 """
 import json
 import logging
-from odin_data.ipc_client import IpcClient
+from datetime import datetime
+from odin_data.odin_data_adapter_client import OdinDataAdapterClient
 from odin.adapters.adapter import ApiAdapter, ApiAdapterResponse, request_types, response_types
 from tornado import escape
 from tornado.ioloop import IOLoop
@@ -32,7 +33,7 @@ class OdinDataAdapter(ApiAdapter):
         super(OdinDataAdapter, self).__init__(**kwargs)
 
         # Status dictionary read from client
-        self._status = None
+        self._status = []
         self._endpoint_arg = None
         self._endpoints = []
         self._clients = []
@@ -60,9 +61,11 @@ class OdinDataAdapter(ApiAdapter):
         self._kwargs['endpoints'] = self._endpoints
 
         for ep in self._endpoints:
-            self._clients.append(IpcClient(ep['ip_address'], ep['port']))
+            self._clients.append(OdinDataAdapterClient(ep['ip_address'], ep['port']))
 
         self._kwargs['count'] = len(self._clients)
+        # Allocate the status list
+        self._status = [None] * len(self._clients)
 
         # Setup the time between client update requests
         self._update_interval = float(self.options.get('update_interval', 0.5))
@@ -157,11 +160,7 @@ class OdinDataAdapter(ApiAdapter):
                 for client, param_set in zip(self._clients, parameters):
                     if param_set:
                         try:
-                            response = client.send_configuration(param_set, request_command)[1]
-                            if not response:
-                                logging.debug(OdinDataAdapter.ERROR_NO_RESPONSE)
-                                status_code = 503
-                                response = {'error': OdinDataAdapter.ERROR_NO_RESPONSE}
+                            client.send_configuration(param_set, request_command)[1]
                         except:
                             logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
                             status_code = 503
@@ -171,11 +170,7 @@ class OdinDataAdapter(ApiAdapter):
             logging.debug("Single parameter set provided: %s", parameters)
             for client in self._clients:
                 try:
-                    response = client.send_configuration(parameters, request_command)[1]
-                    if not response:
-                        logging.debug(OdinDataAdapter.ERROR_NO_RESPONSE)
-                        status_code = 503
-                        response = {'error': OdinDataAdapter.ERROR_NO_RESPONSE}
+                    client.send_configuration(parameters, request_command)[1]
                 except:
                     logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
                     status_code = 503
@@ -213,19 +208,40 @@ class OdinDataAdapter(ApiAdapter):
 
         # Handle background tasks
         # Loop over all connected clients and obtain the status
-        self._status = []
+        index = -1
         for client in self._clients:
             try:
-                response = client.send_request('status')
-                if response:
-                    if 'ack' in response['msg_type']:
-                        param_set = response['params']
-                        param_set['connected'] = True
-                        self._status.append(response['params'])
-            except:
+                index += 1
+                # First see if any clients have not responded for more than 10x update rate
+                if self._status[index]:
+                    pass
+                    # Check for the timestamp
+                    if 'timestamp' in self._status[index]:
+                        ts = datetime.strptime(self._status[index]['timestamp'], "%Y-%m-%dT%H:%M:%S.%f")
+                        ttlm = datetime.now() - ts
+                        if ttlm.seconds > self._update_interval * 10:
+                            # This connection has gone stale, set connected to false
+                            self._status[index] = {'connected': False}
+                            logging.debug("Status updated to: %s", self._status)
+                else:
+                    # No status for this client so set connected to false
+                    self._status[index] = {'connected': False}
+                    logging.debug("Status updated to: %s", self._status)
+
+                client.send_request('status', msg_ID=index, callback=self.update_callback)
+            except Exception as ex:
                 # Any failure to read from FrameProcessor, results in empty status
-                self._status.append({'connected': False})
-        logging.debug("Status updated to: %s", self._status)
+                logging.debug("%s", ex)
+                self._status[index] = {'connected': False}
+                logging.debug("Status updated to: %s", self._status)
 
         # Schedule the update loop to run in the IOLoop instance again after appropriate interval
         IOLoop.instance().call_later(self._update_interval, self.update_loop)
+
+    def update_callback(self, index, status_msg):
+        logging.debug("OdinDataAdatper called back index [%d]: %s", index, status_msg)
+        params = status_msg['params']
+        params['connected'] = True
+        params['timestamp'] = status_msg['timestamp']
+        self._status[index] = params
+        logging.debug("Status updated to: %s", self._status)
