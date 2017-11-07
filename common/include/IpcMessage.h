@@ -93,6 +93,7 @@ public:
     MsgValNotifyFrameReady,          //!< Frame ready notification message
     MsgValNotifyFrameRelease,        //!< Frame release notification message
     MsgValNotifyBufferConfig,        //!< Buffer configuration notification
+    MsgValNotifyStatus,              //!< Status notification 
   };
 
   //! Internal bi-directional mapping of message type from string to enumerated MsgType
