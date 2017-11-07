@@ -1,5 +1,5 @@
 /*!
- * FrameReceiverRxThread.cpp
+ * FrameReceiverRxThread.cpp - abstract receiver thread base class for the FrameReceiver application
  *
  *  Created on: Feb 4, 2015
  *      Author: Tim Nicholls, STFC Application Engineering Group
@@ -9,6 +9,11 @@
 
 using namespace FrameReceiver;
 
+//! Constructor for the FrameReceiverRxThread class.
+//!
+//! This constructor initialises the member variables of the class. Startup of the thread
+//! itself is deferred to the start() method.
+//!
 FrameReceiverRxThread::FrameReceiverRxThread(FrameReceiverConfig& config,
                                              SharedBufferManagerPtr buffer_manager,
                                              FrameDecoderPtr frame_decoder,
@@ -19,21 +24,28 @@ FrameReceiverRxThread::FrameReceiverRxThread(FrameReceiverConfig& config,
     frame_decoder_(frame_decoder),
     tick_period_ms_(tick_period_ms),
     rx_channel_(ZMQ_DEALER),
-    recv_socket_(0),
     run_thread_(true),
     thread_running_(false),
     thread_init_error_(false)
 {
 }
 
+//! Destructor for the FrameReceiverRxThread.
+//!
 FrameReceiverRxThread::~FrameReceiverRxThread()
 {
   LOG4CXX_DEBUG_LEVEL(1, logger_, "Destroying FrameReceiverRxThread....");
 }
 
+//! Start the FrameReceiverRxThread.
+//!
+//! This method starts the RX thread proper, blocking until the thread is started or has
+//! signalled an initialisation error, in which event an exception is thrown.
+//!
 void FrameReceiverRxThread::start()
 {
-  rx_thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&FrameReceiverRxThread::run_service, this)));
+  rx_thread_ = boost::shared_ptr<boost::thread>(
+    new boost::thread(boost::bind(&FrameReceiverRxThread::run_service, this)));
 
   // Wait for the thread service to initialise and be running properly, so that
   // this constructor only returns once the object is fully initialised (RAII).
@@ -48,6 +60,12 @@ void FrameReceiverRxThread::start()
   }
 }
 
+//! Stop the FrameReceiverRxThread.
+//!
+//! This method stops the receiver thread, signalling for it to come to a controlled stop
+//! and waiting for the thead to join. Any cleanup of the specialised thread service type
+//! is also called.
+//!
 void FrameReceiverRxThread::stop()
 {
   run_thread_ = false;
@@ -61,18 +79,26 @@ void FrameReceiverRxThread::stop()
   cleanup_specific_service();
 }
 
+//! Run the RX thread event loop service
+//!
+//! This method is the entry point for the RX thread and, having configured message channels
+//! and timers, runs the IPC reactor event loop, which blocks during normal operation. Once the
+//! reactor exits, the necessary cleanup of the thread is performed.
+//!
 void FrameReceiverRxThread::run_service(void)
 {
   LOG4CXX_DEBUG_LEVEL(1, logger_, "Running RX thread service");
 
   // Connect the message channel to the main thread
   try {
-    LOG4CXX_DEBUG_LEVEL(1, logger_, "Connecting RX channel to endpoint " << config_.rx_channel_endpoint_);
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Connecting RX channel to endpoint "
+      << config_.rx_channel_endpoint_);
     rx_channel_.connect(config_.rx_channel_endpoint_);
   }
   catch (zmq::error_t& e) {
     std::stringstream ss;
-    ss << "RX channel connect to endpoint " << config_.rx_channel_endpoint_ << " failed: " << e.what();
+    ss << "RX channel connect to endpoint " << config_.rx_channel_endpoint_ 
+      << " failed: " << e.what();
     thread_init_msg_ = ss.str();
     thread_init_error_ = true;
     return;
@@ -129,6 +155,12 @@ void FrameReceiverRxThread::run_service(void)
 
 }
 
+//! Advertise the RX thread channel identity.
+//!
+//! This method advertises the identity of the RX thread endpoint on the channel 
+//! communicating with the main thread. This allows the main thread to correctly route
+//! messages to the RX thread over the ROUTER-DEALER channel.
+//!
 void FrameReceiverRxThread::advertise_identity(void)
 {
   LOG4CXX_DEBUG_LEVEL(3, logger_, "Advertising RX thread identity");
@@ -137,6 +169,11 @@ void FrameReceiverRxThread::advertise_identity(void)
   rx_channel_.send(identity_msg.encode());
 }
 
+//! Request frame buffer precharge.
+//!
+//! This method requests precharge of the empty buffer queue from the main thread, allowing
+//! it to fill the empty buffer queue prior to receiving any frame data.
+//!
 void FrameReceiverRxThread::request_buffer_precharge(void)
 {
 
@@ -146,68 +183,118 @@ void FrameReceiverRxThread::request_buffer_precharge(void)
   rx_channel_.send(precharge_msg.encode());
 }
 
+//! Handle messages on the RX channel.
+//!
+//! This method is the handler registered with the thread reactor to handle incoming messages on
+//! the RX channel to the main thread.
+//!
 void FrameReceiverRxThread::handle_rx_channel(void)
 {
   // Receive a message from the main thread channel
   std::string rx_msg_encoded = rx_channel_.recv();
 
-  // Parse and handle the message
+  // ecode the messsage and handle appropriately
   try {
 
     IpcMessage rx_msg(rx_msg_encoded.c_str());
     IpcMessage::MsgType msg_type = rx_msg.get_msg_type();
     IpcMessage::MsgVal msg_val = rx_msg.get_msg_val();
 
-    if ((msg_type == IpcMessage::MsgTypeAck) && (msg_val == IpcMessage::MsgValNotifyIdentity))
-    {
-      LOG4CXX_DEBUG_LEVEL(3, logger_, "RX thread received acknowledgement of identity notification");
-    }
-    else if ((msg_type == IpcMessage::MsgTypeNotify) && (msg_val == IpcMessage::MsgValNotifyFrameRelease))
+    IpcMessage rx_reply;
+
+    switch (msg_type)
     {
 
-      int buffer_id = rx_msg.get_param<int>("buffer_id", -1);
+      // Handle command messages
+      case IpcMessage::MsgTypeCmd:
 
-      if (buffer_id != -1)
-      {
-        frame_decoder_->push_empty_buffer(buffer_id);
-        LOG4CXX_DEBUG_LEVEL(3, logger_, "Added empty buffer ID " << buffer_id << " to queue, "
-            "length is now " << frame_decoder_->get_num_empty_buffers());
-      }
-      else
-      {
-        LOG4CXX_ERROR(logger_, "RX thread received empty frame notification with buffer ID");
-      }
+        switch (msg_val)
+        {
 
-    }
-    else if ((msg_type == IpcMessage::MsgTypeCmd) && (msg_val == IpcMessage::MsgValCmdStatus))
-    {
-      IpcMessage rx_reply;
+          case IpcMessage::MsgValCmdStatus:
+            rx_reply.set_msg_type(IpcMessage::MsgTypeAck);
+            rx_reply.set_msg_val(IpcMessage::MsgValCmdStatus);
+            this->fill_status_params(rx_reply);
+            rx_channel_.send(rx_reply.encode());
+            break;
 
-      rx_reply.set_msg_type(IpcMessage::MsgTypeAck);
-      rx_reply.set_msg_val(IpcMessage::MsgValCmdStatus);
-      rx_reply.set_param("count", rx_msg.get_param<int>("count", -1));
+          default:
+            LOG4CXX_ERROR(logger_,
+              "Got unexpected value on command message from main thread: " << rx_msg_encoded);
+            break;
+        }
+        break;
 
-      rx_channel_.send(rx_reply.encode());
-    }
-    else
-    {
-      LOG4CXX_ERROR(logger_, "RX thread got unexpected message: " << rx_msg_encoded);
+      // Handle acknowledgement messages
+      case IpcMessage::MsgTypeAck:
 
-      IpcMessage rx_reply;
+        switch (msg_val)
+        {
 
-      rx_reply.set_msg_type(IpcMessage::MsgTypeNack);
-      rx_reply.set_msg_val(msg_val);
-      //TODO add error in params
+        case IpcMessage::MsgValNotifyIdentity:
+          LOG4CXX_DEBUG_LEVEL(3, logger_, 
+            "RX thread received acknowledgement of identity notification");
+          break;
+        
+        default:
+          LOG4CXX_ERROR(logger_,
+            "Got unexpected value on acknowlege message from main thread: " << rx_msg_encoded);
+          break;
+        }
+        break;
 
-      rx_channel_.send(rx_reply.encode());
+      // Handle notification messages
+      case IpcMessage::MsgTypeNotify:
+
+        switch (msg_val)
+        {
+        case IpcMessage::MsgValNotifyFrameRelease:
+          {
+            
+            int buffer_id = rx_msg.get_param<int>("buffer_id", -1);      
+            if (buffer_id != -1)
+            {
+              frame_decoder_->push_empty_buffer(buffer_id);
+              LOG4CXX_DEBUG_LEVEL(3, logger_, "Added empty buffer ID " << buffer_id 
+                << " to queue, length is now " << frame_decoder_->get_num_empty_buffers());
+            }
+            else
+            {
+              LOG4CXX_ERROR(logger_, "RX thread received empty frame notification with buffer ID");
+            }
+          }
+          break;
+
+        default:
+          LOG4CXX_ERROR(logger_,
+            "Got unexpected value on notify message from main thread: " << rx_msg_encoded);
+          break;
+        }
+        break;
+
+      default:
+        LOG4CXX_ERROR(logger_, 
+          "Got unexpected type on message from main thread: " << rx_msg_encoded);      
+        IpcMessage rx_reply;          
+        rx_reply.set_msg_type(IpcMessage::MsgTypeNack);
+        rx_reply.set_msg_val(msg_val);
+        rx_reply.set_param("error", std::string("Unexpected message type from main thread"));
+        rx_channel_.send(rx_reply.encode());
+        break;
     }
   }
   catch (IpcMessageException& e)
   {
-    LOG4CXX_ERROR(logger_, "Error decoding control channel request: " << e.what());
+    LOG4CXX_ERROR(logger_, "Error decoding RX channel request: " << e.what());
   }
 }
 
+//! Tick timer handler for the RX thread.
+//!
+//! This method is the tick timer handler for the RX thread and is called periodically
+//! by the thread reactor event loop. Its purpose is to detect external requests to stop
+//! the thread via the stop() method, which clears the run_thread condition.
+//!
 void FrameReceiverRxThread::tick_timer(void)
 {
   //LOG4CXX_DEBUG_LEVEL(4, logger_, "RX thread tick timer fired");
@@ -218,6 +305,13 @@ void FrameReceiverRxThread::tick_timer(void)
   }
 }
 
+//! Buffer monitor timer handler for the RX thread.
+//!
+//! This method is the buffer monitor timer handler for the RX thread and is called periodically
+//! by the thread reactor event loop. It calls the frame decoder buffer montoring function to
+//! allow, e.g. timed out frames to be released. It also sends a status notification to the main
+//! thread to allow status information to be updated ready for client requests.
+//!
 void FrameReceiverRxThread::buffer_monitor_timer(void)
 {
   LOG4CXX_DEBUG_LEVEL(4, logger_, "RX thread buffer monitor thread fired");
@@ -225,13 +319,34 @@ void FrameReceiverRxThread::buffer_monitor_timer(void)
 
   // Send status notification to main thread
   IpcMessage status_msg(IpcMessage::MsgTypeNotify, IpcMessage::MsgValNotifyStatus);
-  status_msg.set_param("rx_thread/empty_buffers", frame_decoder_->get_num_empty_buffers());
-  status_msg.set_param("rx_thread/mapped_buffers", frame_decoder_->get_num_mapped_buffers());
-  status_msg.set_param("rx_thread/frames_timedout", frame_decoder_->get_num_frames_timedout());
-
+  this->fill_status_params(status_msg);
   rx_channel_.send(status_msg.encode());
 }
 
+//! Fill status parameters into a message.
+//! 
+//! This method populates the parameter block of the IpcMessage passed as an argument
+//! with the current state of various RX thread and frame decoder values. This is used
+//! to build status messages for communication with the main thread.
+//!
+//! \param[in,out] status_msg - IpcMessage to fill with status parameters
+//!
+void FrameReceiverRxThread::fill_status_params(IpcMessage& status_msg)
+{
+  status_msg.set_param("rx_thread/empty_buffers", frame_decoder_->get_num_empty_buffers());
+  status_msg.set_param("rx_thread/mapped_buffers", frame_decoder_->get_num_mapped_buffers());
+  status_msg.set_param("rx_thread/frames_timedout", frame_decoder_->get_num_frames_timedout());  
+}
+
+//! Signal that a frame is ready for processing.
+//!
+//! This method is called to signal to the main thread that a frame is ready (either complete or
+//! timed out) for processing by the downstream application. An IpcMessage is created with
+//! the appropriate parameters and passed to the amin thread via the RX channel.
+//!
+//! \param[in] buffer_id - buffer manager ID that is ready
+//! \param[in] frame_number - frame number contained in that buffer
+//!
 void FrameReceiverRxThread::frame_ready(int buffer_id, int frame_number)
 {
   LOG4CXX_DEBUG_LEVEL(2, logger_, "Releasing frame " << frame_number << " in buffer " << buffer_id);
@@ -244,12 +359,28 @@ void FrameReceiverRxThread::frame_ready(int buffer_id, int frame_number)
 
 }
 
+//! Set thread initialisation error condition.
+//!
+//! This method is called by the RX thread initialisation to indicate that an error has
+//! occurred. The error message passed as an argument is stored so it can be retrieved
+//! by the calling process as appropriate.
+//!
+//! \param[in] msg - error message associated with initialisation
+//!
 void FrameReceiverRxThread::set_thread_init_error(const std::string& msg)
 {
   thread_init_msg_ = msg;
   thread_init_error_ = true;
 }
 
+//! Register a socket with the RX thread reactor
+//!
+//! This method registers a socket and associated callback with the RX thread reactor
+//! instance, to allow data arriving on that socket to be handled appropriately
+//!
+//! \param[in] socket_fd - file descriptor of socket to register
+//! \param[in] callback - callback function to be called by reactor on this socket
+//!
 void FrameReceiverRxThread::register_socket(int socket_fd, ReactorCallback callback)
 {
   // Add the receive socket to the reactor
