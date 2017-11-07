@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE( CreateAndPingRxThread )
     for (int loop = 0; loop < loopCount; loop++)
     {
       OdinData::IpcMessage message(msg_type, msg_val);
-      message.set_param<int>("count", loop);
+      //message.set_param<int>("count", loop);
       rx_channel.send(message.encode(), 0, rx_thread_identity);
     }
 
@@ -140,7 +140,7 @@ BOOST_AUTO_TEST_CASE( CreateAndPingRxThread )
         OdinData::IpcMessage response(reply.c_str());
         msgMatch &= (response.get_msg_type() == OdinData::IpcMessage::MsgTypeAck);
         msgMatch &= (response.get_msg_val() == OdinData::IpcMessage::MsgValCmdStatus);
-        msgMatch &= (response.get_param<int>("count", -1) == replyCount);
+        msgMatch &= (response.has_param("rx_thread") == true);
         replyCount++;
         timeoutCount = 0;
       }
