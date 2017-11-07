@@ -79,6 +79,7 @@ namespace FrameReceiver
 
     void precharge_buffers(void);
     void notify_buffer_config(const bool deferred=false);
+    void get_status(OdinData::IpcMessage& status_reply);
 
 #ifdef FR_CONTROLLER_TICK_TIMER
     void tick_timer(void);
@@ -97,6 +98,12 @@ namespace FrameReceiver
     bool need_rx_thread_reconfig_;        //!< Flag to signal reconfiguration of RX thread
     bool need_buffer_manager_reconfig_;   //!< Flag to signal reconfiguration of buffer manager
 
+    bool ipc_configured_;                 //!< Indicates that IPC channels are configured
+    bool decoder_configured_;             //!< Indicates that the frame decoder is configured
+    bool buffer_manager_configured_;      //!< Indicates that the buffer manager is configured
+    bool rx_thread_configured_;           //!< Indicates that the RX thread is configured
+    bool configuration_complete_;         //!< Indicates that all components are configured
+    
     IpcChannel rx_channel_;               //!< Channel for communication with receiver thread
     IpcChannel ctrl_channel_;             //!< Channel for communication with  control clients
     IpcChannel frame_ready_channel_;      //!< Channel for signalling to downstream processes

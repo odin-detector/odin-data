@@ -29,6 +29,10 @@ FrameReceiverController::FrameReceiverController (FrameReceiverConfig& config) :
     need_decoder_reconfig_(false),
     need_buffer_manager_reconfig_(false),
     need_rx_thread_reconfig_(false),
+    ipc_configured_(false),
+    decoder_configured_(false),
+    buffer_manager_configured_(false),
+    rx_thread_configured_(false),
     rx_channel_(ZMQ_ROUTER),
     ctrl_channel_(ZMQ_ROUTER),
     frame_ready_channel_(ZMQ_PUB),
@@ -94,6 +98,10 @@ void FrameReceiverController::configure(OdinData::IpcMessage& config_msg,
     // Configure the RX thread
     this->configure_rx_thread(config_msg);
 
+    // Update the global configuration status from that of the individual components
+    configuration_complete_ = ipc_configured_ & decoder_configured_ &
+      buffer_manager_configured_ & rx_thread_configured_;
+
     // Construct the acknowledgement reply, indicating in the parameters which elements
     // have been reconfigured
     config_reply.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
@@ -101,6 +109,7 @@ void FrameReceiverController::configure(OdinData::IpcMessage& config_msg,
     config_reply.set_param<bool>("decoder_reconfigured", need_decoder_reconfig_);
     config_reply.set_param<bool>("buffer_manager_reconfigured", need_buffer_manager_reconfig_);
     config_reply.set_param<bool>("rx_thread_reconfigured", need_rx_thread_reconfig_);
+    config_reply.set_param<bool>("configuration_complete", configuration_complete_);
 
   }
   catch (FrameReceiverException& e) {
@@ -185,6 +194,9 @@ void FrameReceiverController::stop(const bool deferred)
 void FrameReceiverController::configure_ipc_channels(OdinData::IpcMessage& config_msg)
 {
 
+  // Clear the IPC config status until successful completion
+  ipc_configured_ = false;
+
   // If a new control endpoint is specified, bind the control channel
   std::string ctrl_endpoint = config_msg.get_param<std::string>(
       CONFIG_CTRL_ENDPOINT, config_.ctrl_channel_endpoint_);
@@ -227,6 +239,9 @@ void FrameReceiverController::configure_ipc_channels(OdinData::IpcMessage& confi
     config_.frame_release_endpoint_ = frame_release_endpoint;
     this->setup_frame_release_channel(frame_release_endpoint);
   }
+
+  // Flag successful completion of IPC channel configuration
+  ipc_configured_ = true;
 }
 
 //! Set up the control channel.
@@ -385,6 +400,9 @@ void FrameReceiverController::cleanup_ipc_channels(void)
   frame_ready_channel_.close();
   frame_release_channel_.close();
 
+  // Clear the IPC configuration flag
+  ipc_configured_ = false;
+
 }
 
 //! Configure the frame decoder.
@@ -440,6 +458,10 @@ void FrameReceiverController::configure_frame_decoder(OdinData::IpcMessage& conf
   // Resolve, load and initialise the decoder class if necessary
   if (need_decoder_reconfig_)
   {
+
+    // Clear the decoder configuration status until succesful completion
+    decoder_configured_ = false;
+    
     if (decoder_type != Defaults::default_decoder_type)
     {
       std::string lib_name = "lib" + decoder_type + "FrameDecoder" + SHARED_LIBRARY_SUFFIX;
@@ -488,6 +510,8 @@ void FrameReceiverController::configure_frame_decoder(OdinData::IpcMessage& conf
       need_buffer_manager_reconfig_ = true;
       need_rx_thread_reconfig_ = true;
 
+      // Flag successful completion of decoder configuration
+      decoder_configured_ = true;
     }
     else
     {
@@ -526,6 +550,10 @@ void FrameReceiverController::configure_buffer_manager(OdinData::IpcMessage& con
 
   if (need_buffer_manager_reconfig_)
   {
+
+    // Clear the buffer manager configuration status until succesful completion
+    buffer_manager_configured_ = false;
+            
     if (frame_decoder_)
     {
 
@@ -554,6 +582,9 @@ void FrameReceiverController::configure_buffer_manager(OdinData::IpcMessage& con
 
       // The RX thread will need reconfiguration if the buffer manager has been recreated
       need_rx_thread_reconfig_ = true;
+
+      // Flag successful completion of buffer manager configuration
+      buffer_manager_configured_ = true;
 
     }
     else
@@ -604,6 +635,10 @@ void FrameReceiverController::configure_rx_thread(OdinData::IpcMessage& config_m
 
   if (need_rx_thread_reconfig_)
   {
+
+    // Clear the RX thread configuration status until succesful completion
+    rx_thread_configured_ = false;
+        
     if (frame_decoder_ && buffer_manager_)
     {
 
@@ -624,6 +659,9 @@ void FrameReceiverController::configure_rx_thread(OdinData::IpcMessage& config_m
           throw FrameReceiverException("Cannot create RX thread - RX type not recognised");
       }
       rx_thread_->start();
+
+      // Flag successful completion of RX thread configuration
+      rx_thread_configured_ = true;
     }
     else
     {
@@ -647,6 +685,9 @@ void FrameReceiverController::stop_rx_thread(void)
 
     // Reset the scoped pointer to the RX thread
     rx_thread_.reset();
+
+    // Clear the RX thread configured flag
+    rx_thread_configured_ = false;
   }
 }
 
@@ -690,6 +731,13 @@ void FrameReceiverController::handle_ctrl_channel(void)
             this->configure(ctrl_req, ctrl_reply);
             break;
           
+
+          case IpcMessage::MsgValCmdStatus:
+              LOG4CXX_DEBUG_LEVEL(3, logger_,
+                  "Got control channel status request from client " << client_identity);
+              this->get_status(ctrl_reply);
+              break;
+
           case IpcMessage::MsgValCmdShutdown:
               LOG4CXX_DEBUG_LEVEL(3, logger_,
                 "Got shutdown command request from client " << client_identity);
@@ -898,6 +946,25 @@ void FrameReceiverController::notify_buffer_config(const bool deferred)
 
     frame_ready_channel_.send(config_msg.encode());
   }
+}
+
+//! Get the frame receiver status.
+//!
+//! This method retrieves the status of the frame receiver in response to a client status request,
+//! filling salient information into the parameter block of the reply message passed as an argument.
+//!
+//! \param[in,out] status_reply - IpcMessage reply to status request
+//!
+void FrameReceiverController::get_status(OdinData::IpcMessage& status_reply)
+{
+  status_reply.set_param("ipc_configured", ipc_configured_);
+  status_reply.set_param("decoder_configured", decoder_configured_);
+  status_reply.set_param("buffer_manager_configured", buffer_manager_configured_);
+  status_reply.set_param("rx_thread_configured", rx_thread_configured_);
+  status_reply.set_param("configuration_complete", configuration_complete_);
+
+  status_reply.set_param("frames_received", frames_received_);
+  status_reply.set_param("frames_released", frames_released_);
 }
 
 #ifdef FR_CONTROLLER_TICK_TIMER
