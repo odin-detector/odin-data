@@ -79,6 +79,7 @@ namespace FrameReceiver
 
     void precharge_buffers(void);
     void notify_buffer_config(const bool deferred=false);
+    void store_rx_thread_status(OdinData::IpcMessage& rx_status_msg);
     void get_status(OdinData::IpcMessage& status_reply);
 
 #ifdef FR_CONTROLLER_TICK_TIMER
@@ -115,6 +116,8 @@ namespace FrameReceiver
     unsigned int frames_released_;        //!< Counter for frames released
 
     std::string rx_thread_identity_;      //!< Identity of the RX thread dealer channel
+
+    boost::scoped_ptr<OdinData::IpcMessage> rx_thread_status_; //!< Status of the receiver thread
 
   };
 

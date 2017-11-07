@@ -105,11 +105,10 @@ void FrameReceiverController::configure(OdinData::IpcMessage& config_msg,
     // Construct the acknowledgement reply, indicating in the parameters which elements
     // have been reconfigured
     config_reply.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
-    config_reply.set_param<bool>("ipc_reconfigured", need_ipc_reconfig_);
-    config_reply.set_param<bool>("decoder_reconfigured", need_decoder_reconfig_);
-    config_reply.set_param<bool>("buffer_manager_reconfigured", need_buffer_manager_reconfig_);
-    config_reply.set_param<bool>("rx_thread_reconfigured", need_rx_thread_reconfig_);
-    config_reply.set_param<bool>("configuration_complete", configuration_complete_);
+    config_reply.set_param<bool>("reconfigured/ipc", need_ipc_reconfig_);
+    config_reply.set_param<bool>("reconfigured/decoder", need_decoder_reconfig_);
+    config_reply.set_param<bool>("reconfigured/buffer_manager", need_buffer_manager_reconfig_);
+    config_reply.set_param<bool>("reconfigured/rx_thread", need_rx_thread_reconfig_);
 
   }
   catch (FrameReceiverException& e) {
@@ -836,8 +835,8 @@ void FrameReceiverController::handle_rx_channel(void)
             break;
 
           case IpcMessage::MsgValNotifyStatus:
-            LOG4CXX_DEBUG_LEVEL(4, logger_, "Got status notification from RX thread: " 
-              << rx_msg_encoded);
+            LOG4CXX_DEBUG_LEVEL(4, logger_, "Got status notification from RX thread");
+            this->store_rx_thread_status(rx_msg);
             break;
 
           default:
@@ -973,6 +972,20 @@ void FrameReceiverController::notify_buffer_config(const bool deferred)
   }
 }
 
+//! Store the RX thread status.
+//!
+//! This method stores all the parameters present in the RX thread status message passed as an 
+//! argument, allowing them to be returned in subsequent get_status calls
+//!
+//! \param[in] rx_status_msg - IpcMessage containing RX thread status parameters
+//!
+void FrameReceiverController::store_rx_thread_status(OdinData::IpcMessage& rx_status_msg)
+{
+  rx_thread_status_.reset(
+    new IpcMessage(rx_status_msg.get_param<const rapidjson::Value&>("rx_thread")));
+    LOG4CXX_DEBUG_LEVEL(4, logger_, "RX thread status: " << rx_thread_status_->encode());
+  }
+
 //! Get the frame receiver status.
 //!
 //! This method retrieves the status of the frame receiver in response to a client status request,
@@ -982,14 +995,31 @@ void FrameReceiverController::notify_buffer_config(const bool deferred)
 //!
 void FrameReceiverController::get_status(OdinData::IpcMessage& status_reply)
 {
-  status_reply.set_param("ipc_configured", ipc_configured_);
-  status_reply.set_param("decoder_configured", decoder_configured_);
-  status_reply.set_param("buffer_manager_configured", buffer_manager_configured_);
-  status_reply.set_param("rx_thread_configured", rx_thread_configured_);
-  status_reply.set_param("configuration_complete", configuration_complete_);
 
-  status_reply.set_param("frames_received", frames_received_);
-  status_reply.set_param("frames_released", frames_released_);
+  status_reply.set_msg_type(IpcMessage::MsgTypeAck);
+
+  status_reply.set_param("status/ipc_configured", ipc_configured_);
+  status_reply.set_param("status/decoder_configured", decoder_configured_);
+  status_reply.set_param("status/buffer_manager_configured", buffer_manager_configured_);
+  status_reply.set_param("status/rx_thread_configured", rx_thread_configured_);
+  status_reply.set_param("status/configuration_complete", configuration_complete_);
+
+  unsigned int empty_buffers = 0;
+  unsigned int mapped_buffers = 0;
+  unsigned int frames_timedout = 0;
+  if (rx_thread_status_) 
+  {
+    empty_buffers = rx_thread_status_->get_param<unsigned int>("empty_buffers", 0);
+    mapped_buffers = rx_thread_status_->get_param<unsigned int>("mapped_buffers", 0);
+    frames_timedout = rx_thread_status_->get_param<unsigned int>("frames_timedout", 0);
+  }
+
+  status_reply.set_param("buffers/empty", empty_buffers);
+  status_reply.set_param("buffers/mapped", mapped_buffers);
+
+  status_reply.set_param("frames/timedout", frames_timedout);
+  status_reply.set_param("frames/received", frames_received_);
+  status_reply.set_param("frames/released", frames_released_);
 }
 
 #ifdef FR_CONTROLLER_TICK_TIMER

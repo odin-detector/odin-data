@@ -225,9 +225,9 @@ void FrameReceiverRxThread::buffer_monitor_timer(void)
 
   // Send status notification to main thread
   IpcMessage status_msg(IpcMessage::MsgTypeNotify, IpcMessage::MsgValNotifyStatus);
-  status_msg.set_param("num_empty_buffers", frame_decoder_->get_num_empty_buffers());
-  status_msg.set_param("num_mapped_buffers", frame_decoder_->get_num_mapped_buffers());
-  status_msg.set_param("num_frames_timedout", frame_decoder_->get_num_frames_timedout());
+  status_msg.set_param("rx_thread/empty_buffers", frame_decoder_->get_num_empty_buffers());
+  status_msg.set_param("rx_thread/mapped_buffers", frame_decoder_->get_num_mapped_buffers());
+  status_msg.set_param("rx_thread/frames_timedout", frame_decoder_->get_num_frames_timedout());
 
   rx_channel_.send(status_msg.encode());
 }
