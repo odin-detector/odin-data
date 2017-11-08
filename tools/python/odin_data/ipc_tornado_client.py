@@ -3,9 +3,10 @@ from threading import RLock
 
 from odin_data.ipc_tornado_channel import IpcTornadoChannel
 from odin_data.ipc_message import IpcMessage, IpcMessageException
+from datetime import datetime
 
 
-class OdinDataAdapterClient(object):
+class IpcTornadoClient(object):
 
     ENDPOINT_TEMPLATE = "tcp://{IP}:{PORT}"
 
@@ -14,31 +15,53 @@ class OdinDataAdapterClient(object):
 
         self._ip_address = ip_address
         self._port = port
-        self._client_callbacks = []
 
         self.ctrl_endpoint = self.ENDPOINT_TEMPLATE.format(IP=ip_address, PORT=port)
         self.logger.debug("Connecting to client at %s", self.ctrl_endpoint)
         self.ctrl_channel = IpcTornadoChannel(IpcTornadoChannel.CHANNEL_TYPE_DEALER)
         self.ctrl_channel.connect(self.ctrl_endpoint)
         self.ctrl_channel.register_callback(self._callback)
+        self._status = {}
 
         self._lock = RLock()
 
+    @property
+    def status(self):
+        return self._status
 
     def _callback(self, msg):
         # Handle the multi-part message
         self.logger.debug("Msg received: %s", msg)
         reply = IpcMessage(from_str=msg[0])
-        callbacks = self._client_callbacks.pop()
-        self.logger.debug("Responding to callback with ID: %s", callbacks)
-        for index in callbacks:
-            if callbacks[index]:
-                callbacks[index](index, reply.attrs)
+        if 'status' in reply.get_msg_val():
+            self._update_status(reply.attrs)
 
-    def _send_message(self, msg, msg_ID=None, callback=None):
+    def _update_status(self, status_msg):
+        params = status_msg['params']
+        params['connected'] = True
+        params['timestamp'] = status_msg['timestamp']
+        self._status = params
+        logging.debug("Status updated to: %s", self._status)
+
+    def check_for_stale_status(self, max_stale_time):
+        if self._status is not None:
+            # Check for the timestamp
+            if 'timestamp' in self._status:
+                ts = datetime.strptime(self._status['timestamp'], "%Y-%m-%dT%H:%M:%S.%f")
+                ttlm = datetime.now() - ts
+                if ttlm.seconds > max_stale_time:
+                    # This connection has gone stale, set connected to false
+                    self._status = {'connected': False}
+                    logging.debug("Status updated to: %s", self._status)
+        else:
+            # No status for this client so set connected to false
+            self._status = {'connected': False}
+            logging.debug("Status updated to: %s", self._status)
+
+
+    def _send_message(self, msg):
         self.logger.debug("Sending control message:\n%s", msg.encode())
         with self._lock:
-            self._client_callbacks.append({msg_ID: callback})
             self.ctrl_channel.send(msg.encode())
 
     @staticmethod
@@ -48,11 +71,11 @@ class OdinDataAdapterClient(object):
         else:
             raise IpcMessageException("Request\n%s\nunsuccessful. Got no response." % msg)
 
-    def send_request(self, value, msg_ID=None, callback=None):
+    def send_request(self, value):
         msg = IpcMessage("cmd", value)
-        self._send_message(msg, msg_ID, callback)
+        self._send_message(msg)
 
-    def send_configuration(self, content, target=None, valid_error=None, msg_ID=None, callback=None):
+    def send_configuration(self, content, target=None, valid_error=None):
         msg = IpcMessage("cmd", "configure")
 
         if target is not None:
@@ -61,6 +84,6 @@ class OdinDataAdapterClient(object):
             for parameter, value in content.items():
                 msg.set_param(parameter, value)
 
-        self._send_message(msg, msg_ID, callback)
+        self._send_message(msg)
 
 

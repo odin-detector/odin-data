@@ -5,8 +5,7 @@ Created on 6th September 2017
 """
 import json
 import logging
-from datetime import datetime
-from odin_data.odin_data_adapter_client import OdinDataAdapterClient
+from odin_data.ipc_tornado_client import IpcTornadoClient
 from odin.adapters.adapter import ApiAdapter, ApiAdapterResponse, request_types, response_types
 from tornado import escape
 from tornado.ioloop import IOLoop
@@ -32,8 +31,6 @@ class OdinDataAdapter(ApiAdapter):
         """
         super(OdinDataAdapter, self).__init__(**kwargs)
 
-        # Status dictionary read from client
-        self._status = []
         self._endpoint_arg = None
         self._endpoints = []
         self._clients = []
@@ -45,7 +42,6 @@ class OdinDataAdapter(ApiAdapter):
         for arg in kwargs:
             self._kwargs[arg] = kwargs[arg]
         self._kwargs['module'] = self.name
-
 
         try:
             self._endpoint_arg = self.options.get('endpoints')
@@ -61,7 +57,7 @@ class OdinDataAdapter(ApiAdapter):
         self._kwargs['endpoints'] = self._endpoints
 
         for ep in self._endpoints:
-            self._clients.append(OdinDataAdapterClient(ep['ip_address'], ep['port']))
+            self._clients.append(IpcTornadoClient(ep['ip_address'], ep['port']))
 
         self._kwargs['count'] = len(self._clients)
         # Allocate the status list
@@ -93,8 +89,8 @@ class OdinDataAdapter(ApiAdapter):
         request_command = path.strip('/')
         if not request_command:
             key_list = self._kwargs.keys()
-            for status in self._status:
-                for key in status:
+            for client in self._clients:
+                for key in client.status:
                     if key not in key_list:
                         key_list.append(key)
             response[request_command] = key_list
@@ -108,7 +104,8 @@ class OdinDataAdapter(ApiAdapter):
                 # Now we need to traverse the parameters looking for the request
 
                 response_items = []
-                for paramset in self._status:
+                for client in self._clients:
+                    paramset = client.status
                     try:
                         item_dict = paramset
                         for item in request_items:
@@ -202,46 +199,16 @@ class OdinDataAdapter(ApiAdapter):
         IOLoop instance. This includes requesting the status from the underlying application
         and preparing the JSON encoded reply in a format that can be easily parsed.
         """
-
         logging.debug("Updating status from client...")
-
 
         # Handle background tasks
         # Loop over all connected clients and obtain the status
-        index = -1
         for client in self._clients:
-            try:
-                index += 1
-                # First see if any clients have not responded for more than 10x update rate
-                if self._status[index]:
-                    pass
-                    # Check for the timestamp
-                    if 'timestamp' in self._status[index]:
-                        ts = datetime.strptime(self._status[index]['timestamp'], "%Y-%m-%dT%H:%M:%S.%f")
-                        ttlm = datetime.now() - ts
-                        if ttlm.seconds > self._update_interval * 10:
-                            # This connection has gone stale, set connected to false
-                            self._status[index] = {'connected': False}
-                            logging.debug("Status updated to: %s", self._status)
-                else:
-                    # No status for this client so set connected to false
-                    self._status[index] = {'connected': False}
-                    logging.debug("Status updated to: %s", self._status)
-
-                client.send_request('status', msg_ID=index, callback=self.update_callback)
-            except Exception as ex:
-                # Any failure to read from FrameProcessor, results in empty status
-                logging.debug("%s", ex)
-                self._status[index] = {'connected': False}
-                logging.debug("Status updated to: %s", self._status)
+            # First check for stale status within a client
+            client.check_for_stale_status(self._update_interval * 10)
+            # Now request a status update
+            client.send_request('status')
 
         # Schedule the update loop to run in the IOLoop instance again after appropriate interval
         IOLoop.instance().call_later(self._update_interval, self.update_loop)
 
-    def update_callback(self, index, status_msg):
-        logging.debug("OdinDataAdatper called back index [%d]: %s", index, status_msg)
-        params = status_msg['params']
-        params['connected'] = True
-        params['timestamp'] = status_msg['timestamp']
-        self._status[index] = params
-        logging.debug("Status updated to: %s", self._status)
