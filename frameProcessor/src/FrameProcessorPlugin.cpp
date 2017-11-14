@@ -10,14 +10,12 @@
 
 namespace FrameProcessor
 {
-const std::string FrameProcessorPlugin::META_RX_INTERFACE = "inproc://meta_rx";
 
 /**
  * Constructor, initialises name_ and meta data channel.
  */
 FrameProcessorPlugin::FrameProcessorPlugin() :
-    name_(""),
-    metaChannel_(ZMQ_PUSH)
+    name_("")
 {
   OdinData::configure_logging_mdc(OdinData::app_path.c_str());
   logger_ = log4cxx::Logger::getLogger("FP.FrameProcessorPlugin");
@@ -36,7 +34,7 @@ FrameProcessorPlugin::~FrameProcessorPlugin()
  *
  * \param[in] name - The name.
  */
-void FrameProcessorPlugin::setName(const std::string& name)
+void FrameProcessorPlugin::set_name(const std::string& name)
 {
   // Record our name
   name_ = name;
@@ -47,7 +45,7 @@ void FrameProcessorPlugin::setName(const std::string& name)
  *
  * \return The name.
  */
-std::string FrameProcessorPlugin::getName()
+std::string FrameProcessorPlugin::get_name()
 {
   // Return our name
   return name_;
@@ -91,7 +89,7 @@ void FrameProcessorPlugin::status(OdinData::IpcMessage& status)
  * \param[in] cb - Pointer to an IFrameCallback interface (plugin).
  * \param[in] blocking - Whether call should block.
  */
-void FrameProcessorPlugin::registerCallback(const std::string& name,
+void FrameProcessorPlugin::register_callback(const std::string& name,
                                             boost::shared_ptr<IFrameCallback> cb, bool blocking)
 {
   if (blocking) {
@@ -100,16 +98,16 @@ void FrameProcessorPlugin::registerCallback(const std::string& name,
                             ". Must be removed before adding blocking callback");
     }
       // Check if we own the callback already
-    else if (blockingCallbacks_.count(name) == 0) {
+    else if (blocking_callbacks_.count(name) == 0) {
       LOG4CXX_DEBUG(logger_, "Registering blocking callback " << name << " with " << name_);
       // Record the callback pointer
-      blockingCallbacks_[name] = cb;
+      blocking_callbacks_[name] = cb;
       // Confirm registration
       cb->confirmRegistration(name_);
     }
   }
   else {
-    if (blockingCallbacks_.count(name) != 0) {
+    if (blocking_callbacks_.count(name) != 0) {
       LOG4CXX_WARN(logger_, "Blocking callback " << name << " already registered with " << name_ <<
                             ". Must be removed before adding non-blocking callback");
     }
@@ -129,7 +127,7 @@ void FrameProcessorPlugin::registerCallback(const std::string& name,
  *
  * \param[in] name - Index of the callback (plugin index) to remove.
  */
-void FrameProcessorPlugin::removeCallback(const std::string& name)
+void FrameProcessorPlugin::remove_callback(const std::string& name)
 {
   boost::shared_ptr<IFrameCallback> cb;
   if (callbacks_.count(name) > 0) {
@@ -140,79 +138,14 @@ void FrameProcessorPlugin::removeCallback(const std::string& name)
     // Confirm removal
     cb->confirmRemoval(name_);
   }
-  else if (blockingCallbacks_.count(name) > 0) {
+  else if (blocking_callbacks_.count(name) > 0) {
     // Get the pointer
-    cb = blockingCallbacks_[name];
+    cb = blocking_callbacks_[name];
     // Remove the callback from the map
-    blockingCallbacks_.erase(name);
+    blocking_callbacks_.erase(name);
     // Confirm removal
     cb->confirmRemoval(name_);
   }
-}
-
-void FrameProcessorPlugin::connectMetaChannel()
-{
-  metaChannel_.connect(META_RX_INTERFACE.c_str());
-}
-
-/** Publish meta data from this plugin.
- *
- * \param[in] item - Name of the meta data item to publish.
- * \param[in] value - The value of the meta data item to publish.
- * \param[in] header - Optional additional header data to publish.
- */
-void FrameProcessorPlugin::publishMeta(const std::string& item, int32_t value, const std::string &header)
-{
-  // Create a new MetaMessage object and send to the consumer
-  FrameProcessor::MetaMessage *meta = new FrameProcessor::MetaMessage(name_, item, "integer", header, sizeof(int32_t), &value);
-  // We need the pointer to the object cast to be able to pass it through ZMQ
-  uintptr_t addr = reinterpret_cast<uintptr_t>(&(*meta));
-  // Send the pointer value to the listener
-  metaChannel_.send(sizeof(uintptr_t), &addr, ZMQ_DONTWAIT);
-}
-
-void FrameProcessorPlugin::publishMeta(const std::string& item, uint64_t value, const std::string &header)
-{
-  // Create a new MetaMessage object and send to the consumer
-  FrameProcessor::MetaMessage *meta = new FrameProcessor::MetaMessage(name_, item, "uint64", header, sizeof(uint64_t), &value);
-  // We need the pointer to the object cast to be able to pass it through ZMQ
-  uintptr_t addr = reinterpret_cast<uintptr_t>(&(*meta));
-  // Send the pointer value to the listener
-  metaChannel_.send(sizeof(uintptr_t), &addr, ZMQ_DONTWAIT);
-}
-
-void FrameProcessorPlugin::publishMeta(const std::string& item, double value, const std::string& header)
-{
-  // Create a new MetaMessage object and send to the consumer
-  FrameProcessor::MetaMessage *meta = new FrameProcessor::MetaMessage(name_, item, "double", header, sizeof(double), &value);
-  // We need the pointer to the object cast to be able to pass it through ZMQ
-  uintptr_t addr = reinterpret_cast<uintptr_t>(&(*meta));
-  // Send the pointer value to the listener
-  metaChannel_.send(sizeof(uintptr_t), &addr, ZMQ_DONTWAIT);
-}
-
-void FrameProcessorPlugin::publishMeta(const std::string& item, const std::string& value, const std::string& header)
-{
-  // Create a new MetaMessage object and send to the consumer
-  FrameProcessor::MetaMessage *meta = new FrameProcessor::MetaMessage(name_, item, "string", header, value.length(), value.c_str());
-  // We need the pointer to the object cast to be able to pass it through ZMQ
-  uintptr_t addr = reinterpret_cast<uintptr_t>(&(*meta));
-  // Send the pointer value to the listener
-  metaChannel_.send(sizeof(uintptr_t), &addr, ZMQ_DONTWAIT);
-}
-
-/**
- * \param[in] pValue - The pointer to data blob to publish.
- * \param[in] length - Length of data blob.
- */
-void FrameProcessorPlugin::publishMeta(const std::string& item, const void *pValue, size_t length, const std::string& header)
-{
-  // Create a new MetaMessage object and send to the consumer
-  FrameProcessor::MetaMessage *meta = new FrameProcessor::MetaMessage(name_, item, "raw", header, length, pValue);
-  // We need the pointer to the object cast to be able to pass it through ZMQ
-  uintptr_t addr = reinterpret_cast<uintptr_t>(&(*meta));
-  // Send the pointer value to the listener
-  metaChannel_.send(sizeof(uintptr_t), &addr, ZMQ_DONTWAIT);
 }
 
 /**
@@ -225,7 +158,7 @@ void FrameProcessorPlugin::publishMeta(const std::string& item, const void *pVal
 void FrameProcessorPlugin::callback(boost::shared_ptr<Frame> frame)
 {
   // Calls process frame
-  this->processFrame(frame);
+  this->process_frame(frame);
 }
 
 /** Push the supplied frame to any registered callbacks.
@@ -240,7 +173,7 @@ void FrameProcessorPlugin::push(boost::shared_ptr<Frame> frame)
 {
   // Loop over blocking callbacks, calling each function and waiting for return
   std::map<std::string, boost::shared_ptr<IFrameCallback> >::iterator bcbIter;
-  for (bcbIter = blockingCallbacks_.begin(); bcbIter != blockingCallbacks_.end(); ++bcbIter) {
+  for (bcbIter = blocking_callbacks_.begin(); bcbIter != blocking_callbacks_.end(); ++bcbIter) {
     bcbIter->second->callback(frame);
   }
   // Loop over non-blocking callbacks, placing frame onto each queue

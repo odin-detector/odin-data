@@ -140,7 +140,7 @@ BOOST_AUTO_TEST_CASE( FrameTest )
 
 BOOST_AUTO_TEST_SUITE_END(); //FrameUnitTest
 
-
+/*
 
 class FileWriterPluginTestFixture
 {
@@ -399,3 +399,4 @@ BOOST_AUTO_TEST_CASE( FileWriterPluginSubProcess )
 }
 
 BOOST_AUTO_TEST_SUITE_END(); //FileWriterUnitTest
+*/

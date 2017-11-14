@@ -110,6 +110,8 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
            "Set the timeout period for closing the file (milliseconds)")
         ("block-size",       po::value<size_t>()->default_value(1),
            "Set the number of consecutive frames to write per block")
+        ("blocks-per-file",       po::value<size_t>()->default_value(0),
+           "Set the number of blocks to write to file. Default is 0 (unlimited)")
     ;
 
     // Group the variables for parsing at the command line and/or from the configuration file
@@ -280,6 +282,11 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
       LOG4CXX_DEBUG(logger, "Setting number of frames per block to " << vm["block-size"].as<size_t>());
     }
 
+    if (no_client && vm.count("blocks-per-file"))
+    {
+      LOG4CXX_DEBUG(logger, "Setting number of blocks per file to " << vm["blocks-per-file"].as<size_t>());
+    }
+
   }
   catch (po::unknown_option &e)
   {
@@ -353,6 +360,7 @@ void configureHDF5(boost::shared_ptr<FrameProcessorController> fwc, po::variable
   cfg.set_param<unsigned int>("hdf/process/number", vm["processes"].as<unsigned int>());
   cfg.set_param<unsigned int>("hdf/process/rank", vm["rank"].as<unsigned int>());
   cfg.set_param<size_t>("hdf/process/frames_per_block", vm["block-size"].as<size_t>());
+  cfg.set_param<size_t>("hdf/process/blocks_per_file", vm["blocks-per-file"].as<size_t>());
 
   fwc->configure(cfg, reply);
 }
