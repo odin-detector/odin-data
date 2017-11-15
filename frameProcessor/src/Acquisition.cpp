@@ -60,7 +60,6 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
 
       if (this->concurrent_processes_ > 1) {
         // Check whether this frame should really be in this process
-        // Note: this expects the frame numbering from HW/FW to start at 0, not 1!
         if ((frame_offset / frames_per_block_) % this->concurrent_processes_ != this->concurrent_rank_) {
           LOG4CXX_ERROR(logger_,"Unexpected frame: " << frame_no << " in this process rank: " << this->concurrent_rank_);
           return status_invalid;
@@ -311,6 +310,22 @@ size_t Acquisition::get_frame_offset_in_file(size_t frame_offset) const {
 }
 
 /**
+ * Return the file index for the supplied global offset
+ *
+ * This method calculates the file index that this frame should be written to
+ *
+ * \param[in] frame_offset - Frame number of the frame.
+ * \return - the file index.
+ */
+size_t Acquisition::get_file_index(size_t frame_offset) const {
+  size_t block_number = frame_offset / frames_per_block_;
+  size_t block_row = block_number / concurrent_processes_;
+  size_t file_row = block_row / blocks_per_file_;
+  size_t file_index = (file_row * concurrent_processes_) + concurrent_rank_;
+  return file_index;
+}
+
+/**
  * Gets the HDF5FileWriter object for the given frame
  *
  * This will depending on variables like the number of frames per block and blocks per file.
@@ -326,11 +341,8 @@ boost::shared_ptr<HDF5FileWriter> Acquisition::get_file_writer(size_t frame_offs
     return this->file_writer;
   }
 
-  // Work out what file index this frame should go into
-  size_t block_number = frame_offset / frames_per_block_;
-  size_t block_row = block_number / concurrent_processes_;
-  size_t file_row = block_row / blocks_per_file_;
-  size_t file_index = (file_row * concurrent_processes_) + concurrent_rank_;
+  // Get the file index this frame should go into
+  size_t file_index = get_file_index(frame_offset);
 
   // Get the file writer for this frame index
   if (file_index == file_writer->get_file_index()) {

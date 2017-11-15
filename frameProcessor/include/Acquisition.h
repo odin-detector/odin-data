@@ -38,6 +38,7 @@ public:
   void stop_acquisition();
   bool check_frame_valid(boost::shared_ptr<Frame> frame);
   size_t get_frame_offset_in_file(size_t frame_offset) const;
+  size_t get_file_index(size_t frame_offset) const;
   size_t adjust_frame_offset(size_t frame_no) const;
   boost::shared_ptr<HDF5FileWriter> get_file_writer(size_t frame_offset);
   std::string get_create_meta_header();
