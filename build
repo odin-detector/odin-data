@@ -1,0 +1,23 @@
+PROGRAM=odin-data
+VERSION=0.2.0
+TAR_FILE=none
+
+build()
+{
+    ${CMAKE_BIN}/cmake \
+                       -DBoost_NO_BOOST_CMAKE=ON \
+                       -DHDF5_ROOT=${HDF5_PREFIX} \
+                       -DZEROMQ_ROOTDIR=${ZEROMQ_PREFIX} \
+                       -DLOG4CXX_ROOT_DIR=${LOG4CXX_PREFIX} \
+                       -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
+                       -DCMAKE_INSTALL_PREFIX=${TARGET_PREFIX} \
+                       ${BUILD_SCRIPT_DIR}
+    make VERBOSE=1 && make install
+
+    python_depends NUMPY POSIX_IPC PYSNMP PYZMQ
+    
+    local setup="${1:-setup.py}";
+    cd $BUILD_SCRIPT_DIR/tools/python;
+    $PYTHON $setup bdist_egg --dist-dir=$TARGET_PREFIX/lib/python2.7/site-packages
+}
+

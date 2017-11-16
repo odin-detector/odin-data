@@ -1,7 +1,8 @@
 /external
-/build
 *.pyc
 /tools/python/venv/
+/tools/python/build/
+/tools/python/dist/
 /.settings
 /.metadata
 /.cproject
