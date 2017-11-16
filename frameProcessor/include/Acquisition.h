@@ -19,7 +19,7 @@
 using namespace log4cxx;
 
 #include "FrameProcessorDefinitions.h"
-#include "HDF5FileWriter.h"
+#include "HDF5File.h"
 #include "MetaMessagePublisher.h"
 
 namespace FrameProcessor {
@@ -33,14 +33,14 @@ public:
   ~Acquisition();
   ProcessFrameStatus process_frame(boost::shared_ptr<Frame> frame);
   void create_file(size_t file_number=0);
-  void close_file(boost::shared_ptr<HDF5FileWriter> writer);
+  void close_file(boost::shared_ptr<HDF5File> file);
   void start_acquisition(size_t concurrent_rank, size_t concurrent_processes, size_t frame_offset_adjustment, size_t frames_per_block, size_t blocks_per_file);
   void stop_acquisition();
   bool check_frame_valid(boost::shared_ptr<Frame> frame);
   size_t get_frame_offset_in_file(size_t frame_offset) const;
   size_t get_file_index(size_t frame_offset) const;
   size_t adjust_frame_offset(size_t frame_no) const;
-  boost::shared_ptr<HDF5FileWriter> get_file_writer(size_t frame_offset);
+  boost::shared_ptr<HDF5File> get_file(size_t frame_offset);
   std::string get_create_meta_header();
   std::string get_meta_header();
   std::string generate_filename(size_t file_number=0);
@@ -76,8 +76,8 @@ public:
   /** Number of blocks to write in a file  */
   size_t blocks_per_file_;
 private:
-  boost::shared_ptr<HDF5FileWriter> file_writer;
-  boost::shared_ptr<HDF5FileWriter> previous_file_writer;
+  boost::shared_ptr<HDF5File> current_file;
+  boost::shared_ptr<HDF5File> previous_file;
 };
 
 } /* namespace FrameProcessor */

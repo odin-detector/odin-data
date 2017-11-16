@@ -1,14 +1,13 @@
 /*
- * HDF5FileWriter.cpp
+ * HDF5File.cpp
  *
  *  Created on: 31 Oct 2017
  *      Author: vtu42223
  */
 
-#include <hdf5_hl.h>
+#include "HDF5File.h"
 
-#include "Frame.h"
-#include "HDF5FileWriter.h"
+#include <hdf5_hl.h>
 
 #include "logging.h"
 
@@ -20,20 +19,20 @@ namespace FrameProcessor {
 
 herr_t hdf5_error_cb(unsigned n, const H5E_error2_t *err_desc, void* client_data)
 {
-  HDF5FileWriter *fwPtr = (HDF5FileWriter *)client_data;
+  HDF5File *fwPtr = (HDF5File *)client_data;
   fwPtr->hdf_error_handler(n, err_desc);
   return 0;
 }
 
-HDF5FileWriter::HDF5FileWriter() :
+HDF5File::HDF5File() :
         hdf5_file_id_(-1),
         hdf5_error_flag_(false),
         file_index_(0)
 {
   static bool hdf_initialised = false;
-  this->logger_ = Logger::getLogger("FP.HDF5FileWriter");
+  this->logger_ = Logger::getLogger("FP.HDF5File");
   this->logger_->setLevel(Level::getTrace());
-  LOG4CXX_TRACE(logger_, "HDF5FileWriter constructor.");
+  LOG4CXX_TRACE(logger_, "HDF5File constructor.");
   if (!hdf_initialised) {
     ensure_h5_result(H5Eset_auto2(H5E_DEFAULT, NULL, NULL), "H5Eset_auto2 failed");
     ensure_h5_result(H5Ewalk2(H5E_DEFAULT, H5E_WALK_DOWNWARD, hdf5_error_cb, this), "H5Ewalk2 failed");
@@ -41,7 +40,7 @@ HDF5FileWriter::HDF5FileWriter() :
   }
 }
 
-HDF5FileWriter::~HDF5FileWriter() {
+HDF5File::~HDF5File() {
   // Call to close file in case it hasn't been closed
   close_file();
 }
@@ -54,14 +53,14 @@ HDF5FileWriter::~HDF5FileWriter() {
  * \param[in] filename - The filename
  * \param[in] line - The line number of the call
  */
-void HDF5FileWriter::handle_h5_error(std::string message, std::string function, std::string filename, int line) const {
+void HDF5File::handle_h5_error(std::string message, std::string function, std::string filename, int line) const {
   std::stringstream err;
   err << "H5 function error: (" << message << ") in " << filename << ":" << line << ": " << function;
   LOG4CXX_ERROR(logger_, err.str());
   throw std::runtime_error(err.str().c_str());
 }
 
-void HDF5FileWriter::hdf_error_handler(unsigned n, const H5E_error2_t *err_desc)
+void HDF5File::hdf_error_handler(unsigned n, const H5E_error2_t *err_desc)
 {
   const int MSG_SIZE = 64;
   char maj[MSG_SIZE];
@@ -85,7 +84,7 @@ void HDF5FileWriter::hdf_error_handler(unsigned n, const H5E_error2_t *err_desc)
   hdf5_errors_.push_back(err.str());
 }
 
-bool HDF5FileWriter::check_for_hdf_errors()
+bool HDF5File::check_for_hdf_errors()
 {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
@@ -94,7 +93,7 @@ bool HDF5FileWriter::check_for_hdf_errors()
   return hdf5_error_flag_;
 }
 
-std::vector<std::string> HDF5FileWriter::read_hdf_errors()
+std::vector<std::string> HDF5File::read_hdf_errors()
 {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
@@ -103,7 +102,7 @@ std::vector<std::string> HDF5FileWriter::read_hdf_errors()
   return hdf5_errors_;
 }
 
-void HDF5FileWriter::clear_hdf_errors()
+void HDF5File::clear_hdf_errors()
 {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
@@ -125,7 +124,7 @@ void HDF5FileWriter::clear_hdf_errors()
  * \param[in] filename - Full file name of the file to create.
  * \param[in] chunk_align - Not currently used.
  */
-void HDF5FileWriter::create_file(std::string filename, size_t file_index, size_t chunk_align)
+void HDF5File::create_file(std::string filename, size_t file_index, size_t chunk_align)
 {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
@@ -171,7 +170,7 @@ void HDF5FileWriter::create_file(std::string filename, size_t file_index, size_t
 /**
  * Close the currently open HDF5 file.
  */
-void HDF5FileWriter::close_file() {
+void HDF5File::close_file() {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
   if (this->hdf5_file_id_ >= 0) {
@@ -185,7 +184,7 @@ void HDF5FileWriter::close_file() {
  *
  * \param[in] frame - Reference to the frame.
  */
-void HDF5FileWriter::write_frame(const Frame& frame, hsize_t frame_offset, uint64_t outer_chunk_dimension) {
+void HDF5File::write_frame(const Frame& frame, hsize_t frame_offset, uint64_t outer_chunk_dimension) {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
   hsize_t frame_no = frame.get_frame_number();
@@ -226,7 +225,7 @@ void HDF5FileWriter::write_frame(const Frame& frame, hsize_t frame_offset, uint6
  *
  * \param[in] definition - Reference to the DatasetDefinition.
  */
-void HDF5FileWriter::create_dataset(const DatasetDefinition& definition)
+void HDF5File::create_dataset(const DatasetDefinition& definition)
 {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
@@ -328,7 +327,7 @@ void HDF5FileWriter::create_dataset(const DatasetDefinition& definition)
  * \param[in] dset_name - name of the dataset to search for.
  * \return - the dataset definition if found.
  */
-HDF5FileWriter::HDF5Dataset_t& HDF5FileWriter::get_hdf5_dataset(const std::string dset_name) {
+HDF5File::HDF5Dataset_t& HDF5File::get_hdf5_dataset(const std::string dset_name) {
   // Check if the frame destination dataset has been created
   if (this->hdf5_datasets_.find(dset_name) == this->hdf5_datasets_.end())
   {
@@ -347,7 +346,7 @@ HDF5FileWriter::HDF5Dataset_t& HDF5FileWriter::get_hdf5_dataset(const std::strin
  * \param[in] dset - Handle to the HDF5 dataset.
  * \param[in] frame_no - Number of the incoming frame to extend to.
  */
-void HDF5FileWriter::extend_dataset(HDF5Dataset_t& dset, size_t frame_no) const {
+void HDF5File::extend_dataset(HDF5Dataset_t& dset, size_t frame_no) const {
   if (frame_no > dset.dataset_dimensions[0]) {
     // Extend the dataset
     LOG4CXX_DEBUG(logger_, "Extending dataset_dimensions[0] = " << frame_no);
@@ -361,7 +360,7 @@ void HDF5FileWriter::extend_dataset(HDF5Dataset_t& dset, size_t frame_no) const 
  *
  * \param[in] dataset - HDF5 dataset
  */
-size_t HDF5FileWriter::get_dataset_frames(const std::string dset_name)
+size_t HDF5File::get_dataset_frames(const std::string dset_name)
 {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
@@ -379,7 +378,7 @@ size_t HDF5FileWriter::get_dataset_frames(const std::string dset_name)
  * \param[in] pixel - The PixelType type to convert.
  * \return - the equivalent HDF5 type.
  */
-hid_t HDF5FileWriter::pixel_to_hdf_type(PixelType pixel) const {
+hid_t HDF5File::pixel_to_hdf_type(PixelType pixel) const {
   hid_t dtype = 0;
   switch(pixel)
   {
@@ -409,7 +408,7 @@ hid_t HDF5FileWriter::pixel_to_hdf_type(PixelType pixel) const {
 /**
  * Start SWMR writing
  */
-void HDF5FileWriter::start_swmr() {
+void HDF5File::start_swmr() {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
 #if H5_VERSION_GE(1,9,178)
@@ -418,20 +417,20 @@ void HDF5FileWriter::start_swmr() {
 }
 
 /**
- * Get the file index that this writer is writing
+ * Get the file index of this file
  *
  * \return - the file index (0 indexed)
  */
-size_t HDF5FileWriter::get_file_index() {
+size_t HDF5File::get_file_index() {
   return file_index_;
 }
 
 /**
- * Get the file name that this writer is writing
+ * Get the file name of this file
  *
  * \return - the name of the file
  */
-std::string HDF5FileWriter::get_filename() {
+std::string HDF5File::get_filename() {
   return filename_;
 }
 

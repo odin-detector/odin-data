@@ -153,7 +153,6 @@ class FileWriterPluginTestFixture
 public:
   FileWriterPluginTestFixture()
   {
-    std::cout << "ffs" << std::endl;
     unsigned short img[12] =  { 1, 2, 3, 4,
                                 5, 6, 7, 8,
                                 9,10,11,12 };
@@ -192,124 +191,124 @@ public:
   boost::shared_ptr<FrameProcessor::Frame> frame;
   std::vector< boost::shared_ptr<FrameProcessor::Frame> >frames;
   FrameProcessor::FileWriterPlugin fw;
-  FrameProcessor::HDF5FileWriter hdf5fw;
+  FrameProcessor::HDF5File hdf5f;
   FrameProcessor::DatasetDefinition dset_def;
 };
 
-BOOST_FIXTURE_TEST_SUITE(HDF5FileWriterUnitTest, FileWriterPluginTestFixture);
+BOOST_FIXTURE_TEST_SUITE(HDF5FileUnitTest, FileWriterPluginTestFixture);
 
-BOOST_AUTO_TEST_CASE( HDF5FileWriterTest )
+BOOST_AUTO_TEST_CASE( HDF5FileTest )
 {
-  BOOST_REQUIRE_NO_THROW(hdf5fw.create_file("/tmp/blah.h5", 0));
-  BOOST_REQUIRE_NO_THROW(hdf5fw.create_dataset(dset_def));
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/blah.h5", 0));
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def));
   BOOST_REQUIRE_EQUAL(dset_def.name, frame->get_dataset_name());
 
-  BOOST_REQUIRE_NO_THROW(hdf5fw.write_frame(*frame, frame->get_frame_number(), 1));
-  BOOST_REQUIRE_NO_THROW(hdf5fw.close_file());
+  BOOST_REQUIRE_NO_THROW(hdf5f.write_frame(*frame, frame->get_frame_number(), 1));
+  BOOST_REQUIRE_NO_THROW(hdf5f.close_file());
 }
 
-BOOST_AUTO_TEST_CASE( HDF5FileWriterMultiDatasetTest )
+BOOST_AUTO_TEST_CASE( HDF5FileMultiDatasetTest )
 {
-  BOOST_REQUIRE_NO_THROW(hdf5fw.create_file("/tmp/blah_multidataset.h5", 0));
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/blah_multidataset.h5", 0));
 
   // Create the first dataset "data"
-  BOOST_REQUIRE_NO_THROW(hdf5fw.create_dataset(dset_def));
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def));
   BOOST_CHECK_EQUAL(dset_def.name, frame->get_dataset_name());
 
   // Create the second dataset "stuff"
   dset_def.name = "stuff";
-  BOOST_REQUIRE_NO_THROW(hdf5fw.create_dataset(dset_def));
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def));
 
   // Write first frame to "data"
-  BOOST_REQUIRE_NO_THROW(hdf5fw.write_frame(*frame, frame->get_frame_number(), 1));
+  BOOST_REQUIRE_NO_THROW(hdf5f.write_frame(*frame, frame->get_frame_number(), 1));
 
   // Write the frame to "stuff"
   BOOST_CHECK_NO_THROW(frame->set_dataset_name("stuff"));
   BOOST_CHECK_EQUAL(dset_def.name, frame->get_dataset_name());
-  BOOST_REQUIRE_NO_THROW(hdf5fw.write_frame(*frame, frame->get_frame_number(), 1));
+  BOOST_REQUIRE_NO_THROW(hdf5f.write_frame(*frame, frame->get_frame_number(), 1));
 
   // write another frame to "data"
   BOOST_CHECK_EQUAL("data", frames[2]->get_dataset_name());
-  BOOST_REQUIRE_NO_THROW(hdf5fw.write_frame(*frames[2], frames[2]->get_frame_number(), 1));
+  BOOST_REQUIRE_NO_THROW(hdf5f.write_frame(*frames[2], frames[2]->get_frame_number(), 1));
   // and yet another frame to "stuff"
   BOOST_CHECK_NO_THROW(frames[2]->set_dataset_name("stuff"));
-  BOOST_REQUIRE_NO_THROW(hdf5fw.write_frame(*frames[2], frames[2]->get_frame_number(), 1));
+  BOOST_REQUIRE_NO_THROW(hdf5f.write_frame(*frames[2], frames[2]->get_frame_number(), 1));
 
-  BOOST_REQUIRE_NO_THROW(hdf5fw.close_file());
+  BOOST_REQUIRE_NO_THROW(hdf5f.close_file());
 }
 
-BOOST_AUTO_TEST_CASE( HDF5FileWriterBadFileTest )
+BOOST_AUTO_TEST_CASE( HDF5FileBadFileTest )
 {
   // Check for an error when a bad file path is provided
-  BOOST_CHECK_THROW(hdf5fw.create_file("/non/existent/path/blah_throw.h5", 0), std::runtime_error);
+  BOOST_CHECK_THROW(hdf5f.create_file("/non/existent/path/blah_throw.h5", 0), std::runtime_error);
 }
 
 BOOST_AUTO_TEST_CASE( FileWriterPluginDatasetWithoutOpenFileTest )
 {
   // Check for an error when a dataset is created without a file open
-  BOOST_CHECK_THROW(hdf5fw.create_dataset(dset_def), std::runtime_error);
+  BOOST_CHECK_THROW(hdf5f.create_dataset(dset_def), std::runtime_error);
 }
 
-BOOST_AUTO_TEST_CASE( HDF5FileWriterNoDatasetDefinitionsTest )
+BOOST_AUTO_TEST_CASE( HDF5FileNoDatasetDefinitionsTest )
 {
   // Create a file ready for writing
-  BOOST_REQUIRE_NO_THROW(hdf5fw.create_file("/tmp/blah_throw.h5", 0));
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/blah_throw.h5", 0));
 
   // Write a frame without first creating the dataset
-  BOOST_CHECK_THROW(hdf5fw.write_frame(*frame, frame->get_frame_number(), 1), std::runtime_error);
+  BOOST_CHECK_THROW(hdf5f.write_frame(*frame, frame->get_frame_number(), 1), std::runtime_error);
 
   // Attempt to close the file
-  BOOST_REQUIRE_NO_THROW(hdf5fw.close_file());
+  BOOST_REQUIRE_NO_THROW(hdf5f.close_file());
 }
 
-BOOST_AUTO_TEST_CASE( HDF5FileWriterInvalidDatasetTest )
+BOOST_AUTO_TEST_CASE( HDF5FileInvalidDatasetTest )
 {
-  BOOST_REQUIRE_NO_THROW(hdf5fw.create_file("/tmp/blah_throw.h5", 0));
-  BOOST_REQUIRE_NO_THROW(hdf5fw.create_dataset(dset_def));
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/blah_throw.h5", 0));
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def));
   BOOST_REQUIRE_NO_THROW(frame->set_dataset_name("non_existing_dataset_name"));
 
-  BOOST_CHECK_THROW(hdf5fw.write_frame(*frame, frame->get_frame_number(), 1), std::runtime_error);
-  BOOST_REQUIRE_NO_THROW(hdf5fw.close_file());
+  BOOST_CHECK_THROW(hdf5f.write_frame(*frame, frame->get_frame_number(), 1), std::runtime_error);
+  BOOST_REQUIRE_NO_THROW(hdf5f.close_file());
 }
 
 BOOST_AUTO_TEST_CASE( FileWriterPluginMultipleFramesTest )
 {
-  BOOST_REQUIRE_NO_THROW(hdf5fw.create_file("/tmp/blah_multiple.h5", 0));
-  BOOST_REQUIRE_NO_THROW(hdf5fw.create_dataset(dset_def));
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/blah_multiple.h5", 0));
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def));
 
   std::vector<boost::shared_ptr<FrameProcessor::Frame> >::iterator it;
   for (it = frames.begin(); it != frames.end(); ++it) {
     BOOST_TEST_MESSAGE("Writing frame: " <<  (*it)->get_frame_number());
-    BOOST_REQUIRE_NO_THROW(hdf5fw.write_frame(*(*it), (*it)->get_frame_number(), 1));
+    BOOST_REQUIRE_NO_THROW(hdf5f.write_frame(*(*it), (*it)->get_frame_number(), 1));
   }
-  BOOST_REQUIRE_NO_THROW(hdf5fw.close_file());
+  BOOST_REQUIRE_NO_THROW(hdf5f.close_file());
 }
 
-BOOST_AUTO_TEST_CASE( HDF5FileWriterMultipleReverseTest )
+BOOST_AUTO_TEST_CASE( HDF5FileMultipleReverseTest )
 {
   // Just reverse through the list of frames and write them out.
   // The frames should still appear in the file in the original order...
-  BOOST_REQUIRE_NO_THROW(hdf5fw.create_file("/tmp/blah_multiple_reverse.h5", 0));
-  BOOST_REQUIRE_NO_THROW(hdf5fw.create_dataset(dset_def));
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/blah_multiple_reverse.h5", 0));
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def));
 
   // The first frame to write is used as an offset - so must be the lowest
   // frame number. Frames received later with a smaller number would result
   // in negative file index...
   BOOST_TEST_MESSAGE("Writing frame: " << frame->get_frame_number());
-  BOOST_REQUIRE_NO_THROW(hdf5fw.write_frame(*frame, frame->get_frame_number(), 1));
+  BOOST_REQUIRE_NO_THROW(hdf5f.write_frame(*frame, frame->get_frame_number(), 1));
 
   std::vector<boost::shared_ptr<FrameProcessor::Frame> >::reverse_iterator rit;
   for (rit = frames.rbegin(); rit != frames.rend(); ++rit) {
     BOOST_TEST_MESSAGE("Writing frame: " <<  (*rit)->get_frame_number());
-    BOOST_REQUIRE_NO_THROW(hdf5fw.write_frame(*(*rit), (*rit)->get_frame_number(), 1));
+    BOOST_REQUIRE_NO_THROW(hdf5f.write_frame(*(*rit), (*rit)->get_frame_number(), 1));
   }
-  BOOST_REQUIRE_NO_THROW(hdf5fw.close_file());
+  BOOST_REQUIRE_NO_THROW(hdf5f.close_file());
 }
 
-BOOST_AUTO_TEST_CASE( HDF5FileWriterAdjustHugeOffset )
+BOOST_AUTO_TEST_CASE( HDF5FileAdjustHugeOffset )
 {
-  BOOST_REQUIRE_NO_THROW(hdf5fw.create_file("/tmp/test_huge_offset.h5", 0));
-  BOOST_REQUIRE_NO_THROW(hdf5fw.create_dataset(dset_def));
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/test_huge_offset.h5", 0));
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def));
 
   hsize_t huge_offset = 100000;
   BOOST_REQUIRE_NO_THROW(fw.set_frame_offset_adjustment(huge_offset));
@@ -321,12 +320,12 @@ BOOST_AUTO_TEST_CASE( HDF5FileWriterAdjustHugeOffset )
     //img_header.frame_number = frame_no + huge_offset;
     //(*it)->copy_header(&img_header);
     (*it)->set_frame_number(frame_no + huge_offset);
-    BOOST_REQUIRE_NO_THROW(hdf5fw.write_frame(*(*it), (*it)->get_frame_number(), 1));
+    BOOST_REQUIRE_NO_THROW(hdf5f.write_frame(*(*it), (*it)->get_frame_number(), 1));
   }
-  BOOST_REQUIRE_NO_THROW(hdf5fw.close_file());
+  BOOST_REQUIRE_NO_THROW(hdf5f.close_file());
 }
 
-BOOST_AUTO_TEST_SUITE_END(); //HDF5FileWriterUnitTest
+BOOST_AUTO_TEST_SUITE_END(); //HDF5FileUnitTest
 
 
 BOOST_FIXTURE_TEST_SUITE(AcquisitionUnitTest, FileWriterPluginTestFixture);
@@ -539,3 +538,127 @@ BOOST_AUTO_TEST_CASE( AcquisitionGetOffsetInFile )
 
 BOOST_AUTO_TEST_SUITE_END(); //AcquisitionUnitTest
 
+BOOST_FIXTURE_TEST_SUITE(FileWriterPluginTestUnitTest, FileWriterPluginTestFixture);
+
+BOOST_AUTO_TEST_CASE( FileWriterPluginCalcNumFramesTest1fpb )
+{
+  OdinData::IpcMessage reply;
+  FrameProcessor::FileWriterPlugin fwp0;
+  {
+    OdinData::IpcMessage cfg;
+    cfg.set_param("process/number", 4);
+    cfg.set_param("process/rank", 0);
+    cfg.set_param("process/frames_per_block", 1);
+    fwp0.configure(cfg, reply);
+  }
+  FrameProcessor::FileWriterPlugin fwp1;
+  {
+    OdinData::IpcMessage cfg;
+    cfg.set_param("process/number", 4);
+    cfg.set_param("process/rank", 1);
+    cfg.set_param("process/frames_per_block", 1);
+    fwp1.configure(cfg, reply);
+  }
+  FrameProcessor::FileWriterPlugin fwp2;
+  {
+    OdinData::IpcMessage cfg;
+    cfg.set_param("process/number", 4);
+    cfg.set_param("process/rank", 2);
+    cfg.set_param("process/frames_per_block", 1);
+    fwp2.configure(cfg, reply);
+  }
+  FrameProcessor::FileWriterPlugin fwp3;
+  {
+    OdinData::IpcMessage cfg;
+    cfg.set_param("process/number", 4);
+    cfg.set_param("process/rank", 3);
+    cfg.set_param("process/frames_per_block", 1);
+    fwp3.configure(cfg, reply);
+  }
+
+  size_t num_frames_0 = fwp0.calc_num_frames(1141);
+  BOOST_CHECK_EQUAL(286, num_frames_0);
+  size_t num_frames_1 = fwp1.calc_num_frames(1141);
+  BOOST_CHECK_EQUAL(285, num_frames_1);
+  size_t num_frames_2 = fwp2.calc_num_frames(1141);
+  BOOST_CHECK_EQUAL(285, num_frames_2);
+  size_t num_frames_3 = fwp3.calc_num_frames(1141);
+  BOOST_CHECK_EQUAL(285, num_frames_3);
+
+  num_frames_0 = fwp0.calc_num_frames(3);
+  BOOST_CHECK_EQUAL(1, num_frames_0);
+  num_frames_1 = fwp1.calc_num_frames(3);
+  BOOST_CHECK_EQUAL(1, num_frames_1);
+  num_frames_2 = fwp2.calc_num_frames(3);
+  BOOST_CHECK_EQUAL(1, num_frames_2);
+  num_frames_3 = fwp3.calc_num_frames(3);
+  BOOST_CHECK_EQUAL(0, num_frames_3);
+
+}
+
+BOOST_AUTO_TEST_CASE( FileWriterPluginCalcNumFramesTest1000fpb )
+{
+  OdinData::IpcMessage reply;
+  FrameProcessor::FileWriterPlugin fwp0;
+  {
+    OdinData::IpcMessage cfg;
+    cfg.set_param("process/number", 4);
+    cfg.set_param("process/rank", 0);
+    cfg.set_param("process/frames_per_block", 1000);
+    fwp0.configure(cfg, reply);
+  }
+  FrameProcessor::FileWriterPlugin fwp1;
+  {
+    OdinData::IpcMessage cfg;
+    cfg.set_param("process/number", 4);
+    cfg.set_param("process/rank", 1);
+    cfg.set_param("process/frames_per_block", 1000);
+    fwp1.configure(cfg, reply);
+  }
+  FrameProcessor::FileWriterPlugin fwp2;
+  {
+    OdinData::IpcMessage cfg;
+    cfg.set_param("process/number", 4);
+    cfg.set_param("process/rank", 2);
+    cfg.set_param("process/frames_per_block", 1000);
+    fwp2.configure(cfg, reply);
+  }
+  FrameProcessor::FileWriterPlugin fwp3;
+  {
+    OdinData::IpcMessage cfg;
+    cfg.set_param("process/number", 4);
+    cfg.set_param("process/rank", 3);
+    cfg.set_param("process/frames_per_block", 1000);
+    fwp3.configure(cfg, reply);
+  }
+
+  size_t num_frames_0 = fwp0.calc_num_frames(1141);
+  BOOST_CHECK_EQUAL(1000, num_frames_0);
+  size_t num_frames_1 = fwp1.calc_num_frames(1141);
+  BOOST_CHECK_EQUAL(141, num_frames_1);
+  size_t num_frames_2 = fwp2.calc_num_frames(1141);
+  BOOST_CHECK_EQUAL(0, num_frames_2);
+  size_t num_frames_3 = fwp3.calc_num_frames(1141);
+  BOOST_CHECK_EQUAL(0, num_frames_3);
+
+  num_frames_0 = fwp0.calc_num_frames(3);
+  BOOST_CHECK_EQUAL(3, num_frames_0);
+  num_frames_1 = fwp1.calc_num_frames(3);
+  BOOST_CHECK_EQUAL(0, num_frames_1);
+  num_frames_2 = fwp2.calc_num_frames(3);
+  BOOST_CHECK_EQUAL(0, num_frames_2);
+  num_frames_3 = fwp3.calc_num_frames(3);
+  BOOST_CHECK_EQUAL(0, num_frames_3);
+
+  num_frames_0 = fwp0.calc_num_frames(33999);
+  BOOST_CHECK_EQUAL(9000, num_frames_0);
+  num_frames_1 = fwp1.calc_num_frames(33999);
+  BOOST_CHECK_EQUAL(8999, num_frames_1);
+  num_frames_2 = fwp2.calc_num_frames(33999);
+  BOOST_CHECK_EQUAL(8000, num_frames_2);
+  num_frames_3 = fwp3.calc_num_frames(33999);
+  BOOST_CHECK_EQUAL(8000, num_frames_3);
+
+}
+
+BOOST_AUTO_TEST_SUITE_END(); //FileWriterPluginTest

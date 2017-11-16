@@ -1,12 +1,12 @@
 /*
- * HDF5FileWriter.h
+ * HDF5File.h
  *
  *  Created on: 31 Oct 2017
  *      Author: vtu42223
  */
 
-#ifndef FRAMEPROCESSOR_SRC_HDF5FILEWRITER_H_
-#define FRAMEPROCESSOR_SRC_HDF5FILEWRITER_H_
+#ifndef FRAMEPROCESSOR_SRC_HDF5FILE_H_
+#define FRAMEPROCESSOR_SRC_HDF5FILE_H_
 
 
 #include <string>
@@ -22,12 +22,13 @@ using namespace log4cxx;
 #include <hdf5.h>
 #include "H5Zpublic.h"
 
+#include "Frame.h"
 #include "FrameProcessorDefinitions.h"
 #include "MetaMessagePublisher.h"
 
 namespace FrameProcessor {
 
-class HDF5FileWriter
+class HDF5File
 {
 public:
 
@@ -45,8 +46,8 @@ public:
   };
 
 
-  HDF5FileWriter();
-  ~HDF5FileWriter();
+  HDF5File();
+  ~HDF5File();
   void hdf_error_handler(unsigned n, const H5E_error2_t *err_desc);
   bool check_for_hdf_errors();
   std::vector<std::string> read_hdf_errors();
@@ -69,7 +70,7 @@ private:
   static const H5Z_filter_t BSLZ4_FILTER = (H5Z_filter_t)32008;
 
   HDF5Dataset_t& get_hdf5_dataset(const std::string dset_name);
-  void extend_dataset(HDF5FileWriter::HDF5Dataset_t& dset, size_t frame_no) const;
+  void extend_dataset(HDF5File::HDF5Dataset_t& dset, size_t frame_no) const;
   hid_t pixel_to_hdf_type(PixelType pixel) const;
 
   LoggerPtr logger_;
@@ -90,4 +91,4 @@ private:
 
 } /* namespace FrameProcessor */
 
-#endif /* FRAMEPROCESSOR_SRC_HDF5FILEWRITER_H_ */
+#endif /* FRAMEPROCESSOR_SRC_HDF5FILE_H_ */

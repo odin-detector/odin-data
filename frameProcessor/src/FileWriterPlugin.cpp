@@ -17,11 +17,11 @@
 namespace FrameProcessor
 {
 
-const std::string FileWriterPlugin::CONFIG_PROCESS             = "process";
-const std::string FileWriterPlugin::CONFIG_PROCESS_NUMBER      = "number";
-const std::string FileWriterPlugin::CONFIG_PROCESS_RANK        = "rank";
-const std::string FileWriterPlugin::CONFIG_PROCESS_BLOCKSIZE   = "frames_per_block";
-const std::string FileWriterPlugin::CONFIG_PROCESS_BLOCKS_PER_FILE   = "blocks_per_file";
+const std::string FileWriterPlugin::CONFIG_PROCESS                 = "process";
+const std::string FileWriterPlugin::CONFIG_PROCESS_NUMBER          = "number";
+const std::string FileWriterPlugin::CONFIG_PROCESS_RANK            = "rank";
+const std::string FileWriterPlugin::CONFIG_PROCESS_BLOCKSIZE       = "frames_per_block";
+const std::string FileWriterPlugin::CONFIG_PROCESS_BLOCKS_PER_FILE = "blocks_per_file";
 
 const std::string FileWriterPlugin::CONFIG_FILE                = "file";
 const std::string FileWriterPlugin::CONFIG_FILE_NAME           = "name";
@@ -117,10 +117,9 @@ void FileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame)
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
 
-  // Start a new acquisition if the frame object contains a different acquisition ID from the current one
-  bool can_process_frame = check_acquisition_id(frame);
-
-  if (can_process_frame) {
+  // Check the frame against the current acquisition and start a new one if
+  // the frame object contains a different acquisition ID from the current one
+  if (frame_in_acquisition(frame)) {
 
     if (writing_) {
 
@@ -547,7 +546,7 @@ void FileWriterPlugin::status(OdinData::IpcMessage& status)
  *
  * \param[in] frame - Pointer to the Frame object.
  */
-bool FileWriterPlugin::check_acquisition_id(boost::shared_ptr<Frame> frame) {
+bool FileWriterPlugin::frame_in_acquisition(boost::shared_ptr<Frame> frame) {
   if (!frame->get_acquisition_id().empty()) {
     if (writing_) {
       if (frame->get_acquisition_id() == current_acquisition_->acquisition_id_) {

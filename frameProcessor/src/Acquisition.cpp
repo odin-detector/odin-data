@@ -36,7 +36,7 @@ Acquisition::~Acquisition() {
 /**
  * Processes a frame
  *
- * This method checks that the frame is valid before using an HDF5 file writer to write the frame to file
+ * This method checks that the frame is valid before using an HDF5File to write the frame to file
  *
  * \param[in] frame - The frame to process
  * \return - The Status of the processing.
@@ -47,16 +47,9 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
   try {
     if (check_frame_valid(frame)) {
 
-      uint64_t outer_chunk_dimension = 1;
-      if (dataset_defs_.size() != 0) {
-        outer_chunk_dimension = dataset_defs_.at(frame->get_dataset_name()).chunks[0];
-      }
-
       hsize_t frame_no = frame->get_frame_number();
 
-      size_t frame_offset = 0;
-
-      frame_offset = this->adjust_frame_offset(frame_no);
+      size_t frame_offset = this->adjust_frame_offset(frame_no);
 
       if (this->concurrent_processes_ > 1) {
         // Check whether this frame should really be in this process
@@ -66,16 +59,21 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
         }
       }
 
-      boost::shared_ptr<HDF5FileWriter> writer = this->get_file_writer(frame_offset);
+      boost::shared_ptr<HDF5File> file = this->get_file(frame_offset);
 
-      if (writer == 0) {
-        LOG4CXX_ERROR(logger_,"Unable to get writer for this frame");
+      if (file == 0) {
+        LOG4CXX_ERROR(logger_,"Unable to get file for this frame");
         return status_invalid;
       }
 
       size_t frame_offset_in_file = this->get_frame_offset_in_file(frame_offset);
 
-      writer->write_frame(*frame, frame_offset_in_file, outer_chunk_dimension);
+      uint64_t outer_chunk_dimension = 1;
+      if (dataset_defs_.size() != 0) {
+        outer_chunk_dimension = dataset_defs_.at(frame->get_dataset_name()).chunks[0];
+      }
+
+      file->write_frame(*frame, frame_offset_in_file, outer_chunk_dimension);
 
       // Send the meta message containing the frame written and the offset written to
       rapidjson::Document document;
@@ -115,10 +113,10 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
       // or if no master frame has been defined. If either of these conditions
       // are true then increment the number of frames written.
       if (master_frame_ == "" || master_frame_ == frame->get_dataset_name()) {
-        size_t dataset_frames = writer->get_dataset_frames(frame->get_dataset_name());
+        size_t dataset_frames = file->get_dataset_frames(frame->get_dataset_name());
         frames_processed_++;
         LOG4CXX_TRACE(logger_, "Master frame processed");
-        size_t current_file_index = file_writer->get_file_index() / concurrent_processes_;
+        size_t current_file_index = current_file->get_file_index() / concurrent_processes_;
         size_t frames_written_to_previous_files = current_file_index * frames_per_block_ * blocks_per_file_;
         size_t total_frames_written = frames_written_to_previous_files + dataset_frames;
         if (total_frames_written == frames_written_) {
@@ -165,21 +163,21 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
 /**
  * Creates a file
  *
- * This method creates a new HDF5FileWriter object with the given file_number.
+ * This method creates a new HDF5File object with the given file_number.
  * The file will be created, the datasets populated within the file, and a meta message sent
  *
  * \param[in] file_number - The file_number to create a file for
  */
 void Acquisition::create_file(size_t file_number) {
-  // Set previous writer to current writer
-  close_file(previous_file_writer);
-  previous_file_writer = file_writer;
+  // Set previous file to current file, closing off the file for the previous file first
+  close_file(previous_file);
+  previous_file = current_file;
 
-  file_writer = boost::shared_ptr<HDF5FileWriter>(new HDF5FileWriter());
+  current_file = boost::shared_ptr<HDF5File>(new HDF5File());
 
   // Create the file
   boost::filesystem::path full_path = boost::filesystem::path(file_path_) / boost::filesystem::path(filename_);
-  file_writer->create_file(full_path.string(), file_number);
+  current_file->create_file(full_path.string(), file_number);
 
   // Send meta data message to notify of file creation
   publish_meta("Acquisition", "createfile", full_path.string(), get_create_meta_header());
@@ -189,25 +187,26 @@ void Acquisition::create_file(size_t file_number) {
   for (iter = dataset_defs_.begin(); iter != dataset_defs_.end(); ++iter) {
     DatasetDefinition dset_def = iter->second;
     dset_def.num_frames = frames_to_write_;
-    file_writer->create_dataset(dset_def);
+    current_file->create_dataset(dset_def);
   }
 
-  file_writer->start_swmr();
+  current_file->start_swmr();
 }
 
 /**
  * Closes a file
  *
- * This method closes the file that is currently being written to by the specified writer
+ * This method closes the file that is currently being written to by the specified HDF5File object
+ * and sends off meta data for this event
  *
- * \param[in] writer - The HDF5FileWriter to call to close its file
+ * \param[in] file - The HDF5File to call to close its file
  */
-void Acquisition::close_file(boost::shared_ptr<HDF5FileWriter> writer) {
-  if (writer != 0) {
-    LOG4CXX_INFO(logger_, "Closing file " << writer->get_filename());
-    writer->close_file();
+void Acquisition::close_file(boost::shared_ptr<HDF5File> file) {
+  if (file != 0) {
+    LOG4CXX_INFO(logger_, "Closing file " << file->get_filename());
+    file->close_file();
     // Send meta data message to notify of file close
-    publish_meta("Acquisition", "closefile", writer->get_filename(), get_meta_header());
+    publish_meta("Acquisition", "closefile", file->get_filename(), get_meta_header());
   }
 }
 
@@ -247,8 +246,8 @@ void Acquisition::start_acquisition(size_t concurrent_rank, size_t concurrent_pr
  * Stops this acquisition, closing off any open files
  */
 void Acquisition::stop_acquisition() {
-  close_file(previous_file_writer);
-  close_file(file_writer);
+  close_file(previous_file);
+  close_file(current_file);
   publish_meta("Acquisition", "stopacquisition", "", get_meta_header());
 }
 
@@ -326,50 +325,50 @@ size_t Acquisition::get_file_index(size_t frame_offset) const {
 }
 
 /**
- * Gets the HDF5FileWriter object for the given frame
+ * Gets the HDF5File object for the given frame
  *
  * This will depending on variables like the number of frames per block and blocks per file.
- * If the required writer doesn't currently exist, one will be created.
+ * If the required HDF5File doesn't currently exist, one will be created.
  * If it's detected that there are frames which have been missed which would have required
- * a writer before this one, those writers are created and their files written with blank data
+ * a file before this one, those files are created and their files written with blank data
  *
- * \param[in] frame_offset - The frame offset to get the file writer for
- * \return - The writer that should be used to write this frame
+ * \param[in] frame_offset - The frame offset to get the file for
+ * \return - The file that should be used to write this frame
  */
-boost::shared_ptr<HDF5FileWriter> Acquisition::get_file_writer(size_t frame_offset) {
+boost::shared_ptr<HDF5File> Acquisition::get_file(size_t frame_offset) {
   if (blocks_per_file_ == 0) {
-    return this->file_writer;
+    return this->current_file;
   }
 
   // Get the file index this frame should go into
   size_t file_index = get_file_index(frame_offset);
 
-  // Get the file writer for this frame index
-  if (file_index == file_writer->get_file_index()) {
-    return this->file_writer;
-  } else if (previous_file_writer != 0 && file_index == previous_file_writer->get_file_index()) {
-    return this->previous_file_writer;
-  } else if (file_index > file_writer->get_file_index()) {
+  // Get the file for this frame index
+  if (file_index == current_file->get_file_index()) {
+    return this->current_file;
+  } else if (previous_file != 0 && file_index == previous_file->get_file_index()) {
+    return this->previous_file;
+  } else if (file_index > current_file->get_file_index()) {
     LOG4CXX_TRACE(logger_,"Creating new file as frame " << frame_offset <<
-        " won't go into fileIndex " << file_writer->get_file_index() << " as it requires " << file_index);
+        " won't go into file index " << current_file->get_file_index() << " as it requires " << file_index);
 
     // Check for missing files and create them if they have been missed
-    size_t next_expected_file_index = file_writer->get_file_index() + concurrent_processes_;
+    size_t next_expected_file_index = current_file->get_file_index() + concurrent_processes_;
     while (next_expected_file_index < file_index) {
       LOG4CXX_DEBUG(logger_,"Creating missing file " << next_expected_file_index);
       filename_ = generate_filename(next_expected_file_index);
       create_file(next_expected_file_index);
-      next_expected_file_index = file_writer->get_file_index() + concurrent_processes_;
+      next_expected_file_index = current_file->get_file_index() + concurrent_processes_;
     }
 
     filename_ = generate_filename(file_index);
 
     create_file(file_index);
 
-    return this->file_writer;
+    return this->current_file;
   } else {
     LOG4CXX_WARN(logger_,"Unable to write frame offset " << frame_offset << " as no suitable file found");
-    return boost::shared_ptr<HDF5FileWriter>();
+    return boost::shared_ptr<HDF5File>();
   }
 
 }
