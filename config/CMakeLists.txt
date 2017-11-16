@@ -16,7 +16,7 @@ set(TEST_CONFIGS
 foreach(test_config ${TEST_CONFIGS})
 	add_custom_command(
 		OUTPUT "${CMAKE_CONFIG_OUTPUT_DIRECTORY}/${test_config}"
-		COMMAND cmake -E copy
+		COMMAND ${CMAKE_COMMAND} -E copy
 			"${CMAKE_CURRENT_SOURCE_DIR}/${test_config}"
 			"${CMAKE_CONFIG_OUTPUT_DIRECTORY}/${test_config}"
 		DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${test_config}"
