@@ -76,7 +76,9 @@ public:
   /** Number of blocks to write in a file  */
   size_t blocks_per_file_;
 private:
+  /** The current file that frames are being written to */
   boost::shared_ptr<HDF5File> current_file;
+  /** The previous file that frames were written to, held in case of late frames  */
   boost::shared_ptr<HDF5File> previous_file;
 };
 

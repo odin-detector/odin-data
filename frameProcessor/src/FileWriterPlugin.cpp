@@ -484,8 +484,10 @@ void FileWriterPlugin::configure_dataset(OdinData::IpcMessage& config, OdinData:
         dset_def.compression = no_compression;
       }
 
-      if (dset_def.frame_dimensions.size() > 0){
+      if (dset_def.frame_dimensions.size() > 1) {
         LOG4CXX_DEBUG(logger_, "Creating dataset [" << dset_def.name << "] (" << dset_def.frame_dimensions[0] << ", " << dset_def.frame_dimensions[1] << ")");
+      } else if (dset_def.frame_dimensions.size() > 0) {
+        LOG4CXX_DEBUG(logger_, "Creating dataset [" << dset_def.name << "] (" << dset_def.frame_dimensions[0] << ")");
       } else {
         LOG4CXX_DEBUG(logger_, "Creating 1D dataset [" << dset_def.name << "] with no additional dimensions");
       }

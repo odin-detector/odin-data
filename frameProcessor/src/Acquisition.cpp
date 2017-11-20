@@ -13,6 +13,22 @@
 
 namespace FrameProcessor {
 
+const std::string META_NAME              = "Acquisition";
+
+const std::string META_FRAME_KEY         = "frame";
+const std::string META_OFFSET_KEY        = "offset";
+const std::string META_RANK_KEY          = "rank";
+const std::string META_NUM_PROCESSES_KEY = "proc";
+const std::string META_ACQID_KEY         = "acqID";
+const std::string META_NUM_FRAMES_KEY    = "totalFrames";
+
+const std::string META_WRITE_ITEM        = "writeframe";
+const std::string META_CREATE_ITEM       = "createfile";
+const std::string META_CLOSE_ITEM        = "closefile";
+const std::string META_START_ITEM        = "startacquisition";
+const std::string META_STOP_ITEM         = "stopacquisition";
+
+
 Acquisition::Acquisition() :
         concurrent_rank_(0),
         concurrent_processes_(1),
@@ -80,25 +96,25 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
       document.SetObject();
 
       // Add Frame number
-      rapidjson::Value key_frame("frame", document.GetAllocator());
+      rapidjson::Value key_frame(META_FRAME_KEY.c_str(), document.GetAllocator());
       rapidjson::Value value_frame;
       value_frame.SetUint64(frame_no);
       document.AddMember(key_frame, value_frame, document.GetAllocator());
 
       // Add offset
-      rapidjson::Value key_offset("offset", document.GetAllocator());
+      rapidjson::Value key_offset(META_OFFSET_KEY.c_str(), document.GetAllocator());
       rapidjson::Value value_offset;
       value_offset.SetUint64(frame_offset);
       document.AddMember(key_offset, value_offset, document.GetAllocator());
 
       // Add rank
-      rapidjson::Value key_rank("rank", document.GetAllocator());
+      rapidjson::Value key_rank(META_RANK_KEY.c_str(), document.GetAllocator());
       rapidjson::Value value_rank;
       value_rank.SetUint64(concurrent_rank_);
       document.AddMember(key_rank, value_rank, document.GetAllocator());
 
       // Add num consumers
-      rapidjson::Value key_num_processes("proc", document.GetAllocator());
+      rapidjson::Value key_num_processes(META_NUM_PROCESSES_KEY.c_str(), document.GetAllocator());
       rapidjson::Value value_num_processes;
       value_num_processes.SetUint64(concurrent_processes_);
       document.AddMember(key_num_processes, value_num_processes, document.GetAllocator());
@@ -107,7 +123,7 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
       rapidjson::Writer<rapidjson::StringBuffer> docWriter(buffer);
       document.Accept(docWriter);
 
-      publish_meta("Acquisition", "writeframe", buffer.GetString(), get_meta_header());
+      publish_meta(META_NAME, META_WRITE_ITEM, buffer.GetString(), get_meta_header());
 
       // Check if this is a master frame (for multi dataset acquisitions)
       // or if no master frame has been defined. If either of these conditions
@@ -180,7 +196,7 @@ void Acquisition::create_file(size_t file_number) {
   current_file->create_file(full_path.string(), file_number);
 
   // Send meta data message to notify of file creation
-  publish_meta("Acquisition", "createfile", full_path.string(), get_create_meta_header());
+  publish_meta(META_NAME, META_CREATE_ITEM, full_path.string(), get_create_meta_header());
 
   // Create the datasets from the definitions
   std::map<std::string, DatasetDefinition>::iterator iter;
@@ -206,7 +222,7 @@ void Acquisition::close_file(boost::shared_ptr<HDF5File> file) {
     LOG4CXX_INFO(logger_, "Closing file " << file->get_filename());
     file->close_file();
     // Send meta data message to notify of file close
-    publish_meta("Acquisition", "closefile", file->get_filename(), get_meta_header());
+    publish_meta(META_NAME, META_CLOSE_ITEM, file->get_filename(), get_meta_header());
   }
 }
 
@@ -237,7 +253,7 @@ void Acquisition::start_acquisition(size_t concurrent_rank, size_t concurrent_pr
     return;
   }
 
-  publish_meta("Acquisition", "startacquisition", "", get_create_meta_header());
+  publish_meta(META_NAME, META_START_ITEM, "", get_create_meta_header());
 
   create_file(concurrent_rank_);
 }
@@ -248,7 +264,7 @@ void Acquisition::start_acquisition(size_t concurrent_rank, size_t concurrent_pr
 void Acquisition::stop_acquisition() {
   close_file(previous_file);
   close_file(current_file);
-  publish_meta("Acquisition", "stopacquisition", "", get_meta_header());
+  publish_meta(META_NAME, META_STOP_ITEM, "", get_meta_header());
 }
 
 /** Check incoming frame is valid for its target dataset.
@@ -278,9 +294,16 @@ bool Acquisition::check_frame_valid(boost::shared_ptr<Frame> frame)
   }
   if (frame->get_dimensions(frame->get_dataset_name()) != dataset.frame_dimensions) {
     std::vector<unsigned long long> dimensions = frame->get_dimensions(frame->get_dataset_name());
-    LOG4CXX_ERROR(logger_, "Invalid frame: Frame has dimensions [" << dimensions[0] << ", " << dimensions[1] <<
-        "], expected [" << dataset.frame_dimensions[0] << ", " << dataset.frame_dimensions[1] <<
-        "] for dataset " << dataset.name);
+    if (dimensions.size() >= 2 && dataset.frame_dimensions.size() >= 2) {
+      LOG4CXX_ERROR(logger_, "Invalid frame: Frame has dimensions [" << dimensions[0] << ", " << dimensions[1] <<
+          "], expected [" << dataset.frame_dimensions[0] << ", " << dataset.frame_dimensions[1] <<
+          "] for dataset " << dataset.name);
+    } else if (dimensions.size() >= 1 && dataset.frame_dimensions.size() >= 1) {
+      LOG4CXX_ERROR(logger_, "Invalid frame: Frame has dimensions [" << dimensions[0]  <<
+          "], expected [" << dataset.frame_dimensions[0] << "] for dataset " << dataset.name);
+    } else {
+      LOG4CXX_ERROR(logger_, "Invalid frame: Frame dimensions do not match");
+    }
     invalid = true;
   }
   return !invalid;
@@ -414,13 +437,13 @@ std::string Acquisition::get_create_meta_header() {
   meta_document.SetObject();
 
   // Add Acquisition ID
-  rapidjson::Value key_acq_id("acqID", meta_document.GetAllocator());
+  rapidjson::Value key_acq_id(META_ACQID_KEY.c_str(), meta_document.GetAllocator());
   rapidjson::Value value_acq_id;
   value_acq_id.SetString(acquisition_id_.c_str(), acquisition_id_.length(), meta_document.GetAllocator());
   meta_document.AddMember(key_acq_id, value_acq_id, meta_document.GetAllocator());
 
   // Add Number of Frames
-  rapidjson::Value key_num_frames("totalFrames", meta_document.GetAllocator());
+  rapidjson::Value key_num_frames(META_NUM_FRAMES_KEY.c_str(), meta_document.GetAllocator());
   rapidjson::Value value_num_frames;
   value_num_frames.SetUint64(total_frames_);
   meta_document.AddMember(key_num_frames, value_num_frames, meta_document.GetAllocator());
@@ -443,7 +466,7 @@ std::string Acquisition::get_meta_header() {
   meta_document.SetObject();
 
   // Add Acquisition ID
-  rapidjson::Value key_acq_id("acqID", meta_document.GetAllocator());
+  rapidjson::Value key_acq_id(META_ACQID_KEY.c_str(), meta_document.GetAllocator());
   rapidjson::Value value_acq_id;
   value_acq_id.SetString(acquisition_id_.c_str(), acquisition_id_.length(), meta_document.GetAllocator());
   meta_document.AddMember(key_acq_id, value_acq_id, meta_document.GetAllocator());

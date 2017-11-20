@@ -82,6 +82,7 @@ private:
   std::vector<std::string> hdf5_errors_;
   /** Map of datasets that are being written to */
   std::map<std::string, HDF5Dataset_t> hdf5_datasets_;
+  /** The index of this file across all processors in the acquisition, 0 indexed */
   size_t file_index_;
   /** Full name and path of the file to write to */
   std::string filename_;
