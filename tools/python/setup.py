@@ -7,9 +7,6 @@ import versioneer
 with open('requirements.txt') as f:
     required = f.read().splitlines()
 
-if sys.version_info[0] == 2:
-    required.append('futures>=3.0.0')
-
 setup(name='odin_data',
       version=versioneer.get_version(),
       cmdclass=versioneer.get_cmdclass(),
