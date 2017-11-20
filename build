@@ -13,11 +13,13 @@ build()
                        -DCMAKE_INSTALL_PREFIX=${TARGET_PREFIX} \
                        ${BUILD_SCRIPT_DIR}
     make VERBOSE=1 && make install
+    
+    # Removing pesky dist dir just in case a previous build is left over
+    rm -rf $BUILD_SCRIPT_DIR/tools/python/dist 
 
     python_depends NUMPY POSIX_IPC PYSNMP PYZMQ
     
-    local setup="${1:-setup.py}";
-    cd $BUILD_SCRIPT_DIR/tools/python;
-    $PYTHON $setup bdist_egg --dist-dir=$TARGET_PREFIX/lib/python2.7/site-packages
+    export SRC=$BUILD_SCRIPT_DIR/tools/python
+    setuptools_build # Defined in Python/CONFIG
 }
 
