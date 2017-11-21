@@ -27,7 +27,8 @@ herr_t hdf5_error_cb(unsigned n, const H5E_error2_t *err_desc, void* client_data
 HDF5File::HDF5File() :
         hdf5_file_id_(-1),
         hdf5_error_flag_(false),
-        file_index_(0)
+        file_index_(0),
+        use_earliest_version_(false)
 {
   static bool hdf_initialised = false;
   this->logger_ = Logger::getLogger("FP.HDF5File");
@@ -122,15 +123,18 @@ void HDF5File::clear_hdf_errors()
  * chunk_align parameter not currently used
  *
  * \param[in] filename - Full file name of the file to create.
+ * \param[in] file_index - File index of the file
+ * \param[in] use_earliest_version - Whether to use the earliest version of HDF5 library
  * \param[in] chunk_align - Not currently used.
  */
-void HDF5File::create_file(std::string filename, size_t file_index, size_t chunk_align)
+void HDF5File::create_file(std::string filename, size_t file_index, bool use_earliest_version, size_t chunk_align)
 {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
   hid_t fapl; // File access property list
   hid_t fcpl;
   filename_ = filename;
+  use_earliest_version_ = use_earliest_version;
 
   // Create file access property list
   fapl = H5Pcreate(H5P_FILE_ACCESS);
@@ -139,10 +143,14 @@ void HDF5File::create_file(std::string filename, size_t file_index, size_t chunk
   ensure_h5_result(H5Pset_fclose_degree(fapl, H5F_CLOSE_STRONG), "H5Pset_fclose_degree failed");
 
   // Set chunk boundary alignment to 4MB
-  ensure_h5_result( H5Pset_alignment( fapl, 65536, 4*1024*1024 ), "H5Pset_alignment failed");
+  ensure_h5_result(H5Pset_alignment( fapl, 65536, 4*1024*1024 ), "H5Pset_alignment failed");
 
-  // Set to use the latest library format
-  ensure_h5_result(H5Pset_libver_bounds(fapl, H5F_LIBVER_LATEST, H5F_LIBVER_LATEST), "H5Pset_libver_bounds failed");
+  // Set to use the desired library format
+  if (use_earliest_version_) {
+    ensure_h5_result(H5Pset_libver_bounds(fapl, H5F_LIBVER_EARLIEST, H5F_LIBVER_LATEST), "H5Pset_libver_bounds failed");
+  } else {
+    ensure_h5_result(H5Pset_libver_bounds(fapl, H5F_LIBVER_LATEST, H5F_LIBVER_LATEST), "H5Pset_libver_bounds failed");
+  }
 
   // Create file creation property list
   fcpl = H5Pcreate(H5P_FILE_CREATE);
@@ -216,7 +224,9 @@ void HDF5File::write_frame(const Frame& frame, hsize_t frame_offset, uint64_t ou
       frame.get_data_size(), frame.get_data()), "H5DOwrite_chunk failed");
 
 #if H5_VERSION_GE(1,9,178)
-  ensure_h5_result(H5Dflush(dset.dataset_id), "Failed to flush data to disk");
+  if (!use_earliest_version_) {
+    ensure_h5_result(H5Dflush(dset.dataset_id), "Failed to flush data to disk");
+  }
 #endif
 }
 
@@ -301,9 +311,9 @@ void HDF5File::create_dataset(const DatasetDefinition& definition)
       H5P_DEFAULT, prop, dapl);
   if (dset.dataset_id < 0) {
     // Unable to create the dataset, clean up resources
-    ensure_h5_result( H5Pclose(prop), "H5Pclose failed to close the prop after failing to create the dataset");
-    ensure_h5_result( H5Pclose(dapl), "H5Pclose failed to close the dapl after failing to create the dataset");
-    ensure_h5_result( H5Sclose(dataspace), "H5Pclose failed to close the dataspace after failing to create the dataset");
+    ensure_h5_result(H5Pclose(prop), "H5Pclose failed to close the prop after failing to create the dataset");
+    ensure_h5_result(H5Pclose(dapl), "H5Pclose failed to close the dapl after failing to create the dataset");
+    ensure_h5_result(H5Sclose(dataspace), "H5Pclose failed to close the dataspace after failing to create the dataset");
     // Now throw a runtime error to notify that the dataset could not be created
     throw std::runtime_error("Unable to create the dataset");
   }
@@ -312,9 +322,9 @@ void HDF5File::create_dataset(const DatasetDefinition& definition)
   this->hdf5_datasets_[definition.name] = dset;
 
   LOG4CXX_DEBUG(logger_, "Closing intermediate open HDF objects");
-  ensure_h5_result( H5Pclose(prop), "H5Pclose failed to close the prop");
-  ensure_h5_result( H5Pclose(dapl), "H5Pclose failed to close the dapl");
-  ensure_h5_result( H5Sclose(dataspace), "H5Pclose failed to close the dataspace");
+  ensure_h5_result(H5Pclose(prop), "H5Pclose failed to close the prop");
+  ensure_h5_result(H5Pclose(dapl), "H5Pclose failed to close the dapl");
+  ensure_h5_result(H5Sclose(dataspace), "H5Pclose failed to close the dataspace");
 }
 
 /**
@@ -412,7 +422,9 @@ void HDF5File::start_swmr() {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
 #if H5_VERSION_GE(1,9,178)
-  ensure_h5_result(H5Fstart_swmr_write(this->hdf5_file_id_), "Failed to enable SWMR writing");
+  if (!use_earliest_version_) {
+    ensure_h5_result(H5Fstart_swmr_write(this->hdf5_file_id_), "Failed to enable SWMR writing");
+  }
 #endif
 }
 

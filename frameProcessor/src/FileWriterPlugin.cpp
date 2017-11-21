@@ -23,25 +23,26 @@ const std::string FileWriterPlugin::CONFIG_PROCESS_RANK            = "rank";
 const std::string FileWriterPlugin::CONFIG_PROCESS_BLOCKSIZE       = "frames_per_block";
 const std::string FileWriterPlugin::CONFIG_PROCESS_BLOCKS_PER_FILE = "blocks_per_file";
 
-const std::string FileWriterPlugin::CONFIG_FILE                = "file";
-const std::string FileWriterPlugin::CONFIG_FILE_NAME           = "name";
-const std::string FileWriterPlugin::CONFIG_FILE_PATH           = "path";
+const std::string FileWriterPlugin::CONFIG_FILE                    = "file";
+const std::string FileWriterPlugin::CONFIG_FILE_NAME               = "name";
+const std::string FileWriterPlugin::CONFIG_FILE_PATH               = "path";
+const std::string FileWriterPlugin::CONFIG_FILE_EARLIEST_VERSION   = "earliest_version";
 
-const std::string FileWriterPlugin::CONFIG_DATASET             = "dataset";
-const std::string FileWriterPlugin::CONFIG_DATASET_CMD         = "cmd";
-const std::string FileWriterPlugin::CONFIG_DATASET_NAME        = "name";
-const std::string FileWriterPlugin::CONFIG_DATASET_TYPE        = "datatype";
-const std::string FileWriterPlugin::CONFIG_DATASET_DIMS        = "dims";
-const std::string FileWriterPlugin::CONFIG_DATASET_CHUNKS      = "chunks";
-const std::string FileWriterPlugin::CONFIG_DATASET_COMPRESSION = "compression";
+const std::string FileWriterPlugin::CONFIG_DATASET                 = "dataset";
+const std::string FileWriterPlugin::CONFIG_DATASET_CMD             = "cmd";
+const std::string FileWriterPlugin::CONFIG_DATASET_NAME            = "name";
+const std::string FileWriterPlugin::CONFIG_DATASET_TYPE            = "datatype";
+const std::string FileWriterPlugin::CONFIG_DATASET_DIMS            = "dims";
+const std::string FileWriterPlugin::CONFIG_DATASET_CHUNKS          = "chunks";
+const std::string FileWriterPlugin::CONFIG_DATASET_COMPRESSION     = "compression";
 
-const std::string FileWriterPlugin::CONFIG_FRAMES              = "frames";
-const std::string FileWriterPlugin::CONFIG_MASTER_DATASET      = "master";
-const std::string FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT   = "offset";
-const std::string FileWriterPlugin::CONFIG_WRITE               = "write";
-const std::string FileWriterPlugin::ACQUISITION_ID             = "acquisition_id";
-const std::string FileWriterPlugin::CLOSE_TIMEOUT_PERIOD       = "timeout_timer_period";
-const std::string FileWriterPlugin::START_CLOSE_TIMEOUT        = "start_timeout_timer";
+const std::string FileWriterPlugin::CONFIG_FRAMES                  = "frames";
+const std::string FileWriterPlugin::CONFIG_MASTER_DATASET          = "master";
+const std::string FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT       = "offset";
+const std::string FileWriterPlugin::CONFIG_WRITE                   = "write";
+const std::string FileWriterPlugin::ACQUISITION_ID                 = "acquisition_id";
+const std::string FileWriterPlugin::CLOSE_TIMEOUT_PERIOD           = "timeout_timer_period";
+const std::string FileWriterPlugin::START_CLOSE_TIMEOUT            = "start_timeout_timer";
 
 
 
@@ -390,6 +391,10 @@ void FileWriterPlugin::configure_file(OdinData::IpcMessage& config, OdinData::Ip
   if (config.has_param(FileWriterPlugin::CONFIG_FILE_NAME)) {
     this->next_acquisition_->filename_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_NAME);
     LOG4CXX_DEBUG(logger_, "Next file name changed to " << this->next_acquisition_->filename_);
+  }
+  if (config.has_param(FileWriterPlugin::CONFIG_FILE_EARLIEST_VERSION)) {
+    this->next_acquisition_->use_earliest_hdf5_ = config.get_param<bool>(FileWriterPlugin::CONFIG_FILE_EARLIEST_VERSION);
+    LOG4CXX_DEBUG(logger_, "Use earliest version of HDF5 library to write file set to " << this->next_acquisition_->use_earliest_hdf5_);
   }
 }
 
