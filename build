@@ -4,6 +4,13 @@ TAR_FILE=none
 
 build()
 {
+    # Build server HACK alert!
+    # This is to unwind a change that the build server always appear to apply
+    # to configure/RELEASE: it stuffs the TOOLS_SUPPORT macro in there regardless of
+    # whether or not it is already there! This causes the git repo to have local changes
+    # and in turn this causes the python build to create an egg with a 'dirty' version.
+    git checkout -- ../configure/RELEASE
+    
     ${CMAKE_BIN}/cmake \
                        -DBoost_NO_BOOST_CMAKE=ON \
                        -DHDF5_ROOT=${HDF5_PREFIX} \
