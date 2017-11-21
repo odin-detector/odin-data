@@ -72,6 +72,8 @@ private:
   static const std::string CONFIG_FILE_NAME;
   /** Configuration constant for file path */
   static const std::string CONFIG_FILE_PATH;
+  /** Configuration constant for using earliest file version */
+  static const std::string CONFIG_FILE_EARLIEST_VERSION;
 
   /** Configuration constant for dataset related items */
   static const std::string CONFIG_DATASET;

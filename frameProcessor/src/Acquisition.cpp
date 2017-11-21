@@ -38,7 +38,8 @@ Acquisition::Acquisition() :
         frames_written_(0),
         frames_processed_(0),
         total_frames_(0),
-        frames_to_write_(0)
+        frames_to_write_(0),
+        use_earliest_hdf5_(false)
 {
   this->logger_ = Logger::getLogger("FP.Acquisition");
   this->logger_->setLevel(Level::getTrace());
@@ -193,7 +194,7 @@ void Acquisition::create_file(size_t file_number) {
 
   // Create the file
   boost::filesystem::path full_path = boost::filesystem::path(file_path_) / boost::filesystem::path(filename_);
-  current_file->create_file(full_path.string(), file_number);
+  current_file->create_file(full_path.string(), file_number, use_earliest_hdf5_);
 
   // Send meta data message to notify of file creation
   publish_meta(META_NAME, META_CREATE_ITEM, full_path.string(), get_create_meta_header());
