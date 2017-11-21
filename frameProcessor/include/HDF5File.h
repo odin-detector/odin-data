@@ -53,7 +53,7 @@ public:
   std::vector<std::string> read_hdf_errors();
   void clear_hdf_errors();
   void handle_h5_error(std::string message, std::string function, std::string filename, int line) const;
-  void create_file(std::string file_name, size_t file_index, size_t chunk_align=1024 * 1024);
+  void create_file(std::string file_name, size_t file_index, bool use_earliest_version, size_t chunk_align=1024 * 1024);
   void close_file();
   void create_dataset(const DatasetDefinition& definition);
   void write_frame(const Frame& frame, hsize_t frame_offset, uint64_t outer_chunk_dimension);
@@ -86,6 +86,8 @@ private:
   size_t file_index_;
   /** Full name and path of the file to write to */
   std::string filename_;
+  /** Whether to use the earliest version of the hdf5 library */
+  bool use_earliest_version_;
   /** Mutex used to make this class thread safe */
   boost::recursive_mutex mutex_;
 };
