@@ -41,7 +41,7 @@ namespace FrameReceiver
   const std::string CONFIG_SHARED_BUFFER_NAME = "shared_buffer_name";
   const std::string CONFIG_FRAME_TIMEOUT_MS = "frame_timeout_ms";
   const std::string CONFIG_FRAME_COUNT = "frame_count";
-  const std::string CONFIG_ENABLE_PACKET_LOGGING = "enable_package_logging";
+  const std::string CONFIG_ENABLE_PACKET_LOGGING = "enable_packet_logging";
   const std::string CONFIG_FORCE_RECONFIG = "force_reconfig";
 
 class FrameReceiverConfig
@@ -166,9 +166,13 @@ public:
     config_msg.set_param<std::string>(CONFIG_FRAME_READY_ENDPOINT, frame_ready_endpoint_);
     config_msg.set_param<std::string>(CONFIG_FRAME_RELEASE_ENDPOINT, frame_release_endpoint_);
     config_msg.set_param<std::string>(CONFIG_SHARED_BUFFER_NAME, shared_buffer_name_);
-    config_msg.set_param<int>(CONFIG_FRAME_TIMEOUT_MS, frame_timeout_ms_);
     config_msg.set_param<int>(CONFIG_FRAME_COUNT, frame_count_);
-    config_msg.set_param<bool>(CONFIG_ENABLE_PACKET_LOGGING, enable_packet_logging_);
+
+    std::string decoder_config_path("decoder_config/");
+    config_msg.set_param<int>(decoder_config_path + CONFIG_FRAME_TIMEOUT_MS, frame_timeout_ms_);
+    config_msg.set_param<bool>(decoder_config_path + CONFIG_ENABLE_PACKET_LOGGING,
+                               enable_packet_logging_);
+
     config_msg.set_param<bool>(CONFIG_FORCE_RECONFIG, force_reconfig_);
   }
 
