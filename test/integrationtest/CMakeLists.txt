@@ -5,7 +5,7 @@ set(TEST_SCRIPTS
 foreach(test_script ${TEST_SCRIPTS})
 	add_custom_command(
 		OUTPUT "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${test_script}"
-		COMMAND cmake -E copy
+		COMMAND ${CMAKE_COMMAND} -E copy
 			"${CMAKE_CURRENT_SOURCE_DIR}/${test_script}"
 			"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${test_script}"
 		DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${test_script}"
