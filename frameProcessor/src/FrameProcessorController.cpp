@@ -374,13 +374,13 @@ void FrameProcessorController::loadPlugin(const std::string& index, const std::s
     // Add the plugin to the map, indexed by the name
     boost::shared_ptr<FrameProcessorPlugin> plugin = OdinData::ClassLoader<FrameProcessorPlugin>::load_class(name, library);
     if (plugin) {
-      plugin->setName(index);
-      plugin->connectMetaChannel();
+      plugin->set_name(index);
+      plugin->connect_meta_channel();
       plugins_[index] = plugin;
 
       // Register callback to FWC with FileWriter plugin
       if (name == "FileWriter") {
-        plugin->registerCallback("controller", this->shared_from_this(), true);
+        plugin->register_callback("controller", this->shared_from_this(), true);
       }
 
       // Start the plugin worker thread
@@ -421,7 +421,7 @@ void FrameProcessorController::connectPlugin(const std::string& index, const std
       }
     } else {
       if (plugins_.count(connectTo) > 0) {
-        plugins_[connectTo]->registerCallback(index, plugins_[index]);
+        plugins_[connectTo]->register_callback(index, plugins_[index]);
       }
     }
   } else {
@@ -446,7 +446,7 @@ void FrameProcessorController::disconnectPlugin(const std::string& index, const 
       sharedMemController_->removeCallback(index);
     } else {
       if (plugins_.count(disconnectFrom) > 0) {
-        plugins_[disconnectFrom]->removeCallback(index);
+        plugins_[disconnectFrom]->remove_callback(index);
       }
     }
   } else {
