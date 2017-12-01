@@ -25,3 +25,5 @@ foreach(test_config ${TEST_CONFIGS})
 endforeach(test_config)
 
 add_custom_target(CopyTestConfigs ALL DEPENDS ${TEST_CONFIGS_DEST} )
+
+add_subdirectory(client_msgs)

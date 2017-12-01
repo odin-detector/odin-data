@@ -32,9 +32,8 @@ namespace FrameReceiver
 class FrameReceiverZMQRxThread : public FrameReceiverRxThread
 {
 public:
-  FrameReceiverZMQRxThread(FrameReceiverConfig& config, LoggerPtr& logger,
-                           SharedBufferManagerPtr buffer_manager, FrameDecoderPtr frame_decoder,
-                           unsigned int tick_period_ms=100);
+  FrameReceiverZMQRxThread(FrameReceiverConfig& config, SharedBufferManagerPtr buffer_manager,
+      FrameDecoderPtr frame_decoder, unsigned int tick_period_ms=100);
   virtual ~FrameReceiverZMQRxThread();
 
 private:

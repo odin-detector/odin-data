@@ -9,12 +9,12 @@
 
 using namespace FrameReceiver;
 
-FrameReceiverZMQRxThread::FrameReceiverZMQRxThread(FrameReceiverConfig& config, LoggerPtr& logger,
+FrameReceiverZMQRxThread::FrameReceiverZMQRxThread(FrameReceiverConfig& config,
                                                    SharedBufferManagerPtr buffer_manager,
                                                    FrameDecoderPtr frame_decoder,
                                                    unsigned int tick_period_ms) :
-    FrameReceiverRxThread(config, logger, buffer_manager, frame_decoder, tick_period_ms),
-    logger_(logger),
+    FrameReceiverRxThread(config, buffer_manager, frame_decoder, tick_period_ms),
+    logger_(log4cxx::Logger::getLogger("FR.ZMQRxThread")),
     skt_channel_(ZMQ_PULL)
 {
   LOG4CXX_DEBUG_LEVEL(1, logger_, "FrameReceiverZMQRxThread constructor entered....");

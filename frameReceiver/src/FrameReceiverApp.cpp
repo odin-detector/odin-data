@@ -5,6 +5,8 @@
  *      Author: Tim Nicholls, STFC Application Engineering Group
  */
 
+#include <signal.h>
+#include <iostream>
 #include <fstream>
 using namespace std;
 
@@ -17,13 +19,9 @@ namespace po = boost::program_options;
 
 using namespace FrameReceiver;
 
-bool FrameReceiverApp::terminate_frame_receiver_ = false;
+boost::shared_ptr<FrameReceiverController> FrameReceiverApp::controller_;
 
 IMPLEMENT_DEBUG_LEVEL;
-
-#ifndef BUILD_DIR
-#define BUILD_DIR "."
-#endif
 
 static bool has_suffix(const std::string &str, const std::string &suffix)
 {
@@ -35,29 +33,25 @@ static bool has_suffix(const std::string &str, const std::string &suffix)
 //!
 //! This constructor initialises the FrameReceiverApp instance
 
-FrameReceiverApp::FrameReceiverApp(void) :
-    rx_channel_(ZMQ_PAIR),
-    ctrl_channel_(ZMQ_ROUTER),
-    frame_ready_channel_(ZMQ_PUB),
-    frame_release_channel_(ZMQ_SUB),
-    frames_received_(0),
-    frames_released_(0)
+FrameReceiverApp::FrameReceiverApp(void)
 {
 
   // Retrieve a logger instance
   OdinData::configure_logging_mdc(OdinData::app_path.c_str());
   logger_ = Logger::getLogger("FR.App");
 
+  // Instantiate a controller
+  controller_ = boost::shared_ptr<FrameReceiverController>(
+      new FrameReceiverController(config_)
+  );
+
 }
 
 //! Destructor for FrameReceiverApp class
+
 FrameReceiverApp::~FrameReceiverApp()
 {
-
-  // Delete the RX thread object by resetting the scoped pointer, allowing the IPC channel
-  // to be closed cleanly
-  rx_thread_.reset();
-
+  controller_.reset();
 }
 
 //! Parse command-line arguments and configuration file options.
@@ -97,17 +91,18 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
     config.add_options()
         ("debug,d",      po::value<unsigned int>()->default_value(debug_level),
         "Set the debug level")
-    ("node,n",       po::value<unsigned int>()->default_value(FrameReceiver::Defaults::default_node),
+        ("node,n",       po::value<unsigned int>()->default_value(FrameReceiver::Defaults::default_node),
         "Set the frame receiver node ID")
-    ("logconfig,l",  po::value<string>(),
+        ("logconfig,l",  po::value<string>(),
         "Set the log4cxx logging configuration file")
         ("maxmem,m",     po::value<std::size_t>()->default_value(FrameReceiver::Defaults::default_max_buffer_mem),
          "Set the maximum amount of shared memory to allocate for frame buffers")
-        ("sensortype,s", po::value<std::string>()->default_value("unknown"),
-         "Set the sensor type to receive frame data from")
-        ("path",         po::value<std::string>()->default_value(""),
+        ("decodertype,t", po::value<std::string>()->default_value(FrameReceiver::Defaults::default_decoder_type),
+         "Set the decoder type to to handle data reception")
+        ("path",         po::value<std::string>()->default_value(FrameReceiver::Defaults::default_decoder_path),
          "Path to load the decoder library from")
-        ("rxtype",       po::value<std::string>()->default_value("udp"),
+        ("rxtype",       po::value<std::string>()->default_value(
+            FrameReceiverConfig::map_rx_type_to_name(FrameReceiver::Defaults::default_rx_type)),
          "Set the interface to use for receiving frame data (udp or zmq)")
         ("port,p",       po::value<std::string>()->default_value(FrameReceiver::Defaults::default_rx_port_list),
          "Set the port to receive frame data on")
@@ -117,13 +112,13 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
          "Set the name of the shared memory frame buffer")
         ("frametimeout", po::value<unsigned int>()->default_value(FrameReceiver::Defaults::default_frame_timeout_ms),
         "Set the incomplete frame timeout in ms")
-    ("frames,f",     po::value<unsigned int>()->default_value(FrameReceiver::Defaults::default_frame_count),
+        ("frames,f",     po::value<unsigned int>()->default_value(FrameReceiver::Defaults::default_frame_count),
         "Set the number of frames to receive before terminating")
-    ("packetlog",    po::value<bool>()->default_value(FrameReceiver::Defaults::default_enable_packet_logging),
+        ("packetlog",    po::value<bool>()->default_value(FrameReceiver::Defaults::default_enable_packet_logging),
         "Enable logging of packet diagnostics to file")
         ("rxbuffer",     po::value<unsigned int>()->default_value(FrameReceiver::Defaults::default_rx_recv_buffer_size),
         "Set UDP receive buffer size")
-    ("ctrl",         po::value<std::string>()->default_value(FrameReceiver::Defaults::default_ctrl_chan_endpoint),
+        ("ctrl",         po::value<std::string>()->default_value(FrameReceiver::Defaults::default_ctrl_chan_endpoint),
         "Set the control channel endpoint")
         ("ready",        po::value<std::string>()->default_value(FrameReceiver::Defaults::default_frame_ready_endpoint),
          "Set the frame ready channel endpoint")
@@ -201,16 +196,16 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
       LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting frame buffer maximum memory size to " << config_.max_buffer_mem_);
     }
 
-    if (vm.count("sensortype"))
+    if (vm.count("decodertype"))
     {
-      config_.sensor_type_ = vm["sensortype"].as<std::string>();
-      LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting sensor type to " << config_.sensor_type_);
+      config_.decoder_type_ = vm["decodertype"].as<std::string>();
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting decoder type to " << config_.decoder_type_);
     }
 
     if (vm.count("path"))
     {
-      config_.sensor_path_ = vm["path"].as<std::string>();
-      LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting decoder path to " << config_.sensor_path_);
+      config_.decoder_path_ = vm["path"].as<std::string>();
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting decoder path to " << config_.decoder_path_);
     }
 
     if (vm.count("rxtype"))
@@ -309,66 +304,26 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
 
 }
 
+//! Run the FrameReceiverApp.
+//!
+//! This method runs the frame receiver. The controller is initialised from
+//! the input configuration parameters and then run, blocking until completion
+//! of execution.
+
 void FrameReceiverApp::run(void)
 {
 
-  terminate_frame_receiver_ = false;
   LOG4CXX_INFO(logger_,  "Running frame receiver");
 
   try {
 
-    // Initialise IPC channels
-    initialise_ipc_channels();
+    OdinData::IpcMessage config_msg, config_reply;
+    config_.as_ipc_message(config_msg);
+    config_msg.set_param<bool>(CONFIG_FORCE_RECONFIG, true);
 
-    // Add timers to the reactor
-    //int rxPingTimer = reactor_.add_timer(1000, 0, boost::bind(&FrameReceiverApp::rxPingTimerHandler, this));
-    //int timer2 = reactor_.register_timer(1500, 0, boost::bind(&FrameReceiverApp::timer_handler2, this));
+    controller_->configure(config_msg, config_reply);
 
-    // Create the appropriate frame decoder
-    initialise_frame_decoder();
-
-    // Initialise the frame buffer buffer manager
-    initialise_buffer_manager();
-
-    // Create the RX thread object
-    switch(config_.rx_type_)
-    {
-      case Defaults::RxTypeUDP:
-        rx_thread_.reset(new FrameReceiverUDPRxThread( config_, logger_, buffer_manager_, frame_decoder_));
-        break;
-
-      case Defaults::RxTypeZMQ:
-        rx_thread_.reset(new FrameReceiverZMQRxThread( config_, logger_, buffer_manager_, frame_decoder_));
-        break;
-
-      default:
-        throw OdinData::OdinDataException("Cannot create RX thread - RX type not recognised");
-    }
-    rx_thread_->start();
-
-    // Pre-charge all frame buffers onto the RX thread queue ready for use
-    precharge_buffers();
-
-    // Notify downstream processes of current buffer configuration
-    notify_buffer_config(true);
-
-    LOG4CXX_DEBUG_LEVEL(1, logger_, "Main thread entering reactor loop");
-
-    // Run the reactor event loop
-    reactor_.run();
-
-    // Call cleanup on the RxThread
-    rx_thread_->stop();
-
-    // Destroy the RX thread
-    rx_thread_.reset();
-
-    // Clean up IPC channels
-    cleanup_ipc_channels();
-
-    // Remove timers and channels from the reactor
-    //reactor_.remove_timer(rxPingTimer);
-    //reactor_.remove_timer(timer2);
+    controller_->run();
 
   }
   catch (OdinData::OdinDataException& e)
@@ -383,259 +338,52 @@ void FrameReceiverApp::run(void)
   {
     LOG4CXX_ERROR(logger_, "Unexpected exception during frame receiver run");
   }
+
+  LOG4CXX_INFO(logger_, "Frame receiver stopped");
 }
+
+//! Stop the FrameRecevierApp.
+//!
+//! This method stops the frame receiver by signalling to the controller to stop.
 
 void FrameReceiverApp::stop(void)
 {
-  terminate_frame_receiver_ = true;
+  controller_->stop();
 }
 
-void FrameReceiverApp::initialise_ipc_channels(void)
+//! Interrupt signal handler
+
+void intHandler (int sig)
 {
-  // Bind the control channel
-  ctrl_channel_.bind(config_.ctrl_channel_endpoint_);
+  FrameReceiver::FrameReceiverApp::stop ();
+}
 
-  // Bind the RX thread channel
-  rx_channel_.bind(config_.rx_channel_endpoint_);
+//! Main application entry point
 
-  // Bind the frame ready and release channels
-  try {
-    frame_ready_channel_.bind(config_.frame_ready_endpoint_);
-    frame_release_channel_.bind(config_.frame_release_endpoint_);
-  }
-  catch (std::exception& e)
+int main (int argc, char** argv)
+{
+  int rc = 0;
+
+  // Trap Ctrl-C and pass to interrupt handler
+  signal (SIGINT, intHandler);
+  signal (SIGTERM, intHandler);
+
+  // Set the application path and locale for logging
+  setlocale(LC_CTYPE, "UTF-8");
+  OdinData::app_path = argv[0];
+
+  // Create a FrameReceiverApp instance
+  FrameReceiver::FrameReceiverApp fr_instance;
+
+  // Parse command line arguments and set up node configuration
+  rc = fr_instance.parse_arguments (argc, argv);
+
+  if (rc == 0)
   {
-    LOG4CXX_ERROR(logger_, "Got exception binding IPC channels: " << e.what());
+    // Run the instance
+    fr_instance.run ();
   }
 
-  // Set default subscription on frame release channel
-  frame_release_channel_.subscribe("");
-
-  // Add IPC channels to the reactor
-  reactor_.register_channel(ctrl_channel_, boost::bind(&FrameReceiverApp::handle_ctrl_channel, this));
-  reactor_.register_channel(rx_channel_, boost::bind(&FrameReceiverApp::handle_rx_channel, this));
-  reactor_.register_channel(frame_release_channel_, boost::bind(&FrameReceiverApp::handle_frame_release_channel, this));
+  return rc;
 
 }
-
-void FrameReceiverApp::cleanup_ipc_channels(void)
-{
-  // Remove IPC channels from the reactor
-  reactor_.remove_channel(ctrl_channel_);
-  reactor_.remove_channel(rx_channel_);
-  reactor_.remove_channel(frame_release_channel_);
-
-  // Close all channels
-  ctrl_channel_.close();
-  rx_channel_.close();
-  frame_ready_channel_.close();
-  frame_release_channel_.close();
-
-}
-
-void FrameReceiverApp::initialise_frame_decoder(void)
-{
-  std::string libDir(BUILD_DIR);
-  libDir += "/lib/";
-  if (config_.sensor_path_ != ""){
-    libDir = config_.sensor_path_;
-    // Check if the last character is '/', if not append it
-    if (*libDir.rbegin() != '/'){
-      libDir += "/";
-    }
-  }
-  std::string libName = "lib" + config_.sensor_type_ + "FrameDecoder.so";
-  std::string clsName = config_.sensor_type_ + "FrameDecoder";
-  LOG4CXX_INFO(logger_, "Loading decoder plugin " << clsName << " from " << libDir << libName);
-
-  try {
-    frame_decoder_ = OdinData::ClassLoader<FrameDecoder>::load_class(clsName, libDir + libName);
-    if (!frame_decoder_){
-      throw OdinData::OdinDataException("Cannot initialise frame decoder: sensor type not recognised");
-    } else {
-      LOG4CXX_INFO(logger_, "Created " << clsName << " frame decoder instance");
-    }
-  }
-  catch (const std::runtime_error& e) {
-    std::stringstream sstr;
-    sstr << "Cannot initialise frame decoder: " << e.what();
-    throw OdinData::OdinDataException(sstr.str());
-  }
-  // Initialise the decoder object
-  frame_decoder_->init(logger_, config_.enable_packet_logging_, config_.frame_timeout_ms_);
-}
-
-
-void FrameReceiverApp::initialise_buffer_manager(void)
-{
-  // Create a shared buffer manager
-  buffer_manager_.reset(new SharedBufferManager(config_.shared_buffer_name_, config_.max_buffer_mem_,
-                                                frame_decoder_->get_frame_buffer_size(), false));
-  LOG4CXX_DEBUG_LEVEL(1, logger_, "Initialised frame buffer manager of total size " << config_.max_buffer_mem_ <<
-                                                                                    " with " << buffer_manager_->get_num_buffers() << " buffers");
-
-  // Register buffer manager with the frame decoder
-  frame_decoder_->register_buffer_manager(buffer_manager_);
-
-}
-
-void FrameReceiverApp::precharge_buffers(void)
-{
-  // Push the IDs of all of the empty buffers onto the RX thread channel
-  // TODO if the number of buffers is so big that the RX thread channel would reach HWM (in either direction)
-  // before the reactor has time to start, we could consider putting this pre-charge into a timer handler
-  // that runs as soon as the reactor starts, but need to think about how this might block. Need non-blocking
-  // send on channels??
-  for (int buf = 0; buf < buffer_manager_->get_num_buffers(); buf++)
-  {
-    IpcMessage buf_msg(IpcMessage::MsgTypeNotify, IpcMessage::MsgValNotifyFrameRelease);
-    buf_msg.set_param("buffer_id", buf);
-    rx_channel_.send(buf_msg.encode());
-  }
-}
-
-void FrameReceiverApp::notify_buffer_config(const bool deferred)
-{
-  // Notify downstream applications listening on the frame ready channel of the current shared buffer
-  // configuration.
-
-  if (deferred)
-  {
-    reactor_.register_timer(1000, 1, boost::bind(&FrameReceiverApp::notify_buffer_config, this, false));
-  }
-  else
-  {
-    LOG4CXX_DEBUG_LEVEL(1, logger_, "Notifying downstream processes of shared buffer configuration");
-
-    IpcMessage config_msg(IpcMessage::MsgTypeNotify, IpcMessage::MsgValNotifyBufferConfig);
-    config_msg.set_param("shared_buffer_name", config_.shared_buffer_name_);
-
-    frame_ready_channel_.send(config_msg.encode());
-  }
-}
-
-void FrameReceiverApp::handle_ctrl_channel(void)
-{
-  // Receive a request message from the control channel
-  std::string client_identity;
-  std::string ctrl_req_encoded = ctrl_channel_.recv(&client_identity);
-
-  // Construct a default reply
-  IpcMessage ctrl_reply;
-
-  // Parse and handle the message
-  try {
-
-    IpcMessage ctrl_req(ctrl_req_encoded.c_str());
-
-    switch (ctrl_req.get_msg_type())
-    {
-      case IpcMessage::MsgTypeCmd:
-
-      LOG4CXX_DEBUG_LEVEL(3, logger_, "Got control channel command request from client " << client_identity);
-        ctrl_reply.set_msg_type(IpcMessage::MsgTypeAck);
-        ctrl_reply.set_msg_val(ctrl_req.get_msg_val());
-        break;
-
-      default:
-      LOG4CXX_ERROR(logger_, "Got unexpected command on control channel with type " << ctrl_req.get_msg_type());
-        ctrl_reply.set_msg_type(IpcMessage::MsgTypeNack);
-        ctrl_reply.set_msg_val(ctrl_req.get_msg_val());
-        break;
-    }
-  }
-  catch (IpcMessageException& e)
-  {
-    LOG4CXX_ERROR(logger_, "Error decoding control channel request: " << e.what());
-  }
-  ctrl_channel_.send(ctrl_reply.encode(), 0, client_identity);
-
-}
-
-void FrameReceiverApp::handle_rx_channel(void)
-{
-  std::string rx_reply_encoded = rx_channel_.recv();
-  try {
-    IpcMessage rx_reply(rx_reply_encoded.c_str());
-    //LOG4CXX_DEBUG_LEVEL(1, logger_, "Got reply from RX thread : " << rx_reply_encoded);
-
-    if ((rx_reply.get_msg_type() == IpcMessage::MsgTypeNotify) &&
-        (rx_reply.get_msg_val() == IpcMessage::MsgValNotifyFrameReady))
-    {
-      LOG4CXX_DEBUG_LEVEL(2, logger_, "Got frame ready notification from RX thread"
-          " for frame " << rx_reply.get_param<int>("frame", -1) <<
-                        " in buffer " << rx_reply.get_param<int>("buffer_id", -1));
-      frame_ready_channel_.send(rx_reply_encoded);
-
-      frames_received_++;
-    }
-    else
-    {
-      LOG4CXX_ERROR(logger_, "Got unexpected message from RX thread: " << rx_reply_encoded);
-    }
-  }
-  catch (IpcMessageException& e)
-  {
-    LOG4CXX_ERROR(logger_, "Error decoding RX thread channel reply: " << e.what());
-  }
-}
-
-void FrameReceiverApp::handle_frame_release_channel(void)
-{
-  std::string frame_release_encoded = frame_release_channel_.recv();
-  try {
-    IpcMessage frame_release(frame_release_encoded.c_str());
-    //LOG4CXX_DEBUG(logger_, "Got message on frame release channel : " << frame_release_encoded);
-
-    if ((frame_release.get_msg_type() == IpcMessage::MsgTypeNotify) &&
-        (frame_release.get_msg_val() == IpcMessage::MsgValNotifyFrameRelease))
-    {
-      LOG4CXX_DEBUG_LEVEL(2, logger_, "Got frame release notification from processor"
-          " from frame " << frame_release.get_param<int>("frame", -1) <<
-                         " in buffer " << frame_release.get_param<int>("buffer_id", -1));
-      rx_channel_.send(frame_release_encoded);
-
-      frames_released_++;
-
-      if (config_.frame_count_ && (frames_released_ >= config_.frame_count_))
-      {
-        LOG4CXX_INFO(logger_, "Specified number of frames (" << config_.frame_count_ << ") received and released, terminating");
-        stop();
-        reactor_.stop();
-      }
-    }
-    else if ((frame_release.get_msg_type() == IpcMessage::MsgTypeCmd) &&
-             (frame_release.get_msg_val() == IpcMessage::MsgValCmdBufferConfigRequest))
-    {
-      LOG4CXX_DEBUG_LEVEL(2, logger_, "Got shared buffer config request from processor");
-      notify_buffer_config(false);
-    }
-    else
-    {
-      LOG4CXX_ERROR(logger_, "Got unexpected message on frame release channel: " << frame_release_encoded);
-    }
-  }
-  catch (IpcMessageException& e)
-  {
-    LOG4CXX_ERROR(logger_, "Error decoding message on frame release channel: " << e.what());
-  }
-}
-
-void FrameReceiverApp::rx_ping_timer_handler(void)
-{
-
-  IpcMessage rxPing(IpcMessage::MsgTypeCmd, IpcMessage::MsgValCmdStatus);
-  rx_channel_.send(rxPing.encode());
-
-}
-
-void FrameReceiverApp::timer_handler2(void)
-{
-  static unsigned int dummy_last_frame = 0;
-
-  LOG4CXX_DEBUG_LEVEL(1, logger_, "Sending frame ready message for frame " << dummy_last_frame);
-  IpcMessage frame_ready(IpcMessage::MsgTypeNotify, IpcMessage::MsgValNotifyFrameReady);
-  frame_ready.set_param("frame", dummy_last_frame++);
-  frame_ready_channel_.send(frame_ready.encode());
-}
-

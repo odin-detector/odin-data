@@ -9,7 +9,7 @@ file(GLOB TEST_SOURCES *.cpp)
 
 # Build list of main project source files from src dir but exclude application main
 file(GLOB APP_SOURCES ${FRAMERECEIVER_DIR}/src/*.cpp)
-file(GLOB APP_MAIN_SOURCE ${FRAMERECEIVER_DIR}/src/appMain.cpp)
+file(GLOB APP_MAIN_SOURCE ${FRAMERECEIVER_DIR}/src/FrameReceiverApp.cpp)
 list(REMOVE_ITEM APP_SOURCES ${APP_MAIN_SOURCE})
 
 # Add test and project source files to executable
