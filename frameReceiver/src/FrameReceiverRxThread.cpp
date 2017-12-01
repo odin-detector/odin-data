@@ -193,7 +193,7 @@ void FrameReceiverRxThread::handle_rx_channel(void)
   // Receive a message from the main thread channel
   std::string rx_msg_encoded = rx_channel_.recv();
 
-  // ecode the messsage and handle appropriately
+  // Decode the message and handle appropriately
   try {
 
     IpcMessage rx_msg(rx_msg_encoded.c_str());
@@ -297,7 +297,7 @@ void FrameReceiverRxThread::handle_rx_channel(void)
 //!
 void FrameReceiverRxThread::tick_timer(void)
 {
-  //LOG4CXX_DEBUG_LEVEL(4, logger_, "RX thread tick timer fired");
+  LOG4CXX_DEBUG_LEVEL(4, logger_, "RX thread tick timer fired");
   if (!run_thread_)
   {
     LOG4CXX_DEBUG_LEVEL(1, logger_, "RX thread terminate detected in timer");

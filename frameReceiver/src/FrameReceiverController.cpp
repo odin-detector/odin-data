@@ -354,9 +354,15 @@ void FrameReceiverController::setup_frame_release_channel(const std::string& end
 
 }
 
-//! Unbind an IpcChannel from and endpoint.
+//! Unbind an IpcChannel from an endpoint.
 //!
-//! This method unbinds the specified IPCChannel from an endpoint. This can be done in
+//! This method unbinds the specified IPCChannel from an endpoint. This can be done in a
+//! deferred reactor timer, allowing e.g. a response to be sent first to a command triggering
+//! the action, or immediately.
+//!
+//! \param[in] channel - IpcChannel to unbind
+//! \param[in] endpoint - string URI of endpoint to unbind
+//! \param[in] deferred - optional boolean flag indicating deferred execution requested
 //
 void FrameReceiverController::unbind_channel(OdinData::IpcChannel* channel,
     std::string& endpoint, const bool deferred)
@@ -869,7 +875,8 @@ void FrameReceiverController::handle_frame_release_channel(void)
   std::string frame_release_encoded = frame_release_channel_.recv();
   try {
     IpcMessage frame_release(frame_release_encoded.c_str());
-    //LOG4CXX_DEBUG(logger_, "Got message on frame release channel : " << frame_release_encoded);
+    LOG4CXX_DEBUG_LEVEL(4, logger_,
+        "Got message on frame release channel : " << frame_release_encoded);
 
     if ((frame_release.get_msg_type() == IpcMessage::MsgTypeNotify) &&
         (frame_release.get_msg_val() == IpcMessage::MsgValNotifyFrameRelease))

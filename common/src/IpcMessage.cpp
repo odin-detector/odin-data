@@ -307,7 +307,6 @@ bool operator ==(IpcMessage const& lhs_msg, IpcMessage const& rhs_msg)
   // Test equality of message attributes
   areEqual &= (lhs_msg.msg_type_ == rhs_msg.msg_type_);
   areEqual &= (lhs_msg.msg_val_  == rhs_msg.msg_val_);
-  //areEqual &= (lhs_msg.msg_timestamp_ == rhs_msg.msg_timestamp_);
 
   // Check both messages have a params block
   areEqual &= (lhs_msg.has_params() == rhs_msg.has_params());
