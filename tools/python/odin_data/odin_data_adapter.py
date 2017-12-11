@@ -157,7 +157,7 @@ class OdinDataAdapter(ApiAdapter):
                 for client, param_set in zip(self._clients, parameters):
                     if param_set:
                         try:
-                            client.send_configuration(param_set, request_command)[1]
+                            client.send_configuration(param_set, request_command)
                         except:
                             logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
                             status_code = 503
@@ -167,7 +167,7 @@ class OdinDataAdapter(ApiAdapter):
             logging.debug("Single parameter set provided: %s", parameters)
             for client in self._clients:
                 try:
-                    client.send_configuration(parameters, request_command)[1]
+                    client.send_configuration(parameters, request_command)
                 except:
                     logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
                     status_code = 503
