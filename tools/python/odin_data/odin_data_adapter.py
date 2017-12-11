@@ -141,9 +141,14 @@ class OdinDataAdapter(ApiAdapter):
         response = {}
         logging.debug("PUT path: %s", path)
         logging.debug("PUT request: %s", request)
+        logging.debug("PUT request.body: %s", str(escape.url_unescape(request.body)))
 
         request_command = path.strip('/')
-        parameters = json.loads(str(escape.url_unescape(request.body)))
+        try:
+            parameters = json.loads(str(escape.url_unescape(request.body)))
+        except ValueError:
+            # If the body could not be parsed into an object it may be a simple string
+            parameters = str(escape.url_unescape(request.body))
 
         # Check if the parameters object is a list
         if isinstance(parameters, list):
