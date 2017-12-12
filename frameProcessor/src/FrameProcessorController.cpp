@@ -45,9 +45,13 @@ FrameProcessorController::FrameProcessorController() :
     threadInitError_(false),
     pluginShutdownSent(false),
     ctrlThread_(boost::bind(&FrameProcessorController::runIpcService, this)),
+    ctrlChannelEndpoint_(""),
     ctrlChannel_(ZMQ_ROUTER),
     metaRxChannel_(ZMQ_PULL),
-    metaTxChannel_(ZMQ_PUB)
+    metaTxChannelEndpoint_(""),
+    metaTxChannel_(ZMQ_PUB),
+    frReadyEndpoint_(""),
+    frReleaseEndpoint_("")
 {
   OdinData::configure_logging_mdc(OdinData::app_path.c_str());
   LOG4CXX_DEBUG(logger_, "Constructing FrameProcessorController");
@@ -106,6 +110,13 @@ void FrameProcessorController::handleCtrlChannel()
       this->configure(ctrlMsg, replyMsg);
       LOG4CXX_DEBUG(logger_, "Control thread reply message (configure): "
                              << replyMsg.encode());
+    }
+    else if ((ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) &&
+    		 (ctrlMsg.get_msg_val() == OdinData::IpcMessage::MsgValCmdRequestConfiguration)) {
+        replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
+        this->requestConfiguration(replyMsg);
+        LOG4CXX_DEBUG(logger_, "Control thread reply message (request configuration): "
+                               << replyMsg.encode());
     }
     else if ((ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) &&
              (ctrlMsg.get_msg_val() == OdinData::IpcMessage::MsgValCmdStatus)) {
@@ -297,6 +308,32 @@ void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData:
       OdinData::IpcMessage subConfig(config.get_param<const rapidjson::Value&>(iter->first));
       iter->second->configure(subConfig, reply);
     }
+  }
+}
+
+/**
+ * Request the current configuration of the FrameProcessorController.
+ *
+ * The method also searches through all loaded plugins.  Each plugin is
+ * also sent a request for its configuration.
+ *
+ * \param[out] reply - Response IpcMessage with the current configuration.
+ */
+void FrameProcessorController::requestConfiguration(OdinData::IpcMessage& reply)
+{
+  LOG4CXX_DEBUG(logger_, "Request for configuration made");
+
+  // Add local configuration parameter values to the reply
+  reply.set_param(FrameProcessorController::CONFIG_CTRL_ENDPOINT, ctrlChannelEndpoint_);
+  reply.set_param(FrameProcessorController::CONFIG_META_ENDPOINT, metaTxChannelEndpoint_);
+  std::string fr_cnxn_str = FrameProcessorController::CONFIG_FR_SETUP + "/";
+  reply.set_param(fr_cnxn_str + FrameProcessorController::CONFIG_FR_READY, frReadyEndpoint_);
+  reply.set_param(fr_cnxn_str + FrameProcessorController::CONFIG_FR_RELEASE, frReleaseEndpoint_);
+
+  // Loop over plugins and request current configuration from each
+  std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
+  for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
+    iter->second->requestConfiguration(reply);
   }
 }
 
@@ -532,6 +569,8 @@ void FrameProcessorController::setupFrameReceiverInterface(const std::string& fr
     // Create the new shared memory controller and give it the parser and publisher
     sharedMemController_ = boost::shared_ptr<SharedMemoryController>(
         new SharedMemoryController(reactor_, frSubscriberString, frPublisherString));
+    frReadyEndpoint_ = frSubscriberString;
+    frReleaseEndpoint_ = frPublisherString;
 
   } catch (const boost::interprocess::interprocess_exception& e)
   {
@@ -571,6 +610,7 @@ void FrameProcessorController::setupControlInterface(const std::string& ctrlEndp
   try {
     LOG4CXX_DEBUG(logger_, "Connecting control channel to endpoint: " << ctrlEndpointString);
     ctrlChannel_.bind(ctrlEndpointString.c_str());
+    ctrlChannelEndpoint_ = ctrlEndpointString;
   }
   catch (zmq::error_t& e) {
     //std::stringstream ss;
@@ -632,6 +672,7 @@ void FrameProcessorController::setupMetaTxInterface(const std::string& metaEndpo
     int sndHwmSet = META_TX_HWM;
     metaTxChannel_.setsockopt(ZMQ_SNDHWM, &sndHwmSet, sizeof (sndHwmSet));
     metaTxChannel_.bind(metaEndpointString.c_str());
+    metaTxChannelEndpoint_ = metaEndpointString;
   }
   catch (zmq::error_t& e) {
     throw std::runtime_error(e.what());
