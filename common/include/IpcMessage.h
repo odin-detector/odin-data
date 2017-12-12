@@ -86,6 +86,7 @@ public:
     MsgValCmdReset,                  //!< Reset command message
     MsgValCmdStatus,                 //!< Status command message
     MsgValCmdConfigure,              //!< Configure command message
+	MsgValCmdRequestConfiguration,   //!< Request configuration command message
     MsgValCmdBufferConfigRequest,    //!< Buffer configuration request
     MsgValCmdBufferPrechargeRequest, //!< Buffer precharge request
     MsgValCmdShutdown,               //!< Process shutdown request
