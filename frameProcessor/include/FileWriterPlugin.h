@@ -45,6 +45,7 @@ public:
   void start_writing();
   void stop_writing();
   void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
+  void requestConfiguration(OdinData::IpcMessage& reply);
   void configure_process(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   void configure_file(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   void configure_dataset(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);

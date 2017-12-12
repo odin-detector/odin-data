@@ -284,6 +284,30 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
   }
 }
 
+void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
+{
+  // Protect this method
+  boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+
+  // Return the configuration of the file writer plugin
+  std::string process_str = get_name() + "/" + FileWriterPlugin::CONFIG_PROCESS + "/";
+  reply.set_param(process_str + FileWriterPlugin::CONFIG_PROCESS_NUMBER, concurrent_processes_);
+  reply.set_param(process_str + FileWriterPlugin::CONFIG_PROCESS_RANK, concurrent_rank_);
+  reply.set_param(process_str + FileWriterPlugin::CONFIG_PROCESS_BLOCKSIZE, frames_per_block_);
+  reply.set_param(process_str + FileWriterPlugin::CONFIG_PROCESS_BLOCKS_PER_FILE, blocks_per_file_);
+
+  std::string file_str = get_name() + "/" + FileWriterPlugin::CONFIG_FILE + "/";
+  reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_PATH, next_acquisition_->file_path_);
+  reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_NAME, next_acquisition_->filename_);
+  reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_EARLIEST_VERSION, next_acquisition_->use_earliest_hdf5_);
+
+  reply.set_param(get_name() + "/" + FileWriterPlugin::CONFIG_FRAMES, next_acquisition_->total_frames_);
+  reply.set_param(get_name() + "/" + FileWriterPlugin::CONFIG_MASTER_DATASET, next_acquisition_->master_frame_);
+  reply.set_param(get_name() + "/" + FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT, frame_offset_adjustment_);
+  reply.set_param(get_name() + "/" + FileWriterPlugin::ACQUISITION_ID, next_acquisition_->acquisition_id_);
+  reply.set_param(get_name() + "/" + FileWriterPlugin::CLOSE_TIMEOUT_PERIOD, timeout_period_);
+}
+
 /**
  * Set configuration options for the file writer process count.
  *
