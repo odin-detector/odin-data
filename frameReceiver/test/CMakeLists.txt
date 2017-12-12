@@ -23,7 +23,9 @@ if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
 endif()
 
 # Define libraries to link against
-target_link_libraries(frameReceiverTest ${COMMON_LIBRARY}
-                                        ${Boost_LIBRARIES}
-                                        ${LOG4CXX_LIBRARIES}
-                                        ${ZEROMQ_LIBRARIES})
+target_link_libraries(frameReceiverTest 
+        ${LIB_RECEIVER}
+        ${COMMON_LIBRARY}
+        ${Boost_LIBRARIES}
+        ${LOG4CXX_LIBRARIES}
+        ${ZEROMQ_LIBRARIES})

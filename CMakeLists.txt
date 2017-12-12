@@ -23,8 +23,10 @@ set(COMMON_LIBRARY ${PROJECT_NAME})
 
 # Set the name of the frameProcessor library
 if (NOT APPLE)
+    set(LIB_RECEIVER FrameReceiver)
     set(LIB_PROCESSOR FrameProcessor)
 else(NOT APPLE)
+    set(LIB_RECEIVER OdinFrameReceiver)
     set(LIB_PROCESSOR OdinFrameProcessor)
 endif(NOT APPLE)
 
