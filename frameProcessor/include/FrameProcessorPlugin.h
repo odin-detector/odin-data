@@ -32,6 +32,7 @@ public:
   void set_name(const std::string& name);
   std::string get_name();
   virtual void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
+  virtual void requestConfiguration(OdinData::IpcMessage& reply);
   virtual void status(OdinData::IpcMessage& status);
   void register_callback(const std::string& name, boost::shared_ptr<IFrameCallback> cb, bool blocking=false);
   void remove_callback(const std::string& name);
