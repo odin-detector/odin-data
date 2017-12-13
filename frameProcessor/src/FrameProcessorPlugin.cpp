@@ -64,6 +64,18 @@ void FrameProcessorPlugin::configure(OdinData::IpcMessage& config, OdinData::Ipc
   // Default method simply does nothing
 }
 
+/** Request the plugin's current configuration.
+ *
+ * In this abstract class the request method does perform any
+ * actions, this should be overridden by subclasses.
+ *
+ * \param[out] reply - Response IpcMessage with current configuration.
+ */
+void FrameProcessorPlugin::requestConfiguration(OdinData::IpcMessage& reply)
+{
+  // Default method simply does nothing
+}
+
 /**
  * Collate status information for the plugin.
  *
