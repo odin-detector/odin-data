@@ -112,7 +112,7 @@ void FrameProcessorController::handleCtrlChannel()
                              << replyMsg.encode());
     }
     else if ((ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) &&
-    		 (ctrlMsg.get_msg_val() == OdinData::IpcMessage::MsgValCmdRequestConfiguration)) {
+             (ctrlMsg.get_msg_val() == OdinData::IpcMessage::MsgValCmdRequestConfiguration)) {
         replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
         this->requestConfiguration(replyMsg);
         LOG4CXX_DEBUG(logger_, "Control thread reply message (request configuration): "
