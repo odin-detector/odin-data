@@ -58,6 +58,10 @@ public:
   std::string filename_;
   /** Use the earliest version of hdf5 */
   bool use_earliest_hdf5_;
+  /** HDF5 file chunk alignment threshold */
+  size_t alignment_threshold_;
+  /** HDF5 file chunk alignment value */
+  size_t  alignment_value_;
   /** Identifier for the acquisition - value sent from a detector/control to be used to
    * identify frames, config or anything else to this acquisition. Used to name the file */
   std::string acquisition_id_;

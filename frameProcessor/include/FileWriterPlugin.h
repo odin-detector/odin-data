@@ -75,6 +75,10 @@ private:
   static const std::string CONFIG_FILE_PATH;
   /** Configuration constant for using earliest file version */
   static const std::string CONFIG_FILE_EARLIEST_VERSION;
+  /** Configuration constant for chunk alignment threshold */
+  static const std::string CONFIG_FILE_ALIGNMENT_THRESHOLD;
+  /** Configuration constant for hunk alignment value */
+  static const std::string CONFIG_FILE_ALIGNMENT_VALUE;
 
   /** Configuration constant for dataset related items */
   static const std::string CONFIG_DATASET;
