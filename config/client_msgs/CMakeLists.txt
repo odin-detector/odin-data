@@ -5,7 +5,7 @@ set(CMAKE_CLIENT_MSG_OUTPUT_DIRECTORY ${CMAKE_CONFIG_OUTPUT_DIRECTORY}/client_ms
 foreach(client_msg_file ${CLIENT_MSG_FILES})
   add_custom_command(
     OUTPUT "${CMAKE_CLIENT_MSG_OUTPUT_DIRECTORY}/${client_msg_file}"
-    COMMAND cmake -E copy
+    COMMAND ${CMAKE_COMMAND} -E copy
       "${CMAKE_CURRENT_SOURCE_DIR}/${client_msg_file}"
       "${CMAKE_CLIENT_MSG_OUTPUT_DIRECTORY}/${client_msg_file}"
     DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${client_msg_file}"
