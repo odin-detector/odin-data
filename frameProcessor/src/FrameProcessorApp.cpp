@@ -112,6 +112,12 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
            "Set the number of consecutive frames to write per block")
         ("blocks-per-file",       po::value<size_t>()->default_value(0),
            "Set the number of blocks to write to file. Default is 0 (unlimited)")
+        ("earliest-hdf-ver",      po::bool_switch(),
+           "Set to use earliest hdf5 file version. Default is off (use latest)")
+        ("alignment-threshold",       po::value<size_t>()->default_value(1),
+           "Set the hdf5 alignment threshold. Default is 1 (no alignment)")
+        ("alignment-value",       po::value<size_t>()->default_value(1),
+           "Set the hdf5 alignment value. Default is 1 (no alignment)")
     ;
 
     // Group the variables for parsing at the command line and/or from the configuration file
@@ -287,6 +293,21 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
       LOG4CXX_DEBUG(logger, "Setting number of blocks per file to " << vm["blocks-per-file"].as<size_t>());
     }
 
+    if (no_client && vm["earliest-hdf-ver"].as<bool>())
+    {
+      LOG4CXX_DEBUG(logger, "Using earliest HDF5 version");
+    }
+
+    if (no_client && vm.count("alignment-threshold"))
+    {
+      LOG4CXX_DEBUG(logger, "Setting alignment threshold to " << vm["alignment-threshold"].as<size_t>());
+    }
+
+    if (no_client && vm.count("alignment-value"))
+    {
+      LOG4CXX_DEBUG(logger, "Setting alignment value to " << vm["alignment-value"].as<size_t>());
+    }
+
   }
   catch (po::unknown_option &e)
   {
@@ -361,6 +382,9 @@ void configureHDF5(boost::shared_ptr<FrameProcessorController> fwc, po::variable
   cfg.set_param<unsigned int>("hdf/process/rank", vm["rank"].as<unsigned int>());
   cfg.set_param<size_t>("hdf/process/frames_per_block", vm["block-size"].as<size_t>());
   cfg.set_param<size_t>("hdf/process/blocks_per_file", vm["blocks-per-file"].as<size_t>());
+  cfg.set_param<bool>("hdf/process/earliest_version", vm["earliest-hdf-ver"].as<bool>());
+  cfg.set_param<size_t>("hdf/process/alignment_threshold", vm["alignment-threshold"].as<size_t>());
+  cfg.set_param<size_t>("hdf/process/alignment_value", vm["alignment-value"].as<size_t>());
 
   fwc->configure(cfg, reply);
 }
