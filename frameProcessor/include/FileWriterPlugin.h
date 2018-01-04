@@ -66,6 +66,12 @@ private:
   static const std::string CONFIG_PROCESS_BLOCKSIZE;
   /** Configuration constant for the number of blocks per file */
   static const std::string CONFIG_PROCESS_BLOCKS_PER_FILE;
+  /** Configuration constant for using earliest file version */
+  static const std::string CONFIG_PROCESS_EARLIEST_VERSION;
+  /** Configuration constant for chunk alignment threshold */
+  static const std::string CONFIG_PROCESS_ALIGNMENT_THRESHOLD;
+  /** Configuration constant for chunk alignment value */
+  static const std::string CONFIG_PROCESS_ALIGNMENT_VALUE;
 
   /** Configuration constant for file related items */
   static const std::string CONFIG_FILE;
@@ -73,12 +79,6 @@ private:
   static const std::string CONFIG_FILE_NAME;
   /** Configuration constant for file path */
   static const std::string CONFIG_FILE_PATH;
-  /** Configuration constant for using earliest file version */
-  static const std::string CONFIG_FILE_EARLIEST_VERSION;
-  /** Configuration constant for chunk alignment threshold */
-  static const std::string CONFIG_FILE_ALIGNMENT_THRESHOLD;
-  /** Configuration constant for hunk alignment value */
-  static const std::string CONFIG_FILE_ALIGNMENT_VALUE;
 
   /** Configuration constant for dataset related items */
   static const std::string CONFIG_DATASET;
@@ -140,6 +140,12 @@ private:
   size_t frames_per_block_;
   /** Number of blocks to write in a file  */
   size_t blocks_per_file_;
+  /** Use the earliest version of hdf5 */
+  bool use_earliest_hdf5_;
+  /** HDF5 file chunk alignment threshold */
+  size_t alignment_threshold_;
+  /** HDF5 file chunk alignment value */
+  size_t alignment_value_;
   /** Timeout for closing the file after receiving no data */
   size_t timeout_period_;
   /** Mutex used to make starting the close file timeout thread safe */

@@ -238,13 +238,24 @@ void Acquisition::close_file(boost::shared_ptr<HDF5File> file) {
  * \param[in] frames_per_block - The number of frames per block
  * \param[in] blocks_per_file - The number of blocks per file
  */
-void Acquisition::start_acquisition(size_t concurrent_rank, size_t concurrent_processes, size_t frame_offset_adjustment, size_t frames_per_block, size_t blocks_per_file) {
+void Acquisition::start_acquisition(
+    size_t concurrent_rank,
+    size_t concurrent_processes,
+    size_t frame_offset_adjustment,
+    size_t frames_per_block,
+    size_t blocks_per_file,
+    bool use_earliest_hdf5,
+    size_t alignment_threshold,
+    size_t alignment_value) {
 
   concurrent_rank_ = concurrent_rank;
   concurrent_processes_ = concurrent_processes;
   frame_offset_adjustment_ = frame_offset_adjustment;
   frames_per_block_ = frames_per_block;
   blocks_per_file_ = blocks_per_file;
+  use_earliest_hdf5_ = use_earliest_hdf5;
+  alignment_threshold_ = alignment_threshold;
+  alignment_value_ = alignment_value;
 
   // If filename hasn't been explicitly specified or we are in multi-file mode, generate the filename
   if ((filename_.empty() && !acquisition_id_.empty()) || blocks_per_file_ != 0) {

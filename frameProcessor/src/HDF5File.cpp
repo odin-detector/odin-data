@@ -116,11 +116,6 @@ void HDF5File::clear_hdf_errors()
 
 /**
  * Create the HDF5 ready for writing datasets.
- * Currently the file is created with the following:
- * Chunk boundary alignment is set to 4MB.
- * Using the latest library format
- * Created with SWMR access
- * chunk_align parameter not currently used
  *
  * \param[in] filename - Full file name of the file to create.
  * \param[in] file_index - File index of the file

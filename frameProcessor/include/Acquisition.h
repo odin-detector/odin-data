@@ -34,7 +34,15 @@ public:
   ProcessFrameStatus process_frame(boost::shared_ptr<Frame> frame);
   void create_file(size_t file_number=0);
   void close_file(boost::shared_ptr<HDF5File> file);
-  void start_acquisition(size_t concurrent_rank, size_t concurrent_processes, size_t frame_offset_adjustment, size_t frames_per_block, size_t blocks_per_file);
+  void start_acquisition(
+      size_t concurrent_rank,
+      size_t concurrent_processes,
+      size_t frame_offset_adjustment,
+      size_t frames_per_block,
+      size_t blocks_per_file,
+      bool use_earliest_hdf5,
+      size_t alignment_threshold,
+      size_t alignment_value);
   void stop_acquisition();
   bool check_frame_valid(boost::shared_ptr<Frame> frame);
   size_t get_frame_offset_in_file(size_t frame_offset) const;
@@ -61,7 +69,7 @@ public:
   /** HDF5 file chunk alignment threshold */
   size_t alignment_threshold_;
   /** HDF5 file chunk alignment value */
-  size_t  alignment_value_;
+  size_t alignment_value_;
   /** Identifier for the acquisition - value sent from a detector/control to be used to
    * identify frames, config or anything else to this acquisition. Used to name the file */
   std::string acquisition_id_;
