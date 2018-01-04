@@ -1,0 +1,3 @@
+{
+  "ctrl_endpoint": "tcp://*:5000"
+}

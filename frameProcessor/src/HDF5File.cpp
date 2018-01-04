@@ -116,18 +116,14 @@ void HDF5File::clear_hdf_errors()
 
 /**
  * Create the HDF5 ready for writing datasets.
- * Currently the file is created with the following:
- * Chunk boundary alignment is set to 4MB.
- * Using the latest library format
- * Created with SWMR access
- * chunk_align parameter not currently used
  *
  * \param[in] filename - Full file name of the file to create.
  * \param[in] file_index - File index of the file
  * \param[in] use_earliest_version - Whether to use the earliest version of HDF5 library
- * \param[in] chunk_align - Not currently used.
+ * \param[in] alignment_threshold - Chunk threshold
+ * \param[in] alignment_value - Chunk alignment value
  */
-void HDF5File::create_file(std::string filename, size_t file_index, bool use_earliest_version, size_t chunk_align)
+void HDF5File::create_file(std::string filename, size_t file_index, bool use_earliest_version, size_t alignment_threshold, size_t alignment_value)
 {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
@@ -142,8 +138,8 @@ void HDF5File::create_file(std::string filename, size_t file_index, bool use_ear
 
   ensure_h5_result(H5Pset_fclose_degree(fapl, H5F_CLOSE_STRONG), "H5Pset_fclose_degree failed");
 
-  // Set chunk boundary alignment to 4MB
-  ensure_h5_result(H5Pset_alignment( fapl, 65536, 4*1024*1024 ), "H5Pset_alignment failed");
+  // Set chunk boundary alignment
+  ensure_h5_result(H5Pset_alignment( fapl, alignment_threshold, alignment_value ), "H5Pset_alignment failed");
 
   // Set to use the desired library format
   if (use_earliest_version_) {

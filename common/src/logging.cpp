@@ -16,6 +16,14 @@
 using namespace log4cxx;
 using namespace log4cxx::helpers;
 
+#ifndef HOST_NAME_MAX
+# if defined(_POSIX_HOST_NAME_MAX)
+#  define HOST_NAME_MAX _POSIX_HOST_NAME_MAX
+# elif defined(MAXHOSTNAMELEN)
+#  define HOST_NAME_MAX MAXHOSTNAMELEN
+# endif
+#endif /* HOST_NAME_MAX */
+
 namespace OdinData {
 
 std::string app_path = "";

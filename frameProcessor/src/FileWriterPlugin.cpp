@@ -17,32 +17,34 @@
 namespace FrameProcessor
 {
 
-const std::string FileWriterPlugin::CONFIG_PROCESS                 = "process";
-const std::string FileWriterPlugin::CONFIG_PROCESS_NUMBER          = "number";
-const std::string FileWriterPlugin::CONFIG_PROCESS_RANK            = "rank";
-const std::string FileWriterPlugin::CONFIG_PROCESS_BLOCKSIZE       = "frames_per_block";
-const std::string FileWriterPlugin::CONFIG_PROCESS_BLOCKS_PER_FILE = "blocks_per_file";
+const std::string FileWriterPlugin::CONFIG_PROCESS                     = "process";
+const std::string FileWriterPlugin::CONFIG_PROCESS_NUMBER              = "number";
+const std::string FileWriterPlugin::CONFIG_PROCESS_RANK                = "rank";
+const std::string FileWriterPlugin::CONFIG_PROCESS_BLOCKSIZE           = "frames_per_block";
+const std::string FileWriterPlugin::CONFIG_PROCESS_BLOCKS_PER_FILE     = "blocks_per_file";
+const std::string FileWriterPlugin::CONFIG_PROCESS_EARLIEST_VERSION    = "earliest_version";
+const std::string FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_THRESHOLD = "alignment_threshold";
+const std::string FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_VALUE     = "alignment_value";
 
-const std::string FileWriterPlugin::CONFIG_FILE                    = "file";
-const std::string FileWriterPlugin::CONFIG_FILE_NAME               = "name";
-const std::string FileWriterPlugin::CONFIG_FILE_PATH               = "path";
-const std::string FileWriterPlugin::CONFIG_FILE_EARLIEST_VERSION   = "earliest_version";
+const std::string FileWriterPlugin::CONFIG_FILE                        = "file";
+const std::string FileWriterPlugin::CONFIG_FILE_NAME                   = "name";
+const std::string FileWriterPlugin::CONFIG_FILE_PATH                   = "path";
 
-const std::string FileWriterPlugin::CONFIG_DATASET                 = "dataset";
-const std::string FileWriterPlugin::CONFIG_DATASET_CMD             = "cmd";
-const std::string FileWriterPlugin::CONFIG_DATASET_NAME            = "name";
-const std::string FileWriterPlugin::CONFIG_DATASET_TYPE            = "datatype";
-const std::string FileWriterPlugin::CONFIG_DATASET_DIMS            = "dims";
-const std::string FileWriterPlugin::CONFIG_DATASET_CHUNKS          = "chunks";
-const std::string FileWriterPlugin::CONFIG_DATASET_COMPRESSION     = "compression";
+const std::string FileWriterPlugin::CONFIG_DATASET                     = "dataset";
+const std::string FileWriterPlugin::CONFIG_DATASET_CMD                 = "cmd";
+const std::string FileWriterPlugin::CONFIG_DATASET_NAME                = "name";
+const std::string FileWriterPlugin::CONFIG_DATASET_TYPE                = "datatype";
+const std::string FileWriterPlugin::CONFIG_DATASET_DIMS                = "dims";
+const std::string FileWriterPlugin::CONFIG_DATASET_CHUNKS              = "chunks";
+const std::string FileWriterPlugin::CONFIG_DATASET_COMPRESSION         = "compression";
 
-const std::string FileWriterPlugin::CONFIG_FRAMES                  = "frames";
-const std::string FileWriterPlugin::CONFIG_MASTER_DATASET          = "master";
-const std::string FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT       = "offset";
-const std::string FileWriterPlugin::CONFIG_WRITE                   = "write";
-const std::string FileWriterPlugin::ACQUISITION_ID                 = "acquisition_id";
-const std::string FileWriterPlugin::CLOSE_TIMEOUT_PERIOD           = "timeout_timer_period";
-const std::string FileWriterPlugin::START_CLOSE_TIMEOUT            = "start_timeout_timer";
+const std::string FileWriterPlugin::CONFIG_FRAMES                      = "frames";
+const std::string FileWriterPlugin::CONFIG_MASTER_DATASET              = "master";
+const std::string FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT           = "offset";
+const std::string FileWriterPlugin::CONFIG_WRITE                       = "write";
+const std::string FileWriterPlugin::ACQUISITION_ID                     = "acquisition_id";
+const std::string FileWriterPlugin::CLOSE_TIMEOUT_PERIOD               = "timeout_timer_period";
+const std::string FileWriterPlugin::START_CLOSE_TIMEOUT                = "start_timeout_timer";
 
 
 
@@ -62,6 +64,9 @@ FileWriterPlugin::FileWriterPlugin() :
         frame_offset_adjustment_(0),
         frames_per_block_(1),
         blocks_per_file_(0),
+        use_earliest_hdf5_(false),
+        alignment_threshold_(1),
+        alignment_value_(1),
         timeout_period_(0),
         timeout_thread_running_(true),
         timeout_thread_(boost::bind(&FileWriterPlugin::run_close_file_timeout, this))
@@ -161,7 +166,15 @@ void FileWriterPlugin::start_writing()
     this->current_acquisition_ = next_acquisition_;
     this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition());
 
-    this->current_acquisition_->start_acquisition(concurrent_rank_, concurrent_processes_, frame_offset_adjustment_, frames_per_block_, blocks_per_file_);
+    this->current_acquisition_->start_acquisition(
+        concurrent_rank_,
+        concurrent_processes_,
+        frame_offset_adjustment_,
+        frames_per_block_,
+        blocks_per_file_,
+        use_earliest_hdf5_,
+        alignment_threshold_,
+        alignment_value_);
 
     // Set writing flag to true
     writing_ = true;
@@ -284,6 +297,32 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
   }
 }
 
+void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
+{
+  // Protect this method
+  boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+
+  // Return the configuration of the file writer plugin
+  std::string process_str = get_name() + "/" + FileWriterPlugin::CONFIG_PROCESS + "/";
+  reply.set_param(process_str + FileWriterPlugin::CONFIG_PROCESS_NUMBER, concurrent_processes_);
+  reply.set_param(process_str + FileWriterPlugin::CONFIG_PROCESS_RANK, concurrent_rank_);
+  reply.set_param(process_str + FileWriterPlugin::CONFIG_PROCESS_BLOCKSIZE, frames_per_block_);
+  reply.set_param(process_str + FileWriterPlugin::CONFIG_PROCESS_BLOCKS_PER_FILE, blocks_per_file_);
+  reply.set_param(process_str + FileWriterPlugin::CONFIG_PROCESS_EARLIEST_VERSION, use_earliest_hdf5_);
+  reply.set_param(process_str + FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_THRESHOLD, alignment_threshold_);
+  reply.set_param(process_str + FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_VALUE, alignment_value_);
+
+  std::string file_str = get_name() + "/" + FileWriterPlugin::CONFIG_FILE + "/";
+  reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_PATH, next_acquisition_->file_path_);
+  reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_NAME, next_acquisition_->filename_);
+
+  reply.set_param(get_name() + "/" + FileWriterPlugin::CONFIG_FRAMES, next_acquisition_->total_frames_);
+  reply.set_param(get_name() + "/" + FileWriterPlugin::CONFIG_MASTER_DATASET, next_acquisition_->master_frame_);
+  reply.set_param(get_name() + "/" + FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT, frame_offset_adjustment_);
+  reply.set_param(get_name() + "/" + FileWriterPlugin::ACQUISITION_ID, next_acquisition_->acquisition_id_);
+  reply.set_param(get_name() + "/" + FileWriterPlugin::CLOSE_TIMEOUT_PERIOD, timeout_period_);
+}
+
 /**
  * Set configuration options for the file writer process count.
  *
@@ -365,6 +404,22 @@ void FileWriterPlugin::configure_process(OdinData::IpcMessage& config, OdinData:
       LOG4CXX_DEBUG(logger_, "Blocks per file is already " << this->blocks_per_file_);
     }
   }
+
+  // Check for hdf5 version
+  if (config.has_param(FileWriterPlugin::CONFIG_PROCESS_EARLIEST_VERSION)) {
+    this->use_earliest_hdf5_ = config.get_param<bool>(FileWriterPlugin::CONFIG_PROCESS_EARLIEST_VERSION);
+    LOG4CXX_DEBUG(logger_, "Use earliest version of HDF5 library to write file set to " << this->use_earliest_hdf5_);
+  }
+
+  // Check for alignment value and threshold
+  if (config.has_param(FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_THRESHOLD)) {
+    this->alignment_threshold_ = config.get_param<size_t>(FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_THRESHOLD);
+    LOG4CXX_DEBUG(logger_, "Chunk alignment threshold set to " << this->alignment_threshold_);
+  }
+  if (config.has_param(FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_VALUE)) {
+    this->alignment_value_ = config.get_param<size_t>(FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_VALUE);
+    LOG4CXX_DEBUG(logger_, "Chunk alignment value set to " << this->alignment_value_);
+  }
 }
 
 /**
@@ -391,10 +446,6 @@ void FileWriterPlugin::configure_file(OdinData::IpcMessage& config, OdinData::Ip
   if (config.has_param(FileWriterPlugin::CONFIG_FILE_NAME)) {
     this->next_acquisition_->filename_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_NAME);
     LOG4CXX_DEBUG(logger_, "Next file name changed to " << this->next_acquisition_->filename_);
-  }
-  if (config.has_param(FileWriterPlugin::CONFIG_FILE_EARLIEST_VERSION)) {
-    this->next_acquisition_->use_earliest_hdf5_ = config.get_param<bool>(FileWriterPlugin::CONFIG_FILE_EARLIEST_VERSION);
-    LOG4CXX_DEBUG(logger_, "Use earliest version of HDF5 library to write file set to " << this->next_acquisition_->use_earliest_hdf5_);
   }
 }
 

@@ -307,7 +307,6 @@ bool operator ==(IpcMessage const& lhs_msg, IpcMessage const& rhs_msg)
   // Test equality of message attributes
   areEqual &= (lhs_msg.msg_type_ == rhs_msg.msg_type_);
   areEqual &= (lhs_msg.msg_val_  == rhs_msg.msg_val_);
-  areEqual &= (lhs_msg.msg_timestamp_ == rhs_msg.msg_timestamp_);
 
   // Check both messages have a params block
   areEqual &= (lhs_msg.has_params() == rhs_msg.has_params());
@@ -440,13 +439,18 @@ std::string IpcMessage::valid_msg_type(IpcMessage::MsgType msg_type)
 
 void IpcMessage::msg_val_map_init()
 {
-  msg_val_map_.insert(MsgValMapEntry("reset",                 MsgValCmdReset));
-  msg_val_map_.insert(MsgValMapEntry("status",                MsgValCmdStatus));
-  msg_val_map_.insert(MsgValMapEntry("configure",             MsgValCmdConfigure));
-  msg_val_map_.insert(MsgValMapEntry("request_buffer_config", MsgValCmdBufferConfigRequest));
-  msg_val_map_.insert(MsgValMapEntry("frame_ready",           MsgValNotifyFrameReady));
-  msg_val_map_.insert(MsgValMapEntry("frame_release",         MsgValNotifyFrameRelease));
-  msg_val_map_.insert(MsgValMapEntry("buffer_config",         MsgValNotifyBufferConfig));
+  msg_val_map_.insert(MsgValMapEntry("reset",                    MsgValCmdReset));
+  msg_val_map_.insert(MsgValMapEntry("status",                   MsgValCmdStatus));
+  msg_val_map_.insert(MsgValMapEntry("configure",                MsgValCmdConfigure));
+  msg_val_map_.insert(MsgValMapEntry("request_configuration",    MsgValCmdRequestConfiguration));
+  msg_val_map_.insert(MsgValMapEntry("request_buffer_config",    MsgValCmdBufferConfigRequest));
+  msg_val_map_.insert(MsgValMapEntry("request_buffer_precharge", MsgValCmdBufferPrechargeRequest));
+  msg_val_map_.insert(MsgValMapEntry("shutdown",                 MsgValCmdShutdown));
+  msg_val_map_.insert(MsgValMapEntry("identity",                 MsgValNotifyIdentity));
+  msg_val_map_.insert(MsgValMapEntry("frame_ready",              MsgValNotifyFrameReady));
+  msg_val_map_.insert(MsgValMapEntry("frame_release",            MsgValNotifyFrameRelease));
+  msg_val_map_.insert(MsgValMapEntry("buffer_config",            MsgValNotifyBufferConfig));
+  msg_val_map_.insert(MsgValMapEntry("notify_status",            MsgValNotifyStatus));
 }
 
 //! Maps a message value string to a valid enumerated MsgVal.
@@ -566,6 +570,16 @@ template<> unsigned int IpcMessage::get_value(rapidjson::Value::ConstMemberItera
   return itr->value.GetUint();
 }
 
+#ifdef __APPLE__
+
+// OS X clang compiler seems to base uint64 on a different base type than gcc on Linux, causing
+// linker errors with templated specialisations of get_value and set_value for unsigned long.
+template<> unsigned long IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
+{
+  return itr->value.GetUint64();
+}
+#endif
+
 template<> int64_t IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
 {
   return itr->value.GetInt64();
@@ -641,6 +655,16 @@ template<> void IpcMessage::set_value(rapidjson::Value& value_obj, unsigned int 
 {
   value_obj.SetUint(value);
 }
+
+#ifdef __APPLE__
+
+// OS X clang compiler seems to base uint64 on a different base type than gcc on Linux, causing
+// linker errors with templated specialisations of get_value and set_value for unsigned long.
+template<> void IpcMessage::set_value(rapidjson::Value& value_obj, unsigned long const& value)
+{
+  value_obj.SetUint64(value);
+}
+#endif
 
 //! Sets the value of a message attribute.
 //!

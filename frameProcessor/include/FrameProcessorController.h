@@ -42,6 +42,7 @@ public:
   void handleMetaRxChannel();
   void provideStatus(OdinData::IpcMessage& reply);
   void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
+  void requestConfiguration(OdinData::IpcMessage& reply);
   void configurePlugin(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   void loadPlugin(const std::string& index, const std::string& name, const std::string& library);
   void connectPlugin(const std::string& index, const std::string& connectTo);
@@ -132,12 +133,20 @@ private:
   std::string                                                     threadInitMsg_;
   /** Pointer to the IpcReactor for incoming frame handling */
   boost::shared_ptr<OdinData::IpcReactor>                         reactor_;
+  /** End point for control messages */
+  std::string                                                     ctrlChannelEndpoint_;
   /** IpcChannel for control messages */
   OdinData::IpcChannel                                            ctrlChannel_;
   /** IpcChannel for meta-data messages */
   OdinData::IpcChannel                                            metaRxChannel_;
+  /** End point for publishing meta-data messages */
+  std::string                                                     metaTxChannelEndpoint_;
   /** IpcChannel for publishing meta-data messages */
   OdinData::IpcChannel                                            metaTxChannel_;
+  /** End point for frameReceiver ready channel */
+  std::string                                                     frReadyEndpoint_;
+  /** End point for frameReceiver release channel */
+  std::string                                                     frReleaseEndpoint_;
 };
 
 } /* namespace FrameProcessor */
