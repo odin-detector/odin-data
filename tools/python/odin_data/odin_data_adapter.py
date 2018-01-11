@@ -90,7 +90,7 @@ class OdinDataAdapter(ApiAdapter):
         if not request_command:
             key_list = self._kwargs.keys()
             for client in self._clients:
-                for key in client.status:
+                for key in client.parameters:
                     if key not in key_list:
                         key_list.append(key)
             response[request_command] = key_list
@@ -105,7 +105,8 @@ class OdinDataAdapter(ApiAdapter):
 
                 response_items = []
                 for client in self._clients:
-                    paramset = client.status
+                    paramset = client.parameters
+                    logging.debug("Client paramset: %s", paramset)
                     try:
                         item_dict = paramset
                         for item in request_items:
@@ -116,7 +117,7 @@ class OdinDataAdapter(ApiAdapter):
                     response_items.append(item_dict)
 
                 logging.debug(response_items)
-                response[request_command] = response_items
+                response['value'] = response_items
             except:
                 logging.debug(OdinDataAdapter.ERROR_FAILED_GET)
                 status_code = 503
@@ -144,39 +145,45 @@ class OdinDataAdapter(ApiAdapter):
         logging.debug("PUT request.body: %s", str(escape.url_unescape(request.body)))
 
         request_command = path.strip('/')
-        try:
-            parameters = json.loads(str(escape.url_unescape(request.body)))
-        except ValueError:
-            # If the body could not be parsed into an object it may be a simple string
-            parameters = str(escape.url_unescape(request.body))
 
-        # Check if the parameters object is a list
-        if isinstance(parameters, list):
-            logging.debug("List of parameters provided: %s", parameters)
-            # Check the length of the list matches the number of clients
-            if len(parameters) != len(self._clients):
-                status_code = 503
-                response['error'] = OdinDataAdapter.ERROR_PUT_MISMATCH
-            else:
-                # Loop over the clients and parameters, sending each one
-                for client, param_set in zip(self._clients, parameters):
-                    if param_set:
-                        try:
-                            client.send_configuration(param_set, request_command)
-                        except:
-                            logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
-                            status_code = 503
-                            response = {'error': OdinDataAdapter.ERROR_FAILED_TO_SEND}
+        # Request should start with config/
+        if 'config' in request_command:
+            request_command = request_command.strip('config').strip('/')
+            try:
+                parameters = json.loads(str(escape.url_unescape(request.body)))
+            except ValueError:
+                # If the body could not be parsed into an object it may be a simple string
+                parameters = str(escape.url_unescape(request.body))
 
-        else:
-            logging.debug("Single parameter set provided: %s", parameters)
-            for client in self._clients:
-                try:
-                    client.send_configuration(parameters, request_command)
-                except:
-                    logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
+            # Check if the parameters object is a list
+            if isinstance(parameters, list):
+                logging.debug("List of parameters provided: %s", parameters)
+                # Check the length of the list matches the number of clients
+                if len(parameters) != len(self._clients):
                     status_code = 503
-                    response = {'error': OdinDataAdapter.ERROR_FAILED_TO_SEND}
+                    response['error'] = OdinDataAdapter.ERROR_PUT_MISMATCH
+                else:
+                    # Loop over the clients and parameters, sending each one
+                    for client, param_set in zip(self._clients, parameters):
+                        if param_set:
+                            try:
+                                client.send_configuration(param_set, request_command)
+                            except Exception as err:
+                                logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
+                                logging.error("Error: %s", err)
+                                status_code = 503
+                                response = {'error': OdinDataAdapter.ERROR_FAILED_TO_SEND}
+
+            else:
+                logging.debug("Single parameter set provided: %s", parameters)
+                for client in self._clients:
+                    try:
+                        client.send_configuration(parameters, request_command)
+                    except Exception as err:
+                        logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
+                        logging.error("Error: %s", err)
+                        status_code = 503
+                        response = {'error': OdinDataAdapter.ERROR_FAILED_TO_SEND}
 
 
         return ApiAdapterResponse(response, status_code=status_code)
