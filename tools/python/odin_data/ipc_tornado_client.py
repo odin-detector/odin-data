@@ -21,42 +21,49 @@ class IpcTornadoClient(object):
         self.ctrl_channel = IpcTornadoChannel(IpcTornadoChannel.CHANNEL_TYPE_DEALER)
         self.ctrl_channel.connect(self.ctrl_endpoint)
         self.ctrl_channel.register_callback(self._callback)
-        self._status = {}
+        self._parameters = {}
 
         self._lock = RLock()
 
     @property
-    def status(self):
-        return self._status
+    def parameters(self):
+        return self._parameters
 
     def _callback(self, msg):
         # Handle the multi-part message
         self.logger.debug("Msg received: %s", msg)
         reply = IpcMessage(from_str=msg[0])
+        if 'request_configuration' in reply.get_msg_val():
+            self._update_configuration(reply.attrs)
         if 'status' in reply.get_msg_val():
             self._update_status(reply.attrs)
+
+    def _update_configuration(self, config_msg):
+        params = config_msg['params']
+        self._parameters['config'] = params
+        logging.debug("Current configuration updated to: %s", self._parameters['config'])
 
     def _update_status(self, status_msg):
         params = status_msg['params']
         params['connected'] = True
         params['timestamp'] = status_msg['timestamp']
-        self._status = params
-        logging.debug("Status updated to: %s", self._status)
+        self._parameters['status'] = params
+        logging.debug("Status updated to: %s", self._parameters['status'])
 
     def check_for_stale_status(self, max_stale_time):
-        if self._status is not None:
+        if 'status' in self._parameters:
             # Check for the timestamp
-            if 'timestamp' in self._status:
-                ts = datetime.strptime(self._status['timestamp'], "%Y-%m-%dT%H:%M:%S.%f")
+            if 'timestamp' in self._parameters['status']:
+                ts = datetime.strptime(self._parameters['status']['timestamp'], "%Y-%m-%dT%H:%M:%S.%f")
                 ttlm = datetime.now() - ts
                 if ttlm.seconds > max_stale_time:
                     # This connection has gone stale, set connected to false
-                    self._status = {'connected': False}
-                    logging.debug("Status updated to: %s", self._status)
+                    self._parameters['status'] = {'connected': False}
+                    logging.debug("Status updated to: %s", self._parameters['status'])
         else:
             # No status for this client so set connected to false
-            self._status = {'connected': False}
-            logging.debug("Status updated to: %s", self._status)
+            self._parameters['status'] = {'connected': False}
+            logging.debug("Status updated to: %s", self._parameters['status'])
 
 
     def _send_message(self, msg):
