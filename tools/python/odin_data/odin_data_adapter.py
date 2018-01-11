@@ -211,6 +211,8 @@ class OdinDataAdapter(ApiAdapter):
         for client in self._clients:
             # First check for stale status within a client
             client.check_for_stale_status(self._update_interval * 10)
+            # Request a configuration update
+            client.send_request('request_configuration')
             # Now request a status update
             client.send_request('status')
 
