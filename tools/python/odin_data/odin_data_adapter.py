@@ -147,8 +147,9 @@ class OdinDataAdapter(ApiAdapter):
         request_command = path.strip('/')
 
         # Request should start with config/
-        if 'config' in request_command:
-            request_command = request_command.strip('config').strip('/')
+        if request_command.startswith("config/"):
+            request_command = request_command.replace("config/", "", 1)  # Take the rest of the URI
+            logging.debug("Configure URI: %s", request_command)
             try:
                 parameters = json.loads(str(escape.url_unescape(request.body)))
             except ValueError:
@@ -184,7 +185,6 @@ class OdinDataAdapter(ApiAdapter):
                         logging.error("Error: %s", err)
                         status_code = 503
                         response = {'error': OdinDataAdapter.ERROR_FAILED_TO_SEND}
-
 
         return ApiAdapterResponse(response, status_code=status_code)
 
