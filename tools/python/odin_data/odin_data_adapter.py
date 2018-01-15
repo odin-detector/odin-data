@@ -102,10 +102,37 @@ class OdinDataAdapter(ApiAdapter):
                 request_items = request_command.split('/')
                 logging.debug(request_items)
                 # Now we need to traverse the parameters looking for the request
+                client_index = -1
+                # Check to see if the URI finishes with an index
+                # If it does then we are only interested in reading that single client
+                try:
+                    index = int(request_items[-1])
+                    if index >= 0:
+                        # This is a valid index so remove the value from the URI
+                        request_items = request_items[:-1]
+                        # Set the client index for submitting config to
+                        client_index = index
+                        logging.debug("URI without index: %s", request_command)
+                except ValueError:
+                    # This is OK, there is simply no index provided
+                    pass
 
-                response_items = []
-                for client in self._clients:
-                    paramset = client.parameters
+                if client_index == -1:
+                    response_items = []
+                    for client in self._clients:
+                        paramset = client.parameters
+                        logging.debug("Client paramset: %s", paramset)
+                        try:
+                            item_dict = paramset
+                            for item in request_items:
+                                item_dict = item_dict[item]
+                        except KeyError, ex:
+                            logging.debug("Invalid parameter request in HTTP GET: %s", request_command)
+                            item_dict = None
+                        response_items.append(item_dict)
+                else:
+                    response_items = []
+                    paramset = self._clients[client_index].parameters
                     logging.debug("Client paramset: %s", paramset)
                     try:
                         item_dict = paramset
@@ -114,7 +141,7 @@ class OdinDataAdapter(ApiAdapter):
                     except KeyError, ex:
                         logging.debug("Invalid parameter request in HTTP GET: %s", request_command)
                         item_dict = None
-                    response_items.append(item_dict)
+                    response_items = item_dict
 
                 logging.debug(response_items)
                 response['value'] = response_items
@@ -150,6 +177,23 @@ class OdinDataAdapter(ApiAdapter):
         if request_command.startswith("config/"):
             request_command = request_command.replace("config/", "", 1)  # Take the rest of the URI
             logging.debug("Configure URI: %s", request_command)
+            client_index = -1
+            # Check to see if the URI finishes with an index
+            # eg hdf5/frames/0
+            # If it does then we are only interested in setting that single client
+            uri_items = request_command.split('/')
+            # Check for an integer
+            try:
+                index = int(uri_items[-1])
+                if index >= 0:
+                    # This is a valid index so remove the value from the URI
+                    request_command = request_command.replace("/"+uri_items[-1], "", 1)
+                    # Set the client index for submitting config to
+                    client_index = index
+                    logging.debug("URI without index: %s", request_command)
+            except ValueError:
+                # This is OK, there is simply no index provided
+                pass
             try:
                 parameters = json.loads(str(escape.url_unescape(request.body)))
             except ValueError:
@@ -161,6 +205,11 @@ class OdinDataAdapter(ApiAdapter):
                 logging.debug("List of parameters provided: %s", parameters)
                 # Check the length of the list matches the number of clients
                 if len(parameters) != len(self._clients):
+                    status_code = 503
+                    response['error'] = OdinDataAdapter.ERROR_PUT_MISMATCH
+                elif client_index != -1:
+                    # A list of items has been supplied but also an index has been specified
+                    logging.error("URI contains an index but parameters supplied as a list")
                     status_code = 503
                     response['error'] = OdinDataAdapter.ERROR_PUT_MISMATCH
                 else:
@@ -177,9 +226,20 @@ class OdinDataAdapter(ApiAdapter):
 
             else:
                 logging.debug("Single parameter set provided: %s", parameters)
-                for client in self._clients:
+                if client_index == -1:
+                    # We are sending the value to all clients
+                    for client in self._clients:
+                        try:
+                            client.send_configuration(parameters, request_command)
+                        except Exception as err:
+                            logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
+                            logging.error("Error: %s", err)
+                            status_code = 503
+                            response = {'error': OdinDataAdapter.ERROR_FAILED_TO_SEND}
+                else:
+                    # A client index has been specified
                     try:
-                        client.send_configuration(parameters, request_command)
+                        self._clients[client_index].send_configuration(parameters, request_command)
                     except Exception as err:
                         logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
                         logging.error("Error: %s", err)
