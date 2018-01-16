@@ -1,6 +1,6 @@
 import unittest
 
-from util import *
+from odin_data.util import *
 
 
 class UtilTest(unittest.TestCase):
