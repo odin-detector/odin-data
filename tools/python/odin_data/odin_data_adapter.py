@@ -6,6 +6,7 @@ Created on 6th September 2017
 import json
 import logging
 from odin_data.ipc_tornado_client import IpcTornadoClient
+from odin_data.util import remove_suffix
 from odin.adapters.adapter import ApiAdapter, ApiAdapterResponse, request_types, response_types
 from tornado import escape
 from tornado.ioloop import IOLoop
@@ -187,7 +188,7 @@ class OdinDataAdapter(ApiAdapter):
                 index = int(uri_items[-1])
                 if index >= 0:
                     # This is a valid index so remove the value from the URI
-                    request_command = request_command.replace("/"+uri_items[-1], "", 1)
+                    request_command = remove_suffix(request_command, "/"+uri_items[-1])
                     # Set the client index for submitting config to
                     client_index = index
                     logging.debug("URI without index: %s", request_command)
