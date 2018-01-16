@@ -230,8 +230,19 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
 
   // Check to see if we are configuring a dataset
   if (config.has_param(FileWriterPlugin::CONFIG_DATASET)) {
-    OdinData::IpcMessage dsetConfig(config.get_param<const rapidjson::Value&>(FileWriterPlugin::CONFIG_DATASET));
-    this->configure_dataset(dsetConfig, reply);
+    // Attempt to retrieve the value as a string parameter
+    try
+    {
+      std::string dataset_name = config.get_param<std::string>(FileWriterPlugin::CONFIG_DATASET);
+      // If we can retrieve a single string parameter then we are being asked to create
+      // a new dataset.  Only create it if it doesn't already exist.
+      create_new_dataset(dataset_name);
+    } catch (const std::exception& e)
+    {
+      // The object passed to us is a dataset description so pass to the configure_dataset method.
+      OdinData::IpcMessage dsetConfig(config.get_param<const rapidjson::Value&>(FileWriterPlugin::CONFIG_DATASET));
+      this->configure_dataset(dsetConfig, reply);
+    }
   }
 
   // Check to see if we are being told how many frames to write
@@ -469,87 +480,88 @@ void FileWriterPlugin::configure_file(OdinData::IpcMessage& config, OdinData::Ip
 void FileWriterPlugin::configure_dataset(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
   LOG4CXX_DEBUG(logger_, "Configure dataset");
-  // Read the dataset command
-  if (config.has_param(FileWriterPlugin::CONFIG_DATASET_CMD)) {
-    std::string cmd = config.get_param<std::string>(FileWriterPlugin::CONFIG_DATASET_CMD);
 
-    // Command for creating a new dataset description
-    if (cmd == "create") {
-      DatasetDefinition dset_def;
-      // There must be a name present for the dataset
-      if (config.has_param(FileWriterPlugin::CONFIG_DATASET_NAME)) {
-        dset_def.name = config.get_param<std::string>(FileWriterPlugin::CONFIG_DATASET_NAME);
-      } else {
-        LOG4CXX_ERROR(logger_, "Cannot create a dataset without a name");
-        throw std::runtime_error("Cannot create a dataset without a name");
-      }
+  std::string dataset_name;
+  // There must be a name present for the dataset
+  if (config.has_param(FileWriterPlugin::CONFIG_DATASET_NAME)) {
+    dataset_name = config.get_param<std::string>(FileWriterPlugin::CONFIG_DATASET_NAME);
+  } else {
+    LOG4CXX_ERROR(logger_, "Cannot configure a dataset without a name");
+    throw std::runtime_error("Cannot configure a dataset without a name");
+  }
 
-      // There must be a type present for the dataset
-      if (config.has_param(FileWriterPlugin::CONFIG_DATASET_TYPE)) {
-        dset_def.pixel = (PixelType)config.get_param<int>(FileWriterPlugin::CONFIG_DATASET_TYPE);
-      } else {
-        LOG4CXX_ERROR(logger_, "Cannot create a dataset without a data type");
-        throw std::runtime_error("Cannot create a dataset without a data type");
-      }
+  // Create the dataset if it doesn't already exist
+  create_new_dataset(dataset_name);
+  DatasetDefinition dset = dataset_defs_[dataset_name];
 
-      // There may be dimensions present for the dataset
-      if (config.has_param(FileWriterPlugin::CONFIG_DATASET_DIMS)) {
-        const rapidjson::Value& val = config.get_param<const rapidjson::Value&>(FileWriterPlugin::CONFIG_DATASET_DIMS);
-        // Loop over the dimension values
-        dimensions_t dims(val.Size());
-        for (rapidjson::SizeType i = 0; i < val.Size(); i++) {
-          const rapidjson::Value& dim = val[i];
-          dims[i] = dim.GetUint64();
-        }
-        dset_def.frame_dimensions = dims;
-      } else {
-        // This is a single dimensioned dataset so store dimensions as NULL
-        dimensions_t dims(0);
-        dset_def.frame_dimensions = dims;
-      }
+  // If there is a type present then set it
+  if (config.has_param(FileWriterPlugin::CONFIG_DATASET_TYPE)) {
+    dset.pixel = (PixelType)config.get_param<int>(FileWriterPlugin::CONFIG_DATASET_TYPE);
+  }
 
-      // There might be chunking dimensions present for the dataset, this is not required
-      if (config.has_param(FileWriterPlugin::CONFIG_DATASET_CHUNKS)) {
-        const rapidjson::Value& val = config.get_param<const rapidjson::Value&>(FileWriterPlugin::CONFIG_DATASET_CHUNKS);
-        // Loop over the dimension values
-        dimensions_t chunks(val.Size());
-        for (rapidjson::SizeType i = 0; i < val.Size(); i++) {
-          const rapidjson::Value& dim = val[i];
-          chunks[i] = dim.GetUint64();
-        }
-        dset_def.chunks = chunks;
-      } else {
-        // No chunks were specified, creating defaults from the dataset dimensions
-        // Chunk number of dimensions will be 1 greater than dataset (to include n dimension)
-        dimensions_t chunks(dset_def.frame_dimensions.size()+1);
-        // Set first chunk dimension (n dimension) to a single frame or item
-        chunks[0] = 1;
-        // Set the remaining chunk dimensions to the same as the dataset dimensions
-        for (int index = 0; index < dset_def.frame_dimensions.size(); index++){
-          chunks[index+1] = dset_def.frame_dimensions[index];
-        }
-        dset_def.chunks = chunks;
-      }
-
-      // Check if compression has been specified for the raw data
-      if (config.has_param(FileWriterPlugin::CONFIG_DATASET_COMPRESSION)) {
-        dset_def.compression = (CompressionType)config.get_param<int>(FileWriterPlugin::CONFIG_DATASET_COMPRESSION);
-        LOG4CXX_INFO(logger_, "Enabling compression: " << dset_def.compression);
-      }
-      else {
-        dset_def.compression = no_compression;
-      }
-
-      if (dset_def.frame_dimensions.size() > 1) {
-        LOG4CXX_DEBUG(logger_, "Creating dataset [" << dset_def.name << "] (" << dset_def.frame_dimensions[0] << ", " << dset_def.frame_dimensions[1] << ")");
-      } else if (dset_def.frame_dimensions.size() > 0) {
-        LOG4CXX_DEBUG(logger_, "Creating dataset [" << dset_def.name << "] (" << dset_def.frame_dimensions[0] << ")");
-      } else {
-        LOG4CXX_DEBUG(logger_, "Creating 1D dataset [" << dset_def.name << "] with no additional dimensions");
-      }
-      // Add the dataset definition to the store
-      this->next_acquisition_->dataset_defs_[dset_def.name] = dset_def;
+  // If there are dimensions present for the dataset then set them
+  if (config.has_param(FileWriterPlugin::CONFIG_DATASET_DIMS)) {
+    const rapidjson::Value& val = config.get_param<const rapidjson::Value&>(FileWriterPlugin::CONFIG_DATASET_DIMS);
+    // Loop over the dimension values
+    dimensions_t dims(val.Size());
+    for (rapidjson::SizeType i = 0; i < val.Size(); i++) {
+      const rapidjson::Value& dim = val[i];
+      dims[i] = dim.GetUint64();
     }
+    dset.frame_dimensions = dims;
+    // Create default chunking for the dataset (to include n dimension)
+    dimensions_t chunks(dset.frame_dimensions.size()+1);
+    // Set first chunk dimension (n dimension) to a single frame or item
+    chunks[0] = 1;
+    // Set the remaining chunk dimensions to the same as the dataset dimensions
+    for (int index = 0; index < dset.frame_dimensions.size(); index++){
+      chunks[index+1] = dset.frame_dimensions[index];
+    }
+    dset.chunks = chunks;
+  }
+
+  // There might be chunking dimensions present for the dataset, this is not required
+  if (config.has_param(FileWriterPlugin::CONFIG_DATASET_CHUNKS)) {
+    const rapidjson::Value& val = config.get_param<const rapidjson::Value&>(FileWriterPlugin::CONFIG_DATASET_CHUNKS);
+    // Loop over the dimension values
+    dimensions_t chunks(val.Size());
+    for (rapidjson::SizeType i = 0; i < val.Size(); i++) {
+      const rapidjson::Value& dim = val[i];
+      chunks[i] = dim.GetUint64();
+    }
+    dset.chunks = chunks;
+  }
+
+  // Check if compression has been specified for the raw data
+  if (config.has_param(FileWriterPlugin::CONFIG_DATASET_COMPRESSION)) {
+    dset.compression = (CompressionType)config.get_param<int>(FileWriterPlugin::CONFIG_DATASET_COMPRESSION);
+    LOG4CXX_INFO(logger_, "Enabling compression: " << dset.compression);
+  }
+
+  // Add the dataset definition to the store
+  dataset_defs_[dataset_name] = dset;
+}
+
+/**
+ * Checks to see if a dataset with the supplied name already exists.  If it doesn't then
+ * the dataset definition is created and then added to the store.
+ *
+ * \param[in] dset_name - Name of the dataset to create.
+ */
+void FileWriterPlugin::create_new_dataset(const std::string& dset_name)
+{
+  if (dataset_defs_.count(dset_name) < 1){
+    DatasetDefinition dset_def;
+    // Provide default values for the dataset
+    dset_def.name = dset_name;
+    dset_def.pixel = pixel_raw_8bit;
+    dset_def.compression = no_compression;
+    dset_def.num_frames = 1;
+    std::vector<long long unsigned int> dims(0);
+    dset_def.frame_dimensions = dims;
+    dset_def.chunks = dims;
+    // Record the dataset in the definitions
+    dataset_defs_[dset_def.name] = dset_def;
   }
 }
 

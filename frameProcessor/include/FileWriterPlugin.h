@@ -17,6 +17,7 @@
 using namespace log4cxx;
 
 #include "FrameProcessorPlugin.h"
+#include "FrameProcessorDefinitions.h"
 #include "Acquisition.h"
 #include "ClassLoader.h"
 
@@ -49,6 +50,7 @@ public:
   void configure_process(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   void configure_file(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   void configure_dataset(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
+  void create_new_dataset(const std::string& dset_name);
   void status(OdinData::IpcMessage& status);
   void stop_acquisition();
   void start_close_file_timeout();
@@ -136,6 +138,8 @@ private:
   boost::shared_ptr<Acquisition> current_acquisition_;
   /** Details of the next acquisition to be written */
   boost::shared_ptr<Acquisition> next_acquisition_;
+  /** Map of dataset definitions */
+  std::map<std::string, DatasetDefinition> dataset_defs_;
   /** Number of frames to write consecutively in a file */
   size_t frames_per_block_;
   /** Number of blocks to write in a file  */
