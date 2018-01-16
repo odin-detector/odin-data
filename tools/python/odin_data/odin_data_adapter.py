@@ -6,6 +6,7 @@ Created on 6th September 2017
 import json
 import logging
 from odin_data.ipc_tornado_client import IpcTornadoClient
+from odin_data.util import remove_prefix, remove_suffix
 from odin.adapters.adapter import ApiAdapter, ApiAdapterResponse, request_types, response_types
 from tornado import escape
 from tornado.ioloop import IOLoop
@@ -99,22 +100,31 @@ class OdinDataAdapter(ApiAdapter):
             response[request_command] = self._kwargs[request_command]
         else:
             try:
-                request_items = request_command.split('/')
-                logging.debug(request_items)
+                uri_items = request_command.split('/')
+                logging.debug(uri_items)
                 # Now we need to traverse the parameters looking for the request
+                client_index = -1
+                # Check to see if the URI finishes with an index
+                # If it does then we are only interested in reading that single client
+                try:
+                    index = int(uri_items[-1])
+                    if index >= 0:
+                        # This is a valid index so remove the value from the URI
+                        uri_items = uri_items[:-1]
+                        # Set the client index for submitting config to
+                        client_index = index
+                        logging.debug("URI without index: %s", request_command)
+                except ValueError:
+                    # This is OK, there is simply no index provided
+                    pass
 
-                response_items = []
-                for client in self._clients:
-                    paramset = client.parameters
-                    logging.debug("Client paramset: %s", paramset)
-                    try:
-                        item_dict = paramset
-                        for item in request_items:
-                            item_dict = item_dict[item]
-                    except KeyError, ex:
-                        logging.debug("Invalid parameter request in HTTP GET: %s", request_command)
-                        item_dict = None
-                    response_items.append(item_dict)
+                if client_index == -1:
+                    response_items = []
+                    for client in self._clients:
+                        response_items.append(OdinDataAdapter.traverse_parameters(client.parameters, uri_items))
+                else:
+                    response_items = OdinDataAdapter.traverse_parameters(self._clients[client_index].parameters,
+                                                                         uri_items)
 
                 logging.debug(response_items)
                 response['value'] = response_items
@@ -148,8 +158,25 @@ class OdinDataAdapter(ApiAdapter):
 
         # Request should start with config/
         if request_command.startswith("config/"):
-            request_command = request_command.replace("config/", "", 1)  # Take the rest of the URI
+            request_command = remove_prefix(request_command, "config/")  # Take the rest of the URI
             logging.debug("Configure URI: %s", request_command)
+            client_index = -1
+            # Check to see if the URI finishes with an index
+            # eg hdf5/frames/0
+            # If it does then we are only interested in setting that single client
+            uri_items = request_command.split('/')
+            # Check for an integer
+            try:
+                index = int(uri_items[-1])
+                if index >= 0:
+                    # This is a valid index so remove the value from the URI
+                    request_command = remove_suffix(request_command, "/" + uri_items[-1])
+                    # Set the client index for submitting config to
+                    client_index = index
+                    logging.debug("URI without index: %s", request_command)
+            except ValueError:
+                # This is OK, there is simply no index provided
+                pass
             try:
                 parameters = json.loads(str(escape.url_unescape(request.body)))
             except ValueError:
@@ -163,12 +190,19 @@ class OdinDataAdapter(ApiAdapter):
                 if len(parameters) != len(self._clients):
                     status_code = 503
                     response['error'] = OdinDataAdapter.ERROR_PUT_MISMATCH
+                elif client_index != -1:
+                    # A list of items has been supplied but also an index has been specified
+                    logging.error("URI contains an index but parameters supplied as a list")
+                    status_code = 503
+                    response['error'] = OdinDataAdapter.ERROR_PUT_MISMATCH
                 else:
                     # Loop over the clients and parameters, sending each one
                     for client, param_set in zip(self._clients, parameters):
                         if param_set:
                             try:
-                                client.send_configuration(param_set, request_command)
+                                command, parameters = OdinDataAdapter.uri_params_to_dictionary(request_command,
+                                                                                               param_set)
+                                client.send_configuration(parameters, command)
                             except Exception as err:
                                 logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
                                 logging.error("Error: %s", err)
@@ -177,9 +211,22 @@ class OdinDataAdapter(ApiAdapter):
 
             else:
                 logging.debug("Single parameter set provided: %s", parameters)
-                for client in self._clients:
+                if client_index == -1:
+                    # We are sending the value to all clients
+                    command, parameters = OdinDataAdapter.uri_params_to_dictionary(request_command, parameters)
+                    for client in self._clients:
+                        try:
+                            client.send_configuration(parameters, command)
+                        except Exception as err:
+                            logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
+                            logging.error("Error: %s", err)
+                            status_code = 503
+                            response = {'error': OdinDataAdapter.ERROR_FAILED_TO_SEND}
+                else:
+                    # A client index has been specified
                     try:
-                        client.send_configuration(parameters, request_command)
+                        command, parameters = OdinDataAdapter.uri_params_to_dictionary(request_command, parameters)
+                        self._clients[client_index].send_configuration(parameters, command)
                     except Exception as err:
                         logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
                         logging.error("Error: %s", err)
@@ -204,6 +251,41 @@ class OdinDataAdapter(ApiAdapter):
         logging.debug(response)
 
         return ApiAdapterResponse(response, status_code=status_code)
+
+    @staticmethod
+    def traverse_parameters(param_set, uri_items):
+        logging.debug("Client paramset: %s", param_set)
+        try:
+            item_dict = param_set
+            for item in uri_items:
+                item_dict = item_dict[item]
+        except KeyError, ex:
+            logging.debug("Invalid parameter request in HTTP GET with URI: %s", uri_items)
+            item_dict = None
+        return item_dict
+
+    @staticmethod
+    def uri_params_to_dictionary(request_command, parameters):
+        # Check to see if the request contains more than one item
+        request_list = request_command.split('/')
+        logging.debug("URI request list: %s", request_list)
+        param_dict = {}
+        command = None
+        if len(request_list) > 1:
+            # We need to create a dictionary structure that contains the request list
+            current_dict = param_dict
+            for item in request_list[1:-1]:
+                current_dict[item] = {}
+                current_dict = current_dict[item]
+
+            current_dict[request_list[-1]] = parameters
+            command = request_list[0]
+        else:
+            param_dict = parameters
+            command = request_command
+
+        logging.debug("Command [%s] parameter dictionary: %s", command, param_dict)
+        return command, param_dict
 
     def update_loop(self):
         """Handle background update loop tasks.
