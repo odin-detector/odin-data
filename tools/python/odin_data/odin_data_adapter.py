@@ -6,7 +6,7 @@ Created on 6th September 2017
 import json
 import logging
 from odin_data.ipc_tornado_client import IpcTornadoClient
-from odin_data.util import remove_suffix
+from odin_data.util import remove_prefix, remove_suffix
 from odin.adapters.adapter import ApiAdapter, ApiAdapterResponse, request_types, response_types
 from tornado import escape
 from tornado.ioloop import IOLoop
@@ -158,7 +158,7 @@ class OdinDataAdapter(ApiAdapter):
 
         # Request should start with config/
         if request_command.startswith("config/"):
-            request_command = request_command.replace("config/", "", 1)  # Take the rest of the URI
+            request_command = remove_prefix(request_command, "config/")  # Take the rest of the URI
             logging.debug("Configure URI: %s", request_command)
             client_index = -1
             # Check to see if the URI finishes with an index
