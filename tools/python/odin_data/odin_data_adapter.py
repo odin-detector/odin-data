@@ -266,6 +266,41 @@ class OdinDataAdapter(ApiAdapter):
 
         return ApiAdapterResponse(response, status_code=status_code)
 
+    @staticmethod
+    def traverse_parameters(param_set, uri_items):
+        logging.debug("Client paramset: %s", param_set)
+        try:
+            item_dict = param_set
+            for item in uri_items:
+                item_dict = item_dict[item]
+        except KeyError, ex:
+            logging.debug("Invalid parameter request in HTTP GET with URI: %s", uri_items)
+            item_dict = None
+        return item_dict
+
+    @staticmethod
+    def uri_params_to_dictionary(request_command, parameters):
+        # Check to see if the request contains more than one item
+        request_list = request_command.split('/')
+        logging.debug("URI request list: %s", request_list)
+        param_dict = {}
+        command = None
+        if len(request_list) > 1:
+            # We need to create a dictionary structure that contains the request list
+            current_dict = param_dict
+            for item in request_list[1:-1]:
+                current_dict[item] = {}
+                current_dict = current_dict[item]
+
+            current_dict[request_list[-1]] = parameters
+            command = request_list[0]
+        else:
+            param_dict = parameters
+            command = request_command
+
+        logging.debug("Command [%s] parameter dictionary: %s", command, param_dict)
+        return command, param_dict
+
     def update_loop(self):
         """Handle background update loop tasks.
         This method handles background update tasks executed periodically in the tornado
