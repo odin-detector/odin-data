@@ -127,6 +127,22 @@ IpcMessage::IpcMessage(const rapidjson::Value& value,
   doc_.AddMember("params", newValue, doc_.GetAllocator());
 }
 
+//! Returns a vector of all parameter names contained in the message.
+//!
+//! \return A vector of all parameter names in this message
+
+std::vector<std::string> IpcMessage::get_param_names()
+{
+  std::vector<std::string> names;
+  rapidjson::Value::ConstMemberIterator itr = doc_.FindMember("params");
+  for (rapidjson::Value::ConstMemberIterator param_itr = itr->value.MemberBegin();
+      param_itr != itr->value.MemberEnd(); ++param_itr){
+    std::string param_name(param_itr->name.GetString());
+    names.push_back(param_name);
+  }
+  return names;
+}
+
 //! Searches for the named parameter in the message.
 //!
 //! This method returns true if the parameter is found in the message, or false
