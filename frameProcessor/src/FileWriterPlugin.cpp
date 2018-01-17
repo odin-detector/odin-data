@@ -166,6 +166,12 @@ void FileWriterPlugin::start_writing()
     this->current_acquisition_ = next_acquisition_;
     this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition());
 
+    // Set up datasets within the current acquisition
+    std::map<std::string, DatasetDefinition>::iterator iter;
+    for (iter = this->dataset_defs_.begin(); iter != this->dataset_defs_.end(); ++iter){
+      this->current_acquisition_->dataset_defs_[iter->first] = iter->second;
+    }
+
     this->current_acquisition_->start_acquisition(
         concurrent_rank_,
         concurrent_processes_,
@@ -233,15 +239,25 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
     // Attempt to retrieve the value as a string parameter
     try
     {
+      LOG4CXX_INFO(logger_, "Checking for string name of dataset");
       std::string dataset_name = config.get_param<std::string>(FileWriterPlugin::CONFIG_DATASET);
+      LOG4CXX_INFO(logger_, "Dataset name " << dataset_name << " found, creating...");
       // If we can retrieve a single string parameter then we are being asked to create
       // a new dataset.  Only create it if it doesn't already exist.
       create_new_dataset(dataset_name);
-    } catch (const std::exception& e)
+    } catch (OdinData::IpcMessageException& e)
     {
       // The object passed to us is a dataset description so pass to the configure_dataset method.
-      OdinData::IpcMessage dsetConfig(config.get_param<const rapidjson::Value&>(FileWriterPlugin::CONFIG_DATASET));
-      this->configure_dataset(dsetConfig, reply);
+      OdinData::IpcMessage dataset_config(config.get_param<const rapidjson::Value&>(FileWriterPlugin::CONFIG_DATASET));
+      std::vector<std::string> dataset_names = dataset_config.get_param_names();
+      for (std::vector<std::string>::iterator iter = dataset_names.begin();
+          iter != dataset_names.end(); ++iter){
+        std::string dataset_name = *iter;
+        LOG4CXX_INFO(logger_, "Dataset name " << dataset_name << " found, creating...");
+        create_new_dataset(dataset_name);
+        OdinData::IpcMessage dsetConfig(config.get_param<const rapidjson::Value&>(FileWriterPlugin::CONFIG_DATASET + "/" + dataset_name));
+        this->configure_dataset(dataset_name, dsetConfig, reply);
+      }
     }
   }
 
@@ -332,6 +348,32 @@ void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
   reply.set_param(get_name() + "/" + FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT, frame_offset_adjustment_);
   reply.set_param(get_name() + "/" + FileWriterPlugin::ACQUISITION_ID, next_acquisition_->acquisition_id_);
   reply.set_param(get_name() + "/" + FileWriterPlugin::CLOSE_TIMEOUT_PERIOD, timeout_period_);
+
+  // Check for datasets
+  std::map<std::string, DatasetDefinition>::iterator iter;
+  for (iter = this->dataset_defs_.begin(); iter != this->dataset_defs_.end(); ++iter) {
+    // Add the dataset type
+    reply.set_param(get_name() + "/dataset/" + iter->first + "/" + FileWriterPlugin::CONFIG_DATASET_TYPE, (int)iter->second.pixel);
+
+    // Add the dataset compression
+    reply.set_param(get_name() + "/dataset/" + iter->first + "/" + FileWriterPlugin::CONFIG_DATASET_COMPRESSION, (int)iter->second.compression);
+
+    // Check for and add dimensions
+    if (iter->second.frame_dimensions.size() > 0) {
+      std::string dimParamName = get_name() + "/dataset/" + iter->first + "/" + FileWriterPlugin::CONFIG_DATASET_DIMS + "[]";
+      for (int index = 0; index < iter->second.frame_dimensions.size(); index++) {
+        reply.set_param(dimParamName, (int)iter->second.frame_dimensions[index]);
+      }
+    }
+    // Check for and add chunking dimensions
+    if (iter->second.chunks.size() > 0) {
+      std::string chunkParamName = get_name() + "/dataset/" + iter->first + "/" + FileWriterPlugin::CONFIG_DATASET_CHUNKS + "[]";
+      for (int index = 0; index < iter->second.chunks.size(); index++) {
+        reply.set_param(chunkParamName, (int)iter->second.chunks[index]);
+      }
+    }
+  }
+
 }
 
 /**
@@ -477,21 +519,19 @@ void FileWriterPlugin::configure_file(OdinData::IpcMessage& config, OdinData::Ip
  * \param[in] config - IpcMessage containing configuration data.
  * \param[out] reply - Response IpcMessage.
  */
-void FileWriterPlugin::configure_dataset(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
+void FileWriterPlugin::configure_dataset(const std::string& dataset_name, OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
-  LOG4CXX_DEBUG(logger_, "Configure dataset");
+  LOG4CXX_DEBUG(logger_, "Configuring dataset [" << dataset_name << "]");
 
-  std::string dataset_name;
-  // There must be a name present for the dataset
-  if (config.has_param(FileWriterPlugin::CONFIG_DATASET_NAME)) {
-    dataset_name = config.get_param<std::string>(FileWriterPlugin::CONFIG_DATASET_NAME);
-  } else {
-    LOG4CXX_ERROR(logger_, "Cannot configure a dataset without a name");
-    throw std::runtime_error("Cannot configure a dataset without a name");
-  }
+//  std::string dataset_name;
+//  // There must be a name present for the dataset
+//  if (config.has_param(FileWriterPlugin::CONFIG_DATASET_NAME)) {
+//    dataset_name = config.get_param<std::string>(FileWriterPlugin::CONFIG_DATASET_NAME);
+//  } else {
+//    LOG4CXX_ERROR(logger_, "Cannot configure a dataset without a name");
+//    throw std::runtime_error("Cannot configure a dataset without a name");
+//  }
 
-  // Create the dataset if it doesn't already exist
-  create_new_dataset(dataset_name);
   DatasetDefinition dset = dataset_defs_[dataset_name];
 
   // If there is a type present then set it
@@ -585,6 +625,8 @@ void FileWriterPlugin::status(OdinData::IpcMessage& status)
   status.set_param(get_name() + "/processes", (int)this->concurrent_processes_);
   status.set_param(get_name() + "/rank", (int)this->concurrent_rank_);
 
+  /*
+   * TODO: Remove this section once configuration requests have been verified.
   // Check for datasets
   std::map<std::string, DatasetDefinition>::iterator iter;
   for (iter = this->current_acquisition_->dataset_defs_.begin(); iter != this->current_acquisition_->dataset_defs_.end(); ++iter) {
@@ -606,6 +648,7 @@ void FileWriterPlugin::status(OdinData::IpcMessage& status)
       }
     }
   }
+  */
 }
 
 /** Check if the frame contains an acquisition ID and start a new file if it does and it's different from the current one

@@ -49,7 +49,7 @@ public:
   void requestConfiguration(OdinData::IpcMessage& reply);
   void configure_process(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   void configure_file(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
-  void configure_dataset(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
+  void configure_dataset(const std::string& dataset_name, OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   void create_new_dataset(const std::string& dset_name);
   void status(OdinData::IpcMessage& status);
   void stop_acquisition();
