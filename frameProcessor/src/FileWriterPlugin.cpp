@@ -31,8 +31,6 @@ const std::string FileWriterPlugin::CONFIG_FILE_NAME                   = "name";
 const std::string FileWriterPlugin::CONFIG_FILE_PATH                   = "path";
 
 const std::string FileWriterPlugin::CONFIG_DATASET                     = "dataset";
-const std::string FileWriterPlugin::CONFIG_DATASET_CMD                 = "cmd";
-const std::string FileWriterPlugin::CONFIG_DATASET_NAME                = "name";
 const std::string FileWriterPlugin::CONFIG_DATASET_TYPE                = "datatype";
 const std::string FileWriterPlugin::CONFIG_DATASET_DIMS                = "dims";
 const std::string FileWriterPlugin::CONFIG_DATASET_CHUNKS              = "chunks";

@@ -84,10 +84,6 @@ private:
 
   /** Configuration constant for dataset related items */
   static const std::string CONFIG_DATASET;
-  /** Configuration constant for dataset command */
-  static const std::string CONFIG_DATASET_CMD;
-  /** Configuration constant for dataset name */
-  static const std::string CONFIG_DATASET_NAME;
   /** Configuration constant for dataset datatype */
   static const std::string CONFIG_DATASET_TYPE;
   /** Configuration constant for dataset dimensions */
