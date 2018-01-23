@@ -401,6 +401,20 @@ void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index
     ensure_h5_result(H5Pset_filter(prop, BSLZ4_FILTER, H5Z_FLAG_MANDATORY,
         cd_values_length, cd_values), "H5Pset_filter failed to set the BSLZ4 filter");
   }
+  else if (definition.compression == blosc) {
+    LOG4CXX_INFO(logger_, "Compression type: Blosc");
+    // Create cd_values for filter to set default block size and to enable LZ4
+    unsigned int cd_values[7] = {0, 0, 0, 0, 0, 0, 0};
+    size_t cd_values_length = 7;
+    // TODO: configure the filter parameters dynamically instead of hardcoding like this.
+    cd_values[2] = 2;       // type size
+    cd_values[3] = 100;     // uncompressed size
+    cd_values[4] = 1;       // compression level
+    cd_values[5] = 1;       // 0: shuffle not active, 1: shuffle active
+    cd_values[6] = 0;       // the actual Blosc compressor to use. See blosc.h
+    ensure_h5_result(H5Pset_filter(prop, BLOSC_FILTER, H5Z_FLAG_OPTIONAL,
+                                   cd_values_length, cd_values), "H5Pset_filter failed to set the Blosc filter");
+  }
 
   ensure_h5_result(H5Pset_chunk(prop, dset_dims.size(), &chunk_dims.front()), "H5Pset_chunk failed");
 

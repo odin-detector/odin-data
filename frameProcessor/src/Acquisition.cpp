@@ -385,7 +385,7 @@ bool Acquisition::check_frame_valid(boost::shared_ptr<Frame> frame)
     ss << "Invalid frame: Frame has compression " << frame->get_compression() <<
           ", expected " << dataset.compression <<
           " for dataset " << dataset.name <<
-          " (0: None, 1: LZ4, 2: BSLZ4)";
+          " (0: None, 1: LZ4, 2: BSLZ4, 3: Blosc)";
     last_error_ = ss.str();
     LOG4CXX_ERROR(logger_, last_error_);
     invalid = true;

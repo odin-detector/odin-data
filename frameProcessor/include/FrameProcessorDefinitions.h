@@ -17,7 +17,7 @@ namespace FrameProcessor
   /**
    * Enumeration to store the compression type of the incoming image
    */
-  enum CompressionType { no_compression, lz4, bslz4 };
+  enum CompressionType { no_compression, lz4, bslz4, blosc };
   /**
    * Enumeration to store the compression type of the incoming image
    */
