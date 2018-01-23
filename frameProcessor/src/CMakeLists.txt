@@ -43,6 +43,14 @@ add_library(DummyPlugin SHARED DummyPlugin.cpp)
 target_link_libraries(DummyPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${COMMON_LIBRARY})
 install(TARGETS DummyPlugin DESTINATION lib)
 
+# Add library for Blosc plugin
+if (${BLOSC_FOUND})
+  include_directories(${BLOSC_INCLUDE_DIR})
+  add_library(BloscPlugin SHARED BloscPlugin.cpp)
+  target_link_libraries(BloscPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${BLOSC_LIBRARIES} ${COMMON_LIBRARY})
+  install(TARGETS BloscPlugin DESTINATION lib)
+endif()
+
 # Add library for HDF5 writer plugin
 add_library(Hdf5Plugin SHARED FileWriterPlugin.cpp FileWriterPluginLib.cpp HDF5File.cpp Acquisition.cpp)
 target_link_libraries(Hdf5Plugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${COMMON_LIBRARY})
