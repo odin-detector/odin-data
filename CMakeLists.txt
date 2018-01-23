@@ -43,6 +43,8 @@ endif(APPLE)
 # Set up RPATH handling correctly so that both built and installed targets have the appropriate
 # settings - see https://cmake.org/Wiki/CMake_RPATH_handling
 
+set(CMAKE_MACOSX_RPATH 1)
+
 # Use, i.e. don't skip the full RPATH for the build tree
 SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
 

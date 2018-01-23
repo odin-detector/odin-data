@@ -5,7 +5,12 @@ ADD_DEFINITIONS(-DBUILD_DIR="${CMAKE_BINARY_DIR}")
 include_directories(${FRAMEPROCESSOR_DIR}/include ${HDF5_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${LOG4CXX_INCLUDE_DIRS}/.. ${ZEROMQ_INCLUDE_DIRS})
 add_definitions(${HDF5_DEFINITIONS})
 
-file(GLOB TEST_SOURCES *.cpp)
+file(GLOB TEST_SOURCES FrameProcessorUnitTestMain.cpp FrameProcessorTest.cpp)
+# Add tests for BloscPlugin if Blosc is present
+if (${BLOSC_FOUND})
+  list(APPEND TEST_SOURCES BloscPluginTest.cpp)
+  include_directories(${BLOSC_INCLUDE_DIR})
+endif()
 
 # Add test source files to executable
 add_executable(frameProcessorTest ${TEST_SOURCES})
@@ -23,6 +28,11 @@ target_link_libraries(frameProcessorTest
         OffsetAdjustmentPlugin
         LiveViewPlugin
         ${COMMON_LIBRARY})
+
+# Link for BloscPlugin if Blosc is present
+if (${BLOSC_FOUND})
+  target_link_libraries(frameProcessorTest ${BLOSC_LIBRARIES} BloscPlugin)
+endif()
 
 if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
   # librt required for timing functions
