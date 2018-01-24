@@ -9,11 +9,7 @@
 #define TOOLS_FILEWRITER_BLOSCPLUGIN_H_
 
 #include <log4cxx/logger.h>
-#include <log4cxx/basicconfigurator.h>
-#include <log4cxx/propertyconfigurator.h>
-#include <log4cxx/helpers/exception.h>
 using namespace log4cxx;
-using namespace log4cxx::helpers;
 
 #include "FrameProcessorPlugin.h"
 #include "ClassLoader.h"
@@ -33,6 +29,7 @@ class BloscPlugin : public FrameProcessorPlugin
 public:
   BloscPlugin();
   virtual ~BloscPlugin();
+  boost::shared_ptr<Frame> compress_frame(boost::shared_ptr<Frame> frame);
 
 private:
   void process_frame(boost::shared_ptr<Frame> frame);
