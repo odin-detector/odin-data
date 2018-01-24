@@ -52,12 +52,12 @@ boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> sr
   const size_t raw_data_size = src_frame->get_data_size();
   LOG4CXX_TRACE(logger_, "Frame data size: " << raw_data_size);
 
-  try {
-    size_t dest_data_size = src_frame->get_data_size() + BLOSC_MAX_OVERHEAD;
-    // TODO: is this malloc really necessary? Can't we get writable DataBlocks somehow?
-    void *dest_data_ptr = malloc(dest_data_size);
-    // TODO: error check on the malloc here...
+  size_t dest_data_size = src_frame->get_data_size() + BLOSC_MAX_OVERHEAD;
+  // TODO: is this malloc really necessary? Can't we get writable DataBlocks somehow?
+  void *dest_data_ptr = malloc(dest_data_size);
+  if (dest_data_ptr == NULL) {throw std::runtime_error("Failed to malloc buffer for Blosc compression output");}
 
+  try {
     LOG4CXX_TRACE(logger_, "Compressing frame no. " << src_frame->get_frame_number());
     // TODO: all args are hard-coded here and need to be turned into parameters
     compressed_size = blosc_compress(1, 1, src_frame->get_data_type_size(),
@@ -73,8 +73,8 @@ boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> sr
     LOG4CXX_TRACE(logger_, "Copying compressed data to output frame. (" << compressed_size << " bytes)");
     // I wish we had a pointer swap feature on the Frame class and avoid this unnecessary copy...
     dest_frame->copy_data(dest_data_ptr, compressed_size);
-    free(dest_data_ptr);
-    dest_data_ptr = NULL;
+    if (dest_data_ptr != NULL) {free(dest_data_ptr); dest_data_ptr = NULL;}
+
 
     // I wish we had a shallow-copy feature on the Frame class...
     dest_frame->set_data_type(src_frame->get_data_type());
@@ -85,6 +85,7 @@ boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> sr
   }
   catch (const std::exception& e) {
     LOG4CXX_ERROR(logger_, "Serious error in Blosc compression: " << e.what());
+    if (dest_data_ptr != NULL) {free(dest_data_ptr); dest_data_ptr = NULL;}
   }
   return dest_frame;
 }
