@@ -5,8 +5,8 @@
  *      Author: Ulrik Pedersen
  */
 
-#ifndef TOOLS_FILEWRITER_BLOSCPLUGIN_H_
-#define TOOLS_FILEWRITER_BLOSCPLUGIN_H_
+#ifndef BLOSCPLUGIN_H_
+#define BLOSCPLUGIN_H_
 
 #include <log4cxx/logger.h>
 using namespace log4cxx;
@@ -18,14 +18,15 @@ namespace FrameProcessor
 {
 
 /**
- * This is a compression plugin using the Blosc library
- *
- * When this plugin receives a frame, processFrame is called and the class
- * uses the blosc compression methods to compress the data and output a new,
- * compressed Frame.
- */
+* This is a compression plugin using the Blosc library
+*
+* When this plugin receives a frame, processFrame is called and the class
+* uses the blosc compression methods to compress the data and output a new,
+* compressed Frame.
+*/
 class BloscPlugin : public FrameProcessorPlugin
 {
+
 public:
   BloscPlugin();
   virtual ~BloscPlugin();
@@ -58,4 +59,4 @@ REGISTER(FrameProcessorPlugin, BloscPlugin, "BloscPlugin");
 
 } /* namespace FrameProcessor */
 
-#endif /* TOOLS_FILEWRITER_BLOSCPLUGIN_H_ */
+#endif /* BLOSCPLUGIN_H_ */
