@@ -17,6 +17,15 @@ using namespace log4cxx;
 namespace FrameProcessor
 {
 
+typedef struct{
+  int compression_level;
+  unsigned int shuffle;
+  size_t type_size;
+  size_t uncompressed_size;
+  unsigned int blosc_compressor;
+} BloscCompressionSettings;
+void create_cd_values(const BloscCompressionSettings& settings, std::vector<unsigned int> cd_values);
+
 /**
 * This is a compression plugin using the Blosc library
 *
@@ -34,6 +43,7 @@ public:
 
 private:
   void process_frame(boost::shared_ptr<Frame> frame);
+  const BloscCompressionSettings &update_compression_settings(const std::string &acquisition_id);
 
   /** Pointer to logger */
   LoggerPtr logger_;
