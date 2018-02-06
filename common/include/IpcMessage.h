@@ -181,6 +181,11 @@ public:
     return the_value;
   }
 
+  //! Returns a vector of all parameter names contained in the message.
+  //!
+  //! \return A vector of all parameter names in this message
+  std::vector<std::string> get_param_names();
+
   //! Returns true if the parameter is found within the message
   bool has_param(const std::string& param_name) const;
 
