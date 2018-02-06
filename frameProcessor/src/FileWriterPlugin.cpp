@@ -521,15 +521,6 @@ void FileWriterPlugin::configure_dataset(const std::string& dataset_name, OdinDa
 {
   LOG4CXX_DEBUG(logger_, "Configuring dataset [" << dataset_name << "]");
 
-//  std::string dataset_name;
-//  // There must be a name present for the dataset
-//  if (config.has_param(FileWriterPlugin::CONFIG_DATASET_NAME)) {
-//    dataset_name = config.get_param<std::string>(FileWriterPlugin::CONFIG_DATASET_NAME);
-//  } else {
-//    LOG4CXX_ERROR(logger_, "Cannot configure a dataset without a name");
-//    throw std::runtime_error("Cannot configure a dataset without a name");
-//  }
-
   DatasetDefinition dset = dataset_defs_[dataset_name];
 
   // If there is a type present then set it
@@ -622,31 +613,6 @@ void FileWriterPlugin::status(OdinData::IpcMessage& status)
   status.set_param(get_name() + "/acquisition_id", this->current_acquisition_->acquisition_id_);
   status.set_param(get_name() + "/processes", (int)this->concurrent_processes_);
   status.set_param(get_name() + "/rank", (int)this->concurrent_rank_);
-
-  /*
-   * TODO: Remove this section once configuration requests have been verified.
-  // Check for datasets
-  std::map<std::string, DatasetDefinition>::iterator iter;
-  for (iter = this->current_acquisition_->dataset_defs_.begin(); iter != this->current_acquisition_->dataset_defs_.end(); ++iter) {
-    // Add the dataset type
-    status.set_param(get_name() + "/datasets/" + iter->first + "/type", (int)iter->second.pixel);
-
-    // Check for and add dimensions
-    if (iter->second.frame_dimensions.size() > 0) {
-      std::string dimParamName = get_name() + "/datasets/" + iter->first + "/dimensions[]";
-      for (int index = 0; index < iter->second.frame_dimensions.size(); index++) {
-        status.set_param(dimParamName, (int)iter->second.frame_dimensions[index]);
-      }
-    }
-    // Check for and add chunking dimensions
-    if (iter->second.chunks.size() > 0) {
-      std::string chunkParamName = get_name() + "/datasets/" + iter->first + "/chunks[]";
-      for (int index = 0; index < iter->second.chunks.size(); index++) {
-        status.set_param(chunkParamName, (int)iter->second.chunks[index]);
-      }
-    }
-  }
-  */
 }
 
 /** Check if the frame contains an acquisition ID and start a new file if it does and it's different from the current one
