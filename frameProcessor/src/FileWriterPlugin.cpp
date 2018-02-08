@@ -311,7 +311,9 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
       if (next_acquisition_->total_frames_ > 0 && next_acquisition_->frames_to_write_ == 0) {
         // We're not expecting any frames, so just clear out the nextAcquisition for the next one and don't start writing
         this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition());
-        this->current_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition());
+        if (!writing_) {
+          this->current_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition());
+        }
         LOG4CXX_INFO(logger_, "FrameProcessor will not receive any frames from this acquisition and so no output file will be created");
       } else {
         this->start_writing();
