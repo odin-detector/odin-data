@@ -406,10 +406,8 @@ void configureDataset(boost::shared_ptr<FrameProcessorController> fwc, po::varia
     }
   }
 
-  cfg.set_param<string>("hdf/dataset/cmd", "create");
-  cfg.set_param<string>("hdf/dataset/name", name);
-  cfg.set_param<int>("hdf/dataset/datatype", vm["dtype"].as<int>());
-  cfg.set_param<rapidjson::Value>("hdf/dataset/dims", jsonDims);
+  cfg.set_param<int>("hdf/dataset/" + name + "/datatype", vm["dtype"].as<int>());
+  cfg.set_param<rapidjson::Value>("hdf/dataset/" + name + "/dims", jsonDims);
 
   if (vm.count("chunk-dims")) {
     std::vector<int> chunkDims = vm["chunk-dims"].as<std::vector<int> >();
@@ -419,13 +417,13 @@ void configureDataset(boost::shared_ptr<FrameProcessorController> fwc, po::varia
     for (std::vector<int>::iterator it2 = chunkDims.begin(); it2 != chunkDims.end(); ++it2) {
       jsonChunkDims.PushBack(*it2, chunkDimAllocator);
     }
-    cfg.set_param<rapidjson::Value>("hdf/dataset/chunks", jsonChunkDims);
+    cfg.set_param<rapidjson::Value>("hdf/dataset/" + name + "/chunks", jsonChunkDims);
   }
   if (master) {
     cfg.set_param<string>("hdf/master", name);
   }
   if (vm.count("compression")) {
-    cfg.set_param<int>("hdf/dataset/compression", vm["compression"].as<int>());
+    cfg.set_param<int>("hdf/dataset/" + name + "/compression", vm["compression"].as<int>());
   }
 
   fwc->configure(cfg, reply);
