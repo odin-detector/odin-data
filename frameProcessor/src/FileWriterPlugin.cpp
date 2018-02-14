@@ -253,7 +253,7 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
         std::string dataset_name = *iter;
         LOG4CXX_INFO(logger_, "Dataset name " << dataset_name << " found, creating...");
         create_new_dataset(dataset_name);
-        OdinData::IpcMessage dsetConfig(config.get_param<const rapidjson::Value&>(FileWriterPlugin::CONFIG_DATASET + "/" + dataset_name));
+        OdinData::IpcMessage dsetConfig(dataset_config.get_param<const rapidjson::Value&>(dataset_name));
         this->configure_dataset(dataset_name, dsetConfig, reply);
       }
     }
