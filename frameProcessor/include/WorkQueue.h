@@ -14,6 +14,9 @@
 namespace FrameProcessor
 {
 
+/** Maximum queue size - to prevent unlimited use of memory **/
+const int max_queue_size = 8;
+
 /** Thread safe producer consumer work queue.
  *
  * This is a thread safe producer consumer queue for use across multiple threads
@@ -63,6 +66,9 @@ public:
   void add(T item)
   {
     pthread_mutex_lock(&m_mutex);
+    while (m_queue.size() >= max_queue_size) {
+      pthread_cond_wait(&m_condv, &m_mutex);
+    }
     m_queue.push_back(item);
     pthread_cond_signal(&m_condv);
     pthread_mutex_unlock(&m_mutex);
@@ -84,6 +90,7 @@ public:
     }
     T item = m_queue.front();
     m_queue.pop_front();
+    pthread_cond_signal(&m_condv);
     pthread_mutex_unlock(&m_mutex);
     return item;
   }
