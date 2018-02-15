@@ -33,6 +33,7 @@ FrameReceiverController::FrameReceiverController (FrameReceiverConfig& config) :
     decoder_configured_(false),
     buffer_manager_configured_(false),
     rx_thread_configured_(false),
+    configuration_complete_(false),
     rx_channel_(ZMQ_ROUTER),
     ctrl_channel_(ZMQ_ROUTER),
     frame_ready_channel_(ZMQ_PUB),
@@ -721,6 +722,7 @@ void FrameReceiverController::handle_ctrl_channel(void)
     IpcMessage ctrl_req(ctrl_req_encoded.c_str(), false);
     IpcMessage::MsgType req_type = ctrl_req.get_msg_type();
     IpcMessage::MsgVal req_val = ctrl_req.get_msg_val();
+    ctrl_reply.set_msg_id(ctrl_req.get_msg_id());
 
     switch (req_type)
     {

@@ -22,26 +22,37 @@ class IpcClient(object):
         self.logger.debug("Connecting to client at %s", self.ctrl_endpoint)
         self.ctrl_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_DEALER)
         self.ctrl_channel.connect(self.ctrl_endpoint)
+        
+        self.message_id = 0
 
         self._lock = RLock()
 
     def _send_message(self, msg, timeout):
+        msg.set_msg_id(self.message_id)
+        self.message_id = (self.message_id + 1) % 4294967296
         self.logger.debug("Sending control message:\n%s", msg.encode())
         with self._lock:
             self.ctrl_channel.send(msg.encode())
-            pollevts = self.ctrl_channel.poll(timeout)
-
-        if pollevts == zmq.POLLIN:
-            reply = IpcMessage(from_str=self.ctrl_channel.recv())
-            if reply.is_valid() and reply.get_msg_type() == IpcMessage.ACK:
-                self.logger.debug("Request successful: %s", reply)
-                return True, reply.attrs
-            else:
-                self.logger.debug("Request unsuccessful")
-                return False, reply.attrs
-        else:
-            self.logger.warning("Received no response")
-            return False, None
+            expected_id = msg.get_msg_id()
+            id = None
+            while not id == expected_id:
+                pollevts = self.ctrl_channel.poll(timeout)
+    
+                if pollevts == zmq.POLLIN:
+                    reply = IpcMessage(from_str=self.ctrl_channel.recv())
+                    id = reply.get_msg_id()
+                    if id == expected_id:
+                        if reply.is_valid() and reply.get_msg_type() == IpcMessage.ACK:
+                            self.logger.debug("Request successful: %s", reply)
+                            return True, reply.attrs
+                        else:
+                            self.logger.debug("Request unsuccessful")
+                            return False, reply.attrs
+                    else:
+                        self.logger.warn("Dropping reply message with id [" + str(id) + "] as was expecting [" + str(expected_id) + "]")
+                else:
+                    self.logger.warning("Received no response")
+                    return False, None
 
     @staticmethod
     def _raise_reply_error(msg, reply):
