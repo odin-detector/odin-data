@@ -170,7 +170,8 @@ void FileWriterPlugin::start_writing()
       this->current_acquisition_->dataset_defs_[iter->first] = iter->second;
     }
 
-    this->current_acquisition_->start_acquisition(
+    // Start the acquisition and set writing flag to true if it started successfully
+    writing_ = this->current_acquisition_->start_acquisition(
         concurrent_rank_,
         concurrent_processes_,
         frame_offset_adjustment_,
@@ -179,9 +180,6 @@ void FileWriterPlugin::start_writing()
         use_earliest_hdf5_,
         alignment_threshold_,
         alignment_value_);
-
-    // Set writing flag to true
-    writing_ = true;
   }
 }
 

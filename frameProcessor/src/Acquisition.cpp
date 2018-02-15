@@ -237,8 +237,9 @@ void Acquisition::close_file(boost::shared_ptr<HDF5File> file) {
  * \param[in] frame_offset_adjustment - The starting frame offset adjustment
  * \param[in] frames_per_block - The number of frames per block
  * \param[in] blocks_per_file - The number of blocks per file
+ * \return - true if the acquisition was started successfully
  */
-void Acquisition::start_acquisition(
+bool Acquisition::start_acquisition(
     size_t concurrent_rank,
     size_t concurrent_processes,
     size_t frame_offset_adjustment,
@@ -264,12 +265,14 @@ void Acquisition::start_acquisition(
 
   if (filename_.empty()) {
     LOG4CXX_ERROR(logger_, "Unable to start writing - no filename to write to");
-    return;
+    return false;
   }
 
   publish_meta(META_NAME, META_START_ITEM, "", get_create_meta_header());
 
   create_file(concurrent_rank_);
+
+  return true;
 }
 
 /**
