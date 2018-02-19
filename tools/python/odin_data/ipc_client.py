@@ -10,6 +10,8 @@ from odin_data.ipc_message import IpcMessage, IpcMessageException
 class IpcClient(object):
 
     ENDPOINT_TEMPLATE = "tcp://{IP}:{PORT}"
+    
+    MESSAGE_ID_MAX = 2**32
 
     def __init__(self, ip_address, port):
         self.logger = logging.getLogger(self.__class__.__name__)
@@ -29,7 +31,7 @@ class IpcClient(object):
 
     def _send_message(self, msg, timeout):
         msg.set_msg_id(self.message_id)
-        self.message_id = (self.message_id + 1) % 4294967296
+        self.message_id = (self.message_id + 1) % self.MESSAGE_ID_MAX
         self.logger.debug("Sending control message:\n%s", msg.encode())
         with self._lock:
             self.ctrl_channel.send(msg.encode())
@@ -41,15 +43,15 @@ class IpcClient(object):
                 if pollevts == zmq.POLLIN:
                     reply = IpcMessage(from_str=self.ctrl_channel.recv())
                     id = reply.get_msg_id()
-                    if id == expected_id:
-                        if reply.is_valid() and reply.get_msg_type() == IpcMessage.ACK:
-                            self.logger.debug("Request successful: %s", reply)
-                            return True, reply.attrs
-                        else:
-                            self.logger.debug("Request unsuccessful")
-                            return False, reply.attrs
-                    else:
+                    if not id == expected_id:
                         self.logger.warn("Dropping reply message with id [" + str(id) + "] as was expecting [" + str(expected_id) + "]")
+                        continue
+                    if reply.is_valid() and reply.get_msg_type() == IpcMessage.ACK:
+                        self.logger.debug("Request successful: %s", reply)
+                        return True, reply.attrs
+                    else:
+                        self.logger.debug("Request unsuccessful")
+                        return False, reply.attrs
                 else:
                     self.logger.warning("Received no response")
                     return False, None
