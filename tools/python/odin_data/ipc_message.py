@@ -23,10 +23,11 @@ class IpcMessage(object):
     ACK = "ack"
     NACK = "nack"
 
-    def __init__(self, msg_type=None, msg_val=None, from_str=None):
+    def __init__(self, msg_type=None, msg_val=None, from_str=None, id=None):
         self.attrs = {}
 
         if from_str is None:
+            self.attrs['id'] = id
             self.attrs['msg_type'] = msg_type
             self.attrs['msg_val'] = msg_val
             self.attrs['timestamp'] = datetime.datetime.now().isoformat()
@@ -46,6 +47,7 @@ class IpcMessage(object):
         try:
             is_valid = is_valid & (self._get_attr("msg_type") is not None)
             is_valid = is_valid & (self._get_attr("msg_val") is not None)
+            is_valid = is_valid & (self._get_attr("id") is not None)
             is_valid = is_valid & (self._get_attr("timestamp") is not None)
         except IpcMessageException:
             is_valid = False
@@ -60,6 +62,9 @@ class IpcMessage(object):
 
     def get_msg_timestamp(self):
         return self.attrs['timestamp']
+
+    def get_msg_id(self):
+        return self.attrs['id']
 
     def get_param(self, param_name, default_value=None):
         try:
@@ -77,6 +82,9 @@ class IpcMessage(object):
 
     def set_msg_val(self, msg_val):
         self.attrs['msg_val'] = msg_val
+
+    def set_msg_id(self, msg_id):
+        self.attrs['id'] = msg_id
 
     def set_param(self, param_name, param_value):
         if "params" not in self.attrs:

@@ -95,7 +95,8 @@ void FrameProcessorController::handleCtrlChannel()
   // Receive a message from the main thread channel
   std::string clientIdentity;
   std::string ctrlMsgEncoded = ctrlChannel_.recv(&clientIdentity);
-
+  unsigned int msg_id = 0;
+  
   LOG4CXX_DEBUG(logger_, "Control thread called with message: " << ctrlMsgEncoded);
 
   // Parse and handle the message
@@ -103,6 +104,8 @@ void FrameProcessorController::handleCtrlChannel()
     OdinData::IpcMessage ctrlMsg(ctrlMsgEncoded.c_str());
     OdinData::IpcMessage replyMsg;  // Instantiate default IpmMessage
     replyMsg.set_msg_val(ctrlMsg.get_msg_val());
+    msg_id = ctrlMsg.get_msg_id();
+    replyMsg.set_msg_id(msg_id);
 
     if ((ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) &&
         (ctrlMsg.get_msg_val()  == OdinData::IpcMessage::MsgValCmdConfigure)) {
@@ -141,6 +144,7 @@ void FrameProcessorController::handleCtrlChannel()
     LOG4CXX_ERROR(logger_, "Bad control message: " << e.what());
     OdinData::IpcMessage replyMsg(OdinData::IpcMessage::MsgTypeNack, OdinData::IpcMessage::MsgValCmdConfigure);
     replyMsg.set_param<std::string>("error", std::string(e.what()));
+    replyMsg.set_msg_id(msg_id);
     ctrlChannel_.send(replyMsg.encode());
   }
 }
