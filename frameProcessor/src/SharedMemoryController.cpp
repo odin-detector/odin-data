@@ -79,8 +79,6 @@ SharedMemoryController::~SharedMemoryController()
   reactor_->remove_channel(rxChannel_);
   txChannel_.close();
   rxChannel_.close();
-  // Stop the SharedMemoryController reactor
-  reactor_->stop();
 }
 
 /** setSharedBufferManager
