@@ -11,7 +11,11 @@ import os
 import json
 import zmq
 from struct import Struct
-from json.decoder import JSONDecodeError
+
+try:
+    from json.decoder import JSONDecodeError
+except ImportError:
+    JSONDecodeError = ValueError 
 
 class FrameReceiverClient(object):
     
@@ -84,6 +88,7 @@ class FrameReceiverClient(object):
             config_msg = IpcMessage('cmd', 'configure')
             for param, value in config_params.items():
                 config_msg.set_param(param, value)
+
                 
             self.logger.info("Sending configure command to frame receiver with specified parameters")
             self.ctrl_channel.send(config_msg.encode())
