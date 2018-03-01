@@ -298,12 +298,16 @@ class OdinDataAdapter(ApiAdapter):
         # Handle background tasks
         # Loop over all connected clients and obtain the status
         for client in self._clients:
-            # First check for stale status within a client
-            client.check_for_stale_status(self._update_interval * 10)
-            # Request a configuration update
-            client.send_request('request_configuration')
-            # Now request a status update
-            client.send_request('status')
+            try:
+                # First check for stale status within a client
+                client.check_for_stale_status(self._update_interval * 10)
+                # Request a configuration update
+                client.send_request('request_configuration')
+                # Now request a status update
+                client.send_request('status')
+            except Exception as e:
+                # Exception caught, log the error but do not stop the update loop
+                logging.error("Unhandled exception: %s", e)
 
         # Schedule the update loop to run in the IOLoop instance again after appropriate interval
         IOLoop.instance().call_later(self._update_interval, self.update_loop)
