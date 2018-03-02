@@ -617,6 +617,7 @@ void FileWriterPlugin::status(OdinData::IpcMessage& status)
   status.set_param(get_name() + "/acquisition_id", this->current_acquisition_->acquisition_id_);
   status.set_param(get_name() + "/processes", (int)this->concurrent_processes_);
   status.set_param(get_name() + "/rank", (int)this->concurrent_rank_);
+  status.set_param(get_name() + "/timeout_active", this->timeout_active_);
 }
 
 /** Check if the frame contains an acquisition ID and start a new file if it does and it's different from the current one
