@@ -426,6 +426,10 @@ void FileWriterPlugin::configure_process(OdinData::IpcMessage& config, OdinData:
   if (config.has_param(FileWriterPlugin::CONFIG_PROCESS_BLOCKSIZE)) {
     size_t block_size = config.get_param<size_t>(FileWriterPlugin::CONFIG_PROCESS_BLOCKSIZE);
     if (this->frames_per_block_ != block_size) {
+      if (block_size < 1) {
+        LOG4CXX_ERROR(logger_, "Must have at least one frame per block");
+        throw std::runtime_error("Must have at least one frame per block");
+      }
       // If we are writing a file then we cannot change block size
       if (this->writing_) {
         LOG4CXX_ERROR(logger_, "Cannot change block size whilst writing");
