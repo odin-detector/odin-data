@@ -420,6 +420,7 @@ void FrameReceiverController::cleanup_ipc_channels(void)
 //!
 void FrameReceiverController::configure_frame_decoder(OdinData::IpcMessage& config_msg)
 {
+  LOG4CXX_DEBUG_LEVEL(2, logger_, "Configuring decoder with " << config_msg.encode());
 
   // Resolve the decoder path if specified in the config message
   std::string decoder_path = config_msg.get_param<std::string>(
@@ -727,7 +728,6 @@ void FrameReceiverController::handle_ctrl_channel(void)
     switch (req_type)
     {
       case IpcMessage::MsgTypeCmd:
-
         ctrl_reply.set_msg_val(req_val);
 
         switch (req_val)
@@ -736,6 +736,14 @@ void FrameReceiverController::handle_ctrl_channel(void)
             LOG4CXX_DEBUG_LEVEL(3, logger_,
                 "Got control channel configure request from client " << client_identity);
             this->configure(ctrl_req, ctrl_reply);
+            break;
+
+          case IpcMessage::MsgValCmdRequestConfiguration:
+            LOG4CXX_DEBUG_LEVEL(3, logger_,
+                "Got control channel read configuration request from client " << client_identity);
+            LOG4CXX_DEBUG_LEVEL(3, logger_,
+                "TODO: Implement this method");
+            ctrl_reply.set_msg_type(IpcMessage::MsgTypeAck);
             break;
 
           case IpcMessage::MsgValCmdStatus:
