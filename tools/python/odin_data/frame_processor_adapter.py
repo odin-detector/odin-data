@@ -42,6 +42,7 @@ class FrameProcessorAdapter(OdinDataAdapter):
             'config/hdf/file/extension': 'h5'
         }
         self._command = 'config/hdf/write'
+        self.setup_rank()
 
     @request_types('application/json')
     @response_types('application/json', default='application/json')
@@ -155,7 +156,7 @@ class FrameProcessorAdapter(OdinDataAdapter):
                 # Setup the number of processes and the rank for each client
                 parameters = {
                     'hdf': {
-                        'processes': {
+                        'process': {
                             'number': processes,
                             'rank': rank
                         }
