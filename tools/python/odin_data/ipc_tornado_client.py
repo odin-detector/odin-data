@@ -62,6 +62,7 @@ class IpcTornadoClient(object):
                 if ttlm.seconds > max_stale_time:
                     # This connection has gone stale, set connected to false
                     self._parameters['status'] = {'connected': False}
+                    self._parameters['config'] = {}
                     logging.debug("Status updated to: %s", self._parameters['status'])
         else:
             # No status for this client so set connected to false
