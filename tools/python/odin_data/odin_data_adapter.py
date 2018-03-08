@@ -36,6 +36,7 @@ class OdinDataAdapter(ApiAdapter):
         self._endpoints = []
         self._clients = []
         self._update_interval = None
+        self._config_file = None
 
         logging.debug(kwargs)
 
@@ -95,6 +96,9 @@ class OdinDataAdapter(ApiAdapter):
                     if key not in key_list:
                         key_list.append(key)
             response[request_command] = key_list
+        elif request_command == 'config/config_file':
+            # Special case for submitting a config file.  Read back the current filename
+            response['value'] = self._config_file
         elif request_command in self._kwargs:
             logging.debug("Adapter request for ini argument: %s", request_command)
             response[request_command] = self._kwargs[request_command]
@@ -156,8 +160,44 @@ class OdinDataAdapter(ApiAdapter):
 
         request_command = path.strip('/')
 
-        # Request should start with config/
-        if request_command.startswith("config/"):
+        # Request should either be a config file or else start with config/
+        if request_command == 'config/config_file':
+            # Special case when we have been asked to load a config file to submit to clients
+            # The config file should contain a JSON representation of a list of config dicts,
+            # one for each client
+            self._config_file = str(escape.url_unescape(request.body)).strip('"')
+            logging.error("Loading configuration file {}".format(self._config_file))
+
+            try:
+                with open(self._config_file) as config_file:
+                    config_obj = json.load(config_file)
+                    # Verify the number of items in the config file match the length of clients
+                    if len(self._clients) != len(config_obj):
+                        logging.error(
+                            "Mismatch between config items [{}] and number of clients [{}]".format(len(config_obj),
+                                                                                                   len(self._clients)))
+                        status_code = 503
+                        response = {'error': OdinDataAdapter.ERROR_PUT_MISMATCH}
+                    else:
+                        for client, config_item in zip(self._clients, config_obj):
+                            try:
+                                logging.error("Sending configuration {} to client".format(str(config_item)))
+                                client.send_configuration(config_item)
+                            except Exception as err:
+                                logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
+                                logging.error("Error: %s", err)
+                                status_code = 503
+                                response = {'error': OdinDataAdapter.ERROR_FAILED_TO_SEND}
+            except IOError as io_error:
+                logging.error("Failed to open configuration file: {}".format(io_error))
+                status_code = 503
+                response = {'error': "Failed to open configuration file: {}".format(io_error)}
+            except ValueError as value_error:
+                logging.error("Failed to parse json config: {}".format(value_error))
+                status_code = 503
+                response = {'error': "Failed to parse json config: {}".format(value_error)}
+
+        elif request_command.startswith("config/"):
             request_command = remove_prefix(request_command, "config/")  # Take the rest of the URI
             logging.debug("Configure URI: %s", request_command)
             client_index = -1
