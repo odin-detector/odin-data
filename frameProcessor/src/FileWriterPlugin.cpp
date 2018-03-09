@@ -429,6 +429,10 @@ void FileWriterPlugin::configure_process(OdinData::IpcMessage& config, OdinData:
   if (config.has_param(FileWriterPlugin::CONFIG_PROCESS_BLOCKSIZE)) {
     size_t block_size = config.get_param<size_t>(FileWriterPlugin::CONFIG_PROCESS_BLOCKSIZE);
     if (this->frames_per_block_ != block_size) {
+      if (block_size < 1) {
+        LOG4CXX_ERROR(logger_, "Must have at least one frame per block");
+        throw std::runtime_error("Must have at least one frame per block");
+      }
       // If we are writing a file then we cannot change block size
       if (this->writing_) {
         LOG4CXX_ERROR(logger_, "Cannot change block size whilst writing");
@@ -616,6 +620,7 @@ void FileWriterPlugin::status(OdinData::IpcMessage& status)
   status.set_param(get_name() + "/acquisition_id", this->current_acquisition_->acquisition_id_);
   status.set_param(get_name() + "/processes", (int)this->concurrent_processes_);
   status.set_param(get_name() + "/rank", (int)this->concurrent_rank_);
+  status.set_param(get_name() + "/timeout_active", this->timeout_active_);
 }
 
 /** Check if the frame contains an acquisition ID and start a new file if it does and it's different from the current one
