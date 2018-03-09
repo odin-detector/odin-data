@@ -161,6 +161,9 @@ void FileWriterPlugin::start_writing()
 {
   // Set the current acquisition details to the ones held for the next acquisition and reset the next ones
   if (!writing_) {
+    // Re-calculate the number of frames to write in case the process and
+    // rank has been changed since the frame count was set
+    next_acquisition_->frames_to_write_ = calc_num_frames(this->next_acquisition_->total_frames_);
     this->current_acquisition_ = next_acquisition_;
     this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition());
 

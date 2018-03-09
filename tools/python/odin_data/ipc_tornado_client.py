@@ -10,6 +10,8 @@ class IpcTornadoClient(object):
 
     ENDPOINT_TEMPLATE = "tcp://{IP}:{PORT}"
 
+    MESSAGE_ID_MAX = 2**32
+
     def __init__(self, ip_address, port):
         self.logger = logging.getLogger(self.__class__.__name__)
 
@@ -22,6 +24,7 @@ class IpcTornadoClient(object):
         self.ctrl_channel.connect(self.ctrl_endpoint)
         self.ctrl_channel.register_callback(self._callback)
         self._parameters = {}
+        self.message_id = 0
 
         self._lock = RLock()
 
@@ -59,6 +62,7 @@ class IpcTornadoClient(object):
                 if ttlm.seconds > max_stale_time:
                     # This connection has gone stale, set connected to false
                     self._parameters['status'] = {'connected': False}
+                    self._parameters['config'] = {}
                     logging.debug("Status updated to: %s", self._parameters['status'])
         else:
             # No status for this client so set connected to false
@@ -67,6 +71,8 @@ class IpcTornadoClient(object):
 
 
     def _send_message(self, msg):
+        msg.set_msg_id(self.message_id)
+        self.message_id = (self.message_id + 1) % self.MESSAGE_ID_MAX
         self.logger.debug("Sending control message:\n%s", msg.encode())
         with self._lock:
             self.ctrl_channel.send(msg.encode())
