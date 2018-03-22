@@ -80,7 +80,7 @@ def add_handler(handler_name, handler_description):
     default_config["root"]["handlers"].append(handler_name)
 
 
-def add_graylog_handler(host, port, level="INFO", debug=True):
+def add_graylog_handler(host, port, level="INFO", debug=True, static_fields=None):
     """Add a graylog handler to the default logging configuration dictionary
 
     Call this before calling setup_logging
@@ -94,13 +94,14 @@ def add_graylog_handler(host, port, level="INFO", debug=True):
         port (int): Port number that the graylog server is bound to.
         level (Optional[str]): Set the default log level for the handler.
         debug (Optional[bool]): If True, each log message includes debug info.
+        static_fields (Optional[dict]): Added as extra, static fields
 
     Returns: None
     """
     graylog_config = {
         "class": "pygelf.GelfUdpHandler",
         "level": level,
-        # Obviously a DLS-specific configuration: the graylog server address and port
+        # The graylog server address and port
         "host": host,
         "port": port,
         "debug": debug,
@@ -110,6 +111,8 @@ def add_graylog_handler(host, port, level="INFO", debug=True):
         "username": getpass.getuser(),
         "pid": os.getpid()
     }
+    if static_fields is not None:
+        graylog_config.update(static_fields)
     add_handler("graylog_gelf", graylog_config)
 
 
