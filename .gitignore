@@ -1,5 +1,5 @@
 /external
-/build
+/build*
 *.pyc
 /tools/python/venv/
 /.settings
