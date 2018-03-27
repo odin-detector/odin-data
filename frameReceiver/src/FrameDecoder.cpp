@@ -43,7 +43,25 @@ void FrameDecoder::init(LoggerPtr& logger, OdinData::IpcMessage& config_msg)
 
    // Retrieve the packet logger instance
    packet_logger_ = Logger::getLogger("FR.PacketLogger");
-};
+}
+
+//
+//! Handle a configuration request from the controlling application.
+//!
+//! This method handles a configuration request from the controlling application, populating
+//! the parameter block of the reply message with decoder parameters using the specified
+//! parameter prefix. This method should be overridden by derived decoder classes and then called
+//! by the overridden method to populate base class parameters.
+//!
+//! \param[in] param_prefix - parameter prefix to use on all parameter names
+//! \param[in,out] config_reply - reply IpcMessage to populate with parameters
+//!
+void FrameDecoder::request_configuration(const std::string param_prefix,
+    OdinData::IpcMessage& config_reply)
+{
+    config_reply.set_param(param_prefix + CONFIG_DECODER_ENABLE_PACKET_LOGGING, enable_packet_logging_);
+    config_reply.set_param(param_prefix + CONFIG_DECODER_FRAME_TIMEOUT_MS, frame_timeout_ms_);
+}
 
 //! Register a buffer manager with the decoder.
 //!
