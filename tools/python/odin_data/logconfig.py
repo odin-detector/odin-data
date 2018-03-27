@@ -80,7 +80,7 @@ def add_handler(handler_name, handler_description):
     default_config["root"]["handlers"].append(handler_name)
 
 
-def add_graylog_handler(host, port, level="INFO", debug=True, static_fields=None):
+def add_graylog_handler(host, port, level="INFO", static_fields=None):
     """Add a graylog handler to the default logging configuration dictionary
 
     Call this before calling setup_logging
@@ -93,7 +93,6 @@ def add_graylog_handler(host, port, level="INFO", debug=True, static_fields=None
         host (str): Host name of the graylog server.
         port (int): Port number that the graylog server is bound to.
         level (Optional[str]): Set the default log level for the handler.
-        debug (Optional[bool]): If True, each log message includes debug info.
         static_fields (Optional[dict]): Added as extra, static fields
 
     Returns: None
@@ -104,7 +103,7 @@ def add_graylog_handler(host, port, level="INFO", debug=True, static_fields=None
         # The graylog server address and port
         "host": host,
         "port": port,
-        "debug": debug,
+        "debug": True,
         "formatter": "extended",
         #  The following custom fields will be disabled if setting this False
         "include_extra_fields": True,
