@@ -749,7 +749,7 @@ void FrameReceiverController::handle_ctrl_channel(void)
           case IpcMessage::MsgValCmdRequestConfiguration:
             LOG4CXX_DEBUG_LEVEL(3, logger_,
                 "Got control channel read configuration request from client " << client_identity);
-            this->get_configuration(ctrl_reply);
+            this->request_configuration(ctrl_reply);
             break;
 
           case IpcMessage::MsgValCmdStatus:
@@ -1053,7 +1053,7 @@ void FrameReceiverController::get_status(OdinData::IpcMessage& status_reply)
 //!
 //! \param[in,out] config_reply - IpcMessage reply to configuration request
 //!
-void FrameReceiverController::get_configuration(OdinData::IpcMessage& config_reply)
+void FrameReceiverController::request_configuration(OdinData::IpcMessage& config_reply)
 {
 
   // Set the reply type to acknowledge
@@ -1090,9 +1090,8 @@ void FrameReceiverController::get_configuration(OdinData::IpcMessage& config_rep
   config_reply.set_param(CONFIG_RX_PORTS, config_.rx_port_list());
   config_reply.set_param(CONFIG_RX_RECV_BUFFER_SIZE, config_.rx_recv_buffer_size_);
 
-  // Add frame timeout and count to reply parameters
+  // Add frame count to reply parameters
   config_reply.set_param(CONFIG_FRAME_COUNT, config_.frame_count_);
-  config_reply.set_param(CONFIG_FRAME_TIMEOUT_MS, config_.frame_timeout_ms_);
 
 }
 
