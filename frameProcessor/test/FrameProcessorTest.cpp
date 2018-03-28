@@ -200,7 +200,7 @@ BOOST_FIXTURE_TEST_SUITE(HDF5FileUnitTest, FileWriterPluginTestFixture);
 BOOST_AUTO_TEST_CASE( HDF5FileTest )
 {
   BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/blah.h5", 0, false, 1, 1));
-  BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def));
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def, -1, -1));
   BOOST_REQUIRE_EQUAL(dset_def.name, frame->get_dataset_name());
 
   BOOST_REQUIRE_NO_THROW(hdf5f.write_frame(*frame, frame->get_frame_number(), 1));
@@ -212,12 +212,12 @@ BOOST_AUTO_TEST_CASE( HDF5FileMultiDatasetTest )
   BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/blah_multidataset.h5", 0, false, 1, 1));
 
   // Create the first dataset "data"
-  BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def));
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def, -1, -1));
   BOOST_CHECK_EQUAL(dset_def.name, frame->get_dataset_name());
 
   // Create the second dataset "stuff"
   dset_def.name = "stuff";
-  BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def));
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def, -1, -1));
 
   // Write first frame to "data"
   BOOST_REQUIRE_NO_THROW(hdf5f.write_frame(*frame, frame->get_frame_number(), 1));
@@ -246,7 +246,7 @@ BOOST_AUTO_TEST_CASE( HDF5FileBadFileTest )
 BOOST_AUTO_TEST_CASE( FileWriterPluginDatasetWithoutOpenFileTest )
 {
   // Check for an error when a dataset is created without a file open
-  BOOST_CHECK_THROW(hdf5f.create_dataset(dset_def), std::runtime_error);
+  BOOST_CHECK_THROW(hdf5f.create_dataset(dset_def, -1, -1), std::runtime_error);
 }
 
 BOOST_AUTO_TEST_CASE( HDF5FileNoDatasetDefinitionsTest )
@@ -264,7 +264,7 @@ BOOST_AUTO_TEST_CASE( HDF5FileNoDatasetDefinitionsTest )
 BOOST_AUTO_TEST_CASE( HDF5FileInvalidDatasetTest )
 {
   BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/blah_throw.h5", 0, false, 1, 1));
-  BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def));
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def, -1, -1));
   BOOST_REQUIRE_NO_THROW(frame->set_dataset_name("non_existing_dataset_name"));
 
   BOOST_CHECK_THROW(hdf5f.write_frame(*frame, frame->get_frame_number(), 1), std::runtime_error);
@@ -274,7 +274,7 @@ BOOST_AUTO_TEST_CASE( HDF5FileInvalidDatasetTest )
 BOOST_AUTO_TEST_CASE( FileWriterPluginMultipleFramesTest )
 {
   BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/blah_multiple.h5", 0, false, 1, 1));
-  BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def));
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def, -1, -1));
 
   std::vector<boost::shared_ptr<FrameProcessor::Frame> >::iterator it;
   for (it = frames.begin(); it != frames.end(); ++it) {
@@ -289,7 +289,7 @@ BOOST_AUTO_TEST_CASE( HDF5FileMultipleReverseTest )
   // Just reverse through the list of frames and write them out.
   // The frames should still appear in the file in the original order...
   BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/blah_multiple_reverse.h5", 0, false, 1, 1));
-  BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def));
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def, -1, -1));
 
   // The first frame to write is used as an offset - so must be the lowest
   // frame number. Frames received later with a smaller number would result
@@ -308,7 +308,7 @@ BOOST_AUTO_TEST_CASE( HDF5FileMultipleReverseTest )
 BOOST_AUTO_TEST_CASE( HDF5FileAdjustHugeOffset )
 {
   BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/test_huge_offset.h5", 0, false, 1, 1));
-  BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def));
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def, -1, -1));
 
   hsize_t huge_offset = 100000;
   BOOST_REQUIRE_NO_THROW(fw.set_frame_offset_adjustment(huge_offset));
