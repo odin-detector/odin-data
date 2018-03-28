@@ -1069,9 +1069,12 @@ void FrameReceiverController::request_configuration(OdinData::IpcMessage& config
   config_reply.set_param(CONFIG_DECODER_PATH, config_.decoder_path_);
   config_reply.set_param(CONFIG_DECODER_TYPE, config_.decoder_type_);
 
-  // Add the decoder configuration parameter block to the reply parameters
-  std::string decoder_prefix = CONFIG_DECODER_CONFIG + "/";
-  frame_decoder_->request_configuration(decoder_prefix, config_reply);
+  // Add the decoder configuration parameter block to the reply parameters if the decoder has been
+  // configured
+  if (frame_decoder_) {
+    std::string decoder_prefix = CONFIG_DECODER_CONFIG + "/";
+    frame_decoder_->request_configuration(decoder_prefix, config_reply);
+  }
 
   // Add the buffer manager configuration to the reply parameters
   config_reply.set_param(CONFIG_SHARED_BUFFER_NAME, config_.shared_buffer_name_);
