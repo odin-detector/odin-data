@@ -206,7 +206,22 @@ void Acquisition::create_file(size_t file_number) {
   for (iter = dataset_defs_.begin(); iter != dataset_defs_.end(); ++iter) {
     DatasetDefinition dset_def = iter->second;
     dset_def.num_frames = frames_to_write_;
-    current_file->create_dataset(dset_def);
+
+    // Calculate low and high index for this dataset - needed to be able to open datasets in Albula
+    int low_index = -1;
+    int high_index = -1;
+
+    if (frames_per_block_ > 1)
+    {
+      low_index = file_number * frames_per_block_ + 1;
+      high_index = low_index + frames_per_block_ - 1;
+      if (blocks_per_file_ == 0 || high_index > total_frames_)
+      {
+        high_index = total_frames_;
+      }
+    }
+
+    current_file->create_dataset(dset_def, low_index, high_index);
   }
 
   current_file->start_swmr();
