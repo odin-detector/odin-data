@@ -25,9 +25,9 @@ matrix:
       - "$HOME/.cache/pip"
       - "$HOME/.local/lib"
 install:
-- mkdir -p build
+- mkdir -p .build
 - mkdir -p $INSTALL_PREFIX
-- cd build
+- cd .build
 - cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX -DHDF5_ROOT=$HDF5_ROOT ..
 - make -j 4 VERBOSE=1
 - make install
