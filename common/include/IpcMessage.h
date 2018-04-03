@@ -181,6 +181,11 @@ public:
     return the_value;
   }
 
+  //! Returns a vector of all parameter names contained in the message.
+  //!
+  //! \return A vector of all parameter names in this message
+  std::vector<std::string> get_param_names();
+
   //! Returns true if the parameter is found within the message
   bool has_param(const std::string& param_name) const;
 
@@ -260,6 +265,9 @@ public:
   //! Returns value attribute of message
   const MsgVal get_msg_val(void) const;
 
+  //! Returns id attribute of message
+  const unsigned int get_msg_id(void) const;
+
   //! Returns message timestamp as a string in ISO8601 extended format
   const std::string get_msg_timestamp(void) const;
 
@@ -271,6 +279,9 @@ public:
 
   //! Sets the message value attribute
   void set_msg_val(MsgVal const msg_val);
+
+  //! Sets the message id attribute
+  void set_msg_id(unsigned int msg_id);
 
   //! Returns a JSON-encoded string of the message
   const char* encode(void);
@@ -448,6 +459,7 @@ private:
   MsgType msg_type_;                        //!< Message type attribute
   MsgVal msg_val_;                          //!< Message value attribute
   boost::posix_time::ptime msg_timestamp_;  //!< Message timestamp (internal representation)
+  unsigned int msg_id_;                     //!< Message id attribute
 
   rapidjson::StringBuffer encode_buffer_;   //!< Encoding buffer used to encode message to JSON string
   static MsgTypeMap msg_type_map_;          //!< Bi-directional message type map

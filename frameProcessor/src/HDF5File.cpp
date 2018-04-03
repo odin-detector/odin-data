@@ -230,8 +230,10 @@ void HDF5File::write_frame(const Frame& frame, hsize_t frame_offset, uint64_t ou
  * Create a HDF5 dataset from the DatasetDefinition.
  *
  * \param[in] definition - Reference to the DatasetDefinition.
+ * \param[in] low_index - Value of the lowest frame index in the file if in block mode.
+ * \param[in] high_index - Value of the highest frame index in the file if in block mode.
  */
-void HDF5File::create_dataset(const DatasetDefinition& definition)
+void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index, int high_index)
 {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
@@ -313,6 +315,23 @@ void HDF5File::create_dataset(const DatasetDefinition& definition)
     // Now throw a runtime error to notify that the dataset could not be created
     throw std::runtime_error("Unable to create the dataset");
   }
+
+  /* Add attributes to dataset for low and high index so it can be read by Albula */
+  if (low_index != -1 && high_index != -1)
+  {
+    hid_t space_inl = H5Screate(H5S_SCALAR);
+    hid_t attr_inl = H5Acreate2(dset.dataset_id, "image_nr_low", H5T_STD_I32LE, space_inl, H5P_DEFAULT, H5P_DEFAULT);
+    ensure_h5_result(H5Awrite(attr_inl, H5T_STD_I32LE, &low_index), "Failed to write to low index attribute");
+    ensure_h5_result(H5Aclose(attr_inl), "H5Aclose failed to close the low index attribute");
+    ensure_h5_result(H5Sclose(space_inl), "H5Sclose failed to close the low index dataspace");
+
+    hid_t space_inh = H5Screate(H5S_SCALAR);
+    hid_t attr_inh = H5Acreate2(dset.dataset_id, "image_nr_high", H5T_STD_I32LE, space_inh, H5P_DEFAULT, H5P_DEFAULT);
+    ensure_h5_result(H5Awrite(attr_inh, H5T_STD_I32LE, &high_index), "Failed to write to high index attribute");
+    ensure_h5_result(H5Aclose(attr_inh), "H5Aclose failed to close the high index attribute");
+    ensure_h5_result(H5Sclose(space_inh), "H5Sclose failed to close the high index dataspace");
+  }
+
   dset.dataset_dimensions = dset_dims;
   dset.dataset_offsets = std::vector<hsize_t>(3);
   this->hdf5_datasets_[definition.name] = dset;

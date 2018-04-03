@@ -206,7 +206,22 @@ void Acquisition::create_file(size_t file_number) {
   for (iter = dataset_defs_.begin(); iter != dataset_defs_.end(); ++iter) {
     DatasetDefinition dset_def = iter->second;
     dset_def.num_frames = frames_to_write_;
-    current_file->create_dataset(dset_def);
+
+    // Calculate low and high index for this dataset - needed to be able to open datasets in Albula
+    int low_index = -1;
+    int high_index = -1;
+
+    if (frames_per_block_ > 1)
+    {
+      low_index = file_number * frames_per_block_ + 1;
+      high_index = low_index + frames_per_block_ - 1;
+      if (blocks_per_file_ == 0 || high_index > total_frames_)
+      {
+        high_index = total_frames_;
+      }
+    }
+
+    current_file->create_dataset(dset_def, low_index, high_index);
   }
 
   current_file->start_swmr();
@@ -237,8 +252,9 @@ void Acquisition::close_file(boost::shared_ptr<HDF5File> file) {
  * \param[in] frame_offset_adjustment - The starting frame offset adjustment
  * \param[in] frames_per_block - The number of frames per block
  * \param[in] blocks_per_file - The number of blocks per file
+ * \return - true if the acquisition was started successfully
  */
-void Acquisition::start_acquisition(
+bool Acquisition::start_acquisition(
     size_t concurrent_rank,
     size_t concurrent_processes,
     size_t frame_offset_adjustment,
@@ -264,12 +280,14 @@ void Acquisition::start_acquisition(
 
   if (filename_.empty()) {
     LOG4CXX_ERROR(logger_, "Unable to start writing - no filename to write to");
-    return;
+    return false;
   }
 
   publish_meta(META_NAME, META_START_ITEM, "", get_create_meta_header());
 
   create_file(concurrent_rank_);
+
+  return true;
 }
 
 /**

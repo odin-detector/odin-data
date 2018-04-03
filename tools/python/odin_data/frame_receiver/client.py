@@ -11,7 +11,11 @@ import os
 import json
 import zmq
 from struct import Struct
-from json.decoder import JSONDecodeError
+
+try:
+    from json.decoder import JSONDecodeError
+except ImportError:
+    JSONDecodeError = ValueError 
 
 class FrameReceiverClient(object):
     

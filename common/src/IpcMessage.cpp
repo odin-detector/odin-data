@@ -25,6 +25,7 @@ IpcMessage::IpcMessage(MsgType msg_type, MsgVal msg_val, bool strict_validation)
     strict_validation_(strict_validation),
     msg_type_(msg_type),
     msg_val_(msg_val),
+    msg_id_(0),
     msg_timestamp_(boost::posix_time::microsec_clock::local_time())
 {
   // Intialise empty JSON document
@@ -89,6 +90,18 @@ IpcMessage::IpcMessage(const char* json_msg, bool strict_validation) :
     throw OdinData::IpcMessageException("Illegal or missing timestamp attribute in message");
   }
 
+  try
+  {
+    msg_id_ = get_attribute<unsigned int>("id", 0);
+  }
+  catch (...)
+  {
+    if (strict_validation_)
+    {
+      throw OdinData::IpcMessageException("Illegal or missing id attribute in message");
+    }
+  }
+
   // Check if a params block is present. If strict validation is enabled, thrown an exception if
   // absent.
   if (strict_validation && !has_params())
@@ -116,6 +129,7 @@ IpcMessage::IpcMessage(const rapidjson::Value& value,
     strict_validation_(strict_validation),
     msg_type_(msg_type),
     msg_val_(msg_val),
+    msg_id_(0),
     msg_timestamp_(boost::posix_time::microsec_clock::local_time())
 {
   // Intialise empty JSON document
@@ -125,6 +139,22 @@ IpcMessage::IpcMessage(const rapidjson::Value& value,
   rapidjson::Value newValue(value, doc_.GetAllocator());
   // Create the required params block
   doc_.AddMember("params", newValue, doc_.GetAllocator());
+}
+
+//! Returns a vector of all parameter names contained in the message.
+//!
+//! \return A vector of all parameter names in this message
+
+std::vector<std::string> IpcMessage::get_param_names()
+{
+  std::vector<std::string> names;
+  rapidjson::Value::ConstMemberIterator itr = doc_.FindMember("params");
+  for (rapidjson::Value::ConstMemberIterator param_itr = itr->value.MemberBegin();
+      param_itr != itr->value.MemberEnd(); ++param_itr){
+    std::string param_name(param_itr->name.GetString());
+    names.push_back(param_name);
+  }
+  return names;
 }
 
 //! Searches for the named parameter in the message.
@@ -235,6 +265,15 @@ const struct tm IpcMessage::get_msg_datetime(void) const
   return boost::posix_time::to_tm(msg_timestamp_);
 }
 
+//! Returns id attribute of message.
+//!
+//! This method returns the "id" attribute of the message.
+//!
+//! \return unsigned int message id
+const unsigned int IpcMessage::get_msg_id(void) const
+{
+  return msg_id_;
+}
 
 //! Sets the message type attribute.
 //!
@@ -263,6 +302,16 @@ void IpcMessage::set_msg_val(IpcMessage::MsgVal const msg_val)
 
 }
 
+//! Sets the message id attribute.
+//!
+//! This method sets the id attribute of the message.
+//!
+//! \param msg_id - Message id
+void IpcMessage::set_msg_id(unsigned int msg_id)
+{
+  msg_id_ = msg_id;
+}
+
 //! Returns a JSON-encoded string of the message.
 //!
 //! This method returns a JSON-encoded string version of the message, intended for
@@ -276,6 +325,7 @@ const char* IpcMessage::encode(void)
   // Copy the validated attributes into the JSON document ready for encoding
   set_attribute("msg_type", valid_msg_type(msg_type_));
   set_attribute("msg_val", valid_msg_val(msg_val_));
+  set_attribute("id", msg_id_);
   set_attribute("timestamp", valid_msg_timestamp(msg_timestamp_));
 
   // Clear the encoded output buffer otherwise successive encode() calls append

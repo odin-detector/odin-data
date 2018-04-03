@@ -10,6 +10,7 @@ def test_valid_ipc_msg_from_string():
                 {\"msg_type\":\"cmd\",
                 \"msg_val\":\"status\",
                 \"timestamp\" : \"2015-01-27T15:26:01.123456\",
+                \"id\":322,
                 \"params\" : {
                     \"paramInt\" : 1234,
                     \"paramStr\" : \"testParam\",
@@ -29,6 +30,7 @@ def test_valid_ipc_msg_from_string():
     assert_equals(the_msg.get_msg_type(), "cmd")
     assert_equals(the_msg.get_msg_val(), "status")
     assert_equals(the_msg.get_msg_timestamp(), "2015-01-27T15:26:01.123456")
+    assert_equals(the_msg.get_msg_id(), 322)
 
     # Check that all parameters are as expected
     assert_equals(the_msg.get_param("paramInt"), 1234)
@@ -61,11 +63,13 @@ def test_filled_ipc_msg_valid():
     # Check that empty message is not valid
     assert_false(the_msg.is_valid())
 
-    # Set the message type and Value
+    # Set the message type, Value and id
     msg_type = "cmd"
     the_msg.set_msg_type(msg_type)
     msg_val = "reset"
     the_msg.set_msg_val(msg_val)
+    msg_id = 54223
+    the_msg.set_msg_id(msg_id)
 
     # Check that the message is now valid
     assert_true(the_msg.is_valid())
@@ -111,6 +115,8 @@ def test_round_trip_from_empty_msg():
     the_msg.set_msg_type(msg_type)
     msg_val = "reset"
     the_msg.set_msg_val(msg_val)
+    msg_id = 61616
+    the_msg.set_msg_id(msg_id)
 
      # Define and set some parameters
     paramInt1 = 1234;
@@ -133,6 +139,7 @@ def test_round_trip_from_empty_msg():
     assert_equal(msg_from_encoded.get_msg_type(), msg_type)
     assert_equal(msg_from_encoded.get_msg_val(),  msg_val)
     assert_equal(msg_from_encoded.get_msg_timestamp(), the_msg.get_msg_timestamp())
+    assert_equal(msg_from_encoded.get_msg_id(), the_msg.get_msg_id())
     assert_equal(msg_from_encoded.get_param('paramInt1'), paramInt1)
     assert_equal(msg_from_encoded.get_param('paramInt2'), paramInt2)
     assert_equal(msg_from_encoded.get_param('paramInt3'), paramInt3)
@@ -148,6 +155,8 @@ def test_round_trip_from_empty_msg_comparison():
     the_msg.set_msg_type(msg_type)
     msg_val = "reset"
     the_msg.set_msg_val(msg_val)
+    msg_id = 61616
+    the_msg.set_msg_id(msg_id)
 
      # Define and set some parameters
     paramInt1 = 1234;

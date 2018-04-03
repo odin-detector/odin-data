@@ -55,7 +55,7 @@ public:
   void handle_h5_error(std::string message, std::string function, std::string filename, int line) const;
   void create_file(std::string file_name, size_t file_index, bool use_earliest_version, size_t alignment_threshold, size_t alignment_value);
   void close_file();
-  void create_dataset(const DatasetDefinition& definition);
+  void create_dataset(const DatasetDefinition& definition, int low_index, int high_index);
   void write_frame(const Frame& frame, hsize_t frame_offset, uint64_t outer_chunk_dimension);
   size_t get_dataset_frames(const std::string dset_name);
   void start_swmr();
