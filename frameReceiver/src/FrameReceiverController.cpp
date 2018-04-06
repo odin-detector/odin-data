@@ -631,6 +631,14 @@ void FrameReceiverController::configure_rx_thread(OdinData::IpcMessage& config_m
     need_rx_thread_reconfig_ = true;
   }
 
+  int rx_recv_buffer_size = config_msg.get_param<int>(
+      CONFIG_RX_RECV_BUFFER_SIZE, config_.rx_recv_buffer_size_);
+  if (rx_recv_buffer_size != config_.rx_recv_buffer_size_)
+  {
+    config_.rx_recv_buffer_size_ = rx_recv_buffer_size;
+    need_rx_thread_reconfig_ = true;
+  }
+
   std::string current_rx_port_list = config_.rx_port_list();
   std::string rx_port_list = config_msg.get_param<std::string>(
       CONFIG_RX_PORTS, current_rx_port_list);
@@ -741,9 +749,7 @@ void FrameReceiverController::handle_ctrl_channel(void)
           case IpcMessage::MsgValCmdRequestConfiguration:
             LOG4CXX_DEBUG_LEVEL(3, logger_,
                 "Got control channel read configuration request from client " << client_identity);
-            LOG4CXX_DEBUG_LEVEL(3, logger_,
-                "TODO: Implement this method");
-            ctrl_reply.set_msg_type(IpcMessage::MsgTypeAck);
+            this->request_configuration(ctrl_reply);
             break;
 
           case IpcMessage::MsgValCmdStatus:
@@ -1037,6 +1043,52 @@ void FrameReceiverController::get_status(OdinData::IpcMessage& status_reply)
   status_reply.set_param("frames/timedout", frames_timedout);
   status_reply.set_param("frames/received", frames_received_);
   status_reply.set_param("frames/released", frames_released_);
+}
+
+//! Get the frame receiver configuration.
+//!
+//! This method retrieves the current configuration of the frame receiver in response to a client
+//! status request. The configuration of each component of the receiver is filled into the
+//! parameter block of the reply message passed as an argument
+//!
+//! \param[in,out] config_reply - IpcMessage reply to configuration request
+//!
+void FrameReceiverController::request_configuration(OdinData::IpcMessage& config_reply)
+{
+
+  // Set the reply type to acknowledge
+  config_reply.set_msg_type(IpcMessage::MsgTypeAck);
+
+  // Add the IPC configuration to the reply parameters
+  config_reply.set_param(CONFIG_CTRL_ENDPOINT, config_.ctrl_channel_endpoint_);
+  config_reply.set_param(CONFIG_RX_ENDPOINT, config_.rx_channel_endpoint_);
+  config_reply.set_param(CONFIG_FRAME_READY_ENDPOINT, config_.frame_ready_endpoint_);
+  config_reply.set_param(CONFIG_FRAME_RELEASE_ENDPOINT, config_.frame_release_endpoint_);
+
+  // Add the decoder path and type to the reply parameters
+  config_reply.set_param(CONFIG_DECODER_PATH, config_.decoder_path_);
+  config_reply.set_param(CONFIG_DECODER_TYPE, config_.decoder_type_);
+
+  // Add the decoder configuration parameter block to the reply parameters if the decoder has been
+  // configured
+  if (frame_decoder_) {
+    std::string decoder_prefix = CONFIG_DECODER_CONFIG + "/";
+    frame_decoder_->request_configuration(decoder_prefix, config_reply);
+  }
+
+  // Add the buffer manager configuration to the reply parameters
+  config_reply.set_param(CONFIG_SHARED_BUFFER_NAME, config_.shared_buffer_name_);
+  config_reply.set_param(CONFIG_MAX_BUFFER_MEM, config_.max_buffer_mem_);
+
+  // Add the RX thread configuration to the reply parameters
+  config_reply.set_param(CONFIG_RX_TYPE, FrameReceiverConfig::map_rx_type_to_name(config_.rx_type_));
+  config_reply.set_param(CONFIG_RX_ADDRESS, config_.rx_address_);
+  config_reply.set_param(CONFIG_RX_PORTS, config_.rx_port_list());
+  config_reply.set_param(CONFIG_RX_RECV_BUFFER_SIZE, config_.rx_recv_buffer_size_);
+
+  // Add frame count to reply parameters
+  config_reply.set_param(CONFIG_FRAME_COUNT, config_.frame_count_);
+
 }
 
 #ifdef FR_CONTROLLER_TICK_TIMER
