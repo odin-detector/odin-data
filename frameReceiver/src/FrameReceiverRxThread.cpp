@@ -89,6 +89,8 @@ void FrameReceiverRxThread::run_service(void)
 {
   LOG4CXX_DEBUG_LEVEL(1, logger_, "Running RX thread service");
 
+  OdinData::configure_logging_mdc(OdinData::app_path.c_str());
+
   // Connect the message channel to the main thread
   try {
     LOG4CXX_DEBUG_LEVEL(1, logger_, "Connecting RX channel to endpoint "

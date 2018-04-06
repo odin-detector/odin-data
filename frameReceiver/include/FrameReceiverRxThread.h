@@ -15,6 +15,7 @@
 using namespace log4cxx;
 using namespace log4cxx::helpers;
 #include "DebugLevelLogger.h"
+#include "logging.h"
 
 #include "IpcChannel.h"
 #include "IpcMessage.h"
