@@ -168,7 +168,7 @@ void SharedMemoryController::handleRxChannel()
           // Loop over registered callbacks, placing the frame onto each queue
           std::map<std::string, boost::shared_ptr<IFrameCallback> >::iterator cbIter;
           for (cbIter = callbacks_.begin(); cbIter != callbacks_.end(); ++cbIter) {
-            cbIter->second->getWorkQueue()->add(frame);
+            cbIter->second->getWorkQueue()->add(frame, true);
           }
 
         } else {
