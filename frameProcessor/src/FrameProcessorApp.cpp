@@ -63,7 +63,7 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
     config.add_options()
         ("logconfig,l",   po::value<string>(),
            "Set the log4cxx logging configuration file")
-        ("ctrl",          po::value<std::string>()->default_value("tcp://127.0.0.1:5004"),
+        ("ctrl",          po::value<std::string>()->default_value("tcp://0.0.0.0:5004"),
            "Set the control endpoint")
         ("ready",         po::value<std::string>()->default_value("tcp://127.0.0.1:5001"),
            "Ready ZMQ endpoint from frameReceiver")
