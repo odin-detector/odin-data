@@ -36,7 +36,7 @@ class OdinDataAdapter(ApiAdapter):
         self._endpoints = []
         self._clients = []
         self._update_interval = None
-        self._config_file = None
+        self._config_file = []
 
         logging.debug(kwargs)
 
@@ -44,6 +44,8 @@ class OdinDataAdapter(ApiAdapter):
         for arg in kwargs:
             self._kwargs[arg] = kwargs[arg]
         self._kwargs['module'] = self.name
+        self._kwargs['api'] = 0.1
+        self._kwargs['status/error'] = ''
 
         try:
             self._endpoint_arg = self.options.get('endpoints')
@@ -60,6 +62,7 @@ class OdinDataAdapter(ApiAdapter):
 
         for ep in self._endpoints:
             self._clients.append(IpcTornadoClient(ep['ip_address'], ep['port']))
+            self._config_file.append('')
 
         self._kwargs['count'] = len(self._clients)
         # Allocate the status list
@@ -95,13 +98,10 @@ class OdinDataAdapter(ApiAdapter):
                 for key in client.parameters:
                     if key not in key_list:
                         key_list.append(key)
-            response[request_command] = key_list
-        elif request_command == 'config/config_file':
-            # Special case for submitting a config file.  Read back the current filename
-            response['value'] = self._config_file
+            response['value'] = key_list
         elif request_command in self._kwargs:
             logging.debug("Adapter request for ini argument: %s", request_command)
-            response[request_command] = self._kwargs[request_command]
+            response['value'] = self._kwargs[request_command]
         else:
             try:
                 uri_items = request_command.split('/')
@@ -122,13 +122,21 @@ class OdinDataAdapter(ApiAdapter):
                     # This is OK, there is simply no index provided
                     pass
 
+                response_items = []
                 if client_index == -1:
-                    response_items = []
-                    for client in self._clients:
-                        response_items.append(OdinDataAdapter.traverse_parameters(client.parameters, uri_items))
+                    if request_command.startswith('config/config_file'):
+                        # Special case for a config file.  Read back the current filename
+                        response_items = self._config_file
+                    else:
+                        for client in self._clients:
+                            response_items.append(OdinDataAdapter.traverse_parameters(client.parameters, uri_items))
                 else:
-                    response_items = OdinDataAdapter.traverse_parameters(self._clients[client_index].parameters,
-                                                                         uri_items)
+                    if request_command.startswith('config/config_file'):
+                        # Special case for a config file.  Read back the current filename
+                        response_items = self._config_file[client_index]
+                    else:
+                        response_items = OdinDataAdapter.traverse_parameters(self._clients[client_index].parameters,
+                                                                             uri_items)
 
                 logging.debug(response_items)
                 response['value'] = response_items
@@ -154,50 +162,14 @@ class OdinDataAdapter(ApiAdapter):
         """
         status_code = 200
         response = {}
-        logging.debug("PUT path: %s", path)
+        logging.error("PUT path: %s", path)
         logging.debug("PUT request: %s", request)
-        logging.debug("PUT request.body: %s", str(escape.url_unescape(request.body)))
+        logging.error("PUT request.body: %s", str(escape.url_unescape(request.body)))
 
         request_command = path.strip('/')
 
-        # Request should either be a config file or else start with config/
-        if request_command == 'config/config_file':
-            # Special case when we have been asked to load a config file to submit to clients
-            # The config file should contain a JSON representation of a list of config dicts,
-            # one for each client
-            self._config_file = str(escape.url_unescape(request.body)).strip('"')
-            logging.error("Loading configuration file {}".format(self._config_file))
-
-            try:
-                with open(self._config_file) as config_file:
-                    config_obj = json.load(config_file)
-                    # Verify the number of items in the config file match the length of clients
-                    if len(self._clients) != len(config_obj):
-                        logging.error(
-                            "Mismatch between config items [{}] and number of clients [{}]".format(len(config_obj),
-                                                                                                   len(self._clients)))
-                        status_code = 503
-                        response = {'error': OdinDataAdapter.ERROR_PUT_MISMATCH}
-                    else:
-                        for client, config_item in zip(self._clients, config_obj):
-                            try:
-                                logging.error("Sending configuration {} to client".format(str(config_item)))
-                                client.send_configuration(config_item)
-                            except Exception as err:
-                                logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
-                                logging.error("Error: %s", err)
-                                status_code = 503
-                                response = {'error': OdinDataAdapter.ERROR_FAILED_TO_SEND}
-            except IOError as io_error:
-                logging.error("Failed to open configuration file: {}".format(io_error))
-                status_code = 503
-                response = {'error': "Failed to open configuration file: {}".format(io_error)}
-            except ValueError as value_error:
-                logging.error("Failed to parse json config: {}".format(value_error))
-                status_code = 503
-                response = {'error': "Failed to parse json config: {}".format(value_error)}
-
-        elif request_command.startswith("config/"):
+        # Request should start with config/
+        if request_command.startswith("config/"):
             request_command = remove_prefix(request_command, "config/")  # Take the rest of the URI
             logging.debug("Configure URI: %s", request_command)
             client_index = -1
@@ -223,55 +195,40 @@ class OdinDataAdapter(ApiAdapter):
                 # If the body could not be parsed into an object it may be a simple string
                 parameters = str(escape.url_unescape(request.body))
 
-            # Check if the parameters object is a list
-            if isinstance(parameters, list):
-                logging.debug("List of parameters provided: %s", parameters)
-                # Check the length of the list matches the number of clients
-                if len(parameters) != len(self._clients):
-                    status_code = 503
-                    response['error'] = OdinDataAdapter.ERROR_PUT_MISMATCH
-                elif client_index != -1:
-                    # A list of items has been supplied but also an index has been specified
-                    logging.error("URI contains an index but parameters supplied as a list")
-                    status_code = 503
-                    response['error'] = OdinDataAdapter.ERROR_PUT_MISMATCH
-                else:
-                    # Loop over the clients and parameters, sending each one
-                    for client, param_set in zip(self._clients, parameters):
-                        if param_set:
-                            try:
-                                command, parameters = OdinDataAdapter.uri_params_to_dictionary(request_command,
-                                                                                               param_set)
-                                client.send_configuration(parameters, command)
-                            except Exception as err:
-                                logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
-                                logging.error("Error: %s", err)
-                                status_code = 503
-                                response = {'error': OdinDataAdapter.ERROR_FAILED_TO_SEND}
-
-            else:
-                logging.debug("Single parameter set provided: %s", parameters)
+            if request_command == 'config_file':
+                # Special case where we have been asked to load a config file to submit to clients
+                # The config file should contain a JSON representation of a list of config dicts,
+                # which will be sent one after the other as client messages
+                config_file_path = str(escape.url_unescape(request.body)).strip('"')
                 if client_index == -1:
-                    # We are sending the value to all clients
-                    command, parameters = OdinDataAdapter.uri_params_to_dictionary(request_command, parameters)
-                    for client in self._clients:
-                        try:
-                            client.send_configuration(parameters, command)
-                        except Exception as err:
-                            logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
-                            logging.error("Error: %s", err)
-                            status_code = 503
-                            response = {'error': OdinDataAdapter.ERROR_FAILED_TO_SEND}
+                    for index in range(0, len(self._clients)):
+                        self._config_file[index] = config_file_path
                 else:
-                    # A client index has been specified
-                    try:
-                        command, parameters = OdinDataAdapter.uri_params_to_dictionary(request_command, parameters)
-                        self._clients[client_index].send_configuration(parameters, command)
-                    except Exception as err:
-                        logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
-                        logging.error("Error: %s", err)
-                        status_code = 503
-                        response = {'error': OdinDataAdapter.ERROR_FAILED_TO_SEND}
+                    self._config_file[client_index] = config_file_path
+
+                logging.error("Loading configuration file {}".format(config_file_path))
+                try:
+                    with open(config_file_path) as config_file:
+                        config_obj = json.load(config_file)
+                        # Loop over the items in the object and send them all to the client(s)
+                        for message in config_obj:
+                            #for command in message:
+                            logging.error("Sending message: %s", message)
+                            response, status_code = self.send_to_clients(None, message, client_index)
+                            if status_code != 200:
+                                return ApiAdapterResponse(response, status_code=status_code)
+
+                except IOError as io_error:
+                    logging.error("Failed to open configuration file: {}".format(io_error))
+                    status_code = 503
+                    response = {'error': "Failed to open configuration file: {}".format(io_error)}
+                except ValueError as value_error:
+                    logging.error("Failed to parse json config: {}".format(value_error))
+                    status_code = 503
+                    response = {'error': "Failed to parse json config: {}".format(value_error)}
+            else:
+                # Any other PUT values that do not contain paths to config files
+                response, status_code = self.send_to_clients(request_command, parameters, client_index)
 
         return ApiAdapterResponse(response, status_code=status_code)
 
@@ -292,6 +249,61 @@ class OdinDataAdapter(ApiAdapter):
 
         return ApiAdapterResponse(response, status_code=status_code)
 
+    def send_to_clients(self, request_command, parameters, client_index=-1):
+        status_code = 200
+        response = {}
+
+        # Check if the parameters object is a list
+        if isinstance(parameters, list):
+            logging.debug("List of parameters provided: %s", parameters)
+            # Check the length of the list matches the number of clients
+            if len(parameters) != len(self._clients):
+                status_code = 503
+                response['error'] = OdinDataAdapter.ERROR_PUT_MISMATCH
+            elif client_index != -1:
+                # A list of items has been supplied but also an index has been specified
+                logging.error("URI contains an index but parameters supplied as a list")
+                status_code = 503
+                response['error'] = OdinDataAdapter.ERROR_PUT_MISMATCH
+            else:
+                # Loop over the clients and parameters, sending each one
+                for client, param_set in zip(self._clients, parameters):
+                    if param_set:
+                        try:
+                            command, parameters = OdinDataAdapter.uri_params_to_dictionary(request_command,
+                                                                                           param_set)
+                            client.send_configuration(parameters, command)
+                        except Exception as err:
+                            logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
+                            logging.error("Error: %s", err)
+                            status_code = 503
+                            response = {'error': OdinDataAdapter.ERROR_FAILED_TO_SEND}
+
+        else:
+            logging.debug("Single parameter set provided: %s", parameters)
+            if client_index == -1:
+                # We are sending the value to all clients
+                command, parameters = OdinDataAdapter.uri_params_to_dictionary(request_command, parameters)
+                for client in self._clients:
+                    try:
+                        client.send_configuration(parameters, command)
+                    except Exception as err:
+                        logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
+                        logging.error("Error: %s", err)
+                        status_code = 503
+                        response = {'error': OdinDataAdapter.ERROR_FAILED_TO_SEND}
+            else:
+                # A client index has been specified
+                try:
+                    command, parameters = OdinDataAdapter.uri_params_to_dictionary(request_command, parameters)
+                    self._clients[client_index].send_configuration(parameters, command)
+                except Exception as err:
+                    logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
+                    logging.error("Error: %s", err)
+                    status_code = 503
+                    response = {'error': OdinDataAdapter.ERROR_FAILED_TO_SEND}
+        return response, status_code
+
     @staticmethod
     def traverse_parameters(param_set, uri_items):
         logging.debug("Client paramset: %s", param_set)
@@ -307,19 +319,23 @@ class OdinDataAdapter(ApiAdapter):
     @staticmethod
     def uri_params_to_dictionary(request_command, parameters):
         # Check to see if the request contains more than one item
-        request_list = request_command.split('/')
-        logging.debug("URI request list: %s", request_list)
-        param_dict = {}
-        command = None
-        if len(request_list) > 1:
-            # We need to create a dictionary structure that contains the request list
-            current_dict = param_dict
-            for item in request_list[1:-1]:
-                current_dict[item] = {}
-                current_dict = current_dict[item]
+        if request_command is not None:
+            request_list = request_command.split('/')
+            logging.debug("URI request list: %s", request_list)
+            param_dict = {}
+            command = None
+            if len(request_list) > 1:
+                # We need to create a dictionary structure that contains the request list
+                current_dict = param_dict
+                for item in request_list[1:-1]:
+                    current_dict[item] = {}
+                    current_dict = current_dict[item]
 
-            current_dict[request_list[-1]] = parameters
-            command = request_list[0]
+                current_dict[request_list[-1]] = parameters
+                command = request_list[0]
+            else:
+                param_dict = parameters
+                command = request_command
         else:
             param_dict = parameters
             command = request_command
@@ -339,8 +355,12 @@ class OdinDataAdapter(ApiAdapter):
         # Loop over all connected clients and obtain the status
         for client in self._clients:
             try:
-                # First check for stale status within a client
-                client.check_for_stale_status(self._update_interval * 10)
+                # First check for stale status within a client (2 seconds)
+                client.check_for_stale_status(2.0)
+            except Exception as e:
+                # Exception caught, log the error but do not stop the update loop
+                logging.error("Unhandled exception: %s", e)
+            try:
                 # Request a configuration update
                 client.send_request('request_configuration')
                 # Now request a status update
