@@ -39,7 +39,8 @@ class FrameProcessorAdapter(OdinDataAdapter):
         self._param = {
             'config/hdf/file/path': '',
             'config/hdf/file/name': '',
-            'config/hdf/file/extension': 'h5'
+            'config/hdf/file/extension': 'h5',
+            'config/hdf/frames': 0
         }
         self._command = 'config/hdf/write'
         self.setup_rank()
@@ -103,10 +104,15 @@ class FrameProcessorAdapter(OdinDataAdapter):
         # When this arrives write all params into a single IPC message
         # config/hdf/write
         if path in self._param:
-            self._param[path] = str(escape.url_unescape(request.body)).replace('"', '')
+            logging.debug("Setting {} to {}".format(path, str(escape.url_unescape(request.body)).replace('"', '')))
+            if path == 'config/hdf/frames':
+                self._param[path] = int(str(escape.url_unescape(request.body)).replace('"', ''))
+            else:
+                self._param[path] = str(escape.url_unescape(request.body)).replace('"', '')
         elif path == self._command:
             write = bool_from_string(str(escape.url_unescape(request.body)))
             config = {'hdf': {'write': write}}
+            logging.debug("Setting {} to {}".format(path, config))
             if write:
                 # First setup the rank for the frameProcessor applications
                 self.setup_rank()
@@ -115,6 +121,13 @@ class FrameProcessorAdapter(OdinDataAdapter):
                     try:
                         # Send the configuration required to setup the acquisition
                         # The file path is the same for all clients
+                        parameters = {
+                            'hdf': {
+                                'frames': self._param['config/hdf/frames']
+                            }
+                        }
+                        # Send the number of frames first
+                        client.send_configuration(parameters)
                         parameters = {
                             'hdf': {
                                 'file': {
