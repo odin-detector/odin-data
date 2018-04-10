@@ -327,9 +327,6 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
 
 void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
-  // Protect this method
-  boost::lock_guard<boost::recursive_mutex> lock(mutex_);
-
   // Return the configuration of the file writer plugin
   std::string process_str = get_name() + "/" + FileWriterPlugin::CONFIG_PROCESS + "/";
   reply.set_param(process_str + FileWriterPlugin::CONFIG_PROCESS_NUMBER, concurrent_processes_);
@@ -608,9 +605,6 @@ void FileWriterPlugin::create_new_dataset(const std::string& dset_name)
  */
 void FileWriterPlugin::status(OdinData::IpcMessage& status)
 {
-  // Protect this method
-  boost::lock_guard<boost::recursive_mutex> lock(mutex_);
-
   // Record the plugin's status items
   status.set_param(get_name() + "/writing", this->writing_);
   status.set_param(get_name() + "/frames_max", (int)this->current_acquisition_->frames_to_write_);
