@@ -652,15 +652,40 @@ bool FileWriterPlugin::frame_in_acquisition(boost::shared_ptr<Frame> frame) {
  *
  */
 void FileWriterPlugin::stop_acquisition() {
+  // Before stopping the current acquisition, check for identical paths, filenames or
+  // acquisition IDs.  If these are found do not automatically start the next acquisition
+  bool restart = true;
+  if (writing_){
+    if (!next_acquisition_->file_path_.empty()){
+      if (next_acquisition_->file_path_ == current_acquisition_->file_path_){
+        if (!next_acquisition_->filename_.empty()){
+          if (next_acquisition_->filename_ == current_acquisition_->filename_){
+            // Identical path and filenames so do not re-start
+            restart = false;
+            LOG4CXX_INFO(logger_, "FrameProcessor will not auto-restart acquisition due to identical filename and path");
+          }
+        }
+        if (!next_acquisition_->acquisition_id_.empty()){
+          if (next_acquisition_->acquisition_id_ == current_acquisition_->acquisition_id_){
+            // Identical path and acquisition IDs so do not re-start
+            restart = false;
+            LOG4CXX_INFO(logger_, "FrameProcessor will not auto-restart acquisition due to identical file path and acquisition ID");
+          }
+        }
+      }
+    }
+  }
   this->stop_writing();
-  // Start next acquisition if we have a filename or acquisition ID to use
-  if (!next_acquisition_->filename_.empty() || !next_acquisition_->acquisition_id_.empty()) {
-    if (next_acquisition_->total_frames_ > 0 && next_acquisition_->frames_to_write_ == 0) {
-      // We're not expecting any frames, so just clear out the nextAcquisition for the next one and don't start writing
-      this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition());
-      LOG4CXX_INFO(logger_, "FrameProcessor will not receive any frames from this acquisition and so no output file will be created");
-    } else {
-      this->start_writing();
+  if (restart){
+    // Start next acquisition if we have a filename or acquisition ID to use
+    if (!next_acquisition_->filename_.empty() || !next_acquisition_->acquisition_id_.empty()) {
+      if (next_acquisition_->total_frames_ > 0 && next_acquisition_->frames_to_write_ == 0) {
+        // We're not expecting any frames, so just clear out the nextAcquisition for the next one and don't start writing
+        this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition());
+        LOG4CXX_INFO(logger_, "FrameProcessor will not receive any frames from this acquisition and so no output file will be created");
+      } else {
+        this->start_writing();
+      }
     }
   }
 }
