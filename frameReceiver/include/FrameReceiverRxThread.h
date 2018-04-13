@@ -45,7 +45,7 @@ public:
       FrameDecoderPtr frame_decoder, unsigned int tick_period_ms=100);
   virtual ~FrameReceiverRxThread();
 
-  void start();
+  bool start();
   void stop();
 
   void frame_ready(int buffer_id, int frame_number);

@@ -534,7 +534,7 @@ void FrameReceiverController::configure_frame_decoder(OdinData::IpcMessage& conf
 //! be configured if a frame decoder has been loaded and can be interrogated for the
 //! appropriate buffer information.
 //!
-//! \parmam[in] config_msg - IpcMessage containing configuration parameters
+//! \param[in] config_msg - IpcMessage containing configuration parameters
 //!
 void FrameReceiverController::configure_buffer_manager(OdinData::IpcMessage& config_msg)
 {
@@ -607,7 +607,7 @@ void FrameReceiverController::configure_buffer_manager(OdinData::IpcMessage& con
 //! This method configures and launches the appropriate type of receiver thread based on
 //! the configuration information specified in an IpcMessage.
 //!
-//! \parmam[in] config_msg - IpcMessage containing configuration parameters
+//! \param[in] config_msg - IpcMessage containing configuration parameters
 //!
 void FrameReceiverController::configure_rx_thread(OdinData::IpcMessage& config_msg)
 {
@@ -673,10 +673,10 @@ void FrameReceiverController::configure_rx_thread(OdinData::IpcMessage& config_m
         default:
           throw FrameReceiverException("Cannot create RX thread - RX type not recognised");
       }
-      rx_thread_->start();
 
-      // Flag successful completion of RX thread configuration
-      rx_thread_configured_ = true;
+      // Start the RX thread, Flagging successful completion of configuration
+      rx_thread_configured_ = rx_thread_->start();
+
     }
     else
     {
