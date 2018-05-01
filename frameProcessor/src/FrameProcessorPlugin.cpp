@@ -15,7 +15,9 @@ namespace FrameProcessor
  * Constructor, initialises name_ and meta data channel.
  */
 FrameProcessorPlugin::FrameProcessorPlugin() :
-    name_("")
+    name_(""),
+    error_level_(0),
+    error_message_("")
 {
   OdinData::configure_logging_mdc(OdinData::app_path.c_str());
   logger_ = log4cxx::Logger::getLogger("FP.FrameProcessorPlugin");
@@ -51,7 +53,48 @@ std::string FrameProcessorPlugin::get_name()
   return name_;
 }
 
-/** Configure the plugin.
+/** Set the error state.
+ *
+ * Sets the error level for this plugin
+ *
+ * \param[in] msg - std::string error message.
+ * \param[in] level - int error level of the message.
+ */
+void FrameProcessorPlugin::set_error(const std::string& msg, int level)
+{
+  if (level > error_level_){
+    error_message_ = msg;
+    error_level_ = level;
+  }
+}
+
+/** Clear any error state.
+ *
+ * Clears the error level and any message
+ */
+void FrameProcessorPlugin::clear_error()
+{
+  error_message_ = "";
+  error_level_ = 0;
+}
+
+/** Return the current error level.
+ *
+ */
+int FrameProcessorPlugin::get_error_level()
+{
+  return error_level_;
+}
+
+/** Return the current error message.
+ *
+ */
+std::string FrameProcessorPlugin::get_error()
+{
+  return error_message_;
+}
+
+    /** Configure the plugin.
  *
  * In this abstract class the configure method does perform any
  * actions, this should be overridden by subclasses.

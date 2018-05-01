@@ -230,12 +230,22 @@ void FrameProcessorController::callback(boost::shared_ptr<Frame> frame) {
 
 void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply)
 {
+  // Error message and current level
+  int error_level = -1;
+  std::string error_message = "";
   // Loop over plugins, list names and request status from each
   std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
   for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
     reply.set_param("plugins/names[]", iter->first);
     iter->second->status(reply);
+    // Read error level
+    int level = iter->second->get_error_level();
+    if (level > error_level){
+      error_level = level;
+      error_message = iter->second->get_error();
+    }
   }
+  reply.set_param("error", error_message);
 }
 
 /**
@@ -265,6 +275,14 @@ void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData:
   if (config.has_param("hdf/master")) {
     masterFrame = config.get_param<std::string>("hdf/master");
     LOG4CXX_DEBUG(logger_, "Master frame specifier set to: " << masterFrame);
+  }
+
+  // Check if we have been asked to reset any errors
+  if (config.has_param("clear_errors")) {
+    std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
+    for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
+      iter->second->clear_error();
+    }
   }
 
   // If single-shot and frames given then we are running for defined number and then shutting down
@@ -564,23 +582,27 @@ void FrameProcessorController::setupFrameReceiverInterface(const std::string& fr
 {
   LOG4CXX_DEBUG(logger_, "Shared Memory Config: Publisher=" << frPublisherString << " Subscriber=" << frSubscriberString);
 
-  try
-  {
-    // Release the current shared memory controller if one exists
-    if (sharedMemController_) {
-      sharedMemController_.reset();
+  // Only re-construct the shared memory object if either of the endpoints has been changed
+  if (frPublisherString != frReleaseEndpoint_ || frSubscriberString != frReadyEndpoint_){
+    try
+    {
+      // Release the current shared memory controller if one exists
+      if (sharedMemController_) {
+        sharedMemController_.reset();
+      }
+      // Create the new shared memory controller and give it the parser and publisher
+      sharedMemController_ = boost::shared_ptr<SharedMemoryController>(
+          new SharedMemoryController(reactor_, frSubscriberString, frPublisherString));
+      frReadyEndpoint_ = frSubscriberString;
+      frReleaseEndpoint_ = frPublisherString;
+
+    } catch (const boost::interprocess::interprocess_exception& e)
+    {
+      LOG4CXX_ERROR(logger_, "Unable to access shared memory: " << e.what());
     }
-    // Create the new shared memory controller and give it the parser and publisher
-    sharedMemController_ = boost::shared_ptr<SharedMemoryController>(
-        new SharedMemoryController(reactor_, frSubscriberString, frPublisherString));
-    frReadyEndpoint_ = frSubscriberString;
-    frReleaseEndpoint_ = frPublisherString;
-
-  } catch (const boost::interprocess::interprocess_exception& e)
-  {
-    LOG4CXX_ERROR(logger_, "Unable to access shared memory: " << e.what());
+  } else {
+    LOG4CXX_ERROR(logger_, "*** Not updating shared memory, endpoints were not changed");
   }
-
 }
 
 /** Close the frame receiver interface.
