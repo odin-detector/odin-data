@@ -45,7 +45,6 @@ class OdinDataAdapter(ApiAdapter):
             self._kwargs[arg] = kwargs[arg]
         self._kwargs['module'] = self.name
         self._kwargs['api'] = 0.1
-        self._kwargs['status/error'] = ''
 
         try:
             self._endpoint_arg = self.options.get('endpoints')
@@ -61,6 +60,7 @@ class OdinDataAdapter(ApiAdapter):
         self._kwargs['endpoints'] = self._endpoints
 
         for ep in self._endpoints:
+            logging.debug("Creating client {}:{}".format(ep['ip_address'], ep['port']))
             self._clients.append(IpcTornadoClient(ep['ip_address'], ep['port']))
             self._config_file.append('')
 
@@ -71,7 +71,6 @@ class OdinDataAdapter(ApiAdapter):
         # Setup the time between client update requests
         self._update_interval = float(self.options.get('update_interval', 0.5))
         self._kwargs['update_interval'] = self._update_interval
-        # Start up the status loop
         self.update_loop()
 
     @request_types('application/json')
@@ -162,9 +161,9 @@ class OdinDataAdapter(ApiAdapter):
         """
         status_code = 200
         response = {}
-        logging.error("PUT path: %s", path)
+        logging.debug("PUT path: %s", path)
         logging.debug("PUT request: %s", request)
-        logging.error("PUT request.body: %s", str(escape.url_unescape(request.body)))
+        logging.debug("PUT request.body: %s", str(escape.url_unescape(request.body)))
 
         request_command = path.strip('/')
 
@@ -213,7 +212,7 @@ class OdinDataAdapter(ApiAdapter):
                         # Loop over the items in the object and send them all to the client(s)
                         for message in config_obj:
                             #for command in message:
-                            logging.error("Sending message: %s", message)
+                            logging.debug("Sending message: %s", message)
                             response, status_code = self.send_to_clients(None, message, client_index)
                             if status_code != 200:
                                 return ApiAdapterResponse(response, status_code=status_code)
