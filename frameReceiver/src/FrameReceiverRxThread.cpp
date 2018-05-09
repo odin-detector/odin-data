@@ -42,22 +42,31 @@ FrameReceiverRxThread::~FrameReceiverRxThread()
 //! This method starts the RX thread proper, blocking until the thread is started or has
 //! signalled an initialisation error, in which event an exception is thrown.
 //!
-void FrameReceiverRxThread::start()
+//! \return - bool indicating if thread initialisation and startup succeeded
+//!
+bool FrameReceiverRxThread::start()
 {
+
+  bool init_ok = true;
+
   rx_thread_ = boost::shared_ptr<boost::thread>(
     new boost::thread(boost::bind(&FrameReceiverRxThread::run_service, this)));
 
   // Wait for the thread service to initialise and be running properly, so that
   // this constructor only returns once the object is fully initialised (RAII).
-  // Monitor the thread error flag and throw an exception if initialisation fails
+  // Monitor the thread error flag, log an error and exit false if failed.
 
   while (!thread_running_)
   {
     if (thread_init_error_) {
-      rx_thread_->join();
-      throw OdinData::OdinDataException(thread_init_msg_);
+      run_thread_ = false;
+      LOG4CXX_ERROR(logger_, "RX thread initialisation failed: " << thread_init_msg_);
+      init_ok = false;
+      break;
     }
   }
+
+  return init_ok;
 }
 
 //! Stop the FrameReceiverRxThread.
@@ -89,18 +98,22 @@ void FrameReceiverRxThread::run_service(void)
 {
   LOG4CXX_DEBUG_LEVEL(1, logger_, "Running RX thread service");
 
+  // Configure thread-specific logging parameters
+  OdinData::configure_logging_mdc(OdinData::app_path.c_str());
+
   // Connect the message channel to the main thread
-  try {
+  try
+  {
     LOG4CXX_DEBUG_LEVEL(1, logger_, "Connecting RX channel to endpoint "
       << config_.rx_channel_endpoint_);
     rx_channel_.connect(config_.rx_channel_endpoint_);
   }
-  catch (zmq::error_t& e) {
+  catch (zmq::error_t& e)
+  {
     std::stringstream ss;
     ss << "RX channel connect to endpoint " << config_.rx_channel_endpoint_ 
       << " failed: " << e.what();
-    thread_init_msg_ = ss.str();
-    thread_init_error_ = true;
+    this->set_thread_init_error(ss.str());
     return;
   }
 
@@ -123,7 +136,13 @@ void FrameReceiverRxThread::run_service(void)
   frame_decoder_->register_frame_ready_callback(
     boost::bind(&FrameReceiverRxThread::frame_ready, this, _1, _2));
 
-  // Set thread state to running, allows constructor to return
+  // If there was any prior error setting the thread up, return
+  if (thread_init_error_)
+  {
+    return;
+  }
+
+  // Set thread state to running, allowing the start method in the main thread to return
   thread_running_ = true;
 
   // Advertise RX thread channel identity to the main thread so it knows how to route messages back

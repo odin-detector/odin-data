@@ -63,11 +63,13 @@ public:
    *
    * \param[in] item - the item to add to the queue.
    */
-  void add(T item)
+  void add(T item, bool ignore_max_limit = false)
   {
     pthread_mutex_lock(&m_mutex);
-    while (m_queue.size() >= max_queue_size) {
-      pthread_cond_wait(&m_condv, &m_mutex);
+    if (!ignore_max_limit){
+      while (m_queue.size() >= max_queue_size) {
+        pthread_cond_wait(&m_condv, &m_mutex);
+      }
     }
     m_queue.push_back(item);
     pthread_cond_signal(&m_condv);

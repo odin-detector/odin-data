@@ -327,9 +327,6 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
 
 void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
-  // Protect this method
-  boost::lock_guard<boost::recursive_mutex> lock(mutex_);
-
   // Return the configuration of the file writer plugin
   std::string process_str = get_name() + "/" + FileWriterPlugin::CONFIG_PROCESS + "/";
   reply.set_param(process_str + FileWriterPlugin::CONFIG_PROCESS_NUMBER, concurrent_processes_);
@@ -608,9 +605,6 @@ void FileWriterPlugin::create_new_dataset(const std::string& dset_name)
  */
 void FileWriterPlugin::status(OdinData::IpcMessage& status)
 {
-  // Protect this method
-  boost::lock_guard<boost::recursive_mutex> lock(mutex_);
-
   // Record the plugin's status items
   status.set_param(get_name() + "/writing", this->writing_);
   status.set_param(get_name() + "/frames_max", (int)this->current_acquisition_->frames_to_write_);
@@ -658,15 +652,40 @@ bool FileWriterPlugin::frame_in_acquisition(boost::shared_ptr<Frame> frame) {
  *
  */
 void FileWriterPlugin::stop_acquisition() {
+  // Before stopping the current acquisition, check for identical paths, filenames or
+  // acquisition IDs.  If these are found do not automatically start the next acquisition
+  bool restart = true;
+  if (writing_){
+    if (!next_acquisition_->file_path_.empty()){
+      if (next_acquisition_->file_path_ == current_acquisition_->file_path_){
+        if (!next_acquisition_->filename_.empty()){
+          if (next_acquisition_->filename_ == current_acquisition_->filename_){
+            // Identical path and filenames so do not re-start
+            restart = false;
+            LOG4CXX_INFO(logger_, "FrameProcessor will not auto-restart acquisition due to identical filename and path");
+          }
+        }
+        if (!next_acquisition_->acquisition_id_.empty()){
+          if (next_acquisition_->acquisition_id_ == current_acquisition_->acquisition_id_){
+            // Identical path and acquisition IDs so do not re-start
+            restart = false;
+            LOG4CXX_INFO(logger_, "FrameProcessor will not auto-restart acquisition due to identical file path and acquisition ID");
+          }
+        }
+      }
+    }
+  }
   this->stop_writing();
-  // Start next acquisition if we have a filename or acquisition ID to use
-  if (!next_acquisition_->filename_.empty() || !next_acquisition_->acquisition_id_.empty()) {
-    if (next_acquisition_->total_frames_ > 0 && next_acquisition_->frames_to_write_ == 0) {
-      // We're not expecting any frames, so just clear out the nextAcquisition for the next one and don't start writing
-      this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition());
-      LOG4CXX_INFO(logger_, "FrameProcessor will not receive any frames from this acquisition and so no output file will be created");
-    } else {
-      this->start_writing();
+  if (restart){
+    // Start next acquisition if we have a filename or acquisition ID to use
+    if (!next_acquisition_->filename_.empty() || !next_acquisition_->acquisition_id_.empty()) {
+      if (next_acquisition_->total_frames_ > 0 && next_acquisition_->frames_to_write_ == 0) {
+        // We're not expecting any frames, so just clear out the nextAcquisition for the next one and don't start writing
+        this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition());
+        LOG4CXX_INFO(logger_, "FrameProcessor will not receive any frames from this acquisition and so no output file will be created");
+      } else {
+        this->start_writing();
+      }
     }
   }
 }

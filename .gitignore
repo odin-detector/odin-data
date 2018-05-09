@@ -2,6 +2,7 @@
 build_name*
 prefix/
 /external
+/build*
 *.pyc
 /tools/python/venv/
 /tools/python/build/
