@@ -39,3 +39,9 @@ FrameDecoder::FrameReceiveState DummyUDPFrameDecoder::process_packet(size_t byte
   LOG4CXX_TRACE(logger_, "DummyFrameDecoderUDP process_packet called");
   return FrameDecoder::FrameReceiveStateComplete;
 }
+
+void DummyUDPFrameDecoder::get_status(const std::string param_prefix,
+    OdinData::IpcMessage& status_msg)
+{
+  status_msg.set_param(param_prefix + "name", std::string("DummyUDPFrameDecoder"));
+}

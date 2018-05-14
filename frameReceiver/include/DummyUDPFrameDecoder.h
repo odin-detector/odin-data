@@ -44,6 +44,7 @@ public:
   FrameDecoder::FrameReceiveState process_packet(size_t bytes_received);
 
   void monitor_buffers(void) { };
+  void get_status(const std::string param_prefix, OdinData::IpcMessage& status_msg);
 
   void* get_packet_header_buffer(void){ return reinterpret_cast<void *>(0); };
 

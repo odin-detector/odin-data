@@ -339,6 +339,7 @@ void FrameReceiverRxThread::buffer_monitor_timer(void)
   // Send status notification to main thread
   IpcMessage status_msg(IpcMessage::MsgTypeNotify, IpcMessage::MsgValNotifyStatus);
   this->fill_status_params(status_msg);
+
   rx_channel_.send(status_msg.encode());
 }
 
@@ -354,7 +355,11 @@ void FrameReceiverRxThread::fill_status_params(IpcMessage& status_msg)
 {
   status_msg.set_param("rx_thread/empty_buffers", frame_decoder_->get_num_empty_buffers());
   status_msg.set_param("rx_thread/mapped_buffers", frame_decoder_->get_num_mapped_buffers());
-  status_msg.set_param("rx_thread/frames_timedout", frame_decoder_->get_num_frames_timedout());  
+  status_msg.set_param("rx_thread/frames_timedout", frame_decoder_->get_num_frames_timedout());
+
+  // Get the specific frame decoder instance to fill its own status into message
+  frame_decoder_->get_status(std::string("decoder/"), status_msg);
+
 }
 
 //! Signal that a frame is ready for processing.
