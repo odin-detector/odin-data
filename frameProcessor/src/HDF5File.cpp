@@ -351,8 +351,12 @@ void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index
   hid_t prop = 0;
   hid_t dapl = 0;
   hid_t dtype = datatype_to_hdf_type(definition.data_type);
+  size_t pixel_type_size = H5Tget_size(dtype);
 
   std::vector<hsize_t> frame_dims = definition.frame_dimensions;
+  unsigned int frame_num_pixels = 1;
+  std::vector<hsize_t>::iterator it;
+  for (it=frame_dims.begin(); it != frame_dims.end(); ++it) {frame_num_pixels *= *it;}
 
   // Dataset dims: {1, <image size Y>, <image size X>}
   std::vector<hsize_t> dset_dims(1,1);
@@ -407,11 +411,11 @@ void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index
     unsigned int cd_values[7] = {0, 0, 0, 0, 0, 0, 0};
     size_t cd_values_length = 7;
     // TODO: configure the filter parameters dynamically instead of hardcoding like this.
-    cd_values[2] = 2;       // type size
-    cd_values[3] = 100;     // uncompressed size
+    cd_values[2] = static_cast<unsigned int>(pixel_type_size);       // type size
+    cd_values[3] = frame_num_pixels * pixel_type_size;     // uncompressed size
     cd_values[4] = 1;       // compression level
     cd_values[5] = 1;       // 0: shuffle not active, 1: shuffle active
-    cd_values[6] = 0;       // the actual Blosc compressor to use. See blosc.h
+    cd_values[6] = 1;       // the actual Blosc compressor to use (default: LZ4). See blosc.h
     ensure_h5_result(H5Pset_filter(prop, BLOSC_FILTER, H5Z_FLAG_OPTIONAL,
                                    cd_values_length, cd_values), "H5Pset_filter failed to set the Blosc filter");
   }
