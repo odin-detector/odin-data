@@ -145,14 +145,14 @@ const BloscCompressionSettings& BloscPlugin::update_compression_settings(const s
     this->compression_settings_ = this->commanded_compression_settings_;
     this->current_acquisition_ = acquisition_id;
     int ret = 0;
-    char * compressor_name;
+    const char ** p_compressor_name;
     blosc_compcode_to_compname(this->compression_settings_.blosc_compressor,
-                               &compressor_name);
-    ret = blosc_set_compressor(compressor_name);
+                               p_compressor_name);
+    ret = blosc_set_compressor(*p_compressor_name);
     if (ret < 0) {
       LOG4CXX_ERROR(logger_, "Blosc failed to set compressor: "
           << " " << this->compression_settings_.blosc_compressor
-          << " " << compressor_name)
+          << " " << *p_compressor_name)
       throw std::runtime_error("Blosc failed to set compressor");
     }
   }
