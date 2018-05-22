@@ -20,7 +20,8 @@ The following libraries and packages are required:
 * [Boost](http://www.boost.org) : portable C++ utility libraries. The following components are used - program_options, unit_test_framework, date_time, interprocess, bimap (version >= 1.41)
 * [ZeroMQ](http://zeromq.org) : high-performance asynchronous messaging library (version >= 3.2.4)
 * [Log4CXX](http://logging.apache.org/log4cxx/): Configurable message logger (version >= 0.10.0)
-* [HDF5](https://www.hdfgroup.org/HDF5): __Optional:__ if found, the filewriter application will be built (version >= 1.8.14)
+* [HDF5](https://www.hdfgroup.org/HDF5): __Optional:__ if found, the frame processor application will be built (version >= 1.8.14)
+* [Blosc](http://blosc.org)/[c-blosc](https://github.com/blosc/c-blosc): __Optional:__ if found, the frame processor plugin "BloscPlugin" will be built
 
 Installing dependencies
 -----------------------
@@ -63,7 +64,8 @@ the above libraries and packages can be used by setting the following flags:
 * BOOST_ROOT
 * ZEROMQ_ROOTDIR
 * LOG4CXX_ROOT_DIR
-* HDF5_ROOT
+* HDF5_ROOT - optional: the frameProcessor will __not__ be built if HDF5 is not found.
+* BLOSC_ROOT_DIR - optional: BloscPlugin will not be built if the blosc library is not found
 
 Applications are compiled into the `bin` directory within `build` and the additional python etc tools installed into
 tools. Sample configuration files for testing the system are installed into `test_config`.  See the sections below
