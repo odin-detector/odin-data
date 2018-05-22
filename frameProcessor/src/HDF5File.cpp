@@ -414,7 +414,7 @@ void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index
     cd_values[2] = static_cast<unsigned int>(pixel_type_size);       // type size
     cd_values[3] = frame_num_pixels * pixel_type_size;     // uncompressed size
     cd_values[4] = 1;       // compression level
-    cd_values[5] = 1;       // 0: shuffle not active, 1: shuffle active
+    cd_values[5] = 2;       // 0: shuffle not active, 1: shuffle, 2: bitshuffle
     cd_values[6] = 1;       // the actual Blosc compressor to use (default: LZ4). See blosc.h
     ensure_h5_result(H5Pset_filter(prop, BLOSC_FILTER, H5Z_FLAG_OPTIONAL,
                                    cd_values_length, cd_values), "H5Pset_filter failed to set the Blosc filter");
