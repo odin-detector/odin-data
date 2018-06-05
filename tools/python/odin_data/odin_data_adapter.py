@@ -35,8 +35,10 @@ class OdinDataAdapter(ApiAdapter):
         self._endpoint_arg = None
         self._endpoints = []
         self._clients = []
+        self._client_connections = []
         self._update_interval = None
         self._config_file = []
+        self._config_params = {}
 
         logging.debug(kwargs)
 
@@ -62,16 +64,25 @@ class OdinDataAdapter(ApiAdapter):
         for ep in self._endpoints:
             logging.debug("Creating client {}:{}".format(ep['ip_address'], ep['port']))
             self._clients.append(IpcTornadoClient(ep['ip_address'], ep['port']))
+            self._client_connections.append(False)
             self._config_file.append('')
 
         self._kwargs['count'] = len(self._clients)
         # Allocate the status list
-        self._status = [None] * len(self._clients)
+        self._status = {'status/error': ''}
 
         # Setup the time between client update requests
         self._update_interval = float(self.options.get('update_interval', 0.5))
         self._kwargs['update_interval'] = self._update_interval
         self.update_loop()
+
+    def set_error(self, err):
+        # Record the error message into the status
+        self._status['status/error'] = err
+
+    def clear_error(self):
+        # Record the error message into the status
+        self._status['status/error'] = ''
 
     @request_types('application/json')
     @response_types('application/json', default='application/json')
@@ -86,8 +97,8 @@ class OdinDataAdapter(ApiAdapter):
         """
         status_code = 200
         response = {}
-        logging.debug("GET path: %s", path)
-        logging.debug("GET request: %s", request)
+        #logging.debug("GET path: %s", path)
+        #logging.debug("GET request: %s", request)
 
         # Check if the adapter type is being requested
         request_command = path.strip('/')
@@ -101,10 +112,15 @@ class OdinDataAdapter(ApiAdapter):
         elif request_command in self._kwargs:
             logging.debug("Adapter request for ini argument: %s", request_command)
             response['value'] = self._kwargs[request_command]
+        elif request_command in self._status:
+            logging.debug("Adapter request for status value: %s", request_command)
+            response['value'] = self._status[request_command]
         else:
             try:
+                if 'client_error' in request_command:
+                    request_command = request_command.replace('client_error', 'error')
                 uri_items = request_command.split('/')
-                logging.debug(uri_items)
+                #logging.debug(uri_items)
                 # Now we need to traverse the parameters looking for the request
                 client_index = -1
                 # Check to see if the URI finishes with an index
@@ -137,14 +153,14 @@ class OdinDataAdapter(ApiAdapter):
                         response_items = OdinDataAdapter.traverse_parameters(self._clients[client_index].parameters,
                                                                              uri_items)
 
-                logging.debug(response_items)
+                #logging.debug(response_items)
                 response['value'] = response_items
             except:
                 logging.debug(OdinDataAdapter.ERROR_FAILED_GET)
                 status_code = 503
                 response['error'] = OdinDataAdapter.ERROR_FAILED_GET
 
-        logging.debug("Full response from FP: %s", response)
+        #logging.debug("Full response from FP: %s", response)
 
         return ApiAdapterResponse(response, status_code=status_code)
 
@@ -165,16 +181,121 @@ class OdinDataAdapter(ApiAdapter):
         logging.debug("PUT request: %s", request)
         logging.debug("PUT request.body: %s", str(escape.url_unescape(request.body)))
 
+        # Clear any errors
+        self.clear_error()
+
         request_command = path.strip('/')
 
-        # Request should start with config/
-        if request_command.startswith("config/"):
-            request_command = remove_prefix(request_command, "config/")  # Take the rest of the URI
-            logging.debug("Configure URI: %s", request_command)
+        try:
+            # Request should start with config/
+            if request_command.startswith("config/"):
+                request_command = remove_prefix(request_command, "config/")  # Take the rest of the URI
+
+                # Parse the parameters
+                parameters = None
+                try:
+                    parameters = json.loads(str(escape.url_unescape(request.body)))
+                except ValueError:
+                    # If the body could not be parsed into an object it may be a simple string
+                    parameters = str(escape.url_unescape(request.body))
+
+                # Do not store this configuration if it is the config file
+                if not request_command.startswith('config_file'):
+                    # Check if the parameter is a dict, and if so then merge.  Otherwise replace the value
+                    if request_command in self._config_params:
+                        if isinstance(self._config_params[request_command], dict):
+                            self._config_params[request_command].update(parameters)
+                        else:
+                            self._config_params[request_command] = parameters
+                    else:
+                        self._config_params[request_command] = parameters
+                    logging.error("Stored config items: %s", self._config_params)
+                response, status_code = self.process_configuration(request_command, parameters)
+        except Exception as ex:
+            self.set_error(str(ex))
+            raise
+
+        return ApiAdapterResponse(response, status_code=status_code)
+
+    def process_configuration(self, request_command, parameters):
+        status_code = 200
+        response = {}
+        logging.error("Process configuration with URI: %s", request_command)
+        client_index = -1
+        # Check to see if the URI finishes with an index
+        # eg hdf5/frames/0
+        # If it does then we are only interested in setting that single client
+        uri_items = request_command.split('/')
+        # Check for an integer
+        try:
+            index = int(uri_items[-1])
+            if index >= 0:
+                # This is a valid index so remove the value from the URI
+                request_command = remove_suffix(request_command, "/" + uri_items[-1])
+                # Set the client index for submitting config to
+                client_index = index
+                logging.debug("URI without index: %s", request_command)
+        except ValueError:
+            # This is OK, there is simply no index provided
+            pass
+
+        if request_command == 'config_file':
+            # Special case where we have been asked to load a config file to submit to clients
+            # The config file should contain a JSON representation of a list of config dicts,
+            # which will be sent one after the other as client messages
+            config_file_path = parameters.strip('"')
+            if client_index == -1:
+                for index in range(0, len(self._clients)):
+                    self._config_file[index] = config_file_path
+            else:
+                self._config_file[client_index] = config_file_path
+
+            response, status_code = self.process_configuration_file(config_file_path, client_index)
+        else:
+            # Any other PUT values that do not contain paths to config files
+            response, status_code = self.send_to_clients(request_command, parameters, client_index)
+        return response, status_code
+
+    def process_configuration_file(self, config_file_path, client_index):
+        status_code = 200
+        response = {}
+        if config_file_path != '':
+            logging.error("Loading configuration file {}".format(config_file_path))
+            try:
+                with open(config_file_path) as config_file:
+                    config_obj = json.load(config_file)
+                    # Loop over the items in the object and send them all to the client(s)
+                    for message in config_obj:
+                        # for command in message:
+                        logging.debug("Sending message: %s", message)
+                        response, status_code = self.send_to_clients(None, message, client_index)
+                        if status_code != 200:
+                            return response, status_code
+
+            except IOError as io_error:
+                logging.error("Failed to open configuration file: {}".format(io_error))
+                status_code = 503
+                response = {'error': "Failed to open configuration file: {}".format(io_error)}
+            except ValueError as value_error:
+                logging.error("Failed to parse json config: {}".format(value_error))
+                status_code = 503
+                response = {'error': "Failed to parse json config: {}".format(value_error)}
+        else:
+            logging.error("Not loading configuration file from an empty path")
+        return response, status_code
+
+    def process_reconnection(self, client):
+        # We have been notified that a client has reconnected.
+        # Loop over all stored configuration, sending any that needs to be processed
+        logging.error("Processing reconnection for client: %d", client)
+        # First load the configuration file
+        self.process_configuration_file(self._config_file[client], client)
+
+        # Now check all other stored parameters
+        for request_command in self._config_params:
+            parameters = self._config_params[request_command]
+            # Check if the request ends in an index and is it a match for our client
             client_index = -1
-            # Check to see if the URI finishes with an index
-            # eg hdf5/frames/0
-            # If it does then we are only interested in setting that single client
             uri_items = request_command.split('/')
             # Check for an integer
             try:
@@ -188,48 +309,15 @@ class OdinDataAdapter(ApiAdapter):
             except ValueError:
                 # This is OK, there is simply no index provided
                 pass
-            try:
-                parameters = json.loads(str(escape.url_unescape(request.body)))
-            except ValueError:
-                # If the body could not be parsed into an object it may be a simple string
-                parameters = str(escape.url_unescape(request.body))
 
-            if request_command == 'config_file':
-                # Special case where we have been asked to load a config file to submit to clients
-                # The config file should contain a JSON representation of a list of config dicts,
-                # which will be sent one after the other as client messages
-                config_file_path = str(escape.url_unescape(request.body)).strip('"')
+            if client_index == -1 or client_index == client:
                 if client_index == -1:
-                    for index in range(0, len(self._clients)):
-                        self._config_file[index] = config_file_path
-                else:
-                    self._config_file[client_index] = config_file_path
-
-                logging.error("Loading configuration file {}".format(config_file_path))
+                    request_command = request_command + "/{}".format(client)
+                logging.error("Client index match for request: %s with parameters: %s", request_command, parameters)
                 try:
-                    with open(config_file_path) as config_file:
-                        config_obj = json.load(config_file)
-                        # Loop over the items in the object and send them all to the client(s)
-                        for message in config_obj:
-                            #for command in message:
-                            logging.debug("Sending message: %s", message)
-                            response, status_code = self.send_to_clients(None, message, client_index)
-                            if status_code != 200:
-                                return ApiAdapterResponse(response, status_code=status_code)
-
-                except IOError as io_error:
-                    logging.error("Failed to open configuration file: {}".format(io_error))
-                    status_code = 503
-                    response = {'error': "Failed to open configuration file: {}".format(io_error)}
-                except ValueError as value_error:
-                    logging.error("Failed to parse json config: {}".format(value_error))
-                    status_code = 503
-                    response = {'error': "Failed to parse json config: {}".format(value_error)}
-            else:
-                # Any other PUT values that do not contain paths to config files
-                response, status_code = self.send_to_clients(request_command, parameters, client_index)
-
-        return ApiAdapterResponse(response, status_code=status_code)
+                    self.process_configuration(request_command, parameters)
+                except Exception as ex:
+                    logging.error(ex)
 
     @request_types('application/json')
     @response_types('application/json', default='application/json')
@@ -305,13 +393,13 @@ class OdinDataAdapter(ApiAdapter):
 
     @staticmethod
     def traverse_parameters(param_set, uri_items):
-        logging.debug("Client paramset: %s", param_set)
+        #logging.debug("Client paramset: %s", param_set)
         try:
             item_dict = param_set
             for item in uri_items:
                 item_dict = item_dict[item]
         except KeyError, ex:
-            logging.debug("Invalid parameter request in HTTP GET with URI: %s", uri_items)
+            #logging.debug("Invalid parameter request in HTTP GET with URI: %s", uri_items)
             item_dict = None
         return item_dict
 
@@ -352,10 +440,21 @@ class OdinDataAdapter(ApiAdapter):
 
         # Handle background tasks
         # Loop over all connected clients and obtain the status
+        index = 0
         for client in self._clients:
             try:
-                # First check for stale status within a client (2 seconds)
-                client.check_for_stale_status(2.0)
+                # First check for stale status within a client (1 seconds)
+                #client.check_for_stale_status(1.0)
+                # Now check for a transition from disconnected to connected
+                if not client.connected():
+                    self._client_connections[index] = False
+                else:
+                    if not self._client_connections[index]:
+                        self._client_connections[index] = True
+                        # Reconnection event so push configuration
+                        logging.error("Client reconnection event")
+                        self.process_reconnection(index)
+
             except Exception as e:
                 # Exception caught, log the error but do not stop the update loop
                 logging.error("Unhandled exception: %s", e)
@@ -367,6 +466,8 @@ class OdinDataAdapter(ApiAdapter):
             except Exception as e:
                 # Exception caught, log the error but do not stop the update loop
                 logging.error("Unhandled exception: %s", e)
+
+            index += 1
 
         # Schedule the update loop to run in the IOLoop instance again after appropriate interval
         IOLoop.instance().call_later(self._update_interval, self.update_loop)
