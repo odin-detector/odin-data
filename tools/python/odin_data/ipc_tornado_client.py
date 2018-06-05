@@ -36,12 +36,12 @@ class IpcTornadoClient(object):
 
     def _monitor_callback(self, msg):
         # Handle the multi-part message
-        self.logger.error("Msg received from %s: %s", self.ctrl_endpoint, msg)
+        self.logger.debug("Msg received from %s: %s", self.ctrl_endpoint, msg)
         if msg['event'] == IpcTornadoChannel.CONNECTED:
-            self.logger.error("  Connected...")
+            self.logger.debug("  Connected...")
             self._parameters['status']['connected'] = True
         if msg['event'] == IpcTornadoChannel.DISCONNECTED:
-            self.logger.error("  Disconnected...")
+            self.logger.debug("  Disconnected...")
             self._parameters['status']['connected'] = False
 
     def _callback(self, msg):

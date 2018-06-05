@@ -59,8 +59,6 @@ class FrameProcessorAdapter(OdinDataAdapter):
         """
         status_code = 200
         response = {}
-        #logging.debug("GET path: %s", path)
-        #logging.debug("GET request: %s", request)
 
         # First check if we are interested in the config items
         #
@@ -91,9 +89,8 @@ class FrameProcessorAdapter(OdinDataAdapter):
         """
         status_code = 200
         response = {}
-        logging.error("PUT path: %s", path)
+        logging.debug("PUT path: %s", path)
         logging.debug("PUT request: %s", request)
-        logging.error("PUT request.body: %s", str(escape.url_unescape(request.body)))
 
         # First check if we are interested in the config items
         #
@@ -113,13 +110,11 @@ class FrameProcessorAdapter(OdinDataAdapter):
                 else:
                     self._param[path] = str(escape.url_unescape(request.body)).replace('"', '')
                 # Merge with the configuration store
-                #self._config_params.update(self._param)
-                logging.error("Stored config items: %s", self._config_params)
 
             elif path == self._command:
                 write = bool_from_string(str(escape.url_unescape(request.body)))
                 config = {'hdf': {'write': write}}
-                logging.error("Setting {} to {}".format(path, config))
+                logging.debug("Setting {} to {}".format(path, config))
                 if write:
                     # Before attempting to write files, make some simple error checks
                     # Check the file path is valid

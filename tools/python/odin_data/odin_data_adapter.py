@@ -81,7 +81,7 @@ class OdinDataAdapter(ApiAdapter):
         self._status['status/error'] = err
 
     def clear_error(self):
-        # Record the error message into the status
+        # Clear the error message out of the status dict
         self._status['status/error'] = ''
 
     @request_types('application/json')
@@ -97,8 +97,6 @@ class OdinDataAdapter(ApiAdapter):
         """
         status_code = 200
         response = {}
-        #logging.debug("GET path: %s", path)
-        #logging.debug("GET request: %s", request)
 
         # Check if the adapter type is being requested
         request_command = path.strip('/')
@@ -120,7 +118,7 @@ class OdinDataAdapter(ApiAdapter):
                 if 'client_error' in request_command:
                     request_command = request_command.replace('client_error', 'error')
                 uri_items = request_command.split('/')
-                #logging.debug(uri_items)
+                logging.debug(uri_items)
                 # Now we need to traverse the parameters looking for the request
                 client_index = -1
                 # Check to see if the URI finishes with an index
@@ -153,7 +151,7 @@ class OdinDataAdapter(ApiAdapter):
                         response_items = OdinDataAdapter.traverse_parameters(self._clients[client_index].parameters,
                                                                              uri_items)
 
-                #logging.debug(response_items)
+                logging.debug(response_items)
                 response['value'] = response_items
             except:
                 logging.debug(OdinDataAdapter.ERROR_FAILED_GET)
