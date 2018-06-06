@@ -158,8 +158,6 @@ class OdinDataAdapter(ApiAdapter):
                 status_code = 503
                 response['error'] = OdinDataAdapter.ERROR_FAILED_GET
 
-        #logging.debug("Full response from FP: %s", response)
-
         return ApiAdapterResponse(response, status_code=status_code)
 
     @request_types('application/json')
@@ -207,7 +205,7 @@ class OdinDataAdapter(ApiAdapter):
                             self._config_params[request_command] = parameters
                     else:
                         self._config_params[request_command] = parameters
-                    logging.error("Stored config items: %s", self._config_params)
+                    logging.debug("Stored config items: %s", self._config_params)
                 response, status_code = self.process_configuration(request_command, parameters)
         except Exception as ex:
             self.set_error(str(ex))
@@ -218,7 +216,7 @@ class OdinDataAdapter(ApiAdapter):
     def process_configuration(self, request_command, parameters):
         status_code = 200
         response = {}
-        logging.error("Process configuration with URI: %s", request_command)
+        logging.debug("Process configuration with URI: %s", request_command)
         client_index = -1
         # Check to see if the URI finishes with an index
         # eg hdf5/frames/0
@@ -258,7 +256,7 @@ class OdinDataAdapter(ApiAdapter):
         status_code = 200
         response = {}
         if config_file_path != '':
-            logging.error("Loading configuration file {}".format(config_file_path))
+            logging.debug("Loading configuration file {}".format(config_file_path))
             try:
                 with open(config_file_path) as config_file:
                     config_obj = json.load(config_file)
@@ -285,7 +283,7 @@ class OdinDataAdapter(ApiAdapter):
     def process_reconnection(self, client):
         # We have been notified that a client has reconnected.
         # Loop over all stored configuration, sending any that needs to be processed
-        logging.error("Processing reconnection for client: %d", client)
+        logging.debug("Processing reconnection for client: %d", client)
         # First load the configuration file
         self.process_configuration_file(self._config_file[client], client)
 
@@ -311,7 +309,7 @@ class OdinDataAdapter(ApiAdapter):
             if client_index == -1 or client_index == client:
                 if client_index == -1:
                     request_command = request_command + "/{}".format(client)
-                logging.error("Client index match for request: %s with parameters: %s", request_command, parameters)
+                logging.debug("Client index match for request: %s with parameters: %s", request_command, parameters)
                 try:
                     self.process_configuration(request_command, parameters)
                 except Exception as ex:
@@ -347,7 +345,7 @@ class OdinDataAdapter(ApiAdapter):
                 response['error'] = OdinDataAdapter.ERROR_PUT_MISMATCH
             elif client_index != -1:
                 # A list of items has been supplied but also an index has been specified
-                logging.error("URI contains an index but parameters supplied as a list")
+                logging.debug("URI contains an index but parameters supplied as a list")
                 status_code = 503
                 response['error'] = OdinDataAdapter.ERROR_PUT_MISMATCH
             else:
@@ -391,13 +389,11 @@ class OdinDataAdapter(ApiAdapter):
 
     @staticmethod
     def traverse_parameters(param_set, uri_items):
-        #logging.debug("Client paramset: %s", param_set)
         try:
             item_dict = param_set
             for item in uri_items:
                 item_dict = item_dict[item]
         except KeyError, ex:
-            #logging.debug("Invalid parameter request in HTTP GET with URI: %s", uri_items)
             item_dict = None
         return item_dict
 
@@ -450,7 +446,7 @@ class OdinDataAdapter(ApiAdapter):
                     if not self._client_connections[index]:
                         self._client_connections[index] = True
                         # Reconnection event so push configuration
-                        logging.error("Client reconnection event")
+                        logging.debug("Client reconnection event")
                         self.process_reconnection(index)
 
             except Exception as e:
