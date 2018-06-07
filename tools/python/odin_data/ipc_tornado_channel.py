@@ -7,6 +7,7 @@ communication via ZeroMQ sockets.
 Tim Nicholls, STFC Application Engineering Group
 """
 from zmq.eventloop.zmqstream import ZMQStream
+from zmq.utils.monitor import parse_monitor_message
 from odin_data.ipc_channel import IpcChannel
 
 
@@ -14,6 +15,9 @@ class IpcTornadoChannel(IpcChannel):
     """Inter-process communication channel class for use with Tornado IO Loop.
 
     """
+    CONNECTED = IpcChannel.EVENT_ACCEPTED
+    DISCONNECTED = IpcChannel.EVENT_DISCONNECTED
+
     def __init__(self, channel_type, endpoint=None, context=None, identity=None):
         """Initalise the IpcChannel object.
 
@@ -24,6 +28,7 @@ class IpcTornadoChannel(IpcChannel):
         """
         super(IpcTornadoChannel, self).__init__(channel_type, endpoint, context, identity)
         self._callback = None
+        self._monitor_callback = None
         self._stream = None
 
     def register_callback(self, callback):
@@ -48,4 +53,15 @@ class IpcTornadoChannel(IpcChannel):
             self._stream.send(data)
         else:
             super(IpcTornadoChannel, self).send(data)
+
+    def register_monitor(self, callback):
+        self._monitor_callback = callback
+        self._monitor_socket = self.socket.get_monitor_socket(IpcChannel.EVENT_ACCEPTED | IpcChannel.EVENT_DISCONNECTED)
+        # Create the socket
+        self._monitor_stream = ZMQStream(self._monitor_socket)
+        self._monitor_stream.on_recv(self._internal_monitor_callback)
+
+    def _internal_monitor_callback(self, msg):
+        if self._monitor_callback is not None:
+            self._monitor_callback(parse_monitor_message(msg))
 

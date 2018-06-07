@@ -1,4 +1,5 @@
 import logging
+import struct
 from threading import RLock
 
 from odin_data.ipc_tornado_channel import IpcTornadoChannel
@@ -18,12 +19,13 @@ class IpcTornadoClient(object):
         self._ip_address = ip_address
         self._port = port
 
+        self._parameters = {'status': {'connected': False}}
         self.ctrl_endpoint = self.ENDPOINT_TEMPLATE.format(IP=ip_address, PORT=port)
         self.logger.debug("Connecting to client at %s", self.ctrl_endpoint)
         self.ctrl_channel = IpcTornadoChannel(IpcTornadoChannel.CHANNEL_TYPE_DEALER)
         self.ctrl_channel.connect(self.ctrl_endpoint)
         self.ctrl_channel.register_callback(self._callback)
-        self._parameters = {}
+        self.ctrl_channel.register_monitor(self._monitor_callback)
         self.message_id = 0
 
         self._lock = RLock()
@@ -32,9 +34,18 @@ class IpcTornadoClient(object):
     def parameters(self):
         return self._parameters
 
+    def _monitor_callback(self, msg):
+        # Handle the multi-part message
+        self.logger.debug("Msg received from %s: %s", self.ctrl_endpoint, msg)
+        if msg['event'] == IpcTornadoChannel.CONNECTED:
+            self.logger.debug("  Connected...")
+            self._parameters['status']['connected'] = True
+        if msg['event'] == IpcTornadoChannel.DISCONNECTED:
+            self.logger.debug("  Disconnected...")
+            self._parameters['status']['connected'] = False
+
     def _callback(self, msg):
         # Handle the multi-part message
-        self.logger.debug("Msg received: %s", msg)
         reply = IpcMessage(from_str=msg[0])
         if 'request_configuration' in reply.get_msg_val():
             self._update_configuration(reply.attrs)
@@ -44,36 +55,21 @@ class IpcTornadoClient(object):
     def _update_configuration(self, config_msg):
         params = config_msg['params']
         self._parameters['config'] = params
-        logging.debug("Current configuration updated to: %s", self._parameters['config'])
 
     def _update_status(self, status_msg):
         params = status_msg['params']
-        params['connected'] = True
+        connected = self._parameters['status']['connected']
         params['timestamp'] = status_msg['timestamp']
         self._parameters['status'] = params
-        logging.debug("Status updated to: %s", self._parameters['status'])
+        self._parameters['status']['connected'] = connected
 
-    def check_for_stale_status(self, max_stale_time):
-        if 'status' in self._parameters:
-            # Check for the timestamp
-            if 'timestamp' in self._parameters['status']:
-                ts = datetime.strptime(self._parameters['status']['timestamp'], "%Y-%m-%dT%H:%M:%S.%f")
-                ttlm = datetime.now() - ts
-                if ttlm.seconds > max_stale_time:
-                    # This connection has gone stale, set connected to false
-                    self._parameters['status'] = {'connected': False}
-                    self._parameters['config'] = {}
-                    logging.debug("Status updated to: %s", self._parameters['status'])
-        else:
-            # No status for this client so set connected to false
-            self._parameters['status'] = {'connected': False}
-            logging.debug("Status updated to: %s", self._parameters['status'])
-
+    def connected(self):
+        return self._parameters['status']['connected']
 
     def _send_message(self, msg):
         msg.set_msg_id(self.message_id)
         self.message_id = (self.message_id + 1) % self.MESSAGE_ID_MAX
-        self.logger.debug("Sending control message:\n%s", msg.encode())
+        self.logger.debug("Sending control message [%s]:\n%s", self.ctrl_endpoint, msg.encode())
         with self._lock:
             self.ctrl_channel.send(msg.encode())
 
