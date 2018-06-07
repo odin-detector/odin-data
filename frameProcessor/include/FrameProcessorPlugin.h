@@ -31,10 +31,9 @@ public:
   virtual ~FrameProcessorPlugin();
   void set_name(const std::string& name);
   std::string get_name();
-  void set_error(const std::string& msg, int level);
-  void clear_error();
-  int get_error_level();
-  std::string get_error();
+  void set_error(const std::string& msg);
+  void clear_errors();
+  std::vector<std::string> get_errors();
   virtual void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   virtual void requestConfiguration(OdinData::IpcMessage& reply);
   virtual void status(OdinData::IpcMessage& status);
@@ -64,9 +63,8 @@ private:
   std::map<std::string, boost::shared_ptr<IFrameCallback> > callbacks_;
   /** Map of registered plugins for blocking callbacks, indexed by name */
   std::map<std::string, boost::shared_ptr<IFrameCallback> > blocking_callbacks_;
-  /** Error level and current message */
-  int error_level_;
-  std::string error_message_;
+  /** Error message array*/
+  std::vector<std::string> error_messages_;
 };
 
 } /* namespace FrameProcessor */

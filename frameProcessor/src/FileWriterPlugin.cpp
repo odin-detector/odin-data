@@ -139,7 +139,7 @@ void FileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame)
         start_close_file_timeout();
       } else if (status == status_invalid) {
         LOG4CXX_WARN(logger_, "Frame invalid");
-        this->set_error(current_acquisition_->get_last_error(), 1);
+        this->set_error(current_acquisition_->get_last_error());
       }
 
       // Push frame to any registered callbacks
@@ -332,7 +332,7 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
   {
     std::stringstream ss;
     ss << "Bad ctrl msg: " << e.what();
-    this->set_error(ss.str(), 2);
+    this->set_error(ss.str());
     throw;
   }
 }
@@ -407,7 +407,6 @@ void FileWriterPlugin::configure_process(OdinData::IpcMessage& config, OdinData:
     if (this->concurrent_processes_ != processes) {
       // If we are writing a file then we cannot change concurrent processes
       if (this->writing_) {
-        this->set_error("Cannot change concurrent processes whilst writing", 2);
         LOG4CXX_ERROR(logger_, "Cannot change concurrent processes whilst writing");
         throw std::runtime_error("Cannot change concurrent processes whilst writing");
       }
@@ -424,7 +423,6 @@ void FileWriterPlugin::configure_process(OdinData::IpcMessage& config, OdinData:
     if (this->concurrent_rank_ != rank) {
       // If we are writing a file then we cannot change concurrent rank
       if (this->writing_) {
-        this->set_error("Cannot change process rank whilst writing", 2);
         LOG4CXX_ERROR(logger_, "Cannot change process rank whilst writing");
         throw std::runtime_error("Cannot change process rank whilst writing");
       }
@@ -441,13 +439,11 @@ void FileWriterPlugin::configure_process(OdinData::IpcMessage& config, OdinData:
     size_t block_size = config.get_param<size_t>(FileWriterPlugin::CONFIG_PROCESS_BLOCKSIZE);
     if (this->frames_per_block_ != block_size) {
       if (block_size < 1) {
-        this->set_error("Must have at least one frame per block", 2);
         LOG4CXX_ERROR(logger_, "Must have at least one frame per block");
         throw std::runtime_error("Must have at least one frame per block");
       }
       // If we are writing a file then we cannot change block size
       if (this->writing_) {
-        this->set_error("Cannot change block size whilst writing", 2);
         LOG4CXX_ERROR(logger_, "Cannot change block size whilst writing");
         throw std::runtime_error("Cannot change block size whilst writing");
       }
@@ -465,7 +461,6 @@ void FileWriterPlugin::configure_process(OdinData::IpcMessage& config, OdinData:
     if (this->blocks_per_file_ != blocks_per_file) {
       // If we are writing a file then we cannot change block size
       if (this->writing_) {
-        this->set_error("Cannot change blocks per file whilst writing", 2);
         LOG4CXX_ERROR(logger_, "Cannot change blocks per file whilst writing");
         throw std::runtime_error("Cannot change blocks per file whilst writing");
       }

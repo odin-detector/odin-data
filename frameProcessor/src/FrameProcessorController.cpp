@@ -230,22 +230,21 @@ void FrameProcessorController::callback(boost::shared_ptr<Frame> frame) {
 
 void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply)
 {
-  // Error message and current level
-  int error_level = -1;
-  std::string error_message = "";
+  // Error messages
+  std::vector<std::string> error_messages;
   // Loop over plugins, list names and request status from each
   std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
   for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
     reply.set_param("plugins/names[]", iter->first);
     iter->second->status(reply);
     // Read error level
-    int level = iter->second->get_error_level();
-    if (level > error_level){
-      error_level = level;
-      error_message = iter->second->get_error();
-    }
+    std::vector<std::string> plugin_errors = iter->second->get_errors();
+    error_messages.insert(error_messages.end(), plugin_errors.begin(), plugin_errors.end());
   }
-  reply.set_param("error", error_message);
+  std::vector<std::string>::iterator error_iter;
+  for (error_iter = error_messages.begin(); error_iter != error_messages.end(); ++error_iter) {
+    reply.set_param("error[]", *error_iter);
+  }
 }
 
 /**
@@ -281,7 +280,7 @@ void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData:
   if (config.has_param("clear_errors")) {
     std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
     for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
-      iter->second->clear_error();
+      iter->second->clear_errors();
     }
   }
 

@@ -15,9 +15,7 @@ namespace FrameProcessor
  * Constructor, initialises name_ and meta data channel.
  */
 FrameProcessorPlugin::FrameProcessorPlugin() :
-    name_(""),
-    error_level_(0),
-    error_message_("")
+    name_("")
 {
   OdinData::configure_logging_mdc(OdinData::app_path.c_str());
   logger_ = log4cxx::Logger::getLogger("FP.FrameProcessorPlugin");
@@ -60,11 +58,18 @@ std::string FrameProcessorPlugin::get_name()
  * \param[in] msg - std::string error message.
  * \param[in] level - int error level of the message.
  */
-void FrameProcessorPlugin::set_error(const std::string& msg, int level)
+void FrameProcessorPlugin::set_error(const std::string& msg)
 {
-  if (level > error_level_){
-    error_message_ = msg;
-    error_level_ = level;
+  // Loop over error messages, if this is a new message then add it
+  std::vector<std::string>::iterator iter;
+  bool found_error = false;
+  for (iter = error_messages_.begin(); iter != error_messages_.end(); ++iter){
+    if (msg == *iter){
+      found_error = true;
+    }
+  }
+  if (!found_error){
+    error_messages_.push_back(msg);
   }
 }
 
@@ -72,26 +77,17 @@ void FrameProcessorPlugin::set_error(const std::string& msg, int level)
  *
  * Clears the error level and any message
  */
-void FrameProcessorPlugin::clear_error()
+void FrameProcessorPlugin::clear_errors()
 {
-  error_message_ = "";
-  error_level_ = 0;
-}
-
-/** Return the current error level.
- *
- */
-int FrameProcessorPlugin::get_error_level()
-{
-  return error_level_;
+  error_messages_.clear();
 }
 
 /** Return the current error message.
  *
  */
-std::string FrameProcessorPlugin::get_error()
+std::vector<std::string> FrameProcessorPlugin::get_errors()
 {
-  return error_message_;
+  return error_messages_;
 }
 
     /** Configure the plugin.
