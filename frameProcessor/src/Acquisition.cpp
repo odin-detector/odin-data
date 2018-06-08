@@ -41,7 +41,8 @@ Acquisition::Acquisition() :
         frames_to_write_(0),
         use_earliest_hdf5_(false),
         alignment_threshold_(1),
-        alignment_value_(1)
+        alignment_value_(1),
+        last_error_("")
 {
   this->logger_ = Logger::getLogger("FP.Acquisition");
   this->logger_->setLevel(Level::getTrace());
@@ -50,6 +51,16 @@ Acquisition::Acquisition() :
 }
 
 Acquisition::~Acquisition() {
+}
+
+/**
+ * Returns the last error message that was generated
+ *
+ * \return - The most recently generated error message.
+ */
+std::string Acquisition::get_last_error()
+{
+  return last_error_;
 }
 
 /**
@@ -73,7 +84,10 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
       if (this->concurrent_processes_ > 1) {
         // Check whether this frame should really be in this process
         if ((frame_offset / frames_per_block_) % this->concurrent_processes_ != this->concurrent_rank_) {
-          LOG4CXX_ERROR(logger_,"Unexpected frame: " << frame_no << " in this process rank: " << this->concurrent_rank_);
+          std::stringstream ss;
+          ss << "Unexpected frame: " << frame_no << " in this process rank: " << this->concurrent_rank_;
+          last_error_ = ss.str();
+          LOG4CXX_ERROR(logger_, last_error_);
           return status_invalid;
         }
       }
@@ -81,7 +95,8 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
       boost::shared_ptr<HDF5File> file = this->get_file(frame_offset);
 
       if (file == 0) {
-        LOG4CXX_ERROR(logger_,"Unable to get file for this frame");
+        last_error_ = "Unable to get file for this frame";
+        LOG4CXX_ERROR(logger_,last_error_);
         return status_invalid;
       }
 
@@ -164,16 +179,25 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
 
   }
   catch (const std::out_of_range& e) {
-    LOG4CXX_ERROR(logger_, "Out of Range exception: " << e.what());
+    std::stringstream ss;
+    ss << "Out of Range exception: " << e.what();
+    last_error_ = ss.str();
+    LOG4CXX_ERROR(logger_, last_error_);
     return status_invalid;
   }
   catch (const std::range_error& e)
   {
-    LOG4CXX_ERROR(logger_, "Range exception: " << e.what());
+    std::stringstream ss;
+    ss << "Range exception: " << e.what();
+    last_error_ = ss.str();
+    LOG4CXX_ERROR(logger_, last_error_);
     return status_invalid;
   }
   catch (const std::exception& e) {
-    LOG4CXX_ERROR(logger_, "Unexpected exception: " << e.what());
+    std::stringstream ss;
+    ss << "Unexpected exception: " << e.what();
+    last_error_ = ss.str();
+    LOG4CXX_ERROR(logger_, last_error_);
     return status_invalid;
   }
   return return_status;
@@ -279,7 +303,8 @@ bool Acquisition::start_acquisition(
   }
 
   if (filename_.empty()) {
-    LOG4CXX_ERROR(logger_, "Unable to start writing - no filename to write to");
+    last_error_ = "Unable to start writing - no filename to write to";
+    LOG4CXX_ERROR(logger_, last_error_);
     return false;
   }
 
@@ -311,30 +336,43 @@ bool Acquisition::check_frame_valid(boost::shared_ptr<Frame> frame)
   bool invalid = false;
   DatasetDefinition dataset = dataset_defs_.at(frame->get_dataset_name());
   if (frame->get_compression() >= 0 && frame->get_compression() != dataset.compression) {
-    LOG4CXX_ERROR(logger_, "Invalid frame: Frame has compression " << frame->get_compression() <<
-        ", expected " << dataset.compression <<
-        " for dataset " << dataset.name <<
-        " (0: None, 1: LZ4, 2: BSLZ4)");
+    std::stringstream ss;
+    ss << "Invalid frame: Frame has compression " << frame->get_compression() <<
+          ", expected " << dataset.compression <<
+          " for dataset " << dataset.name <<
+          " (0: None, 1: LZ4, 2: BSLZ4)";
+    last_error_ = ss.str();
+    LOG4CXX_ERROR(logger_, last_error_);
     invalid = true;
   }
   if (frame->get_data_type() >= 0 && frame->get_data_type() != dataset.pixel) {
-    LOG4CXX_ERROR(logger_, "Invalid frame: Frame has data type " << frame->get_data_type() <<
-        ", expected " << dataset.pixel <<
-        " for dataset " << dataset.name <<
-        " (0: UINT8, 1: UINT16, 2: UINT32, 3: UINT64)");
+    std::stringstream ss;
+    ss << "Invalid frame: Frame has data type " << frame->get_data_type() <<
+       ", expected " << dataset.pixel <<
+       " for dataset " << dataset.name <<
+       " (0: UINT8, 1: UINT16, 2: UINT32, 3: UINT64)";
+    last_error_ = ss.str();
+    LOG4CXX_ERROR(logger_, last_error_);
     invalid = true;
   }
   if (frame->get_dimensions(frame->get_dataset_name()) != dataset.frame_dimensions) {
     std::vector<unsigned long long> dimensions = frame->get_dimensions(frame->get_dataset_name());
     if (dimensions.size() >= 2 && dataset.frame_dimensions.size() >= 2) {
-      LOG4CXX_ERROR(logger_, "Invalid frame: Frame has dimensions [" << dimensions[0] << ", " << dimensions[1] <<
-          "], expected [" << dataset.frame_dimensions[0] << ", " << dataset.frame_dimensions[1] <<
-          "] for dataset " << dataset.name);
+      std::stringstream ss;
+      ss << "Invalid frame: Frame has dimensions [" << dimensions[0] << ", " << dimensions[1] <<
+         "], expected [" << dataset.frame_dimensions[0] << ", " << dataset.frame_dimensions[1] <<
+         "] for dataset " << dataset.name;
+      last_error_ = ss.str();
+      LOG4CXX_ERROR(logger_, last_error_);
     } else if (dimensions.size() >= 1 && dataset.frame_dimensions.size() >= 1) {
-      LOG4CXX_ERROR(logger_, "Invalid frame: Frame has dimensions [" << dimensions[0]  <<
-          "], expected [" << dataset.frame_dimensions[0] << "] for dataset " << dataset.name);
+      std::stringstream ss;
+      ss << "Invalid frame: Frame has dimensions [" << dimensions[0]  <<
+         "], expected [" << dataset.frame_dimensions[0] << "] for dataset " << dataset.name;
+      last_error_ = ss.str();
+      LOG4CXX_ERROR(logger_, last_error_);
     } else {
-      LOG4CXX_ERROR(logger_, "Invalid frame: Frame dimensions do not match");
+      last_error_ = "Invalid frame: Frame dimensions do not match";
+      LOG4CXX_ERROR(logger_, last_error_);
     }
     invalid = true;
   }

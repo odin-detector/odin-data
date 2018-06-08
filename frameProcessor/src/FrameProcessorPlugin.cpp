@@ -51,7 +51,45 @@ std::string FrameProcessorPlugin::get_name()
   return name_;
 }
 
-/** Configure the plugin.
+/** Set the error state.
+ *
+ * Sets an error for this plugin
+ *
+ * \param[in] msg - std::string error message.
+ */
+void FrameProcessorPlugin::set_error(const std::string& msg)
+{
+  // Loop over error messages, if this is a new message then add it
+  std::vector<std::string>::iterator iter;
+  bool found_error = false;
+  for (iter = error_messages_.begin(); iter != error_messages_.end(); ++iter){
+    if (msg == *iter){
+      found_error = true;
+    }
+  }
+  if (!found_error){
+    error_messages_.push_back(msg);
+  }
+}
+
+/** Clear any error state.
+ *
+ * Clears any messages that have previously been set
+ */
+void FrameProcessorPlugin::clear_errors()
+{
+  error_messages_.clear();
+}
+
+/** Return the current error message.
+ *
+ */
+std::vector<std::string> FrameProcessorPlugin::get_errors()
+{
+  return error_messages_;
+}
+
+    /** Configure the plugin.
  *
  * In this abstract class the configure method does perform any
  * actions, this should be overridden by subclasses.
