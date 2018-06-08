@@ -216,6 +216,14 @@ public:
     rapidjson::Value *next;
     // Does the param exist
     if (!this->has_param(tl_param_name)){
+      // Check for array notation
+      std::string array_end = "[]";
+      if (0 == tl_param_name.compare(tl_param_name.length() - array_end.length(), array_end.length(), array_end)){
+        found_array = true;
+      }
+      if (found_array){
+        tl_param_name = tl_param_name.substr(0, tl_param_name.size()-2);
+      }
       this->internal_set_param(tl_param_name, rapidjson::Value().SetObject());
     }
     // Get the reference to the parameter
@@ -307,7 +315,6 @@ private:
 
   template<typename T> void internal_set_param(std::string const& param_name, T const& param_value)
   {
-
     rapidjson::Document::AllocatorType& allocator = doc_.GetAllocator();
 
     // Create the params block if it doesn't exist

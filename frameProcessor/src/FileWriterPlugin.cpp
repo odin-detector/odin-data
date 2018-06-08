@@ -139,6 +139,7 @@ void FileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame)
         start_close_file_timeout();
       } else if (status == status_invalid) {
         LOG4CXX_WARN(logger_, "Frame invalid");
+        this->set_error(current_acquisition_->get_last_error());
       }
 
       // Push frame to any registered callbacks
@@ -221,107 +222,118 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
 
   LOG4CXX_INFO(logger_, config.encode());
 
-  // Check to see if we are configuring the process number and rank
-  if (config.has_param(FileWriterPlugin::CONFIG_PROCESS)) {
-    OdinData::IpcMessage processConfig(config.get_param<const rapidjson::Value&>(FileWriterPlugin::CONFIG_PROCESS));
-    this->configure_process(processConfig, reply);
-  }
+  try {
+    // Check to see if we are configuring the process number and rank
+    if (config.has_param(FileWriterPlugin::CONFIG_PROCESS)) {
+      OdinData::IpcMessage processConfig(config.get_param<const rapidjson::Value &>(FileWriterPlugin::CONFIG_PROCESS));
+      this->configure_process(processConfig, reply);
+    }
 
-  // Check to see if we are configuring the file path and name
-  if (config.has_param(FileWriterPlugin::CONFIG_FILE)) {
-    OdinData::IpcMessage fileConfig(config.get_param<const rapidjson::Value&>(FileWriterPlugin::CONFIG_FILE));
-    this->configure_file(fileConfig, reply);
-  }
+    // Check to see if we are configuring the file path and name
+    if (config.has_param(FileWriterPlugin::CONFIG_FILE)) {
+      OdinData::IpcMessage fileConfig(config.get_param<const rapidjson::Value &>(FileWriterPlugin::CONFIG_FILE));
+      this->configure_file(fileConfig, reply);
+    }
 
-  // Check to see if we are configuring a dataset
-  if (config.has_param(FileWriterPlugin::CONFIG_DATASET)) {
-    // Attempt to retrieve the value as a string parameter
-    try
-    {
-      LOG4CXX_INFO(logger_, "Checking for string name of dataset");
-      std::string dataset_name = config.get_param<std::string>(FileWriterPlugin::CONFIG_DATASET);
-      LOG4CXX_INFO(logger_, "Dataset name " << dataset_name << " found, creating...");
-      // If we can retrieve a single string parameter then we are being asked to create
-      // a new dataset.  Only create it if it doesn't already exist.
-      create_new_dataset(dataset_name);
-    } catch (OdinData::IpcMessageException& e)
-    {
-      // The object passed to us is a dataset description so pass to the configure_dataset method.
-      OdinData::IpcMessage dataset_config(config.get_param<const rapidjson::Value&>(FileWriterPlugin::CONFIG_DATASET));
-      std::vector<std::string> dataset_names = dataset_config.get_param_names();
-      for (std::vector<std::string>::iterator iter = dataset_names.begin();
-          iter != dataset_names.end(); ++iter){
-        std::string dataset_name = *iter;
+    // Check to see if we are configuring a dataset
+    if (config.has_param(FileWriterPlugin::CONFIG_DATASET)) {
+      // Attempt to retrieve the value as a string parameter
+      try {
+        LOG4CXX_INFO(logger_, "Checking for string name of dataset");
+        std::string dataset_name = config.get_param<std::string>(FileWriterPlugin::CONFIG_DATASET);
         LOG4CXX_INFO(logger_, "Dataset name " << dataset_name << " found, creating...");
+        // If we can retrieve a single string parameter then we are being asked to create
+        // a new dataset.  Only create it if it doesn't already exist.
         create_new_dataset(dataset_name);
-        OdinData::IpcMessage dsetConfig(dataset_config.get_param<const rapidjson::Value&>(dataset_name));
-        this->configure_dataset(dataset_name, dsetConfig, reply);
-      }
-    }
-  }
-
-  // Check to see if we are being told how many frames to write
-  if (config.has_param(FileWriterPlugin::CONFIG_FRAMES) && config.get_param<size_t>(FileWriterPlugin::CONFIG_FRAMES) > 0) {
-    size_t totalFrames = config.get_param<size_t>(FileWriterPlugin::CONFIG_FRAMES);
-    next_acquisition_->total_frames_ = totalFrames;
-    next_acquisition_->frames_to_write_ = calc_num_frames(totalFrames);
-
-    LOG4CXX_INFO(logger_, "Expecting " << next_acquisition_->frames_to_write_ << " frames (total " << totalFrames << ")");
-  }
-
-  // Check to see if the master dataset is being set
-  if (config.has_param(FileWriterPlugin::CONFIG_MASTER_DATASET)) {
-    next_acquisition_->master_frame_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_MASTER_DATASET);
-  }
-
-  // Check if we are setting the frame offset adjustment
-  if (config.has_param(FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT)) {
-    LOG4CXX_INFO(logger_, "Setting frame offset adjustment to "
-        << config.get_param<int>(FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT));
-    frame_offset_adjustment_ = (size_t)config.get_param<int>(FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT);
-  }
-
-  // Check to see if the acquisition id is being set
-  if (config.has_param(FileWriterPlugin::ACQUISITION_ID)) {
-    next_acquisition_->acquisition_id_ = config.get_param<std::string>(FileWriterPlugin::ACQUISITION_ID);
-    LOG4CXX_INFO(logger_, "Setting next Acquisition ID to " << next_acquisition_->acquisition_id_);
-  }
-
-  // Check to see if the close file timeout period is being set
-  if (config.has_param(FileWriterPlugin::CLOSE_TIMEOUT_PERIOD)) {
-    timeout_period_ = config.get_param<size_t>(FileWriterPlugin::CLOSE_TIMEOUT_PERIOD);
-    LOG4CXX_INFO(logger_, "Setting close file timeout to " << timeout_period_);
-  }
-
-  // Check to see if the close file timeout is being started
-  if (config.has_param(FileWriterPlugin::START_CLOSE_TIMEOUT)) {
-    if (config.get_param<bool>(FileWriterPlugin::START_CLOSE_TIMEOUT) == true) {
-      LOG4CXX_INFO(logger_, "Configure call to start close file timeout");
-      if (writing_) {
-        start_close_file_timeout();
-      } else {
-        LOG4CXX_INFO(logger_, "Not starting timeout as not currently writing");
-      }
-    }
-  }
-
-  // Final check is to start or stop writing
-  if (config.has_param(FileWriterPlugin::CONFIG_WRITE)) {
-    if (config.get_param<bool>(FileWriterPlugin::CONFIG_WRITE) == true) {
-      // Only start writing if we have frames to write, or if the total number of frames is 0 (free running mode)
-      if (next_acquisition_->total_frames_ > 0 && next_acquisition_->frames_to_write_ == 0) {
-        // We're not expecting any frames, so just clear out the nextAcquisition for the next one and don't start writing
-        this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition());
-        if (!writing_) {
-          this->current_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition());
+      } catch (OdinData::IpcMessageException &e) {
+        // The object passed to us is a dataset description so pass to the configure_dataset method.
+        OdinData::IpcMessage dataset_config(
+            config.get_param<const rapidjson::Value &>(FileWriterPlugin::CONFIG_DATASET));
+        std::vector <std::string> dataset_names = dataset_config.get_param_names();
+        for (std::vector<std::string>::iterator iter = dataset_names.begin();
+             iter != dataset_names.end(); ++iter) {
+          std::string dataset_name = *iter;
+          LOG4CXX_INFO(logger_, "Dataset name " << dataset_name << " found, creating...");
+          create_new_dataset(dataset_name);
+          OdinData::IpcMessage dsetConfig(dataset_config.get_param<const rapidjson::Value &>(dataset_name));
+          this->configure_dataset(dataset_name, dsetConfig, reply);
         }
-        LOG4CXX_INFO(logger_, "FrameProcessor will not receive any frames from this acquisition and so no output file will be created");
-      } else {
-        this->start_writing();
       }
-    } else {
-      this->stop_writing();
     }
+
+    // Check to see if we are being told how many frames to write
+    if (config.has_param(FileWriterPlugin::CONFIG_FRAMES) &&
+        config.get_param<size_t>(FileWriterPlugin::CONFIG_FRAMES) > 0) {
+      size_t totalFrames = config.get_param<size_t>(FileWriterPlugin::CONFIG_FRAMES);
+      next_acquisition_->total_frames_ = totalFrames;
+      next_acquisition_->frames_to_write_ = calc_num_frames(totalFrames);
+
+      LOG4CXX_INFO(logger_,
+                   "Expecting " << next_acquisition_->frames_to_write_ << " frames (total " << totalFrames << ")");
+    }
+
+    // Check to see if the master dataset is being set
+    if (config.has_param(FileWriterPlugin::CONFIG_MASTER_DATASET)) {
+      next_acquisition_->master_frame_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_MASTER_DATASET);
+    }
+
+    // Check if we are setting the frame offset adjustment
+    if (config.has_param(FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT)) {
+      LOG4CXX_INFO(logger_, "Setting frame offset adjustment to "
+          << config.get_param<int>(FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT));
+      frame_offset_adjustment_ = (size_t) config.get_param<int>(FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT);
+    }
+
+    // Check to see if the acquisition id is being set
+    if (config.has_param(FileWriterPlugin::ACQUISITION_ID)) {
+      next_acquisition_->acquisition_id_ = config.get_param<std::string>(FileWriterPlugin::ACQUISITION_ID);
+      LOG4CXX_INFO(logger_, "Setting next Acquisition ID to " << next_acquisition_->acquisition_id_);
+    }
+
+    // Check to see if the close file timeout period is being set
+    if (config.has_param(FileWriterPlugin::CLOSE_TIMEOUT_PERIOD)) {
+      timeout_period_ = config.get_param<size_t>(FileWriterPlugin::CLOSE_TIMEOUT_PERIOD);
+      LOG4CXX_INFO(logger_, "Setting close file timeout to " << timeout_period_);
+    }
+
+    // Check to see if the close file timeout is being started
+    if (config.has_param(FileWriterPlugin::START_CLOSE_TIMEOUT)) {
+      if (config.get_param<bool>(FileWriterPlugin::START_CLOSE_TIMEOUT) == true) {
+        LOG4CXX_INFO(logger_, "Configure call to start close file timeout");
+        if (writing_) {
+          start_close_file_timeout();
+        } else {
+          LOG4CXX_INFO(logger_, "Not starting timeout as not currently writing");
+        }
+      }
+    }
+
+    // Final check is to start or stop writing
+    if (config.has_param(FileWriterPlugin::CONFIG_WRITE)) {
+      if (config.get_param<bool>(FileWriterPlugin::CONFIG_WRITE) == true) {
+        // Only start writing if we have frames to write, or if the total number of frames is 0 (free running mode)
+        if (next_acquisition_->total_frames_ > 0 && next_acquisition_->frames_to_write_ == 0) {
+          // We're not expecting any frames, so just clear out the nextAcquisition for the next one and don't start writing
+          this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition());
+          if (!writing_) {
+            this->current_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition());
+          }
+          LOG4CXX_INFO(logger_,
+                       "FrameProcessor will not receive any frames from this acquisition and so no output file will be created");
+        } else {
+          this->start_writing();
+        }
+      } else {
+        this->stop_writing();
+      }
+    }
+  }
+  catch (std::runtime_error& e)
+  {
+    std::stringstream ss;
+    ss << "Bad ctrl msg: " << e.what();
+    this->set_error(ss.str());
+    throw;
   }
 }
 

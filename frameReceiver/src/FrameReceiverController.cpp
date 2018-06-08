@@ -1004,10 +1004,9 @@ void FrameReceiverController::notify_buffer_config(const bool deferred)
 //!
 void FrameReceiverController::store_rx_thread_status(OdinData::IpcMessage& rx_status_msg)
 {
-  rx_thread_status_.reset(
-    new IpcMessage(rx_status_msg.get_param<const rapidjson::Value&>("rx_thread")));
-    LOG4CXX_DEBUG_LEVEL(4, logger_, "RX thread status: " << rx_thread_status_->encode());
-  }
+  rx_thread_status_.reset(new IpcMessage(rx_status_msg.encode()));
+  LOG4CXX_DEBUG_LEVEL(4, logger_, "RX thread status: " << rx_thread_status_->encode());
+}
 
 //! Get the frame receiver status.
 //!
@@ -1032,9 +1031,16 @@ void FrameReceiverController::get_status(OdinData::IpcMessage& status_reply)
   unsigned int frames_timedout = 0;
   if (rx_thread_status_) 
   {
-    empty_buffers = rx_thread_status_->get_param<unsigned int>("empty_buffers", 0);
-    mapped_buffers = rx_thread_status_->get_param<unsigned int>("mapped_buffers", 0);
-    frames_timedout = rx_thread_status_->get_param<unsigned int>("frames_timedout", 0);
+    empty_buffers = rx_thread_status_->get_param<unsigned int>("rx_thread/empty_buffers");
+    mapped_buffers = rx_thread_status_->get_param<unsigned int>("rx_thread/mapped_buffers");
+    frames_timedout = rx_thread_status_->get_param<unsigned int>("rx_thread/frames_timedout");
+
+    // If there is decoder status info present, also copy that into the reply
+    if (rx_thread_status_->has_param("decoder"))
+    {
+      status_reply.set_param("decoder",
+         rx_thread_status_->get_param<const rapidjson::Value&>("decoder"));
+    }
   }
 
   status_reply.set_param("buffers/empty", empty_buffers);
@@ -1043,6 +1049,7 @@ void FrameReceiverController::get_status(OdinData::IpcMessage& status_reply)
   status_reply.set_param("frames/timedout", frames_timedout);
   status_reply.set_param("frames/received", frames_received_);
   status_reply.set_param("frames/released", frames_released_);
+
 }
 
 //! Get the frame receiver configuration.

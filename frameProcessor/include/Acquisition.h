@@ -31,6 +31,7 @@ class Acquisition : public MetaMessagePublisher
 public:
   Acquisition();
   ~Acquisition();
+  std::string get_last_error();
   ProcessFrameStatus process_frame(boost::shared_ptr<Frame> frame);
   void create_file(size_t file_number=0);
   void close_file(boost::shared_ptr<HDF5File> file);
@@ -94,6 +95,8 @@ private:
   boost::shared_ptr<HDF5File> current_file;
   /** The previous file that frames were written to, held in case of late frames  */
   boost::shared_ptr<HDF5File> previous_file;
+  /** Most recently generated error message */
+  std::string last_error_;
 };
 
 } /* namespace FrameProcessor */
