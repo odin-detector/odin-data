@@ -75,6 +75,7 @@ public:
   const unsigned int get_frame_timeout_ms(void) const;
   const unsigned int get_num_frames_timedout(void) const;
   virtual void monitor_buffers(void) = 0;
+  virtual void get_status(const std::string param_prefix, OdinData::IpcMessage& status_msg) = 0;
 
 protected:
   LoggerPtr logger_;  //!< Pointer to the logging facility
