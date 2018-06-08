@@ -53,10 +53,9 @@ std::string FrameProcessorPlugin::get_name()
 
 /** Set the error state.
  *
- * Sets the error level for this plugin
+ * Sets an error for this plugin
  *
  * \param[in] msg - std::string error message.
- * \param[in] level - int error level of the message.
  */
 void FrameProcessorPlugin::set_error(const std::string& msg)
 {
@@ -75,7 +74,7 @@ void FrameProcessorPlugin::set_error(const std::string& msg)
 
 /** Clear any error state.
  *
- * Clears the error level and any message
+ * Clears any messages that have previously been set
  */
 void FrameProcessorPlugin::clear_errors()
 {
