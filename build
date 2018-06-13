@@ -1,5 +1,5 @@
 PROGRAM=odin-data
-VERSION=0.2.0
+VERSION=0.4.0
 TAR_FILE=none
 
 build()
