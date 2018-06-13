@@ -8,5 +8,5 @@ PYTHON = $(TOOLS_SUPPORT)/Python/2-7-3
 NUMPY  = $(TOOLS_SUPPORT)/numpy/1-11-1
 POSIX_IPC = $(TOOLS_SUPPORT)/posix_ipc/1-0-0
 PYSNMP  = $(TOOLS_SUPPORT)/pysnmp/4-4-2
-PYZMQ  = $(TOOLS_SUPPORT)/pyzmq/13-1-0
+PYZMQ  = $(TOOLS_SUPPORT)/pyzmq/16-0-2dls2
 
