@@ -13,6 +13,7 @@ build()
     
     ${CMAKE_BIN}/cmake \
                        -DBoost_NO_BOOST_CMAKE=ON \
+                       -DBOOST_ROOT=${BOOST_PREFIX} \
                        -DHDF5_ROOT=${HDF5_PREFIX} \
                        -DZEROMQ_ROOTDIR=${ZEROMQ_PREFIX} \
                        -DLOG4CXX_ROOT_DIR=${LOG4CXX_PREFIX} \
