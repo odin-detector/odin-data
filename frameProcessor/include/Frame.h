@@ -140,7 +140,7 @@ private:
   size_t bytes_per_pixel;
   /** Frame number */
   unsigned long long frameNumber_;
-  /** Map of dimensions, indexed by name */
+  /** Vector of dimensions */
   dimensions_t dimensions_;
   /** Compression type of raw data */
   int compression_;
