@@ -113,8 +113,8 @@ public:
    */
   void set_acquisition_id(const std::string& acquisitionID) { this->acquisitionID_ = acquisitionID; }
 
-  void set_dimensions(const std::string& type, const std::vector<unsigned long long>& dimensions);
-  dimensions_t get_dimensions(const std::string& type) const;
+  void set_dimensions(const std::vector<unsigned long long>& dimensions);
+  dimensions_t get_dimensions() const;
   int get_compression() const;
   int get_data_type() const;
   void set_parameter(const std::string& index, size_t parameter);
@@ -141,7 +141,7 @@ private:
   /** Frame number */
   unsigned long long frameNumber_;
   /** Map of dimensions, indexed by name */
-  std::map<std::string, dimensions_t> dimensions_;
+  dimensions_t dimensions_;
   /** Compression type of raw data */
   int compression_;
   /** Data type of raw data */
