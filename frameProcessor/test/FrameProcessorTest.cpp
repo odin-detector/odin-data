@@ -132,12 +132,12 @@ BOOST_AUTO_TEST_CASE( FrameTest )
   dimensions_t img_dims(2); img_dims[0] = 3; img_dims[1] = 4;
 
   FrameProcessor::Frame frame("raw");
-  frame.set_dimensions("frame", img_dims);
+  frame.set_dimensions(img_dims);
   frame.set_frame_number(7);
   BOOST_CHECK_NO_THROW(frame.copy_data(static_cast<void*>(img), 24));
   BOOST_REQUIRE_EQUAL(frame.get_data_size(), 24);
-  BOOST_REQUIRE_EQUAL(frame.get_dimensions("frame")[0], 3);
-  BOOST_REQUIRE_EQUAL(frame.get_dimensions("frame")[1], 4);
+  BOOST_REQUIRE_EQUAL(frame.get_dimensions()[0], 3);
+  BOOST_REQUIRE_EQUAL(frame.get_dimensions()[1], 4);
   BOOST_CHECK_EQUAL(frame.get_frame_number(), 7);
   const unsigned short *img_copy = static_cast<const unsigned short*>(frame.get_data());
   BOOST_CHECK_EQUAL(img_copy[0], img[0]);

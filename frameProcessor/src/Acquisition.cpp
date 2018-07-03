@@ -355,8 +355,8 @@ bool Acquisition::check_frame_valid(boost::shared_ptr<Frame> frame)
     LOG4CXX_ERROR(logger_, last_error_);
     invalid = true;
   }
-  if (frame->get_dimensions(frame->get_dataset_name()) != dataset.frame_dimensions) {
-    std::vector<unsigned long long> dimensions = frame->get_dimensions(frame->get_dataset_name());
+  if (frame->get_dimensions() != dataset.frame_dimensions) {
+    std::vector<unsigned long long> dimensions = frame->get_dimensions();
     if (dimensions.size() >= 2 && dataset.frame_dimensions.size() >= 2) {
       std::stringstream ss;
       ss << "Invalid frame: Frame has dimensions [" << dimensions[0] << ", " << dimensions[1] <<

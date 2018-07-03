@@ -153,32 +153,24 @@ size_t Frame::get_data_size() const
 
 /** Sets a particular set of dimension values.
  *
- * This method sets the dimensions of the frame. The dimensions are
- * stored in a map indexed by a string, which allows several sets of
- * dimensions to be stored (for example, the overall dimensions plus
- * chunked or subframe dimensions).
+ * This method sets the dimensions of the frame.
  *
- * \param[in] type - the string index under which to store these dimensions.
  * \param[in] dimensions - array of dimensions to store.
  */
-void Frame::set_dimensions(const std::string& type, const std::vector<unsigned long long>& dimensions)
+void Frame::set_dimensions(const std::vector<unsigned long long>& dimensions)
 {
-  dimensions_[type] = dimensions;
+  dimensions_ = dimensions;
 }
 
 /** Retrieves a particular set of dimension values.
  *
- * This method gets the dimensions of the frame. The dimensions are
- * stored in a map indexed by a string, which allows several sets of
- * dimensions to be stored (for example, the overall dimensions plus
- * chunked or subframe dimensions).
+ * This method gets the dimensions of the frame.
  *
- * \param[in] type - the string index of dimensions to return.
  * \return array of dimensions.
  */
-dimensions_t Frame::get_dimensions(const std::string& type) const
+dimensions_t Frame::get_dimensions() const
 {
-  return dimensions_.find(type)->second;
+  return dimensions_;
 }
 
 /** Retrieves the compression type of the raw data.
