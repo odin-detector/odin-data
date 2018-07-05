@@ -25,5 +25,8 @@ if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
   # librt required for timing functions
   find_library(REALTIME_LIBRARY
                NAMES rt)
-  target_link_libraries( frameProcessorTest ${REALTIME_LIBRARY} )
+  target_link_libraries(frameProcessorTest ${REALTIME_LIBRARY} )
+  find_library(PTHREAD_LIBRARY
+	       NAMES pthread)
+  target_link_libraries(frameProcessorTest ${PTHREAD_LIBRARY} )
 endif()

@@ -20,6 +20,9 @@ if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
     find_library(REALTIME_LIBRARY
                  NAMES rt)
     target_link_libraries( frameReceiverTest ${REALTIME_LIBRARY} )
+    find_library(PTHREAD_LIBRARY
+             NAMES pthread)
+    target_link_libraries(frameReceiverTest ${PTHREAD_LIBRARY} )
 endif()
 
 # Define libraries to link against

@@ -21,6 +21,12 @@ add_executable(frameReceiver ${APP_SOURCES})
 
 target_link_libraries(frameReceiver ${LIB_RECEIVER} ${COMMON_LIBRARY} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES})
 
+if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
+    find_library(PTHREAD_LIBRARY
+             NAMES pthread)
+    target_link_libraries(frameReceiver ${PTHREAD_LIBRARY} )
+endif()
+
 install(TARGETS frameReceiver RUNTIME DESTINATION bin)
 
 add_library(DummyUDPFrameDecoder SHARED DummyUDPFrameDecoder.cpp DummyUDPFrameDecoderLib.cpp)

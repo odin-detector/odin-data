@@ -30,6 +30,12 @@ message(STATUS "HDF5 libs:           " ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES})
 message(STATUS "HDF5 defs:           " ${HDF5_DEFINITIONS})
 
 target_link_libraries(frameProcessor ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${COMMON_LIBRARY})
+if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
+    find_library(PTHREAD_LIBRARY
+             NAMES pthread)
+    target_link_libraries(frameProcessor ${PTHREAD_LIBRARY} )
+endif()
+
 install(TARGETS frameProcessor RUNTIME DESTINATION bin)
 
 # Add library for dummy plugin
