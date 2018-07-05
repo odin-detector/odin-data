@@ -92,6 +92,13 @@ class IpcMessage(object):
 
         self.attrs['params'][param_name] = param_value
 
+    def has_param(self, param_name):
+        try:
+            param_value = self.attrs['params'][param_name]
+        except KeyError:
+            return False
+        return True
+
     def encode(self):
         return json.dumps(self.attrs)
 
