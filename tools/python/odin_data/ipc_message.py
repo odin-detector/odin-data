@@ -20,6 +20,12 @@ class IpcMessageException(Exception):
 
 class IpcMessage(object):
 
+    MSG_TYPE_CMD = "cmd"
+    MSG_TYPE_ACK = "ack"
+    MSG_TYPE_NACK = "nack"
+    MSG_VAL_CMD_CONFIGURE = "configure"
+    MSG_VAL_CMD_STATUS = "status"
+
     ACK = "ack"
     NACK = "nack"
 
