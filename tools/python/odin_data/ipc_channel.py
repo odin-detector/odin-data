@@ -74,7 +74,7 @@ class IpcChannel(object):
         # Create the socket
         self.socket = self.context.socket(self.channel_type)
 
-        # If the socket type is DEALER, set the identity, chosing a random
+        # If the socket type is DEALER, set the identity, choosing a random
         # UUID4 value if not specified
         if self.channel_type == self.CHANNEL_TYPE_DEALER:
             if identity is None:
