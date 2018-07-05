@@ -74,7 +74,7 @@ class IpcChannel(object):
         # Create the socket
         self.socket = self.context.socket(self.channel_type)
 
-        # If the socket type is DEALER, set the identity, chosing a random
+        # If the socket type is DEALER, set the identity, choosing a random
         # UUID4 value if not specified
         if self.channel_type == self.CHANNEL_TYPE_DEALER:
             if identity is None:
@@ -108,18 +108,24 @@ class IpcChannel(object):
         """Close the IpcChannel socket."""
         self.socket.close()
 
-    def send(self, data):
+    def send(self, data, channel_id=''):
         """Send data to the IpcChannel.
 
         :param: data to send on channel
         """
         # If the data is unicode (like all Python3 native strings), convert to a
         # byte stream to be sent on the socket
+        if self.channel_type == IpcChannel.CHANNEL_TYPE_ROUTER:
+            self.router_send_identity(channel_id)
+
         if isinstance(data, unicode):
             data = cast_bytes(data)
 
         # Send the data
         self.socket.send(data)
+
+    def router_send_identity(self, identity_str):
+        self.socket.send(identity_str, zmq.SNDMORE)
 
     def recv(self):
         """Recieve data from the IpcChannel.

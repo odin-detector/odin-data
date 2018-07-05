@@ -20,6 +20,12 @@ class IpcMessageException(Exception):
 
 class IpcMessage(object):
 
+    MSG_TYPE_CMD = "cmd"
+    MSG_TYPE_ACK = "ack"
+    MSG_TYPE_NACK = "nack"
+    MSG_VAL_CMD_CONFIGURE = "configure"
+    MSG_VAL_CMD_STATUS = "status"
+
     ACK = "ack"
     NACK = "nack"
 
@@ -91,6 +97,13 @@ class IpcMessage(object):
             self.attrs['params'] = {}
 
         self.attrs['params'][param_name] = param_value
+
+    def has_param(self, param_name):
+        try:
+            param_value = self.attrs['params'][param_name]
+        except KeyError:
+            return False
+        return True
 
     def encode(self):
         return json.dumps(self.attrs)
