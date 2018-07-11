@@ -21,6 +21,7 @@
 #include "DataBlockPool.h"
 #include "IpcChannel.h"
 #include "IpcMessage.h"
+#include "FrameProcessorDefinitions.h"
 
 /**
  *  Shared Buffer (IPC) Header
@@ -34,6 +35,28 @@ typedef struct
   /** The size of each buffer in the shared memory block */
   size_t buffer_size;
 } Header;
+
+
+/** Frame Parameter Value */
+union ParameterValue
+{
+    uint8_t i8;
+    uint16_t i16;
+    uint32_t i32;
+    uint64_t i64;
+    float f32;
+};
+
+/**
+ *  Frame Parameter
+ */
+typedef struct
+{
+  /** The value of this parameter */
+  ParameterValue value;
+  /** The type of this parameter */
+  FrameProcessor::PixelType type;
+} Parameter;
 
 typedef unsigned long long dimsize_t;
 typedef std::vector<dimsize_t> dimensions_t;
@@ -117,8 +140,18 @@ public:
   dimensions_t get_dimensions() const;
   int get_compression() const;
   int get_data_type() const;
-  void set_parameter(const std::string& index, size_t parameter);
-  size_t get_parameter(const std::string& index) const;
+  void set_parameter(const std::string& index, uint8_t value);
+  void set_parameter(const std::string& index, uint16_t value);
+  void set_parameter(const std::string& index, uint32_t value);
+  void set_parameter(const std::string& index, uint64_t value);
+  void set_parameter(const std::string& index, float value);
+  std::map<std::string, Parameter> & get_parameters();
+  Parameter get_parameter(const std::string& index) const;
+  uint8_t get_i8_parameter(const std::string& index) const;
+  uint16_t get_i16_parameter(const std::string& index) const;
+  uint32_t get_i32_parameter(const std::string& index) const;
+  uint64_t get_i64_parameter(const std::string& index) const;
+  float get_float_parameter(const std::string& index) const;
   bool has_parameter(const std::string& index);
   void set_compression(int compression);
   void set_data_type(int data_type);
@@ -147,7 +180,7 @@ private:
   /** Data type of raw data */
   int data_type_;
   /** General parameter map */
-  std::map<std::string, size_t> parameters_;
+  std::map<std::string, Parameter> parameters_;
   /** Pointer to raw data block */
   boost::shared_ptr<DataBlock> raw_;
   /** Pointer to shared memory raw block **/

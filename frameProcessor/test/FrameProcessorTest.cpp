@@ -325,6 +325,75 @@ BOOST_AUTO_TEST_CASE( HDF5FileAdjustHugeOffset )
   BOOST_REQUIRE_NO_THROW(hdf5f.close_file());
 }
 
+BOOST_AUTO_TEST_CASE( FileWriterPluginWriteParamTest )
+{
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/test_params.h5", 0, false, 1, 1));
+
+  FrameProcessor::DatasetDefinition param_dset_def;
+  param_dset_def.name = "p1";
+  param_dset_def.pixel = FrameProcessor::pixel_raw_64bit;
+  dimensions_t chunk_dims(1);
+  chunk_dims[0] = 1;
+  param_dset_def.chunks = chunk_dims;
+
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(param_dset_def, -1, -1));
+
+  std::vector<boost::shared_ptr<FrameProcessor::Frame> >::iterator it;
+  for (it = frames.begin(); it != frames.end(); ++it) {
+    uint64_t val = 123;
+    (*it)->set_parameter("p1", val);
+    BOOST_TEST_MESSAGE("Writing frame: " <<  (*it)->get_frame_number());
+    BOOST_REQUIRE_NO_THROW(hdf5f.write_parameter(*(*it), param_dset_def, (*it)->get_frame_number()));
+  }
+  BOOST_REQUIRE_NO_THROW(hdf5f.close_file());
+}
+
+BOOST_AUTO_TEST_CASE( FileWriterPluginWriteParamWrongTypeTest )
+{
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/test_params.h5", 0, false, 1, 1));
+
+  FrameProcessor::DatasetDefinition param_dset_def;
+  param_dset_def.name = "p1";
+  param_dset_def.pixel = FrameProcessor::pixel_raw_16bit;
+  dimensions_t chunk_dims(1);
+  chunk_dims[0] = 1;
+  param_dset_def.chunks = chunk_dims;
+
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(param_dset_def, -1, -1));
+
+  std::vector<boost::shared_ptr<FrameProcessor::Frame> >::iterator it;
+  for (it = frames.begin(); it != frames.end(); ++it) {
+    uint64_t val = 123;
+    (*it)->set_parameter("p1", val);
+    BOOST_TEST_MESSAGE("Writing frame: " <<  (*it)->get_frame_number());
+    BOOST_CHECK_THROW(hdf5f.write_parameter(*(*it), param_dset_def, (*it)->get_frame_number()), std::runtime_error);
+  }
+  BOOST_REQUIRE_NO_THROW(hdf5f.close_file());
+}
+
+BOOST_AUTO_TEST_CASE( FileWriterPluginWriteParamNoParamTest )
+{
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/test_params.h5", 0, false, 1, 1));
+
+  FrameProcessor::DatasetDefinition param_dset_def;
+  param_dset_def.name = "p1";
+  param_dset_def.pixel = FrameProcessor::pixel_raw_64bit;
+  dimensions_t chunk_dims(1);
+  chunk_dims[0] = 1;
+  param_dset_def.chunks = chunk_dims;
+
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(param_dset_def, -1, -1));
+
+  std::vector<boost::shared_ptr<FrameProcessor::Frame> >::iterator it;
+  for (it = frames.begin(); it != frames.end(); ++it) {
+    uint64_t val = 123;
+    (*it)->set_parameter("p2", val);
+    BOOST_TEST_MESSAGE("Writing frame: " <<  (*it)->get_frame_number());
+    BOOST_CHECK_THROW(hdf5f.write_parameter(*(*it), param_dset_def, (*it)->get_frame_number()), std::runtime_error);
+  }
+  BOOST_REQUIRE_NO_THROW(hdf5f.close_file());
+}
+
 BOOST_AUTO_TEST_SUITE_END(); //HDF5FileUnitTest
 
 

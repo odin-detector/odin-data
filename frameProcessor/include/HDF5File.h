@@ -57,6 +57,7 @@ public:
   void close_file();
   void create_dataset(const DatasetDefinition& definition, int low_index, int high_index);
   void write_frame(const Frame& frame, hsize_t frame_offset, uint64_t outer_chunk_dimension);
+  void write_parameter(const Frame& frame, DatasetDefinition dataset_definition, hsize_t frame_offset);
   size_t get_dataset_frames(const std::string dset_name);
   void start_swmr();
   size_t get_file_index();
@@ -68,6 +69,9 @@ private:
   static const H5Z_filter_t LZ4_FILTER = (H5Z_filter_t)32004;
   /** Filter definition to write datasets with bitshuffle processed data */
   static const H5Z_filter_t BSLZ4_FILTER = (H5Z_filter_t)32008;
+
+  /** Flush rate for parameter datasets in miliseconds */
+  static const int PARAM_FLUSH_RATE = 1000;
 
   HDF5Dataset_t& get_hdf5_dataset(const std::string dset_name);
   void extend_dataset(HDF5File::HDF5Dataset_t& dset, size_t frame_no) const;
@@ -90,6 +94,10 @@ private:
   bool use_earliest_version_;
   /** Mutex used to make this class thread safe */
   boost::recursive_mutex mutex_;
+  /* Parameters memspace */
+  hid_t param_memspace_;
+  /* Map containing time each dataset was last flushed*/
+  std::map<std::string, boost::posix_time::ptime> last_flushed;
 };
 
 } /* namespace FrameProcessor */

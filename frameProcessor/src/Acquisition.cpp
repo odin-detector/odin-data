@@ -109,6 +109,18 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
 
       file->write_frame(*frame, frame_offset_in_file, outer_chunk_dimension);
 
+      // Loops over all parameters, checking if there is a matching dataset and write to it if so
+      std::map<std::string, Parameter> & frame_parameters = frame->get_parameters();
+      std::map<std::string, Parameter>::iterator param_iter;
+      for (param_iter = frame_parameters.begin(); param_iter != frame_parameters.end(); ++param_iter) {
+        std::map<std::string, DatasetDefinition>::iterator dset_iter;
+        dset_iter = dataset_defs_.find(param_iter->first);
+        if (dset_iter != dataset_defs_.end())
+        {
+          file->write_parameter(*frame, dset_iter->second, frame_offset_in_file);
+        }
+      }
+
       // Send the meta message containing the frame written and the offset written to
       rapidjson::Document document;
       document.SetObject();
