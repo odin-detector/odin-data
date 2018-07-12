@@ -425,7 +425,7 @@ void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index
   }
 
   /* Add attributes to dataset for low and high index so it can be read by Albula */
-  if (low_index != -1 && high_index != -1)
+  if (definition.create_low_high_indexes)
   {
     hid_t space_inl = H5Screate(H5S_SCALAR);
     hid_t attr_inl = H5Acreate2(dset.dataset_id, "image_nr_low", H5T_STD_I32LE, space_inl, H5P_DEFAULT, H5P_DEFAULT);

@@ -168,6 +168,7 @@ public:
     dset_def.frame_dimensions[0] = 3;
     dset_def.frame_dimensions[1] = 4;
     dset_def.chunks = chunk_dims;
+    dset_def.create_low_high_indexes = false;
 
     frame = boost::shared_ptr<FrameProcessor::Frame>(new FrameProcessor::Frame("data"));
     frame->set_frame_number(7);
@@ -728,6 +729,50 @@ BOOST_AUTO_TEST_CASE( FileWriterPluginCalcNumFramesTest1000fpb )
   num_frames_3 = fwp3.calc_num_frames(33999);
   BOOST_CHECK_EQUAL(8000, num_frames_3);
 
+}
+
+BOOST_AUTO_TEST_CASE( FileWriterPluginIpcMessageMemoryErrorTest )
+{
+    std::cout << "**********************************" << std::endl;
+    const std::string CONFIG_DATASET  = "dataset";
+
+    OdinData::IpcMessage c1("{\"params\":{\"process\":{\"blocks_per_file\":1,\"earliest_version\":true,\"frames_per_block\":10,\"number\":1,\"rank\":0}},\"msg_type\":\"illegal\",\"msg_val\":\"illegal\",\"id\":0,\"timestamp\":\"2018-07-11T13:05:15.249263\"}", false);
+
+    OdinData::IpcMessage reply;
+    FrameProcessor::FileWriterPlugin fwp;
+    {
+      fwp.configure(c1, reply);
+      OdinData::IpcMessage c2("{\"params\":{\"frames\":10,\"acquisition_id\":\"test\",\"write\": true,\"file\":{\"path\":\"/tmp/uid/\"},\"dataset\":{\"data\":{\"datatype\":1,\"dims\":[2167,2070],\"compression\":2}}},\"msg_type\":\"illegal\",\"msg_val\":\"illegal\",\"id\":0,\"timestamp\":\"2018-07-11T13:06:40.309074\"}", false);
+      OdinData::IpcMessage c3("{\"params\":{\"write\":false},\"msg_type\":\"illegal\",\"msg_val\":\"illegal\",\"id\":0,\"timestamp\":\"2018-07-11T13:07:51.568623\"}", false);
+
+      fwp.configure(c2, reply);
+
+      std::cout << "orig: " << c2.encode() << std::endl;
+
+      OdinData::IpcMessage data1(c2.get_param<const rapidjson::Value&>(CONFIG_DATASET + "/" + "data"));
+      OdinData::IpcMessage dataset1(c2.get_param<const rapidjson::Value &>("dataset"));
+      std::cout << "data1: " << data1.encode() << std::endl;
+      std::cout << "dataset1: " << dataset1.encode() << std::endl;
+
+      //fwp.configure(c3, reply);
+      fwp.stop_writing();
+
+      std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << std::endl;
+      std::cout << "orig: " << c2.encode() << std::endl;
+
+      OdinData::IpcMessage data2(c2.get_param<const rapidjson::Value&>(CONFIG_DATASET + "/" + "data"));
+      OdinData::IpcMessage dataset2(c2.get_param<const rapidjson::Value &>("dataset"));
+      OdinData::IpcMessage data3(dataset2.get_param<const rapidjson::Value&>("data"));
+      std::string broken = data2.encode();
+
+      std::cout << "data2: " << broken << std::endl;
+      std::cout << "dataset2: " << dataset2.encode() << std::endl;
+      std::cout << "data3: " << data3.encode() << std::endl;
+
+      BOOST_REQUIRE_NE(std::string::npos, broken.find("[2167,2070]"));
+
+      std::cout << "* * * * * * * * * * * * * * * * * * * * * * * " << std::endl;
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END(); //FileWriterPluginTest
