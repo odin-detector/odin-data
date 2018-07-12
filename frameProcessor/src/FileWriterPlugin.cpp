@@ -35,6 +35,7 @@ const std::string FileWriterPlugin::CONFIG_DATASET_TYPE                = "dataty
 const std::string FileWriterPlugin::CONFIG_DATASET_DIMS                = "dims";
 const std::string FileWriterPlugin::CONFIG_DATASET_CHUNKS              = "chunks";
 const std::string FileWriterPlugin::CONFIG_DATASET_COMPRESSION         = "compression";
+const std::string FileWriterPlugin::CONFIG_DATASET_INDEXES             = "indexes";
 
 const std::string FileWriterPlugin::CONFIG_FRAMES                      = "frames";
 const std::string FileWriterPlugin::CONFIG_MASTER_DATASET              = "master";
@@ -583,6 +584,11 @@ void FileWriterPlugin::configure_dataset(const std::string& dataset_name, OdinDa
     LOG4CXX_INFO(logger_, "Enabling compression: " << dset.compression);
   }
 
+  // Check if creating the high/low indexes has been specified
+  if (config.has_param(FileWriterPlugin::CONFIG_DATASET_INDEXES)) {
+    dset.create_low_high_indexes = (CompressionType)config.get_param<bool>(FileWriterPlugin::CONFIG_DATASET_INDEXES);
+  }
+
   // Add the dataset definition to the store
   dataset_defs_[dataset_name] = dset;
 }
@@ -605,6 +611,7 @@ void FileWriterPlugin::create_new_dataset(const std::string& dset_name)
     std::vector<long long unsigned int> dims(0);
     dset_def.frame_dimensions = dims;
     dset_def.chunks = dims;
+    dset_def.create_low_high_indexes = false;
     // Record the dataset in the definitions
     dataset_defs_[dset_def.name] = dset_def;
   }

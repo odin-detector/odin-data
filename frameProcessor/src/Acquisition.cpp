@@ -247,7 +247,7 @@ void Acquisition::create_file(size_t file_number) {
     int low_index = -1;
     int high_index = -1;
 
-    if (frames_per_block_ > 1)
+    if (dset_def.create_low_high_indexes && frames_per_block_ > 1)
     {
       low_index = file_number * frames_per_block_ + 1;
       high_index = low_index + frames_per_block_ - 1;

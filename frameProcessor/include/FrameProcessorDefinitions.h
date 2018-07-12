@@ -40,6 +40,8 @@ namespace FrameProcessor
     std::vector<long long unsigned int> chunks;
     /** Compression state of data **/
     CompressionType compression;
+    /** Compression state of data **/
+    bool create_low_high_indexes;
   };
 
 } /* namespace FrameProcessor */
