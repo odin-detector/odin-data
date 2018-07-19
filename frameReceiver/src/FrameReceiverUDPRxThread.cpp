@@ -99,33 +99,39 @@ void FrameReceiverUDPRxThread::cleanup_specific_service(void)
 void FrameReceiverUDPRxThread::handle_receive_socket(int recv_socket, int recv_port)
 {
 
+  struct iovec io_vec[2];
+  uint8_t iovec_entry = 0;
+
+  struct sockaddr_in from_addr;
+
   if (frame_decoder_->requires_header_peek())
   {
     size_t header_size = frame_decoder_->get_packet_header_size();
     void*  header_buffer = frame_decoder_->get_packet_header_buffer();
-    struct sockaddr_in from_addr;
     socklen_t from_len = sizeof(from_addr);
     size_t bytes_received = recvfrom(recv_socket, header_buffer, header_size, MSG_PEEK, (struct sockaddr*)&from_addr, &from_len);
     LOG4CXX_DEBUG_LEVEL(3, logger_, "RX thread received " << bytes_received << " header bytes on recv socket");
     frame_decoder_->process_packet_header(bytes_received, recv_port, &from_addr);
+
+    io_vec[iovec_entry].iov_base = frame_decoder_->get_packet_header_buffer();
+    io_vec[iovec_entry].iov_len  = frame_decoder_->get_packet_header_size();
+    iovec_entry++;
   }
 
-  struct iovec io_vec[2];
-  io_vec[0].iov_base = frame_decoder_->get_packet_header_buffer();
-  io_vec[0].iov_len  = frame_decoder_->get_packet_header_size();
-  io_vec[1].iov_base = frame_decoder_->get_next_payload_buffer();
-  io_vec[1].iov_len  = frame_decoder_->get_next_payload_size();
+  io_vec[iovec_entry].iov_base = frame_decoder_->get_next_payload_buffer();
+  io_vec[iovec_entry].iov_len  = frame_decoder_->get_next_payload_size();
+  iovec_entry++;
 
   struct msghdr msg_hdr;
   memset((void*)&msg_hdr,  0, sizeof(struct msghdr));
-  msg_hdr.msg_name = 0;
-  msg_hdr.msg_namelen = 0;
+  msg_hdr.msg_name = (void*)&from_addr;
+  msg_hdr.msg_namelen = sizeof(struct sockaddr_in);
   msg_hdr.msg_iov = io_vec;
-  msg_hdr.msg_iovlen = 2;
+  msg_hdr.msg_iovlen = iovec_entry;
 
   size_t bytes_received = recvmsg(recv_socket, &msg_hdr, 0);
   LOG4CXX_DEBUG_LEVEL(3, logger_, "RX thread received " << bytes_received << " header/payload bytes on recv socket, "
       "payload buffer address " << frame_decoder_->get_next_payload_buffer());
 
-  FrameDecoder::FrameReceiveState frame_receive_state = frame_decoder_->process_packet(bytes_received);
+  FrameDecoder::FrameReceiveState frame_receive_state = frame_decoder_->process_packet(bytes_received, recv_port, &from_addr);
 }
