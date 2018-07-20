@@ -101,7 +101,7 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
         ("bit-depth",     po::value<std::string>(),
            "Bit-depth mode of detector")
         ("compression",   po::value<int>(),
-           "Compression type of input data (0: None, 1: LZ4, 2: BSLZ4)")
+           "Compression type of input data (0: None, 1: LZ4, 2: BSLZ4, 3: Blosc)")
         ("output,o",      po::value<std::string>()->default_value("test.hdf5"),
            "Name of HDF5 file to write frames to (default: test.hdf5)")
         ("output-dir",    po::value<std::string>()->default_value("/tmp/"),
@@ -352,6 +352,11 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
   }
 }
 
+bool isBloscRequired(po::variables_map vm)
+{
+  return vm.count("compression") && vm["compression"].as<int>() == 3;
+}
+
 void configureController(boost::shared_ptr<FrameProcessorController> fwc,
                          po::variables_map vm) {
   OdinData::IpcMessage cfg;
@@ -391,6 +396,19 @@ void configureDetector(boost::shared_ptr<FrameProcessorController> fwc, po::vari
   fwc->configure(cfg, reply);
 }
 
+void configureBlosc(boost::shared_ptr<FrameProcessorController> fwc, po::variables_map vm) {
+  OdinData::IpcMessage cfg;
+  OdinData::IpcMessage reply;
+
+  cfg.set_param<string>("plugin/load/library", "./lib/libBloscPlugin.so");
+  cfg.set_param<string>("plugin/load/index", "blosc");
+  cfg.set_param<string>("plugin/load/name", "BloscPlugin");
+  cfg.set_param<string>("plugin/connect/index", "blosc");
+  cfg.set_param<string>("plugin/connect/connection", vm["detector"].as<string>());
+
+  fwc->configure(cfg, reply);
+}
+
 void configureHDF5(boost::shared_ptr<FrameProcessorController> fwc, po::variables_map vm) {
   OdinData::IpcMessage cfg;
   OdinData::IpcMessage reply;
@@ -399,7 +417,11 @@ void configureHDF5(boost::shared_ptr<FrameProcessorController> fwc, po::variable
   cfg.set_param<string>("plugin/load/index", "hdf");
   cfg.set_param<string>("plugin/load/name", "FileWriterPlugin");
   cfg.set_param<string>("plugin/connect/index", "hdf");
-  cfg.set_param<string>("plugin/connect/connection", vm["detector"].as<string>());
+  if (isBloscRequired(vm)) {
+    cfg.set_param<string>("plugin/connect/connection", "blosc");
+  } else {
+    cfg.set_param<string>("plugin/connect/connection", vm["detector"].as<string>());
+  }
   cfg.set_param<unsigned int>("hdf/process/number", vm["processes"].as<unsigned int>());
   cfg.set_param<unsigned int>("hdf/process/rank", vm["rank"].as<unsigned int>());
   cfg.set_param<size_t>("hdf/process/frames_per_block", vm["block-size"].as<size_t>());
@@ -468,6 +490,9 @@ void configureFileWriter(boost::shared_ptr<FrameProcessorController> fwc, po::va
 
 void configurePlugins(boost::shared_ptr<FrameProcessorController> fwc, po::variables_map vm) {
   configureDetector(fwc, vm);
+  if (isBloscRequired(vm)) {
+    configureBlosc(fwc, vm);
+  }
   configureHDF5(fwc, vm);
 
   std::vector<string> datasets = vm["datasets"].as<std::vector<string> >();
