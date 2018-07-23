@@ -51,7 +51,7 @@ current_acquisition_("")
   this->compression_settings_ = this->commanded_compression_settings_;
 
   // Setup logging for the class
-  logger_ = Logger::getLogger("FW.BloscPlugin");
+  logger_ = Logger::getLogger("FP.BloscPlugin");
   logger_->setLevel(Level::getAll());
   LOG4CXX_TRACE(logger_, "BloscPlugin constructor.");
 
