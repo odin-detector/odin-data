@@ -290,7 +290,7 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
     if (vm.count("json_file"))
     {
       json_config_file_ = vm["json_file"].as<std::string>();
-      LOG4CXX_DEBUG_LEVEL(1, logger_, "Loading JSON configuration file " << config_.frame_release_endpoint_);
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Loading JSON configuration file " << json_config_file_);
     }
 
   }
