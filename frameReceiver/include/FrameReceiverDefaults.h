@@ -43,6 +43,7 @@ const std::string  default_rx_chan_endpoint       = "inproc://rx_channel";
 const std::string  default_ctrl_chan_endpoint     = "tcp://*:5000";
 const std::string  default_frame_ready_endpoint   = "tcp://*:5001";
 const std::string  default_frame_release_endpoint = "tcp://*:5002";
+const std::string  default_json_config_file       = "";
 const std::string  default_shared_buffer_name     = "FrameReceiverBuffer";
 const unsigned int default_frame_timeout_ms       = 1000;
 const unsigned int default_frame_count            = 0;

@@ -7,7 +7,9 @@
 
 #include <signal.h>
 #include <iostream>
+#include <string>
 #include <fstream>
+#include <streambuf>
 using namespace std;
 
 #include <boost/foreach.hpp>
@@ -33,7 +35,7 @@ static bool has_suffix(const std::string &str, const std::string &suffix)
 //!
 //! This constructor initialises the FrameReceiverApp instance
 
-FrameReceiverApp::FrameReceiverApp(void)
+FrameReceiverApp::FrameReceiverApp(void) : json_config_file_("")
 {
 
   // Retrieve a logger instance
@@ -124,6 +126,8 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
          "Set the frame ready channel endpoint")
         ("release",      po::value<std::string>()->default_value(FrameReceiver::Defaults::default_frame_release_endpoint),
          "Set the frame release channel endpoint")
+        ("json_file,j",  po::value<std::string>()->default_value(FrameReceiver::Defaults::default_json_config_file),
+         "Path to a JSON configuration file to submit to the application")
         ;
 
     // Group the variables for parsing at the command line and/or from the configuration file
@@ -283,6 +287,12 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
       LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting frame release channel endpoint to " << config_.frame_release_endpoint_);
     }
 
+    if (vm.count("json_file"))
+    {
+      json_config_file_ = vm["json_file"].as<std::string>();
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Loading JSON configuration file " << json_config_file_);
+    }
+
   }
   catch (Exception &e)
   {
@@ -322,6 +332,43 @@ void FrameReceiverApp::run(void)
     config_msg.set_param<bool>(CONFIG_FORCE_RECONFIG, true);
 
     controller_->configure(config_msg, config_reply);
+
+    // Check for a JSON configuration file option
+    if (json_config_file_ != "") {
+      // Attempt to open the file specified and read in the string as a JSON parameter set
+      std::ifstream t(json_config_file_.c_str());
+      std::string json((std::istreambuf_iterator<char>(t)),
+                       std::istreambuf_iterator<char>());
+
+      // Check for empty JSON and throw an exception.
+      if (json == "") {
+        throw OdinData::OdinDataException("Incorrect or empty JSON configuration file specified");
+      }
+
+      // Parse the JSON file
+      rapidjson::Document param_doc;
+      param_doc.Parse(json.c_str());
+      // Check if the top level object is an array
+      if (param_doc.IsArray()) {
+        // Loop over the array submitting the child objects in order
+        for (rapidjson::SizeType i = 0; i < param_doc.Size(); ++i) {
+          // Create a configuration message
+          OdinData::IpcMessage json_config_msg(param_doc[i],
+                                               OdinData::IpcMessage::MsgTypeCmd,
+                                               OdinData::IpcMessage::MsgValCmdConfigure);
+          // Now submit the config to the controller
+          controller_->configure(json_config_msg, config_reply);
+        }
+      } else {
+        // Single level JSON object
+        // Create a configuration message
+        OdinData::IpcMessage json_config_msg(param_doc,
+                                             OdinData::IpcMessage::MsgTypeCmd,
+                                             OdinData::IpcMessage::MsgValCmdConfigure);
+        // Now submit the config to the controller
+        controller_->configure(json_config_msg, config_reply);
+      }
+    }
 
     controller_->run();
 

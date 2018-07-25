@@ -1,0 +1,30 @@
+[
+  {
+    "fr_setup": {
+      "fr_ready_cnxn": "tcp://127.0.0.1:5001",
+      "fr_release_cnxn": "tcp://127.0.0.1:5002"
+    }
+  },
+  {
+    "plugin": {
+      "load": {
+        "index": "hdf",
+        "name": "FileWriterPlugin",
+        "library": "../lib/libHdf5Plugin.so"
+      }
+    }
+  },
+  {
+    "plugin": {
+      "connect": {
+        "index": "hdf",
+        "connection": "frame_receiver"
+      }
+    }
+  },
+  {
+    "hdf": {
+      "dataset": "data"
+    }
+  }
+]
