@@ -334,14 +334,14 @@ void FrameReceiverApp::run(void)
     controller_->configure(config_msg, config_reply);
 
     // Check for a JSON configuration file option
-    if (json_config_file_ != ""){
+    if (json_config_file_ != "") {
       // Attempt to open the file specified and read in the string as a JSON parameter set
       std::ifstream t(json_config_file_.c_str());
       std::string json((std::istreambuf_iterator<char>(t)),
                        std::istreambuf_iterator<char>());
 
       // Check for empty JSON and throw an exception.
-      if (json == ""){
+      if (json == "") {
         throw OdinData::OdinDataException("Incorrect or empty JSON configuration file specified");
       }
 
@@ -351,7 +351,7 @@ void FrameReceiverApp::run(void)
       // Check if the top level object is an array
       if (param_doc.IsArray()) {
         // Loop over the array submitting the child objects in order
-        for (rapidjson::SizeType i = 0; i < param_doc.Size(); ++i){
+        for (rapidjson::SizeType i = 0; i < param_doc.Size(); ++i) {
           // Create a configuration message
           OdinData::IpcMessage json_config_msg(param_doc[i],
                                                OdinData::IpcMessage::MsgTypeCmd,

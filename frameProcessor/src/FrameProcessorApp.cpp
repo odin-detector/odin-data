@@ -500,8 +500,7 @@ int main(int argc, char** argv)
       }
     }
 
-    if (vm["json_file"].as<std::string>() != "")
-    {
+    if (vm["json_file"].as<std::string>() != "") {
       std::string json_config_file = vm["json_file"].as<std::string>();
       // Attempt to open the file specified and read in the string as a JSON parameter set
       std::ifstream t(json_config_file.c_str());
@@ -509,7 +508,7 @@ int main(int argc, char** argv)
                        std::istreambuf_iterator<char>());
 
       // Check for empty JSON and throw an exception.
-      if (json == ""){
+      if (json == "") {
         throw OdinData::OdinDataException("Incorrect or empty JSON configuration file specified");
       }
 
@@ -519,7 +518,7 @@ int main(int argc, char** argv)
       // Check if the top level object is an array
       if (param_doc.IsArray()) {
         // Loop over the array submitting the child objects in order
-        for (rapidjson::SizeType i = 0; i < param_doc.Size(); ++i){
+        for (rapidjson::SizeType i = 0; i < param_doc.Size(); ++i) {
           // Create a configuration message
           OdinData::IpcMessage json_config_msg(param_doc[i],
                                                OdinData::IpcMessage::MsgTypeCmd,
