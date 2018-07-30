@@ -357,10 +357,10 @@ bool Acquisition::check_frame_valid(boost::shared_ptr<Frame> frame)
     LOG4CXX_ERROR(logger_, last_error_);
     invalid = true;
   }
-  if (frame->get_data_type() >= 0 && frame->get_data_type() != dataset.pixel) {
+  if (frame->get_data_type() >= 0 && frame->get_data_type() != dataset.data_type) {
     std::stringstream ss;
     ss << "Invalid frame: Frame has data type " << frame->get_data_type() <<
-       ", expected " << dataset.pixel <<
+       ", expected " << dataset.data_type <<
        " for dataset " << dataset.name <<
        " (0: UINT8, 1: UINT16, 2: UINT32, 3: UINT64)";
     last_error_ = ss.str();

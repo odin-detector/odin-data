@@ -75,7 +75,7 @@ private:
 
   HDF5Dataset_t& get_hdf5_dataset(const std::string dset_name);
   void extend_dataset(HDF5File::HDF5Dataset_t& dset, size_t frame_no) const;
-  hid_t pixel_to_hdf_type(PixelType pixel) const;
+  hid_t datatype_to_hdf_type(DataType data_type) const;
 
   LoggerPtr logger_;
   /** Internal ID of the file being written to */

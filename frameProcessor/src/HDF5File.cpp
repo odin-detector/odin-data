@@ -251,28 +251,28 @@ void HDF5File::write_parameter(const Frame& frame, DatasetDefinition dataset_def
   float f32value = 0;
 
   // Get the correct value and size from the parameter given its type
-  switch( dataset_definition.pixel ) {
-  case pixel_raw_8bit:
+  switch( dataset_definition.data_type ) {
+  case raw_8bit:
     u8value = frame.get_i8_parameter(dataset_definition.name);
     data_ptr = &u8value;
     size = sizeof(uint8_t);
     break;
-  case pixel_raw_16bit:
+  case raw_16bit:
     u16value = frame.get_i16_parameter(dataset_definition.name);
     data_ptr = &u16value;
     size = sizeof(uint16_t);
     break;
-  case pixel_raw_32bit:
+  case raw_32bit:
     u32value = frame.get_i32_parameter(dataset_definition.name);
     data_ptr = &u32value;
     size = sizeof(uint32_t);
     break;
-  case pixel_raw_64bit:
+  case raw_64bit:
     u64value = frame.get_i64_parameter(dataset_definition.name);
     data_ptr = &u64value;
     size = sizeof(uint64_t);
     break;
-  case pixel_float:
+  case raw_float:
     f32value = frame.get_float_parameter(dataset_definition.name);
     data_ptr = &f32value;
     size = sizeof(float);
@@ -296,7 +296,7 @@ void HDF5File::write_parameter(const Frame& frame, DatasetDefinition dataset_def
   offset[0] = frame_offset;
 
   // Create the hdf5 variables for writing
-  hid_t dtype = pixel_to_hdf_type(dataset_definition.pixel);
+  hid_t dtype = datatype_to_hdf_type(dataset_definition.data_type);
   hsize_t elementSize[1] = {1};
   hid_t filespace_ = H5Dget_space(dset.dataset_id);
 
@@ -349,7 +349,7 @@ void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index
   hid_t dataspace = 0;
   hid_t prop = 0;
   hid_t dapl = 0;
-  hid_t dtype = pixel_to_hdf_type(definition.pixel);
+  hid_t dtype = datatype_to_hdf_type(definition.data_type);
 
   std::vector<hsize_t> frame_dims = definition.frame_dimensions;
 
@@ -506,33 +506,33 @@ size_t HDF5File::get_dataset_frames(const std::string dset_name)
 }
 
 /**
- * Convert from a PixelType type to the corresponding HDF5 type.
+ * Convert from a DataType type to the corresponding HDF5 type.
  *
- * \param[in] pixel - The PixelType type to convert.
+ * \param[in] data_type - The DataType type to convert.
  * \return - the equivalent HDF5 type.
  */
-hid_t HDF5File::pixel_to_hdf_type(PixelType pixel) const {
+hid_t HDF5File::datatype_to_hdf_type(DataType data_type) const {
   hid_t dtype = 0;
-  switch(pixel)
+  switch(data_type)
   {
-  case pixel_raw_64bit:
+  case raw_64bit:
     LOG4CXX_DEBUG(logger_, "Data type: UINT64");
     dtype = H5T_NATIVE_UINT64;
     break;
-  case pixel_raw_32bit:
+  case raw_32bit:
     LOG4CXX_DEBUG(logger_, "Data type: UINT32");
     dtype = H5T_NATIVE_UINT32;
     break;
-  case pixel_raw_16bit:
+  case raw_16bit:
     LOG4CXX_DEBUG(logger_, "Data type: UINT16");
     dtype = H5T_NATIVE_UINT16;
     break;
-  case pixel_raw_8bit:
+  case raw_8bit:
     LOG4CXX_DEBUG(logger_, "Data type: UINT8");
     dtype = H5T_NATIVE_UINT8;
     break;
-  case pixel_float:
-    LOG4CXX_DEBUG(logger_, "Data type: F32");
+  case raw_float:
+    LOG4CXX_DEBUG(logger_, "Data type: FLOAT");
     dtype = H5T_NATIVE_FLOAT;
     break;
   default:

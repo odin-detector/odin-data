@@ -40,11 +40,11 @@ typedef struct
 /** Frame Parameter Value */
 union ParameterValue
 {
-    uint8_t i8;
-    uint16_t i16;
-    uint32_t i32;
-    uint64_t i64;
-    float f32;
+    uint8_t i8_val;
+    uint16_t i16_val;
+    uint32_t i32_val;
+    uint64_t i64_val;
+    float float_val;
 };
 
 /**
@@ -55,7 +55,7 @@ typedef struct
   /** The value of this parameter */
   ParameterValue value;
   /** The type of this parameter */
-  FrameProcessor::PixelType type;
+  FrameProcessor::DataType type;
 } Parameter;
 
 typedef unsigned long long dimsize_t;

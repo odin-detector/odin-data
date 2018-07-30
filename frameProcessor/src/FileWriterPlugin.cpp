@@ -364,7 +364,7 @@ void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
   std::map<std::string, DatasetDefinition>::iterator iter;
   for (iter = this->dataset_defs_.begin(); iter != this->dataset_defs_.end(); ++iter) {
     // Add the dataset type
-    reply.set_param(get_name() + "/dataset/" + iter->first + "/" + FileWriterPlugin::CONFIG_DATASET_TYPE, (int)iter->second.pixel);
+    reply.set_param(get_name() + "/dataset/" + iter->first + "/" + FileWriterPlugin::CONFIG_DATASET_TYPE, (int)iter->second.data_type);
 
     // Add the dataset compression
     reply.set_param(get_name() + "/dataset/" + iter->first + "/" + FileWriterPlugin::CONFIG_DATASET_COMPRESSION, (int)iter->second.compression);
@@ -542,7 +542,7 @@ void FileWriterPlugin::configure_dataset(const std::string& dataset_name, OdinDa
 
   // If there is a type present then set it
   if (config.has_param(FileWriterPlugin::CONFIG_DATASET_TYPE)) {
-    dset.pixel = (PixelType)config.get_param<int>(FileWriterPlugin::CONFIG_DATASET_TYPE);
+    dset.data_type = (DataType)config.get_param<int>(FileWriterPlugin::CONFIG_DATASET_TYPE);
   }
 
   // If there are dimensions present for the dataset then set them
@@ -605,7 +605,7 @@ void FileWriterPlugin::create_new_dataset(const std::string& dset_name)
     DatasetDefinition dset_def;
     // Provide default values for the dataset
     dset_def.name = dset_name;
-    dset_def.pixel = pixel_raw_8bit;
+    dset_def.data_type = raw_8bit;
     dset_def.compression = no_compression;
     dset_def.num_frames = 1;
     std::vector<long long unsigned int> dims(0);

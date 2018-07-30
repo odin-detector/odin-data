@@ -206,8 +206,8 @@ int Frame::get_data_type() const
 void Frame::set_parameter(const std::string& index, uint8_t value)
 {
   Parameter param;
-  param.type = pixel_raw_8bit;
-  param.value.i8 = value;
+  param.type = raw_8bit;
+  param.value.i8_val = value;
   parameters_[index] = param;
 }
 
@@ -222,8 +222,8 @@ void Frame::set_parameter(const std::string& index, uint8_t value)
 void Frame::set_parameter(const std::string& index, uint16_t value)
 {
   Parameter param;
-  param.type = pixel_raw_16bit;
-  param.value.i16 = value;
+  param.type = raw_16bit;
+  param.value.i16_val = value;
   parameters_[index] = param;
 }
 
@@ -238,8 +238,8 @@ void Frame::set_parameter(const std::string& index, uint16_t value)
 void Frame::set_parameter(const std::string& index, uint32_t value)
 {
   Parameter param;
-  param.type = pixel_raw_32bit;
-  param.value.i32 = value;
+  param.type = raw_32bit;
+  param.value.i32_val = value;
   parameters_[index] = param;
 }
 
@@ -254,8 +254,8 @@ void Frame::set_parameter(const std::string& index, uint32_t value)
 void Frame::set_parameter(const std::string& index, uint64_t value)
 {
   Parameter param;
-  param.type = pixel_raw_64bit;
-  param.value.i64 = value;
+  param.type = raw_64bit;
+  param.value.i64_val = value;
   parameters_[index] = param;
 }
 
@@ -270,8 +270,8 @@ void Frame::set_parameter(const std::string& index, uint64_t value)
 void Frame::set_parameter(const std::string& index, float value)
 {
   Parameter param;
-  param.type = pixel_float;
-  param.value.f32 = value;
+  param.type = raw_float;
+  param.value.float_val = value;
   parameters_[index] = param;
 }
 
@@ -327,13 +327,13 @@ Parameter Frame::get_parameter(const std::string& index) const
 uint8_t Frame::get_i8_parameter(const std::string& index) const
 {
   Parameter param = get_parameter(index);
-  if (param.type != pixel_raw_8bit)
+  if (param.type != raw_8bit)
   {
     LOG4CXX_ERROR(logger, "Parameter: " << index << " has wrong type");
     throw std::runtime_error("Parameter has wrong type");
   }
 
-  return param.value.i8;
+  return param.value.i8_val;
 }
 
 /** Return the value of a uint16_t parameter for this Frame.
@@ -347,13 +347,13 @@ uint8_t Frame::get_i8_parameter(const std::string& index) const
 uint16_t Frame::get_i16_parameter(const std::string& index) const
 {
   Parameter parameter = get_parameter(index);
-  if (parameter.type != pixel_raw_16bit)
+  if (parameter.type != raw_16bit)
   {
     LOG4CXX_ERROR(logger, "Parameter: " << index << " has wrong type");
     throw std::runtime_error("Parameter has wrong type");
   }
 
-  return parameter.value.i16;
+  return parameter.value.i16_val;
 }
 
 /** Return the value of a uint32_t parameter for this Frame.
@@ -367,13 +367,13 @@ uint16_t Frame::get_i16_parameter(const std::string& index) const
 uint32_t Frame::get_i32_parameter(const std::string& index) const
 {
   Parameter parameter = get_parameter(index);
-  if (parameter.type != pixel_raw_32bit)
+  if (parameter.type != raw_32bit)
   {
     LOG4CXX_ERROR(logger, "Parameter: " << index << " has wrong type");
     throw std::runtime_error("Parameter has wrong type");
   }
 
-  return parameter.value.i32;
+  return parameter.value.i32_val;
 }
 
 /** Return the value of a uint64_t parameter for this Frame.
@@ -387,13 +387,13 @@ uint32_t Frame::get_i32_parameter(const std::string& index) const
 uint64_t Frame::get_i64_parameter(const std::string& index) const
 {
   Parameter parameter = get_parameter(index);
-  if (parameter.type != pixel_raw_64bit)
+  if (parameter.type != raw_64bit)
   {
     LOG4CXX_ERROR(logger, "Parameter: " << index << " has wrong type");
     throw std::runtime_error("Parameter has wrong type");
   }
 
-  return parameter.value.i64;
+  return parameter.value.i64_val;
 }
 
 /** Return the value of a float parameter for this Frame.
@@ -407,13 +407,13 @@ uint64_t Frame::get_i64_parameter(const std::string& index) const
 float Frame::get_float_parameter(const std::string& index) const
 {
   Parameter parameter = get_parameter(index);
-  if (parameter.type != pixel_float)
+  if (parameter.type != raw_float)
   {
     LOG4CXX_ERROR(logger, "Parameter: " << index << " has wrong type");
     throw std::runtime_error("Parameter has wrong type");
   }
 
-  return parameter.value.f32;
+  return parameter.value.float_val;
 }
 
 /** Return the parameters for this Frame.

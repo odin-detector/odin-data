@@ -163,7 +163,7 @@ public:
 
     dset_def.name = "data";
     dset_def.num_frames = 2; //unused?
-    dset_def.pixel = FrameProcessor::pixel_raw_16bit;
+    dset_def.data_type = FrameProcessor::raw_16bit;
     dset_def.frame_dimensions = dimensions_t(2);
     dset_def.frame_dimensions[0] = 3;
     dset_def.frame_dimensions[1] = 4;
@@ -332,7 +332,7 @@ BOOST_AUTO_TEST_CASE( FileWriterPluginWriteParamTest )
 
   FrameProcessor::DatasetDefinition param_dset_def;
   param_dset_def.name = "p1";
-  param_dset_def.pixel = FrameProcessor::pixel_raw_64bit;
+  param_dset_def.data_type = FrameProcessor::raw_64bit;
   dimensions_t chunk_dims(1);
   chunk_dims[0] = 1;
   param_dset_def.chunks = chunk_dims;
@@ -355,7 +355,7 @@ BOOST_AUTO_TEST_CASE( FileWriterPluginWriteParamWrongTypeTest )
 
   FrameProcessor::DatasetDefinition param_dset_def;
   param_dset_def.name = "p1";
-  param_dset_def.pixel = FrameProcessor::pixel_raw_16bit;
+  param_dset_def.data_type = FrameProcessor::raw_16bit;
   dimensions_t chunk_dims(1);
   chunk_dims[0] = 1;
   param_dset_def.chunks = chunk_dims;
@@ -378,7 +378,7 @@ BOOST_AUTO_TEST_CASE( FileWriterPluginWriteParamNoParamTest )
 
   FrameProcessor::DatasetDefinition param_dset_def;
   param_dset_def.name = "p1";
-  param_dset_def.pixel = FrameProcessor::pixel_raw_64bit;
+  param_dset_def.data_type = FrameProcessor::raw_64bit;
   dimensions_t chunk_dims(1);
   chunk_dims[0] = 1;
   param_dset_def.chunks = chunk_dims;
