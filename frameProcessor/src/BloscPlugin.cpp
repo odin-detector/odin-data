@@ -87,7 +87,12 @@ boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> sr
   );
 
   c_settings = this->update_compression_settings(src_frame->get_acquisition_id());
-  c_settings.type_size = src_frame->get_data_type_size();
+  if (src_frame->get_data_type() >= 0) {
+    c_settings.type_size = src_frame->get_data_type_size();
+  }
+  else { // TODO: This if/else is a hack to work around Frame::data_type_ not being set. See https://jira.diamond.ac.uk/browse/BC-811
+    c_settings.type_size = 2; // hack: just default to 16bit per pixel as Excalibur use that
+  }
   c_settings.uncompressed_size = src_frame->get_data_size();
 
   size_t dest_data_size = c_settings.uncompressed_size + BLOSC_MAX_OVERHEAD;
