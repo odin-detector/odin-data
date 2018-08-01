@@ -90,7 +90,7 @@ boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> sr
   c_settings.type_size = src_frame->get_data_type_size();
   c_settings.uncompressed_size = src_frame->get_data_size();
 
-  size_t dest_data_size = src_frame->get_data_size() + BLOSC_MAX_OVERHEAD;
+  size_t dest_data_size = c_settings.uncompressed_size + BLOSC_MAX_OVERHEAD;
   // TODO: is this malloc really necessary? Can't we get writable DataBlocks somehow?
   void *dest_data_ptr = malloc(dest_data_size);
   if (dest_data_ptr == NULL) {throw std::runtime_error("Failed to malloc buffer for Blosc compression output");}
@@ -98,10 +98,16 @@ boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> sr
   try {
     LOG4CXX_TRACE(logger_, "Compressing frame no. " << src_frame->get_frame_number()
       << " with: " << blosc_get_compressor());
-    // TODO: all args are hard-coded here and need to be turned into parameters
+    LOG4CXX_TRACE(logger_, "calling blosc_compress: clevel=" << c_settings.compression_level
+                            << " doshuffle=" << c_settings.shuffle
+                            << " typesize=" << c_settings.type_size
+                            << " nbytes=" << c_settings.uncompressed_size
+                            << " src=" << src_data_ptr
+                            << " dest=" << dest_data_ptr
+                            << " destsize=" << dest_data_size);
     compressed_size = blosc_compress(c_settings.compression_level, c_settings.shuffle,
-                                     src_frame->get_data_type_size(),
-                                     src_frame->get_data_size(), src_data_ptr,
+                                     c_settings.type_size,
+                                     c_settings.uncompressed_size, src_data_ptr,
                                      dest_data_ptr, dest_data_size);
     if (compressed_size > 0) {
       double factor = 0.;
@@ -146,8 +152,7 @@ const BloscCompressionSettings& BloscPlugin::update_compression_settings(const s
     this->current_acquisition_ = acquisition_id;
     int ret = 0;
     const char ** p_compressor_name;
-    blosc_compcode_to_compname(this->compression_settings_.blosc_compressor,
-                               p_compressor_name);
+    blosc_compcode_to_compname(this->compression_settings_.blosc_compressor, p_compressor_name);
     ret = blosc_set_compressor(*p_compressor_name);
     if (ret < 0) {
       LOG4CXX_ERROR(logger_, "Blosc failed to set compressor: "
