@@ -87,4 +87,15 @@ void UIDAdjustmentPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcM
   }
 }
 
+/**
+ * Get the configuration values for this Plugin.
+ *
+ * \param[out] reply - Response IpcMessage.
+ */
+void UIDAdjustmentPlugin::requestConfiguration(OdinData::IpcMessage& reply)
+{
+  reply.set_param(get_name() + "/" + FIRST_FRAME_CONFIG, first_frame_number_);
+  reply.set_param(get_name() + "/" + UID_ADJUSTMENT_CONFIG, configured_uid_adjustment_);
+}
+
 } /* namespace FrameProcessor */
