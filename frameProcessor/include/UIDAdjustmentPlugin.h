@@ -36,10 +36,10 @@ class UIDAdjustmentPlugin : public FrameProcessorPlugin
 public:
   UIDAdjustmentPlugin();
   virtual ~UIDAdjustmentPlugin();
-
-private:
   void process_frame(boost::shared_ptr<Frame> frame);
   void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
+
+private:
   void requestConfiguration(OdinData::IpcMessage& reply);
 
   /** Pointer to logger */
@@ -51,12 +51,6 @@ private:
   /** Frame number of the first frame in an acquisition from the detector **/
   uint64_t first_frame_number_;
 };
-
-/**
- * Registration of this plugin through the ClassLoader. This macro
- * registers the class without needing to worry about name mangling
- */
-REGISTER(FrameProcessorPlugin, UIDAdjustmentPlugin, "UIDAdjustmentPlugin");
 
 } /* namespace FrameProcessor */
 

@@ -19,6 +19,7 @@ using namespace log4cxx::xml;
 #include "FileWriterPlugin.h"
 #include "Acquisition.h"
 #include "FrameProcessorDefinitions.h"
+#include "UIDAdjustmentPlugin.h"
 
 class GlobalConfig {
 public:
@@ -607,6 +608,97 @@ BOOST_AUTO_TEST_CASE( AcquisitionGetOffsetInFile )
 }
 
 BOOST_AUTO_TEST_SUITE_END(); //AcquisitionUnitTest
+
+BOOST_FIXTURE_TEST_SUITE(UIDAdjustmentPluginUnitTest, FileWriterPluginTestFixture);
+
+BOOST_AUTO_TEST_CASE( AdjustUID )
+{
+  FrameProcessor::UIDAdjustmentPlugin plugin;
+  //FrameProcessor::Frame frame("raw");
+  boost::shared_ptr<FrameProcessor::Frame> frame(new FrameProcessor::Frame("raw"));
+  uint64_t uid = 0;
+  frame->set_parameter("UID", uid);
+
+  // Check 0 goes to 0 when no config has been sent
+  plugin.process_frame(frame);
+  BOOST_CHECK_EQUAL(0, frame->get_i64_parameter("UID"));
+
+  // Check a non 0 goes to the same when no config has been sent
+  uid = 27;
+  frame->set_frame_number(uid);
+  frame->set_parameter("UID", uid);
+  plugin.process_frame(frame);
+  BOOST_CHECK_EQUAL(27, frame->get_i64_parameter("UID"));
+
+  // Configure a frame offset of 4
+  OdinData::IpcMessage reply;
+  OdinData::IpcMessage cfg;
+  cfg.set_param(FrameProcessor::UID_ADJUSTMENT_CONFIG, 4);
+  plugin.configure(cfg, reply);
+
+  // Check the offset is not applied as not seen first frame since configuring
+  uid = 28;
+  frame->set_frame_number(uid);
+  frame->set_parameter("UID", uid);
+  plugin.process_frame(frame);
+  BOOST_CHECK_EQUAL(28, frame->get_i64_parameter("UID"));
+
+  // Check the offset is applied when a new first frame is now sent
+  uid = 0;
+  frame->set_frame_number(uid);
+  frame->set_parameter("UID", uid);
+  plugin.process_frame(frame);
+  BOOST_CHECK_EQUAL(4, frame->get_i64_parameter("UID"));
+
+  // Check the offset is still applied when not on frame 0
+  uid = 10;
+  frame->set_frame_number(uid);
+  frame->set_parameter("UID", uid);
+  plugin.process_frame(frame);
+  BOOST_CHECK_EQUAL(14, frame->get_i64_parameter("UID"));
+
+  // Check the offset is still applied when uid is different to frame number
+  uid = 100;
+  frame->set_frame_number(27);
+  frame->set_parameter("UID", uid);
+  plugin.process_frame(frame);
+  BOOST_CHECK_EQUAL(104, frame->get_i64_parameter("UID"));
+
+  // Configure a start frame of 1
+  cfg.set_param(FrameProcessor::UID_ADJUSTMENT_CONFIG, 33);
+  cfg.set_param(FrameProcessor::FIRST_FRAME_CONFIG, 1);
+  plugin.configure(cfg, reply);
+
+  // Check the new offset is not applied when not on frame 0
+  uid = 12;
+  frame->set_frame_number(uid);
+  frame->set_parameter("UID", uid);
+  plugin.process_frame(frame);
+  BOOST_CHECK_EQUAL(16, frame->get_i64_parameter("UID"));
+
+  // Check the new offset is not applied when on frame 0
+  uid = 0;
+  frame->set_frame_number(uid);
+  frame->set_parameter("UID", uid);
+  plugin.process_frame(frame);
+  BOOST_CHECK_EQUAL(4, frame->get_i64_parameter("UID"));
+
+  // Check the new offset is applied when on frame 1
+  uid = 1;
+  frame->set_frame_number(uid);
+  frame->set_parameter("UID", uid);
+  plugin.process_frame(frame);
+  BOOST_CHECK_EQUAL(34, frame->get_i64_parameter("UID"));
+
+  // Check the new offset is applied when on frame 2
+  uid = 2;
+  frame->set_frame_number(uid);
+  frame->set_parameter("UID", uid);
+  plugin.process_frame(frame);
+  BOOST_CHECK_EQUAL(35, frame->get_i64_parameter("UID"));
+}
+
+BOOST_AUTO_TEST_SUITE_END(); //UIDAdjustmentPluginUnitTest
 
 BOOST_FIXTURE_TEST_SUITE(FileWriterPluginTestUnitTest, FileWriterPluginTestFixture);
 

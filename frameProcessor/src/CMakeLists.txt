@@ -43,7 +43,7 @@ target_link_libraries(Hdf5Plugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_L
 install(TARGETS Hdf5Plugin DESTINATION lib)
 
 # Add library for UIDAdjustment plugin
-add_library(UIDAdjustmentPlugin SHARED UIDAdjustmentPlugin.cpp)
+add_library(UIDAdjustmentPlugin SHARED UIDAdjustmentPlugin.cpp UIDAdjustmentPluginLib.cpp)
 target_link_libraries(UIDAdjustmentPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${COMMON_LIBRARY})
 install(TARGETS UIDAdjustmentPlugin DESTINATION lib)
 
