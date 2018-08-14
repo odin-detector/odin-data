@@ -452,17 +452,16 @@ class OdinDataAdapter(ApiAdapter):
             except Exception as e:
                 # Exception caught, log the error but do not stop the update loop
                 logging.error("Unhandled exception: %s", e)
-            try:
-                # Request a configuration update
-                client.send_request('request_configuration')
-                # Now request a status update
-                client.send_request('status')
-            except Exception as e:
-                # Exception caught, log the error but do not stop the update loop
-                logging.error("Unhandled exception: %s", e)
+
+            # Request parameter updates
+            for parameter_tree in ["status", "request_configuration"]:
+                try:
+                    client.send_request(parameter_tree)
+                except Exception as e:
+                    # Log the error, but do not stop the update loop
+                    logging.error("Unhandled exception: %s", e)
 
             index += 1
 
         # Schedule the update loop to run in the IOLoop instance again after appropriate interval
         IOLoop.instance().call_later(self._update_interval, self.update_loop)
-
