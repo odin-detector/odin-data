@@ -277,7 +277,7 @@ class OdinDataAdapter(ApiAdapter):
                 status_code = 503
                 response = {'error': "Failed to parse json config: {}".format(value_error)}
         else:
-            logging.error("Not loading configuration file from an empty path")
+            logging.info("Not loading configuration file from an empty path")
         return response, status_code
 
     def process_reconnection(self, client):
