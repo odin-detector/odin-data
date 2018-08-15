@@ -1,0 +1,13 @@
+{
+  "max_buffer_mem": 10000000,
+  "decoder_type": "Excalibur",
+  "decoder_path": "/dls_sw/prod/tools/RHEL6-x86_64/excalibur-detector/0-2-0/prefix/lib",
+  "rx_ports": "61649,61650",
+  "decoder_config": {
+    "enable_packet_logging": false,
+    "frame_timeout_ms": 1000,
+    "fem_port_map": "61649:0,61650:1",
+    "bitdepth": "12-bit"
+  }
+}
+

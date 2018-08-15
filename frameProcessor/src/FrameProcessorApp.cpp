@@ -118,6 +118,8 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
            "Set the hdf5 alignment threshold. Default is 1 (no alignment)")
         ("alignment-value",       po::value<size_t>()->default_value(1),
            "Set the hdf5 alignment value. Default is 1 (no alignment)")
+        ("json_file,j",  po::value<std::string>()->default_value(""),
+         "Path to a JSON configuration file to submit to the application")
     ;
 
     // Group the variables for parsing at the command line and/or from the configuration file
@@ -495,6 +497,43 @@ int main(int argc, char** argv)
         LOG4CXX_DEBUG(logger, "Adding configuration options to work without a client");
         configurePlugins(fwc, vm);
         configureFileWriter(fwc, vm);
+      }
+    }
+
+    if (vm["json_file"].as<std::string>() != "") {
+      std::string json_config_file = vm["json_file"].as<std::string>();
+      // Attempt to open the file specified and read in the string as a JSON parameter set
+      std::ifstream t(json_config_file.c_str());
+      std::string json((std::istreambuf_iterator<char>(t)),
+                       std::istreambuf_iterator<char>());
+
+      // Check for empty JSON and throw an exception.
+      if (json == "") {
+        throw OdinData::OdinDataException("Incorrect or empty JSON configuration file specified");
+      }
+
+      // Parse the JSON file
+      rapidjson::Document param_doc;
+      param_doc.Parse(json.c_str());
+      // Check if the top level object is an array
+      if (param_doc.IsArray()) {
+        // Loop over the array submitting the child objects in order
+        for (rapidjson::SizeType i = 0; i < param_doc.Size(); ++i) {
+          // Create a configuration message
+          OdinData::IpcMessage json_config_msg(param_doc[i],
+                                               OdinData::IpcMessage::MsgTypeCmd,
+                                               OdinData::IpcMessage::MsgValCmdConfigure);
+          // Now submit the config to the controller
+          fwc->configure(json_config_msg, reply);
+        }
+      } else {
+        // Single level JSON object
+        // Create a configuration message
+        OdinData::IpcMessage json_config_msg(param_doc,
+                                             OdinData::IpcMessage::MsgTypeCmd,
+                                             OdinData::IpcMessage::MsgValCmdConfigure);
+        // Now submit the config to the controller
+        fwc->configure(json_config_msg, reply);
       }
     }
 
