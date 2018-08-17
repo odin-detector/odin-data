@@ -463,5 +463,16 @@ class OdinDataAdapter(ApiAdapter):
 
             index += 1
 
+            self.process_updates()
+
         # Schedule the update loop to run in the IOLoop instance again after appropriate interval
         IOLoop.instance().call_later(self._update_interval, self.update_loop)
+
+    def process_updates(self):
+        """Handle additional background update loop tasks
+
+        Child classes can implement logic here to take any action based on the
+        latest parameter tree, before the next update is scheduled.
+
+        """
+        pass
