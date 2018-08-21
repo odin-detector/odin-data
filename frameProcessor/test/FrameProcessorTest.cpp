@@ -19,6 +19,7 @@ using namespace log4cxx::xml;
 #include "FileWriterPlugin.h"
 #include "Acquisition.h"
 #include "FrameProcessorDefinitions.h"
+#include "UIDAdjustmentPlugin.h"
 
 class GlobalConfig {
 public:
@@ -163,11 +164,12 @@ public:
 
     dset_def.name = "data";
     dset_def.num_frames = 2; //unused?
-    dset_def.pixel = FrameProcessor::pixel_raw_16bit;
+    dset_def.data_type = FrameProcessor::raw_16bit;
     dset_def.frame_dimensions = dimensions_t(2);
     dset_def.frame_dimensions[0] = 3;
     dset_def.frame_dimensions[1] = 4;
     dset_def.chunks = chunk_dims;
+    dset_def.create_low_high_indexes = false;
 
     frame = boost::shared_ptr<FrameProcessor::Frame>(new FrameProcessor::Frame("data"));
     frame->set_frame_number(7);
@@ -321,6 +323,75 @@ BOOST_AUTO_TEST_CASE( HDF5FileAdjustHugeOffset )
     //(*it)->copy_header(&img_header);
     (*it)->set_frame_number(frame_no + huge_offset);
     BOOST_REQUIRE_NO_THROW(hdf5f.write_frame(*(*it), (*it)->get_frame_number(), 1));
+  }
+  BOOST_REQUIRE_NO_THROW(hdf5f.close_file());
+}
+
+BOOST_AUTO_TEST_CASE( FileWriterPluginWriteParamTest )
+{
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/test_params.h5", 0, false, 1, 1));
+
+  FrameProcessor::DatasetDefinition param_dset_def;
+  param_dset_def.name = "p1";
+  param_dset_def.data_type = FrameProcessor::raw_64bit;
+  dimensions_t chunk_dims(1);
+  chunk_dims[0] = 1;
+  param_dset_def.chunks = chunk_dims;
+
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(param_dset_def, -1, -1));
+
+  std::vector<boost::shared_ptr<FrameProcessor::Frame> >::iterator it;
+  for (it = frames.begin(); it != frames.end(); ++it) {
+    uint64_t val = 123;
+    (*it)->set_parameter("p1", val);
+    BOOST_TEST_MESSAGE("Writing frame: " <<  (*it)->get_frame_number());
+    BOOST_REQUIRE_NO_THROW(hdf5f.write_parameter(*(*it), param_dset_def, (*it)->get_frame_number()));
+  }
+  BOOST_REQUIRE_NO_THROW(hdf5f.close_file());
+}
+
+BOOST_AUTO_TEST_CASE( FileWriterPluginWriteParamWrongTypeTest )
+{
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/test_params.h5", 0, false, 1, 1));
+
+  FrameProcessor::DatasetDefinition param_dset_def;
+  param_dset_def.name = "p1";
+  param_dset_def.data_type = FrameProcessor::raw_16bit;
+  dimensions_t chunk_dims(1);
+  chunk_dims[0] = 1;
+  param_dset_def.chunks = chunk_dims;
+
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(param_dset_def, -1, -1));
+
+  std::vector<boost::shared_ptr<FrameProcessor::Frame> >::iterator it;
+  for (it = frames.begin(); it != frames.end(); ++it) {
+    uint64_t val = 123;
+    (*it)->set_parameter("p1", val);
+    BOOST_TEST_MESSAGE("Writing frame: " <<  (*it)->get_frame_number());
+    BOOST_CHECK_THROW(hdf5f.write_parameter(*(*it), param_dset_def, (*it)->get_frame_number()), std::runtime_error);
+  }
+  BOOST_REQUIRE_NO_THROW(hdf5f.close_file());
+}
+
+BOOST_AUTO_TEST_CASE( FileWriterPluginWriteParamNoParamTest )
+{
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/test_params.h5", 0, false, 1, 1));
+
+  FrameProcessor::DatasetDefinition param_dset_def;
+  param_dset_def.name = "p1";
+  param_dset_def.data_type = FrameProcessor::raw_64bit;
+  dimensions_t chunk_dims(1);
+  chunk_dims[0] = 1;
+  param_dset_def.chunks = chunk_dims;
+
+  BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(param_dset_def, -1, -1));
+
+  std::vector<boost::shared_ptr<FrameProcessor::Frame> >::iterator it;
+  for (it = frames.begin(); it != frames.end(); ++it) {
+    uint64_t val = 123;
+    (*it)->set_parameter("p2", val);
+    BOOST_TEST_MESSAGE("Writing frame: " <<  (*it)->get_frame_number());
+    BOOST_CHECK_THROW(hdf5f.write_parameter(*(*it), param_dset_def, (*it)->get_frame_number()), std::runtime_error);
   }
   BOOST_REQUIRE_NO_THROW(hdf5f.close_file());
 }
@@ -537,6 +608,97 @@ BOOST_AUTO_TEST_CASE( AcquisitionGetOffsetInFile )
 }
 
 BOOST_AUTO_TEST_SUITE_END(); //AcquisitionUnitTest
+
+BOOST_FIXTURE_TEST_SUITE(UIDAdjustmentPluginUnitTest, FileWriterPluginTestFixture);
+
+BOOST_AUTO_TEST_CASE( AdjustUID )
+{
+  FrameProcessor::UIDAdjustmentPlugin plugin;
+  //FrameProcessor::Frame frame("raw");
+  boost::shared_ptr<FrameProcessor::Frame> frame(new FrameProcessor::Frame("raw"));
+  uint64_t uid = 0;
+  frame->set_parameter("UID", uid);
+
+  // Check 0 goes to 0 when no config has been sent
+  plugin.process_frame(frame);
+  BOOST_CHECK_EQUAL(0, frame->get_i64_parameter("UID"));
+
+  // Check a non 0 goes to the same when no config has been sent
+  uid = 27;
+  frame->set_frame_number(uid);
+  frame->set_parameter("UID", uid);
+  plugin.process_frame(frame);
+  BOOST_CHECK_EQUAL(27, frame->get_i64_parameter("UID"));
+
+  // Configure a frame offset of 4
+  OdinData::IpcMessage reply;
+  OdinData::IpcMessage cfg;
+  cfg.set_param(FrameProcessor::UID_ADJUSTMENT_CONFIG, 4);
+  plugin.configure(cfg, reply);
+
+  // Check the offset is not applied as not seen first frame since configuring
+  uid = 28;
+  frame->set_frame_number(uid);
+  frame->set_parameter("UID", uid);
+  plugin.process_frame(frame);
+  BOOST_CHECK_EQUAL(28, frame->get_i64_parameter("UID"));
+
+  // Check the offset is applied when a new first frame is now sent
+  uid = 0;
+  frame->set_frame_number(uid);
+  frame->set_parameter("UID", uid);
+  plugin.process_frame(frame);
+  BOOST_CHECK_EQUAL(4, frame->get_i64_parameter("UID"));
+
+  // Check the offset is still applied when not on frame 0
+  uid = 10;
+  frame->set_frame_number(uid);
+  frame->set_parameter("UID", uid);
+  plugin.process_frame(frame);
+  BOOST_CHECK_EQUAL(14, frame->get_i64_parameter("UID"));
+
+  // Check the offset is still applied when uid is different to frame number
+  uid = 100;
+  frame->set_frame_number(27);
+  frame->set_parameter("UID", uid);
+  plugin.process_frame(frame);
+  BOOST_CHECK_EQUAL(104, frame->get_i64_parameter("UID"));
+
+  // Configure a start frame of 1
+  cfg.set_param(FrameProcessor::UID_ADJUSTMENT_CONFIG, 33);
+  cfg.set_param(FrameProcessor::FIRST_FRAME_CONFIG, 1);
+  plugin.configure(cfg, reply);
+
+  // Check the new offset is not applied when not on frame 0
+  uid = 12;
+  frame->set_frame_number(uid);
+  frame->set_parameter("UID", uid);
+  plugin.process_frame(frame);
+  BOOST_CHECK_EQUAL(16, frame->get_i64_parameter("UID"));
+
+  // Check the new offset is not applied when on frame 0
+  uid = 0;
+  frame->set_frame_number(uid);
+  frame->set_parameter("UID", uid);
+  plugin.process_frame(frame);
+  BOOST_CHECK_EQUAL(4, frame->get_i64_parameter("UID"));
+
+  // Check the new offset is applied when on frame 1
+  uid = 1;
+  frame->set_frame_number(uid);
+  frame->set_parameter("UID", uid);
+  plugin.process_frame(frame);
+  BOOST_CHECK_EQUAL(34, frame->get_i64_parameter("UID"));
+
+  // Check the new offset is applied when on frame 2
+  uid = 2;
+  frame->set_frame_number(uid);
+  frame->set_parameter("UID", uid);
+  plugin.process_frame(frame);
+  BOOST_CHECK_EQUAL(35, frame->get_i64_parameter("UID"));
+}
+
+BOOST_AUTO_TEST_SUITE_END(); //UIDAdjustmentPluginUnitTest
 
 BOOST_FIXTURE_TEST_SUITE(FileWriterPluginTestUnitTest, FileWriterPluginTestFixture);
 

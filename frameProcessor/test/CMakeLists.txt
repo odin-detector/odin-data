@@ -19,6 +19,7 @@ target_link_libraries(frameProcessorTest
         ${HDF5_LIBRARIES}
         ${HDF5HL_LIBRARIES}
         Hdf5Plugin
+        UIDAdjustmentPlugin
         ${COMMON_LIBRARY})
 
 if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )

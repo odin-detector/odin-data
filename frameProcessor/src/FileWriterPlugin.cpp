@@ -35,6 +35,7 @@ const std::string FileWriterPlugin::CONFIG_DATASET_TYPE                = "dataty
 const std::string FileWriterPlugin::CONFIG_DATASET_DIMS                = "dims";
 const std::string FileWriterPlugin::CONFIG_DATASET_CHUNKS              = "chunks";
 const std::string FileWriterPlugin::CONFIG_DATASET_COMPRESSION         = "compression";
+const std::string FileWriterPlugin::CONFIG_DATASET_INDEXES             = "indexes";
 
 const std::string FileWriterPlugin::CONFIG_FRAMES                      = "frames";
 const std::string FileWriterPlugin::CONFIG_MASTER_DATASET              = "master";
@@ -363,7 +364,7 @@ void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
   std::map<std::string, DatasetDefinition>::iterator iter;
   for (iter = this->dataset_defs_.begin(); iter != this->dataset_defs_.end(); ++iter) {
     // Add the dataset type
-    reply.set_param(get_name() + "/dataset/" + iter->first + "/" + FileWriterPlugin::CONFIG_DATASET_TYPE, (int)iter->second.pixel);
+    reply.set_param(get_name() + "/dataset/" + iter->first + "/" + FileWriterPlugin::CONFIG_DATASET_TYPE, (int)iter->second.data_type);
 
     // Add the dataset compression
     reply.set_param(get_name() + "/dataset/" + iter->first + "/" + FileWriterPlugin::CONFIG_DATASET_COMPRESSION, (int)iter->second.compression);
@@ -541,7 +542,7 @@ void FileWriterPlugin::configure_dataset(const std::string& dataset_name, OdinDa
 
   // If there is a type present then set it
   if (config.has_param(FileWriterPlugin::CONFIG_DATASET_TYPE)) {
-    dset.pixel = (PixelType)config.get_param<int>(FileWriterPlugin::CONFIG_DATASET_TYPE);
+    dset.data_type = (DataType)config.get_param<int>(FileWriterPlugin::CONFIG_DATASET_TYPE);
   }
 
   // If there are dimensions present for the dataset then set them
@@ -583,6 +584,11 @@ void FileWriterPlugin::configure_dataset(const std::string& dataset_name, OdinDa
     LOG4CXX_INFO(logger_, "Enabling compression: " << dset.compression);
   }
 
+  // Check if creating the high/low indexes has been specified
+  if (config.has_param(FileWriterPlugin::CONFIG_DATASET_INDEXES)) {
+    dset.create_low_high_indexes = (CompressionType)config.get_param<bool>(FileWriterPlugin::CONFIG_DATASET_INDEXES);
+  }
+
   // Add the dataset definition to the store
   dataset_defs_[dataset_name] = dset;
 }
@@ -599,12 +605,13 @@ void FileWriterPlugin::create_new_dataset(const std::string& dset_name)
     DatasetDefinition dset_def;
     // Provide default values for the dataset
     dset_def.name = dset_name;
-    dset_def.pixel = pixel_raw_8bit;
+    dset_def.data_type = raw_8bit;
     dset_def.compression = no_compression;
     dset_def.num_frames = 1;
     std::vector<long long unsigned int> dims(0);
     dset_def.frame_dimensions = dims;
     dset_def.chunks = dims;
+    dset_def.create_low_high_indexes = false;
     // Record the dataset in the definitions
     dataset_defs_[dset_def.name] = dset_def;
   }

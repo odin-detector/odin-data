@@ -92,6 +92,8 @@ private:
   static const std::string CONFIG_DATASET_CHUNKS;
   /** Configuration constant for data compression */
   static const std::string CONFIG_DATASET_COMPRESSION;
+  /** Configuration constant for data high/low indexes */
+  static const std::string CONFIG_DATASET_INDEXES;
 
   /** Configuration constant for number of frames to write */
   static const std::string CONFIG_FRAMES;

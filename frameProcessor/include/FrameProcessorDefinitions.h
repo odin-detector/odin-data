@@ -13,7 +13,7 @@ namespace FrameProcessor
   /**
    * Enumeration to store the pixel type of the incoming image
    */
-  enum PixelType { pixel_raw_8bit, pixel_raw_16bit, pixel_float32, pixel_raw_64bit };
+  enum DataType { raw_8bit, raw_16bit, raw_32bit, raw_64bit, raw_float };
   /**
    * Enumeration to store the compression type of the incoming image
    */
@@ -31,7 +31,7 @@ namespace FrameProcessor
     /** Name of the dataset **/
     std::string name;
     /** Data type for the dataset **/
-    PixelType pixel;
+    DataType data_type;
     /** Numer of frames expected to capture **/
     size_t num_frames;
     /** Array of dimensions of the dataset **/
@@ -40,6 +40,8 @@ namespace FrameProcessor
     std::vector<long long unsigned int> chunks;
     /** Compression state of data **/
     CompressionType compression;
+    /** Whether to create Low/High indexes for this dataset **/
+    bool create_low_high_indexes;
   };
 
 } /* namespace FrameProcessor */

@@ -109,6 +109,18 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
 
       file->write_frame(*frame, frame_offset_in_file, outer_chunk_dimension);
 
+      // Loops over all parameters, checking if there is a matching dataset and write to it if so
+      std::map<std::string, Parameter> & frame_parameters = frame->get_parameters();
+      std::map<std::string, Parameter>::iterator param_iter;
+      for (param_iter = frame_parameters.begin(); param_iter != frame_parameters.end(); ++param_iter) {
+        std::map<std::string, DatasetDefinition>::iterator dset_iter;
+        dset_iter = dataset_defs_.find(param_iter->first);
+        if (dset_iter != dataset_defs_.end())
+        {
+          file->write_parameter(*frame, dset_iter->second, frame_offset_in_file);
+        }
+      }
+
       // Send the meta message containing the frame written and the offset written to
       rapidjson::Document document;
       document.SetObject();
@@ -235,7 +247,7 @@ void Acquisition::create_file(size_t file_number) {
     int low_index = -1;
     int high_index = -1;
 
-    if (frames_per_block_ > 1)
+    if (dset_def.create_low_high_indexes && frames_per_block_ > 1)
     {
       low_index = file_number * frames_per_block_ + 1;
       high_index = low_index + frames_per_block_ - 1;
@@ -345,12 +357,12 @@ bool Acquisition::check_frame_valid(boost::shared_ptr<Frame> frame)
     LOG4CXX_ERROR(logger_, last_error_);
     invalid = true;
   }
-  if (frame->get_data_type() >= 0 && frame->get_data_type() != dataset.pixel) {
+  if (frame->get_data_type() >= 0 && frame->get_data_type() != dataset.data_type) {
     std::stringstream ss;
     ss << "Invalid frame: Frame has data type " << frame->get_data_type() <<
-       ", expected " << dataset.pixel <<
+       ", expected " << dataset.data_type <<
        " for dataset " << dataset.name <<
-       " (0: UINT8, 1: UINT16, 2: UINT32, 3: UINT64)";
+       " (0: UINT8, 1: UINT16, 2: UINT32, 3: UINT64, 4: FLOAT)";
     last_error_ = ss.str();
     LOG4CXX_ERROR(logger_, last_error_);
     invalid = true;
