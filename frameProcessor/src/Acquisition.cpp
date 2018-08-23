@@ -32,7 +32,6 @@ const std::string META_STOP_ITEM         = "stopacquisition";
 Acquisition::Acquisition() :
         concurrent_rank_(0),
         concurrent_processes_(1),
-        frame_offset_adjustment_(0),
         frames_per_block_(1),
         blocks_per_file_(0),
         frames_written_(0),
@@ -79,7 +78,7 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
 
       hsize_t frame_no = frame->get_frame_number();
 
-      size_t frame_offset = this->adjust_frame_offset(frame_no);
+      size_t frame_offset = this->adjust_frame_offset(frame);
 
       if (this->concurrent_processes_ > 1) {
         // Check whether this frame should really be in this process
@@ -159,7 +158,7 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
       // or if no master frame has been defined. If either of these conditions
       // are true then increment the number of frames written.
       if (master_frame_ == "" || master_frame_ == frame->get_dataset_name()) {
-        size_t dataset_frames = file->get_dataset_frames(frame->get_dataset_name());
+        size_t dataset_frames = current_file->get_dataset_frames(frame->get_dataset_name());
         frames_processed_++;
         LOG4CXX_TRACE(logger_, "Master frame processed");
         size_t current_file_index = current_file->get_file_index() / concurrent_processes_;
@@ -177,7 +176,7 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
 
       // If this frame is the final one in the series we are expecting to process, set the return state
       if (frames_to_write_ > 0 && frames_written_ == frames_to_write_) {
-        if (frames_processed_ == frames_to_write_) {
+        if (frames_processed_ >= frames_to_write_) {
           return_status = status_complete;
         } else {
           LOG4CXX_INFO(logger_, "Number of frames processed (" << frames_processed_ << ") doesn't match expected (" << frames_to_write_ << ")");
@@ -285,7 +284,6 @@ void Acquisition::close_file(boost::shared_ptr<HDF5File> file) {
  *
  * \param[in] concurrent_rank - The rank of the processor
  * \param[in] concurrent_processes - The number of processors
- * \param[in] frame_offset_adjustment - The starting frame offset adjustment
  * \param[in] frames_per_block - The number of frames per block
  * \param[in] blocks_per_file - The number of blocks per file
  * \return - true if the acquisition was started successfully
@@ -293,7 +291,6 @@ void Acquisition::close_file(boost::shared_ptr<HDF5File> file) {
 bool Acquisition::start_acquisition(
     size_t concurrent_rank,
     size_t concurrent_processes,
-    size_t frame_offset_adjustment,
     size_t frames_per_block,
     size_t blocks_per_file,
     bool use_earliest_hdf5,
@@ -302,7 +299,6 @@ bool Acquisition::start_acquisition(
 
   concurrent_rank_ = concurrent_rank;
   concurrent_processes_ = concurrent_processes;
-  frame_offset_adjustment_ = frame_offset_adjustment;
   frames_per_block_ = frames_per_block;
   blocks_per_file_ = blocks_per_file;
   use_earliest_hdf5_ = use_earliest_hdf5;
@@ -478,33 +474,34 @@ boost::shared_ptr<HDF5File> Acquisition::get_file(size_t frame_offset) {
 
 }
 
-/** Adjust the incoming frame number with an offset
+/** Returns the adjusted offset (index in file) for the Frame
  *
- * This is a hacky work-around a missing feature in the Mezzanine
- * firmware: the frame number is never reset and is ever incrementing.
- * The file writer can deal with it, by inserting the frame right at
- * the end of a very large dataset (fortunately sparsely written to disk).
+ * Combines the frame number with the frame offset stored on the frame
+ * object to calculate an the adjusted frame offset in the file for this
+ * frame
  *
- * This function latches the first frame number and subtracts this number
- * from every incoming frame.
- *
- * Throws a std::range_error if a frame is received which has a smaller
- * frame number than the initial frame used to set the offset.
+ * Throws a std::range_error if the applied offset would cause the frame
+ * offset to be calculated as a negative number
  *
  * Returns the dataset offset for frame number (frame_no)
  */
-size_t Acquisition::adjust_frame_offset(size_t frame_no) const {
+size_t Acquisition::adjust_frame_offset(boost::shared_ptr<Frame> frame) const {
+  size_t frame_no = frame->get_frame_number();
+  int64_t frame_offset_adjustment = frame->get_frame_offset();
   size_t frame_offset = 0;
-  if (frame_no < this->frame_offset_adjustment_) {
-    // Deal with a frame arriving after the very first frame
-    // which was used to set the offset: throw a range error
-    throw std::range_error("Frame out of order at start causing negative file offset");
+
+  LOG4CXX_DEBUG(logger_, "Raw frame number: " << frame_no << ", Frame offset adjustment: " << frame_offset_adjustment);
+
+  if (frame_offset_adjustment < 0) {
+    if (-frame_offset_adjustment > frame_no) {
+      // Deal with a frame containing an offset that would cause
+      // the adjusted offset to be negative: throw a range error
+      throw std::range_error("Frame offset causes negative file offset");
+    }
   }
 
-  // Normal case: apply offset
-  LOG4CXX_DEBUG(logger_, "Raw frame number: " << frame_no);
-  LOG4CXX_DEBUG(logger_, "Frame offset adjustment: " << frame_offset_adjustment_);
-  frame_offset = frame_no - this->frame_offset_adjustment_;
+  frame_offset = frame_no + frame_offset_adjustment;
+  LOG4CXX_DEBUG(logger_, "Adjusted frame offset: " << frame_offset);
   return frame_offset;
 }
 

@@ -18,6 +18,7 @@ namespace FrameProcessor
 Frame::Frame(const std::string& index) :
     bytes_per_pixel(0),
     frameNumber_(0),
+    frameOffset_(0),
     shared_raw_(0),
     shared_size_(0),
     shared_memory_(false),

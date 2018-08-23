@@ -39,7 +39,6 @@ const std::string FileWriterPlugin::CONFIG_DATASET_INDEXES             = "indexe
 
 const std::string FileWriterPlugin::CONFIG_FRAMES                      = "frames";
 const std::string FileWriterPlugin::CONFIG_MASTER_DATASET              = "master";
-const std::string FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT           = "offset";
 const std::string FileWriterPlugin::CONFIG_WRITE                       = "write";
 const std::string FileWriterPlugin::ACQUISITION_ID                     = "acquisition_id";
 const std::string FileWriterPlugin::CLOSE_TIMEOUT_PERIOD               = "timeout_timer_period";
@@ -53,14 +52,12 @@ const std::string FileWriterPlugin::START_CLOSE_TIMEOUT                = "start_
  * filename is set to a default.
  *
  * The writer plugin is also configured to be a single
- * process writer (no other expected writers) with an offset
- * of 0.
+ * process writer (no other expected writers).
  */
 FileWriterPlugin::FileWriterPlugin() :
         writing_(false),
         concurrent_processes_(1),
         concurrent_rank_(0),
-        frame_offset_adjustment_(0),
         frames_per_block_(1),
         blocks_per_file_(0),
         use_earliest_hdf5_(false),
@@ -97,13 +94,6 @@ FileWriterPlugin::~FileWriterPlugin()
   if (writing_) {
     stop_writing();
   }
-}
-
-/** Set frame offset
- *
- */
-void FileWriterPlugin::set_frame_offset_adjustment(size_t frame_no) {
-  this->frame_offset_adjustment_ = frame_no;
 }
 
 /** Process an incoming frame.
@@ -179,7 +169,6 @@ void FileWriterPlugin::start_writing()
     writing_ = this->current_acquisition_->start_acquisition(
         concurrent_rank_,
         concurrent_processes_,
-        frame_offset_adjustment_,
         frames_per_block_,
         blocks_per_file_,
         use_earliest_hdf5_,
@@ -278,13 +267,6 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
       next_acquisition_->master_frame_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_MASTER_DATASET);
     }
 
-    // Check if we are setting the frame offset adjustment
-    if (config.has_param(FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT)) {
-      LOG4CXX_INFO(logger_, "Setting frame offset adjustment to "
-          << config.get_param<int>(FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT));
-      frame_offset_adjustment_ = (size_t) config.get_param<int>(FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT);
-    }
-
     // Check to see if the acquisition id is being set
     if (config.has_param(FileWriterPlugin::ACQUISITION_ID)) {
       next_acquisition_->acquisition_id_ = config.get_param<std::string>(FileWriterPlugin::ACQUISITION_ID);
@@ -356,7 +338,6 @@ void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 
   reply.set_param(get_name() + "/" + FileWriterPlugin::CONFIG_FRAMES, next_acquisition_->total_frames_);
   reply.set_param(get_name() + "/" + FileWriterPlugin::CONFIG_MASTER_DATASET, next_acquisition_->master_frame_);
-  reply.set_param(get_name() + "/" + FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT, frame_offset_adjustment_);
   reply.set_param(get_name() + "/" + FileWriterPlugin::ACQUISITION_ID, next_acquisition_->acquisition_id_);
   reply.set_param(get_name() + "/" + FileWriterPlugin::CLOSE_TIMEOUT_PERIOD, timeout_period_);
 

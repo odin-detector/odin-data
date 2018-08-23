@@ -41,8 +41,6 @@ public:
   explicit FileWriterPlugin();
   virtual ~FileWriterPlugin();
 
-  void set_frame_offset_adjustment(size_t frame_no);
-
   void start_writing();
   void stop_writing();
   void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
@@ -101,8 +99,6 @@ private:
   static const std::string CONFIG_MASTER_DATASET;
   /** Configuration constant for starting and stopping writing of frames */
   static const std::string CONFIG_WRITE;
-  /** Configuration constant for the frame offset */
-  static const std::string CONFIG_OFFSET_ADJUSTMENT;
   /** Configuration constant for the acquisition id */
   static const std::string ACQUISITION_ID;
   /** Configuration constant for the close file timeout */
@@ -130,8 +126,6 @@ private:
   size_t concurrent_processes_;
   /** Rank of this file writer */
   size_t concurrent_rank_;
-  /** Offset between raw frame ID and position in dataset */
-  size_t frame_offset_adjustment_;
   /** Details of the acquisition currently being written */
   boost::shared_ptr<Acquisition> current_acquisition_;
   /** Details of the next acquisition to be written */
