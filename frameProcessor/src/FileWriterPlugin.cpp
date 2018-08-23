@@ -609,6 +609,7 @@ void FileWriterPlugin::status(OdinData::IpcMessage& status)
   status.set_param(get_name() + "/writing", this->writing_);
   status.set_param(get_name() + "/frames_max", (int)this->current_acquisition_->frames_to_write_);
   status.set_param(get_name() + "/frames_written", (int)this->current_acquisition_->frames_written_);
+  status.set_param(get_name() + "/frames_processed", (int)this->current_acquisition_->frames_processed_);
   status.set_param(get_name() + "/file_path", this->current_acquisition_->file_path_);
   status.set_param(get_name() + "/file_name", this->current_acquisition_->filename_);
   status.set_param(get_name() + "/acquisition_id", this->current_acquisition_->acquisition_id_);
