@@ -40,7 +40,6 @@ OffsetAdjustmentPlugin::~OffsetAdjustmentPlugin()
  */
 void OffsetAdjustmentPlugin::process_frame(boost::shared_ptr<Frame> frame)
 {
-  LOG4CXX_TRACE(logger_, "f" << frame->get_frame_number() << " g" << first_frame_number_ << " h" << current_offset_adjustment_ << " i" << configured_offset_adjustment_);
   if (frame->get_frame_number() == first_frame_number_)
   {
     // If at first frame, set the offset value to the the configured value to apply it from now on
