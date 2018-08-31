@@ -306,7 +306,7 @@ bool Acquisition::start_acquisition(
   alignment_value_ = alignment_value;
 
   // If filename hasn't been explicitly specified or we are in multi-file mode, generate the filename
-  if ((filename_.empty() && !acquisition_id_.empty()) || blocks_per_file_ != 0) {
+  if (filename_.empty() || blocks_per_file_ != 0) {
     filename_ = generate_filename(concurrent_rank_);
   }
 
@@ -577,7 +577,14 @@ std::string Acquisition::generate_filename(size_t file_number) {
   } else {
     char number_string[7];
     snprintf(number_string, 7, "%06d", file_number + 1);
-    generated_filename << acquisition_id_ << "_data_" << number_string << ".h5";
+    if (!configured_filename_.empty())
+    {
+      generated_filename << configured_filename_ << "_" << number_string << ".h5";
+    }
+    else
+    {
+      generated_filename << acquisition_id_ << "_" << number_string << ".h5";
+    }
   }
 
   return generated_filename.str();

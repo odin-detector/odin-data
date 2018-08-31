@@ -64,6 +64,8 @@ public:
   std::string file_path_;
   /** Name of the file to write to */
   std::string filename_;
+  /** Configured value for the filename to use */
+  std::string configured_filename_;
   /** Use the earliest version of hdf5 */
   bool use_earliest_hdf5_;
   /** HDF5 file chunk alignment threshold */

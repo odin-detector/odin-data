@@ -334,7 +334,7 @@ void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 
   std::string file_str = get_name() + "/" + FileWriterPlugin::CONFIG_FILE + "/";
   reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_PATH, next_acquisition_->file_path_);
-  reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_NAME, next_acquisition_->filename_);
+  reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_NAME, next_acquisition_->configured_filename_);
 
   reply.set_param(get_name() + "/" + FileWriterPlugin::CONFIG_FRAMES, next_acquisition_->total_frames_);
   reply.set_param(get_name() + "/" + FileWriterPlugin::CONFIG_MASTER_DATASET, next_acquisition_->master_frame_);
@@ -493,8 +493,10 @@ void FileWriterPlugin::configure_file(OdinData::IpcMessage& config, OdinData::Ip
     LOG4CXX_DEBUG(logger_, "Next file path changed to " << this->next_acquisition_->file_path_);
   }
   if (config.has_param(FileWriterPlugin::CONFIG_FILE_NAME)) {
+    // Set both the configured filename and the filename_ value. Configured will only be used  in 'block' writing mode
+    this->next_acquisition_->configured_filename_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_NAME);
     this->next_acquisition_->filename_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_NAME);
-    LOG4CXX_DEBUG(logger_, "Next file name changed to " << this->next_acquisition_->filename_);
+    LOG4CXX_DEBUG(logger_, "Next file name changed to " << this->next_acquisition_->configured_filename_);
   }
 }
 
