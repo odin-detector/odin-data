@@ -2,7 +2,7 @@
  * LiveImageViewPlugin.cpp
  *
  *  Created on: 6 Sept 2018
- *      Author: wbd45595
+ *      Author: Adam Neaves - wbd45595
  */
 
 #include "LiveViewPlugin.h"

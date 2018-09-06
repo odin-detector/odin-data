@@ -2,7 +2,7 @@
  * LiveViewPlugin.h
  *
  *  Created on: 6 Sept 2018
- *      Author: wbd45595
+ *      Author: Adam Neaves - wbd45595
  */
 
 #ifndef FRAMEPROCESSOR_LIVEVIEWPLUGIN_H_
