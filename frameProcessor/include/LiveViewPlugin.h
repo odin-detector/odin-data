@@ -15,6 +15,7 @@
 using namespace log4cxx;
 using namespace log4cxx::helpers;
 
+
 #include "FrameProcessorPlugin.h"
 #include "ClassLoader.h"
 
@@ -22,10 +23,9 @@ namespace FrameProcessor
 {
 
 const int32_t DEFAULT_FRAME_FREQ = 5; //every 5th frame will be displayed
-const bool DEFAULT_SHOW_RAW_FRAME = true; //by default, transmit the raw frame rather than converting to image TODO: bool or enum for different
+//const bool DEFAULT_SHOW_RAW_FRAME = true; //by default, transmit the raw frame rather than converting to image TODO: bool or enum for different
 const std::string DEFAULT_IMAGE_VIEW_SOCKET_ADDR = "tcp://*:1337";
 static const std::string LV_FRAME_FREQ_CONFIG = "frame_frequency";
-static const std::string LV_RAW_FRAME_CONFIG  = "show_raw_frame";
 static const std::string LV_LIVE_VIEW_SOCKET_ADDR_CONFIG = "live_view_socket_addr";
 
 class LiveViewPlugin : public FrameProcessorPlugin{
@@ -44,11 +44,14 @@ private:
   /** Every Nth Frame to display*/
   int frame_freq_;
   /** transmit a raw frame or compile to an image first */
-  bool show_raw_frame_;
+  //bool show_raw_frame_;
   /** address for ZMQ socket for transmitting images*/
   std::string image_view_socket_addr_;
+
+  OdinData::IpcChannel publish_socket_;
+
 };
 
-} /* namespace FrameProcessor */
+}/* namespace FrameProcessor */
 
 #endif /* FRAMEPROCESSOR_LIVEVIEWPLUGIN_H_*/
