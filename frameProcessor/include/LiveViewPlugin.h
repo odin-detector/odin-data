@@ -22,11 +22,14 @@ using namespace log4cxx::helpers;
 namespace FrameProcessor
 {
 
-const int32_t DEFAULT_FRAME_FREQ = 5; //every 5th frame will be displayed
+const int32_t DEFAULT_FRAME_FREQ = 2; //every 2nd frame will be displayed
 //const bool DEFAULT_SHOW_RAW_FRAME = true; //by default, transmit the raw frame rather than converting to image TODO: bool or enum for different
 const std::string DEFAULT_IMAGE_VIEW_SOCKET_ADDR = "tcp://*:1337";
 static const std::string LV_FRAME_FREQ_CONFIG = "frame_frequency";
 static const std::string LV_LIVE_VIEW_SOCKET_ADDR_CONFIG = "live_view_socket_addr";
+
+const std::string DATA_TYPES[] = {"uint8","uint16","uint32"};
+const std::string COMPRESS_TYPES[] = {"none","LZ4","BSLZ4"};
 
 class LiveViewPlugin : public FrameProcessorPlugin{
 
@@ -38,6 +41,9 @@ public:
 
 private:
   void requestConfiguration(OdinData::IpcMessage& reply);
+  std::string getTypeFromEnum(int type);
+  std::string getCompressFromEnum(int compress);
+
 
   /** Pointer to logger */
   LoggerPtr logger_;
