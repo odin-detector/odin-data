@@ -28,6 +28,7 @@ const std::string META_CLOSE_ITEM        = "closefile";
 const std::string META_START_ITEM        = "startacquisition";
 const std::string META_STOP_ITEM         = "stopacquisition";
 
+const std::string FILE_EXTENSION         = ".h5";
 
 Acquisition::Acquisition() :
         concurrent_rank_(0),
@@ -305,10 +306,8 @@ bool Acquisition::start_acquisition(
   alignment_threshold_ = alignment_threshold;
   alignment_value_ = alignment_value;
 
-  // If filename hasn't been explicitly specified or we are in multi-file mode, generate the filename
-  if (filename_.empty() || blocks_per_file_ != 0) {
-    filename_ = generate_filename(concurrent_rank_);
-  }
+  // Generate the filename
+  filename_ = generate_filename(concurrent_rank_);
 
   if (filename_.empty()) {
     last_error_ = "Unable to start writing - no filename to write to";
@@ -492,12 +491,9 @@ size_t Acquisition::adjust_frame_offset(boost::shared_ptr<Frame> frame) const {
 
   LOG4CXX_DEBUG(logger_, "Raw frame number: " << frame_no << ", Frame offset adjustment: " << frame_offset_adjustment);
 
-  if (frame_offset_adjustment < 0) {
-    if (-frame_offset_adjustment > frame_no) {
-      // Deal with a frame containing an offset that would cause
-      // the adjusted offset to be negative: throw a range error
-      throw std::range_error("Frame offset causes negative file offset");
-    }
+  if ((int) frame_no + frame_offset_adjustment < 0 ) {
+    // Throw a range error if the offset would cause the adjusted offset to be negative
+    throw std::range_error("Frame offset causes negative file offset");
   }
 
   frame_offset = frame_no + frame_offset_adjustment;
@@ -560,10 +556,11 @@ std::string Acquisition::get_meta_header() {
 /**
  * Generates the filename for the given file number
  *
- * If there is only one file (blocks per file is 0), then the rank is used.
+ * Appends a 6 digit file number to the configured file name.
+ * File numbers are 0 indexed, but filenames are 1 indexed
  *
- * If there are multiple files (blocks per file is bigger than 0), then
- * the file number is used. File numbers are 0 indexed, but filenames are 1 indexed
+ * If no file name is configured, it uses the acquisition ID and if this
+ * is not configured, then the generated filename returned is empty.
  *
  * \param[in] file_number - The file number to generate the filename for
  * \return - The name of the file including extension
@@ -572,19 +569,15 @@ std::string Acquisition::generate_filename(size_t file_number) {
 
   std::stringstream generated_filename;
 
-  if (blocks_per_file_ == 0) {
-    generated_filename << acquisition_id_ << "_r" << concurrent_rank_ << ".h5";
-  } else {
-    char number_string[7];
-    snprintf(number_string, 7, "%06d", file_number + 1);
-    if (!configured_filename_.empty())
-    {
-      generated_filename << configured_filename_ << "_" << number_string << ".h5";
-    }
-    else
-    {
-      generated_filename << acquisition_id_ << "_" << number_string << ".h5";
-    }
+  char number_string[7];
+  snprintf(number_string, 7, "%06d", file_number + 1);
+  if (!configured_filename_.empty())
+  {
+    generated_filename << configured_filename_ << "_" << number_string << FILE_EXTENSION;
+  }
+  else if (!acquisition_id_.empty())
+  {
+    generated_filename << acquisition_id_ << "_" << number_string << FILE_EXTENSION;
   }
 
   return generated_filename.str();

@@ -493,9 +493,7 @@ void FileWriterPlugin::configure_file(OdinData::IpcMessage& config, OdinData::Ip
     LOG4CXX_DEBUG(logger_, "Next file path changed to " << this->next_acquisition_->file_path_);
   }
   if (config.has_param(FileWriterPlugin::CONFIG_FILE_NAME)) {
-    // Set both the configured filename and the filename_ value. Configured will only be used  in 'block' writing mode
     this->next_acquisition_->configured_filename_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_NAME);
-    this->next_acquisition_->filename_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_NAME);
     LOG4CXX_DEBUG(logger_, "Next file name changed to " << this->next_acquisition_->configured_filename_);
   }
 }
@@ -661,8 +659,8 @@ void FileWriterPlugin::stop_acquisition() {
   if (writing_){
     if (!next_acquisition_->file_path_.empty()){
       if (next_acquisition_->file_path_ == current_acquisition_->file_path_){
-        if (!next_acquisition_->filename_.empty()){
-          if (next_acquisition_->filename_ == current_acquisition_->filename_){
+        if (!next_acquisition_->configured_filename_.empty()){
+          if (next_acquisition_->configured_filename_ == current_acquisition_->configured_filename_){
             // Identical path and filenames so do not re-start
             restart = false;
             LOG4CXX_INFO(logger_, "FrameProcessor will not auto-restart acquisition due to identical filename and path");
@@ -681,7 +679,7 @@ void FileWriterPlugin::stop_acquisition() {
   this->stop_writing();
   if (restart){
     // Start next acquisition if we have a filename or acquisition ID to use
-    if (!next_acquisition_->filename_.empty() || !next_acquisition_->acquisition_id_.empty()) {
+    if (!next_acquisition_->configured_filename_.empty() || !next_acquisition_->acquisition_id_.empty()) {
       if (next_acquisition_->total_frames_ > 0 && next_acquisition_->frames_to_write_ == 0) {
         // We're not expecting any frames, so just clear out the nextAcquisition for the next one and don't start writing
         this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition());
