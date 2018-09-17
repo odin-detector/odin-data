@@ -22,15 +22,6 @@ using namespace log4cxx::helpers;
 namespace FrameProcessor
 {
 
-const int32_t DEFAULT_FRAME_FREQ = 2; //every 2nd frame will be displayed
-//const bool DEFAULT_SHOW_RAW_FRAME = true; //by default, transmit the raw frame rather than converting to image TODO: bool or enum for different
-const std::string DEFAULT_IMAGE_VIEW_SOCKET_ADDR = "tcp://*:1337";
-static const std::string LV_FRAME_FREQ_CONFIG = "frame_frequency";
-static const std::string LV_LIVE_VIEW_SOCKET_ADDR_CONFIG = "live_view_socket_addr";
-
-const std::string DATA_TYPES[] = {"uint8","uint16","uint32"};
-const std::string COMPRESS_TYPES[] = {"none","LZ4","BSLZ4"};
-
 class LiveViewPlugin : public FrameProcessorPlugin{
 
 public:
@@ -38,22 +29,44 @@ public:
   virtual ~LiveViewPlugin();
   void process_frame(boost::shared_ptr<Frame> frame);
   void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
+  void PassLiveFrame(boost::shared_ptr<Frame> frame, int frame_num);
 
 private:
+  /*DEFAULT CONFIG VALUES*/
+  static const int32_t     DEFAULT_FRAME_FREQ;// = 2; //every 2nd frame will be displayed
+  static const std::string DEFAULT_IMAGE_VIEW_SOCKET_ADDR;// = "tcp://*:1337";
+  static const bool        DEFAULT_PER_SECOND;
+
+
+
+  /*Config Names*/
+  static const std::string CONFIG_FRAME_FREQ;// = "frame_frequency";
+  static const std::string CONFIG_SOCKET_ADDR;// = "live_view_socket_addr";
+  static const std::string CONFIG_PER_SECOND;
+
+  /*Possible Data and Compression Types*/
+  static const std::string DATA_TYPES[];
+  static const std::string COMPRESS_TYPES[];
+
   void requestConfiguration(OdinData::IpcMessage& reply);
   std::string getTypeFromEnum(int type);
   std::string getCompressFromEnum(int compress);
 
 
+  /**time between frames in milliseconds*/
+  static int time_between_frames;
+  /**time the last frame was shown*/
+  boost::posix_time::ptime time_last_frame;
+
   /** Pointer to logger */
   LoggerPtr logger_;
   /** Every Nth Frame to display*/
   int frame_freq_;
-  /** transmit a raw frame or compile to an image first */
-  //bool show_raw_frame_;
   /** address for ZMQ socket for transmitting images*/
   std::string image_view_socket_addr_;
-
+  /**If displaying frames at a per second rate or per number of frames received*/
+  bool is_per_second_;
+  /**The socket the live view image frames will be sent to*/
   OdinData::IpcChannel publish_socket_;
 
 };
