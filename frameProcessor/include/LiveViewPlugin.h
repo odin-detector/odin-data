@@ -54,7 +54,7 @@ private:
 
 
   /**time between frames in milliseconds*/
-  static int time_between_frames;
+  int time_between_frames;
   /**time the last frame was shown*/
   boost::posix_time::ptime time_last_frame;
 

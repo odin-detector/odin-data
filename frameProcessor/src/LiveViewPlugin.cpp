@@ -62,6 +62,7 @@ LiveViewPlugin::~LiveViewPlugin()
  */
 void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
 {
+  boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
   LOG4CXX_TRACE(logger_, "LiveViewPlugin Process Frame.");
   int frame_num = frame->get_frame_number();
   LOG4CXX_TRACE(logger_, "LiveViewPlugin Frame Number " << frame_num);
@@ -73,11 +74,13 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
   }
   else if(is_per_second_)
   {
-    boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
-    LOG4CXX_DEBUG(logger_, "time since last frame was shown: " << (now - time_last_frame).total_milliseconds());
+    LOG4CXX_TRACE(logger_, "time since last frame was shown: " << (now - time_last_frame).total_milliseconds());
     if((now - time_last_frame).total_milliseconds() > time_between_frames)
     {
+      LOG4CXX_TRACE(logger_, "Elapsed time > " << time_between_frames)
+      time_last_frame = now;
       PassLiveFrame(frame, frame_num);
+      //time_last_frame = boost::posix_time::microsec_clock::local_time();
     }
   }
 
@@ -118,7 +121,7 @@ void LiveViewPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessag
       LOG4CXX_INFO(logger_, "LIVE VIEW DISPLAYING X FRAMES PER SECOND: " << is_per_second_);
       if(is_per_second_ && frame_freq_ != 0)
       {
-        time_between_frames = 1 / frame_freq_;
+        time_between_frames = 1000 / frame_freq_;
       }
     }
   }
