@@ -27,7 +27,7 @@ const std::string LiveViewPlugin::DATA_TYPES[] = {"uint8","uint16","uint32"};
 const std::string LiveViewPlugin::COMPRESS_TYPES[] = {"none","LZ4","BSLZ4"};
 
 /**
- * Constructor for this class
+ * Constructor for this class. Sets up ZMQ pub socket and other default values for the config
  */
 LiveViewPlugin::LiveViewPlugin() :
     publish_socket(ZMQ_PUB)
@@ -52,9 +52,10 @@ LiveViewPlugin::~LiveViewPlugin()
 }
 
 /**
- * Process recieved frame. For the live view plugin, this means taking a copy if its 1 in N frames,
- * passing on the frame, and then transmitting the frame to the live view socket, either as raw data
- * or as an image.
+ * Process recieved frame. For the live view plugin, this means checking if certain conditions are true (time elapsed, frame number, dataset name)
+ * and then potentially creating a json header and copying the data to send to the publisher socket.
+ * 
+ * \param[in] frame - pointer to a frame object.
  */
 void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
 {
@@ -89,6 +90,16 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
   this->push(frame);
 }
 
+
+/**
+ * Set configuration options for this Plugin.
+ *
+ * This sets up the Live View Plugin according to the configuration IpcMessage
+ * objects that are received.
+ *
+ * \param[in] config - IpcMessage containing configuration data.
+ * \param[out] reply - Response IpcMessage.
+ */
 void LiveViewPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
   try{
@@ -106,7 +117,7 @@ void LiveViewPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessag
     {
       setSocketAddrConfig(config.get_param<std::string>(CONFIG_SOCKET_ADDR));
     }
-
+    //check if we are setting the dataset name filter
     if(config.has_param(CONFIG_DATASET_NAME))
     {
       setDatasetNameConfig(config.get_param<std::string>(CONFIG_DATASET_NAME));
@@ -127,6 +138,11 @@ void LiveViewPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessag
   }
 }
 
+/**
+ * Get the configuration values for this Plugin.
+ *
+ * \param[out] reply - Response IpcMessage.
+ */
 void LiveViewPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
   reply.set_param(get_name() + "/" + LiveViewPlugin::CONFIG_FRAME_FREQ, frame_freq);
@@ -134,6 +150,15 @@ void LiveViewPlugin::requestConfiguration(OdinData::IpcMessage& reply)
   reply.set_param(get_name() + "/" + LiveViewPlugin::CONFIG_PER_SECOND, per_second);
 }
 
+/**
+ * Gets the type of the data, based on the enum value
+ * Values as follows:
+ * 0 - raw_8bit
+ * 1 - raw_16bit
+ * 2 - raw_32bit
+ * \param[in] type - enum value
+ * \return string value representing data type, or "unknown" if an unrecognised enum value
+ */
 std::string LiveViewPlugin::getTypeFromEnum(int32_t type)
 {
   if(type >= 0 && type < sizeof(DATA_TYPES)/sizeof(DATA_TYPES[0])){
@@ -142,7 +167,13 @@ std::string LiveViewPlugin::getTypeFromEnum(int32_t type)
     return "unknown";
   }
 }
-/* -1: Unset, 0: None, 1: LZ4, 2: BSLZ4*/
+
+/**
+ * Gets the type of compression, based on the enum value
+ * -1: Unset, 0: None, 1: LZ4, 2: BSLZ4
+ * \param[in] compress - enum value
+ * \return the string value representing the compression. Assumed none if the enum value is unrecognised.
+ */
 std::string LiveViewPlugin::getCompressFromEnum(int32_t compress)
 {
   if(compress >= 0 && compress < sizeof(COMPRESS_TYPES)/sizeof(COMPRESS_TYPES[0])){
@@ -152,6 +183,20 @@ std::string LiveViewPlugin::getCompressFromEnum(int32_t compress)
   }
 }
 
+/**
+ * Constructs a header with information about the data frame, then sends that header and the data
+ * to the ZMQ socket interface to be consumed by an external live viewer.
+ * The Header contains the following:
+ * - int32_t Frame number
+ * - string   Acquisition ID
+ * - string   Data Type
+ * - size_t   Data Size
+ * - string   compression type
+ * - size_t[] dimensions
+ * \param[in] frame - pointer to the data frame
+ * \param[in] frame_num - the number of the frame
+ * 
+ */
 void LiveViewPlugin::PassLiveFrame(boost::shared_ptr<Frame> frame, int32_t frame_num)
 {
   void* frame_data_copy = (void*)frame->get_data();
@@ -223,6 +268,11 @@ void LiveViewPlugin::PassLiveFrame(boost::shared_ptr<Frame> frame, int32_t frame
   time_last_frame = boost::posix_time::microsec_clock::local_time();
 }
 
+/**
+ * Sets the config value "per_second" which tells the plugin the number of frames to show each second
+ * Setting this value to 0 disables the "frames per second" checking
+ * \param[in] value - the value to assign to per_second
+ */ 
 void LiveViewPlugin::setPerSecondConfig(int32_t value)
 {
   per_second = value;
@@ -237,7 +287,11 @@ void LiveViewPlugin::setPerSecondConfig(int32_t value)
     time_between_frames = 1000 / per_second;
   }
 }
-
+/**
+ * Sets the Frame Frequency config value. This value tells the plugin to show every Nth frame.
+ * Setting this value to 0 disables this check
+ * \param[in] value - the value to assign to frame_freq
+ */ 
 void LiveViewPlugin::setFrameFreqConfig(int32_t value)
 {
   frame_freq = value;
@@ -250,7 +304,11 @@ void LiveViewPlugin::setFrameFreqConfig(int32_t value)
     LOG4CXX_INFO(logger_, "Showing every " << frame_freq << " frame(s)");
   }
 }
-
+/**
+ * Sets the address of the publisher socket that live view data is sent to.
+ * When setting this address, it also binds the socket to the address, unbinding it from any previous address given
+ * \param[in] value - the address to bind the socket to.
+ */
 void LiveViewPlugin::setSocketAddrConfig(std::string value)
 {
   //we dont want to unbind and rebind the same address or it causes errors, so we check first
@@ -266,6 +324,11 @@ void LiveViewPlugin::setSocketAddrConfig(std::string value)
   publish_socket.bind(image_view_socket_addr);
 }
 
+/**
+ * Sets the dataset filter configuration. The live view output can be filtered by the dataset variable on the frame based off a list
+ * of desired datasets.
+ * \param[in] value - A comma deliminated list of dataset names, or an empty string to ignore this filtering.
+ */
 void LiveViewPlugin::setDatasetNameConfig(std::string value)
 {
   std::string delim = ",";
@@ -276,7 +339,7 @@ void LiveViewPlugin::setDatasetNameConfig(std::string value)
     boost::split(datasets, value, boost::is_any_of(delim));
   }
   std::string dataset_string = "";
-  for(int i = 0; i< datasets.size(); i++){
+  for(int i = 0; i< datasets.size(); i++){ 
     boost::trim(datasets[i]);
     dataset_string += datasets[i] + ",";
   }
