@@ -1,11 +1,4 @@
-# Software Requirements
-
-# Specification
-
-#
-## For
-
-# Odin Data Live View Plugin
+# Specification For Odin Data Live View Plugin
 
 | **Document Information** | |
 | --- |--- |
@@ -16,6 +9,7 @@
 
 | **Version** | **Date** | **Author** | **Comments/Changes made** |
 | --- | --- | --- | --- |
+| 1.0 | 18/09/2018 | Adam Neaves | Updated to match changes made to the way per second frame freqency work together    |
 | 0.1 | 17/09/2018 | Adam Neaves | Created document |
 
 
@@ -44,13 +38,15 @@ The plugin will be daisy chained in with the other plugins, and thus needs to be
 The plugin can be configured in the same json file that the rest of the plugins are configured by. The following configuration options are available at this time:
 
 - **live_view_socket_addr** 
-  - A string that represents the address the live view images will be published to.
+  - A string that specifies the socket port and address the live view images will be published to.
 - **per_second** 
-  - A bool, representing whether or not the plugin displays live view images in a 1 in every N frames manner, or N frames per second.
+  - An int that specifies how many frames should be displayed each second. Setting this value to 0 will disable the *per Second* option, so the plugin will ignore the time between frames shown.
 - **frame_frequency** 
-  - an int that, depending on the *per_second* parameter, represents the N of the above parameter. So, if *per_second* is **true**, it represents the frames per second. If *per_second* is **false**, it instead represents how many frames need to pass through the plugin before it displays another.
+  - an int that configures the plugin to display every N<sup>th</sup> frame. Setting this value to 0 will disable the frequency, so that the plugin ignores the frame number.
 
-This behaviour is currently subject to change depending on development of the plugin. Currently, it can only be set to display every nth frame, or display up to a number of frames per second, but cannot do both.
+This behaviour is currently subject to change depending on development of the plugin. Currently, the plugin is designed so that, if both *per_second* and *frame_frequency* are set, the *per_second* option overrides the *frame_frequency*. This means that the plugin will display every N<sup>th</sup> frame as specified by the *frame_frequency*, unless the elapsed time between frames displayed gets larger than specified by *per_second*, in which case it displays the next frame no matter what.
+
+If both *frame_frequency* and *per_second* are set to 0, no live view images will be pushed to the socket, as both methods of frame selection are disabled. If this occurs, the plugin will warn the user of this behaviour when configured, but otherwise remains loaded and a part of the data pipeline.
 
 ## Data Output
 
