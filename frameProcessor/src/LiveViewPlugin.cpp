@@ -6,6 +6,7 @@
  */
 
 #include "LiveViewPlugin.h"
+#include <boost/algorithm/string.hpp>
 
 namespace FrameProcessor
 {
@@ -13,11 +14,13 @@ namespace FrameProcessor
 const int32_t     LiveViewPlugin::DEFAULT_FRAME_FREQ = 2;
 const std::string LiveViewPlugin::DEFAULT_IMAGE_VIEW_SOCKET_ADDR = "tcp://*:1337";
 const int32_t     LiveViewPlugin::DEFAULT_PER_SECOND = 2;
+const std::string LiveViewPlugin::DEFAULT_DATASET_NAME = "";
 
 /*Config Names*/
 const std::string LiveViewPlugin::CONFIG_FRAME_FREQ =  "frame_frequency";
 const std::string LiveViewPlugin::CONFIG_SOCKET_ADDR = "live_view_socket_addr";
 const std::string LiveViewPlugin::CONFIG_PER_SECOND =  "per_second";
+const std::string LiveViewPlugin::CONFIG_DATASET_NAME = "dataset_name";
 
 /*Enum style arrays for the header*/
 const std::string LiveViewPlugin::DATA_TYPES[] = {"uint8","uint16","uint32"};
@@ -27,23 +30,16 @@ const std::string LiveViewPlugin::COMPRESS_TYPES[] = {"none","LZ4","BSLZ4"};
  * Constructor for this class
  */
 LiveViewPlugin::LiveViewPlugin() :
-    //show_raw_frame_(DEFAULT_SHOW_RAW_FRAME),
-    frame_freq_(DEFAULT_FRAME_FREQ),
-    image_view_socket_addr_(DEFAULT_IMAGE_VIEW_SOCKET_ADDR),
-    publish_socket_(ZMQ_PUB),
-    per_second_(DEFAULT_PER_SECOND)
+    publish_socket(ZMQ_PUB)
 {
   logger_ = Logger::getLogger("FW.LiveViewPlugin");
   logger_->setLevel(Level::getAll());
   LOG4CXX_TRACE(logger_, "LiveViewPlugin constructor.");
-  if(per_second_ && frame_freq_ != 0)
-  {
-    time_between_frames = 1000 / frame_freq_;
-    time_last_frame = boost::posix_time::microsec_clock::local_time();
 
-  }
-
-  publish_socket_.bind(image_view_socket_addr_);
+  setFrameFreqConfig(DEFAULT_FRAME_FREQ);
+  setPerSecondConfig(DEFAULT_PER_SECOND);
+  setSocketAddrConfig(DEFAULT_IMAGE_VIEW_SOCKET_ADDR);
+  setDatasetNameConfig(DEFAULT_DATASET_NAME);
 }
 
 /**
@@ -52,7 +48,7 @@ LiveViewPlugin::LiveViewPlugin() :
 LiveViewPlugin::~LiveViewPlugin()
 {
   LOG4CXX_TRACE(logger_, "LiveViewPlugin destructor.");
-  publish_socket_.unbind(image_view_socket_addr_);
+  publish_socket.unbind(image_view_socket_addr);
 }
 
 /**
@@ -63,19 +59,29 @@ LiveViewPlugin::~LiveViewPlugin()
 void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
 {
   LOG4CXX_TRACE(logger_, "LiveViewPlugin Process Frame.");
-  boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
-  int32_t frame_num = frame->get_frame_number();
-  int32_t elapsed_time = (now - time_last_frame).total_milliseconds();
 
-  if(per_second_ != 0 && elapsed_time > time_between_frames) //time between frames too large, showing frame no matter what the frame number is
-  {
-    LOG4CXX_TRACE(logger_, "Elapsed time " << elapsed_time << " > " << time_between_frames);
-    PassLiveFrame(frame, frame_num);
+  std::string frame_dataset = frame->get_dataset_name();
+  //if datasets is empty, or contains the frame's dataset, then we can print it
+  if(datasets.empty() || std::find(datasets.begin(), datasets.end(), frame_dataset) != datasets.end()){
+
+    boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
+    int32_t frame_num = frame->get_frame_number();
+    int32_t elapsed_time = (now - time_last_frame).total_milliseconds();
+
+    if(per_second != 0 && elapsed_time > time_between_frames) //time between frames too large, showing frame no matter what the frame number is
+    {
+      LOG4CXX_TRACE(logger_, "Elapsed time " << elapsed_time << " > " << time_between_frames);
+      PassLiveFrame(frame, frame_num);
+    }
+    else if(frame_freq != 0 && frame_num % frame_freq == 0)
+    {
+      LOG4CXX_TRACE(logger_, "LiveViewPlugin Frame " << frame_num << " to be displayed.");
+      PassLiveFrame(frame, frame_num);
+    }
   }
-  else if(frame_freq_ != 0 && frame_num % frame_freq_ == 0)
+  else
   {
-    LOG4CXX_TRACE(logger_, "LiveViewPlugin Frame " << frame_num << " to be displayed.");
-    PassLiveFrame(frame, frame_num);
+    LOG4CXX_TRACE(logger_,"Frame dataset :" << frame_dataset << " not desired");
   }
 
   LOG4CXX_TRACE(logger_, "Pushing Data Frame" );
@@ -101,7 +107,12 @@ void LiveViewPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessag
       setSocketAddrConfig(config.get_param<std::string>(CONFIG_SOCKET_ADDR));
     }
 
-    if(per_second_ == 0 && frame_freq_ == 0)
+    if(config.has_param(CONFIG_DATASET_NAME))
+    {
+      setDatasetNameConfig(config.get_param<std::string>(CONFIG_DATASET_NAME));
+    }
+
+    if(per_second == 0 && frame_freq == 0)
     {
       LOG4CXX_WARN(logger_, "CURRENT LIVE VIEW CONFIGURATION RESULTS IN IT DOING NOTHING");
     }
@@ -118,9 +129,9 @@ void LiveViewPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessag
 
 void LiveViewPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
-  reply.set_param(get_name() + "/" + LiveViewPlugin::CONFIG_FRAME_FREQ, frame_freq_);
-  reply.set_param(get_name() + "/" + LiveViewPlugin::CONFIG_SOCKET_ADDR, image_view_socket_addr_);
-  reply.set_param(get_name() + "/" + LiveViewPlugin::CONFIG_PER_SECOND, per_second_);
+  reply.set_param(get_name() + "/" + LiveViewPlugin::CONFIG_FRAME_FREQ, frame_freq);
+  reply.set_param(get_name() + "/" + LiveViewPlugin::CONFIG_SOCKET_ADDR, image_view_socket_addr);
+  reply.set_param(get_name() + "/" + LiveViewPlugin::CONFIG_PER_SECOND, per_second);
 }
 
 std::string LiveViewPlugin::getTypeFromEnum(int32_t type)
@@ -128,7 +139,7 @@ std::string LiveViewPlugin::getTypeFromEnum(int32_t type)
   if(type >= 0 && type < sizeof(DATA_TYPES)/sizeof(DATA_TYPES[0])){
     return DATA_TYPES[type];
   }else{
-    return "unset";
+    return "unknown";
   }
 }
 /* -1: Unset, 0: None, 1: LZ4, 2: BSLZ4*/
@@ -137,7 +148,7 @@ std::string LiveViewPlugin::getCompressFromEnum(int32_t compress)
   if(compress >= 0 && compress < sizeof(COMPRESS_TYPES)/sizeof(COMPRESS_TYPES[0])){
     return COMPRESS_TYPES[compress];
   }else{
-    return "unset";
+    return COMPRESS_TYPES[0];
   }
 }
 
@@ -205,47 +216,71 @@ void LiveViewPlugin::PassLiveFrame(boost::shared_ptr<Frame> frame, int32_t frame
   document.Accept(writer);
 
   LOG4CXX_TRACE(logger_, "LiveViewPlugin Header Built, sending down socket.");
-  publish_socket_.send(buffer.GetString(), ZMQ_SNDMORE);
+  publish_socket.send(buffer.GetString(), ZMQ_SNDMORE);
   LOG4CXX_TRACE(logger_, "LiveViewPlugin Sending frame raw data");
-  publish_socket_.send(size, frame_data_copy, 0);
+  publish_socket.send(size, frame_data_copy, 0);
 
   time_last_frame = boost::posix_time::microsec_clock::local_time();
 }
 
 void LiveViewPlugin::setPerSecondConfig(int32_t value)
 {
-  per_second_ = value;
+  per_second = value;
 
-  if(per_second_ == 0)
+  if(per_second == 0)
   {
-    LOG4CXX_TRACE(logger_, "Disabling Frames Per Second Option");
+    LOG4CXX_INFO(logger_, "Disabling Frames Per Second Option");
   }
   else
   {
-    LOG4CXX_TRACE(logger_, "Displaying " << per_second_ << " frames per second");
-    time_between_frames = 1000 / per_second_;
+    LOG4CXX_INFO(logger_, "Displaying " << per_second << " frames per second");
+    time_between_frames = 1000 / per_second;
   }
 }
+
 void LiveViewPlugin::setFrameFreqConfig(int32_t value)
 {
-  frame_freq_ = value;
-  if(frame_freq_ == 0)
+  frame_freq = value;
+  if(frame_freq == 0)
   {
-    LOG4CXX_TRACE(logger_, "Disabling Frame Frequency");
+    LOG4CXX_INFO(logger_, "Disabling Frame Frequency");
   }
   else
   {
-    LOG4CXX_TRACE(logger_, "Showing every " << frame_freq_ << " frame(s)");
+    LOG4CXX_INFO(logger_, "Showing every " << frame_freq << " frame(s)");
   }
 }
 
 void LiveViewPlugin::setSocketAddrConfig(std::string value)
 {
-  //we need to unbind the socket before re-binding, otherwise it would potentially break
-  publish_socket_.unbind(image_view_socket_addr_);
-  image_view_socket_addr_ = value;
-  LOG4CXX_INFO(logger_, "Setting Live View Socket Address to " << image_view_socket_addr_);
-  publish_socket_.bind(image_view_socket_addr_);
+  //we dont want to unbind and rebind the same address or it causes errors, so we check first
+  if(publish_socket.has_bound_endpoint(value))
+  {
+    LOG4CXX_WARN(logger_, "Socket already bound to " << value << ". Doing nothing");
+    return;
+  }
+  publish_socket.unbind(image_view_socket_addr);
+
+  image_view_socket_addr = value;
+  LOG4CXX_INFO(logger_, "Setting Live View Socket Address to " << image_view_socket_addr);
+  publish_socket.bind(image_view_socket_addr);
+}
+
+void LiveViewPlugin::setDatasetNameConfig(std::string value)
+{
+  std::string delim = ",";
+  datasets.clear();
+  if(!value.empty())
+  {
+    //delim value string by comma
+    boost::split(datasets, value, boost::is_any_of(delim));
+  }
+  std::string dataset_string = "";
+  for(int i = 0; i< datasets.size(); i++){
+    boost::trim(datasets[i]);
+    dataset_string += datasets[i] + ",";
+  }
+  LOG4CXX_INFO(logger_, "Setting the datasets allowed to: " << dataset_string);
 }
 }/*namespace FrameProcessor*/
 

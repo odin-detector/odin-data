@@ -38,6 +38,7 @@ private:
   static const int32_t     DEFAULT_FRAME_FREQ;// = 2; //every 2nd frame will be displayed
   static const std::string DEFAULT_IMAGE_VIEW_SOCKET_ADDR;// = "tcp://*:1337";
   static const int32_t     DEFAULT_PER_SECOND;
+  static const std::string DEFAULT_DATASET_NAME;
 
 
 
@@ -45,6 +46,7 @@ private:
   static const std::string CONFIG_FRAME_FREQ;// = "frame_frequency";
   static const std::string CONFIG_SOCKET_ADDR;// = "live_view_socket_addr";
   static const std::string CONFIG_PER_SECOND;
+  static const std::string CONFIG_DATASET_NAME;
 
   /*Possible Data and Compression Types*/
   static const std::string DATA_TYPES[];
@@ -56,6 +58,7 @@ private:
   void setPerSecondConfig(int32_t value);
   void setFrameFreqConfig(int32_t value);
   void setSocketAddrConfig(std::string value);
+  void setDatasetNameConfig(std::string value);
 
 
   /**time between frames in milliseconds*/
@@ -66,13 +69,15 @@ private:
   /** Pointer to logger */
   LoggerPtr logger_;
   /** Every Nth Frame to display*/
-  int32_t frame_freq_;
+  int32_t frame_freq;
   /** address for ZMQ socket for transmitting images*/
-  std::string image_view_socket_addr_;
+  std::string image_view_socket_addr;
   /**Frames to show per second. Will override the frame_freq if elapsed time between frames gets too big*/
-  int32_t per_second_;
+  int32_t per_second;
   /**The socket the live view image frames will be sent to*/
-  OdinData::IpcChannel publish_socket_;
+  OdinData::IpcChannel publish_socket;
+  /**List of the dataset names to publish. If a frame comes in with a dataset name not on the list it will be ignored*/
+  std::vector<std::string>datasets;
 
 };
 

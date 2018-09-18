@@ -4,21 +4,20 @@
 | --- |--- |
 | Author(s) | Adam Neaves |
 | Reviewer(s) |   |
-| Version | 0.1 |
-| Date | 17/09/2018 |
+| Version | 1.0 |
+| Date | 18/09/2018 |
 
 | **Version** | **Date** | **Author** | **Comments/Changes made** |
 | --- | --- | --- | --- |
-| 1.0 | 18/09/2018 | Adam Neaves | Updated to match changes made to the way per second frame freqency work together    |
+| 1.0 | 18/09/2018 | Adam Neaves | Updated to change from requirements to specification |
 | 0.1 | 17/09/2018 | Adam Neaves | Created document |
 
 
 # Introduction
-## Product Purpose
 
 The Live View Plugin is a plugin for Odin Data, that provides a downscaled set of the data on an external ZMQ Publisher Socket, and thus allows for external or internal software to access a live copy of the data to display to users, if need be. It can get a subset of the data either by only publishing 1 in N frames to the socket, or by displaying a certain number of frames per second. The behaviour of this plugin is fully configurable, in the same way the other plugins for Odin Data are.
 
-This plugin does not provide a GUI that displays the data image, only reveals the data to a socket so that a separate piece of software may display it.
+This plugin does not provide a GUI that displays the data image, only provides an interface so that a separate piece of software may display it.
 
 ## References
 
@@ -27,10 +26,6 @@ The following list of documents were used during the creation of this plugin, or
 - The ZeroMQ API reference
 - The ZeroMQ guide book.
 - [The Odin Workshop created by Tim Nicholls](https://github.com/stfc-aeg/odin-workshop)
-
-## Design and Implementation Constraints
-
-The plugin will be daisy chained in with the other plugins, and thus needs to be designed in a way that will not cause issue within this architecture. This means it should be able to process data frames at a reasonable speed to avoid bottlenecks within the system.
 
 # Specification
 
@@ -43,8 +38,11 @@ The plugin can be configured in the same json file that the rest of the plugins 
   - An int that specifies how many frames should be displayed each second. Setting this value to 0 will disable the *per Second* option, so the plugin will ignore the time between frames shown.
 - **frame_frequency** 
   - an int that configures the plugin to display every N<sup>th</sup> frame. Setting this value to 0 will disable the frequency, so that the plugin ignores the frame number.
+- **dataset_name**
+  - A string, representing a whitelist of dataset names that will be displayed by the live view. Dataset names are separated by commas, and trimmed of surrounding whitespace.
+  Setting this to an empty string will disable this option, so the dataset value will not be considered when choosing frames to display.
 
-This behaviour is currently subject to change depending on development of the plugin. Currently, the plugin is designed so that, if both *per_second* and *frame_frequency* are set, the *per_second* option overrides the *frame_frequency*. This means that the plugin will display every N<sup>th</sup> frame as specified by the *frame_frequency*, unless the elapsed time between frames displayed gets larger than specified by *per_second*, in which case it displays the next frame no matter what.
+Currently, the plugin is designed so that, if both *per_second* and *frame_frequency* are set, the *per_second* option overrides the *frame_frequency*. This means that the plugin will display every N<sup>th</sup> frame as specified by the *frame_frequency*, unless the elapsed time between frames displayed gets larger than specified by *per_second*, in which case it displays the next frame no matter what.
 
 If both *frame_frequency* and *per_second* are set to 0, no live view images will be pushed to the socket, as both methods of frame selection are disabled. If this occurs, the plugin will warn the user of this behaviour when configured, but otherwise remains loaded and a part of the data pipeline.
 
