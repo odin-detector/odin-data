@@ -21,6 +21,7 @@ using namespace log4cxx::xml;
 #include "FrameProcessorDefinitions.h"
 #include "UIDAdjustmentPlugin.h"
 #include "OffsetAdjustmentPlugin.h"
+#include "LiveViewPlugin.h"
 
 class GlobalConfig {
 public:
@@ -727,7 +728,7 @@ BOOST_AUTO_TEST_CASE( AdjustUID )
   plugin.process_frame(frame);
   BOOST_CHECK_EQUAL(35, frame->get_i64_parameter("UID"));
 }
-
+ 
 BOOST_AUTO_TEST_SUITE_END(); //UIDAdjustmentPluginUnitTest
 
 BOOST_FIXTURE_TEST_SUITE(OffsetAdjustmentPluginUnitTest, FileWriterPluginTestFixture);
@@ -819,6 +820,45 @@ BOOST_AUTO_TEST_CASE( AdjustOffset )
 }
 
 BOOST_AUTO_TEST_SUITE_END(); //UIDAdjustmentPluginUnitTest
+
+BOOST_FIXTURE_TEST_SUITE(LiveViewPluginUnitTest, FileWriterPluginTestFixture);
+
+BOOST_AUTO_TEST_CASE( LiveViewTest)
+{
+
+  FrameProcessor::LiveViewPlugin plugin;
+  OdinData::IpcMessage reply;
+  OdinData::IpcMessage cfg;
+  //boost::shared_ptr<FrameProcessor::Frame> frame(new FrameProcessor::Frame("raw"));
+
+  OdinData::IpcChannel recv_socket(ZMQ_SUB);
+  recv_socket.subscribe("");
+  //std::string live_view_socket_addr = plugin.getPubSocketAddr();
+  recv_socket.connect("tcp://127.0.0.1:5020"); //TODO: GET RID OF HARDCODED ADDRESS
+  //std::cout << live_view_socket_addr << std::endl;
+
+  frame->set_frame_number(FrameProcessor::LiveViewPlugin::DEFAULT_FRAME_FREQ);
+  //test we can output frame
+  while(!recv_socket.poll(100)) //to avoid issue with slow joiners, using a while loop here
+  {
+    plugin.process_frame(frame);
+    std::cout << "FRAME PROCESSED" << std::endl;
+  }
+  std::string message = recv_socket.recv();
+  std::vector<unsigned short> buf;
+  recv_socket.recv_raw(buf);
+  std::cout << message << std::endl;
+  rapidjson::Document doc;
+  doc.Parse(message.c_str());
+  BOOST_CHECK_EQUAL(doc["frame_num"].GetInt(), frame->get_frame_number());
+  BOOST_CHECK_EQUAL(doc["dsize"].GetInt() , frame->get_data_size());
+
+
+
+  
+}
+
+BOOST_AUTO_TEST_SUITE_END(); //LiveViewPluginUnitTest
 
 BOOST_FIXTURE_TEST_SUITE(FileWriterPluginTestUnitTest, FileWriterPluginTestFixture);
 

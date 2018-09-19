@@ -30,9 +30,7 @@ public:
   void process_frame(boost::shared_ptr<Frame> frame);
   void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   void PassLiveFrame(boost::shared_ptr<Frame> frame, int32_t frame_num);
-
-private:
-
+  std::string getPubSocketAddr();
 
   /*DEFAULT CONFIG VALUES*/
   static const int32_t     DEFAULT_FRAME_FREQ;            /**<The default value for the Frame Frequency configuration   = 2*/
@@ -45,6 +43,8 @@ private:
   static const std::string CONFIG_PER_SECOND;   /**<The name of the Per Second config in the json file      = "per_second"*/
   static const std::string CONFIG_SOCKET_ADDR;  /**<The name of the Socket Address config in the json file  = "live_view_socket_addr"*/
   static const std::string CONFIG_DATASET_NAME; /**<The name of the Dataset Name config in the json file    = "dataset_name"*/
+
+private:
 
   /*Possible Data and Compression Types*/
   static const std::string DATA_TYPES[];     /**<List of possible dtype strings*/

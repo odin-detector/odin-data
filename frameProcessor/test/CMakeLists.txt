@@ -21,6 +21,7 @@ target_link_libraries(frameProcessorTest
         Hdf5Plugin
         UIDAdjustmentPlugin
         OffsetAdjustmentPlugin
+        LiveViewPlugin
         ${COMMON_LIBRARY})
 
 if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )

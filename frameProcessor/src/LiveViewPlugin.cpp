@@ -12,7 +12,7 @@ namespace FrameProcessor
 {
 /*Default Config*/
 const int32_t     LiveViewPlugin::DEFAULT_FRAME_FREQ = 2;
-const int32_t     LiveViewPlugin::DEFAULT_PER_SECOND = 2;
+const int32_t     LiveViewPlugin::DEFAULT_PER_SECOND = 0;
 const std::string LiveViewPlugin::DEFAULT_IMAGE_VIEW_SOCKET_ADDR = "tcp://*:5020";
 const std::string LiveViewPlugin::DEFAULT_DATASET_NAME = "";
 
@@ -344,6 +344,14 @@ void LiveViewPlugin::setDatasetNameConfig(std::string value)
     dataset_string += datasets[i] + ",";
   }
   LOG4CXX_INFO(logger_, "Setting the datasets allowed to: " << dataset_string);
+}
+
+std::string LiveViewPlugin::getPubSocketAddr()
+{
+  char resolved_endpoint[256];
+  size_t endpoint_size = sizeof(resolved_endpoint);
+  publish_socket.getsockopt(ZMQ_LAST_ENDPOINT, resolved_endpoint, &endpoint_size);
+  return resolved_endpoint;
 }
 }/*namespace FrameProcessor*/
 
