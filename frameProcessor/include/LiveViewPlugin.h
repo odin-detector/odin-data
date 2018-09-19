@@ -35,22 +35,20 @@ private:
 
 
   /*DEFAULT CONFIG VALUES*/
-  static const int32_t     DEFAULT_FRAME_FREQ;// = 2; //every 2nd frame will be displayed
-  static const std::string DEFAULT_IMAGE_VIEW_SOCKET_ADDR;// = "tcp://*:1337";
-  static const int32_t     DEFAULT_PER_SECOND;
-  static const std::string DEFAULT_DATASET_NAME;
-
-
+  static const int32_t     DEFAULT_FRAME_FREQ;            /**<The default value for the Frame Frequency configuration   = 2*/
+  static const int32_t     DEFAULT_PER_SECOND;            /**<The default value for the frames per second configuration = 2*/
+  static const std::string DEFAULT_IMAGE_VIEW_SOCKET_ADDR;/**<The default value for the ZMQ socket address              = "tcp://*:5020"*/
+  static const std::string DEFAULT_DATASET_NAME;          /**<The default value for the dataset name filter             = ""*/
 
   /*Config Names*/
-  static const std::string CONFIG_FRAME_FREQ;// = "frame_frequency";
-  static const std::string CONFIG_SOCKET_ADDR;// = "live_view_socket_addr";
-  static const std::string CONFIG_PER_SECOND;
-  static const std::string CONFIG_DATASET_NAME;
+  static const std::string CONFIG_FRAME_FREQ;   /**<The name of the Frame Frequency config in the json file = "frame_frequency"*/
+  static const std::string CONFIG_PER_SECOND;   /**<The name of the Per Second config in the json file      = "per_second"*/
+  static const std::string CONFIG_SOCKET_ADDR;  /**<The name of the Socket Address config in the json file  = "live_view_socket_addr"*/
+  static const std::string CONFIG_DATASET_NAME; /**<The name of the Dataset Name config in the json file    = "dataset_name"*/
 
   /*Possible Data and Compression Types*/
-  static const std::string DATA_TYPES[];
-  static const std::string COMPRESS_TYPES[];
+  static const std::string DATA_TYPES[];     /**<List of possible dtype strings*/
+  static const std::string COMPRESS_TYPES[]; /**<List of possible compression type strings*/
 
   void requestConfiguration(OdinData::IpcMessage& reply);
   std::string getTypeFromEnum(int32_t type);

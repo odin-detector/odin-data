@@ -12,14 +12,14 @@ namespace FrameProcessor
 {
 /*Default Config*/
 const int32_t     LiveViewPlugin::DEFAULT_FRAME_FREQ = 2;
-const std::string LiveViewPlugin::DEFAULT_IMAGE_VIEW_SOCKET_ADDR = "tcp://*:1337";
 const int32_t     LiveViewPlugin::DEFAULT_PER_SECOND = 2;
+const std::string LiveViewPlugin::DEFAULT_IMAGE_VIEW_SOCKET_ADDR = "tcp://*:5020";
 const std::string LiveViewPlugin::DEFAULT_DATASET_NAME = "";
 
 /*Config Names*/
 const std::string LiveViewPlugin::CONFIG_FRAME_FREQ =  "frame_frequency";
-const std::string LiveViewPlugin::CONFIG_SOCKET_ADDR = "live_view_socket_addr";
 const std::string LiveViewPlugin::CONFIG_PER_SECOND =  "per_second";
+const std::string LiveViewPlugin::CONFIG_SOCKET_ADDR = "live_view_socket_addr";
 const std::string LiveViewPlugin::CONFIG_DATASET_NAME = "dataset_name";
 
 /*Enum style arrays for the header*/
@@ -170,7 +170,7 @@ std::string LiveViewPlugin::getTypeFromEnum(int32_t type)
 
 /**
  * Gets the type of compression, based on the enum value
- * -1: Unset, 0: None, 1: LZ4, 2: BSLZ4
+ * 0: None, 1: LZ4, 2: BSLZ4
  * \param[in] compress - enum value
  * \return the string value representing the compression. Assumed none if the enum value is unrecognised.
  */
