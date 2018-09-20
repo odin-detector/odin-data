@@ -823,7 +823,49 @@ BOOST_AUTO_TEST_SUITE_END(); //UIDAdjustmentPluginUnitTest
 
 BOOST_FIXTURE_TEST_SUITE(LiveViewPluginUnitTest, FileWriterPluginTestFixture);
 
-BOOST_AUTO_TEST_CASE( LiveViewTest)
+class LiveViewPluginTestFixture
+{
+public:
+  LiveViewPluginTestFixture()
+  {
+    dimensions_t img_dims(2); img_dims[0] = 3; img_dims[1] = 4;
+    dimensions_t chunk_dims(3); chunk_dims[0] = 1; chunk_dims[1] = 3; chunk_dims[2] = 4;
+    //PercivalEmulator::FrameHeader img_header;
+    //img_header.frame_number = 7;
+
+    dset_def.name = "data";
+    dset_def.num_frames = 2; //unused?
+    dset_def.data_type = FrameProcessor::raw_8bit;
+    dset_def.frame_dimensions = dimensions_t(2);
+    dset_def.frame_dimensions[0] = 3;
+    dset_def.frame_dimensions[1] = 4;
+    dset_def.chunks = chunk_dims;
+    dset_def.create_low_high_indexes = false;
+
+    frame = boost::shared_ptr<FrameProcessor::Frame>(new FrameProcessor::Frame("data"));
+    frame->set_frame_number(7);
+    frame->set_dimensions(dset_def.frame_dimensions);
+    frame->set_data_type(dset_def.data_type);
+//        frame->
+//        2, img_dims));
+//        frame->copy_header(&img_header);
+    frame->copy_data(static_cast<void*>(img), 12);
+
+  }
+  ~LiveViewPluginTestFixture() {}
+  boost::shared_ptr<FrameProcessor::Frame> frame;
+  std::vector< boost::shared_ptr<FrameProcessor::Frame> >frames;
+  FrameProcessor::FileWriterPlugin fw;
+  FrameProcessor::HDF5File hdf5f;
+  FrameProcessor::DatasetDefinition dset_def;
+  uint8_t img[12] =  { 1, 2, 3, 4,
+                       5, 6, 7, 8,
+                       9,10,11,12 };
+};
+
+BOOST_FIXTURE_TEST_SUITE(LiveViewPluginUnitTest, LiveViewPluginTestFixture);
+
+BOOST_AUTO_TEST_CASE(LiveViewTest)
 {
 
   FrameProcessor::LiveViewPlugin plugin;
@@ -845,8 +887,6 @@ BOOST_AUTO_TEST_CASE( LiveViewTest)
     std::cout << "FRAME PROCESSED" << std::endl;
   }
   std::string message = recv_socket.recv();
-  std::vector<unsigned short> buf;
-  recv_socket.recv_raw(buf);
   std::cout << message << std::endl;
   rapidjson::Document doc;
   doc.Parse(message.c_str());
@@ -854,8 +894,28 @@ BOOST_AUTO_TEST_CASE( LiveViewTest)
   BOOST_CHECK_EQUAL(doc["dsize"].GetInt() , frame->get_data_size());
 
 
+  //std::vector<int> head_shape(std::atoi(doc["shape"][0].GetString()), std::atoi(doc["shape"][1].GetString()));
+  BOOST_CHECK_EQUAL(atoi(doc["shape"][0].GetString()), frame->get_dimensions()[0]);
+  BOOST_CHECK_EQUAL(atoi(doc["shape"][1].GetString()), frame->get_dimensions()[1]);
+  uint8_t  pbuf[frame->get_data_size()];
+
+  recv_socket.recv_raw(&pbuf);
+  std::vector<uint8_t> buf(frame->get_data_size());
+  std::copy(pbuf, pbuf + frame->get_data_size(), buf.begin());
+//  std::string data = recv_socket.recv(); //TODO: really should be using recv_raw but i could NOT get that to work
+//  std::vector<uint8_t> buf (data.begin(), data.end());
+//  //void const *pdata = (frame->get_data());
+
+  //std::vector<unsigned short> const* original = static_cast<std::vector<unsigned short> const*>( pdata );
+  std::vector<unsigned short> original(img, img + sizeof img / sizeof img[0]);
+  BOOST_CHECK_EQUAL_COLLECTIONS(buf.begin(), buf.end() , original.begin(), original.end());
 
   
+
+  //TODO: Test config options
+  //TODO: Test Frames Per Second Option
+  //TODO: Test Dataset Filtering
+  //TODO: Test Different Datatypes
 }
 
 BOOST_AUTO_TEST_SUITE_END(); //LiveViewPluginUnitTest
