@@ -855,13 +855,13 @@ public:
         tmp_frame->set_frame_number(i);
         tmp_frame->set_dimensions(dset_def.frame_dimensions);
         tmp_frame->set_data_type(dset_def.data_type);
-        tmp_frame->set_dataset_name(i % 2 ? "data" : "not_data");
+        tmp_frame->set_dataset_name(i % 4 ? "data" : "not_data");
 
         tmp_frame->copy_data(static_cast<void*>(img), 12);
 
         frames.push_back(tmp_frame);
       }
-
+    new_socket_recieve = false;
   }
   ~LiveViewPluginTestFixture() {}
   boost::shared_ptr<FrameProcessor::Frame> frame;
@@ -876,7 +876,7 @@ public:
   const std::string COMPRESS_TYPES[3] = {"none","LZ4","BSLZ4"};
   std::vector< boost::shared_ptr<FrameProcessor::Frame> > frame_list;
 
-
+  bool new_socket_recieve; //we have to declare this here, or we get a memory access error around line 825
 };
 
 BOOST_FIXTURE_TEST_SUITE(LiveViewPluginUnitTest, LiveViewPluginTestFixture);
@@ -889,9 +889,12 @@ BOOST_AUTO_TEST_CASE(LiveViewTest)
   OdinData::IpcMessage cfg;
 
   OdinData::IpcChannel recv_socket(ZMQ_SUB);
+  OdinData::IpcChannel recv_socket_other(ZMQ_SUB);
   recv_socket.subscribe("");
+  recv_socket_other.subscribe("");
   //std::string live_view_socket_addr = plugin.getPubSocketAddr();
   recv_socket.connect("tcp://127.0.0.1:5020"); //TODO: GET RID OF HARDCODED ADDRESS
+  recv_socket_other.connect("tcp://127.0.0.1:1337");
   //std::cout << live_view_socket_addr << std::endl;
 
   frame->set_frame_number(FrameProcessor::LiveViewPlugin::DEFAULT_FRAME_FREQ);
@@ -923,7 +926,7 @@ BOOST_AUTO_TEST_CASE(LiveViewTest)
   std::vector<unsigned short> original(img, img + sizeof img / sizeof img[0]);
   BOOST_CHECK_EQUAL_COLLECTIONS(buf.begin(), buf.end() , original.begin(), original.end()); //collection comparison needs beginning and end of each vector
 
-  //TEST EVERY DOWNSCALE OPTION
+  //TEST DOWNSCALE OPTION
   while(recv_socket.poll(10))
   {
     recv_socket.recv(); //clear any extra data from the above while loop
@@ -938,14 +941,56 @@ BOOST_AUTO_TEST_CASE(LiveViewTest)
   while(recv_socket.poll(10))
   {
     std::string tmp_string = recv_socket.recv();
+//    std::cout << tmp_string <<std::endl;
     processed_frames.push_back(tmp_string);
     void* buf;
     recv_socket.recv_raw(buf); //we dont need the data for this test but still need to read from the socket to clear it
 
   }
   BOOST_CHECK_EQUAL(processed_frames.size(), frames.size()/FrameProcessor::LiveViewPlugin::DEFAULT_FRAME_FREQ);
-  //TODO: Test config options
-  //TODO: Test Frames Per Second Option
+
+
+  //TEST CONFIGURATION
+  cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_FRAME_FREQ, 1);
+  cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_DATASET_NAME, std::string("data"));
+  cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_SOCKET_ADDR, std::string("tcp://*:1337"));
+
+  BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
+
+  //send frame again to check its going to a different socket
+
+  for(int i = 0; i < 10; i ++)
+  {
+    plugin.process_frame(frame);
+    BOOST_CHECK(!recv_socket.poll(100));
+    new_socket_recieve = recv_socket_other.poll(100);
+    if(new_socket_recieve)
+    {
+      break;
+    }
+  }
+  BOOST_CHECK(new_socket_recieve);
+
+  //TEST DATASET FILTERING
+  while(recv_socket_other.poll(10))
+  {
+    recv_socket_other.recv(); //clear any extra data from the above while loop
+  }
+
+  for(int i = 0; i < frames.size(); i++)
+  {
+    plugin.process_frame(frames[i]);
+  }
+
+  std::vector<std::string> dataset_processed_frames;
+  while(recv_socket_other.poll(10))
+  {
+    std::string tmp_string = recv_socket_other.recv();
+    processed_frames.push_back(tmp_string);
+    void* buf;
+    recv_socket_other.recv_raw(buf); //we dont need the data for this test but still need to read from the socket to clear it
+  }
+  BOOST_CHECK_EQUAL(dataset_processed_frames.size(), 3);
   //TODO: Test Dataset Filtering
   //TODO: Test Different Datatypes
 }

@@ -206,6 +206,7 @@ void LiveViewPlugin::PassLiveFrame(boost::shared_ptr<Frame> frame, int32_t frame
   std::string type = getTypeFromEnum(frame->get_data_type());
   size_t size = frame->get_data_size();
   std::string compress = getCompressFromEnum(frame->get_compression());
+  std::string dataset = frame->get_dataset_name();
 
   rapidjson::Document document; //header info
   document.SetObject();
@@ -231,6 +232,11 @@ void LiveViewPlugin::PassLiveFrame(boost::shared_ptr<Frame> frame, int32_t frame
   rapidjson::Value keySize("dsize", document.GetAllocator());
   rapidjson::Value valueSize(size);
   document.AddMember(keySize, valueSize, document.GetAllocator());
+
+  //getting dataset
+  rapidjson::Value keySet("dataset", document.GetAllocator());
+  rapidjson::Value valueSet(dataset.c_str(), document.GetAllocator());
+  document.AddMember(keySet, valueSet, document.GetAllocator());
 
   //getting compression
   rapidjson::Value keyCompress("compression", document.GetAllocator());
