@@ -843,13 +843,24 @@ public:
     dset_def.create_low_high_indexes = false;
 
     frame = boost::shared_ptr<FrameProcessor::Frame>(new FrameProcessor::Frame("data"));
-    frame->set_frame_number(7);
+    frame->set_frame_number(2);
     frame->set_dimensions(dset_def.frame_dimensions);
     frame->set_data_type(dset_def.data_type);
-//        frame->
-//        2, img_dims));
-//        frame->copy_header(&img_header);
+    frame->set_compression(0);
     frame->copy_data(static_cast<void*>(img), 12);
+
+    for(int i = 0; i < 10; i++)
+      {
+        boost::shared_ptr<FrameProcessor::Frame> tmp_frame(new FrameProcessor::Frame("data"));
+        tmp_frame->set_frame_number(i);
+        tmp_frame->set_dimensions(dset_def.frame_dimensions);
+        tmp_frame->set_data_type(dset_def.data_type);
+        tmp_frame->set_dataset_name(i % 2 ? "data" : "not_data");
+
+        tmp_frame->copy_data(static_cast<void*>(img), 12);
+
+        frames.push_back(tmp_frame);
+      }
 
   }
   ~LiveViewPluginTestFixture() {}
@@ -861,6 +872,11 @@ public:
   uint8_t img[12] =  { 1, 2, 3, 4,
                        5, 6, 7, 8,
                        9,10,11,12 };
+  const std::string DATA_TYPES[3] = {"uint8","uint16","uint32"};
+  const std::string COMPRESS_TYPES[3] = {"none","LZ4","BSLZ4"};
+  std::vector< boost::shared_ptr<FrameProcessor::Frame> > frame_list;
+
+
 };
 
 BOOST_FIXTURE_TEST_SUITE(LiveViewPluginUnitTest, LiveViewPluginTestFixture);
@@ -871,7 +887,6 @@ BOOST_AUTO_TEST_CASE(LiveViewTest)
   FrameProcessor::LiveViewPlugin plugin;
   OdinData::IpcMessage reply;
   OdinData::IpcMessage cfg;
-  //boost::shared_ptr<FrameProcessor::Frame> frame(new FrameProcessor::Frame("raw"));
 
   OdinData::IpcChannel recv_socket(ZMQ_SUB);
   recv_socket.subscribe("");
@@ -884,34 +899,51 @@ BOOST_AUTO_TEST_CASE(LiveViewTest)
   while(!recv_socket.poll(100)) //to avoid issue with slow joiners, using a while loop here
   {
     plugin.process_frame(frame);
-    std::cout << "FRAME PROCESSED" << std::endl;
   }
   std::string message = recv_socket.recv();
   std::cout << message << std::endl;
   rapidjson::Document doc;
   doc.Parse(message.c_str());
+
+  //TEST HEADER CONTENTS
   BOOST_CHECK_EQUAL(doc["frame_num"].GetInt(), frame->get_frame_number());
+  BOOST_CHECK_EQUAL(doc["acquisition_id"].GetString(), frame->get_acquisition_id());
+  BOOST_CHECK_EQUAL(doc["dtype"].GetString(), DATA_TYPES[frame->get_data_type()]);
   BOOST_CHECK_EQUAL(doc["dsize"].GetInt() , frame->get_data_size());
-
-
-  //std::vector<int> head_shape(std::atoi(doc["shape"][0].GetString()), std::atoi(doc["shape"][1].GetString()));
+  BOOST_CHECK_EQUAL(doc["compression"].GetString(), COMPRESS_TYPES[frame->get_compression()]);
   BOOST_CHECK_EQUAL(atoi(doc["shape"][0].GetString()), frame->get_dimensions()[0]);
   BOOST_CHECK_EQUAL(atoi(doc["shape"][1].GetString()), frame->get_dimensions()[1]);
-  uint8_t  pbuf[frame->get_data_size()];
 
-  recv_socket.recv_raw(&pbuf);
-  std::vector<uint8_t> buf(frame->get_data_size());
-  std::copy(pbuf, pbuf + frame->get_data_size(), buf.begin());
-//  std::string data = recv_socket.recv(); //TODO: really should be using recv_raw but i could NOT get that to work
-//  std::vector<uint8_t> buf (data.begin(), data.end());
-//  //void const *pdata = (frame->get_data());
+  //TEST DATA CONTENTS
+  uint8_t  pbuf[frame->get_data_size()]; //create basic array to store data
 
-  //std::vector<unsigned short> const* original = static_cast<std::vector<unsigned short> const*>( pdata );
+  recv_socket.recv_raw(&pbuf); //put data into arary
+  std::vector<uint8_t> buf(frame->get_data_size()); //create vector of size of data
+  std::copy(pbuf, pbuf + frame->get_data_size(), buf.begin()); //copy data from array to vector, so it can be compared
   std::vector<unsigned short> original(img, img + sizeof img / sizeof img[0]);
-  BOOST_CHECK_EQUAL_COLLECTIONS(buf.begin(), buf.end() , original.begin(), original.end());
+  BOOST_CHECK_EQUAL_COLLECTIONS(buf.begin(), buf.end() , original.begin(), original.end()); //collection comparison needs beginning and end of each vector
 
-  
+  //TEST EVERY DOWNSCALE OPTION
+  while(recv_socket.poll(10))
+  {
+    recv_socket.recv(); //clear any extra data from the above while loop
+  }
+  //process all frames. with a downscale factor of 2, this should return all the even numbered frames.
+  for(int i = 0; i < frames.size(); i++)
+  {
+    plugin.process_frame(frames[i]);
+  }
 
+  std::vector<std::string> processed_frames;
+  while(recv_socket.poll(10))
+  {
+    std::string tmp_string = recv_socket.recv();
+    processed_frames.push_back(tmp_string);
+    void* buf;
+    recv_socket.recv_raw(buf); //we dont need the data for this test but still need to read from the socket to clear it
+
+  }
+  BOOST_CHECK_EQUAL(processed_frames.size(), frames.size()/FrameProcessor::LiveViewPlugin::DEFAULT_FRAME_FREQ);
   //TODO: Test config options
   //TODO: Test Frames Per Second Option
   //TODO: Test Dataset Filtering
