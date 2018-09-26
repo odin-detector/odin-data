@@ -862,6 +862,7 @@ public:
         frames.push_back(tmp_frame);
       }
     new_socket_recieve = false;
+
   }
   ~LiveViewPluginTestFixture() {}
   boost::shared_ptr<FrameProcessor::Frame> frame;
@@ -877,6 +878,8 @@ public:
   std::vector< boost::shared_ptr<FrameProcessor::Frame> > frame_list;
 
   bool new_socket_recieve; //we have to declare this here, or we get a memory access error around line 825
+
+
 };
 
 BOOST_FIXTURE_TEST_SUITE(LiveViewPluginUnitTest, LiveViewPluginTestFixture);
@@ -943,8 +946,7 @@ BOOST_AUTO_TEST_CASE(LiveViewTest)
     std::string tmp_string = recv_socket.recv();
 //    std::cout << tmp_string <<std::endl;
     processed_frames.push_back(tmp_string);
-    void* buf;
-    recv_socket.recv_raw(buf); //we dont need the data for this test but still need to read from the socket to clear it
+    recv_socket.recv_raw(pbuf); //we dont need the data for this test but still need to read from the socket to clear it
 
   }
   BOOST_CHECK_EQUAL(processed_frames.size(), frames.size()/FrameProcessor::LiveViewPlugin::DEFAULT_FRAME_FREQ);
@@ -986,12 +988,12 @@ BOOST_AUTO_TEST_CASE(LiveViewTest)
   while(recv_socket_other.poll(10))
   {
     std::string tmp_string = recv_socket_other.recv();
-    processed_frames.push_back(tmp_string);
-    void* buf;
-    recv_socket_other.recv_raw(buf); //we dont need the data for this test but still need to read from the socket to clear it
+    std::cout << "Received Header: " << tmp_string <<std::endl;
+    dataset_processed_frames.push_back(tmp_string);
+    recv_socket_other.recv_raw(pbuf); //we dont need the data for this test but still need to read from the socket to clear it
   }
-  BOOST_CHECK_EQUAL(dataset_processed_frames.size(), 3);
-  //TODO: Test Dataset Filtering
+  BOOST_CHECK_EQUAL(dataset_processed_frames.size(), 7);
+
   //TODO: Test Different Datatypes
 }
 
