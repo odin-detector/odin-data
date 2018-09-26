@@ -40,7 +40,6 @@ class FrameProcessorAdapter(OdinDataAdapter):
         self._param = {
             'config/hdf/file/path': '',
             'config/hdf/file/name': '',
-            'config/hdf/file/extension': 'h5',
             'config/hdf/frames': 0
         }
         self._command = 'config/hdf/write'
@@ -65,7 +64,6 @@ class FrameProcessorAdapter(OdinDataAdapter):
         # Store these parameters locally:
         # config/hdf/file/path
         # config/hdf/file/name
-        # config/hdf/file/extension
         #
         # When this arrives write all params into a single IPC message
         # config/hdf/write
@@ -97,7 +95,6 @@ class FrameProcessorAdapter(OdinDataAdapter):
         # Store these parameters locally:
         # config/hdf/file/path
         # config/hdf/file/name
-        # config/hdf/file/extension
         #
         # When this arrives write all params into a single IPC message
         # config/hdf/write
@@ -120,9 +117,6 @@ class FrameProcessorAdapter(OdinDataAdapter):
                     # Check the file path is valid
                     if not os.path.isdir(str(self._param['config/hdf/file/path'])):
                         raise RuntimeError("Invalid path specified [{}]".format(str(self._param['config/hdf/file/path'])))
-                    # Check the extension exists
-                    if str(self._param['config/hdf/file/extension']) == '':
-                        raise RuntimeError("File extension must not be empty")
                     # Check the filename exists
                     if str(self._param['config/hdf/file/name']) == '':
                         raise RuntimeError("File name must not be empty")
@@ -144,9 +138,7 @@ class FrameProcessorAdapter(OdinDataAdapter):
                             'hdf': {
                                 'file': {
                                     'path': str(self._param['config/hdf/file/path']),
-                                    'name': str(self._param['config/hdf/file/name']) +
-                                            '_r' + str(rank) + '.' +
-                                            str(self._param['config/hdf/file/extension'])
+                                    'name': str(self._param['config/hdf/file/name'])
                                     }
                             }
                         }
