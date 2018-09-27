@@ -100,6 +100,8 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
            "Name of HDF5 file to write frames to (default: test.hdf5)")
         ("output-dir",    po::value<std::string>()->default_value("/tmp/"),
            "Directory to write HDF5 file to (default: /tmp/)")
+        ("extension",     po::value<std::string>()->default_value("h5"),
+           "Set the file extension of the data files (default: h5)")
         ("single-shot,S", po::bool_switch(),
            "Shutdown after one dataset completed")
         ("frames,f",      po::value<unsigned int>()->default_value(0),
@@ -437,6 +439,7 @@ void configureFileWriter(boost::shared_ptr<FrameProcessorController> fwc, po::va
 
   cfg.set_param<string>("hdf/file/name", vm["output"].as<string>());
   cfg.set_param<string>("hdf/file/path", vm["output-dir"].as<string>());
+  cfg.set_param<string>("hdf/file/extension", vm["extension"].as<string>());
   cfg.set_param<unsigned int>("hdf/frames", vm["frames"].as<unsigned int>());
   cfg.set_param<string>("hdf/acquisition_id", vm["acqid"].as<string>());
   cfg.set_param<size_t>("hdf/timeout_timer_period", vm["timeout"].as<size_t>());

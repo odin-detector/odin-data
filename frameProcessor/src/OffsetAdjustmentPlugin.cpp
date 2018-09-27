@@ -78,6 +78,7 @@ void OffsetAdjustmentPlugin::configure(OdinData::IpcMessage& config, OdinData::I
   {
     std::stringstream ss;
     ss << "Bad ctrl msg: " << e.what();
+    LOG4CXX_WARN(logger_, ss);
     this->set_error(ss.str());
     throw;
   }

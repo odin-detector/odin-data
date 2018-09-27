@@ -40,6 +40,7 @@ public:
       size_t concurrent_processes,
       size_t frames_per_block,
       size_t blocks_per_file,
+      std::string file_extension,
       bool use_earliest_hdf5,
       size_t alignment_threshold,
       size_t alignment_value);
@@ -66,6 +67,8 @@ public:
   std::string filename_;
   /** Configured value for the filename to use */
   std::string configured_filename_;
+  /** File extension to use */
+  std::string file_extension_;
   /** Use the earliest version of hdf5 */
   bool use_earliest_hdf5_;
   /** HDF5 file chunk alignment threshold */

@@ -79,6 +79,8 @@ private:
   static const std::string CONFIG_FILE_NAME;
   /** Configuration constant for file path */
   static const std::string CONFIG_FILE_PATH;
+  /** Configuration constant for file extension */
+  static const std::string CONFIG_FILE_EXTENSION;
 
   /** Configuration constant for dataset related items */
   static const std::string CONFIG_DATASET;
@@ -158,6 +160,8 @@ private:
   bool timeout_thread_running_;
   /** The close file timeout thread */
   boost::thread timeout_thread_;
+  /** The file extension to use */
+  std::string file_extension_;
 };
 
 } /* namespace FrameProcessor */

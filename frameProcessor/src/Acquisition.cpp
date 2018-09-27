@@ -28,8 +28,6 @@ const std::string META_CLOSE_ITEM        = "closefile";
 const std::string META_START_ITEM        = "startacquisition";
 const std::string META_STOP_ITEM         = "stopacquisition";
 
-const std::string FILE_EXTENSION         = ".h5";
-
 Acquisition::Acquisition() :
         concurrent_rank_(0),
         concurrent_processes_(1),
@@ -287,6 +285,10 @@ void Acquisition::close_file(boost::shared_ptr<HDF5File> file) {
  * \param[in] concurrent_processes - The number of processors
  * \param[in] frames_per_block - The number of frames per block
  * \param[in] blocks_per_file - The number of blocks per file
+ * \param[in] file_extension - The file extension to use
+ * \param[in] use_earliest_hdf5 - Whether to use an early version of hdf5 library
+ * \param[in] alignment_threshold - Alignment threshold for hdf5 chunking
+ * \param[in] alignment_value - Alignment value for hdf5 chunking
  * \return - true if the acquisition was started successfully
  */
 bool Acquisition::start_acquisition(
@@ -294,6 +296,7 @@ bool Acquisition::start_acquisition(
     size_t concurrent_processes,
     size_t frames_per_block,
     size_t blocks_per_file,
+    std::string file_extension,
     bool use_earliest_hdf5,
     size_t alignment_threshold,
     size_t alignment_value) {
@@ -305,6 +308,16 @@ bool Acquisition::start_acquisition(
   use_earliest_hdf5_ = use_earliest_hdf5;
   alignment_threshold_ = alignment_threshold;
   alignment_value_ = alignment_value;
+  file_extension_ = file_extension;
+
+  // Sanitise the file extension, ensuring there is a . at the start if the extension is not empty
+  if (!file_extension_.empty())
+  {
+    if (file_extension_.at(0) != '.')
+    {
+      file_extension_.insert(0, ".");
+    }
+  }
 
   // Generate the filename
   filename_ = generate_filename(concurrent_rank_);
@@ -573,11 +586,11 @@ std::string Acquisition::generate_filename(size_t file_number) {
   snprintf(number_string, 7, "%06d", file_number + 1);
   if (!configured_filename_.empty())
   {
-    generated_filename << configured_filename_ << "_" << number_string << FILE_EXTENSION;
+    generated_filename << configured_filename_ << "_" << number_string << file_extension_;
   }
   else if (!acquisition_id_.empty())
   {
-    generated_filename << acquisition_id_ << "_" << number_string << FILE_EXTENSION;
+    generated_filename << acquisition_id_ << "_" << number_string << file_extension_;
   }
 
   return generated_filename.str();

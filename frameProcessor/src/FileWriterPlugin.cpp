@@ -29,6 +29,7 @@ const std::string FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_VALUE     = "alignm
 const std::string FileWriterPlugin::CONFIG_FILE                        = "file";
 const std::string FileWriterPlugin::CONFIG_FILE_NAME                   = "name";
 const std::string FileWriterPlugin::CONFIG_FILE_PATH                   = "path";
+const std::string FileWriterPlugin::CONFIG_FILE_EXTENSION              = "extension";
 
 const std::string FileWriterPlugin::CONFIG_DATASET                     = "dataset";
 const std::string FileWriterPlugin::CONFIG_DATASET_TYPE                = "datatype";
@@ -60,6 +61,7 @@ FileWriterPlugin::FileWriterPlugin() :
         concurrent_rank_(0),
         frames_per_block_(1),
         blocks_per_file_(0),
+        file_extension_("h5"),
         use_earliest_hdf5_(false),
         alignment_threshold_(1),
         alignment_value_(1),
@@ -171,6 +173,7 @@ void FileWriterPlugin::start_writing()
         concurrent_processes_,
         frames_per_block_,
         blocks_per_file_,
+        file_extension_,
         use_earliest_hdf5_,
         alignment_threshold_,
         alignment_value_);
@@ -335,6 +338,7 @@ void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
   std::string file_str = get_name() + "/" + FileWriterPlugin::CONFIG_FILE + "/";
   reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_PATH, next_acquisition_->file_path_);
   reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_NAME, next_acquisition_->configured_filename_);
+  reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_EXTENSION, file_extension_);
 
   reply.set_param(get_name() + "/" + FileWriterPlugin::CONFIG_FRAMES, next_acquisition_->total_frames_);
   reply.set_param(get_name() + "/" + FileWriterPlugin::CONFIG_MASTER_DATASET, next_acquisition_->master_frame_);
@@ -495,6 +499,10 @@ void FileWriterPlugin::configure_file(OdinData::IpcMessage& config, OdinData::Ip
   if (config.has_param(FileWriterPlugin::CONFIG_FILE_NAME)) {
     this->next_acquisition_->configured_filename_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_NAME);
     LOG4CXX_DEBUG(logger_, "Next file name changed to " << this->next_acquisition_->configured_filename_);
+  }
+  if (config.has_param(FileWriterPlugin::CONFIG_FILE_EXTENSION)) {
+    this->file_extension_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_EXTENSION);
+    LOG4CXX_DEBUG(logger_, "File extension changed to " << this->file_extension_);
   }
 }
 
