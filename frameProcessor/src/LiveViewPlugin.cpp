@@ -132,7 +132,7 @@ void LiveViewPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessag
   {
     std::stringstream ss;
     ss << "Bad ctrl msg: " << e.what();
-    std::cout << "CONFIG EXCEPTION: " << e.what() << std::endl;
+    LOG4CXX_WARN(logger_,  "CONFIG EXCEPTION: " << e.what());
     this->set_error(ss.str());
     throw;
   }
