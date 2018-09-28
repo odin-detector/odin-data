@@ -14,6 +14,20 @@ class LiveViewPluginTestFixture
 public:
   LiveViewPluginTestFixture()
   {
+
+    for(int i = 0; i < 12; i++){
+      img_8[i] = i+1;
+      img_16[i] = i+1;
+    }
+
+    DATA_TYPES[0]  = "uint8";
+    DATA_TYPES[1]  = "uint16";
+    DATA_TYPES[2]  = "uint32";
+
+    COMPRESS_TYPES[0] = "none";
+    COMPRESS_TYPES[1] = "LZ4";
+    COMPRESS_TYPES[2] = "BSLZ4";
+
     dimensions_t img_dims(2); img_dims[0] = 3; img_dims[1] = 4;
 
     dset_def.data_type = FrameProcessor::raw_8bit;
@@ -55,25 +69,25 @@ public:
   boost::shared_ptr<FrameProcessor::Frame> frame_16;
   std::vector< boost::shared_ptr<FrameProcessor::Frame> >frames;
   FrameProcessor::DatasetDefinition dset_def;
-  uint8_t img_8[12]   =  { 1, 2, 3, 4,
-                           5, 6, 7, 8,
-                           9,10,11,12 };
-  uint16_t img_16[12] =  { 1, 2, 3, 4,
-                           5, 6, 7, 8,
-                           9,10,11,12 };
-  const std::string DATA_TYPES[3] = {"uint8","uint16","uint32"};
-  const std::string COMPRESS_TYPES[3] = {"none","LZ4","BSLZ4"};
+
+  uint8_t img_8[12];
+  uint16_t img_16[12];
+
+  uint8_t  pbuf[12]; //create basic array to store data
+  uint16_t pbuf_16[12];
+//  const std::string DATA_TYPES[3] = {"uint8","uint16","uint32"};
+//  const std::string COMPRESS_TYPES[3] = {"none","LZ4","BSLZ4"};
+  std::map<int, std::string> DATA_TYPES;
+  std::map<int, std::string> COMPRESS_TYPES;
   bool new_socket_recieve; //we have to declare this here, or we get a memory access error around line 825
+  std::string message;
 
 };
 
 BOOST_FIXTURE_TEST_SUITE(LiveViewPluginUnitTest, LiveViewPluginTestFixture);
 
-BOOST_AUTO_TEST_CASE(LiveViewTest)
+BOOST_AUTO_TEST_CASE(LiveViewBasicSendTest)
 {
-
-  uint8_t  pbuf[frame->get_data_size()]; //create basic array to store data
-  uint16_t pbuf_16[12];
 
   FrameProcessor::LiveViewPlugin plugin;
   OdinData::IpcMessage reply;
@@ -94,7 +108,7 @@ BOOST_AUTO_TEST_CASE(LiveViewTest)
   {
     plugin.process_frame(frame);
   }
-  std::string message = recv_socket.recv();
+  message = recv_socket.recv();
   BOOST_TEST_MESSAGE(message);
   rapidjson::Document doc;
   doc.Parse(message.c_str());
@@ -175,7 +189,7 @@ BOOST_AUTO_TEST_CASE(LiveViewTest)
   while(recv_socket_other.poll(10))
   {
     std::string tmp_string = recv_socket_other.recv();
-    std::cout << "Received Header: " << tmp_string <<std::endl;
+    BOOST_TEST_MESSAGE( "Received Header: " << tmp_string);
     dataset_processed_frames.push_back(tmp_string);
     recv_socket_other.recv_raw(pbuf); //we dont need the data for this test but still need to read from the socket to clear it from the queue
   }
