@@ -12,7 +12,9 @@
 class LiveViewPluginTestFixture
 {
 public:
-  LiveViewPluginTestFixture()
+  LiveViewPluginTestFixture():
+    recv_socket(ZMQ_SUB),
+    recv_socket_other(ZMQ_SUB)
   {
 
     for(int i = 0; i < 12; i++){
@@ -63,8 +65,18 @@ public:
       }
     new_socket_recieve = false;
 
+
+    recv_socket.subscribe("");
+    recv_socket_other.subscribe("");
+    recv_socket.connect("tcp://127.0.0.1:5020");
+    recv_socket_other.connect("tcp://127.0.0.1:5021");
+
   }
-  ~LiveViewPluginTestFixture() {}
+  ~LiveViewPluginTestFixture() {
+    BOOST_TEST_MESSAGE("Live View Fixture Teardown");
+    recv_socket.close();
+    recv_socket_other.close();
+  }
   boost::shared_ptr<FrameProcessor::Frame> frame;
   boost::shared_ptr<FrameProcessor::Frame> frame_16;
   std::vector< boost::shared_ptr<FrameProcessor::Frame> >frames;
@@ -82,26 +94,19 @@ public:
   bool new_socket_recieve; //we have to declare this here, or we get a memory access error around line 825
   std::string message;
 
+  OdinData::IpcChannel recv_socket;
+  OdinData::IpcChannel recv_socket_other;
+  FrameProcessor::LiveViewPlugin plugin;
+  OdinData::IpcMessage reply;
+  OdinData::IpcMessage cfg;
+  rapidjson::Document doc;
+
 };
 
 BOOST_FIXTURE_TEST_SUITE(LiveViewPluginUnitTest, LiveViewPluginTestFixture);
 
 BOOST_AUTO_TEST_CASE(LiveViewBasicSendTest)
 {
-
-  FrameProcessor::LiveViewPlugin plugin;
-  OdinData::IpcMessage reply;
-  OdinData::IpcMessage cfg;
-
-  OdinData::IpcChannel recv_socket(ZMQ_SUB);
-  OdinData::IpcChannel recv_socket_other(ZMQ_SUB);
-  recv_socket.subscribe("");
-  recv_socket_other.subscribe("");
-  //std::string live_view_socket_addr = plugin.getPubSocketAddr();
-  recv_socket.connect("tcp://127.0.0.1:5020");
-  recv_socket_other.connect("tcp://127.0.0.1:1337");
-  //std::cout << live_view_socket_addr << std::endl;
-
   frame->set_frame_number(FrameProcessor::LiveViewPlugin::DEFAULT_FRAME_FREQ);
   //test we can output frame
   while(!recv_socket.poll(100)) //to avoid issue with slow joiners, using a while loop here
@@ -110,7 +115,6 @@ BOOST_AUTO_TEST_CASE(LiveViewBasicSendTest)
   }
   message = recv_socket.recv();
   BOOST_TEST_MESSAGE(message);
-  rapidjson::Document doc;
   doc.Parse(message.c_str());
 
   //TEST HEADER CONTENTS
@@ -130,6 +134,10 @@ BOOST_AUTO_TEST_CASE(LiveViewBasicSendTest)
   std::vector<uint8_t> original(img_8, img_8 + sizeof img_8 / sizeof img_8[0]);
   BOOST_CHECK_EQUAL_COLLECTIONS(buf.begin(), buf.end() , original.begin(), original.end()); //collection comparison needs beginning and end of each vector
 
+}
+
+BOOST_AUTO_TEST_CASE(LiveViewDownscaleTest)
+{
 
   //TEST DOWNSCALE OPTION
   while(recv_socket.poll(10))
@@ -152,11 +160,14 @@ BOOST_AUTO_TEST_CASE(LiveViewBasicSendTest)
   }
   BOOST_CHECK_EQUAL(processed_frames.size(), frames.size()/FrameProcessor::LiveViewPlugin::DEFAULT_FRAME_FREQ);
 
+}
 
+BOOST_AUTO_TEST_CASE(LiveViewConfigTest)
+{
   //TEST CONFIGURATION
   cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_FRAME_FREQ, 1);
   cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_DATASET_NAME, std::string("data"));
-  cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_SOCKET_ADDR, std::string("tcp://*:1337"));
+  cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_SOCKET_ADDR, std::string("tcp://*:5021"));
 
   BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
 
@@ -174,10 +185,19 @@ BOOST_AUTO_TEST_CASE(LiveViewBasicSendTest)
   }
   BOOST_CHECK(new_socket_recieve);
 
+}
+
+BOOST_AUTO_TEST_CASE(LiveViewDatasetFilterTest)
+{
   //TEST DATASET FILTERING
-  while(recv_socket_other.poll(10))
+  cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_FRAME_FREQ, 1);
+  cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_DATASET_NAME, std::string("data"));
+
+  plugin.configure(cfg, reply);
+
+  while(recv_socket.poll(10))
   {
-    recv_socket_other.recv(); //clear any extra data from the above while loop
+    recv_socket.recv(); //clear any extra data from the above while loop
   }
 
   for(int i = 0; i < frames.size(); i++)
@@ -186,20 +206,26 @@ BOOST_AUTO_TEST_CASE(LiveViewBasicSendTest)
   }
 
   std::vector<std::string> dataset_processed_frames;
-  while(recv_socket_other.poll(10))
+  while(recv_socket.poll(10))
   {
-    std::string tmp_string = recv_socket_other.recv();
+    std::string tmp_string = recv_socket.recv();
     BOOST_TEST_MESSAGE( "Received Header: " << tmp_string);
     dataset_processed_frames.push_back(tmp_string);
-    recv_socket_other.recv_raw(pbuf); //we dont need the data for this test but still need to read from the socket to clear it from the queue
+    recv_socket.recv_raw(pbuf); //we dont need the data for this test but still need to read from the socket to clear it from the queue
   }
   BOOST_CHECK_EQUAL(dataset_processed_frames.size(), 7);
+}
 
+BOOST_AUTO_TEST_CASE(LiveViewOtherDatatypeTest)
+{
   //test other data types
-  plugin.process_frame(frame_16);
-  message = recv_socket_other.recv();
+  while(!recv_socket.poll(10))
+  {
+    plugin.process_frame(frame_16);
+  }
+  message = recv_socket.recv();
   BOOST_TEST_MESSAGE(message);
-  recv_socket_other.recv_raw(pbuf_16);
+  recv_socket.recv_raw(pbuf_16);
   std::vector<uint16_t> buf_16(12);
   std::copy(pbuf_16, pbuf_16 + frame_16->get_data_size()/2, buf_16.begin());
   std::vector<uint16_t> original_16(img_16, img_16 + sizeof img_16 / sizeof img_16[0]);
