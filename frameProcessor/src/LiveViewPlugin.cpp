@@ -48,7 +48,6 @@ LiveViewPlugin::LiveViewPlugin() :
 LiveViewPlugin::~LiveViewPlugin()
 {
   LOG4CXX_TRACE(logger_, "LiveViewPlugin destructor.");
-  publish_socket.unbind(image_view_socket_addr);
   publish_socket.close();
 }
 
