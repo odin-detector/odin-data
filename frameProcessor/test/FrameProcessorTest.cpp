@@ -829,25 +829,25 @@ public:
   LiveViewPluginTestFixture()
   {
     dimensions_t img_dims(2); img_dims[0] = 3; img_dims[1] = 4;
-    dimensions_t chunk_dims(3); chunk_dims[0] = 1; chunk_dims[1] = 3; chunk_dims[2] = 4;
-    //PercivalEmulator::FrameHeader img_header;
-    //img_header.frame_number = 7;
 
-    dset_def.name = "data";
-    dset_def.num_frames = 2; //unused?
     dset_def.data_type = FrameProcessor::raw_8bit;
     dset_def.frame_dimensions = dimensions_t(2);
     dset_def.frame_dimensions[0] = 3;
     dset_def.frame_dimensions[1] = 4;
-    dset_def.chunks = chunk_dims;
-    dset_def.create_low_high_indexes = false;
 
     frame = boost::shared_ptr<FrameProcessor::Frame>(new FrameProcessor::Frame("data"));
     frame->set_frame_number(2);
     frame->set_dimensions(dset_def.frame_dimensions);
     frame->set_data_type(dset_def.data_type);
     frame->set_compression(0);
-    frame->copy_data(static_cast<void*>(img), 12);
+    frame->copy_data(static_cast<void*>(img_8), 12);
+
+    frame_16 = boost::shared_ptr<FrameProcessor::Frame>(new FrameProcessor::Frame("data"));
+    frame_16->set_frame_number(2);
+    frame_16->set_dimensions(dset_def.frame_dimensions);
+    frame_16->set_data_type(FrameProcessor::raw_16bit);
+    frame_16->set_compression(0);
+    frame_16->copy_data(static_cast<void*>(img_16), 24);
 
     for(int i = 0; i < 10; i++)
       {
@@ -857,7 +857,7 @@ public:
         tmp_frame->set_data_type(dset_def.data_type);
         tmp_frame->set_dataset_name(i % 4 ? "data" : "not_data");
 
-        tmp_frame->copy_data(static_cast<void*>(img), 12);
+        tmp_frame->copy_data(static_cast<void*>(img_8), 12);
 
         frames.push_back(tmp_frame);
       }
@@ -866,19 +866,20 @@ public:
   }
   ~LiveViewPluginTestFixture() {}
   boost::shared_ptr<FrameProcessor::Frame> frame;
+  boost::shared_ptr<FrameProcessor::Frame> frame_16;
   std::vector< boost::shared_ptr<FrameProcessor::Frame> >frames;
   FrameProcessor::FileWriterPlugin fw;
   FrameProcessor::HDF5File hdf5f;
   FrameProcessor::DatasetDefinition dset_def;
-  uint8_t img[12] =  { 1, 2, 3, 4,
-                       5, 6, 7, 8,
-                       9,10,11,12 };
+  uint8_t img_8[12]   =  { 1, 2, 3, 4,
+                           5, 6, 7, 8,
+                           9,10,11,12 };
+  uint16_t img_16[12] =  { 1, 2, 3, 4,
+                           5, 6, 7, 8,
+                           9,10,11,12 };
   const std::string DATA_TYPES[3] = {"uint8","uint16","uint32"};
   const std::string COMPRESS_TYPES[3] = {"none","LZ4","BSLZ4"};
-  std::vector< boost::shared_ptr<FrameProcessor::Frame> > frame_list;
-
   bool new_socket_recieve; //we have to declare this here, or we get a memory access error around line 825
-
 
 };
 
@@ -886,6 +887,9 @@ BOOST_FIXTURE_TEST_SUITE(LiveViewPluginUnitTest, LiveViewPluginTestFixture);
 
 BOOST_AUTO_TEST_CASE(LiveViewTest)
 {
+
+  uint8_t  pbuf[frame->get_data_size()]; //create basic array to store data
+  uint16_t pbuf_16[12];
 
   FrameProcessor::LiveViewPlugin plugin;
   OdinData::IpcMessage reply;
@@ -896,7 +900,7 @@ BOOST_AUTO_TEST_CASE(LiveViewTest)
   recv_socket.subscribe("");
   recv_socket_other.subscribe("");
   //std::string live_view_socket_addr = plugin.getPubSocketAddr();
-  recv_socket.connect("tcp://127.0.0.1:5020"); //TODO: GET RID OF HARDCODED ADDRESS
+  recv_socket.connect("tcp://127.0.0.1:5020");
   recv_socket_other.connect("tcp://127.0.0.1:1337");
   //std::cout << live_view_socket_addr << std::endl;
 
@@ -907,7 +911,7 @@ BOOST_AUTO_TEST_CASE(LiveViewTest)
     plugin.process_frame(frame);
   }
   std::string message = recv_socket.recv();
-  std::cout << message << std::endl;
+  BOOST_TEST_MESSAGE(message);
   rapidjson::Document doc;
   doc.Parse(message.c_str());
 
@@ -920,14 +924,14 @@ BOOST_AUTO_TEST_CASE(LiveViewTest)
   BOOST_CHECK_EQUAL(atoi(doc["shape"][0].GetString()), frame->get_dimensions()[0]);
   BOOST_CHECK_EQUAL(atoi(doc["shape"][1].GetString()), frame->get_dimensions()[1]);
 
-  //TEST DATA CONTENTS
-  uint8_t  pbuf[frame->get_data_size()]; //create basic array to store data
 
+  //TEST DATA CONTENTS
   recv_socket.recv_raw(&pbuf); //put data into arary
   std::vector<uint8_t> buf(frame->get_data_size()); //create vector of size of data
   std::copy(pbuf, pbuf + frame->get_data_size(), buf.begin()); //copy data from array to vector, so it can be compared
-  std::vector<unsigned short> original(img, img + sizeof img / sizeof img[0]);
+  std::vector<uint8_t> original(img_8, img_8 + sizeof img_8 / sizeof img_8[0]);
   BOOST_CHECK_EQUAL_COLLECTIONS(buf.begin(), buf.end() , original.begin(), original.end()); //collection comparison needs beginning and end of each vector
+
 
   //TEST DOWNSCALE OPTION
   while(recv_socket.poll(10))
@@ -944,7 +948,6 @@ BOOST_AUTO_TEST_CASE(LiveViewTest)
   while(recv_socket.poll(10))
   {
     std::string tmp_string = recv_socket.recv();
-//    std::cout << tmp_string <<std::endl;
     processed_frames.push_back(tmp_string);
     recv_socket.recv_raw(pbuf); //we dont need the data for this test but still need to read from the socket to clear it
 
@@ -990,11 +993,24 @@ BOOST_AUTO_TEST_CASE(LiveViewTest)
     std::string tmp_string = recv_socket_other.recv();
     std::cout << "Received Header: " << tmp_string <<std::endl;
     dataset_processed_frames.push_back(tmp_string);
-    recv_socket_other.recv_raw(pbuf); //we dont need the data for this test but still need to read from the socket to clear it
+    recv_socket_other.recv_raw(pbuf); //we dont need the data for this test but still need to read from the socket to clear it from the queue
   }
   BOOST_CHECK_EQUAL(dataset_processed_frames.size(), 7);
 
-  //TODO: Test Different Datatypes
+  //test other data types
+  plugin.process_frame(frame_16);
+  message = recv_socket_other.recv();
+  BOOST_TEST_MESSAGE(message);
+  recv_socket_other.recv_raw(pbuf_16);
+  std::vector<uint16_t> buf_16(12);
+  std::copy(pbuf_16, pbuf_16 + frame_16->get_data_size()/2, buf_16.begin());
+  std::vector<uint16_t> original_16(img_16, img_16 + sizeof img_16 / sizeof img_16[0]);
+  BOOST_CHECK_EQUAL_COLLECTIONS(buf_16.begin(), buf_16.end(), original_16.begin(), original_16.end());
+
+  doc.Parse(message.c_str());
+  BOOST_CHECK_EQUAL(doc["dsize"].GetInt() , frame_16->get_data_size());
+  BOOST_CHECK_EQUAL(doc["dtype"].GetString(), DATA_TYPES[frame_16->get_data_type()]);
+
 }
 
 BOOST_AUTO_TEST_SUITE_END(); //LiveViewPluginUnitTest
