@@ -48,7 +48,7 @@ LiveViewPlugin::LiveViewPlugin() :
 LiveViewPlugin::~LiveViewPlugin()
 {
   LOG4CXX_TRACE(logger_, "LiveViewPlugin destructor.");
-  publish_socket.unbind(image_view_socket_addr);
+  publish_socket.close();
 }
 
 /**
@@ -112,11 +112,6 @@ void LiveViewPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessag
     {
       setPerSecondConfig(config.get_param<int32_t>(CONFIG_PER_SECOND));
     }
-    //check if we're setting the address of the socket to send the live view frames to.
-    if(config.has_param(CONFIG_SOCKET_ADDR))
-    {
-      setSocketAddrConfig(config.get_param<std::string>(CONFIG_SOCKET_ADDR));
-    }
     //check if we are setting the dataset name filter
     if(config.has_param(CONFIG_DATASET_NAME))
     {
@@ -127,12 +122,17 @@ void LiveViewPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessag
     {
       LOG4CXX_WARN(logger_, "CURRENT LIVE VIEW CONFIGURATION RESULTS IN IT DOING NOTHING");
     }
-
+    //check if we're setting the address of the socket to send the live view frames to.
+    if(config.has_param(CONFIG_SOCKET_ADDR))
+    {
+      setSocketAddrConfig(config.get_param<std::string>(CONFIG_SOCKET_ADDR));
+    }
   }
   catch (std::runtime_error& e)
   {
     std::stringstream ss;
     ss << "Bad ctrl msg: " << e.what();
+    std::cout << "CONFIG EXCEPTION: " << e.what() << std::endl;
     this->set_error(ss.str());
     throw;
   }
@@ -323,7 +323,7 @@ void LiveViewPlugin::setSocketAddrConfig(std::string value)
     LOG4CXX_WARN(logger_, "Socket already bound to " << value << ". Doing nothing");
     return;
   }
-  publish_socket.unbind(image_view_socket_addr);
+  publish_socket.unbind(image_view_socket_addr.c_str());
 
   image_view_socket_addr = value;
   LOG4CXX_INFO(logger_, "Setting Live View Socket Address to " << image_view_socket_addr);
