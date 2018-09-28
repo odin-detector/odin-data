@@ -25,16 +25,16 @@ namespace FrameProcessor
 class LiveViewPlugin : public FrameProcessorPlugin{
 
 public:
+
   LiveViewPlugin();
   virtual ~LiveViewPlugin();
   void process_frame(boost::shared_ptr<Frame> frame);
   void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
-  void PassLiveFrame(boost::shared_ptr<Frame> frame, int32_t frame_num);
-  std::string getPubSocketAddr();
+  void PassLiveFrame(boost::shared_ptr<Frame> frame);
 
   /*DEFAULT CONFIG VALUES*/
   static const int32_t     DEFAULT_FRAME_FREQ;            /**<The default value for the Frame Frequency configuration   = 2*/
-  static const int32_t     DEFAULT_PER_SECOND;            /**<The default value for the frames per second configuration = 2*/
+  static const int32_t     DEFAULT_PER_SECOND;            /**<The default value for the frames per second configuration = 0*/
   static const std::string DEFAULT_IMAGE_VIEW_SOCKET_ADDR;/**<The default value for the ZMQ socket address              = "tcp://*:5020"*/
   static const std::string DEFAULT_DATASET_NAME;          /**<The default value for the dataset name filter             = ""*/
 
@@ -59,7 +59,7 @@ private:
   void setDatasetNameConfig(std::string value);
 
 
-  /**time between frames in milliseconds*/
+  /**time between frames in milliseconds, calculated from the per_second config*/
   int32_t time_between_frames;
   /**time the last frame was shown*/
   boost::posix_time::ptime time_last_frame;

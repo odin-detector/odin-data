@@ -43,7 +43,7 @@ LiveViewPlugin::LiveViewPlugin() :
 }
 
 /**
- * Destructor.
+ * Class Destructor. Closes the Publish socket
  */
 LiveViewPlugin::~LiveViewPlugin()
 {
@@ -53,7 +53,7 @@ LiveViewPlugin::~LiveViewPlugin()
 
 /**
  * Process recieved frame. For the live view plugin, this means checking if certain conditions are true (time elapsed, frame number, dataset name)
- * and then potentially creating a json header and copying the data to send to the publisher socket.
+ * and then, if the conditions mean sending the frame, creating a json header and copying the data to send to the publisher socket.
  * 
  * \param[in] frame - pointer to a frame object.
  */
@@ -63,7 +63,8 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
 
   std::string frame_dataset = frame->get_dataset_name();
   //if datasets is empty, or contains the frame's dataset, then we can print it
-  if(datasets.empty() || std::find(datasets.begin(), datasets.end(), frame_dataset) != datasets.end()){
+  if(datasets.empty() || std::find(datasets.begin(), datasets.end(), frame_dataset) != datasets.end())
+  {
 
     boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
     int32_t frame_num = frame->get_frame_number();
@@ -72,12 +73,12 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
     if(per_second != 0 && elapsed_time > time_between_frames) //time between frames too large, showing frame no matter what the frame number is
     {
       LOG4CXX_TRACE(logger_, "Elapsed time " << elapsed_time << " > " << time_between_frames);
-      PassLiveFrame(frame, frame_num);
+      PassLiveFrame(frame);
     }
     else if(frame_freq != 0 && frame_num % frame_freq == 0)
     {
       LOG4CXX_TRACE(logger_, "LiveViewPlugin Frame " << frame_num << " to be displayed.");
-      PassLiveFrame(frame, frame_num);
+      PassLiveFrame(frame);
     }
   }
   else
@@ -108,6 +109,7 @@ void LiveViewPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessag
     {
       setFrameFreqConfig(config.get_param<int32_t>(CONFIG_FRAME_FREQ));
     }
+    //check if we're setting the per_second config
     if(config.has_param(CONFIG_PER_SECOND))
     {
       setPerSecondConfig(config.get_param<int32_t>(CONFIG_PER_SECOND));
@@ -118,6 +120,7 @@ void LiveViewPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessag
       setDatasetNameConfig(config.get_param<std::string>(CONFIG_DATASET_NAME));
     }
 
+    //display warning if configuration sets the plugin to do nothing
     if(per_second == 0 && frame_freq == 0)
     {
       LOG4CXX_WARN(logger_, "CURRENT LIVE VIEW CONFIGURATION RESULTS IN IT DOING NOTHING");
@@ -132,7 +135,6 @@ void LiveViewPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessag
   {
     std::stringstream ss;
     ss << "Bad ctrl msg: " << e.what();
-    LOG4CXX_WARN(logger_,  "CONFIG EXCEPTION: " << e.what());
     this->set_error(ss.str());
     throw;
   }
@@ -161,7 +163,8 @@ void LiveViewPlugin::requestConfiguration(OdinData::IpcMessage& reply)
  */
 std::string LiveViewPlugin::getTypeFromEnum(int32_t type)
 {
-  if(type >= 0 && type < sizeof(DATA_TYPES)/sizeof(DATA_TYPES[0])){
+  if(type >= 0 && type < sizeof(DATA_TYPES)/sizeof(DATA_TYPES[0]))
+  {
     return DATA_TYPES[type];
   }else{
     return "unknown";
@@ -176,7 +179,8 @@ std::string LiveViewPlugin::getTypeFromEnum(int32_t type)
  */
 std::string LiveViewPlugin::getCompressFromEnum(int32_t compress)
 {
-  if(compress >= 0 && compress < sizeof(COMPRESS_TYPES)/sizeof(COMPRESS_TYPES[0])){
+  if(compress >= 0 && compress < sizeof(COMPRESS_TYPES)/sizeof(COMPRESS_TYPES[0]))
+  {
     return COMPRESS_TYPES[compress];
   }else{
     return COMPRESS_TYPES[0];
@@ -197,10 +201,11 @@ std::string LiveViewPlugin::getCompressFromEnum(int32_t compress)
  * \param[in] frame_num - the number of the frame
  * 
  */
-void LiveViewPlugin::PassLiveFrame(boost::shared_ptr<Frame> frame, int32_t frame_num)
+void LiveViewPlugin::PassLiveFrame(boost::shared_ptr<Frame> frame)
 {
   void* frame_data_copy = (void*)frame->get_data();
 
+  uint32_t frame_num = frame->get_frame_number();
   std::string aqqID = frame->get_acquisition_id();
   dimensions_t dim = frame->get_dimensions();
   std::string type = getTypeFromEnum(frame->get_data_type());
@@ -248,7 +253,8 @@ void LiveViewPlugin::PassLiveFrame(boost::shared_ptr<Frame> frame, int32_t frame
   rapidjson::Value valueDims(rapidjson::kArrayType);
 
   size_t dim_size = dim.size();
-  for(size_t i=0; i < dim_size; i++){
+  for(size_t i=0; i < dim_size; i++)
+  {
     std::string dimString = boost::to_string(dim[i]);
     rapidjson::Value dimStringVal(dimString.c_str(), document.GetAllocator());
     valueDims.PushBack(dimStringVal, document.GetAllocator());
@@ -317,15 +323,14 @@ void LiveViewPlugin::setFrameFreqConfig(int32_t value)
  */
 void LiveViewPlugin::setSocketAddrConfig(std::string value)
 {
-  //we dont want to unbind and rebind the same address or it causes errors, so we check first
+  //we dont want to unbind and rebind the same address, as it can cause an error if it takes time to unbind, so we check first
   if(publish_socket.has_bound_endpoint(value))
   {
     LOG4CXX_WARN(logger_, "Socket already bound to " << value << ". Doing nothing");
     return;
   }
-  LOG4CXX_TRACE(logger_, "UNBINDING SOCKET");
+
   publish_socket.unbind(image_view_socket_addr.c_str());
-  LOG4CXX_TRACE(logger_, "SOCKET UNBOUND");
 
   image_view_socket_addr = value;
   LOG4CXX_INFO(logger_, "Setting Live View Socket Address to " << image_view_socket_addr);
@@ -347,20 +352,14 @@ void LiveViewPlugin::setDatasetNameConfig(std::string value)
     boost::split(datasets, value, boost::is_any_of(delim));
   }
   std::string dataset_string = "";
-  for(int i = 0; i< datasets.size(); i++){
+  for(int i = 0; i< datasets.size(); i++)
+  {
     boost::trim(datasets[i]);
     dataset_string += datasets[i] + ",";
   }
   LOG4CXX_INFO(logger_, "Setting the datasets allowed to: " << dataset_string);
 }
 
-std::string LiveViewPlugin::getPubSocketAddr()
-{
-  char resolved_endpoint[256];
-  size_t endpoint_size = sizeof(resolved_endpoint);
-  publish_socket.getsockopt(ZMQ_LAST_ENDPOINT, resolved_endpoint, &endpoint_size);
-  return resolved_endpoint;
-}
 }/*namespace FrameProcessor*/
 
 
