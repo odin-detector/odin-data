@@ -13,7 +13,7 @@ namespace FrameProcessor
 /*Default Config*/
 const int32_t     LiveViewPlugin::DEFAULT_FRAME_FREQ = 2;
 const int32_t     LiveViewPlugin::DEFAULT_PER_SECOND = 0;
-const std::string LiveViewPlugin::DEFAULT_IMAGE_VIEW_SOCKET_ADDR = "tcp://*:5020";
+const std::string LiveViewPlugin::DEFAULT_IMAGE_VIEW_SOCKET_ADDR = "tcp://127.0.0.1:5020";
 const std::string LiveViewPlugin::DEFAULT_DATASET_NAME = "";
 
 /*Config Names*/
@@ -348,7 +348,7 @@ void LiveViewPlugin::setDatasetNameConfig(std::string value)
     boost::split(datasets, value, boost::is_any_of(delim));
   }
   std::string dataset_string = "";
-  for(int i = 0; i< datasets.size(); i++){ 
+  for(int i = 0; i< datasets.size(); i++){
     boost::trim(datasets[i]);
     dataset_string += datasets[i] + ",";
   }
