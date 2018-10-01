@@ -40,6 +40,7 @@ class FrameProcessorAdapter(OdinDataAdapter):
         self._param = {
             'config/hdf/file/path': '',
             'config/hdf/file/name': '',
+            'config/hdf/file/extension': 'h5',
             'config/hdf/frames': 0
         }
         self._command = 'config/hdf/write'
@@ -64,6 +65,7 @@ class FrameProcessorAdapter(OdinDataAdapter):
         # Store these parameters locally:
         # config/hdf/file/path
         # config/hdf/file/name
+        # config/hdf/file/extension
         #
         # When this arrives write all params into a single IPC message
         # config/hdf/write
@@ -95,6 +97,7 @@ class FrameProcessorAdapter(OdinDataAdapter):
         # Store these parameters locally:
         # config/hdf/file/path
         # config/hdf/file/name
+        # config/hdf/file/extension
         #
         # When this arrives write all params into a single IPC message
         # config/hdf/write
@@ -138,7 +141,8 @@ class FrameProcessorAdapter(OdinDataAdapter):
                             'hdf': {
                                 'file': {
                                     'path': str(self._param['config/hdf/file/path']),
-                                    'name': str(self._param['config/hdf/file/name'])
+                                    'name': str(self._param['config/hdf/file/name']),
+                                    'extension': str(self._param['config/hdf/file/extension'])
                                     }
                             }
                         }
