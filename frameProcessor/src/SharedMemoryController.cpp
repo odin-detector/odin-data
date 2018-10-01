@@ -6,6 +6,7 @@
  */
 
 #include <SharedMemoryController.h>
+#include "DebugLevelLogger.h"
 
 namespace FrameProcessor
 {
@@ -37,7 +38,7 @@ SharedMemoryController::SharedMemoryController(boost::shared_ptr<OdinData::IpcRe
 
   // Connect the frame ready channel
   try {
-    LOG4CXX_DEBUG(logger_, "Connecting RX Channel to endpoint: " << rxEndPoint);
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Connecting RX Channel to endpoint: " << rxEndPoint);
     rxChannel_.connect(rxEndPoint.c_str());
     rxChannel_.subscribe("");
   }
@@ -53,7 +54,7 @@ SharedMemoryController::SharedMemoryController(boost::shared_ptr<OdinData::IpcRe
 
   // Now connect the frame release response channel
   try {
-    LOG4CXX_DEBUG(logger_, "Connecting TX Channel to endpoint: " << txEndPoint);
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Connecting TX Channel to endpoint: " << txEndPoint);
     txChannel_.connect(txEndPoint.c_str());
   }
   catch (zmq::error_t& e) {
@@ -98,7 +99,7 @@ void SharedMemoryController::setSharedBufferManager(const std::string& shared_bu
       new OdinData::SharedBufferManager(shared_buffer_name)
   );
 
-  LOG4CXX_DEBUG(logger_, "Initialised shared buffer manager for buffer " << shared_buffer_name);
+  LOG4CXX_DEBUG_LEVEL(1, logger_, "Initialised shared buffer manager for buffer " << shared_buffer_name);
 }
 
 /** Request the shared buffer configuration information from the upstream frame receiver process
@@ -118,7 +119,7 @@ void SharedMemoryController::requestSharedBufferConfig(const bool deferred)
   }
   else
   {
-    LOG4CXX_DEBUG(logger_, "Requesting shared buffer configuration from frame receiver");
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Requesting shared buffer configuration from frame receiver");
 
     OdinData::IpcMessage config_request(OdinData::IpcMessage::MsgTypeCmd, OdinData::IpcMessage::MsgValCmdBufferConfigRequest);
 
@@ -140,7 +141,7 @@ void SharedMemoryController::handleRxChannel()
   // Receive a message from the main thread channel
   std::string rxMsgEncoded = rxChannel_.recv();
 
-  LOG4CXX_DEBUG(logger_, "RX thread called with message: " << rxMsgEncoded);
+  LOG4CXX_DEBUG_LEVEL(1, logger_, "RX thread called with message: " << rxMsgEncoded);
 
   // Parse and handle the message
   try {
@@ -185,7 +186,7 @@ void SharedMemoryController::handleRxChannel()
       try
       {
         std::string shared_buffer_name = rxMsg.get_param<std::string>("shared_buffer_name");
-        LOG4CXX_DEBUG(logger_, "Shared buffer config notification received for " << shared_buffer_name);
+        LOG4CXX_DEBUG_LEVEL(1, logger_, "Shared buffer config notification received for " << shared_buffer_name);
         this->setSharedBufferManager(shared_buffer_name);
       }
       catch (OdinData::IpcMessageException& e)

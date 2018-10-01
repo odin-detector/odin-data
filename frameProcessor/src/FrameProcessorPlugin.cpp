@@ -7,6 +7,7 @@
 
 #include "logging.h"
 #include "FrameProcessorPlugin.h"
+#include "DebugLevelLogger.h"
 
 namespace FrameProcessor
 {
@@ -149,7 +150,7 @@ void FrameProcessorPlugin::register_callback(const std::string& name,
     }
       // Check if we own the callback already
     else if (blocking_callbacks_.count(name) == 0) {
-      LOG4CXX_DEBUG(logger_, "Registering blocking callback " << name << " with " << name_);
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Registering blocking callback " << name << " with " << name_);
       // Record the callback pointer
       blocking_callbacks_[name] = cb;
       // Confirm registration
@@ -163,7 +164,7 @@ void FrameProcessorPlugin::register_callback(const std::string& name,
     }
       // Check if we own the callback already
     else if (callbacks_.count(name) == 0) {
-      LOG4CXX_DEBUG(logger_, "Registering non-blocking callback " << name << " with " << name_);
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Registering non-blocking callback " << name << " with " << name_);
       // Record the callback pointer
       callbacks_[name] = cb;
       // Confirm registration
