@@ -65,7 +65,7 @@ public:
   std::string file_path_;
   /** Name of the file to write to */
   std::string filename_;
-  /** Configured value for the filename to use */
+  /** Configured value to be used as the prefix to generate the filename. */
   std::string configured_filename_;
   /** File extension to use */
   std::string file_extension_;
