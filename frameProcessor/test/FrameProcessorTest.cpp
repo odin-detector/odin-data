@@ -2,6 +2,9 @@
  * FileWriterTest.cpp
  *
  */
+#include "DebugLevelLogger.h"
+IMPLEMENT_DEBUG_LEVEL;
+
 #define BOOST_TEST_MODULE "FrameProcessorUnitTests"
 #define BOOST_TEST_MAIN
 #include <boost/test/unit_test.hpp>
