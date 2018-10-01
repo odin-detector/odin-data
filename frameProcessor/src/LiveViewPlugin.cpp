@@ -10,20 +10,20 @@
 
 namespace FrameProcessor
 {
-/*Default Config*/
+/* Default Config*/
 const int32_t     LiveViewPlugin::DEFAULT_FRAME_FREQ = 2;
 const int32_t     LiveViewPlugin::DEFAULT_PER_SECOND = 0;
 const std::string LiveViewPlugin::DEFAULT_IMAGE_VIEW_SOCKET_ADDR = "tcp://127.0.0.1:5020";
 const std::string LiveViewPlugin::DEFAULT_DATASET_NAME = "";
 
-/*Config Names*/
+/* Config Names*/
 const std::string LiveViewPlugin::CONFIG_FRAME_FREQ =  "frame_frequency";
 const std::string LiveViewPlugin::CONFIG_PER_SECOND =  "per_second";
 const std::string LiveViewPlugin::CONFIG_SOCKET_ADDR = "live_view_socket_addr";
 const std::string LiveViewPlugin::CONFIG_DATASET_NAME = "dataset_name";
 
-/*Enum style arrays for the header*/
-const std::string LiveViewPlugin::DATA_TYPES[] = {"uint8","uint16","uint32"};
+/* Enum style arrays for the header*/
+const std::string LiveViewPlugin::DATA_TYPES[] = {"uint8","uint16","uint32","uint64","float"};
 const std::string LiveViewPlugin::COMPRESS_TYPES[] = {"none","LZ4","BSLZ4"};
 
 /**
@@ -62,20 +62,20 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
   LOG4CXX_TRACE(logger_, "LiveViewPlugin Process Frame.");
 
   std::string frame_dataset = frame->get_dataset_name();
-  //if datasets is empty, or contains the frame's dataset, then we can print it
-  if(datasets.empty() || std::find(datasets.begin(), datasets.end(), frame_dataset) != datasets.end())
+  /* If datasets is empty, or contains the frame's dataset, then we can potentially send it*/
+  if (datasets.empty() || std::find(datasets.begin(), datasets.end(), frame_dataset) != datasets.end())
   {
 
     boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
     int32_t frame_num = frame->get_frame_number();
     int32_t elapsed_time = (now - time_last_frame).total_milliseconds();
 
-    if(per_second != 0 && elapsed_time > time_between_frames) //time between frames too large, showing frame no matter what the frame number is
+    if (per_second != 0 && elapsed_time > time_between_frames) //time between frames too large, showing frame no matter what the frame number is
     {
       LOG4CXX_TRACE(logger_, "Elapsed time " << elapsed_time << " > " << time_between_frames);
       PassLiveFrame(frame);
     }
-    else if(frame_freq != 0 && frame_num % frame_freq == 0)
+    else if (frame_freq != 0 && frame_num % frame_freq == 0)
     {
       LOG4CXX_TRACE(logger_, "LiveViewPlugin Frame " << frame_num << " to be displayed.");
       PassLiveFrame(frame);
@@ -104,28 +104,28 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
 void LiveViewPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
   try{
-    //check if we're setting the frequency of frames to show
+    /* Check if we're setting the frequency of frames to show*/
     if(config.has_param(CONFIG_FRAME_FREQ))
     {
       setFrameFreqConfig(config.get_param<int32_t>(CONFIG_FRAME_FREQ));
     }
-    //check if we're setting the per_second config
+    /* Check if we're setting the per_second config*/
     if(config.has_param(CONFIG_PER_SECOND))
     {
       setPerSecondConfig(config.get_param<int32_t>(CONFIG_PER_SECOND));
     }
-    //check if we are setting the dataset name filter
+    /* Check if we are setting the dataset name filter*/
     if(config.has_param(CONFIG_DATASET_NAME))
     {
       setDatasetNameConfig(config.get_param<std::string>(CONFIG_DATASET_NAME));
     }
 
-    //display warning if configuration sets the plugin to do nothing
+    /* Display warning if configuration sets the plugin to do nothing*/
     if(per_second == 0 && frame_freq == 0)
     {
       LOG4CXX_WARN(logger_, "CURRENT LIVE VIEW CONFIGURATION RESULTS IN IT DOING NOTHING");
     }
-    //check if we're setting the address of the socket to send the live view frames to.
+    /* Check if we're setting the address of the socket to send the live view frames to.*/
     if(config.has_param(CONFIG_SOCKET_ADDR))
     {
       setSocketAddrConfig(config.get_param<std::string>(CONFIG_SOCKET_ADDR));
@@ -213,7 +213,7 @@ void LiveViewPlugin::PassLiveFrame(boost::shared_ptr<Frame> frame)
   std::string compress = getCompressFromEnum(frame->get_compression());
   std::string dataset = frame->get_dataset_name();
 
-  rapidjson::Document document; //header info
+  rapidjson::Document document; /* Header info*/
   document.SetObject();
   LOG4CXX_TRACE(logger_, "LiveViewPlugin Building Frame Header");
   //building image header
@@ -258,12 +258,9 @@ void LiveViewPlugin::PassLiveFrame(boost::shared_ptr<Frame> frame)
     std::string dimString = boost::to_string(dim[i]);
     rapidjson::Value dimStringVal(dimString.c_str(), document.GetAllocator());
     valueDims.PushBack(dimStringVal, document.GetAllocator());
-
   }
 
   document.AddMember(keyDims, valueDims, document.GetAllocator());
-
-
 
   //convert to a json like string so that it can be passed along the socket as the image header
   rapidjson::StringBuffer buffer;
@@ -352,7 +349,7 @@ void LiveViewPlugin::setDatasetNameConfig(std::string value)
     boost::split(datasets, value, boost::is_any_of(delim));
   }
   std::string dataset_string = "";
-  for(int i = 0; i< datasets.size(); i++)
+  for (int i = 0; i < datasets.size(); i++)
   {
     boost::trim(datasets[i]);
     dataset_string += datasets[i] + ",";

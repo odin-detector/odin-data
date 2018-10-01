@@ -32,23 +32,33 @@ public:
   void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   void PassLiveFrame(boost::shared_ptr<Frame> frame);
 
-  /*DEFAULT CONFIG VALUES*/
-  static const int32_t     DEFAULT_FRAME_FREQ;            /**<The default value for the Frame Frequency configuration   = 2*/
-  static const int32_t     DEFAULT_PER_SECOND;            /**<The default value for the frames per second configuration = 0*/
-  static const std::string DEFAULT_IMAGE_VIEW_SOCKET_ADDR;/**<The default value for the ZMQ socket address              = "tcp://*:5020"*/
-  static const std::string DEFAULT_DATASET_NAME;          /**<The default value for the dataset name filter             = ""*/
+  /* Default Config Values*/
+  /** The default value for the Frame Frequency configuration*/
+  static const int32_t     DEFAULT_FRAME_FREQ;
+  /** The default value for the frames per second configuration*/
+  static const int32_t     DEFAULT_PER_SECOND;
+  /** The default value for the ZMQ socket address*/
+  static const std::string DEFAULT_IMAGE_VIEW_SOCKET_ADDR;
+  /** The default value for the dataset name filter*/
+  static const std::string DEFAULT_DATASET_NAME;
 
-  /*Config Names*/
-  static const std::string CONFIG_FRAME_FREQ;   /**<The name of the Frame Frequency config in the json file = "frame_frequency"*/
-  static const std::string CONFIG_PER_SECOND;   /**<The name of the Per Second config in the json file      = "per_second"*/
-  static const std::string CONFIG_SOCKET_ADDR;  /**<The name of the Socket Address config in the json file  = "live_view_socket_addr"*/
-  static const std::string CONFIG_DATASET_NAME; /**<The name of the Dataset Name config in the json file    = "dataset_name"*/
+  /* Config Names*/
+  /** The name of the Frame Frequency config in the json file*/
+  static const std::string CONFIG_FRAME_FREQ;
+  /** The name of the Per Second config in the json file*/
+  static const std::string CONFIG_PER_SECOND;
+  /** The name of the Socket Address config in the json file*/
+  static const std::string CONFIG_SOCKET_ADDR;
+  /** The name of the Dataset Name config in the json file*/
+  static const std::string CONFIG_DATASET_NAME;
 
 private:
 
-  /*Possible Data and Compression Types*/
-  static const std::string DATA_TYPES[];     /**<List of possible dtype strings*/
-  static const std::string COMPRESS_TYPES[]; /**<List of possible compression type strings*/
+  /* Possible Data and Compression Types*/
+  /** List of possible dtype strings*/
+  static const std::string DATA_TYPES[];
+  /** List of possible compression type strings*/
+  static const std::string COMPRESS_TYPES[];
 
   void requestConfiguration(OdinData::IpcMessage& reply);
   std::string getTypeFromEnum(int32_t type);
@@ -59,26 +69,26 @@ private:
   void setDatasetNameConfig(std::string value);
 
 
-  /**time between frames in milliseconds, calculated from the per_second config*/
+  /** Time between frames in milliseconds, calculated from the per_second config*/
   int32_t time_between_frames;
-  /**time the last frame was shown*/
+  /** Time the last frame was shown*/
   boost::posix_time::ptime time_last_frame;
 
   /** Pointer to logger */
   LoggerPtr logger_;
   /** Every Nth Frame to display*/
   int32_t frame_freq;
-  /** address for ZMQ socket for transmitting images*/
+  /** Address for ZMQ socket for transmitting images*/
   std::string image_view_socket_addr;
-  /**Frames to show per second. Will override the frame_freq if elapsed time between frames gets too big*/
+  /** Frames to show per second. Will override the frame_freq if elapsed time between frames gets too big*/
   int32_t per_second;
-  /**The socket the live view image frames will be sent to*/
+  /** The socket the live view image frames will be sent to*/
   OdinData::IpcChannel publish_socket;
-  /**List of the dataset names to publish. If a frame comes in with a dataset name not on the list it will be ignored*/
+  /** List of the dataset names to publish. If a frame comes in with a dataset name not on the list it will be ignored*/
   std::vector<std::string>datasets;
 
 };
 
-}/* namespace FrameProcessor */
+}/* Namespace FrameProcessor */
 
 #endif /* FRAMEPROCESSOR_LIVEVIEWPLUGIN_H_*/
