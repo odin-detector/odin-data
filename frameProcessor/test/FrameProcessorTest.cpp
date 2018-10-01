@@ -20,6 +20,7 @@ using namespace log4cxx::xml;
 #include "Acquisition.h"
 #include "FrameProcessorDefinitions.h"
 #include "UIDAdjustmentPlugin.h"
+#include "OffsetAdjustmentPlugin.h"
 
 class GlobalConfig {
 public:
@@ -313,7 +314,6 @@ BOOST_AUTO_TEST_CASE( HDF5FileAdjustHugeOffset )
   BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def, -1, -1));
 
   hsize_t huge_offset = 100000;
-  BOOST_REQUIRE_NO_THROW(fw.set_frame_offset_adjustment(huge_offset));
 
   std::vector<boost::shared_ptr<FrameProcessor::Frame> >::iterator it;
   for (it = frames.begin(); it != frames.end(); ++it){
@@ -321,6 +321,7 @@ BOOST_AUTO_TEST_CASE( HDF5FileAdjustHugeOffset )
     //PercivalEmulator::FrameHeader img_header = *((*it)->get_header());
     //img_header.frame_number = frame_no + huge_offset;
     //(*it)->copy_header(&img_header);
+    (*it)->set_frame_offset(huge_offset);
     (*it)->set_frame_number(frame_no + huge_offset);
     BOOST_REQUIRE_NO_THROW(hdf5f.write_frame(*(*it), (*it)->get_frame_number(), 1));
   }
@@ -407,7 +408,6 @@ BOOST_AUTO_TEST_CASE( AcquisitionGetFileIndex )
 
   acquisition.concurrent_rank_ = 0;
   acquisition.concurrent_processes_ = 4;
-  acquisition.frame_offset_adjustment_ = 0;
   acquisition.frames_per_block_ = 1000;
   acquisition.blocks_per_file_ = 1;
 
@@ -476,7 +476,6 @@ BOOST_AUTO_TEST_CASE( AcquisitionGetFileIndex )
 
   acquisition.concurrent_rank_ = 0;
   acquisition.concurrent_processes_ = 1;
-  acquisition.frame_offset_adjustment_ = 0;
   acquisition.frames_per_block_ = 3;
   acquisition.blocks_per_file_ = 5;
 
@@ -506,15 +505,14 @@ BOOST_AUTO_TEST_CASE( AcquisitionGetFileIndex )
 
   acquisition.concurrent_rank_ = 0;
   acquisition.concurrent_processes_ = 4;
-  acquisition.frame_offset_adjustment_ = 3;
   acquisition.frames_per_block_ = 100;
   acquisition.blocks_per_file_ = 1;
 
   file_index = acquisition.get_file_index(0);
   BOOST_CHECK_EQUAL(0, file_index);
 
-  file_index = acquisition.get_file_index(101);
-  BOOST_CHECK_EQUAL(0, file_index);
+  file_index = acquisition.get_file_index(401);
+  BOOST_CHECK_EQUAL(4, file_index);
 
 
 }
@@ -525,7 +523,6 @@ BOOST_AUTO_TEST_CASE( AcquisitionGetOffsetInFile )
 
   acquisition.concurrent_rank_ = 0;
   acquisition.concurrent_processes_ = 4;
-  acquisition.frame_offset_adjustment_ = 0;
   acquisition.frames_per_block_ = 1000;
   acquisition.blocks_per_file_ = 1;
 
@@ -579,7 +576,6 @@ BOOST_AUTO_TEST_CASE( AcquisitionGetOffsetInFile )
 
   acquisition.concurrent_rank_ = 0;
   acquisition.concurrent_processes_ = 4;
-  acquisition.frame_offset_adjustment_ = 0;
   acquisition.frames_per_block_ = 100;
   acquisition.blocks_per_file_ = 2;
 
@@ -607,6 +603,41 @@ BOOST_AUTO_TEST_CASE( AcquisitionGetOffsetInFile )
 
 }
 
+BOOST_AUTO_TEST_CASE( AcquisitionAdjustFrameOffset )
+{
+  FrameProcessor::Acquisition acquisition;
+
+  boost::shared_ptr<FrameProcessor::Frame> frame(new FrameProcessor::Frame("raw"));
+  frame->set_frame_number(0);
+  frame->set_frame_offset(0);
+
+  size_t adjusted_offset = acquisition.adjust_frame_offset(frame);
+  BOOST_CHECK_EQUAL(0, adjusted_offset);
+
+  frame->set_frame_number(1);
+  adjusted_offset = acquisition.adjust_frame_offset(frame);
+  BOOST_CHECK_EQUAL(1, adjusted_offset);
+
+  frame->set_frame_number(0);
+  frame->set_frame_offset(1);
+  adjusted_offset = acquisition.adjust_frame_offset(frame);
+  BOOST_CHECK_EQUAL(1, adjusted_offset);
+
+  frame->set_frame_number(1);
+  frame->set_frame_offset(1);
+  adjusted_offset = acquisition.adjust_frame_offset(frame);
+  BOOST_CHECK_EQUAL(2, adjusted_offset);
+
+  frame->set_frame_number(1);
+  frame->set_frame_offset(-1);
+  adjusted_offset = acquisition.adjust_frame_offset(frame);
+  BOOST_CHECK_EQUAL(0, adjusted_offset);
+
+  frame->set_frame_number(0);
+  frame->set_frame_offset(-1);
+  BOOST_CHECK_THROW(acquisition.adjust_frame_offset(frame), std::range_error);
+}
+
 BOOST_AUTO_TEST_SUITE_END(); //AcquisitionUnitTest
 
 BOOST_FIXTURE_TEST_SUITE(UIDAdjustmentPluginUnitTest, FileWriterPluginTestFixture);
@@ -614,7 +645,6 @@ BOOST_FIXTURE_TEST_SUITE(UIDAdjustmentPluginUnitTest, FileWriterPluginTestFixtur
 BOOST_AUTO_TEST_CASE( AdjustUID )
 {
   FrameProcessor::UIDAdjustmentPlugin plugin;
-  //FrameProcessor::Frame frame("raw");
   boost::shared_ptr<FrameProcessor::Frame> frame(new FrameProcessor::Frame("raw"));
   uint64_t uid = 0;
   frame->set_parameter("UID", uid);
@@ -696,6 +726,96 @@ BOOST_AUTO_TEST_CASE( AdjustUID )
   frame->set_parameter("UID", uid);
   plugin.process_frame(frame);
   BOOST_CHECK_EQUAL(35, frame->get_i64_parameter("UID"));
+}
+
+BOOST_AUTO_TEST_SUITE_END(); //UIDAdjustmentPluginUnitTest
+
+BOOST_FIXTURE_TEST_SUITE(OffsetAdjustmentPluginUnitTest, FileWriterPluginTestFixture);
+
+BOOST_AUTO_TEST_CASE( AdjustOffset )
+{
+  FrameProcessor::OffsetAdjustmentPlugin plugin;
+  boost::shared_ptr<FrameProcessor::Frame> frame(new FrameProcessor::Frame("raw"));
+  uint64_t offset = 0;
+  frame->set_frame_offset(offset);
+
+  // Check 0 goes to 0 when no config has been sent
+  plugin.process_frame(frame);
+  BOOST_CHECK_EQUAL(0, frame->get_frame_offset());
+
+  // Check a non 0 goes to the same when no config has been sent
+  offset = 27;
+  frame->set_frame_number(offset);
+  frame->set_frame_offset(offset);
+  plugin.process_frame(frame);
+  BOOST_CHECK_EQUAL(27, frame->get_frame_offset());
+
+  // Configure a frame offset of 4
+  OdinData::IpcMessage reply;
+  OdinData::IpcMessage cfg;
+  cfg.set_param(FrameProcessor::OFFSET_ADJUSTMENT_CONFIG, 4);
+  plugin.configure(cfg, reply);
+
+  // Check the offset is not applied as not seen first frame since configuring
+  offset = 28;
+  frame->set_frame_number(offset);
+  frame->set_frame_offset(offset);
+  plugin.process_frame(frame);
+  BOOST_CHECK_EQUAL(28, frame->get_frame_offset());
+
+  // Check the offset is applied when a new first frame is now sent
+  offset = 0;
+  frame->set_frame_number(offset);
+  frame->set_frame_offset(offset);
+  plugin.process_frame(frame);
+  BOOST_CHECK_EQUAL(4, frame->get_frame_offset());
+
+  // Check the offset is still applied when not on frame 0
+  offset = 10;
+  frame->set_frame_number(offset);
+  frame->set_frame_offset(offset);
+  plugin.process_frame(frame);
+  BOOST_CHECK_EQUAL(14, frame->get_frame_offset());
+
+  // Check the offset is still applied when uid is different to frame number
+  offset = 100;
+  frame->set_frame_number(27);
+  frame->set_frame_offset(offset);
+  plugin.process_frame(frame);
+  BOOST_CHECK_EQUAL(104, frame->get_frame_offset());
+
+  // Configure a start frame of 1
+  cfg.set_param(FrameProcessor::OFFSET_ADJUSTMENT_CONFIG, 33);
+  cfg.set_param(FrameProcessor::FIRST_FRAME_CONFIG, 1);
+  plugin.configure(cfg, reply);
+
+  // Check the new offset is not applied when not on frame 0
+  offset = 12;
+  frame->set_frame_number(offset);
+  frame->set_frame_offset(offset);
+  plugin.process_frame(frame);
+  BOOST_CHECK_EQUAL(16, frame->get_frame_offset());
+
+  // Check the new offset is not applied when on frame 0
+  offset = 0;
+  frame->set_frame_number(offset);
+  frame->set_frame_offset(offset);
+  plugin.process_frame(frame);
+  BOOST_CHECK_EQUAL(4, frame->get_frame_offset());
+
+  // Check the new offset is applied when on frame 1
+  offset = 1;
+  frame->set_frame_number(offset);
+  frame->set_frame_offset(offset);
+  plugin.process_frame(frame);
+  BOOST_CHECK_EQUAL(34, frame->get_frame_offset());
+
+  // Check the new offset is applied when on frame 2
+  offset = 2;
+  frame->set_frame_number(offset);
+  frame->set_frame_offset(offset);
+  plugin.process_frame(frame);
+  BOOST_CHECK_EQUAL(35, frame->get_frame_offset());
 }
 
 BOOST_AUTO_TEST_SUITE_END(); //UIDAdjustmentPluginUnitTest

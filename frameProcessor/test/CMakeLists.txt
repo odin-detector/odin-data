@@ -20,6 +20,7 @@ target_link_libraries(frameProcessorTest
         ${HDF5HL_LIBRARIES}
         Hdf5Plugin
         UIDAdjustmentPlugin
+        OffsetAdjustmentPlugin
         ${COMMON_LIBRARY})
 
 if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )

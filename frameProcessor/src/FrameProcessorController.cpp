@@ -517,6 +517,8 @@ void FrameProcessorController::disconnectPlugin(const std::string& index, const 
 
 void FrameProcessorController::run() {
 
+  LOG4CXX_INFO(logger_, "Running frame processor");
+
   // Start worker thread (for IFrameCallback) to monitor frames passed through
   start();
 
@@ -553,7 +555,7 @@ void FrameProcessorController::run() {
   LOG4CXX_DEBUG(logger_, "Tearing down DataBlockPool");
   DataBlockPool::tearDownClass();
 
-  LOG4CXX_DEBUG(logger_, "Shutting Down.");
+  LOG4CXX_INFO(logger_, "Shutting Down.");
 }
 
 /**

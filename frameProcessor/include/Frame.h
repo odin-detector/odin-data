@@ -118,6 +118,24 @@ public:
    */
   unsigned long long get_frame_number() const { return this->frameNumber_; }
 
+  /** Set the frame offset for this Frame.
+   *
+   * This method sets the frame offset that is used to calculate
+   * the position in the data file this frame belongs.
+   *
+   * \param[in] number - the frame offset.
+   */
+  void set_frame_offset(int64_t offset) { this->frameOffset_ = offset; }
+
+  /** Get the frame offset for this Frame.
+   *
+   * This method returns the frame offset that is used to calculate
+   * the position in the data file this frame belongs.
+   *
+   * \return the frame offset.
+   */
+  int64_t get_frame_offset() const { return this->frameOffset_; }
+
   /** Get the acquisition id for this Frame
    *
    * This method gets the id of the parent acquisition of this frame
@@ -173,6 +191,8 @@ private:
   size_t bytes_per_pixel;
   /** Frame number */
   unsigned long long frameNumber_;
+  /** Frame offset */
+  int64_t frameOffset_;
   /** Vector of dimensions */
   dimensions_t dimensions_;
   /** Compression type of raw data */

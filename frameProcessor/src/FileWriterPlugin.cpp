@@ -29,6 +29,7 @@ const std::string FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_VALUE     = "alignm
 const std::string FileWriterPlugin::CONFIG_FILE                        = "file";
 const std::string FileWriterPlugin::CONFIG_FILE_NAME                   = "name";
 const std::string FileWriterPlugin::CONFIG_FILE_PATH                   = "path";
+const std::string FileWriterPlugin::CONFIG_FILE_EXTENSION              = "extension";
 
 const std::string FileWriterPlugin::CONFIG_DATASET                     = "dataset";
 const std::string FileWriterPlugin::CONFIG_DATASET_TYPE                = "datatype";
@@ -39,7 +40,6 @@ const std::string FileWriterPlugin::CONFIG_DATASET_INDEXES             = "indexe
 
 const std::string FileWriterPlugin::CONFIG_FRAMES                      = "frames";
 const std::string FileWriterPlugin::CONFIG_MASTER_DATASET              = "master";
-const std::string FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT           = "offset";
 const std::string FileWriterPlugin::CONFIG_WRITE                       = "write";
 const std::string FileWriterPlugin::ACQUISITION_ID                     = "acquisition_id";
 const std::string FileWriterPlugin::CLOSE_TIMEOUT_PERIOD               = "timeout_timer_period";
@@ -53,16 +53,15 @@ const std::string FileWriterPlugin::START_CLOSE_TIMEOUT                = "start_
  * filename is set to a default.
  *
  * The writer plugin is also configured to be a single
- * process writer (no other expected writers) with an offset
- * of 0.
+ * process writer (no other expected writers).
  */
 FileWriterPlugin::FileWriterPlugin() :
         writing_(false),
         concurrent_processes_(1),
         concurrent_rank_(0),
-        frame_offset_adjustment_(0),
         frames_per_block_(1),
         blocks_per_file_(0),
+        file_extension_("h5"),
         use_earliest_hdf5_(false),
         alignment_threshold_(1),
         alignment_value_(1),
@@ -97,13 +96,6 @@ FileWriterPlugin::~FileWriterPlugin()
   if (writing_) {
     stop_writing();
   }
-}
-
-/** Set frame offset
- *
- */
-void FileWriterPlugin::set_frame_offset_adjustment(size_t frame_no) {
-  this->frame_offset_adjustment_ = frame_no;
 }
 
 /** Process an incoming frame.
@@ -179,9 +171,9 @@ void FileWriterPlugin::start_writing()
     writing_ = this->current_acquisition_->start_acquisition(
         concurrent_rank_,
         concurrent_processes_,
-        frame_offset_adjustment_,
         frames_per_block_,
         blocks_per_file_,
+        file_extension_,
         use_earliest_hdf5_,
         alignment_threshold_,
         alignment_value_);
@@ -278,13 +270,6 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
       next_acquisition_->master_frame_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_MASTER_DATASET);
     }
 
-    // Check if we are setting the frame offset adjustment
-    if (config.has_param(FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT)) {
-      LOG4CXX_INFO(logger_, "Setting frame offset adjustment to "
-          << config.get_param<int>(FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT));
-      frame_offset_adjustment_ = (size_t) config.get_param<int>(FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT);
-    }
-
     // Check to see if the acquisition id is being set
     if (config.has_param(FileWriterPlugin::ACQUISITION_ID)) {
       next_acquisition_->acquisition_id_ = config.get_param<std::string>(FileWriterPlugin::ACQUISITION_ID);
@@ -352,11 +337,11 @@ void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 
   std::string file_str = get_name() + "/" + FileWriterPlugin::CONFIG_FILE + "/";
   reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_PATH, next_acquisition_->file_path_);
-  reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_NAME, next_acquisition_->filename_);
+  reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_NAME, next_acquisition_->configured_filename_);
+  reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_EXTENSION, file_extension_);
 
   reply.set_param(get_name() + "/" + FileWriterPlugin::CONFIG_FRAMES, next_acquisition_->total_frames_);
   reply.set_param(get_name() + "/" + FileWriterPlugin::CONFIG_MASTER_DATASET, next_acquisition_->master_frame_);
-  reply.set_param(get_name() + "/" + FileWriterPlugin::CONFIG_OFFSET_ADJUSTMENT, frame_offset_adjustment_);
   reply.set_param(get_name() + "/" + FileWriterPlugin::ACQUISITION_ID, next_acquisition_->acquisition_id_);
   reply.set_param(get_name() + "/" + FileWriterPlugin::CLOSE_TIMEOUT_PERIOD, timeout_period_);
 
@@ -512,8 +497,12 @@ void FileWriterPlugin::configure_file(OdinData::IpcMessage& config, OdinData::Ip
     LOG4CXX_DEBUG(logger_, "Next file path changed to " << this->next_acquisition_->file_path_);
   }
   if (config.has_param(FileWriterPlugin::CONFIG_FILE_NAME)) {
-    this->next_acquisition_->filename_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_NAME);
-    LOG4CXX_DEBUG(logger_, "Next file name changed to " << this->next_acquisition_->filename_);
+    this->next_acquisition_->configured_filename_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_NAME);
+    LOG4CXX_DEBUG(logger_, "Next file name changed to " << this->next_acquisition_->configured_filename_);
+  }
+  if (config.has_param(FileWriterPlugin::CONFIG_FILE_EXTENSION)) {
+    this->file_extension_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_EXTENSION);
+    LOG4CXX_DEBUG(logger_, "File extension changed to " << this->file_extension_);
   }
 }
 
@@ -628,6 +617,7 @@ void FileWriterPlugin::status(OdinData::IpcMessage& status)
   status.set_param(get_name() + "/writing", this->writing_);
   status.set_param(get_name() + "/frames_max", (int)this->current_acquisition_->frames_to_write_);
   status.set_param(get_name() + "/frames_written", (int)this->current_acquisition_->frames_written_);
+  status.set_param(get_name() + "/frames_processed", (int)this->current_acquisition_->frames_processed_);
   status.set_param(get_name() + "/file_path", this->current_acquisition_->file_path_);
   status.set_param(get_name() + "/file_name", this->current_acquisition_->filename_);
   status.set_param(get_name() + "/acquisition_id", this->current_acquisition_->acquisition_id_);
@@ -677,8 +667,8 @@ void FileWriterPlugin::stop_acquisition() {
   if (writing_){
     if (!next_acquisition_->file_path_.empty()){
       if (next_acquisition_->file_path_ == current_acquisition_->file_path_){
-        if (!next_acquisition_->filename_.empty()){
-          if (next_acquisition_->filename_ == current_acquisition_->filename_){
+        if (!next_acquisition_->configured_filename_.empty()){
+          if (next_acquisition_->configured_filename_ == current_acquisition_->configured_filename_){
             // Identical path and filenames so do not re-start
             restart = false;
             LOG4CXX_INFO(logger_, "FrameProcessor will not auto-restart acquisition due to identical filename and path");
@@ -697,7 +687,7 @@ void FileWriterPlugin::stop_acquisition() {
   this->stop_writing();
   if (restart){
     // Start next acquisition if we have a filename or acquisition ID to use
-    if (!next_acquisition_->filename_.empty() || !next_acquisition_->acquisition_id_.empty()) {
+    if (!next_acquisition_->configured_filename_.empty() || !next_acquisition_->acquisition_id_.empty()) {
       if (next_acquisition_->total_frames_ > 0 && next_acquisition_->frames_to_write_ == 0) {
         // We're not expecting any frames, so just clear out the nextAcquisition for the next one and don't start writing
         this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition());
