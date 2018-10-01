@@ -2,7 +2,7 @@
  * LiveViewUnitTest.cpp
  *
  *  Created on: 28 Sep 2018
- *      Author: wbd45595
+ *      Author: Adam Neaves - wbd45595
  */
 
 #include <boost/test/unit_test.hpp>
@@ -132,8 +132,9 @@ BOOST_AUTO_TEST_CASE(LiveViewBasicSendTest)
   BOOST_CHECK_EQUAL(doc["dtype"].GetString(), DATA_TYPES[frame->get_data_type()]);
   BOOST_CHECK_EQUAL(doc["dsize"].GetInt() , frame->get_data_size());
   BOOST_CHECK_EQUAL(doc["compression"].GetString(), COMPRESS_TYPES[frame->get_compression()]);
-  BOOST_CHECK_EQUAL(atoi(doc["shape"][0].GetString()), frame->get_dimensions()[0]);
-  BOOST_CHECK_EQUAL(atoi(doc["shape"][1].GetString()), frame->get_dimensions()[1]);
+  char *end;
+  BOOST_CHECK_EQUAL(strtol(doc["shape"][0].GetString(), &end, 10), frame->get_dimensions()[0]);
+  BOOST_CHECK_EQUAL(strtol(doc["shape"][1].GetString(), &end, 10), frame->get_dimensions()[1]);
 
 
   //TEST DATA CONTENTS
