@@ -15,6 +15,10 @@ using namespace FrameReceiver;
 #define SHARED_LIBRARY_SUFFIX ".so"
 #endif
 
+namespace FrameReceiver {
+  IMPLEMENT_DEBUG_LEVEL;
+}
+
 //! Constructor for the FrameReceiverController class.
 //!
 //! This constructor initialises the logger, IPC channels and state
@@ -86,6 +90,11 @@ void FrameReceiverController::configure(OdinData::IpcMessage& config_msg,
   config_reply.set_msg_val(config_msg.get_msg_val());
 
   try {
+    if (config_msg.has_param(CONFIG_DEBUG)) {
+      unsigned int debug_level = config_msg.get_param<unsigned int>(CONFIG_DEBUG);
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Debug level set to  " << debug_level);
+      set_debug_level(debug_level);
+    }
 
     // Configure IPC channels
     this->configure_ipc_channels(config_msg);
