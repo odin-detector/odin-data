@@ -8,12 +8,17 @@
 #include <stdio.h>
 
 #include "FrameProcessorController.h"
+#include "DebugLevelLogger.h"
 
 namespace FrameProcessor
 {
+IMPLEMENT_DEBUG_LEVEL;
+
 const std::string FrameProcessorController::META_RX_INTERFACE        = "inproc://meta_rx";
 
 const std::string FrameProcessorController::CONFIG_SHUTDOWN          = "shutdown";
+
+const std::string FrameProcessorController::CONFIG_DEBUG             = "debug";
 
 const std::string FrameProcessorController::CONFIG_FR_RELEASE        = "fr_release_cnxn";
 const std::string FrameProcessorController::CONFIG_FR_READY          = "fr_ready_cnxn";
@@ -288,7 +293,14 @@ void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData:
   if (config.has_param("single-shot") && config.get_param<bool>("single-shot") &&
       config.has_param("frames") && config.get_param<unsigned int>("frames") != 0) {
     datasetSize = config.get_param<unsigned int>("frames");
-    LOG4CXX_DEBUG(logger_, "Dataset size: " << datasetSize);
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Dataset size: " << datasetSize);
+  }
+
+  // Check for a debug level change
+  if (config.has_param(FrameProcessorController::CONFIG_DEBUG)) {
+    unsigned int debug_level = config.get_param<unsigned int>(FrameProcessorController::CONFIG_DEBUG);
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Debug level set to  " << debug_level);
+    set_debug_level(debug_level);
   }
 
   // Check if we are being asked to shutdown
