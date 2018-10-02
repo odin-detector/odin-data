@@ -58,10 +58,12 @@ The header contains the following data as a json string
   - The Acquisition ID number assigned by the detector. This can be blank.
 - dtype - *string*
   - The data type of the following data blob. Represents the size of each pixel of data.
+  - Possible values are: "unknown", "uint8", "uint16", "uint32", "uint64", "float".
 - dsize - *int*
   - The total size of the data blob in bytes
 - compression *string*
   - The method of compression applied. Can be left as "unset"
+  - Possible Values are: "none", "LZ4", "BSLZ4".
 - shape *int array*
   - An array describing the dimensions of the data. If plotted on a standard graph, shape[0] represents the x axis, and shape[1] the y axis.
 
