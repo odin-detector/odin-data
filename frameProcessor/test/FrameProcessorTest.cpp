@@ -21,6 +21,7 @@ using namespace log4cxx::xml;
 #include "FrameProcessorDefinitions.h"
 #include "UIDAdjustmentPlugin.h"
 #include "OffsetAdjustmentPlugin.h"
+#include "LiveViewPlugin.h"
 
 class GlobalConfig {
 public:
@@ -727,7 +728,7 @@ BOOST_AUTO_TEST_CASE( AdjustUID )
   plugin.process_frame(frame);
   BOOST_CHECK_EQUAL(35, frame->get_i64_parameter("UID"));
 }
-
+ 
 BOOST_AUTO_TEST_SUITE_END(); //UIDAdjustmentPluginUnitTest
 
 BOOST_FIXTURE_TEST_SUITE(OffsetAdjustmentPluginUnitTest, FileWriterPluginTestFixture);
