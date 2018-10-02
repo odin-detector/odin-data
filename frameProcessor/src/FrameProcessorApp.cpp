@@ -64,7 +64,7 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
     // and in the configuration file
     po::options_description config("Configuration options");
     config.add_options()
-        ("debug,d",      po::value<unsigned int>()->default_value(debug_level),
+        ("debug-level,d",      po::value<unsigned int>()->default_value(debug_level),
            "Set the debug level")
         ("logconfig,l",   po::value<string>(),
            "Set the log4cxx logging configuration file")
@@ -180,9 +180,9 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
       BasicConfigurator::configure();
     }
 
-    if (vm.count("debug"))
+    if (vm.count("debug-level"))
     {
-      set_debug_level(vm["debug"].as<unsigned int>());
+      set_debug_level(vm["debug-level"].as<unsigned int>());
       LOG4CXX_DEBUG_LEVEL(1, logger, "Debug level set to  " << debug_level);
     }
 
