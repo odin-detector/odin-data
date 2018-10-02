@@ -18,7 +18,7 @@ const std::string FrameProcessorController::META_RX_INTERFACE        = "inproc:/
 
 const std::string FrameProcessorController::CONFIG_SHUTDOWN          = "shutdown";
 
-const std::string FrameProcessorController::CONFIG_DEBUG             = "debug";
+const std::string FrameProcessorController::CONFIG_DEBUG             = "debug_level";
 
 const std::string FrameProcessorController::CONFIG_FR_RELEASE        = "fr_release_cnxn";
 const std::string FrameProcessorController::CONFIG_FR_READY          = "fr_ready_cnxn";
