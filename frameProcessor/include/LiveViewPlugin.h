@@ -30,9 +30,9 @@ public:
   virtual ~LiveViewPlugin();
   void process_frame(boost::shared_ptr<Frame> frame);
   void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
-  void PassLiveFrame(boost::shared_ptr<Frame> frame);
+  void pass_live_frame(boost::shared_ptr<Frame> frame);
 
-  /* Default Config Values*/
+  /*DEFAULT CONFIG VALUES*/
   /** The default value for the Frame Frequency configuration*/
   static const int32_t     DEFAULT_FRAME_FREQ;
   /** The default value for the frames per second configuration*/
@@ -42,7 +42,7 @@ public:
   /** The default value for the dataset name filter*/
   static const std::string DEFAULT_DATASET_NAME;
 
-  /* Config Names*/
+  /*Config Names*/
   /** The name of the Frame Frequency config in the json file*/
   static const std::string CONFIG_FRAME_FREQ;
   /** The name of the Per Second config in the json file*/
@@ -54,41 +54,41 @@ public:
 
 private:
 
-  /* Possible Data and Compression Types*/
+  /*Possible Data and Compression Types*/
   /** List of possible dtype strings*/
   static const std::string DATA_TYPES[];
   /** List of possible compression type strings*/
   static const std::string COMPRESS_TYPES[];
 
   void requestConfiguration(OdinData::IpcMessage& reply);
-  std::string getTypeFromEnum(int32_t type);
-  std::string getCompressFromEnum(int32_t compress);
-  void setPerSecondConfig(int32_t value);
-  void setFrameFreqConfig(int32_t value);
-  void setSocketAddrConfig(std::string value);
-  void setDatasetNameConfig(std::string value);
+//  std::string get_type_from_enum(int32_t type);
+//  std::string get_compress_from_enum(int32_t compress);
+  void set_per_second_config(int32_t value);
+  void set_frame_freq_config(int32_t value);
+  void set_socket_addr_config(std::string value);
+  void set_dataset_name_config(std::string value);
 
 
-  /** Time between frames in milliseconds, calculated from the per_second config*/
-  int32_t time_between_frames;
-  /** Time the last frame was shown*/
-  boost::posix_time::ptime time_last_frame;
+  /**time between frames in milliseconds, calculated from the per_second config*/
+  int32_t time_between_frames_;
+  /**time the last frame was shown*/
+  boost::posix_time::ptime time_last_frame_;
 
   /** Pointer to logger */
   LoggerPtr logger_;
   /** Every Nth Frame to display*/
-  int32_t frame_freq;
-  /** Address for ZMQ socket for transmitting images*/
-  std::string image_view_socket_addr;
-  /** Frames to show per second. Will override the frame_freq if elapsed time between frames gets too big*/
-  int32_t per_second;
-  /** The socket the live view image frames will be sent to*/
-  OdinData::IpcChannel publish_socket;
-  /** List of the dataset names to publish. If a frame comes in with a dataset name not on the list it will be ignored*/
-  std::vector<std::string>datasets;
+  int32_t frame_freq_;
+  /** address for ZMQ socket for transmitting images*/
+  std::string image_view_socket_addr_;
+  /**Frames to show per second. Will override the frame_freq if elapsed time between frames gets too big*/
+  int32_t per_second_;
+  /**The socket the live view image frames will be sent to*/
+  OdinData::IpcChannel publish_socket_;
+  /**List of the dataset names to publish. If a frame comes in with a dataset name not on the list it will be ignored*/
+  std::vector<std::string>datasets_;
 
 };
 
-}/* Namespace FrameProcessor */
+}/* namespace FrameProcessor */
 
 #endif /* FRAMEPROCESSOR_LIVEVIEWPLUGIN_H_*/
