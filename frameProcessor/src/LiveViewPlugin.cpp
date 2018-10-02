@@ -55,6 +55,8 @@ LiveViewPlugin::~LiveViewPlugin()
  */
 void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
 {
+  /** Static Frame Count will increment each time this method is called, basically as a count of how many frames have been processed by the plugin*/
+  static uint32_t frame_count_;
   LOG4CXX_TRACE(logger_, "LiveViewPlugin Process Frame.");
 
   std::string frame_dataset = frame->get_dataset_name();
@@ -63,7 +65,7 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
   {
 
     boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
-    int32_t frame_num = frame->get_frame_number();
+    /*int32_t frame_num = frame->get_frame_number();*/
     int32_t elapsed_time = (now - time_last_frame_).total_milliseconds();
 
     if (per_second_ != 0 && elapsed_time > time_between_frames_) //time between frames too large, showing frame no matter what the frame number is
@@ -71,19 +73,20 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
       LOG4CXX_TRACE(logger_, "Elapsed time " << elapsed_time << " > " << time_between_frames_);
       pass_live_frame(frame);
     }
-    else if (frame_freq_ != 0 && frame_num % frame_freq_ == 0)
+    else if (frame_freq_ != 0 && frame_count_ % frame_freq_ == 0)
     {
-      LOG4CXX_TRACE(logger_, "LiveViewPlugin Frame " << frame_num << " to be displayed.");
+      LOG4CXX_TRACE(logger_, "LiveViewPlugin Frame " << frame->get_frame_number() << " to be displayed.");
       pass_live_frame(frame);
     }
   }
   else
   {
-    LOG4CXX_TRACE(logger_,"Frame dataset :" << frame_dataset << " not desired");
+    LOG4CXX_TRACE(logger_,"Frame dataset: " << frame_dataset << " not desired");
   }
 
   LOG4CXX_TRACE(logger_, "Pushing Data Frame" );
   //push frame down the pipeline no matter if frame was passed to live viewer or not
+  frame_count_ ++;
   this->push(frame);
 }
 
