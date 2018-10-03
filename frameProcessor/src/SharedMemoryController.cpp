@@ -92,6 +92,10 @@ SharedMemoryController::~SharedMemoryController()
  */
 void SharedMemoryController::setSharedBufferManager(const std::string& shared_buffer_name)
 {
+
+  // Set configured status to false until the new shared buffer manager is initialised
+  sharedBufferConfigured_ = false;
+
   // Reset the shared buffer manager if already existing
   if (sbm_) {
     sbm_.reset();
@@ -102,6 +106,7 @@ void SharedMemoryController::setSharedBufferManager(const std::string& shared_bu
       new OdinData::SharedBufferManager(shared_buffer_name)
   );
 
+  // Set configured status to true
   sharedBufferConfigured_ = true;
 
   LOG4CXX_DEBUG_LEVEL(1, logger_, "Initialised shared buffer manager for buffer " << shared_buffer_name);
