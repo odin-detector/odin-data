@@ -48,7 +48,8 @@ FrameProcessorController::FrameProcessorController() :
     runThread_(true),
     threadRunning_(false),
     threadInitError_(false),
-    pluginShutdownSent(false),
+    pluginShutdownSent_(false),
+    shutdown_(false),
     ctrlThread_(boost::bind(&FrameProcessorController::runIpcService, this)),
     ctrlChannelEndpoint_(""),
     ctrlChannel_(ZMQ_ROUTER),
@@ -84,7 +85,8 @@ FrameProcessorController::FrameProcessorController() :
  */
 FrameProcessorController::~FrameProcessorController()
 {
-  // TODO Auto-generated destructor stub
+  // Make sure we shutdown cleanly if an exception was thrown
+  shutdown();
 }
 
 /** Handle an incoming configuration message.
@@ -228,7 +230,7 @@ void FrameProcessorController::callback(boost::shared_ptr<Frame> frame) {
     exitCondition_.notify_all();
     // Wait until the main thread has sent stop commands to the plugins
     LOG4CXX_DEBUG_LEVEL(2, logger_, "Exit condition set. Waiting for main thread to stop plugins.");
-    while(!pluginShutdownSent);
+    while(!pluginShutdownSent_);
     // Return so they can shutdown
   }
 }
@@ -548,40 +550,49 @@ void FrameProcessorController::run() {
   // Start worker thread (for IFrameCallback) to monitor frames passed through
   start();
 
+  LOG4CXX_INFO(logger_, "Running FrameProcessor")
+
   // Now wait for the shutdown command from either the control interface or the worker thread
   waitForShutdown();
+  shutdown();
+}
 
-  // Stop all plugin worker threads
-  LOG4CXX_DEBUG_LEVEL(1, logger_, "Stopping plugin worker threads");
-  std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator it;
-  for (it = plugins_.begin(); it != plugins_.end(); it++) {
-    it->second->stop();
+void FrameProcessorController::shutdown() {
+  if (!shutdown_) {
+    LOG4CXX_INFO(logger_, "Received shutdown command");
+    // Stop all plugin worker threads
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Stopping plugin worker threads");
+    std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator it;
+    for (it = plugins_.begin(); it != plugins_.end(); it++) {
+      it->second->stop();
+    }
+    // Worker thread callback will block caller until pluginShutdownSent_ is set
+    pluginShutdownSent_ = true;
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Plugin shutdown sent. Removing plugins once stopped.");
+    // Wait until each plugin has stopped and erase it from our map
+    for (it = plugins_.begin(); it != plugins_.end(); it++) {
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Removing " << it->first);
+      while(it->second->isWorking());
+      plugins_.erase(it);
+    }
+
+    // Stop worker thread (for IFrameCallback) and reactor
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Stopping FrameProcessorController worker thread and IPCReactor");
+    stop();
+    reactor_->stop();
+
+    // Close control IPC channel
+    closeControlInterface();
+    // Close FrameReceiver interface IPC channels
+    closeFrameReceiverInterface();
+
+    // Destroy any allocated DataBlocks
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Tearing down DataBlockPool");
+    DataBlockPool::tearDownClass();
+
+    shutdown_ = true;
+    LOG4CXX_INFO(logger_, "Shutting Down");
   }
-  // Worker thread callback will block caller until pluginShutdownSent is set
-  pluginShutdownSent = true;
-  LOG4CXX_DEBUG_LEVEL(1, logger_, "Plugin shutdown sent. Removing plugins once stopped.");
-  // Wait until the each plugin has stopped and erase it from our map
-  for (it = plugins_.begin(); it != plugins_.end(); it++) {
-    LOG4CXX_DEBUG_LEVEL(1, logger_, "Removing " << it->first);
-    while(it->second->isWorking());
-    plugins_.erase(it);
-  }
-
-  // Stop worker thread (for IFrameCallback) and reactor
-  LOG4CXX_DEBUG_LEVEL(1, logger_, "Stopping FrameProcessorController worker thread and IPCReactor");
-  stop();
-  reactor_->stop();
-
-  // Close control IPC channel
-  closeControlInterface();
-  // Close FrameReceiver interface IPC channels
-  closeFrameReceiverInterface();
-
-  // Destroy any allocated DataBlocks
-  LOG4CXX_DEBUG_LEVEL(1, logger_, "Tearing down DataBlockPool");
-  DataBlockPool::tearDownClass();
-
-  LOG4CXX_INFO(logger_, "Shutting Down.");
 }
 
 /**

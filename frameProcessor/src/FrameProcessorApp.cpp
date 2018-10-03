@@ -557,7 +557,7 @@ int main(int argc, char** argv)
 
   } catch (const std::exception& e) {
     LOG4CXX_ERROR(logger, e.what());
-    // Nothing to do, terminate gracefully(?)
+    throw;
   }
   return 0;
 }
