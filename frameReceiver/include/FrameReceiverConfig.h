@@ -43,6 +43,7 @@ namespace FrameReceiver
   const std::string CONFIG_FRAME_COUNT = "frame_count";
   const std::string CONFIG_ENABLE_PACKET_LOGGING = "enable_packet_logging";
   const std::string CONFIG_FORCE_RECONFIG = "force_reconfig";
+  const std::string CONFIG_DEBUG = "debug_level";
 
 class FrameReceiverConfig
 {

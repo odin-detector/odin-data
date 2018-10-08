@@ -56,6 +56,9 @@ private:
   /** Configuration constant to shutdown the frame processor **/
   static const std::string CONFIG_SHUTDOWN;
 
+  /** Configuration constant to set the debug level of the frame processor **/
+  static const std::string CONFIG_DEBUG;
+
   /** Configuration constant for name of shared memory storage **/
   static const std::string CONFIG_FR_SHARED_MEMORY;
   /** Configuration constant for connection string for frame release **/

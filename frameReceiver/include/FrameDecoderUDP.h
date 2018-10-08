@@ -21,7 +21,7 @@
 #include <log4cxx/logger.h>
 using namespace log4cxx;
 using namespace log4cxx::helpers;
-#include <DebugLevelLogger.h>
+#include "DebugLevelLogger.h"
 
 #include "FrameDecoder.h"
 

@@ -33,8 +33,11 @@ using namespace rapidjson;
 
 #include "logging.h"
 #include "FrameProcessorController.h"
+#include "DebugLevelLogger.h"
 
 using namespace FrameProcessor;
+
+IMPLEMENT_DEBUG_LEVEL;
 
 static bool has_suffix(const std::string &str, const std::string &suffix)
 {
@@ -61,6 +64,8 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
     // and in the configuration file
     po::options_description config("Configuration options");
     config.add_options()
+        ("debug-level,d",      po::value<unsigned int>()->default_value(debug_level),
+           "Set the debug level")
         ("logconfig,l",   po::value<string>(),
            "Set the log4cxx logging configuration file")
         ("ctrl",          po::value<std::string>()->default_value("tcp://0.0.0.0:5004"),
@@ -80,7 +85,7 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
            "Number of concurrent file writer processes")
         ("rank,r",        po::value<unsigned int>()->default_value(0),
            "The rank (index number) of the current file writer process in relation to the other concurrent ones")
-        ("detector,d",    po::value<std::string>(),
+        ("detector",      po::value<std::string>(),
            "Detector to configure for")
         ("path",          po::value<std::string>(),
            "Path to detector shared library with format 'lib<detector>ProcessPlugin.so'")
@@ -175,26 +180,32 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
       BasicConfigurator::configure();
     }
 
+    if (vm.count("debug-level"))
+    {
+      set_debug_level(vm["debug-level"].as<unsigned int>());
+      LOG4CXX_DEBUG_LEVEL(1, logger, "Debug level set to  " << debug_level);
+    }
+
     bool no_client = vm["no-client"].as<bool>();
 
     if (no_client)
     {
-      LOG4CXX_DEBUG(logger, "Running FileWriter without client");
+      LOG4CXX_DEBUG_LEVEL(1, logger, "Running FileWriter without client");
     }
 
     if (no_client && vm.count("ready"))
     {
-      LOG4CXX_DEBUG(logger, "Setting frame ready notification ZMQ address to " << vm["ready"].as<string>());
+      LOG4CXX_DEBUG_LEVEL(1, logger, "Setting frame ready notification ZMQ address to " << vm["ready"].as<string>());
     }
 
     if (no_client && vm.count("release"))
     {
-      LOG4CXX_DEBUG(logger, "Setting frame release notification ZMQ address to " << vm["release"].as<string>());
+      LOG4CXX_DEBUG_LEVEL(1, logger, "Setting frame release notification ZMQ address to " << vm["release"].as<string>());
     }
 
     if (no_client && vm.count("frames"))
     {
-      LOG4CXX_DEBUG(logger, "Setting number of frames to receive to " << vm["frames"].as<unsigned int>());
+      LOG4CXX_DEBUG_LEVEL(1, logger, "Setting number of frames to receive to " << vm["frames"].as<unsigned int>());
     }
 
     if (no_client && vm.count("datasets"))
@@ -204,7 +215,7 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
       for (std::vector<string>::iterator it = datasets.begin(); it != datasets.end(); ++it) {
         message += *it + ", ";
       }
-      LOG4CXX_DEBUG(logger, message);
+      LOG4CXX_DEBUG_LEVEL(1, logger, message);
     }
 
     if (no_client && vm.count("dims"))
@@ -214,7 +225,7 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
       for (std::vector<int>::iterator it = dims.begin(); it != dims.end(); ++it) {
         message += boost::lexical_cast<std::string>(*it) + ", ";
       }
-      LOG4CXX_DEBUG(logger, message);
+      LOG4CXX_DEBUG_LEVEL(1, logger, message);
     }
 
     if (no_client && vm.count("chunk-dims"))
@@ -224,92 +235,92 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
       for (std::vector<int>::iterator it = chunkDims.begin(); it != chunkDims.end(); ++it) {
         message += boost::lexical_cast<std::string>(*it) + ", ";
       }
-      LOG4CXX_DEBUG(logger, message);
+      LOG4CXX_DEBUG_LEVEL(1, logger, message);
     }
 
     if (no_client && vm.count("detector"))
     {
-      LOG4CXX_DEBUG(logger, "Configuring for " << vm["detector"].as<string>() << " detector");
+      LOG4CXX_DEBUG_LEVEL(1, logger, "Configuring for " << vm["detector"].as<string>() << " detector");
     }
 
     if (no_client && vm.count("bit-depth"))
     {
-      LOG4CXX_DEBUG(logger, "Setting bit-depth to " << vm["bit-depth"].as<string>());
+      LOG4CXX_DEBUG_LEVEL(1, logger, "Setting bit-depth to " << vm["bit-depth"].as<string>());
     }
 
     if (no_client && vm.count("dtype"))
     {
-      LOG4CXX_DEBUG(logger, "Setting data type to " << vm["dtype"].as<int>());
+      LOG4CXX_DEBUG_LEVEL(1, logger, "Setting data type to " << vm["dtype"].as<int>());
     }
 
     if (no_client && vm.count("path"))
     {
-      LOG4CXX_DEBUG(logger, "Setting shared library path to " << vm["path"].as<string>());
+      LOG4CXX_DEBUG_LEVEL(1, logger, "Setting shared library path to " << vm["path"].as<string>());
     }
 
     if (no_client && vm.count("compression"))
     {
-      LOG4CXX_DEBUG(logger, "Setting compression type to " << vm["compression"].as<int>());
+      LOG4CXX_DEBUG_LEVEL(1, logger, "Setting compression type to " << vm["compression"].as<int>());
     }
 
     if (no_client && vm.count("ctrl"))
     {
-      LOG4CXX_DEBUG(logger, "Setting control endpoint to: " << vm["ctrl"].as<string>());
+      LOG4CXX_DEBUG_LEVEL(1, logger, "Setting control endpoint to: " << vm["ctrl"].as<string>());
     }
 
     if (no_client && vm.count("meta"))
     {
-      LOG4CXX_DEBUG(logger, "Setting meta endpoint to: " << vm["meta"].as<string>());
+      LOG4CXX_DEBUG_LEVEL(1, logger, "Setting meta endpoint to: " << vm["meta"].as<string>());
     }
 
     if (no_client && vm.count("output"))
     {
-      LOG4CXX_DEBUG(logger, "Writing frames to file: " << vm["output"].as<string>());
+      LOG4CXX_DEBUG_LEVEL(1, logger, "Writing frames to file: " << vm["output"].as<string>());
     }
 
     if (no_client && vm.count("processes"))
     {
-      LOG4CXX_DEBUG(logger, "Number of concurrent file writer processes: " << vm["processes"].as<unsigned int>());
+      LOG4CXX_DEBUG_LEVEL(1, logger, "Number of concurrent file writer processes: " << vm["processes"].as<unsigned int>());
     }
 
     if (no_client && vm.count("rank"))
     {
-      LOG4CXX_DEBUG(logger, "This process rank (index): " << vm["rank"].as<unsigned int>());
+      LOG4CXX_DEBUG_LEVEL(1, logger, "This process rank (index): " << vm["rank"].as<unsigned int>());
     }
 
     if (no_client && vm.count("acqid"))
     {
-      LOG4CXX_DEBUG(logger, "Setting acquisition ID to " << vm["acqid"].as<string>());
+      LOG4CXX_DEBUG_LEVEL(1, logger, "Setting acquisition ID to " << vm["acqid"].as<string>());
     }
 
     if (no_client && vm.count("timeout"))
     {
-      LOG4CXX_DEBUG(logger, "Setting close file timeout period to " << vm["timeout"].as<size_t>());
+      LOG4CXX_DEBUG_LEVEL(1, logger, "Setting close file timeout period to " << vm["timeout"].as<size_t>());
     }
 
     if (no_client && vm.count("block-size"))
     {
-      LOG4CXX_DEBUG(logger, "Setting number of frames per block to " << vm["block-size"].as<size_t>());
+      LOG4CXX_DEBUG_LEVEL(1, logger, "Setting number of frames per block to " << vm["block-size"].as<size_t>());
     }
 
     if (no_client && vm.count("blocks-per-file"))
     {
-      LOG4CXX_DEBUG(logger, "Setting number of blocks per file to " << vm["blocks-per-file"].as<size_t>());
+      LOG4CXX_DEBUG_LEVEL(1, logger, "Setting number of blocks per file to " << vm["blocks-per-file"].as<size_t>());
     }
 
     if (no_client && vm["earliest-hdf-ver"].as<bool>())
     {
-      LOG4CXX_DEBUG(logger, "Using earliest HDF5 version");
+      LOG4CXX_DEBUG_LEVEL(1, logger, "Using earliest HDF5 version");
     }
 
     if (no_client && vm.count("alignment-threshold"))
     {
-      LOG4CXX_DEBUG(logger, "Setting alignment threshold to " << vm["alignment-threshold"].as<size_t>());
+      LOG4CXX_DEBUG_LEVEL(1, logger, "Setting alignment threshold to " << vm["alignment-threshold"].as<size_t>());
     }
 
     if (no_client && vm.count("alignment-value"))
     {
-      LOG4CXX_DEBUG(logger, "Setting alignment value to " << vm["alignment-value"].as<size_t>());
+      LOG4CXX_DEBUG_LEVEL(1, logger, "Setting alignment value to " << vm["alignment-value"].as<size_t>());
     }
 
   }
@@ -497,7 +508,7 @@ int main(int argc, char** argv)
       configureController(fwc, vm);
       if (vm["no-client"].as<bool>()) {
         checkNoClientArgs(vm);
-        LOG4CXX_DEBUG(logger, "Adding configuration options to work without a client");
+        LOG4CXX_DEBUG_LEVEL(1, logger, "Adding configuration options to work without a client");
         configurePlugins(fwc, vm);
         configureFileWriter(fwc, vm);
       }
@@ -542,7 +553,7 @@ int main(int argc, char** argv)
 
     fwc->run();
 
-    LOG4CXX_DEBUG(logger, "FrameProcessorController run finished. Stopping app.");
+    LOG4CXX_DEBUG_LEVEL(1, logger, "FrameProcessorController run finished. Stopping app.");
 
   } catch (const std::exception& e) {
     LOG4CXX_ERROR(logger, e.what());
