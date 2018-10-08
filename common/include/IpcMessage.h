@@ -92,6 +92,7 @@ public:
     MsgValCmdRequestConfiguration,   //!< Request configuration command message
     MsgValCmdBufferConfigRequest,    //!< Buffer configuration request
     MsgValCmdBufferPrechargeRequest, //!< Buffer precharge request
+    MsgValCmdResetStatistics,        //!< Reset statistics command
     MsgValCmdShutdown,               //!< Process shutdown request
     MsgValNotifyIdentity,            //!< Identity notification message
     MsgValNotifyFrameReady,          //!< Frame ready notification message
