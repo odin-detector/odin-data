@@ -55,6 +55,9 @@ private:
 } // namespace OdinData
 
 // Override rapidsjon assertion mechanism before including appropriate headers
+#ifdef RAPIDJSON_ASSERT
+#undef RAPIDJSON_ASSERT
+#endif
 #define RAPIDJSON_ASSERT(x) if (!(x)) throw OdinData::IpcMessageException("rapidjson assertion thrown");
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
