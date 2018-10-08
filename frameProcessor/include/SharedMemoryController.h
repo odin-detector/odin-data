@@ -46,6 +46,7 @@ public:
   void registerCallback(const std::string& name, boost::shared_ptr<IFrameCallback> cb);
   void removeCallback(const std::string& name);
   void handleRxChannel();
+  void status(OdinData::IpcMessage& status);
 
 private:
   /** Pointer to logger */
@@ -60,6 +61,11 @@ private:
   OdinData::IpcChannel             rxChannel_;
   /** IpcChannel for sending notifications of frame release */
   OdinData::IpcChannel             txChannel_;
+  /** Shared buffer configured status flag */
+  bool sharedBufferConfigured_;
+
+  /** Name of class used in status messages */
+  static const std::string SHARED_MEMORY_CONTROLLER_NAME;
 };
 
 } /* namespace FrameProcessor */

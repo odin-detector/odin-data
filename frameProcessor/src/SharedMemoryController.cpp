@@ -11,6 +11,8 @@
 namespace FrameProcessor
 {
 
+const std::string SharedMemoryController::SHARED_MEMORY_CONTROLLER_NAME = "shared_memory";
+
 /** Constructor.
  *
  * The constructor sets up logging used within the class. It also creates the
@@ -29,7 +31,8 @@ SharedMemoryController::SharedMemoryController(boost::shared_ptr<OdinData::IpcRe
                                                const std::string& txEndPoint) :
     reactor_(reactor),
     rxChannel_(ZMQ_SUB),
-    txChannel_(ZMQ_PUB)
+    txChannel_(ZMQ_PUB),
+    sharedBufferConfigured_(false)
 {
   // Setup logging for the class
   logger_ = Logger::getLogger("FW.SharedMemoryController");
@@ -89,6 +92,10 @@ SharedMemoryController::~SharedMemoryController()
  */
 void SharedMemoryController::setSharedBufferManager(const std::string& shared_buffer_name)
 {
+
+  // Set configured status to false until the new shared buffer manager is initialised
+  sharedBufferConfigured_ = false;
+
   // Reset the shared buffer manager if already existing
   if (sbm_) {
     sbm_.reset();
@@ -98,6 +105,9 @@ void SharedMemoryController::setSharedBufferManager(const std::string& shared_bu
   sbm_ =  boost::shared_ptr<OdinData::SharedBufferManager>(
       new OdinData::SharedBufferManager(shared_buffer_name)
   );
+
+  // Set configured status to true
+  sharedBufferConfigured_ = true;
 
   LOG4CXX_DEBUG_LEVEL(1, logger_, "Initialised shared buffer manager for buffer " << shared_buffer_name);
 }
@@ -248,6 +258,20 @@ void SharedMemoryController::removeCallback(const std::string& name)
     // Confirm removal
     cb->confirmRemoval("frame_receiver");
   }
+}
+
+/**
+ * Collate status information for the plugin. The status is added to the status IpcMessage object.
+ *
+ * \param[out] status - Reference to an IpcMessage value to store the status.
+ */
+void SharedMemoryController::status(OdinData::IpcMessage& status)
+{
+  // Set status parameters in the status message
+  status.set_param(
+      SharedMemoryController::SHARED_MEMORY_CONTROLLER_NAME + "/configured",
+      sharedBufferConfigured_);
+
 }
 
 } /* namespace FrameProcessor */

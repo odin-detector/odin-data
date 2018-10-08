@@ -233,10 +233,24 @@ void FrameProcessorController::callback(boost::shared_ptr<Frame> frame) {
   }
 }
 
+/** Provide status information to requesting clients.
+ *
+ * This is called in response to a status request from a connected client. The reply to the
+ * request is populated with status information from the shared memory controller and all the
+ * plugins currently loaded, and with any error messages currently stored.
+ *
+ * @param[in,out] reply - response IPC message to be populated with status parameters
+ */
 void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply)
 {
   // Error messages
   std::vector<std::string> error_messages;
+
+  // Request status information from the shared memory controller
+  if (sharedMemController_) {
+    sharedMemController_->status(reply);
+  }
+
   // Loop over plugins, list names and request status from each
   std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
   for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
