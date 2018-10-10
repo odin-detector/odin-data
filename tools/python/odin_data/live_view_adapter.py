@@ -11,6 +11,7 @@ from tornado.escape import json_decode
 from tornado.ioloop import IOLoop
 from tornado.concurrent import run_on_executor
 from odin_data.ipc_tornado_channel import IpcTornadoChannel
+from odin_data.ipc_channel import IpcChannelException
 
 import numpy as np
 import cv2
@@ -34,14 +35,106 @@ class LiveViewAdapter(ApiAdapter):
             logging.debug("Setting default endpoint of 'tcp://127.0.0.1:5020'")
             self.endpoint = "tcp://127.0.0.1:5020"
 
+        self.live_viewer = LiveViewer(self.endpoint)
+
+    @response_types('application/json', 'image/*', default='application/json')
+    def get(self, path, request):
+        try:
+            response, content_type, status = self.live_viewer.get(path)
+        except ParameterTreeError as e:
+            response = {'response': 'LiveViewAdapter GET error: {}'.format(e.message)}
+            content_type = 'application/json'
+            status = 400
+
+        return ApiAdapterResponse(response, content_type=content_type, status_code=status)
+
+    @response_types('application/json', default='application/json')
+    def put(self, path, request):
+
+        logging.debug("REQUEST: {}".format(request.body))
+        try:
+            data = json_decode(request.body)
+            self.live_viewer.set(path, data)
+            response, content_type, status = self.live_viewer.get(path)
+
+        except ParameterTreeError as e:
+            response = {'response': 'LiveViewAdapter PUT error: {}'.format(e.message)}
+            content_type = 'application/json'
+            status = 400
+
+        return ApiAdapterResponse(response, content_type=content_type, status_code=status)
+
+    def cleanup(self):
+        self.live_viewer.cleanup()
+
+
+class LiveViewer(object):
+
+    def __init__(self, endpoint):
+        logging.debug("Initialising LiveViewer")
+
+        self.img_data = []
+        self.img_encode = None
+        self.frame = Frame({})
+        self.endpoint = endpoint
         self.ipc_channel = IpcTornadoChannel(IpcTornadoChannel.CHANNEL_TYPE_SUB, endpoint=self.endpoint)
         self.ipc_channel.subscribe()
         self.ipc_channel.connect()
         # register the get_image method to automatically be called when the ZMQ socket receives a message
         self.ipc_channel.register_callback(self.create_image_from_socket)
 
-        self.img = None
-        self.frame = None
+        self.colormap_options = {"Autumn": cv2.COLORMAP_AUTUMN,
+                                 "Bone": cv2.COLORMAP_BONE,
+                                 "Jet": cv2.COLORMAP_JET,
+                                 "Winter": cv2.COLORMAP_WINTER,
+                                 "Rainbow": cv2.COLORMAP_RAINBOW,
+                                 "Ocean": cv2.COLORMAP_OCEAN,
+                                 "Summer": cv2.COLORMAP_SUMMER,
+                                 "Spring": cv2.COLORMAP_SPRING,
+                                 "Cool": cv2.COLORMAP_COOL,
+                                 "HSV": cv2.COLORMAP_HSV,
+                                 "Pink": cv2.COLORMAP_PINK,
+                                 "Hot": cv2.COLORMAP_HOT,
+                                 "Parula": cv2.COLORMAP_PARULA
+                                 }
+
+        self.selected_colormap = self.colormap_options["Jet"]
+
+        self.param_tree = ParameterTree(
+            {"name": "Live View Adapter",
+             "endpoint": (lambda: self.endpoint, self.set_endpoint),
+             "frame": (lambda: self.frame.header, None),
+             "colormap_options": (lambda: self.get_colormap_options_list(), None),
+             "colormap_selected": (lambda: self.get_selected_colormap(), self.set_colormap)
+             }
+        )
+
+    def get(self, path):
+        path_elems = re.split('[/?#]', path)
+        if path_elems[0] == 'image':
+            # sub_path = '/'.join(path_elems)
+            if self.img_encode is not None:
+                if len(path_elems) > 1:
+                    colormap = self.colormap_options[path_elems[1]]
+                else:
+                    colormap = None
+                response = self.render_image(colormap=colormap)
+                content_type = 'image/png'
+                status = 200
+            else:
+                response = {"response": "LiveViewAdapter: No Image Available"}
+                content_type = 'application/json'
+                status = 400
+        else:
+
+            response = self.param_tree.get(path)
+            content_type = 'application/json'
+            status = 200
+
+        return response, content_type, status
+
+    def set(self, path, data):
+        self.param_tree.set(path, data)
 
     def create_image_from_socket(self, msg):
         # message should be a list from multi part message. first part will be the json header from the live view
@@ -54,61 +147,29 @@ class LiveViewAdapter(ApiAdapter):
         logging.debug(header)
         img_data = np.fromstring(msg[1], dtype=np.dtype(header['dtype']))
         img_data = img_data.reshape([int(header["shape"][0]), int(header["shape"][1])])
-        img_scaled = cv2.normalize(img_data, dst=None, alpha=0, beta=65535, norm_type=cv2.NORM_MINMAX)
-        self.img = cv2.imencode('.png', img_scaled)[1].tostring()
+        img_scaled = cv2.normalize(img_data, dst=None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8UC1)
+        # if self.img_encode is None:
+        #     self.img_encode = cv2.imencode('.png', img_scaled)[1]
+        #     logging.debug("Image type: {}".format(type(self.img_encode)))
+        self.render_image(img_data=img_scaled)
 
-        self.frame = Frame(header)
+        self.frame.header = header
 
-    @response_types('application/json', 'image/*', default='application/json')
-    def get(self, path, request):
-
-        path_elems = re.split('[/?#]', path)
-        if path_elems[0] == 'image':
-            # sub_path = '/'.join(path_elems)
-            if self.img is not None:
-                response = self.img
-                content_type = 'image/png'
-                status = 200
-            else:
-                response = {"response": "LiveViewAdapter: No Image Available"}
-                content_type = 'application/json'
-                status = 400
+    def render_image(self, img_data=None, colormap=None):
+        logging.debug("Rendering Image")
+        if img_data is not None:
+            self.img_data = img_data
+        if colormap is None:
+            colormap = self.selected_colormap
         else:
-            if path in self.options:
-                response = self.options.get(path)
-            elif self.frame is not None and path in self.frame.header:
-                response = self.frame.get(path)
-            else:
-                response = {'response': 'LiveViewAdapter: GET on path {}'.format(path)}
+            logging.debug("Colormap: " + str(colormap))
+        img_scaled = cv2.applyColorMap(self.img_data, colormap)
 
-            content_type = 'application/json'
-            status = 200
+        self.img_encode = cv2.imencode('.png', img_scaled)[1]
 
-        return ApiAdapterResponse(response, content_type=content_type, status_code=status)
+        return self.img_encode.tostring()
 
-    @response_types('application/json', default='application/json')
-    def put(self, path, request):
-
-        try:
-            data = json_decode(request.body)
-            if path in self.options:
-                self.options[path] = data
-                response = {'response': 'LiveViewAdapter PUT called: {} set to {}'.format(path, data)}
-            else:
-                response = {'response': 'LiveViewAdapter: PUT on path {}'.format(path)}
-
-            content_type = 'application/json'
-            status = 200
-        except (TypeError, ValueError) as e:
-            response = {'response': 'LiveViewAdapter PUT error: {}'.format(e.message)}
-            content_type = 'application/json'
-            status = 400
-
-        return ApiAdapterResponse(response, content_type=content_type, status_code=status)
-
-    def cleanup(self):
-        self.ipc_channel.close()
-
+    # this method copied from Stack Overflow, for converting unicode strings to str objects in a dict
     def convert_to_string(self, obj):
         if isinstance(obj, dict):
             return {self.convert_to_string(key): self.convert_to_string(value)
@@ -120,6 +181,37 @@ class LiveViewAdapter(ApiAdapter):
         else:
             return obj
 
+    def cleanup(self):
+        self.ipc_channel.close()
+
+    def get_colormap_options_list(self):
+        key_list = self.colormap_options.keys()
+        key_list.sort()
+        return key_list
+
+    def get_selected_colormap(self):
+        for name, value in self.colormap_options.items():
+            if self.selected_colormap == value:
+                return name
+
+    def set_endpoint(self, endpoint):
+        try:
+            self.endpoint = endpoint
+            if self.ipc_channel.endpoint is not self.endpoint:
+                self.ipc_channel.connect(self.endpoint)
+        except IpcChannelException as e:
+            logging.error("IPC Channel Exception: {}".format(e.message))
+
+    def set_colormap(self, colormap):
+        # logging.debug("Setting colourmap to {}".format(colormap))
+        # logging.debug("Type: {}".format(type(colormap)))
+        # if isinstance(colormap, unicode):
+        #     logging.debug("Using String: {}".format(self.colormap_options[str(colormap)]))
+        #     self.selected_colormap = self.colormap_options[colormap]
+        # elif isinstance(colormap, int):
+        #     self.selected_colormap = colormap
+        # self.render_image()
+        logging.debug("SET COLORMAP NOT IMPLEMENTED")
 
 class Frame(object):
 
@@ -132,3 +224,4 @@ class Frame(object):
         else:
             response = None
         return response
+
