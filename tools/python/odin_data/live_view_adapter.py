@@ -16,6 +16,7 @@ from odin_data.ipc_channel import IpcChannelException
 import numpy as np
 import cv2
 import re
+from collections import OrderedDict
 
 from odin.adapters.adapter import ApiAdapter, ApiAdapterResponse, request_types, response_types
 from odin.adapters.parameter_tree import ParameterTree, ParameterTreeError
@@ -40,7 +41,7 @@ class LiveViewAdapter(ApiAdapter):
     @response_types('application/json', 'image/*', default='application/json')
     def get(self, path, request):
         try:
-            response, content_type, status = self.live_viewer.get(path)
+            response, content_type, status = self.live_viewer.get(path, request)
         except ParameterTreeError as e:
             response = {'response': 'LiveViewAdapter GET error: {}'.format(e.message)}
             content_type = 'application/json'
@@ -97,6 +98,20 @@ class LiveViewer(object):
                                  "Hot": cv2.COLORMAP_HOT,
                                  "Parula": cv2.COLORMAP_PARULA
                                  }
+        self.colormap_keys_capitalisation = {"autumn": "Autumn",
+                                             "bone": "Bone",
+                                             "jet": "Jet",
+                                             "winter": "Winter",
+                                             "rainbow": "Rainbow",
+                                             "ocean": "Ocean",
+                                             "summer": "Summer",
+                                             "spring": "Spring",
+                                             "cool": "Cool",
+                                             "hsv": "HSV",
+                                             "pink": "Pink",
+                                             "hot": "Hot",
+                                             "parula": "Parula"
+                                             }
 
         self.selected_colormap = self.colormap_options["Jet"]
 
@@ -105,17 +120,17 @@ class LiveViewer(object):
              "endpoint": (lambda: self.endpoint, self.set_endpoint),
              "frame": (lambda: self.frame.header, None),
              "colormap_options": (lambda: self.get_colormap_options_list(), None),
-             "colormap_selected": (lambda: self.get_selected_colormap(), self.set_colormap)
+             "colormap_default": (lambda: self.get_selected_colormap(), None)
              }
         )
 
-    def get(self, path):
+    def get(self, path, request):
         path_elems = re.split('[/?#]', path)
         if path_elems[0] == 'image':
-            # sub_path = '/'.join(path_elems)
             if self.img_encode is not None:
-                if len(path_elems) > 1:
-                    colormap = self.colormap_options[path_elems[1]]
+                if "colormap" in request.arguments:
+                    colormap_name = request.arguments["colormap"][0]
+                    colormap = self.colormap_options[self.colormap_keys_capitalisation[colormap_name]]
                 else:
                     colormap = None
                 response = self.render_image(colormap=colormap)
@@ -148,10 +163,8 @@ class LiveViewer(object):
         img_data = np.fromstring(msg[1], dtype=np.dtype(header['dtype']))
         img_data = img_data.reshape([int(header["shape"][0]), int(header["shape"][1])])
         img_scaled = cv2.normalize(img_data, dst=None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8UC1)
-        # if self.img_encode is None:
-        #     self.img_encode = cv2.imencode('.png', img_scaled)[1]
-        #     logging.debug("Image type: {}".format(type(self.img_encode)))
-        self.render_image(img_data=img_scaled)
+
+        self.img_encode = self.render_image(img_data=img_scaled)
 
         self.frame.header = header
 
@@ -164,10 +177,8 @@ class LiveViewer(object):
         else:
             logging.debug("Colormap: " + str(colormap))
         img_scaled = cv2.applyColorMap(self.img_data, colormap)
-
-        self.img_encode = cv2.imencode('.png', img_scaled)[1]
-
-        return self.img_encode.tostring()
+        img_encode = cv2.imencode('.png', img_scaled)[1]
+        return img_encode.tostring()
 
     # this method copied from Stack Overflow, for converting unicode strings to str objects in a dict
     def convert_to_string(self, obj):
@@ -185,14 +196,13 @@ class LiveViewer(object):
         self.ipc_channel.close()
 
     def get_colormap_options_list(self):
-        key_list = self.colormap_options.keys()
-        key_list.sort()
-        return key_list
+        options_dict = OrderedDict(sorted(self.colormap_keys_capitalisation.items()))
+        return options_dict
 
     def get_selected_colormap(self):
         for name, value in self.colormap_options.items():
             if self.selected_colormap == value:
-                return name
+                return name.lower()
 
     def set_endpoint(self, endpoint):
         try:
