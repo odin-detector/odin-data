@@ -647,12 +647,15 @@ bool FileWriterPlugin::frame_in_acquisition(boost::shared_ptr<Frame> frame) {
     }
 
     if (frame->get_acquisition_id() == next_acquisition_->acquisition_id_) {
-      LOG4CXX_DEBUG(logger_, "Acquisition ID sent in frame matches next acquisition ID. Closing current file and starting next");
+      LOG4CXX_DEBUG(logger_, "Acquisition ID sent in frame matches next acquisition ID. "
+                             "Closing current file and starting next");
       stop_writing();
       start_writing();
     } else {
-      LOG4CXX_WARN(logger_, "Unexpected acquisition ID on frame [" << frame->get_acquisition_id() << "] for frame " << frame->get_frame_number());
-      // TODO set status? (There's currently no mechanism to report this in the status message)
+      std::stringstream ss;
+      ss << "Unexpected acquisition ID on frame [" << frame->get_acquisition_id() << "] "
+            "for frame " << frame->get_frame_number();
+      set_error(ss.str());
       return false;
     }
   }
