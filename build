@@ -12,10 +12,7 @@ build()
     git checkout -- ../configure/RELEASE
     
     ${CMAKE_BIN}/cmake \
-                       -DBoost_NO_BOOST_CMAKE=ON \
-                       -DBOOST_ROOT=${BOOST_PREFIX} \
                        -DHDF5_ROOT=${HDF5_PREFIX} \
-                       -DZEROMQ_ROOTDIR=${ZEROMQ_PREFIX} \
                        -DLOG4CXX_ROOT_DIR=${LOG4CXX_PREFIX} \
                        -DBLOSC_ROOT_DIR=${BLOSC_PREFIX} \
                        -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
