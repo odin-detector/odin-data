@@ -763,6 +763,12 @@ void FrameReceiverController::handle_ctrl_channel(void)
               this->get_status(ctrl_reply);
               break;
 
+          case IpcMessage::MsgValCmdResetStatistics:
+              LOG4CXX_DEBUG_LEVEL(3, logger_,
+                "Got reset statistics request from client " << client_identity);
+              this->reset_statistics(ctrl_reply);
+              break;
+
           case IpcMessage::MsgValCmdShutdown:
               LOG4CXX_DEBUG_LEVEL(3, logger_,
                 "Got shutdown command request from client " << client_identity);
@@ -1101,6 +1107,26 @@ void FrameReceiverController::request_configuration(OdinData::IpcMessage& config
   // Add frame count to reply parameters
   config_reply.set_param(CONFIG_FRAME_COUNT, config_.frame_count_);
 
+}
+
+//! Reset the frame receiver statistics.
+//!
+//! This method resets the frame receiver statistics present in status responses.
+//! If a frame decoder is configured, its reset method is called to clear any
+//! decoder specific values.
+//!
+//! \param[in,out] reset_reply - IpcMessage reply to reset request
+//!
+void FrameReceiverController::reset_statistics(OdinData::IpcMessage& reset_reply)
+{
+
+  // Set the reply type to acknowledge
+  reset_reply.set_msg_type(IpcMessage::MsgTypeAck);
+
+  // If a decoder is configured, calls its reset method
+  if (frame_decoder_) {
+    frame_decoder_->reset_statistics();
+  }
 }
 
 #ifdef FR_CONTROLLER_TICK_TIMER
