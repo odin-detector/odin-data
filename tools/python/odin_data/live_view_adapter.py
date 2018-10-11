@@ -5,11 +5,7 @@ Created on 8th October 2018
 """
 
 import logging
-from concurrent import futures
-import time
 from tornado.escape import json_decode
-from tornado.ioloop import IOLoop
-from tornado.concurrent import run_on_executor
 from odin_data.ipc_tornado_channel import IpcTornadoChannel
 from odin_data.ipc_channel import IpcChannelException
 
@@ -74,8 +70,7 @@ class LiveViewer(object):
     def __init__(self, endpoint):
         logging.debug("Initialising LiveViewer")
 
-        self.img_data = []
-        self.img_encode = None
+        self.img_data = None
         self.frame = Frame({})
         self.endpoint = endpoint
         self.ipc_channel = IpcTornadoChannel(IpcTornadoChannel.CHANNEL_TYPE_SUB, endpoint=self.endpoint)
@@ -120,14 +115,14 @@ class LiveViewer(object):
              "endpoint": (lambda: self.endpoint, self.set_endpoint),
              "frame": (lambda: self.frame.header, None),
              "colormap_options": (lambda: self.get_colormap_options_list(), None),
-             "colormap_default": (lambda: self.get_selected_colormap(), None)
+             "colormap_default": (lambda: self.get_default_colormap(), None)
              }
         )
 
     def get(self, path, request):
         path_elems = re.split('[/?#]', path)
         if path_elems[0] == 'image':
-            if self.img_encode is not None:
+            if self.img_data is not None:
                 if "colormap" in request.arguments:
                     colormap_name = request.arguments["colormap"][0]
                     colormap = self.colormap_options[self.colormap_keys_capitalisation[colormap_name]]
@@ -155,29 +150,26 @@ class LiveViewer(object):
         # message should be a list from multi part message. first part will be the json header from the live view
         # second part is the raw image data
         logging.debug("Creating Image from message")
-        logging.debug("Number of messages: {}".format(len(msg)))
         header = json_decode(msg[0])
         # json_decode returns dictionary encoded in unicode. Convert to normal strings
         header = self.convert_to_string(header)
         logging.debug(header)
         img_data = np.fromstring(msg[1], dtype=np.dtype(header['dtype']))
         img_data = img_data.reshape([int(header["shape"][0]), int(header["shape"][1])])
-        img_scaled = cv2.normalize(img_data, dst=None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8UC1)
-
-        self.img_encode = self.render_image(img_data=img_scaled)
-
+        self.img_data = cv2.normalize(img_data, dst=None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8UC1)
         self.frame.header = header
 
     def render_image(self, img_data=None, colormap=None):
-        logging.debug("Rendering Image")
+        # logging.debug("Rendering Image")
         if img_data is not None:
             self.img_data = img_data
         if colormap is None:
             colormap = self.selected_colormap
-        else:
-            logging.debug("Colormap: " + str(colormap))
+        # else:
+        #     logging.debug("Colormap: " + str(colormap))
         img_scaled = cv2.applyColorMap(self.img_data, colormap)
-        img_encode = cv2.imencode('.png', img_scaled)[1]
+        # most time consuming step. Depending on image size and the type of image
+        img_encode = cv2.imencode('.png', img_scaled, params=[cv2.IMWRITE_PNG_COMPRESSION, 0])[1]
         return img_encode.tostring()
 
     # this method copied from Stack Overflow, for converting unicode strings to str objects in a dict
@@ -199,7 +191,7 @@ class LiveViewer(object):
         options_dict = OrderedDict(sorted(self.colormap_keys_capitalisation.items()))
         return options_dict
 
-    def get_selected_colormap(self):
+    def get_default_colormap(self):
         for name, value in self.colormap_options.items():
             if self.selected_colormap == value:
                 return name.lower()
@@ -212,16 +204,6 @@ class LiveViewer(object):
         except IpcChannelException as e:
             logging.error("IPC Channel Exception: {}".format(e.message))
 
-    def set_colormap(self, colormap):
-        # logging.debug("Setting colourmap to {}".format(colormap))
-        # logging.debug("Type: {}".format(type(colormap)))
-        # if isinstance(colormap, unicode):
-        #     logging.debug("Using String: {}".format(self.colormap_options[str(colormap)]))
-        #     self.selected_colormap = self.colormap_options[colormap]
-        # elif isinstance(colormap, int):
-        #     self.selected_colormap = colormap
-        # self.render_image()
-        logging.debug("SET COLORMAP NOT IMPLEMENTED")
 
 class Frame(object):
 
