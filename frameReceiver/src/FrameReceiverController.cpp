@@ -15,10 +15,6 @@ using namespace FrameReceiver;
 #define SHARED_LIBRARY_SUFFIX ".so"
 #endif
 
-namespace FrameReceiver {
-  IMPLEMENT_DEBUG_LEVEL;
-}
-
 //! Constructor for the FrameReceiverController class.
 //!
 //! This constructor initialises the logger, IPC channels and state
