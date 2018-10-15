@@ -7,7 +7,6 @@ Created on 8th October 2018
 import logging
 from tornado.escape import json_decode
 from odin_data.ipc_tornado_channel import IpcTornadoChannel
-from odin_data.ipc_channel import IpcChannelException
 
 import numpy as np
 import cv2
@@ -16,6 +15,12 @@ from collections import OrderedDict
 
 from odin.adapters.adapter import ApiAdapter, ApiAdapterResponse, response_types
 from odin.adapters.parameter_tree import ParameterTree, ParameterTreeError
+
+ENDPOINTS_CONFIG_NAME = 'live_view_endpoints'
+COLORMAP_CONFIG_NAME = 'default_colormap'
+
+DEFAULT_ENDPOINT = 'tcp://127.0.0.1:5020'
+DEFAULT_COLORMAP = "Jet"
 
 
 class LiveViewAdapter(ApiAdapter):
@@ -30,19 +35,18 @@ class LiveViewAdapter(ApiAdapter):
         logging.debug("Live View Adapter init called")
         super(LiveViewAdapter, self).__init__(**kwargs)
 
-        if self.options.get('live_view_endpoint', False):
-            endpoint = self.options.get('live_view_endpoint', "")
-            logging.debug("Live View Endpoint: '{}'".format(endpoint))
+        if self.options.get(ENDPOINTS_CONFIG_NAME, False):
+            endpoints = [x.strip() for x in self.options.get(ENDPOINTS_CONFIG_NAME, "").split(',')]
         else:
-            logging.debug("Setting default endpoint of 'tcp://127.0.0.1:5020'")
-            endpoint = "tcp://127.0.0.1:5020"
+            logging.debug("Setting default endpoint of '{}'".format(DEFAULT_ENDPOINT))
+            endpoints = [DEFAULT_ENDPOINT]
 
-        if self.options.get('default_colormap', False):
-            default_colormap = self.options.get('default_colormap', "")
+        if self.options.get(COLORMAP_CONFIG_NAME, False):
+            default_colormap = self.options.get(COLORMAP_CONFIG_NAME, "")
         else:
             default_colormap = "Jet"
 
-        self.live_viewer = LiveViewer(endpoint, default_colormap)
+        self.live_viewer = LiveViewer(endpoints, default_colormap)
 
     @response_types('application/json', 'image/*', default='application/json')
     def get(self, path, request):
@@ -94,37 +98,49 @@ class LiveViewer(object):
     """
     Live View object, which handles the major logic of the adapter, including the compliation of the images from data.
     """
-    def __init__(self, endpoint, default_colormap):
+    def __init__(self, endpoints, default_colormap):
         """
         Initialise the Live View object, creating the IPC channel used to receive images from Odin Data,
         and assigning a callback method that is called when data arrives at the channel.
         It also initialises the Parameter tree used for HTTP GET and SET requests.
-        :param endpoint: the endpoint address that the IPC channel subscribes to.
+        :param endpoints: the endpoint address that the IPC channel subscribes to.
         """
         logging.debug("Initialising LiveViewer")
 
         self.img_data = np.arange(0, 1024, 1).reshape(32, 32)
         self.header = {}
-        self.endpoint = endpoint
-        self.ipc_channel = IpcTornadoChannel(IpcTornadoChannel.CHANNEL_TYPE_SUB, endpoint=self.endpoint)
-        self.ipc_channel.subscribe()
-        self.ipc_channel.connect()
-        # register the get_image method to automatically be called when the ZMQ socket receives a message
-        self.ipc_channel.register_callback(self.create_image_from_socket)
+        self.endpoints = endpoints
+        ipc_channels = []
+        for endpoint in self.endpoints:
+            try:
+                endpoint = endpoint.strip()
+                tmp_channel = IpcTornadoChannel(IpcTornadoChannel.CHANNEL_TYPE_SUB, endpoint=endpoint)
+                tmp_channel.subscribe()
+                tmp_channel.connect()
+                # register the get_image method to automatically be called when the ZMQ socket receives a message
+                tmp_channel.register_callback(self.create_image_from_socket)  # TODO: find way of attaching img counter
+                ipc_channels.append(tmp_channel)
+                logging.debug("Subscribed to endpoint: {}".format(tmp_channel.endpoint))
+            except Exception as e:
+                logging.warning("Unable to subscribe to {0}: {1}".format(endpoint, e))
 
-        self.colormap_options = {"Autumn": cv2.COLORMAP_AUTUMN,
-                                 "Bone": cv2.COLORMAP_BONE,
-                                 "Jet": cv2.COLORMAP_JET,
-                                 "Winter": cv2.COLORMAP_WINTER,
-                                 "Rainbow": cv2.COLORMAP_RAINBOW,
-                                 "Ocean": cv2.COLORMAP_OCEAN,
-                                 "Summer": cv2.COLORMAP_SUMMER,
-                                 "Spring": cv2.COLORMAP_SPRING,
-                                 "Cool": cv2.COLORMAP_COOL,
-                                 "HSV": cv2.COLORMAP_HSV,
-                                 "Pink": cv2.COLORMAP_PINK,
-                                 "Hot": cv2.COLORMAP_HOT,
-                                 "Parula": cv2.COLORMAP_PARULA
+        logging.debug("Connected to {} endpoints".format(len(ipc_channels)))
+        if len(ipc_channels) == 0:
+            logging.warning("Warning: No subscriptions made. Check the configuration file for valid endpoints")
+
+        self.colormap_options = {"autumn": cv2.COLORMAP_AUTUMN,
+                                 "bone": cv2.COLORMAP_BONE,
+                                 "jet": cv2.COLORMAP_JET,
+                                 "winter": cv2.COLORMAP_WINTER,
+                                 "rainbow": cv2.COLORMAP_RAINBOW,
+                                 "ocean": cv2.COLORMAP_OCEAN,
+                                 "summer": cv2.COLORMAP_SUMMER,
+                                 "spring": cv2.COLORMAP_SPRING,
+                                 "cool": cv2.COLORMAP_COOL,
+                                 "hsv": cv2.COLORMAP_HSV,
+                                 "pink": cv2.COLORMAP_PINK,
+                                 "hot": cv2.COLORMAP_HOT,
+                                 "parula": cv2.COLORMAP_PARULA
                                  }
         self.colormap_keys_capitalisation = {"autumn": "Autumn",
                                              "bone": "Bone",
@@ -141,11 +157,14 @@ class LiveViewer(object):
                                              "parula": "Parula"
                                              }
 
-        self.selected_colormap = self.colormap_options[default_colormap]
+        if default_colormap.lower() in self.colormap_options:
+            self.selected_colormap = self.colormap_options[default_colormap.lower()]
+        else:
+            self.selected_colormap = self.colormap_options["jet"]
 
         self.param_tree = ParameterTree(
             {"name": "Live View Adapter",
-             "endpoint": (lambda: self.endpoint, self.set_endpoint),
+             "endpoints": (lambda: self.endpoints, None),
              "frame": (lambda: self.header, None),
              "colormap_options": (lambda: self.get_colormap_options_list(), None),
              "colormap_default": (lambda: self.get_default_colormap(), None),
@@ -165,14 +184,12 @@ class LiveViewer(object):
             if self.img_data is not None:
                 colormap = None
                 clip_max = None
-                clip_min = 0
+                clip_min = None
                 if request is not None:
                     # Get request parameters needed for the image rendering
                     if "colormap" in request.arguments:
                         colormap_name = request.arguments["colormap"][0].lower()
-                        # nested dictionary key mapping because of capitalisation mapping. requests should be
-                        # all lower characters.
-                        colormap = self.colormap_options[self.colormap_keys_capitalisation[colormap_name]]
+                        colormap = self.colormap_options[colormap_name]
                     if "clip-max" in request.arguments:
                         clip_max = int(request.arguments["clip-max"][0])
                     if "clip-min" in request.arguments:
@@ -226,12 +243,15 @@ class LiveViewer(object):
         Render an image from the image data, applying a colormap to the greyscale data.
         :param colormap: Desired image colormap. if None, uses the default colormap.
         :param clip_min: The minimum pixel value desired. If a pixel is lower than this value, it is set to this value.
-        :param clip_max: The maximum pixel value desired. If a pixel is lower than this value, it is set to this value.
+        :param clip_max: The maximum pixel value desired. If a pixel is higher than this value, it is set to this value.
         :return: The rendered image binary data, encoded into a string so it can be returned by a GET request.
         """
         if colormap is None:
             colormap = self.selected_colormap
-        img_clipped = np.clip(self.img_data, clip_min, clip_max)  # clip image
+        if clip_min is not None or clip_max is not None:
+            img_clipped = np.clip(self.img_data, clip_min, clip_max)  # clip image
+        else:
+            img_clipped = self.img_data
         img_scaled = self.scale_array(img_clipped, 0, 255).astype(dtype=np.uint8)  # scale to 0-255 for colormap
         img_colormapped = cv2.applyColorMap(img_scaled, colormap)
         # most time consuming step. Depending on image size and the type of image
@@ -291,16 +311,3 @@ class LiveViewer(object):
         for name, value in self.colormap_options.items():
             if self.selected_colormap == value:
                 return name.lower()
-
-    def set_endpoint(self, endpoint):
-        """
-        Sets the IPC channel endpoint address, connecting it to the supplied address.
-        :param endpoint: a string representing the IPC socket address.
-        """
-        try:
-            self.endpoint = endpoint
-            if self.ipc_channel.endpoint is not self.endpoint:
-                self.ipc_channel.connect(self.endpoint)  # TODO: check if this breaks when truing to change the socket
-        except IpcChannelException as e:
-            logging.error("IPC Channel Exception: {}".format(e.message))
-
