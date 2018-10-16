@@ -11,7 +11,7 @@
 namespace FrameProcessor
 {
 /* Default Config*/
-const int32_t     LiveViewPlugin::DEFAULT_FRAME_FREQ = 2;
+const int32_t     LiveViewPlugin::DEFAULT_FRAME_FREQ = 1;
 const int32_t     LiveViewPlugin::DEFAULT_PER_SECOND = 0;
 const std::string LiveViewPlugin::DEFAULT_IMAGE_VIEW_SOCKET_ADDR = "tcp://127.0.0.1:5020";
 const std::string LiveViewPlugin::DEFAULT_DATASET_NAME = "";
