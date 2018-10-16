@@ -110,22 +110,17 @@ class LiveViewer(object):
         self.img_data = np.arange(0, 1024, 1).reshape(32, 32)
         self.header = {}
         self.endpoints = endpoints
-        ipc_channels = []
+        self.ipc_channels = []
         for endpoint in self.endpoints:
             try:
-                endpoint = endpoint.strip()
-                tmp_channel = IpcTornadoChannel(IpcTornadoChannel.CHANNEL_TYPE_SUB, endpoint=endpoint)
-                tmp_channel.subscribe()
-                tmp_channel.connect()
-                # register the get_image method to automatically be called when the ZMQ socket receives a message
-                tmp_channel.register_callback(self.create_image_from_socket)  # TODO: find way of attaching img counter
-                ipc_channels.append(tmp_channel)
+                tmp_channel = SubSocket(self, endpoint)
+                self.ipc_channels.append(tmp_channel)
                 logging.debug("Subscribed to endpoint: {}".format(tmp_channel.endpoint))
             except Exception as e:
                 logging.warning("Unable to subscribe to {0}: {1}".format(endpoint, e))
 
-        logging.debug("Connected to {} endpoints".format(len(ipc_channels)))
-        if len(ipc_channels) == 0:
+        logging.debug("Connected to {} endpoints".format(len(self.ipc_channels)))
+        if len(self.ipc_channels) == 0:
             logging.warning("Warning: No subscriptions made. Check the configuration file for valid endpoints")
 
         self.colormap_options = {"autumn": cv2.COLORMAP_AUTUMN,
@@ -164,11 +159,12 @@ class LiveViewer(object):
 
         self.param_tree = ParameterTree(
             {"name": "Live View Adapter",
-             "endpoints": (lambda: self.endpoints, None),
+             "endpoints": (lambda: self.get_channel_endpoints(), None),
              "frame": (lambda: self.header, None),
              "colormap_options": (lambda: self.get_colormap_options_list(), None),
              "colormap_default": (lambda: self.get_default_colormap(), None),
-             "data_min_max": (lambda: [int(self.img_data.min()), int(self.img_data.max())], None)
+             "data_min_max": (lambda: [int(self.img_data.min()), int(self.img_data.max())], None),
+             "frame_counts": (lambda: self.get_channel_counts(), None)
              }
         )
 
@@ -224,6 +220,7 @@ class LiveViewer(object):
         Creates the image data array from the raw data sent by the Odin Data Plugin, reshaping it to a
         multi dimensional array matching the image dimensions.
         :param msg: a multipart message containing the image header, and raw image data.
+        :param socket: the socket the message came from
         """
         # message should be a list from multi part message. first part will be the json header from the live view
         # second part is the raw image data
@@ -291,9 +288,10 @@ class LiveViewer(object):
 
     def cleanup(self):
         """
-        Closes the IPC channel ready for shutdown.
+        Closes the IPC channels ready for shutdown.
         """
-        self.ipc_channel.close()
+        for channel in self.ipc_channels:
+            channel.cleanup()
 
     def get_colormap_options_list(self):
         """
@@ -311,3 +309,37 @@ class LiveViewer(object):
         for name, value in self.colormap_options.items():
             if self.selected_colormap == value:
                 return name.lower()
+
+    def get_channel_endpoints(self):
+        endpoints = []
+        for channel in self.ipc_channels:
+            endpoints.append(channel.endpoint)
+
+        return endpoints
+
+    def get_channel_counts(self):
+        counts = {}
+        for channel in self.ipc_channels:
+            counts[channel.endpoint] = channel.frame_count
+
+        return counts
+
+
+class SubSocket(object):
+
+    def __init__(self, parent, endpoint):
+        self.parent = parent
+        self.endpoint = endpoint
+        self.frame_count = 0
+        self.channel = IpcTornadoChannel(IpcTornadoChannel.CHANNEL_TYPE_SUB, endpoint=endpoint)
+        self.channel.subscribe()
+        self.channel.connect()
+        # register the get_image method to automatically be called when the ZMQ socket receives a message
+        self.channel.register_callback(self.callback)
+
+    def callback(self, msg):
+        self.frame_count += 1
+        self.parent.create_image_from_socket(msg)
+
+    def cleanup(self):
+        self.channel.close()
