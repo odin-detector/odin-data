@@ -245,8 +245,14 @@ class LiveViewer(object):
         """
         if colormap is None:
             colormap = self.selected_colormap
+        if clip_min is not None and clip_max is not None:
+            if clip_min >= clip_max:
+                clip_min = None
+                clip_max = None
+                logging.warning("ERROR: Clip Min cannot be equal to or more than clip_max")
         if clip_min is not None or clip_max is not None:
             img_clipped = np.clip(self.img_data, clip_min, clip_max)  # clip image
+
         else:
             img_clipped = self.img_data
         img_scaled = self.scale_array(img_clipped, 0, 255).astype(dtype=np.uint8)  # scale to 0-255 for colormap
@@ -311,6 +317,10 @@ class LiveViewer(object):
                 return name.lower()
 
     def get_channel_endpoints(self):
+        """
+        Get the list of endpoints this adapter is subscribed to
+        :return: a list of endpoints
+        """
         endpoints = []
         for channel in self.ipc_channels:
             endpoints.append(channel.endpoint)
@@ -318,6 +328,10 @@ class LiveViewer(object):
         return endpoints
 
     def get_channel_counts(self):
+        """
+        Get a dict of the endpoints and the count of how many frames came from that endpoint
+        :return: A dict, with the endpoint as a key, and the number of images from that endpoint as the value
+        """
         counts = {}
         for channel in self.ipc_channels:
             counts[channel.endpoint] = channel.frame_count
@@ -326,8 +340,17 @@ class LiveViewer(object):
 
 
 class SubSocket(object):
-
+    """
+    The Subscriber Socket object, this initialises the IPC Channel and sets up a callback function for receiving data
+    from that socket that counts how many images it receives during its lifetime.
+    """
     def __init__(self, parent, endpoint):
+        """
+        Initializer, sets up the IPC channel as a subscriber, and registers the callback
+        :param parent: the class that created this object, a LiveViewer, given so that this object can reference the
+        method in the parent
+        :param endpoint: the URI address of the socket to subscribe to
+        """
         self.parent = parent
         self.endpoint = endpoint
         self.frame_count = 0
@@ -338,8 +361,16 @@ class SubSocket(object):
         self.channel.register_callback(self.callback)
 
     def callback(self, msg):
+        """
+        The callback method that gets called whenever data arrives on the IPC channel socket. Increments the counter,
+        then passes the message on to the image renderer of the parent.
+        :param msg: the multipart message from the IPC channel
+        """
         self.frame_count += 1
         self.parent.create_image_from_socket(msg)
 
     def cleanup(self):
+        """
+        Cleanup method for when the server is closed. Closes the IPC channel socket correctly.
+        """
         self.channel.close()
