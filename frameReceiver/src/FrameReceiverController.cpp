@@ -1123,10 +1123,15 @@ void FrameReceiverController::reset_statistics(OdinData::IpcMessage& reset_reply
   // Set the reply type to acknowledge
   reset_reply.set_msg_type(IpcMessage::MsgTypeAck);
 
-  // If a decoder is configured, calls its reset method
+  // If a decoder is configured, call its reset method
   if (frame_decoder_) {
     frame_decoder_->reset_statistics();
   }
+
+  // Reset frames recevied and released counters
+  frames_received_ = 0;
+  frames_released_ = 0;
+
 }
 
 #ifdef FR_CONTROLLER_TICK_TIMER
