@@ -9,16 +9,31 @@
 
 #include "LiveViewPlugin.h"
 
+std::string global_socket_addr= "tcp://127.0.0.1:";
+uint32_t global_socket_port = 5020;
+
 /**
  * Test fixture for the Live View Unit Tests. sets up the plugin and other things required by the tests.
  */
 class LiveViewPluginTestFixture
 {
+
 public:
   LiveViewPluginTestFixture():
     recv_socket(ZMQ_SUB),
     recv_socket_other(ZMQ_SUB)
   {
+
+    //set up the recieve sockets so we can read data from the plugin's live output.
+    recv_socket.subscribe("");
+    recv_socket_other.subscribe("");
+    std::string addr = global_socket_addr + boost::to_string(global_socket_port);
+    BOOST_TEST_MESSAGE("Address: " + addr);
+    recv_socket.connect(addr);
+    recv_socket_other.connect("tcp://127.0.0.1:5050");
+    OdinData::IpcMessage tmp_cfg;
+    tmp_cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_SOCKET_ADDR, std::string(addr));
+    plugin.configure(tmp_cfg, reply);
 
     //create dummy data for the test frames
     for(int i = 0; i < 12; i++)
@@ -69,20 +84,26 @@ public:
 
     new_socket_recieve = false;
 
-    //set up the recieve sockets so we can read data from the plugin's live output.
-    recv_socket.subscribe("");
-    recv_socket_other.subscribe("");
-    recv_socket.connect("tcp://127.0.0.1:5020");
-    recv_socket_other.connect("tcp://127.0.0.1:5021");
+    //need to make sure the recv socket has finished connecting
 
+    while(!recv_socket.poll(100)) //to avoid issue with slow subscribers, keep sending the frame until the subscriber has received it
+      {
+        //send the frame to the plugin
+        plugin.process_frame(frame);
+      }
+    while(recv_socket.poll(10))
+    {
+      recv_socket.recv();
+    }
+    BOOST_TEST_MESSAGE("FIXTURE SETUP COMPELTE");
   }
+
   ~LiveViewPluginTestFixture() {
     BOOST_TEST_MESSAGE("Live View Fixture Teardown");
-    uint32_t linger_option = 0;
-    recv_socket.setsockopt(ZMQ_LINGER, &linger_option, sizeof(linger_option));
-    recv_socket_other.setsockopt(ZMQ_LINGER, &linger_option, sizeof(linger_option));
     recv_socket.close();
     recv_socket_other.close();
+    global_socket_port ++;
+
   }
 
   boost::shared_ptr<FrameProcessor::Frame> frame;
@@ -113,6 +134,34 @@ public:
 BOOST_FIXTURE_TEST_SUITE(LiveViewPluginUnitTest, LiveViewPluginTestFixture);
 
 /**
+ * Tests to ensure the configuration works, including testing to make sure we can change the address of the live view socket
+ */
+BOOST_AUTO_TEST_CASE(LiveViewConfigTest)
+{
+  //TEST CONFIGURATION
+  cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_FRAME_FREQ, 1);
+  cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_DATASET_NAME, std::string("data"));
+  cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_SOCKET_ADDR, std::string("tcp://127.0.0.1:5050"));
+
+  BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
+
+  //send frame again to check its going to a different socket
+
+  for(int i = 0; i < 10; i ++)
+  {
+    plugin.process_frame(frame);
+    BOOST_CHECK(!recv_socket.poll(100));
+    new_socket_recieve = recv_socket_other.poll(100);
+    if(new_socket_recieve)
+    {
+      break;
+    }
+  }
+  BOOST_CHECK(new_socket_recieve);
+
+}
+
+/**
  * tests the basic functionality, passing the plugin a single frame and seeing if it appears the same on the other end of the socket
  */
 BOOST_AUTO_TEST_CASE(LiveViewBasicSendTest)
@@ -120,6 +169,7 @@ BOOST_AUTO_TEST_CASE(LiveViewBasicSendTest)
   //setting the frame number here guarantees that it'll be passed to the live view socket
   frame->set_frame_number(FrameProcessor::LiveViewPlugin::DEFAULT_FRAME_FREQ);
   //test we can output frame
+
   while(!recv_socket.poll(100)) //to avoid issue with slow subscribers, keep sending the frame until the subscriber has received it
   {
     //send the frame to the plugin
@@ -156,10 +206,8 @@ BOOST_AUTO_TEST_CASE(LiveViewDownscaleTest)
 {
 
   //TEST DOWNSCALE OPTION
-  while(recv_socket.poll(10))
-  {
-    recv_socket.recv(); //clear any extra data from the socket. Also gives the recieve socket time to init
-  }
+  cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_FRAME_FREQ, 2);
+  plugin.configure(cfg, reply);
   //process all frames. with a downscale factor of 2, this should return all the even numbered frames.
   for(int i = 0; i < frames.size(); i++)
   {
@@ -175,34 +223,6 @@ BOOST_AUTO_TEST_CASE(LiveViewDownscaleTest)
 
   }
   BOOST_CHECK_EQUAL(processed_frames.size(), 5);
-
-}
-
-/**
- * Tests to ensure the configuration works, including testing to make sure we can change the address of the live view socket
- */
-BOOST_AUTO_TEST_CASE(LiveViewConfigTest)
-{
-  //TEST CONFIGURATION
-  cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_FRAME_FREQ, 1);
-  cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_DATASET_NAME, std::string("data"));
-  cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_SOCKET_ADDR, std::string("tcp://127.0.0.1:5021"));
-
-  BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
-
-  //send frame again to check its going to a different socket
-
-  for(int i = 0; i < 10; i ++)
-  {
-    plugin.process_frame(frame);
-    BOOST_CHECK(!recv_socket.poll(100));
-    new_socket_recieve = recv_socket_other.poll(100);
-    if(new_socket_recieve)
-    {
-      break;
-    }
-  }
-  BOOST_CHECK(new_socket_recieve);
 
 }
 
