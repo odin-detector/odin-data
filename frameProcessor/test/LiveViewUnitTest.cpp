@@ -78,6 +78,9 @@ public:
   }
   ~LiveViewPluginTestFixture() {
     BOOST_TEST_MESSAGE("Live View Fixture Teardown");
+    uint32_t linger_option = 0;
+    recv_socket.setsockopt(ZMQ_LINGER, &linger_option, sizeof(linger_option));
+    recv_socket_other.setsockopt(ZMQ_LINGER, &linger_option, sizeof(linger_option));
     recv_socket.close();
     recv_socket_other.close();
   }
