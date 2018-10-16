@@ -85,11 +85,12 @@ public:
     new_socket_recieve = false;
 
     //need to make sure the recv socket has finished connecting
-
-    while(!recv_socket.poll(100)) //to avoid issue with slow subscribers, keep sending the frame until the subscriber has received it
+    uint32_t attempts_left = 10;
+    while(!recv_socket.poll(100) && attempts_left > 0) //to avoid issue with slow subscribers, keep sending the frame until the subscriber has received it
       {
         //send the frame to the plugin
         plugin.process_frame(frame);
+        attempts_left --;
       }
     while(recv_socket.poll(10))
     {
@@ -170,13 +171,17 @@ BOOST_AUTO_TEST_CASE(LiveViewBasicSendTest)
   frame->set_frame_number(FrameProcessor::LiveViewPlugin::DEFAULT_FRAME_FREQ);
   //test we can output frame
 
-  while(!recv_socket.poll(100)) //to avoid issue with slow subscribers, keep sending the frame until the subscriber has received it
+  uint32_t attempts_left = 10;
+  while(!recv_socket.poll(100) && attempts_left > 0) //to avoid issue with slow subscribers, keep sending the frame until the subscriber has received it
   {
     //send the frame to the plugin
     plugin.process_frame(frame);
+    attempts_left --;
   }
-  message = recv_socket.recv();
-  BOOST_TEST_MESSAGE(message);
+  if(attempts_left){
+    message = recv_socket.recv();
+    BOOST_TEST_MESSAGE(message);
+  }
   doc.Parse(message.c_str());
 
   //TEST HEADER CONTENTS
@@ -270,13 +275,18 @@ BOOST_AUTO_TEST_CASE(LiveViewOtherDatatypeTest)
 {
 
   //send the frame of uint16 data until the receiver socket can receive something
-  while(!recv_socket.poll(10))
+  uint32_t attempts_left = 10;
+  while(!recv_socket.poll(10) && attempts_left > 0)
   {
     plugin.process_frame(frame_16);
+    attempts_left --;
   }
-  message = recv_socket.recv();
-  BOOST_TEST_MESSAGE(message);
-  recv_socket.recv_raw(pbuf_16);
+  if(attempts_left)
+  {
+    message = recv_socket.recv();
+    BOOST_TEST_MESSAGE(message);
+    recv_socket.recv_raw(pbuf_16);
+  }
   std::vector<uint16_t> buf_16(12); //create vector to store the data
   std::copy(pbuf_16, pbuf_16 + frame_16->get_data_size()/2, buf_16.begin()); //Divide the data size in half, as each byte is only half a point of data
   std::vector<uint16_t> original_16(img_16, img_16 + sizeof img_16 / sizeof img_16[0]);
