@@ -45,12 +45,14 @@ public:
 
   void monitor_buffers(void) { };
   void get_status(const std::string param_prefix, OdinData::IpcMessage& status_msg);
+  void reset_statistics(void);
 
   void* get_packet_header_buffer(void){ return reinterpret_cast<void *>(0); };
 
 private:
 
   unsigned int udp_packets_per_frame_;
+  unsigned int status_get_count_;
 
 };
 
