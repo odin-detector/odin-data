@@ -37,8 +37,6 @@ using namespace rapidjson;
 
 using namespace FrameProcessor;
 
-IMPLEMENT_DEBUG_LEVEL;
-
 static bool has_suffix(const std::string &str, const std::string &suffix)
 {
   return str.size() >= suffix.size() &&

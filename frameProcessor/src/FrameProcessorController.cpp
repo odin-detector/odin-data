@@ -12,7 +12,6 @@
 
 namespace FrameProcessor
 {
-IMPLEMENT_DEBUG_LEVEL;
 
 const std::string FrameProcessorController::META_RX_INTERFACE        = "inproc://meta_rx";
 
