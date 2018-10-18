@@ -10,6 +10,7 @@
 #include <hdf5_hl.h>
 
 #include "logging.h"
+#include "DebugLevelLogger.h"
 
 namespace FrameProcessor {
 

@@ -6,6 +6,7 @@
  */
 
 #include <Frame.h>
+#include "DebugLevelLogger.h"
 
 namespace FrameProcessor
 {

@@ -9,6 +9,7 @@
 
 #include "Frame.h"
 #include "Acquisition.h"
+#include "DebugLevelLogger.h"
 
 
 namespace FrameProcessor {

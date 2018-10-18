@@ -13,6 +13,7 @@
 #include "FrameProcessorDefinitions.h"
 
 #include "logging.h"
+#include "DebugLevelLogger.h"
 
 namespace FrameProcessor
 {

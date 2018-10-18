@@ -6,6 +6,7 @@
  */
 
 #include <DataBlockPool.h>
+#include "DebugLevelLogger.h"
 
 namespace FrameProcessor
 {
