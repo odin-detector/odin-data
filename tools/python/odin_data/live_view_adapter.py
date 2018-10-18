@@ -8,6 +8,7 @@ import logging
 from tornado.escape import json_decode
 from odin_data.ipc_tornado_channel import IpcTornadoChannel
 
+import sys
 import numpy as np
 import cv2
 import re
@@ -108,6 +109,8 @@ class LiveViewer(object):
         logging.debug("Initialising LiveViewer")
 
         self.img_data = np.arange(0, 1024, 1).reshape(32, 32)
+        self.clip_min = None
+        self.clip_max = None
         self.header = {}
         self.endpoints = endpoints
         self.ipc_channels = []
@@ -157,14 +160,17 @@ class LiveViewer(object):
         else:
             self.selected_colormap = self.colormap_options["jet"]
 
+        self.rendered_image = self.render_image()
+
         self.param_tree = ParameterTree(
             {"name": "Live View Adapter",
              "endpoints": (lambda: self.get_channel_endpoints(), None),
              "frame": (lambda: self.header, None),
              "colormap_options": (lambda: self.get_colormap_options_list(), None),
-             "colormap_default": (lambda: self.get_default_colormap(), None),
+             "colormap_selected": (lambda: self.get_selected_colormap(), self.set_selected_colormap),
              "data_min_max": (lambda: [int(self.img_data.min()), int(self.img_data.max())], None),
-             "frame_counts": (lambda: self.get_channel_counts(), None)
+             "frame_counts": (lambda: self.get_channel_counts(), self.set_channel_counts),
+             "img_clip": (lambda: [self.clip_min, self.clip_max], self.set_clip)
              }
         )
 
@@ -172,27 +178,14 @@ class LiveViewer(object):
         """
         Handles a HTTP get request. Checks if the request is for the image or another resource, and responds accordingly
         :param path: the URI path to the resource requested
-        :param request: Additional request parameters. Used for the image requests
+        :param request: Additional request parameters.
         :return: the requested resource, or an error message and code, depending on the validity of the request.
         """
         path_elems = re.split('[/?#]', path)
         if path_elems[0] == 'image':
             if self.img_data is not None:
-                colormap = None
-                clip_max = None
-                clip_min = None
-                if request is not None:
-                    # Get request parameters needed for the image rendering
-                    if "colormap" in request.arguments:
-                        colormap_name = request.arguments["colormap"][0].lower()
-                        colormap = self.colormap_options[colormap_name]
-                    if "clip-max" in request.arguments:
-                        clip_max = int(request.arguments["clip-max"][0])
-                    if "clip-min" in request.arguments:
-                        clip_min = int(request.arguments["clip-min"][0])
-
-                response = self.render_image(colormap, clip_min, clip_max)
-                content_type = 'image/png'
+                response = self.rendered_image
+                content_type = 'image/bmp'
                 status = 200
             else:
                 response = {"response": "LiveViewAdapter: No Image Available"}
@@ -220,7 +213,6 @@ class LiveViewer(object):
         Creates the image data array from the raw data sent by the Odin Data Plugin, reshaping it to a
         multi dimensional array matching the image dimensions.
         :param msg: a multipart message containing the image header, and raw image data.
-        :param socket: the socket the message came from
         """
         # message should be a list from multi part message. first part will be the json header from the live view
         # second part is the raw image data
@@ -235,7 +227,10 @@ class LiveViewer(object):
         self.img_data = img_data.reshape([int(header["shape"][0]), int(header["shape"][1])])
         self.header = header
 
-    def render_image(self, colormap, clip_min, clip_max):
+        self.rendered_image = self.render_image(self.selected_colormap, self.clip_min, self.clip_max)
+        logging.debug("Image Size: {}".format(len(self.rendered_image)))
+
+    def render_image(self, colormap=None, clip_min=None, clip_max=None):
         """
         Render an image from the image data, applying a colormap to the greyscale data.
         :param colormap: Desired image colormap. if None, uses the default colormap.
@@ -246,10 +241,10 @@ class LiveViewer(object):
         if colormap is None:
             colormap = self.selected_colormap
         if clip_min is not None and clip_max is not None:
-            if clip_min >= clip_max:
+            if clip_min > clip_max:
                 clip_min = None
                 clip_max = None
-                logging.warning("ERROR: Clip Min cannot be equal to or more than clip_max")
+                logging.warning("ERROR: Clip Min cannot be more than clip_max")
         if clip_min is not None or clip_max is not None:
             img_clipped = np.clip(self.img_data, clip_min, clip_max)  # clip image
 
@@ -307,7 +302,7 @@ class LiveViewer(object):
         options_dict = OrderedDict(sorted(self.colormap_keys_capitalisation.items()))
         return options_dict
 
-    def get_default_colormap(self):
+    def get_selected_colormap(self):
         """
         Gets the default colormap for the adapter
         :return: the default colormap for the adapter
@@ -315,6 +310,28 @@ class LiveViewer(object):
         for name, value in self.colormap_options.items():
             if self.selected_colormap == value:
                 return name.lower()
+
+    def set_selected_colormap(self, colormap):
+        if colormap.lower() in self.colormap_options:
+            self.selected_colormap = self.colormap_options[colormap.lower()]
+
+    def set_clip(self, clip_array):
+        clip_array = self.convert_to_string(clip_array)
+        if type(clip_array[0]) is str:
+            if clip_array[0].lower() == 'none':
+                self.clip_min = None
+            else:
+                self.clip_min = int(clip_array[0])
+        elif type(clip_array[0]) is int:
+            self.clip_min = clip_array[0]
+
+        if type(clip_array[1]) is str:
+            if clip_array[1].lower() == 'none':
+                self.clip_max = None
+            else:
+                self.clip_max = int(clip_array[1])
+        elif type(clip_array[1]) is int:
+            self.clip_max = clip_array[1]
 
     def get_channel_endpoints(self):
         """
@@ -337,6 +354,14 @@ class LiveViewer(object):
             counts[channel.endpoint] = channel.frame_count
 
         return counts
+
+    def set_channel_counts(self, data):
+        data = self.convert_to_string(data)
+        logging.debug("Data Type: {}".format(type(data)))
+        for channel in self.ipc_channels:
+            if channel.endpoint in data:
+                logging.debug("Endpoint {} in request".format(channel.endpoint))
+                channel.frame_count = data[channel.endpoint]
 
 
 class SubSocket(object):
