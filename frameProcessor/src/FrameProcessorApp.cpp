@@ -556,7 +556,7 @@ int main(int argc, char** argv)
     LOG4CXX_DEBUG_LEVEL(1, logger, "FrameProcessorController run finished. Stopping app.");
 
   } catch (const std::exception& e) {
-    LOG4CXX_ERROR(logger, e.what());
+    LOG4CXX_ERROR(logger, "Caught unhandled exception in FrameProcessor, application will terminate: " << e.what());
     throw;
   }
   return 0;
