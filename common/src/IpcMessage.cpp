@@ -500,6 +500,7 @@ void IpcMessage::msg_val_map_init()
   msg_val_map_.insert(MsgValMapEntry("frame_ready",              MsgValNotifyFrameReady));
   msg_val_map_.insert(MsgValMapEntry("frame_release",            MsgValNotifyFrameRelease));
   msg_val_map_.insert(MsgValMapEntry("buffer_config",            MsgValNotifyBufferConfig));
+  msg_val_map_.insert(MsgValMapEntry("buffer_precharge",         MsgValNotifyBufferPrecharge));
   msg_val_map_.insert(MsgValMapEntry("notify_status",            MsgValNotifyStatus));
 }
 
