@@ -46,7 +46,7 @@ public:
 
   virtual void* get_next_payload_buffer(void) const = 0;
   virtual size_t get_next_payload_size(void) const = 0;
-  virtual FrameReceiveState process_packet(size_t bytes_received) = 0;
+  virtual FrameReceiveState process_packet(size_t bytes_received, int port, struct sockaddr_in* from_addr) = 0;
 };
 
 inline FrameDecoderUDP::~FrameDecoderUDP() {};
