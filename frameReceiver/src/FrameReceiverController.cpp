@@ -942,8 +942,8 @@ void FrameReceiverController::handle_frame_release_channel(void)
 //!
 //! This method precharges all the buffers available in the shared buffer manager onto the
 //! empty buffer queue in the receiver thread. This allows the receiver thread to obtain a pool
-//! of empty buffers at startup, and is done by sending frame release notificaitons for all buffers
-//! over the RX thread channel.
+//! of empty buffers at startup, and is done by sending a buffer precharge notification over the
+//! RX thread channel.
 //!
 void FrameReceiverController::precharge_buffers(void)
 {
@@ -951,14 +951,10 @@ void FrameReceiverController::precharge_buffers(void)
   // Only pre-charge buffers if a buffer manager and RX thread are configured
   if (buffer_manager_ && rx_thread_)
   {
-
-    // Loop over all buffers in the buffer manager and send a frame release notification for each
-    for (int buf = 0; buf < buffer_manager_->get_num_buffers(); buf++)
-    {
-      IpcMessage buf_msg(IpcMessage::MsgTypeNotify, IpcMessage::MsgValNotifyFrameRelease);
-      buf_msg.set_param<int>("buffer_id", buf);
-      rx_channel_.send(buf_msg.encode(), 0, rx_thread_identity_);
-    }
+    IpcMessage precharge_msg(IpcMessage::MsgTypeNotify, IpcMessage::MsgValNotifyBufferPrecharge);
+    precharge_msg.set_param<int>("start_buffer_id", 0);
+    precharge_msg.set_param<int>("num_buffers", buffer_manager_->get_num_buffers());
+    rx_channel_.send(precharge_msg.encode(), 0, rx_thread_identity_);
   }
   else
   {
