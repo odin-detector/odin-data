@@ -146,7 +146,7 @@ DataBlockPool::DataBlockPool() :
  */
 void DataBlockPool::internalAllocate(size_t nBlocks, size_t nBytes)
 {
-  LOG4CXX_DEBUG(logger_, "Allocating " << nBlocks << " additional DataBlocks of " << nBytes << " bytes");
+  LOG4CXX_DEBUG_LEVEL(2, logger_, "Allocating " << nBlocks << " additional DataBlocks of " << nBytes << " bytes");
 
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
@@ -172,7 +172,7 @@ void DataBlockPool::internalAllocate(size_t nBlocks, size_t nBytes)
  */
 boost::shared_ptr<DataBlock> DataBlockPool::internalTake(size_t nBytes)
 {
-  LOG4CXX_DEBUG(logger_, "Requesting DataBlock of " << nBytes << " bytes");
+  LOG4CXX_DEBUG_LEVEL(2, logger_, "Requesting DataBlock of " << nBytes << " bytes");
 
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
@@ -196,7 +196,7 @@ boost::shared_ptr<DataBlock> DataBlockPool::internalTake(size_t nBytes)
     usedMap_[block->getIndex()] = block;
     freeBlocks_--;
     usedBlocks_++;
-    LOG4CXX_DEBUG(logger_, "Providing DataBlock [id=" << block->getIndex() << "]");
+    LOG4CXX_DEBUG_LEVEL(2, logger_, "Providing DataBlock [id=" << block->getIndex() << "]");
   }
   return block;
 }
@@ -209,7 +209,7 @@ boost::shared_ptr<DataBlock> DataBlockPool::internalTake(size_t nBytes)
  */
 void DataBlockPool::internalRelease(boost::shared_ptr<DataBlock> block)
 {
-  LOG4CXX_DEBUG(logger_, "Releasing DataBlock [id=" << block->getIndex() << "]");
+  LOG4CXX_DEBUG_LEVEL(2, logger_, "Releasing DataBlock [id=" << block->getIndex() << "]");
 
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);

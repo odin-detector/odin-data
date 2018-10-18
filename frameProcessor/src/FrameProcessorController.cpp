@@ -720,7 +720,7 @@ void FrameProcessorController::closeMetaRxInterface()
 void FrameProcessorController::setupMetaTxInterface(const std::string& metaEndpointString)
 {
   try {
-    LOG4CXX_DEBUG(logger_, "Connecting meta TX channel to endpoint: " << metaEndpointString);
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Connecting meta TX channel to endpoint: " << metaEndpointString);
     int sndHwmSet = META_TX_HWM;
     metaTxChannel_.setsockopt(ZMQ_SNDHWM, &sndHwmSet, sizeof (sndHwmSet));
     metaTxChannel_.bind(metaEndpointString.c_str());
