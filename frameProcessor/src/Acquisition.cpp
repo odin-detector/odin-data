@@ -9,6 +9,7 @@
 
 #include "Frame.h"
 #include "Acquisition.h"
+#include "DebugLevelLogger.h"
 
 
 namespace FrameProcessor {
@@ -492,7 +493,7 @@ boost::shared_ptr<HDF5File> Acquisition::get_file(size_t frame_offset) {
     // Check for missing files and create them if they have been missed
     size_t next_expected_file_index = current_file->get_file_index() + concurrent_processes_;
     while (next_expected_file_index < file_index) {
-      LOG4CXX_DEBUG(logger_,"Creating missing file " << next_expected_file_index);
+      LOG4CXX_DEBUG_LEVEL(1, logger_,"Creating missing file " << next_expected_file_index);
       filename_ = generate_filename(next_expected_file_index);
       create_file(next_expected_file_index);
       next_expected_file_index = current_file->get_file_index() + concurrent_processes_;
@@ -526,7 +527,7 @@ size_t Acquisition::adjust_frame_offset(boost::shared_ptr<Frame> frame) const {
   int64_t frame_offset_adjustment = frame->get_frame_offset();
   size_t frame_offset = 0;
 
-  LOG4CXX_DEBUG(logger_, "Raw frame number: " << frame_no << ", Frame offset adjustment: " << frame_offset_adjustment);
+  LOG4CXX_DEBUG_LEVEL(2, logger_, "Raw frame number: " << frame_no << ", Frame offset adjustment: " << frame_offset_adjustment);
 
   if ((int) frame_no + frame_offset_adjustment < 0 ) {
     // Throw a range error if the offset would cause the adjusted offset to be negative
@@ -534,7 +535,7 @@ size_t Acquisition::adjust_frame_offset(boost::shared_ptr<Frame> frame) const {
   }
 
   frame_offset = frame_no + frame_offset_adjustment;
-  LOG4CXX_DEBUG(logger_, "Adjusted frame offset: " << frame_offset);
+  LOG4CXX_DEBUG_LEVEL(2, logger_, "Adjusted frame offset: " << frame_offset);
   return frame_offset;
 }
 

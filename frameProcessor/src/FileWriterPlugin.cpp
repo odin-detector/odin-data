@@ -13,6 +13,7 @@
 #include "FrameProcessorDefinitions.h"
 
 #include "logging.h"
+#include "DebugLevelLogger.h"
 
 namespace FrameProcessor
 {
@@ -396,10 +397,10 @@ void FileWriterPlugin::configure_process(OdinData::IpcMessage& config, OdinData:
         throw std::runtime_error(message);
       }
       this->concurrent_processes_ = processes;
-      LOG4CXX_DEBUG(logger_, "Concurrent processes changed to " << this->concurrent_processes_);
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Concurrent processes changed to " << this->concurrent_processes_);
     }
     else {
-      LOG4CXX_DEBUG(logger_, "Concurrent processes is already " << this->concurrent_processes_);
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Concurrent processes is already " << this->concurrent_processes_);
     }
   }
   // Check for rank number
@@ -413,10 +414,10 @@ void FileWriterPlugin::configure_process(OdinData::IpcMessage& config, OdinData:
         throw std::runtime_error(message);
       }
       this->concurrent_rank_ = rank;
-      LOG4CXX_DEBUG(logger_, "Process rank changed to " << this->concurrent_rank_);
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Process rank changed to " << this->concurrent_rank_);
     }
     else {
-      LOG4CXX_DEBUG(logger_, "Process rank is already " << this->concurrent_rank_);
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Process rank is already " << this->concurrent_rank_);
     }
   }
 
@@ -436,10 +437,10 @@ void FileWriterPlugin::configure_process(OdinData::IpcMessage& config, OdinData:
         throw std::runtime_error(message);
       }
       this->frames_per_block_ = block_size;
-      LOG4CXX_INFO(logger_, "Setting number of frames per block to " << frames_per_block_);
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting number of frames per block to " << frames_per_block_);
     }
     else {
-      LOG4CXX_DEBUG(logger_, "Block size is already " << this->frames_per_block_);
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Block size is already " << this->frames_per_block_);
     }
   }
 
@@ -454,27 +455,27 @@ void FileWriterPlugin::configure_process(OdinData::IpcMessage& config, OdinData:
         throw std::runtime_error(message);
       }
       this->blocks_per_file_ = blocks_per_file;
-      LOG4CXX_INFO(logger_, "Setting number of blocks per file to " << blocks_per_file_);
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting number of blocks per file to " << blocks_per_file_);
     }
     else {
-      LOG4CXX_DEBUG(logger_, "Blocks per file is already " << this->blocks_per_file_);
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Blocks per file is already " << this->blocks_per_file_);
     }
   }
 
   // Check for hdf5 version
   if (config.has_param(FileWriterPlugin::CONFIG_PROCESS_EARLIEST_VERSION)) {
     this->use_earliest_hdf5_ = config.get_param<bool>(FileWriterPlugin::CONFIG_PROCESS_EARLIEST_VERSION);
-    LOG4CXX_DEBUG(logger_, "Use earliest version of HDF5 library to write file set to " << this->use_earliest_hdf5_);
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Use earliest version of HDF5 library to write file set to " << this->use_earliest_hdf5_);
   }
 
   // Check for alignment value and threshold
   if (config.has_param(FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_THRESHOLD)) {
     this->alignment_threshold_ = config.get_param<size_t>(FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_THRESHOLD);
-    LOG4CXX_DEBUG(logger_, "Chunk alignment threshold set to " << this->alignment_threshold_);
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Chunk alignment threshold set to " << this->alignment_threshold_);
   }
   if (config.has_param(FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_VALUE)) {
     this->alignment_value_ = config.get_param<size_t>(FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_VALUE);
-    LOG4CXX_DEBUG(logger_, "Chunk alignment value set to " << this->alignment_value_);
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Chunk alignment value set to " << this->alignment_value_);
   }
 }
 
@@ -493,19 +494,19 @@ void FileWriterPlugin::configure_process(OdinData::IpcMessage& config, OdinData:
  */
 void FileWriterPlugin::configure_file(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
-  LOG4CXX_DEBUG(logger_, "Configure file name and path");
+  LOG4CXX_DEBUG_LEVEL(1, logger_, "Configure file name and path");
   // Check for file path and file name
   if (config.has_param(FileWriterPlugin::CONFIG_FILE_PATH)) {
     this->next_acquisition_->file_path_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_PATH);
-    LOG4CXX_DEBUG(logger_, "Next file path changed to " << this->next_acquisition_->file_path_);
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Next file path changed to " << this->next_acquisition_->file_path_);
   }
   if (config.has_param(FileWriterPlugin::CONFIG_FILE_NAME)) {
     this->next_acquisition_->configured_filename_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_NAME);
-    LOG4CXX_DEBUG(logger_, "Next file name changed to " << this->next_acquisition_->configured_filename_);
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Next file name changed to " << this->next_acquisition_->configured_filename_);
   }
   if (config.has_param(FileWriterPlugin::CONFIG_FILE_EXTENSION)) {
     this->file_extension_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_EXTENSION);
-    LOG4CXX_DEBUG(logger_, "File extension changed to " << this->file_extension_);
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "File extension changed to " << this->file_extension_);
   }
 }
 
@@ -528,7 +529,7 @@ void FileWriterPlugin::configure_file(OdinData::IpcMessage& config, OdinData::Ip
  */
 void FileWriterPlugin::configure_dataset(const std::string& dataset_name, OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
-  LOG4CXX_DEBUG(logger_, "Configuring dataset [" << dataset_name << "]");
+  LOG4CXX_DEBUG_LEVEL(1, logger_, "Configuring dataset [" << dataset_name << "]");
 
   DatasetDefinition dset = dataset_defs_[dataset_name];
 
@@ -647,8 +648,8 @@ bool FileWriterPlugin::frame_in_acquisition(boost::shared_ptr<Frame> frame) {
     }
 
     if (frame->get_acquisition_id() == next_acquisition_->acquisition_id_) {
-      LOG4CXX_DEBUG(logger_, "Acquisition ID sent in frame matches next acquisition ID. "
-                             "Closing current file and starting next");
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Acquisition ID sent in frame matches next acquisition ID. "
+                                      "Closing current file and starting next");
       stop_writing();
       start_writing();
     } else {
@@ -741,7 +742,7 @@ void FileWriterPlugin::run_close_file_timeout()
       while (timeout_active_) {
         if (!timeout_condition_.timed_wait(lock, boost::posix_time::milliseconds(timeout_period_))) {
           // Timeout
-          LOG4CXX_DEBUG(logger_, "Close file Timeout timed out");
+          LOG4CXX_DEBUG_LEVEL(1, logger_, "Close file Timeout timed out");
           boost::lock_guard<boost::recursive_mutex> lock(mutex_);
           if (writing_ && timeout_active_) {
             LOG4CXX_INFO(logger_, "Timed out waiting for frames, stopping writing");

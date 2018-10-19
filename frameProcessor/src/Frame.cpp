@@ -6,6 +6,7 @@
  */
 
 #include <Frame.h>
+#include "DebugLevelLogger.h"
 
 namespace FrameProcessor
 {
@@ -51,7 +52,7 @@ Frame::~Frame()
                                OdinData::IpcMessage::MsgValNotifyFrameRelease);
     txMsg.set_param("frame", shared_frame_id_);
     txMsg.set_param("buffer_id", shared_id_);
-    LOG4CXX_DEBUG(logger, "Sending response: " << txMsg.encode());
+    LOG4CXX_DEBUG_LEVEL(2, logger, "Sending response: " << txMsg.encode());
 
     // Now publish the release message, to notify the frame receiver that we are
     // finished with that block of shared memory

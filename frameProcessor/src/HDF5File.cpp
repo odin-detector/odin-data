@@ -10,6 +10,7 @@
 #include <hdf5_hl.h>
 
 #include "logging.h"
+#include "DebugLevelLogger.h"
 
 namespace FrameProcessor {
 
@@ -376,16 +377,16 @@ void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index
   for (int index = 1; index < chunk_dims.size(); index++){
     ss << "," << chunk_dims[index];
   }
-  LOG4CXX_DEBUG(logger_, ss.str());
+  LOG4CXX_DEBUG_LEVEL(1, logger_, ss.str());
   prop = H5Pcreate(H5P_DATASET_CREATE);
   ensure_h5_result(prop, "H5Pcreate failed to create the dataset");
 
   /* Enable defined compression mode */
   if (definition.compression == no_compression) {
-    LOG4CXX_INFO(logger_, "Compression type: None");
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Compression type: None");
   }
   else if (definition.compression == lz4){
-    LOG4CXX_INFO(logger_, "Compression type: LZ4");
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Compression type: LZ4");
     // Create cd_values for filter to set the LZ4 compression level
     unsigned int cd_values = 3;
     size_t cd_values_length = 1;
@@ -393,7 +394,7 @@ void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index
         cd_values_length, &cd_values), "H5Pset_filter failed to set the LZ4 filter");
   }
   else if (definition.compression == bslz4) {
-    LOG4CXX_INFO(logger_, "Compression type: BSLZ4");
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Compression type: BSLZ4");
     // Create cd_values for filter to set default block size and to enable LZ4
     unsigned int cd_values[2] = {0, 2};
     size_t cd_values_length = 2;
@@ -444,7 +445,7 @@ void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index
   dset.dataset_offsets = std::vector<hsize_t>(3);
   this->hdf5_datasets_[definition.name] = dset;
 
-  LOG4CXX_DEBUG(logger_, "Closing intermediate open HDF objects");
+  LOG4CXX_DEBUG_LEVEL(1, logger_, "Closing intermediate open HDF objects");
   ensure_h5_result(H5Pclose(prop), "H5Pclose failed to close the prop");
   ensure_h5_result(H5Pclose(dapl), "H5Pclose failed to close the dapl");
   ensure_h5_result(H5Sclose(dataspace), "H5Pclose failed to close the dataspace");
@@ -483,7 +484,7 @@ HDF5File::HDF5Dataset_t& HDF5File::get_hdf5_dataset(const std::string dset_name)
 void HDF5File::extend_dataset(HDF5Dataset_t& dset, size_t frame_no) const {
   if (frame_no > dset.dataset_dimensions[0]) {
     // Extend the dataset
-    LOG4CXX_DEBUG(logger_, "Extending dataset_dimensions[0] = " << frame_no);
+    LOG4CXX_DEBUG_LEVEL(2, logger_, "Extending dataset_dimensions[0] = " << frame_no);
     dset.dataset_dimensions[0] = frame_no;
     ensure_h5_result(H5Dset_extent( dset.dataset_id,
         &dset.dataset_dimensions.front()), "H5Dset_extent failed to extend the dataset");
@@ -517,27 +518,27 @@ hid_t HDF5File::datatype_to_hdf_type(DataType data_type) const {
   switch(data_type)
   {
   case raw_64bit:
-    LOG4CXX_DEBUG(logger_, "Data type: UINT64");
+    LOG4CXX_DEBUG_LEVEL(2, logger_, "Data type: UINT64");
     dtype = H5T_NATIVE_UINT64;
     break;
   case raw_32bit:
-    LOG4CXX_DEBUG(logger_, "Data type: UINT32");
+    LOG4CXX_DEBUG_LEVEL(2, logger_, "Data type: UINT32");
     dtype = H5T_NATIVE_UINT32;
     break;
   case raw_16bit:
-    LOG4CXX_DEBUG(logger_, "Data type: UINT16");
+    LOG4CXX_DEBUG_LEVEL(2, logger_, "Data type: UINT16");
     dtype = H5T_NATIVE_UINT16;
     break;
   case raw_8bit:
-    LOG4CXX_DEBUG(logger_, "Data type: UINT8");
+    LOG4CXX_DEBUG_LEVEL(2, logger_, "Data type: UINT8");
     dtype = H5T_NATIVE_UINT8;
     break;
   case raw_float:
-    LOG4CXX_DEBUG(logger_, "Data type: FLOAT");
+    LOG4CXX_DEBUG_LEVEL(2, logger_, "Data type: FLOAT");
     dtype = H5T_NATIVE_FLOAT;
     break;
   default:
-    LOG4CXX_DEBUG(logger_, "Data type: UINT16");
+    LOG4CXX_DEBUG_LEVEL(2, logger_, "Data type: UINT16");
     dtype = H5T_NATIVE_UINT16;
   }
   return dtype;
