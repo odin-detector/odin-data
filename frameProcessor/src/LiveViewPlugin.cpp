@@ -173,7 +173,7 @@ void LiveViewPlugin::pass_live_frame(boost::shared_ptr<Frame> frame)
   std::string aqqID = frame->get_acquisition_id();
   dimensions_t dim = frame->get_dimensions();
   std::string type = get_type_from_enum((DataType)frame->get_data_type());
-  size_t size = frame->get_data_size();
+  std::size_t size = frame->get_data_size();
   std::string compress = get_compress_from_enum((CompressionType)frame->get_compression());
   std::string dataset = frame->get_dataset_name();
 
@@ -199,7 +199,7 @@ void LiveViewPlugin::pass_live_frame(boost::shared_ptr<Frame> frame)
 
   //getting Data Size
   rapidjson::Value keySize("dsize", document.GetAllocator());
-  rapidjson::Value valueSize(size);
+  rapidjson::Value valueSize(static_cast<uint64_t>(size));
   document.AddMember(keySize, valueSize, document.GetAllocator());
 
   //getting dataset
