@@ -146,10 +146,17 @@ BOOST_AUTO_TEST_CASE(LiveViewConfigTest)
 
   BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
   //send frame again to check its going to a different socket
-
+  while(recv_socket.poll(10))
+  {
+    BOOST_TEST_MESSAGE("ORIGINAL SOCKET STILL HAS DATA");
+    recv_socket.recv();
+  }
   for(int i = 0; i < 10; i ++)
   {
     plugin.process_frame(frame);
+    if(recv_socket.poll(100)){
+      BOOST_TEST_MESSAGE("Original socket received data");
+    }
     //BOOST_CHECK(!recv_socket.poll(100));
     new_socket_recieve = recv_socket_other.poll(100);
     if(new_socket_recieve)
