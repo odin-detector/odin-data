@@ -17,10 +17,11 @@ using namespace OdinData;
 //! This static method retrieves the singleton IpcContext instance used
 //! by call IpcChannels in an application.
 //!
-IpcContext& IpcContext::Instance(void)
+IpcContext& IpcContext::Instance(unsigned int io_threads)
 {
-  static IpcContext ipcContext;
-  return ipcContext;
+  static IpcContext ipc_context(io_threads);
+
+  return ipc_context;
 }
 
 //! Retrieve the underlying ZeroMQ context from the IpcContext instance
@@ -42,7 +43,7 @@ zmq::context_t& IpcContext::get(void)
 //!
 //! \param[in] io_threads - number of IO threads to create.
 //!
-IpcContext::IpcContext(int io_threads) :
+IpcContext::IpcContext(unsigned int io_threads) :
     zmq_context_(io_threads)
 {
 }
