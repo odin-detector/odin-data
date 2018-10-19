@@ -255,6 +255,7 @@ void Acquisition::create_file(size_t file_number) {
       }
     }
 
+    validate_dataset_definition(dset_def);
     current_file->create_dataset(dset_def, low_index, high_index);
   }
 
@@ -275,6 +276,29 @@ void Acquisition::close_file(boost::shared_ptr<HDF5File> file) {
     file->close_file();
     // Send meta data message to notify of file close
     publish_meta(META_NAME, META_CLOSE_ITEM, file->get_filename(), get_meta_header());
+  }
+}
+
+/**
+ * Validate dataset definition
+ *
+ * Perform checks on the given dataset definition to ensure it is valid before creation
+ *
+ * \param[in] definition - The DatasetDefinition to validate
+ */
+void Acquisition::validate_dataset_definition(DatasetDefinition definition) {
+  // Check image dimensions
+  std::vector<long long unsigned int>::iterator iter;
+  for (iter = definition.frame_dimensions.begin(); iter != definition.frame_dimensions.end(); ++iter) {
+    if (*iter == 0) {
+      throw std::runtime_error("Image dimensions must be non-zero");
+    }
+  }
+  // Check chunk dimensions
+  for (iter = definition.chunks.begin(); iter != definition.chunks.end(); ++iter) {
+    if (*iter == 0) {
+      throw std::runtime_error("Chunk dimensions must be non-zero");
+    }
   }
 }
 
