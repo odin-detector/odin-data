@@ -290,7 +290,8 @@ void LiveViewPlugin::set_socket_addr_config(std::string value)
     LOG4CXX_WARN(logger_, "Socket already bound to " << value << ". Doing nothing");
     return;
   }
-
+  uint32_t linger = 0;
+  publish_socket_.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
   publish_socket_.unbind(image_view_socket_addr_.c_str());
 
   image_view_socket_addr_ = value;
