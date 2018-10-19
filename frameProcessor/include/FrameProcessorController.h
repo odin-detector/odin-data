@@ -49,6 +49,7 @@ public:
   void disconnectPlugin(const std::string& index, const std::string& disconnectFrom);
   void run();
   void waitForShutdown();
+  void shutdown();
 private:
   /** Configuration constant for the meta-data Rx interface **/
   static const std::string META_RX_INTERFACE;
@@ -129,7 +130,9 @@ private:
   /** Did an error occur during the thread initialisation */
   bool                                                            threadInitError_;
   /** Have we sent sent the shutdown command to the plugins */
-  bool                                                            pluginShutdownSent;
+  bool                                                            pluginShutdownSent_;
+  /** Have we successfully shutdown */
+  bool                                                            shutdown_;
   /** Main thread used for control message handling */
   boost::thread                                                   ctrlThread_;
   /** Store for any messages occurring during thread initialisation */

@@ -70,6 +70,7 @@ void FrameProcessorPlugin::set_error(const std::string& msg)
   }
   if (!found_error){
     error_messages_.push_back(msg);
+    LOG4CXX_ERROR(logger_, msg);
   }
 }
 

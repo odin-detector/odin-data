@@ -466,8 +466,9 @@ HDF5File::HDF5Dataset_t& HDF5File::get_hdf5_dataset(const std::string dset_name)
   if (this->hdf5_datasets_.find(dset_name) == this->hdf5_datasets_.end())
   {
     // no dataset of this name exist
-    LOG4CXX_ERROR(logger_, "Attempted to access non-existent dataset: \"" << dset_name << "\"\n");
-    throw std::runtime_error("Attempted to access non-existent dataset");
+    std::stringstream message;
+    message << "Attempted to access non-existent dataset: \"" << dset_name << "\"\n";
+    throw std::runtime_error(message.str());
   }
   return this->hdf5_datasets_.at(dset_name);
 }

@@ -94,6 +94,7 @@ public:
     MsgValNotifyFrameReady,          //!< Frame ready notification message
     MsgValNotifyFrameRelease,        //!< Frame release notification message
     MsgValNotifyBufferConfig,        //!< Buffer configuration notification
+    MsgValNotifyBufferPrecharge,     //!< Buffer precharge notification
     MsgValNotifyStatus,              //!< Status notification 
   };
 

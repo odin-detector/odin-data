@@ -132,7 +132,7 @@ void FileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame)
         LOG4CXX_INFO(logger_, "Starting close file timeout as received last frame but missing some frames");
         start_close_file_timeout();
       } else if (status == status_invalid) {
-        LOG4CXX_WARN(logger_, "Frame invalid");
+        this->set_error("Frame invalid");
         this->set_error(current_acquisition_->get_last_error());
       }
 
@@ -317,9 +317,7 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
   }
   catch (std::runtime_error& e)
   {
-    std::stringstream ss;
-    ss << "Bad ctrl msg: " << e.what();
-    this->set_error(ss.str());
+    this->set_error(e.what());
     throw;
   }
 }
@@ -394,8 +392,9 @@ void FileWriterPlugin::configure_process(OdinData::IpcMessage& config, OdinData:
     if (this->concurrent_processes_ != processes) {
       // If we are writing a file then we cannot change concurrent processes
       if (this->writing_) {
-        LOG4CXX_ERROR(logger_, "Cannot change concurrent processes whilst writing");
-        throw std::runtime_error("Cannot change concurrent processes whilst writing");
+        std::string message = "Cannot change concurrent processes whilst writing";
+        set_error(message);
+        throw std::runtime_error(message);
       }
       this->concurrent_processes_ = processes;
       LOG4CXX_DEBUG_LEVEL(1, logger_, "Concurrent processes changed to " << this->concurrent_processes_);
@@ -410,8 +409,9 @@ void FileWriterPlugin::configure_process(OdinData::IpcMessage& config, OdinData:
     if (this->concurrent_rank_ != rank) {
       // If we are writing a file then we cannot change concurrent rank
       if (this->writing_) {
-        LOG4CXX_ERROR(logger_, "Cannot change process rank whilst writing");
-        throw std::runtime_error("Cannot change process rank whilst writing");
+        std::string message = "Cannot change process rank whilst writing";
+        set_error(message);
+        throw std::runtime_error(message);
       }
       this->concurrent_rank_ = rank;
       LOG4CXX_DEBUG_LEVEL(1, logger_, "Process rank changed to " << this->concurrent_rank_);
@@ -426,13 +426,15 @@ void FileWriterPlugin::configure_process(OdinData::IpcMessage& config, OdinData:
     size_t block_size = config.get_param<size_t>(FileWriterPlugin::CONFIG_PROCESS_BLOCKSIZE);
     if (this->frames_per_block_ != block_size) {
       if (block_size < 1) {
-        LOG4CXX_ERROR(logger_, "Must have at least one frame per block");
-        throw std::runtime_error("Must have at least one frame per block");
+        std::string message = "Must have at least one frame per block";
+        set_error(message);
+        throw std::runtime_error(message);
       }
       // If we are writing a file then we cannot change block size
       if (this->writing_) {
-        LOG4CXX_ERROR(logger_, "Cannot change block size whilst writing");
-        throw std::runtime_error("Cannot change block size whilst writing");
+        std::string message = "Cannot change block size whilst writing";
+        set_error(message);
+        throw std::runtime_error(message);
       }
       this->frames_per_block_ = block_size;
       LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting number of frames per block to " << frames_per_block_);
@@ -448,8 +450,9 @@ void FileWriterPlugin::configure_process(OdinData::IpcMessage& config, OdinData:
     if (this->blocks_per_file_ != blocks_per_file) {
       // If we are writing a file then we cannot change block size
       if (this->writing_) {
-        LOG4CXX_ERROR(logger_, "Cannot change blocks per file whilst writing");
-        throw std::runtime_error("Cannot change blocks per file whilst writing");
+        std::string message = "Cannot change blocks per file whilst writing";
+        set_error(message);
+        throw std::runtime_error(message);
       }
       this->blocks_per_file_ = blocks_per_file;
       LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting number of blocks per file to " << blocks_per_file_);
@@ -645,12 +648,15 @@ bool FileWriterPlugin::frame_in_acquisition(boost::shared_ptr<Frame> frame) {
     }
 
     if (frame->get_acquisition_id() == next_acquisition_->acquisition_id_) {
-      LOG4CXX_DEBUG_LEVEL(1, logger_, "Acquisition ID sent in frame matches next acquisition ID. Closing current file and starting next");
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Acquisition ID sent in frame matches next acquisition ID. "
+                                      "Closing current file and starting next");
       stop_writing();
       start_writing();
     } else {
-      LOG4CXX_WARN(logger_, "Unexpected acquisition ID on frame [" << frame->get_acquisition_id() << "] for frame " << frame->get_frame_number());
-      // TODO set status? (There's currently no mechanism to report this in the status message)
+      std::stringstream ss;
+      ss << "Unexpected acquisition ID on frame [" << frame->get_acquisition_id() << "] "
+            "for frame " << frame->get_frame_number();
+      set_error(ss.str());
       return false;
     }
   }

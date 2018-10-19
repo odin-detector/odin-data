@@ -35,6 +35,7 @@ public:
   ProcessFrameStatus process_frame(boost::shared_ptr<Frame> frame);
   void create_file(size_t file_number=0);
   void close_file(boost::shared_ptr<HDF5File> file);
+  void validate_dataset_definition(DatasetDefinition definition);
   bool start_acquisition(
       size_t concurrent_rank,
       size_t concurrent_processes,
