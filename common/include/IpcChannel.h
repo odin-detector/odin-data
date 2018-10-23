@@ -21,11 +21,11 @@ namespace OdinData
 class IpcContext
 {
 public:
-  static IpcContext& Instance(void);
+  static IpcContext& Instance(unsigned int io_threads=1);
   zmq::context_t& get(void);
 
 private:
-  IpcContext(int io_threads=1);
+  IpcContext(unsigned int io_threads=1);
   IpcContext(const IpcContext&);
   IpcContext& operator=(const IpcContext&);
 

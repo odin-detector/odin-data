@@ -42,13 +42,14 @@ const int FrameProcessorController::META_TX_HWM = 10000;
  * The constructor sets up logging used within the class, and starts the
  * IpcReactor thread.
  */
-FrameProcessorController::FrameProcessorController() :
+FrameProcessorController::FrameProcessorController(unsigned int num_io_threads) :
     logger_(log4cxx::Logger::getLogger("FP.FrameProcessorController")),
     runThread_(true),
     threadRunning_(false),
     threadInitError_(false),
     pluginShutdownSent_(false),
     shutdown_(false),
+    ipc_context_(OdinData::IpcContext::Instance(num_io_threads)),
     ctrlThread_(boost::bind(&FrameProcessorController::runIpcService, this)),
     ctrlChannelEndpoint_(""),
     ctrlChannel_(ZMQ_ROUTER),

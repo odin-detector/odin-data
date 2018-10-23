@@ -36,7 +36,7 @@ class FrameProcessorController : public IFrameCallback,
                                  public boost::enable_shared_from_this<FrameProcessorController>
 {
 public:
-  FrameProcessorController();
+  FrameProcessorController(unsigned int num_io_threads=1);
   virtual ~FrameProcessorController();
   void handleCtrlChannel();
   void handleMetaRxChannel();
@@ -141,6 +141,8 @@ private:
   boost::shared_ptr<OdinData::IpcReactor>                         reactor_;
   /** End point for control messages */
   std::string                                                     ctrlChannelEndpoint_;
+  /** ZMQ context for IPC channels */
+  OdinData::IpcContext& ipc_context_;
   /** IpcChannel for control messages */
   OdinData::IpcChannel                                            ctrlChannel_;
   /** IpcChannel for meta-data messages */

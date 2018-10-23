@@ -34,6 +34,7 @@ FrameReceiverController::FrameReceiverController (FrameReceiverConfig& config) :
     buffer_manager_configured_(false),
     rx_thread_configured_(false),
     configuration_complete_(false),
+    ipc_context_(IpcContext::Instance(config.io_threads_)),
     rx_channel_(ZMQ_ROUTER),
     ctrl_channel_(ZMQ_ROUTER),
     frame_ready_channel_(ZMQ_PUB),
