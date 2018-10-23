@@ -34,6 +34,7 @@ using namespace rapidjson;
 #include "logging.h"
 #include "FrameProcessorController.h"
 #include "DebugLevelLogger.h"
+#include "version.h"
 
 using namespace FrameProcessor;
 
@@ -143,6 +144,7 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
     if (vm.count("help"))
     {
       std::cout << "usage: fileWriter [options]" << std::endl << std::endl;
+      std::cout << "       odin-data version: " << ODIN_DATA_VERSION_STR << std::endl << std::endl;
       std::cout << cmdline_options << std::endl;
       exit(1);
     }

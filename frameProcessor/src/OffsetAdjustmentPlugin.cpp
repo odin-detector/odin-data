@@ -6,6 +6,7 @@
  */
 
 #include "OffsetAdjustmentPlugin.h"
+#include "version.h"
 
 namespace FrameProcessor
 {
@@ -92,6 +93,31 @@ void OffsetAdjustmentPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
   reply.set_param(get_name() + "/" + FIRST_FRAME_OFFSET_CONFIG, first_frame_number_);
   reply.set_param(get_name() + "/" + OFFSET_ADJUSTMENT_CONFIG, configured_offset_adjustment_);
+}
+
+int OffsetAdjustmentPlugin::get_version_major()
+{
+  return ODIN_DATA_VERSION_MAJOR;
+}
+
+int OffsetAdjustmentPlugin::get_version_minor()
+{
+  return ODIN_DATA_VERSION_MINOR;
+}
+
+int OffsetAdjustmentPlugin::get_version_patch()
+{
+  return ODIN_DATA_VERSION_PATCH;
+}
+
+std::string OffsetAdjustmentPlugin::get_version_short()
+{
+  return ODIN_DATA_VERSION_STR_SHORT;
+}
+
+std::string OffsetAdjustmentPlugin::get_version_long()
+{
+  return ODIN_DATA_VERSION_STR;
 }
 
 } /* namespace FrameProcessor */

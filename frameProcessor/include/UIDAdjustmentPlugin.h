@@ -38,6 +38,11 @@ public:
   virtual ~UIDAdjustmentPlugin();
   void process_frame(boost::shared_ptr<Frame> frame);
   void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
+  int get_version_major();
+  int get_version_minor();
+  int get_version_patch();
+  std::string get_version_short();
+  std::string get_version_long();
 
 private:
   void requestConfiguration(OdinData::IpcMessage& reply);
