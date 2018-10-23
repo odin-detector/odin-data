@@ -66,6 +66,8 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
            "Set the debug level")
         ("logconfig,l",   po::value<string>(),
            "Set the log4cxx logging configuration file")
+        ("iothreads",     po::value<unsigned int>()->default_value(1),
+           "Set number of IPC channel IO threads")
         ("ctrl",          po::value<std::string>()->default_value("tcp://0.0.0.0:5004"),
            "Set the control endpoint")
         ("ready",         po::value<std::string>()->default_value("tcp://127.0.0.1:5001"),
@@ -182,6 +184,11 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
     {
       set_debug_level(vm["debug-level"].as<unsigned int>());
       LOG4CXX_DEBUG_LEVEL(1, logger, "Debug level set to  " << debug_level);
+    }
+
+    if (vm.count("iothreads"))
+    {
+      LOG4CXX_DEBUG_LEVEL(1, logger, "Setting number of IO threads to " << vm["iothreads"].as<unsigned int>());
     }
 
     bool no_client = vm["no-client"].as<bool>();
@@ -493,8 +500,9 @@ int main(int argc, char** argv)
     po::variables_map vm;
     parse_arguments(argc, argv, vm, logger);
 
+    unsigned int num_io_threads = vm["iothreads"].as<unsigned int>();
     boost::shared_ptr<FrameProcessorController> fwc;
-    fwc = boost::shared_ptr<FrameProcessorController>(new FrameProcessorController());
+    fwc = boost::shared_ptr<FrameProcessorController>(new FrameProcessorController(num_io_threads));
 
     // Configure the control channel for the FrameProcessor
     OdinData::IpcMessage cfg;
