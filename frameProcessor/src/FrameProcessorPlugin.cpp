@@ -82,6 +82,16 @@ void FrameProcessorPlugin::clear_errors()
   error_messages_.clear();
 }
 
+/** Reset any statistics.
+ *
+ * Any counters in the plugin should be reset by this method
+ */
+bool FrameProcessorPlugin::reset_statistics()
+{
+  // Default method does nothing
+  return true;
+}
+
 /** Return the current error message.
  *
  */
