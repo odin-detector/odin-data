@@ -31,6 +31,11 @@ public:
   void process_frame(boost::shared_ptr<Frame> frame);
   void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   void pass_live_frame(boost::shared_ptr<Frame> frame);
+  int get_version_major();
+  int get_version_minor();
+  int get_version_patch();
+  std::string get_version_short();
+  std::string get_version_long();
 
   /*DEFAULT CONFIG VALUES*/
   /** The default value for the Frame Frequency configuration*/

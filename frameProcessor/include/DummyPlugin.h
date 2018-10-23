@@ -33,6 +33,11 @@ class DummyPlugin : public FrameProcessorPlugin
 public:
   DummyPlugin();
   virtual ~DummyPlugin();
+  int get_version_major();
+  int get_version_minor();
+  int get_version_patch();
+  std::string get_version_short();
+  std::string get_version_long();
 
 private:
   void process_frame(boost::shared_ptr<Frame> frame);

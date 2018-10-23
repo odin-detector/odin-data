@@ -6,6 +6,7 @@
  */
 
 #include "UIDAdjustmentPlugin.h"
+#include "version.h"
 
 namespace FrameProcessor
 {
@@ -96,6 +97,31 @@ void UIDAdjustmentPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
   reply.set_param(get_name() + "/" + FIRST_FRAME_CONFIG, first_frame_number_);
   reply.set_param(get_name() + "/" + UID_ADJUSTMENT_CONFIG, configured_uid_adjustment_);
+}
+
+int UIDAdjustmentPlugin::get_version_major()
+{
+  return ODIN_DATA_VERSION_MAJOR;
+}
+
+int UIDAdjustmentPlugin::get_version_minor()
+{
+  return ODIN_DATA_VERSION_MINOR;
+}
+
+int UIDAdjustmentPlugin::get_version_patch()
+{
+  return ODIN_DATA_VERSION_PATCH;
+}
+
+std::string UIDAdjustmentPlugin::get_version_short()
+{
+  return ODIN_DATA_VERSION_STR_SHORT;
+}
+
+std::string UIDAdjustmentPlugin::get_version_long()
+{
+  return ODIN_DATA_VERSION_STR;
 }
 
 } /* namespace FrameProcessor */

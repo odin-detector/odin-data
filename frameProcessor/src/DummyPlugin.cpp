@@ -6,6 +6,7 @@
  */
 
 #include "DummyPlugin.h"
+#include "version.h"
 
 namespace FrameProcessor
 {
@@ -38,6 +39,31 @@ DummyPlugin::~DummyPlugin()
 void DummyPlugin::process_frame(boost::shared_ptr<Frame> frame)
 {
   LOG4CXX_TRACE(logger_, "Received a new frame...");
+}
+
+int DummyPlugin::get_version_major()
+{
+  return ODIN_DATA_VERSION_MAJOR;
+}
+
+int DummyPlugin::get_version_minor()
+{
+  return ODIN_DATA_VERSION_MINOR;
+}
+
+int DummyPlugin::get_version_patch()
+{
+  return ODIN_DATA_VERSION_PATCH;
+}
+
+std::string DummyPlugin::get_version_short()
+{
+  return ODIN_DATA_VERSION_STR_SHORT;
+}
+
+std::string DummyPlugin::get_version_long()
+{
+  return ODIN_DATA_VERSION_STR;
 }
 
 } /* namespace FrameProcessor */
