@@ -256,6 +256,7 @@ void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply)
   std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
   for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
     reply.set_param("plugins/names[]", iter->first);
+    iter->second->version(reply);
     iter->second->status(reply);
     // Read error level
     std::vector<std::string> plugin_errors = iter->second->get_errors();
@@ -548,8 +549,6 @@ void FrameProcessorController::run() {
 
   // Start worker thread (for IFrameCallback) to monitor frames passed through
   start();
-
-  LOG4CXX_INFO(logger_, "Running FrameProcessor")
 
   // Now wait for the shutdown command from either the control interface or the worker thread
   waitForShutdown();
