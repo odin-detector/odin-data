@@ -132,6 +132,13 @@ void FrameProcessorController::handleCtrlChannel()
       LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (status): "
                              << replyMsg.encode());
     }
+    else if ((ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) &&
+             (ctrlMsg.get_msg_val() == OdinData::IpcMessage::MsgValCmdResetStatistics)) {
+      replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
+      this->resetStatistics(replyMsg);
+      LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (reset statistics): "
+              << replyMsg.encode());
+    }
     else {
       LOG4CXX_ERROR(logger_, "Control thread got unexpected message: " << ctrlMsgEncoded);
       replyMsg.set_param("error", "Invalid control message: " + ctrlMsgEncoded);
@@ -380,6 +387,32 @@ void FrameProcessorController::requestConfiguration(OdinData::IpcMessage& reply)
   std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
   for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
     iter->second->requestConfiguration(reply);
+  }
+}
+
+/**
+ * Reset statistics on all of the loaded plugins.
+ *
+ * The method calls reset statistics on all of the loaded plugins.
+ *
+ * \param[out] reply - Response IpcMessage with the current status.
+ */
+void FrameProcessorController::resetStatistics(OdinData::IpcMessage& reply)
+{
+  LOG4CXX_DEBUG_LEVEL(1, logger_, "Reset statistics requested");
+  bool reset_ok = true;
+
+  // Loop over plugins and call reset statistics on each
+  std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
+  for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
+    reset_ok = iter->second->reset_statistics();
+    // Check for failure
+    if (!reset_ok){
+      reply.set_msg_type(OdinData::IpcMessage::MsgTypeNack);
+      std::stringstream sstr;
+      sstr << "Failed to reset statistics on plugin " << iter->first;
+      reply.set_param("error", sstr.str());
+    }
   }
 }
 
