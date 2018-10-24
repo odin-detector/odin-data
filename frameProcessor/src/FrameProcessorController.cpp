@@ -9,6 +9,7 @@
 
 #include "FrameProcessorController.h"
 #include "DebugLevelLogger.h"
+#include "version.h"
 
 namespace FrameProcessor
 {
@@ -267,6 +268,14 @@ void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply)
   for (error_iter = error_messages.begin(); error_iter != error_messages.end(); ++error_iter) {
     reply.set_param("error[]", *error_iter);
   }
+
+  // Populate the reply with version information for the core application
+  reply.set_param("version/major", ODIN_DATA_VERSION_MAJOR);
+  reply.set_param("version/minor", ODIN_DATA_VERSION_MINOR);
+  reply.set_param("version/patch", ODIN_DATA_VERSION_PATCH);
+  reply.set_param("version/short", std::string(ODIN_DATA_VERSION_STR_SHORT));
+  reply.set_param("version/full", std::string(ODIN_DATA_VERSION_STR));
+ 
 }
 
 /**
