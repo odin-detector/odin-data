@@ -6,6 +6,7 @@
  */
 
 #include "FrameReceiverController.h"
+#include "version.h"
 
 using namespace FrameReceiver;
 
@@ -1050,12 +1051,19 @@ void FrameReceiverController::get_status(OdinData::IpcMessage& status_reply)
     IpcMessage decoder_version_reply;
     frame_decoder_->version("decoder/", status_reply);
   }
+
   status_reply.set_param("buffers/empty", empty_buffers);
   status_reply.set_param("buffers/mapped", mapped_buffers);
 
   status_reply.set_param("frames/timedout", frames_timedout);
   status_reply.set_param("frames/received", frames_received_);
   status_reply.set_param("frames/released", frames_released_);
+
+  status_reply.set_param("version/major", ODIN_DATA_VERSION_MAJOR);
+  status_reply.set_param("version/minor", ODIN_DATA_VERSION_MINOR);
+  status_reply.set_param("version/patch", ODIN_DATA_VERSION_PATCH);
+  status_reply.set_param("version/short", std::string(ODIN_DATA_VERSION_STR_SHORT));
+  status_reply.set_param("version/full", std::string(ODIN_DATA_VERSION_STR));
 
 }
 
