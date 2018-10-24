@@ -174,3 +174,17 @@ void FrameDecoder::drop_all_buffers(void)
   }
 }
 
+//! Collate version information for the decoder.
+//!
+//! The version information is added to the status IpcMessage object.
+//! 
+//! \param[in,out] status - Reference to an IpcMessage value to store the version.
+//!
+void FrameDecoder::version(const std::string param_prefix, OdinData::IpcMessage& status)
+{
+  status.set_param(param_prefix + "version/major", get_version_major());
+  status.set_param(param_prefix + "version/minor", get_version_minor());
+  status.set_param(param_prefix + "version/patch", get_version_patch());
+  status.set_param(param_prefix + "version/short", get_version_short());
+  status.set_param(param_prefix + "version/full", get_version_long());
+}

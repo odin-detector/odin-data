@@ -1045,6 +1045,11 @@ void FrameReceiverController::get_status(OdinData::IpcMessage& status_reply)
     }
   }
 
+  // If there is a decoder loaded, append its version information to the reply
+  if (frame_decoder_) {
+    IpcMessage decoder_version_reply;
+    frame_decoder_->version("decoder/", status_reply);
+  }
   status_reply.set_param("buffers/empty", empty_buffers);
   status_reply.set_param("buffers/mapped", mapped_buffers);
 
