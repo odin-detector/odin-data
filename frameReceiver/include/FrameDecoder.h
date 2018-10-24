@@ -78,6 +78,7 @@ public:
   virtual void monitor_buffers(void) = 0;
   virtual void get_status(const std::string param_prefix, OdinData::IpcMessage& status_msg) = 0;
   void version(const std::string param_prefix, OdinData::IpcMessage& status);
+  virtual void reset_statistics(void);
 
 protected:
   LoggerPtr logger_;  //!< Pointer to the logging facility
