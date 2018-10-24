@@ -22,7 +22,8 @@ OffsetAdjustmentPlugin::OffsetAdjustmentPlugin() :
   // Setup logging for the class
   logger_ = Logger::getLogger("FW.OffsetAdjustmentPlugin");
   logger_->setLevel(Level::getAll());
-  LOG4CXX_TRACE(logger_, "OffsetAdjustmentPlugin constructor.");
+  LOG4CXX_INFO(logger_, "OffsetAdjustmentPlugin version " << this->get_version_long() << " loaded");
+
 }
 
 /**

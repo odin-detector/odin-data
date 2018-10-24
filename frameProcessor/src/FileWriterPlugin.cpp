@@ -73,7 +73,7 @@ FileWriterPlugin::FileWriterPlugin() :
 {
   this->logger_ = Logger::getLogger("FP.FileWriterPlugin");
   this->logger_->setLevel(Level::getTrace());
-  LOG4CXX_TRACE(logger_, "FileWriterPlugin constructor.");
+  LOG4CXX_INFO(logger_, "FileWriterPlugin version " << this->get_version_long() << " loaded");
   this->current_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition());
   this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition());
 }

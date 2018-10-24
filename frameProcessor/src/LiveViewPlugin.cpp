@@ -31,7 +31,8 @@ LiveViewPlugin::LiveViewPlugin() :
 {
   logger_ = Logger::getLogger("FW.LiveViewPlugin");
   logger_->setLevel(Level::getAll());
-  LOG4CXX_TRACE(logger_, "LiveViewPlugin constructor.");
+  LOG4CXX_INFO(logger_, "LiveViewPlugin version " << this->get_version_long() << " loaded");
+
 
   set_frame_freq_config(DEFAULT_FRAME_FREQ);
   set_per_second_config(DEFAULT_PER_SECOND);

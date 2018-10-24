@@ -22,7 +22,8 @@ UIDAdjustmentPlugin::UIDAdjustmentPlugin() :
   // Setup logging for the class
   logger_ = Logger::getLogger("FW.UIDAdjustmentPlugin");
   logger_->setLevel(Level::getAll());
-  LOG4CXX_TRACE(logger_, "UIDAdjustmentPlugin constructor.");
+  LOG4CXX_INFO(logger_, "UIDAdjustmentPlugin version " << this->get_version_long() << " loaded");
+
 }
 
 /**

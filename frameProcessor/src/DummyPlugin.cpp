@@ -19,7 +19,7 @@ DummyPlugin::DummyPlugin()
   // Setup logging for the class
   logger_ = Logger::getLogger("FW.DummyPlugin");
   logger_->setLevel(Level::getAll());
-  LOG4CXX_TRACE(logger_, "DummyPlugin constructor.");
+  LOG4CXX_INFO(logger_, "DummyPlugin version " << this->get_version_long() << " loaded");
 }
 
 /**
