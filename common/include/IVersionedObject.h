@@ -7,7 +7,7 @@
 
 #include <string>
 
-namespace FrameProcessor
+namespace OdinData
 {
 /** Interface to provide version information for any odin-data object.
  *

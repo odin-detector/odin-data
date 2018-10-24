@@ -25,7 +25,7 @@ namespace FrameProcessor
  * Frame objects between plugins. It also provides methods for configuring
  * plugins and for retrieving status from plugins.
  */
-class FrameProcessorPlugin : public IFrameCallback, public IVersionedObject, public MetaMessagePublisher
+class FrameProcessorPlugin : public IFrameCallback, public OdinData::IVersionedObject, public MetaMessagePublisher
 {
 public:
   FrameProcessorPlugin();
