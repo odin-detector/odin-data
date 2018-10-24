@@ -502,6 +502,8 @@ int main(int argc, char** argv)
     po::variables_map vm;
     parse_arguments(argc, argv, vm, logger);
 
+    LOG4CXX_INFO(logger, "frameProcessor version " << ODIN_DATA_VERSION_STR << " starting up");
+
     unsigned int num_io_threads = vm["iothreads"].as<unsigned int>();
     boost::shared_ptr<FrameProcessorController> fwc;
     fwc = boost::shared_ptr<FrameProcessorController>(new FrameProcessorController(num_io_threads));
