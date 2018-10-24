@@ -376,25 +376,19 @@ class OdinDataAdapter(ApiAdapter):
     def send_command_to_clients(self, command, client_index=-1):
         status_code = 200
         response = {}
-        if client_index == -1:
-            # We are sending the value to all clients
-            for client in self._clients:
-                try:
+        try:
+            if client_index == -1:
+                # We are sending the value to all clients
+                for client in self._clients:
                     client.send_request(command)
-                except Exception as err:
-                    logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
-                    logging.error("Error: %s", err)
-                    status_code = 503
-                    response = {'error': OdinDataAdapter.ERROR_FAILED_TO_SEND}
-        else:
-            # A client index has been specified
-            try:
+            else:
+                # A client index has been specified
                 self._clients[client_index].send_request(command)
-            except Exception as err:
-                logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
-                logging.error("Error: %s", err)
-                status_code = 503
-                response = {'error': OdinDataAdapter.ERROR_FAILED_TO_SEND}
+        except Exception as err:
+            logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
+            logging.error("Error: %s", err)
+            status_code = 503
+            response = {'error': OdinDataAdapter.ERROR_FAILED_TO_SEND}
         return response, status_code
 
     def send_to_clients(self, request_command, parameters, client_index=-1):
