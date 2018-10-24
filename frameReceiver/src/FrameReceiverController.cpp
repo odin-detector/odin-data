@@ -1077,6 +1077,8 @@ void FrameReceiverController::get_status(OdinData::IpcMessage& status_reply)
 void FrameReceiverController::get_version(OdinData::IpcMessage& version_reply)
 {
 
+  version_reply.set_msg_type(IpcMessage::MsgTypeAck);
+
   // Populate the reply with top-level odin-data application version information
   version_reply.set_param("version/odin-data/major", ODIN_DATA_VERSION_MAJOR);
   version_reply.set_param("version/odin-data/minor", ODIN_DATA_VERSION_MINOR);
