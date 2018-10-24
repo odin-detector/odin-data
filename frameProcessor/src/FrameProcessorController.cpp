@@ -137,6 +137,13 @@ void FrameProcessorController::handleCtrlChannel()
                              << replyMsg.encode());
     }
     else if ((ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) &&
+             (ctrlMsg.get_msg_val() == OdinData::IpcMessage::MsgValCmdRequestVersion)) {
+      replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
+      this->provideVersion(replyMsg);
+      LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (rquest version): "
+                             << replyMsg.encode());
+    }
+    else if ((ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) &&
              (ctrlMsg.get_msg_val() == OdinData::IpcMessage::MsgValCmdResetStatistics)) {
       replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
       this->resetStatistics(replyMsg);
@@ -265,7 +272,6 @@ void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply)
   std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
   for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
     reply.set_param("plugins/names[]", iter->first);
-    iter->second->version(reply);
     iter->second->status(reply);
     // Read error level
     std::vector<std::string> plugin_errors = iter->second->get_errors();
@@ -276,13 +282,32 @@ void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply)
     reply.set_param("error[]", *error_iter);
   }
 
-  // Populate the reply with version information for the core application
-  reply.set_param("version/major", ODIN_DATA_VERSION_MAJOR);
-  reply.set_param("version/minor", ODIN_DATA_VERSION_MINOR);
-  reply.set_param("version/patch", ODIN_DATA_VERSION_PATCH);
-  reply.set_param("version/short", std::string(ODIN_DATA_VERSION_STR_SHORT));
-  reply.set_param("version/full", std::string(ODIN_DATA_VERSION_STR));
+}
+
+/** Provide version information to requesting clients.
+ *
+ * This is called in response to a version request from a connected client. The reply to the
+ * request is populated with version information from application and all the
+ * plugins currently loaded.
+ *
+ * @param[in,out] reply - response IPC message to be populated with version information
+ */
+void FrameProcessorController::provideVersion(OdinData::IpcMessage& reply)
+{
+
+  // Populate the reply with top-level odin-data application version information
+  reply.set_param("version/odin-data/major", ODIN_DATA_VERSION_MAJOR);
+  reply.set_param("version/odin-data/minor", ODIN_DATA_VERSION_MINOR);
+  reply.set_param("version/odin-data/patch", ODIN_DATA_VERSION_PATCH);
+  reply.set_param("version/odin-data/short", std::string(ODIN_DATA_VERSION_STR_SHORT));
+  reply.set_param("version/odin-data/full", std::string(ODIN_DATA_VERSION_STR));
  
+  // Loop over plugins, list version information from each
+  std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
+  for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
+    iter->second->version(reply);
+  }
+
 }
 
 /**

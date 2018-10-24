@@ -149,11 +149,11 @@ void FrameProcessorPlugin::status(OdinData::IpcMessage& status)
  */
 void FrameProcessorPlugin::version(OdinData::IpcMessage& status)
 {
-  status.set_param(get_name() + "/version/major", get_version_major());
-  status.set_param(get_name() + "/version/minor", get_version_minor());
-  status.set_param(get_name() + "/version/patch", get_version_patch());
-  status.set_param(get_name() + "/version/short", get_version_short());
-  status.set_param(get_name() + "/version/full", get_version_long());
+  status.set_param("version/" + get_name() + "/major", get_version_major());
+  status.set_param("version/" + get_name() + "/minor", get_version_minor());
+  status.set_param("version/" + get_name() + "/patch", get_version_patch());
+  status.set_param("version/" + get_name() + "/short", get_version_short());
+  status.set_param("version/" + get_name() + "/full", get_version_long());
 }
 
 /**
