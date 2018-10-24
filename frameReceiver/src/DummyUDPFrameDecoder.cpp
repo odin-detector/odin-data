@@ -11,7 +11,8 @@ using namespace FrameReceiver;
 
 DummyUDPFrameDecoder::DummyUDPFrameDecoder() :
     FrameDecoderUDP(),
-    udp_packets_per_frame_(DummyUdpFrameDecoderDefaults::default_udp_packets_per_frame)
+    udp_packets_per_frame_(DummyUdpFrameDecoderDefaults::default_udp_packets_per_frame),
+    status_get_count_(0)
 {
 
 }
@@ -43,5 +44,14 @@ FrameDecoder::FrameReceiveState DummyUDPFrameDecoder::process_packet(size_t byte
 void DummyUDPFrameDecoder::get_status(const std::string param_prefix,
     OdinData::IpcMessage& status_msg)
 {
+  status_get_count_++;
   status_msg.set_param(param_prefix + "name", std::string("DummyUDPFrameDecoder"));
+  status_msg.set_param(param_prefix + "status_get_count", status_get_count_);
+}
+
+void DummyUDPFrameDecoder::reset_statistics()
+{
+  FrameDecoderUDP::reset_statistics();
+  LOG4CXX_DEBUG_LEVEL(1, logger_, "DummyUDPFrameDecoder resetting statistics");
+  status_get_count_ = 0;
 }

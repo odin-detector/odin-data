@@ -33,6 +33,7 @@ public:
   std::string get_name();
   void set_error(const std::string& msg);
   void clear_errors();
+  virtual bool reset_statistics();
   std::vector<std::string> get_errors();
   virtual void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   virtual void requestConfiguration(OdinData::IpcMessage& reply);

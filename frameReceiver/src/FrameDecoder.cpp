@@ -174,3 +174,15 @@ void FrameDecoder::drop_all_buffers(void)
   }
 }
 
+//! Reset frame decoder statistics.
+//!
+//! This method resets the frame decoder statistics. In this base class this
+//! is limited to setting the timed-out frames count to zero. Dervied decoder classes
+//! which override this method should ensure the base class version is explicitly called.
+//!
+void FrameDecoder::reset_statistics(void)
+{
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Resetting frame decoder statistics");
+    frames_timedout_ = 0;
+}
+

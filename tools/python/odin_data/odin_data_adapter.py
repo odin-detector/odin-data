@@ -24,6 +24,8 @@ class OdinDataAdapter(ApiAdapter):
     ERROR_FAILED_GET = "Unable to successfully complete the GET request"
     ERROR_PUT_MISMATCH = "The size of parameter array does not match the number of clients"
 
+    SUPPORTED_COMMANDS = ['reset_statistics']
+    
     def __init__(self, **kwargs):
         """
         Initialise the OdinDataAdapter object
@@ -183,7 +185,7 @@ class OdinDataAdapter(ApiAdapter):
         request_command = path.strip('/')
 
         try:
-            # Request should start with config/
+            # Request should start with either config/ or command/
             if request_command.startswith("config/"):
                 request_command = remove_prefix(request_command, "config/")  # Take the rest of the URI
 
@@ -207,11 +209,50 @@ class OdinDataAdapter(ApiAdapter):
                         self._config_params[request_command] = parameters
                     logging.debug("Stored config items: %s", self._config_params)
                 response, status_code = self.process_configuration(request_command, parameters)
+
+            elif request_command.startswith("command/"):
+                request_command = remove_prefix(request_command, "command/")  # Take the rest of the URI
+
+                client_index, uri_items = self.parse_uri(request_command)
+                # Check that the command is supported
+                # For a command the uri_items object should always be length 1, the command
+                if len(uri_items) > 1:
+                    logging.debug(OdinDataAdapter.ERROR_FAILED_PUT)
+                    status_code = 503
+                    response['error'] = 'Invalid URI for command: {}'.format(request_command)
+                else:
+                    command = uri_items[0]
+                    if command in self.SUPPORTED_COMMANDS:
+                        # Create the IPC message and send to all clients
+                        response, status_code = self.send_command_to_clients(command, client_index)
+                    else:
+                        logging.debug(OdinDataAdapter.ERROR_FAILED_PUT)
+                        status_code = 503
+                        response['error'] = 'Invalid command requested: {}'.format(command)
+
         except Exception as ex:
             self.set_error(str(ex))
             raise
 
         return ApiAdapterResponse(response, status_code=status_code)
+
+    def parse_uri(self, request_command):
+        # Split the request_command into a list
+        uri_items = request_command.split('/')
+
+        client_index = -1
+        # Check to see if the URI finishes with an index
+        try:
+            index = int(uri_items[-1])
+            if index >= 0:
+                # This is a valid index so remove the value from the URI
+                uri_items = uri_items[:-1]
+                # Set the client index for submitting config to
+                client_index = index
+        except ValueError:
+            # This is OK, there is simply no index provided
+            pass
+        return client_index, uri_items
 
     def process_configuration(self, request_command, parameters):
         status_code = 200
@@ -331,6 +372,24 @@ class OdinDataAdapter(ApiAdapter):
         logging.debug(response)
 
         return ApiAdapterResponse(response, status_code=status_code)
+
+    def send_command_to_clients(self, command, client_index=-1):
+        status_code = 200
+        response = {}
+        try:
+            if client_index == -1:
+                # We are sending the value to all clients
+                for client in self._clients:
+                    client.send_request(command)
+            else:
+                # A client index has been specified
+                self._clients[client_index].send_request(command)
+        except Exception as err:
+            logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
+            logging.error("Error: %s", err)
+            status_code = 503
+            response = {'error': OdinDataAdapter.ERROR_FAILED_TO_SEND}
+        return response, status_code
 
     def send_to_clients(self, request_command, parameters, client_index=-1):
         status_code = 200
