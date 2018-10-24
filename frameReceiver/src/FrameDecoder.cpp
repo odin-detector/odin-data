@@ -182,11 +182,11 @@ void FrameDecoder::drop_all_buffers(void)
 //!
 void FrameDecoder::version(const std::string param_prefix, OdinData::IpcMessage& status)
 {
-  status.set_param(param_prefix + "version/major", get_version_major());
-  status.set_param(param_prefix + "version/minor", get_version_minor());
-  status.set_param(param_prefix + "version/patch", get_version_patch());
-  status.set_param(param_prefix + "version/short", get_version_short());
-  status.set_param(param_prefix + "version/full", get_version_long());
+  status.set_param(param_prefix + "major", get_version_major());
+  status.set_param(param_prefix + "minor", get_version_minor());
+  status.set_param(param_prefix + "patch", get_version_patch());
+  status.set_param(param_prefix + "short", get_version_short());
+  status.set_param(param_prefix + "full", get_version_long());
 }
 
 //! Reset frame decoder statistics.

@@ -81,6 +81,7 @@ namespace FrameReceiver
     void notify_buffer_config(const bool deferred=false);
     void store_rx_thread_status(OdinData::IpcMessage& rx_status_msg);
     void get_status(OdinData::IpcMessage& status_reply);
+    void get_version(OdinData::IpcMessage& version_reply);
     void reset_statistics(OdinData::IpcMessage& reset_reply);
     void request_configuration(OdinData::IpcMessage& config_reply);
 
