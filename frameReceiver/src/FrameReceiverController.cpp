@@ -34,6 +34,7 @@ FrameReceiverController::FrameReceiverController (FrameReceiverConfig& config) :
     buffer_manager_configured_(false),
     rx_thread_configured_(false),
     configuration_complete_(false),
+    ipc_context_(IpcContext::Instance(config.io_threads_)),
     rx_channel_(ZMQ_ROUTER),
     ctrl_channel_(ZMQ_ROUTER),
     frame_ready_channel_(ZMQ_PUB),
@@ -86,6 +87,11 @@ void FrameReceiverController::configure(OdinData::IpcMessage& config_msg,
   config_reply.set_msg_val(config_msg.get_msg_val());
 
   try {
+    if (config_msg.has_param(CONFIG_DEBUG)) {
+      unsigned int debug_level = config_msg.get_param<unsigned int>(CONFIG_DEBUG);
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Debug level set to  " << debug_level);
+      set_debug_level(debug_level);
+    }
 
     // Configure IPC channels
     this->configure_ipc_channels(config_msg);
@@ -937,8 +943,8 @@ void FrameReceiverController::handle_frame_release_channel(void)
 //!
 //! This method precharges all the buffers available in the shared buffer manager onto the
 //! empty buffer queue in the receiver thread. This allows the receiver thread to obtain a pool
-//! of empty buffers at startup, and is done by sending frame release notificaitons for all buffers
-//! over the RX thread channel.
+//! of empty buffers at startup, and is done by sending a buffer precharge notification over the
+//! RX thread channel.
 //!
 void FrameReceiverController::precharge_buffers(void)
 {
@@ -946,14 +952,10 @@ void FrameReceiverController::precharge_buffers(void)
   // Only pre-charge buffers if a buffer manager and RX thread are configured
   if (buffer_manager_ && rx_thread_)
   {
-
-    // Loop over all buffers in the buffer manager and send a frame release notification for each
-    for (int buf = 0; buf < buffer_manager_->get_num_buffers(); buf++)
-    {
-      IpcMessage buf_msg(IpcMessage::MsgTypeNotify, IpcMessage::MsgValNotifyFrameRelease);
-      buf_msg.set_param<int>("buffer_id", buf);
-      rx_channel_.send(buf_msg.encode(), 0, rx_thread_identity_);
-    }
+    IpcMessage precharge_msg(IpcMessage::MsgTypeNotify, IpcMessage::MsgValNotifyBufferPrecharge);
+    precharge_msg.set_param<int>("start_buffer_id", 0);
+    precharge_msg.set_param<int>("num_buffers", buffer_manager_->get_num_buffers());
+    rx_channel_.send(precharge_msg.encode(), 0, rx_thread_identity_);
   }
   else
   {

@@ -23,9 +23,9 @@ class IpcTornadoClient(object):
         self.ctrl_endpoint = self.ENDPOINT_TEMPLATE.format(IP=ip_address, PORT=port)
         self.logger.debug("Connecting to client at %s", self.ctrl_endpoint)
         self.ctrl_channel = IpcTornadoChannel(IpcTornadoChannel.CHANNEL_TYPE_DEALER)
+        self.ctrl_channel.register_monitor(self._monitor_callback)
         self.ctrl_channel.connect(self.ctrl_endpoint)
         self.ctrl_channel.register_callback(self._callback)
-        self.ctrl_channel.register_monitor(self._monitor_callback)
         self.message_id = 0
 
         self._lock = RLock()
@@ -58,10 +58,10 @@ class IpcTornadoClient(object):
 
     def _update_status(self, status_msg):
         params = status_msg['params']
-        connected = self._parameters['status']['connected']
         params['timestamp'] = status_msg['timestamp']
         self._parameters['status'] = params
-        self._parameters['status']['connected'] = connected
+        # If we have received a status response then we must be connected
+        self._parameters['status']['connected'] = True
 
     def connected(self):
         return self._parameters['status']['connected']

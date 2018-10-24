@@ -8,12 +8,16 @@
 #include <stdio.h>
 
 #include "FrameProcessorController.h"
+#include "DebugLevelLogger.h"
 
 namespace FrameProcessor
 {
+
 const std::string FrameProcessorController::META_RX_INTERFACE        = "inproc://meta_rx";
 
 const std::string FrameProcessorController::CONFIG_SHUTDOWN          = "shutdown";
+
+const std::string FrameProcessorController::CONFIG_DEBUG             = "debug_level";
 
 const std::string FrameProcessorController::CONFIG_FR_RELEASE        = "fr_release_cnxn";
 const std::string FrameProcessorController::CONFIG_FR_READY          = "fr_ready_cnxn";
@@ -38,12 +42,14 @@ const int FrameProcessorController::META_TX_HWM = 10000;
  * The constructor sets up logging used within the class, and starts the
  * IpcReactor thread.
  */
-FrameProcessorController::FrameProcessorController() :
+FrameProcessorController::FrameProcessorController(unsigned int num_io_threads) :
     logger_(log4cxx::Logger::getLogger("FP.FrameProcessorController")),
     runThread_(true),
     threadRunning_(false),
     threadInitError_(false),
-    pluginShutdownSent(false),
+    pluginShutdownSent_(false),
+    shutdown_(false),
+    ipc_context_(OdinData::IpcContext::Instance(num_io_threads)),
     ctrlThread_(boost::bind(&FrameProcessorController::runIpcService, this)),
     ctrlChannelEndpoint_(""),
     ctrlChannel_(ZMQ_ROUTER),
@@ -54,7 +60,7 @@ FrameProcessorController::FrameProcessorController() :
     frReleaseEndpoint_("")
 {
   OdinData::configure_logging_mdc(OdinData::app_path.c_str());
-  LOG4CXX_DEBUG(logger_, "Constructing FrameProcessorController");
+  LOG4CXX_DEBUG_LEVEL(1, logger_, "Constructing FrameProcessorController");
 
   totalFrames = 0;
 
@@ -79,7 +85,8 @@ FrameProcessorController::FrameProcessorController() :
  */
 FrameProcessorController::~FrameProcessorController()
 {
-  // TODO Auto-generated destructor stub
+  // Make sure we shutdown cleanly if an exception was thrown
+  shutdown();
 }
 
 /** Handle an incoming configuration message.
@@ -97,7 +104,7 @@ void FrameProcessorController::handleCtrlChannel()
   std::string ctrlMsgEncoded = ctrlChannel_.recv(&clientIdentity);
   unsigned int msg_id = 0;
   
-  LOG4CXX_DEBUG(logger_, "Control thread called with message: " << ctrlMsgEncoded);
+  LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread called with message: " << ctrlMsgEncoded);
 
   // Parse and handle the message
   try {
@@ -111,21 +118,21 @@ void FrameProcessorController::handleCtrlChannel()
         (ctrlMsg.get_msg_val()  == OdinData::IpcMessage::MsgValCmdConfigure)) {
       replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
       this->configure(ctrlMsg, replyMsg);
-      LOG4CXX_DEBUG(logger_, "Control thread reply message (configure): "
+      LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (configure): "
                              << replyMsg.encode());
     }
     else if ((ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) &&
              (ctrlMsg.get_msg_val() == OdinData::IpcMessage::MsgValCmdRequestConfiguration)) {
         replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
         this->requestConfiguration(replyMsg);
-        LOG4CXX_DEBUG(logger_, "Control thread reply message (request configuration): "
+        LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (request configuration): "
                                << replyMsg.encode());
     }
     else if ((ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) &&
              (ctrlMsg.get_msg_val() == OdinData::IpcMessage::MsgValCmdStatus)) {
       replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
       this->provideStatus(replyMsg);
-      LOG4CXX_DEBUG(logger_, "Control thread reply message (status): "
+      LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (status): "
                              << replyMsg.encode());
     }
     else {
@@ -214,24 +221,38 @@ void FrameProcessorController::callback(boost::shared_ptr<Frame> frame) {
   // If frame is a master frame, or all frames are included (no master frames), increment frame count
   if (masterFrame == "" || frame->get_dataset_name() == masterFrame) {
     totalFrames++;
-    LOG4CXX_DEBUG(logger_, "Frame " << totalFrames << " complete.");
+    LOG4CXX_DEBUG_LEVEL(2, logger_, "Frame " << totalFrames << " complete.");
   }
 
   if (totalFrames == datasetSize) {
-    LOG4CXX_DEBUG(logger_, "Dataset complete. Shutting down.");
+    LOG4CXX_DEBUG_LEVEL(2, logger_, "Dataset complete. Shutting down.");
     // Set exit condition so main thread can continue and shutdown
     exitCondition_.notify_all();
     // Wait until the main thread has sent stop commands to the plugins
-    LOG4CXX_DEBUG(logger_, "Exit condition set. Waiting for main thread to stop plugins.");
-    while(!pluginShutdownSent);
+    LOG4CXX_DEBUG_LEVEL(2, logger_, "Exit condition set. Waiting for main thread to stop plugins.");
+    while(!pluginShutdownSent_);
     // Return so they can shutdown
   }
 }
 
+/** Provide status information to requesting clients.
+ *
+ * This is called in response to a status request from a connected client. The reply to the
+ * request is populated with status information from the shared memory controller and all the
+ * plugins currently loaded, and with any error messages currently stored.
+ *
+ * @param[in,out] reply - response IPC message to be populated with status parameters
+ */
 void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply)
 {
   // Error messages
   std::vector<std::string> error_messages;
+
+  // Request status information from the shared memory controller
+  if (sharedMemController_) {
+    sharedMemController_->status(reply);
+  }
+
   // Loop over plugins, list names and request status from each
   std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
   for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
@@ -268,12 +289,12 @@ void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply)
  */
 void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
-  LOG4CXX_DEBUG(logger_, "Configuration submitted: " << config.encode());
+  LOG4CXX_DEBUG_LEVEL(1, logger_, "Configuration submitted: " << config.encode());
 
   // Check if we are being given the master frame specifier
   if (config.has_param("hdf/master")) {
     masterFrame = config.get_param<std::string>("hdf/master");
-    LOG4CXX_DEBUG(logger_, "Master frame specifier set to: " << masterFrame);
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Master frame specifier set to: " << masterFrame);
   }
 
   // Check if we have been asked to reset any errors
@@ -288,7 +309,14 @@ void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData:
   if (config.has_param("single-shot") && config.get_param<bool>("single-shot") &&
       config.has_param("frames") && config.get_param<unsigned int>("frames") != 0) {
     datasetSize = config.get_param<unsigned int>("frames");
-    LOG4CXX_DEBUG(logger_, "Dataset size: " << datasetSize);
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Dataset size: " << datasetSize);
+  }
+
+  // Check for a debug level change
+  if (config.has_param(FrameProcessorController::CONFIG_DEBUG)) {
+    unsigned int debug_level = config.get_param<unsigned int>(FrameProcessorController::CONFIG_DEBUG);
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Debug level set to  " << debug_level);
+    set_debug_level(debug_level);
   }
 
   // Check if we are being asked to shutdown
@@ -342,7 +370,7 @@ void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData:
  */
 void FrameProcessorController::requestConfiguration(OdinData::IpcMessage& reply)
 {
-  LOG4CXX_DEBUG(logger_, "Request for configuration made");
+  LOG4CXX_DEBUG_LEVEL(3, logger_, "Request for configuration made");
 
   // Add local configuration parameter values to the reply
   reply.set_param(FrameProcessorController::CONFIG_CTRL_ENDPOINT, ctrlChannelEndpoint_);
@@ -517,43 +545,54 @@ void FrameProcessorController::disconnectPlugin(const std::string& index, const 
 
 void FrameProcessorController::run() {
 
+  LOG4CXX_INFO(logger_, "Running frame processor");
+
   // Start worker thread (for IFrameCallback) to monitor frames passed through
   start();
 
+  LOG4CXX_INFO(logger_, "Running FrameProcessor")
+
   // Now wait for the shutdown command from either the control interface or the worker thread
   waitForShutdown();
+  shutdown();
+}
 
-  // Stop all plugin worker threads
-  LOG4CXX_DEBUG(logger_, "Stopping plugin worker threads");
-  std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator it;
-  for (it = plugins_.begin(); it != plugins_.end(); it++) {
-    it->second->stop();
+void FrameProcessorController::shutdown() {
+  if (!shutdown_) {
+    LOG4CXX_INFO(logger_, "Received shutdown command");
+    // Stop all plugin worker threads
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Stopping plugin worker threads");
+    std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator it;
+    for (it = plugins_.begin(); it != plugins_.end(); it++) {
+      it->second->stop();
+    }
+    // Worker thread callback will block caller until pluginShutdownSent_ is set
+    pluginShutdownSent_ = true;
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Plugin shutdown sent. Removing plugins once stopped.");
+    // Wait until each plugin has stopped and erase it from our map
+    for (it = plugins_.begin(); it != plugins_.end(); it++) {
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Removing " << it->first);
+      while(it->second->isWorking());
+      plugins_.erase(it);
+    }
+
+    // Stop worker thread (for IFrameCallback) and reactor
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Stopping FrameProcessorController worker thread and IPCReactor");
+    stop();
+    reactor_->stop();
+
+    // Close control IPC channel
+    closeControlInterface();
+    // Close FrameReceiver interface IPC channels
+    closeFrameReceiverInterface();
+
+    // Destroy any allocated DataBlocks
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Tearing down DataBlockPool");
+    DataBlockPool::tearDownClass();
+
+    shutdown_ = true;
+    LOG4CXX_INFO(logger_, "Shutting Down");
   }
-  // Worker thread callback will block caller until pluginShutdownSent is set
-  pluginShutdownSent = true;
-  LOG4CXX_DEBUG(logger_, "Plugin shutdown sent. Removing plugins once stopped.");
-  // Wait until the each plugin has stopped and erase it from our map
-  for (it = plugins_.begin(); it != plugins_.end(); it++) {
-    LOG4CXX_DEBUG(logger_, "Removing " << it->first);
-    while(it->second->isWorking());
-    plugins_.erase(it);
-  }
-
-  // Stop worker thread (for IFrameCallback) and reactor
-  LOG4CXX_DEBUG(logger_, "Stopping FrameProcessorController worker thread and IPCReactor");
-  stop();
-  reactor_->stop();
-
-  // Close control IPC channel
-  closeControlInterface();
-  // Close FrameReceiver interface IPC channels
-  closeFrameReceiverInterface();
-
-  // Destroy any allocated DataBlocks
-  LOG4CXX_DEBUG(logger_, "Tearing down DataBlockPool");
-  DataBlockPool::tearDownClass();
-
-  LOG4CXX_DEBUG(logger_, "Shutting Down.");
 }
 
 /**
@@ -579,7 +618,7 @@ void FrameProcessorController::waitForShutdown()
 void FrameProcessorController::setupFrameReceiverInterface(const std::string& frPublisherString,
                                                            const std::string& frSubscriberString)
 {
-  LOG4CXX_DEBUG(logger_, "Shared Memory Config: Publisher=" << frPublisherString << " Subscriber=" << frSubscriberString);
+  LOG4CXX_DEBUG_LEVEL(1, logger_, "Shared Memory Config: Publisher=" << frPublisherString << " Subscriber=" << frSubscriberString);
 
   // Only re-construct the shared memory object if either of the endpoints has been changed
   if (frPublisherString != frReleaseEndpoint_ || frSubscriberString != frReadyEndpoint_){
@@ -608,7 +647,7 @@ void FrameProcessorController::setupFrameReceiverInterface(const std::string& fr
  */
 void FrameProcessorController::closeFrameReceiverInterface()
 {
-  LOG4CXX_DEBUG(logger_, "Closing FrameReceiver interface.");
+  LOG4CXX_DEBUG_LEVEL(1, logger_, "Closing FrameReceiver interface.");
   try
   {
     // Release the current shared memory controller if one exists
@@ -633,7 +672,7 @@ void FrameProcessorController::closeFrameReceiverInterface()
 void FrameProcessorController::setupControlInterface(const std::string& ctrlEndpointString)
 {
   try {
-    LOG4CXX_DEBUG(logger_, "Connecting control channel to endpoint: " << ctrlEndpointString);
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Connecting control channel to endpoint: " << ctrlEndpointString);
     ctrlChannel_.bind(ctrlEndpointString.c_str());
     ctrlChannelEndpoint_ = ctrlEndpointString;
   }
@@ -653,7 +692,7 @@ void FrameProcessorController::setupControlInterface(const std::string& ctrlEndp
 void FrameProcessorController::closeControlInterface()
 {
   try {
-    LOG4CXX_DEBUG(logger_, "Closing control endpoint socket.");
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Closing control endpoint socket.");
     ctrlThread_.join();
     reactor_->remove_channel(ctrlChannel_);
     ctrlChannel_.close();
@@ -667,7 +706,7 @@ void FrameProcessorController::closeControlInterface()
 void FrameProcessorController::setupMetaRxInterface()
 {
   try {
-    LOG4CXX_DEBUG(logger_, "Connecting meta RX channel to endpoint: " << META_RX_INTERFACE);
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Connecting meta RX channel to endpoint: " << META_RX_INTERFACE);
     metaRxChannel_.bind(META_RX_INTERFACE.c_str());
   }
   catch (zmq::error_t& e) {
@@ -681,7 +720,7 @@ void FrameProcessorController::setupMetaRxInterface()
 void FrameProcessorController::closeMetaRxInterface()
 {
   try {
-    LOG4CXX_DEBUG(logger_, "Closing meta RX endpoint.");
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Closing meta RX endpoint.");
     reactor_->remove_channel(metaRxChannel_);
     metaRxChannel_.close();
   }
@@ -693,7 +732,7 @@ void FrameProcessorController::closeMetaRxInterface()
 void FrameProcessorController::setupMetaTxInterface(const std::string& metaEndpointString)
 {
   try {
-    LOG4CXX_DEBUG(logger_, "Connecting meta TX channel to endpoint: " << metaEndpointString);
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Connecting meta TX channel to endpoint: " << metaEndpointString);
     int sndHwmSet = META_TX_HWM;
     metaTxChannel_.setsockopt(ZMQ_SNDHWM, &sndHwmSet, sizeof (sndHwmSet));
     metaTxChannel_.bind(metaEndpointString.c_str());
@@ -707,7 +746,7 @@ void FrameProcessorController::setupMetaTxInterface(const std::string& metaEndpo
 void FrameProcessorController::closeMetaTxInterface()
 {
   try {
-    LOG4CXX_DEBUG(logger_, "Closing meta TX endpoint.");
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Closing meta TX endpoint.");
     metaTxChannel_.close();
   }
   catch (zmq::error_t& e) {
@@ -725,7 +764,7 @@ void FrameProcessorController::runIpcService(void)
   // Configure logging for this thread
   OdinData::configure_logging_mdc(OdinData::app_path.c_str());
 
-  LOG4CXX_DEBUG(logger_, "Running IPC thread service");
+  LOG4CXX_DEBUG_LEVEL(1, logger_, "Running IPC thread service");
 
   // Create the reactor
   reactor_ = boost::shared_ptr<OdinData::IpcReactor>(new OdinData::IpcReactor());
@@ -740,7 +779,7 @@ void FrameProcessorController::runIpcService(void)
   reactor_->run();
 
   // Cleanup - remove channels, sockets and timers from the reactor and close the receive socket
-  LOG4CXX_DEBUG(logger_, "Terminating IPC thread service");
+  LOG4CXX_DEBUG_LEVEL(1, logger_, "Terminating IPC thread service");
 }
 
 /** Tick timer task called by IpcReactor.
@@ -751,7 +790,7 @@ void FrameProcessorController::tickTimer(void)
 {
   if (!runThread_)
   {
-    LOG4CXX_DEBUG(logger_, "IPC thread terminate detected in timer");
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "IPC thread terminate detected in timer");
     reactor_->stop();
   }
 }

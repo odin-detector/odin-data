@@ -43,12 +43,14 @@ namespace FrameReceiver
   const std::string CONFIG_FRAME_COUNT = "frame_count";
   const std::string CONFIG_ENABLE_PACKET_LOGGING = "enable_packet_logging";
   const std::string CONFIG_FORCE_RECONFIG = "force_reconfig";
+  const std::string CONFIG_DEBUG = "debug_level";
 
 class FrameReceiverConfig
 {
 public:
 
   FrameReceiverConfig() :
+  
       max_buffer_mem_(Defaults::default_max_buffer_mem),
       decoder_path_(Defaults::default_decoder_path),
       decoder_type_(Defaults::default_decoder_type),
@@ -56,6 +58,7 @@ public:
       rx_type_(Defaults::default_rx_type),
       rx_address_(Defaults::default_rx_address),
       rx_recv_buffer_size_(Defaults::default_rx_recv_buffer_size),
+      io_threads_(Defaults::default_io_threads),
       rx_channel_endpoint_(Defaults::default_rx_chan_endpoint),
       ctrl_channel_endpoint_(Defaults::default_ctrl_chan_endpoint),
       frame_ready_endpoint_(Defaults::default_frame_ready_endpoint),
@@ -186,6 +189,7 @@ private:
   std::vector<uint16_t> rx_ports_;               //!< Port(s) to receive frame data on
   std::string           rx_address_;             //!< IP address to receive frame data on
   int                   rx_recv_buffer_size_;    //!< Receive socket buffer size
+  unsigned int          io_threads_;             //!< Number of IO threads for IPC channels
   std::string           rx_channel_endpoint_;    //!< IPC channel endpoint for RX thread communication
   std::string           ctrl_channel_endpoint_;  //!< IPC channel endpoint for control communication with other processes
   std::string           frame_ready_endpoint_;   //!< IPC channel endpoint for transmitting frame ready notifications to other processes

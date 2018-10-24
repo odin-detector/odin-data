@@ -267,6 +267,27 @@ void FrameReceiverRxThread::handle_rx_channel(void)
 
         switch (msg_val)
         {
+        case IpcMessage::MsgValNotifyBufferPrecharge:
+          {
+            int start_buffer_id = rx_msg.get_param<int>("start_buffer_id", -1);
+            int num_buffers = rx_msg.get_param<int>("num_buffers", -1);
+
+            if ((start_buffer_id == -1) || (num_buffers == -1))
+            {
+              LOG4CXX_ERROR(logger_, "RX thread received precharge notification with missing buffer parameters");
+            }
+            else
+            {
+              for (int buffer_id = start_buffer_id; buffer_id < start_buffer_id + num_buffers; buffer_id++)
+              {
+                frame_decoder_->push_empty_buffer(buffer_id);
+              }
+              LOG4CXX_DEBUG_LEVEL(1, logger_, "Precharged " << num_buffers << " empty buffers onto queue, "
+                << "length is now " << frame_decoder_->get_num_empty_buffers());
+            }
+          }
+          break;
+
         case IpcMessage::MsgValNotifyFrameRelease:
           {
             

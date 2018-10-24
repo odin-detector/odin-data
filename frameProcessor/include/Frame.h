@@ -21,6 +21,7 @@
 #include "DataBlockPool.h"
 #include "IpcChannel.h"
 #include "IpcMessage.h"
+#include "FrameProcessorDefinitions.h"
 
 /**
  *  Shared Buffer (IPC) Header
@@ -34,6 +35,28 @@ typedef struct
   /** The size of each buffer in the shared memory block */
   size_t buffer_size;
 } Header;
+
+
+/** Frame Parameter Value */
+union ParameterValue
+{
+    uint8_t i8_val;
+    uint16_t i16_val;
+    uint32_t i32_val;
+    uint64_t i64_val;
+    float float_val;
+};
+
+/**
+ *  Frame Parameter
+ */
+typedef struct
+{
+  /** The value of this parameter */
+  ParameterValue value;
+  /** The type of this parameter */
+  FrameProcessor::DataType type;
+} Parameter;
 
 typedef unsigned long long dimsize_t;
 typedef std::vector<dimsize_t> dimensions_t;
@@ -95,6 +118,24 @@ public:
    */
   unsigned long long get_frame_number() const { return this->frameNumber_; }
 
+  /** Set the frame offset for this Frame.
+   *
+   * This method sets the frame offset that is used to calculate
+   * the position in the data file this frame belongs.
+   *
+   * \param[in] number - the frame offset.
+   */
+  void set_frame_offset(int64_t offset) { this->frameOffset_ = offset; }
+
+  /** Get the frame offset for this Frame.
+   *
+   * This method returns the frame offset that is used to calculate
+   * the position in the data file this frame belongs.
+   *
+   * \return the frame offset.
+   */
+  int64_t get_frame_offset() const { return this->frameOffset_; }
+
   /** Get the acquisition id for this Frame
    *
    * This method gets the id of the parent acquisition of this frame
@@ -117,8 +158,18 @@ public:
   dimensions_t get_dimensions() const;
   int get_compression() const;
   int get_data_type() const;
-  void set_parameter(const std::string& index, size_t parameter);
-  size_t get_parameter(const std::string& index) const;
+  void set_parameter(const std::string& index, uint8_t value);
+  void set_parameter(const std::string& index, uint16_t value);
+  void set_parameter(const std::string& index, uint32_t value);
+  void set_parameter(const std::string& index, uint64_t value);
+  void set_parameter(const std::string& index, float value);
+  std::map<std::string, Parameter> & get_parameters();
+  Parameter get_parameter(const std::string& index) const;
+  uint8_t get_i8_parameter(const std::string& index) const;
+  uint16_t get_i16_parameter(const std::string& index) const;
+  uint32_t get_i32_parameter(const std::string& index) const;
+  uint64_t get_i64_parameter(const std::string& index) const;
+  float get_float_parameter(const std::string& index) const;
   bool has_parameter(const std::string& index);
   void set_compression(int compression);
   void set_data_type(int data_type);
@@ -140,6 +191,8 @@ private:
   size_t bytes_per_pixel;
   /** Frame number */
   unsigned long long frameNumber_;
+  /** Frame offset */
+  int64_t frameOffset_;
   /** Vector of dimensions */
   dimensions_t dimensions_;
   /** Compression type of raw data */
@@ -147,7 +200,7 @@ private:
   /** Data type of raw data */
   int data_type_;
   /** General parameter map */
-  std::map<std::string, size_t> parameters_;
+  std::map<std::string, Parameter> parameters_;
   /** Pointer to raw data block */
   boost::shared_ptr<DataBlock> raw_;
   /** Pointer to shared memory raw block **/

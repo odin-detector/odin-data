@@ -23,8 +23,6 @@ using namespace FrameReceiver;
 
 boost::shared_ptr<FrameReceiverController> FrameReceiverApp::controller_;
 
-IMPLEMENT_DEBUG_LEVEL;
-
 static bool has_suffix(const std::string &str, const std::string &suffix)
 {
   return str.size() >= suffix.size() &&
@@ -41,11 +39,6 @@ FrameReceiverApp::FrameReceiverApp(void) : json_config_file_("")
   // Retrieve a logger instance
   OdinData::configure_logging_mdc(OdinData::app_path.c_str());
   logger_ = Logger::getLogger("FR.App");
-
-  // Instantiate a controller
-  controller_ = boost::shared_ptr<FrameReceiverController>(
-      new FrameReceiverController(config_)
-  );
 
 }
 
@@ -91,7 +84,7 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
     // and in the configuration file
     po::options_description config("Configuration options");
     config.add_options()
-        ("debug,d",      po::value<unsigned int>()->default_value(debug_level),
+        ("debug-level,d",      po::value<unsigned int>()->default_value(debug_level),
         "Set the debug level")
         ("node,n",       po::value<unsigned int>()->default_value(FrameReceiver::Defaults::default_node),
         "Set the frame receiver node ID")
@@ -120,6 +113,8 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
         "Enable logging of packet diagnostics to file")
         ("rxbuffer",     po::value<unsigned int>()->default_value(FrameReceiver::Defaults::default_rx_recv_buffer_size),
         "Set UDP receive buffer size")
+        ("iothreads",    po::value<unsigned int>()->default_value(FrameReceiver::Defaults::default_io_threads),
+        "Set number of IPC channel IO threads")
         ("ctrl",         po::value<std::string>()->default_value(FrameReceiver::Defaults::default_ctrl_chan_endpoint),
         "Set the control channel endpoint")
         ("ready",        po::value<std::string>()->default_value(FrameReceiver::Defaults::default_frame_ready_endpoint),
@@ -156,9 +151,9 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
       return 1;
     }
 
-    if (vm.count("debug"))
+    if (vm.count("debug-level"))
     {
-      set_debug_level(vm["debug"].as<unsigned int>());
+      set_debug_level(vm["debug-level"].as<unsigned int>());
       LOG4CXX_DEBUG_LEVEL(1, logger_, "Debug level set to  " << debug_level);
     }
     // If the command line config option was given, parse the specified configuration
@@ -269,6 +264,12 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
       LOG4CXX_DEBUG_LEVEL(1, logger_, "RX receive buffer size is " << config_.rx_recv_buffer_size_);
     }
 
+    if (vm.count("iothreads"))
+    {
+      config_.io_threads_ = vm["iothreads"].as<unsigned int>();
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting number of IO threads to " << config_.io_threads_);
+    }
+
     if (vm.count("ctrl"))
     {
       config_.ctrl_channel_endpoint_ = vm["ctrl"].as<std::string>();
@@ -324,6 +325,11 @@ void FrameReceiverApp::run(void)
 {
 
   LOG4CXX_INFO(logger_,  "Running frame receiver");
+
+    // Instantiate a controller
+  controller_ = boost::shared_ptr<FrameReceiverController>(
+      new FrameReceiverController(config_)
+  );
 
   try {
 

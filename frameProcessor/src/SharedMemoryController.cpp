@@ -6,9 +6,12 @@
  */
 
 #include <SharedMemoryController.h>
+#include "DebugLevelLogger.h"
 
 namespace FrameProcessor
 {
+
+const std::string SharedMemoryController::SHARED_MEMORY_CONTROLLER_NAME = "shared_memory";
 
 /** Constructor.
  *
@@ -28,7 +31,8 @@ SharedMemoryController::SharedMemoryController(boost::shared_ptr<OdinData::IpcRe
                                                const std::string& txEndPoint) :
     reactor_(reactor),
     rxChannel_(ZMQ_SUB),
-    txChannel_(ZMQ_PUB)
+    txChannel_(ZMQ_PUB),
+    sharedBufferConfigured_(false)
 {
   // Setup logging for the class
   logger_ = Logger::getLogger("FW.SharedMemoryController");
@@ -37,7 +41,7 @@ SharedMemoryController::SharedMemoryController(boost::shared_ptr<OdinData::IpcRe
 
   // Connect the frame ready channel
   try {
-    LOG4CXX_DEBUG(logger_, "Connecting RX Channel to endpoint: " << rxEndPoint);
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Connecting RX Channel to endpoint: " << rxEndPoint);
     rxChannel_.connect(rxEndPoint.c_str());
     rxChannel_.subscribe("");
   }
@@ -53,7 +57,7 @@ SharedMemoryController::SharedMemoryController(boost::shared_ptr<OdinData::IpcRe
 
   // Now connect the frame release response channel
   try {
-    LOG4CXX_DEBUG(logger_, "Connecting TX Channel to endpoint: " << txEndPoint);
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Connecting TX Channel to endpoint: " << txEndPoint);
     txChannel_.connect(txEndPoint.c_str());
   }
   catch (zmq::error_t& e) {
@@ -88,6 +92,10 @@ SharedMemoryController::~SharedMemoryController()
  */
 void SharedMemoryController::setSharedBufferManager(const std::string& shared_buffer_name)
 {
+
+  // Set configured status to false until the new shared buffer manager is initialised
+  sharedBufferConfigured_ = false;
+
   // Reset the shared buffer manager if already existing
   if (sbm_) {
     sbm_.reset();
@@ -98,7 +106,10 @@ void SharedMemoryController::setSharedBufferManager(const std::string& shared_bu
       new OdinData::SharedBufferManager(shared_buffer_name)
   );
 
-  LOG4CXX_DEBUG(logger_, "Initialised shared buffer manager for buffer " << shared_buffer_name);
+  // Set configured status to true
+  sharedBufferConfigured_ = true;
+
+  LOG4CXX_DEBUG_LEVEL(1, logger_, "Initialised shared buffer manager for buffer " << shared_buffer_name);
 }
 
 /** Request the shared buffer configuration information from the upstream frame receiver process
@@ -118,7 +129,7 @@ void SharedMemoryController::requestSharedBufferConfig(const bool deferred)
   }
   else
   {
-    LOG4CXX_DEBUG(logger_, "Requesting shared buffer configuration from frame receiver");
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Requesting shared buffer configuration from frame receiver");
 
     OdinData::IpcMessage config_request(OdinData::IpcMessage::MsgTypeCmd, OdinData::IpcMessage::MsgValCmdBufferConfigRequest);
 
@@ -140,7 +151,7 @@ void SharedMemoryController::handleRxChannel()
   // Receive a message from the main thread channel
   std::string rxMsgEncoded = rxChannel_.recv();
 
-  LOG4CXX_DEBUG(logger_, "RX thread called with message: " << rxMsgEncoded);
+  LOG4CXX_DEBUG_LEVEL(1, logger_, "RX thread called with message: " << rxMsgEncoded);
 
   // Parse and handle the message
   try {
@@ -185,7 +196,7 @@ void SharedMemoryController::handleRxChannel()
       try
       {
         std::string shared_buffer_name = rxMsg.get_param<std::string>("shared_buffer_name");
-        LOG4CXX_DEBUG(logger_, "Shared buffer config notification received for " << shared_buffer_name);
+        LOG4CXX_DEBUG_LEVEL(1, logger_, "Shared buffer config notification received for " << shared_buffer_name);
         this->setSharedBufferManager(shared_buffer_name);
       }
       catch (OdinData::IpcMessageException& e)
@@ -247,6 +258,20 @@ void SharedMemoryController::removeCallback(const std::string& name)
     // Confirm removal
     cb->confirmRemoval("frame_receiver");
   }
+}
+
+/**
+ * Collate status information for the plugin. The status is added to the status IpcMessage object.
+ *
+ * \param[out] status - Reference to an IpcMessage value to store the status.
+ */
+void SharedMemoryController::status(OdinData::IpcMessage& status)
+{
+  // Set status parameters in the status message
+  status.set_param(
+      SharedMemoryController::SHARED_MEMORY_CONTROLLER_NAME + "/configured",
+      sharedBufferConfigured_);
+
 }
 
 } /* namespace FrameProcessor */

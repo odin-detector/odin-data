@@ -34,7 +34,7 @@ void DummyUDPFrameDecoder::init(LoggerPtr& logger, OdinData::IpcMessage& config_
   LOG4CXX_TRACE(logger_, "DummyFrameDecoderUDP init called");
 }
 
-FrameDecoder::FrameReceiveState DummyUDPFrameDecoder::process_packet(size_t bytes_received)
+FrameDecoder::FrameReceiveState DummyUDPFrameDecoder::process_packet(size_t bytes_received, int port, struct sockaddr_in* from_addr)
 {
   LOG4CXX_TRACE(logger_, "DummyFrameDecoderUDP process_packet called");
   return FrameDecoder::FrameReceiveStateComplete;

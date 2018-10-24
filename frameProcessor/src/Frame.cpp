@@ -6,6 +6,7 @@
  */
 
 #include <Frame.h>
+#include "DebugLevelLogger.h"
 
 namespace FrameProcessor
 {
@@ -18,6 +19,7 @@ namespace FrameProcessor
 Frame::Frame(const std::string& index) :
     bytes_per_pixel(0),
     frameNumber_(0),
+    frameOffset_(0),
     shared_raw_(0),
     shared_size_(0),
     shared_memory_(false),
@@ -50,7 +52,7 @@ Frame::~Frame()
                                OdinData::IpcMessage::MsgValNotifyFrameRelease);
     txMsg.set_param("frame", shared_frame_id_);
     txMsg.set_param("buffer_id", shared_id_);
-    LOG4CXX_DEBUG(logger, "Sending response: " << txMsg.encode());
+    LOG4CXX_DEBUG_LEVEL(2, logger, "Sending response: " << txMsg.encode());
 
     // Now publish the release message, to notify the frame receiver that we are
     // finished with that block of shared memory
@@ -195,17 +197,84 @@ int Frame::get_data_type() const
   return data_type_;
 }
 
-/** Set a parameter for this Frame.
+/** Set a uint8_t parameter for this Frame.
  *
  * This method sets a parameter of the Frame. The parameters are
  * stored in a map indexed by a string.
  *
  * \param[in] index - the string index under which to store the parameter.
- * \param[in] parameter - the parameter to store.
+ * \param[in] parameter - the parameter value to store.
  */
-void Frame::set_parameter(const std::string& index, size_t parameter)
+void Frame::set_parameter(const std::string& index, uint8_t value)
 {
-  parameters_[index] = parameter;
+  Parameter param;
+  param.type = raw_8bit;
+  param.value.i8_val = value;
+  parameters_[index] = param;
+}
+
+/** Set a uint16_t parameter for this Frame.
+ *
+ * This method sets a parameter of the Frame. The parameters are
+ * stored in a map indexed by a string.
+ *
+ * \param[in] index - the string index under which to store the parameter.
+ * \param[in] parameter - the parameter value to store.
+ */
+void Frame::set_parameter(const std::string& index, uint16_t value)
+{
+  Parameter param;
+  param.type = raw_16bit;
+  param.value.i16_val = value;
+  parameters_[index] = param;
+}
+
+/** Set a uint32_t parameter for this Frame.
+ *
+ * This method sets a parameter of the Frame. The parameters are
+ * stored in a map indexed by a string.
+ *
+ * \param[in] index - the string index under which to store the parameter.
+ * \param[in] parameter - the parameter value to store.
+ */
+void Frame::set_parameter(const std::string& index, uint32_t value)
+{
+  Parameter param;
+  param.type = raw_32bit;
+  param.value.i32_val = value;
+  parameters_[index] = param;
+}
+
+/** Set a uint64_t parameter for this Frame.
+ *
+ * This method sets a parameter of the Frame. The parameters are
+ * stored in a map indexed by a string.
+ *
+ * \param[in] index - the string index under which to store the parameter.
+ * \param[in] parameter - the parameter value to store.
+ */
+void Frame::set_parameter(const std::string& index, uint64_t value)
+{
+  Parameter param;
+  param.type = raw_64bit;
+  param.value.i64_val = value;
+  parameters_[index] = param;
+}
+
+/** Set a float parameter for this Frame.
+ *
+ * This method sets a parameter of the Frame. The parameters are
+ * stored in a map indexed by a string.
+ *
+ * \param[in] index - the string index under which to store the parameter.
+ * \param[in] parameter - the parameter value to store.
+ */
+void Frame::set_parameter(const std::string& index, float value)
+{
+  Parameter param;
+  param.type = raw_float;
+  param.value.float_val = value;
+  parameters_[index] = param;
 }
 
 /** Set the compression type of the raw data.
@@ -238,9 +307,126 @@ void Frame::set_data_type(int data_type)
  * \param[in] index - the string index of the parameter to return.
  * \return the parameter.
  */
-size_t Frame::get_parameter(const std::string& index) const
+Parameter Frame::get_parameter(const std::string& index) const
 {
-  return parameters_.find(index)->second;
+  std::map<std::string, Parameter>::const_iterator iter = parameters_.find(index);
+  if (iter == parameters_.end())
+  {
+    LOG4CXX_ERROR(logger, "Unable to find parameter: " << index);
+    throw std::runtime_error("Unable to find parameter:");
+  }
+  return iter->second;
+}
+
+/** Return the value of a uint8_t parameter for this Frame.
+ *
+ * This method retrieves a parameter of the Frame. The parameters are
+ * stored in a map indexed by a string.
+ *
+ * \param[in] index - the string index of the parameter to return.
+ * \return the parameter value.
+ */
+uint8_t Frame::get_i8_parameter(const std::string& index) const
+{
+  Parameter param = get_parameter(index);
+  if (param.type != raw_8bit)
+  {
+    LOG4CXX_ERROR(logger, "Parameter: " << index << " has wrong type");
+    throw std::runtime_error("Parameter has wrong type");
+  }
+
+  return param.value.i8_val;
+}
+
+/** Return the value of a uint16_t parameter for this Frame.
+ *
+ * This method retrieves a parameter of the Frame. The parameters are
+ * stored in a map indexed by a string.
+ *
+ * \param[in] index - the string index of the parameter to return.
+ * \return the parameter value.
+ */
+uint16_t Frame::get_i16_parameter(const std::string& index) const
+{
+  Parameter parameter = get_parameter(index);
+  if (parameter.type != raw_16bit)
+  {
+    LOG4CXX_ERROR(logger, "Parameter: " << index << " has wrong type");
+    throw std::runtime_error("Parameter has wrong type");
+  }
+
+  return parameter.value.i16_val;
+}
+
+/** Return the value of a uint32_t parameter for this Frame.
+ *
+ * This method retrieves a parameter of the Frame. The parameters are
+ * stored in a map indexed by a string.
+ *
+ * \param[in] index - the string index of the parameter to return.
+ * \return the parameter value.
+ */
+uint32_t Frame::get_i32_parameter(const std::string& index) const
+{
+  Parameter parameter = get_parameter(index);
+  if (parameter.type != raw_32bit)
+  {
+    LOG4CXX_ERROR(logger, "Parameter: " << index << " has wrong type");
+    throw std::runtime_error("Parameter has wrong type");
+  }
+
+  return parameter.value.i32_val;
+}
+
+/** Return the value of a uint64_t parameter for this Frame.
+ *
+ * This method retrieves a parameter of the Frame. The parameters are
+ * stored in a map indexed by a string.
+ *
+ * \param[in] index - the string index of the parameter to return.
+ * \return the parameter value.
+ */
+uint64_t Frame::get_i64_parameter(const std::string& index) const
+{
+  Parameter parameter = get_parameter(index);
+  if (parameter.type != raw_64bit)
+  {
+    LOG4CXX_ERROR(logger, "Parameter: " << index << " has wrong type");
+    throw std::runtime_error("Parameter has wrong type");
+  }
+
+  return parameter.value.i64_val;
+}
+
+/** Return the value of a float parameter for this Frame.
+ *
+ * This method retrieves a parameter of the Frame. The parameters are
+ * stored in a map indexed by a string.
+ *
+ * \param[in] index - the string index of the parameter to return.
+ * \return the parameter value.
+ */
+float Frame::get_float_parameter(const std::string& index) const
+{
+  Parameter parameter = get_parameter(index);
+  if (parameter.type != raw_float)
+  {
+    LOG4CXX_ERROR(logger, "Parameter: " << index << " has wrong type");
+    throw std::runtime_error("Parameter has wrong type");
+  }
+
+  return parameter.value.float_val;
+}
+
+/** Return the parameters for this Frame.
+ *
+ * This method retrieves the map of Parameters
+ *
+ * \return the parameters.
+ */
+std::map<std::string, Parameter> & Frame::get_parameters()
+{
+  return parameters_;
 }
 
 /** Check if the Frame contains a parameter.

@@ -35,12 +35,13 @@ public:
   ProcessFrameStatus process_frame(boost::shared_ptr<Frame> frame);
   void create_file(size_t file_number=0);
   void close_file(boost::shared_ptr<HDF5File> file);
+  void validate_dataset_definition(DatasetDefinition definition);
   bool start_acquisition(
       size_t concurrent_rank,
       size_t concurrent_processes,
-      size_t frame_offset_adjustment,
       size_t frames_per_block,
       size_t blocks_per_file,
+      std::string file_extension,
       bool use_earliest_hdf5,
       size_t alignment_threshold,
       size_t alignment_value);
@@ -48,7 +49,7 @@ public:
   bool check_frame_valid(boost::shared_ptr<Frame> frame);
   size_t get_frame_offset_in_file(size_t frame_offset) const;
   size_t get_file_index(size_t frame_offset) const;
-  size_t adjust_frame_offset(size_t frame_no) const;
+  size_t adjust_frame_offset(boost::shared_ptr<Frame> frame) const;
   boost::shared_ptr<HDF5File> get_file(size_t frame_offset);
   std::string get_create_meta_header();
   std::string get_meta_header();
@@ -65,6 +66,10 @@ public:
   std::string file_path_;
   /** Name of the file to write to */
   std::string filename_;
+  /** Configured value to be used as the prefix to generate the filename. */
+  std::string configured_filename_;
+  /** File extension to use */
+  std::string file_extension_;
   /** Use the earliest version of hdf5 */
   bool use_earliest_hdf5_;
   /** HDF5 file chunk alignment threshold */
@@ -84,8 +89,6 @@ public:
   size_t concurrent_processes_;
   /** Rank of this file writer */
   size_t concurrent_rank_;
-  /** Offset between raw frame ID and position in dataset */
-  size_t frame_offset_adjustment_;
   /** Number of frames to write consecutively in a file */
   size_t frames_per_block_;
   /** Number of blocks to write in a file  */

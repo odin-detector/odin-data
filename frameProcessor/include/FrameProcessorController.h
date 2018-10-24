@@ -36,7 +36,7 @@ class FrameProcessorController : public IFrameCallback,
                                  public boost::enable_shared_from_this<FrameProcessorController>
 {
 public:
-  FrameProcessorController();
+  FrameProcessorController(unsigned int num_io_threads=1);
   virtual ~FrameProcessorController();
   void handleCtrlChannel();
   void handleMetaRxChannel();
@@ -49,12 +49,16 @@ public:
   void disconnectPlugin(const std::string& index, const std::string& disconnectFrom);
   void run();
   void waitForShutdown();
+  void shutdown();
 private:
   /** Configuration constant for the meta-data Rx interface **/
   static const std::string META_RX_INTERFACE;
 
   /** Configuration constant to shutdown the frame processor **/
   static const std::string CONFIG_SHUTDOWN;
+
+  /** Configuration constant to set the debug level of the frame processor **/
+  static const std::string CONFIG_DEBUG;
 
   /** Configuration constant for name of shared memory storage **/
   static const std::string CONFIG_FR_SHARED_MEMORY;
@@ -126,7 +130,9 @@ private:
   /** Did an error occur during the thread initialisation */
   bool                                                            threadInitError_;
   /** Have we sent sent the shutdown command to the plugins */
-  bool                                                            pluginShutdownSent;
+  bool                                                            pluginShutdownSent_;
+  /** Have we successfully shutdown */
+  bool                                                            shutdown_;
   /** Main thread used for control message handling */
   boost::thread                                                   ctrlThread_;
   /** Store for any messages occurring during thread initialisation */
@@ -135,6 +141,8 @@ private:
   boost::shared_ptr<OdinData::IpcReactor>                         reactor_;
   /** End point for control messages */
   std::string                                                     ctrlChannelEndpoint_;
+  /** ZMQ context for IPC channels */
+  OdinData::IpcContext& ipc_context_;
   /** IpcChannel for control messages */
   OdinData::IpcChannel                                            ctrlChannel_;
   /** IpcChannel for meta-data messages */

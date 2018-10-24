@@ -120,9 +120,6 @@ class FrameProcessorAdapter(OdinDataAdapter):
                     # Check the file path is valid
                     if not os.path.isdir(str(self._param['config/hdf/file/path'])):
                         raise RuntimeError("Invalid path specified [{}]".format(str(self._param['config/hdf/file/path'])))
-                    # Check the extension exists
-                    if str(self._param['config/hdf/file/extension']) == '':
-                        raise RuntimeError("File extension must not be empty")
                     # Check the filename exists
                     if str(self._param['config/hdf/file/name']) == '':
                         raise RuntimeError("File name must not be empty")
@@ -144,9 +141,8 @@ class FrameProcessorAdapter(OdinDataAdapter):
                             'hdf': {
                                 'file': {
                                     'path': str(self._param['config/hdf/file/path']),
-                                    'name': str(self._param['config/hdf/file/name']) +
-                                            '_r' + str(rank) + '.' +
-                                            str(self._param['config/hdf/file/extension'])
+                                    'name': str(self._param['config/hdf/file/name']),
+                                    'extension': str(self._param['config/hdf/file/extension'])
                                     }
                             }
                         }

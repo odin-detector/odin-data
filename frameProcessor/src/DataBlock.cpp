@@ -6,6 +6,7 @@
  */
 
 #include <DataBlock.h>
+#include "DebugLevelLogger.h"
 
 namespace FrameProcessor
 {
@@ -21,7 +22,7 @@ DataBlock::DataBlock(size_t nbytes) :
     logger_(log4cxx::Logger::getLogger("FP.DataBlock")),
     allocatedBytes_(nbytes)
 {
-  LOG4CXX_DEBUG(logger_, "Constructing DataBlock, allocating " << nbytes << " bytes");
+  LOG4CXX_DEBUG_LEVEL(2, logger_, "Constructing DataBlock, allocating " << nbytes << " bytes");
   // Create this DataBlock's unique index
   index_ = DataBlock::indexCounter_++;
   // Allocate the memory required for this data block
@@ -69,7 +70,7 @@ size_t DataBlock::getSize()
  */
 void DataBlock::resize(size_t nbytes)
 {
-  LOG4CXX_DEBUG(logger_, "Resizing DataBlock " << index_ << " to " << nbytes << " bytes");
+  LOG4CXX_DEBUG_LEVEL(2, logger_, "Resizing DataBlock " << index_ << " to " << nbytes << " bytes");
   // If the new size requested is the different
   // to our current size then re-allocate
   if (nbytes != allocatedBytes_) {

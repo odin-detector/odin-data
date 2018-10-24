@@ -9,6 +9,7 @@
 
 #include "Frame.h"
 #include "Acquisition.h"
+#include "DebugLevelLogger.h"
 
 
 namespace FrameProcessor {
@@ -28,11 +29,9 @@ const std::string META_CLOSE_ITEM        = "closefile";
 const std::string META_START_ITEM        = "startacquisition";
 const std::string META_STOP_ITEM         = "stopacquisition";
 
-
 Acquisition::Acquisition() :
         concurrent_rank_(0),
         concurrent_processes_(1),
-        frame_offset_adjustment_(0),
         frames_per_block_(1),
         blocks_per_file_(0),
         frames_written_(0),
@@ -79,7 +78,7 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
 
       hsize_t frame_no = frame->get_frame_number();
 
-      size_t frame_offset = this->adjust_frame_offset(frame_no);
+      size_t frame_offset = this->adjust_frame_offset(frame);
 
       if (this->concurrent_processes_ > 1) {
         // Check whether this frame should really be in this process
@@ -108,6 +107,18 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
       }
 
       file->write_frame(*frame, frame_offset_in_file, outer_chunk_dimension);
+
+      // Loops over all parameters, checking if there is a matching dataset and write to it if so
+      std::map<std::string, Parameter> & frame_parameters = frame->get_parameters();
+      std::map<std::string, Parameter>::iterator param_iter;
+      for (param_iter = frame_parameters.begin(); param_iter != frame_parameters.end(); ++param_iter) {
+        std::map<std::string, DatasetDefinition>::iterator dset_iter;
+        dset_iter = dataset_defs_.find(param_iter->first);
+        if (dset_iter != dataset_defs_.end())
+        {
+          file->write_parameter(*frame, dset_iter->second, frame_offset_in_file);
+        }
+      }
 
       // Send the meta message containing the frame written and the offset written to
       rapidjson::Document document;
@@ -147,7 +158,7 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
       // or if no master frame has been defined. If either of these conditions
       // are true then increment the number of frames written.
       if (master_frame_ == "" || master_frame_ == frame->get_dataset_name()) {
-        size_t dataset_frames = file->get_dataset_frames(frame->get_dataset_name());
+        size_t dataset_frames = current_file->get_dataset_frames(frame->get_dataset_name());
         frames_processed_++;
         LOG4CXX_TRACE(logger_, "Master frame processed");
         size_t current_file_index = current_file->get_file_index() / concurrent_processes_;
@@ -165,7 +176,7 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
 
       // If this frame is the final one in the series we are expecting to process, set the return state
       if (frames_to_write_ > 0 && frames_written_ == frames_to_write_) {
-        if (frames_processed_ == frames_to_write_) {
+        if (frames_processed_ >= frames_to_write_) {
           return_status = status_complete;
         } else {
           LOG4CXX_INFO(logger_, "Number of frames processed (" << frames_processed_ << ") doesn't match expected (" << frames_to_write_ << ")");
@@ -235,7 +246,7 @@ void Acquisition::create_file(size_t file_number) {
     int low_index = -1;
     int high_index = -1;
 
-    if (frames_per_block_ > 1)
+    if (dset_def.create_low_high_indexes && frames_per_block_ > 1)
     {
       low_index = file_number * frames_per_block_ + 1;
       high_index = low_index + frames_per_block_ - 1;
@@ -245,6 +256,7 @@ void Acquisition::create_file(size_t file_number) {
       }
     }
 
+    validate_dataset_definition(dset_def);
     current_file->create_dataset(dset_def, low_index, high_index);
   }
 
@@ -269,38 +281,71 @@ void Acquisition::close_file(boost::shared_ptr<HDF5File> file) {
 }
 
 /**
+ * Validate dataset definition
+ *
+ * Perform checks on the given dataset definition to ensure it is valid before creation
+ *
+ * \param[in] definition - The DatasetDefinition to validate
+ */
+void Acquisition::validate_dataset_definition(DatasetDefinition definition) {
+  // Check image dimensions
+  std::vector<long long unsigned int>::iterator iter;
+  for (iter = definition.frame_dimensions.begin(); iter != definition.frame_dimensions.end(); ++iter) {
+    if (*iter == 0) {
+      throw std::runtime_error("Image dimensions must be non-zero");
+    }
+  }
+  // Check chunk dimensions
+  for (iter = definition.chunks.begin(); iter != definition.chunks.end(); ++iter) {
+    if (*iter == 0) {
+      throw std::runtime_error("Chunk dimensions must be non-zero");
+    }
+  }
+}
+
+/**
  * Starts this acquisition, creating the acquisition file, or first file in a series, and publishes meta
  *
  * \param[in] concurrent_rank - The rank of the processor
  * \param[in] concurrent_processes - The number of processors
- * \param[in] frame_offset_adjustment - The starting frame offset adjustment
  * \param[in] frames_per_block - The number of frames per block
  * \param[in] blocks_per_file - The number of blocks per file
+ * \param[in] file_extension - The file extension to use
+ * \param[in] use_earliest_hdf5 - Whether to use an early version of hdf5 library
+ * \param[in] alignment_threshold - Alignment threshold for hdf5 chunking
+ * \param[in] alignment_value - Alignment value for hdf5 chunking
  * \return - true if the acquisition was started successfully
  */
 bool Acquisition::start_acquisition(
     size_t concurrent_rank,
     size_t concurrent_processes,
-    size_t frame_offset_adjustment,
     size_t frames_per_block,
     size_t blocks_per_file,
+    std::string file_extension,
     bool use_earliest_hdf5,
     size_t alignment_threshold,
     size_t alignment_value) {
 
   concurrent_rank_ = concurrent_rank;
   concurrent_processes_ = concurrent_processes;
-  frame_offset_adjustment_ = frame_offset_adjustment;
   frames_per_block_ = frames_per_block;
   blocks_per_file_ = blocks_per_file;
   use_earliest_hdf5_ = use_earliest_hdf5;
   alignment_threshold_ = alignment_threshold;
   alignment_value_ = alignment_value;
+  file_extension_ = file_extension;
 
-  // If filename hasn't been explicitly specified or we are in multi-file mode, generate the filename
-  if ((filename_.empty() && !acquisition_id_.empty()) || blocks_per_file_ != 0) {
-    filename_ = generate_filename(concurrent_rank_);
+  // Sanitise the file extension, ensuring there is a . at the start if the extension is not empty
+  if (!file_extension_.empty())
+  {
+    if (file_extension_.at(0) != '.')
+    {
+      file_extension_.insert(0, ".");
+    }
   }
+
+  // Generate the filename
+  filename_ = generate_filename(concurrent_rank_);
 
   if (filename_.empty()) {
     last_error_ = "Unable to start writing - no filename to write to";
@@ -345,12 +390,12 @@ bool Acquisition::check_frame_valid(boost::shared_ptr<Frame> frame)
     LOG4CXX_ERROR(logger_, last_error_);
     invalid = true;
   }
-  if (frame->get_data_type() >= 0 && frame->get_data_type() != dataset.pixel) {
+  if (frame->get_data_type() >= 0 && frame->get_data_type() != dataset.data_type) {
     std::stringstream ss;
     ss << "Invalid frame: Frame has data type " << frame->get_data_type() <<
-       ", expected " << dataset.pixel <<
+       ", expected " << dataset.data_type <<
        " for dataset " << dataset.name <<
-       " (0: UINT8, 1: UINT16, 2: UINT32, 3: UINT64)";
+       " (0: UINT8, 1: UINT16, 2: UINT32, 3: UINT64, 4: FLOAT)";
     last_error_ = ss.str();
     LOG4CXX_ERROR(logger_, last_error_);
     invalid = true;
@@ -448,7 +493,7 @@ boost::shared_ptr<HDF5File> Acquisition::get_file(size_t frame_offset) {
     // Check for missing files and create them if they have been missed
     size_t next_expected_file_index = current_file->get_file_index() + concurrent_processes_;
     while (next_expected_file_index < file_index) {
-      LOG4CXX_DEBUG(logger_,"Creating missing file " << next_expected_file_index);
+      LOG4CXX_DEBUG_LEVEL(1, logger_,"Creating missing file " << next_expected_file_index);
       filename_ = generate_filename(next_expected_file_index);
       create_file(next_expected_file_index);
       next_expected_file_index = current_file->get_file_index() + concurrent_processes_;
@@ -466,33 +511,31 @@ boost::shared_ptr<HDF5File> Acquisition::get_file(size_t frame_offset) {
 
 }
 
-/** Adjust the incoming frame number with an offset
+/** Returns the adjusted offset (index in file) for the Frame
  *
- * This is a hacky work-around a missing feature in the Mezzanine
- * firmware: the frame number is never reset and is ever incrementing.
- * The file writer can deal with it, by inserting the frame right at
- * the end of a very large dataset (fortunately sparsely written to disk).
+ * Combines the frame number with the frame offset stored on the frame
+ * object to calculate an the adjusted frame offset in the file for this
+ * frame
  *
- * This function latches the first frame number and subtracts this number
- * from every incoming frame.
- *
- * Throws a std::range_error if a frame is received which has a smaller
- * frame number than the initial frame used to set the offset.
+ * Throws a std::range_error if the applied offset would cause the frame
+ * offset to be calculated as a negative number
  *
  * Returns the dataset offset for frame number (frame_no)
  */
-size_t Acquisition::adjust_frame_offset(size_t frame_no) const {
+size_t Acquisition::adjust_frame_offset(boost::shared_ptr<Frame> frame) const {
+  size_t frame_no = frame->get_frame_number();
+  int64_t frame_offset_adjustment = frame->get_frame_offset();
   size_t frame_offset = 0;
-  if (frame_no < this->frame_offset_adjustment_) {
-    // Deal with a frame arriving after the very first frame
-    // which was used to set the offset: throw a range error
-    throw std::range_error("Frame out of order at start causing negative file offset");
+
+  LOG4CXX_DEBUG_LEVEL(2, logger_, "Raw frame number: " << frame_no << ", Frame offset adjustment: " << frame_offset_adjustment);
+
+  if ((int) frame_no + frame_offset_adjustment < 0 ) {
+    // Throw a range error if the offset would cause the adjusted offset to be negative
+    throw std::range_error("Frame offset causes negative file offset");
   }
 
-  // Normal case: apply offset
-  LOG4CXX_DEBUG(logger_, "Raw frame number: " << frame_no);
-  LOG4CXX_DEBUG(logger_, "Frame offset adjustment: " << frame_offset_adjustment_);
-  frame_offset = frame_no - this->frame_offset_adjustment_;
+  frame_offset = frame_no + frame_offset_adjustment;
+  LOG4CXX_DEBUG_LEVEL(2, logger_, "Adjusted frame offset: " << frame_offset);
   return frame_offset;
 }
 
@@ -551,10 +594,11 @@ std::string Acquisition::get_meta_header() {
 /**
  * Generates the filename for the given file number
  *
- * If there is only one file (blocks per file is 0), then the rank is used.
+ * Appends a 6 digit file number to the configured file name.
+ * File numbers are 0 indexed, but filenames are 1 indexed
  *
- * If there are multiple files (blocks per file is bigger than 0), then
- * the file number is used. File numbers are 0 indexed, but filenames are 1 indexed
+ * If no file name is configured, it uses the acquisition ID and if this
+ * is not configured, then the generated filename returned is empty.
  *
  * \param[in] file_number - The file number to generate the filename for
  * \return - The name of the file including extension
@@ -563,12 +607,15 @@ std::string Acquisition::generate_filename(size_t file_number) {
 
   std::stringstream generated_filename;
 
-  if (blocks_per_file_ == 0) {
-    generated_filename << acquisition_id_ << "_r" << concurrent_rank_ << ".h5";
-  } else {
-    char number_string[7];
-    snprintf(number_string, 7, "%06d", file_number + 1);
-    generated_filename << acquisition_id_ << "_data_" << number_string << ".h5";
+  char number_string[7];
+  snprintf(number_string, 7, "%06d", file_number + 1);
+  if (!configured_filename_.empty())
+  {
+    generated_filename << configured_filename_ << "_" << number_string << file_extension_;
+  }
+  else if (!acquisition_id_.empty())
+  {
+    generated_filename << acquisition_id_ << "_" << number_string << file_extension_;
   }
 
   return generated_filename.str();

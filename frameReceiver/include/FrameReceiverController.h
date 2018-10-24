@@ -106,6 +106,7 @@ namespace FrameReceiver
     bool rx_thread_configured_;           //!< Indicates that the RX thread is configured
     bool configuration_complete_;         //!< Indicates that all components are configured
     
+    IpcContext& ipc_context_;             //!< ZMQ context for IPC channels
     IpcChannel rx_channel_;               //!< Channel for communication with receiver thread
     IpcChannel ctrl_channel_;             //!< Channel for communication with  control clients
     IpcChannel frame_ready_channel_;      //!< Channel for signalling to downstream processes

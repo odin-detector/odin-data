@@ -28,6 +28,7 @@ enum RxType
 };
 
 const int          default_node                   = 1;
+const unsigned int default_io_threads             = 1;
 const std::size_t  default_max_buffer_mem         = 1048576;
 const std::string  default_decoder_path           = std::string(BUILD_DIR) + "/lib/";
 const std::string  default_decoder_type           = "unknown";
