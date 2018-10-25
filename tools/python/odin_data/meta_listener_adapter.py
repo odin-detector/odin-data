@@ -95,9 +95,9 @@ class MetaListenerAdapter(OdinDataAdapter):
         :return: ApiAdapterResponse object to be returned to the client
 
         """
-        logging.error("PUT path: %s", path)
-        logging.error("PUT request: %s", request)
-        logging.error("PUT request.body: %s",
+        logging.debug("PUT path: %s", path)
+        logging.debug("PUT request: %s", request)
+        logging.debug("PUT request.body: %s",
                       str(escape.url_unescape(request.body)))
 
         value = str(escape.url_unescape(request.body)).replace('"', '')
