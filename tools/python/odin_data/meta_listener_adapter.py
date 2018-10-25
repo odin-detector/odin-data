@@ -95,8 +95,6 @@ class MetaListenerAdapter(OdinDataAdapter):
         :return: ApiAdapterResponse object to be returned to the client
 
         """
-        status_code = 200
-        response = {}
         logging.error("PUT path: %s", path)
         logging.error("PUT request: %s", request)
         logging.error("PUT request.body: %s",
@@ -108,18 +106,15 @@ class MetaListenerAdapter(OdinDataAdapter):
             self.acquisitionID = value
             # Set inactive so process_updates doesn't clear acquisition ID
             self.acquisition_active = False
-            # Send the PUT request
-            try:
-                config = {
-                    "acquisition_id": self.acquisitionID,
-                }
-                self._client.send_configuration(config)
-            except Exception as err:
-                logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
-                logging.error("Error: %s", err)
-                status_code = 503
-                response = {'error': OdinDataAdapter.ERROR_FAILED_TO_SEND}
+
+            config = {
+                "acquisition_id": self.acquisitionID,
+            }
+            status_code, response = self._send_config(config)
         elif path == "config/stop":
+            self.acquisitionID = ""
+            self.acquisition_active = False
+
             # By default we stop all acquisitions by passing None
             config = {
                 "acquisition_id": None,
@@ -128,33 +123,32 @@ class MetaListenerAdapter(OdinDataAdapter):
             if self.acquisitionID:
                 # If we have an Acquisition ID then stop that one only
                 config["acquisition_id"] = self.acquisitionID
-            try:
-                self._client.send_configuration(config)
-            except Exception as err:
-                logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
-                logging.error("Error: %s", err)
-                status_code = 503
-                response = {'error': OdinDataAdapter.ERROR_FAILED_TO_SEND}
-            self.acquisitionID = ""
-            self.acquisition_active = False
+            status_code, response = self._send_config(config)
         elif path in self._acquisition_parameters:
             # Send the PUT request on with the acquisitionID attached
-            try:
-                parameter = path.split("/", 1)[-1]  # Remove 'config/'
-                config = {
-                    "acquisition_id": self.acquisitionID,
-                    parameter: value
-                }
-                self._client.send_configuration(config)
-            except Exception as err:
-                logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
-                logging.error("Error: %s", err)
-                status_code = 503
-                response = {'error': OdinDataAdapter.ERROR_FAILED_TO_SEND}
+            parameter = path.split("/", 1)[-1]  # Remove 'config/'
+            config = {
+                "acquisition_id": self.acquisitionID,
+                parameter: value
+            }
+            status_code, response = self._send_config(config)
         else:
             return super(OdinDataAdapter, self).put(path, request)
 
         return ApiAdapterResponse(response, status_code=status_code)
+
+    def _send_config(self, config_message):
+        status_code = 200
+        response = {}
+        try:
+            self._client.send_configuration(config_message)
+        except Exception as err:
+            logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
+            logging.error("Error: %s", err)
+            status_code = 503
+            response = {"error": OdinDataAdapter.ERROR_FAILED_TO_SEND}
+
+        return status_code, response
 
     def process_updates(self):
         """Handle additional background update loop tasks
