@@ -141,6 +141,22 @@ void FrameProcessorPlugin::status(OdinData::IpcMessage& status)
 }
 
 /**
+ * Collate version information for the plugin.
+ *
+ * The version information is added to the status IpcMessage object.
+ *
+ * \param[out] status - Reference to an IpcMessage value to store the version.
+ */
+void FrameProcessorPlugin::version(OdinData::IpcMessage& status)
+{
+  status.set_param("version/" + get_name() + "/major", get_version_major());
+  status.set_param("version/" + get_name() + "/minor", get_version_minor());
+  status.set_param("version/" + get_name() + "/patch", get_version_patch());
+  status.set_param("version/" + get_name() + "/short", get_version_short());
+  status.set_param("version/" + get_name() + "/full", get_version_long());
+}
+
+/**
  * Registers another plugin for frame callbacks from this plugin.
  *
  * The callback interface (which will be another plugin) is stored in

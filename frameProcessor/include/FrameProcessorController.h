@@ -41,6 +41,7 @@ public:
   void handleCtrlChannel();
   void handleMetaRxChannel();
   void provideStatus(OdinData::IpcMessage& reply);
+  void provideVersion(OdinData::IpcMessage& reply);
   void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   void requestConfiguration(OdinData::IpcMessage& reply);
   void resetStatistics(OdinData::IpcMessage& reply);

@@ -6,6 +6,7 @@
  */
 
 #include "LiveViewPlugin.h"
+#include "version.h"
 #include <boost/algorithm/string.hpp>
 
 namespace FrameProcessor
@@ -30,7 +31,8 @@ LiveViewPlugin::LiveViewPlugin() :
 {
   logger_ = Logger::getLogger("FW.LiveViewPlugin");
   logger_->setLevel(Level::getAll());
-  LOG4CXX_TRACE(logger_, "LiveViewPlugin constructor.");
+  LOG4CXX_INFO(logger_, "LiveViewPlugin version " << this->get_version_long() << " loaded");
+
 
   set_frame_freq_config(DEFAULT_FRAME_FREQ);
   set_per_second_config(DEFAULT_PER_SECOND);
@@ -239,6 +241,31 @@ void LiveViewPlugin::pass_live_frame(boost::shared_ptr<Frame> frame)
   publish_socket_.send(size, frame_data_copy, 0);
 
   time_last_frame_ = boost::posix_time::microsec_clock::local_time();
+}
+
+int LiveViewPlugin::get_version_major()
+{
+  return ODIN_DATA_VERSION_MAJOR;
+}
+
+int LiveViewPlugin::get_version_minor()
+{
+  return ODIN_DATA_VERSION_MINOR;
+}
+
+int LiveViewPlugin::get_version_patch()
+{
+  return ODIN_DATA_VERSION_PATCH;
+}
+
+std::string LiveViewPlugin::get_version_short()
+{
+  return ODIN_DATA_VERSION_STR_SHORT;
+}
+
+std::string LiveViewPlugin::get_version_long()
+{
+  return ODIN_DATA_VERSION_STR;
 }
 
 /**

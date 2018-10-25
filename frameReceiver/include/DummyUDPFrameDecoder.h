@@ -30,6 +30,12 @@ public:
   DummyUDPFrameDecoder();
   ~DummyUDPFrameDecoder();
 
+  int get_version_major();
+  int get_version_minor();
+  int get_version_patch();
+  std::string get_version_short();
+  std::string get_version_long();
+  
   void init(LoggerPtr& logger, OdinData::IpcMessage& config_msg);
 
   const size_t get_frame_buffer_size(void) const { return static_cast<const size_t>(1000000); };

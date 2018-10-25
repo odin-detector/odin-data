@@ -18,6 +18,7 @@ namespace po = boost::program_options;
 
 #include "logging.h"
 #include "FrameReceiverApp.h"
+#include "version.h"
 
 using namespace FrameReceiver;
 
@@ -147,7 +148,7 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
     // If the command line version option was given, print version and exit
     if (vm.count("version"))
     {
-      std::cout << "Will print version here" << std::endl;
+      std::cout << "frameReceiver version " ODIN_DATA_VERSION_STR << std::endl;
       return 1;
     }
 
@@ -324,7 +325,7 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
 void FrameReceiverApp::run(void)
 {
 
-  LOG4CXX_INFO(logger_,  "Running frame receiver");
+  LOG4CXX_INFO(logger_, "frameReceiver version " << ODIN_DATA_VERSION_STR << " starting up");
 
     // Instantiate a controller
   controller_ = boost::shared_ptr<FrameReceiverController>(
