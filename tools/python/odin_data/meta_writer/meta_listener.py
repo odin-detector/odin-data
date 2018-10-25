@@ -193,57 +193,35 @@ class MetaListener:
             if acquisition_id is not None:
                 if acquisition_id in self._writers:
                     self.logger.debug('Writer is in writers for acq ' + str(acquisition_id))
-                    acquisition_exists = True
                 else:
                     self.logger.debug('Writer not in writers for acquisition [' + str(acquisition_id) + ']')
                     self.logger.info(
                         'Creating new acquisition [' + str(acquisition_id) + '] with default directory ' + str(
                             self._directory))
                     self.create_new_acquisition(self._directory, acquisition_id)
-                    acquisition_exists = True
 
                 if 'output_dir' in params:
-                    if acquisition_exists:
-                        self.logger.debug('Setting acquisition [' + str(acquisition_id) + '] directory to ' + str(
-                            params['output_dir']))
-                        self._writers[acquisition_id].directory = params['output_dir']
-                        reply = IpcMessage(IpcMessage.ACK, 'configure', id=msg_id)
-                    else:
-                        self.logger.warn('No acquisition for acquisition_id: ' + str(acquisition_id))
-                        reply = IpcMessage(IpcMessage.NACK, 'configure', id=msg_id)
-                        reply.set_param('error', 'No current acquisition with acquisition_id: ' + str(acquisition_id))
+                    self.logger.debug('Setting acquisition [' + str(acquisition_id) + '] directory to ' + str(
+                        params['output_dir']))
+                    self._writers[acquisition_id].directory = params['output_dir']
+                    reply = IpcMessage(IpcMessage.ACK, 'configure', id=msg_id)
 
                 if 'flush' in params:
-                    if acquisition_exists:
-                        self.logger.debug(
-                            'Setting acquisition [' + str(acquisition_id) + '] flush to ' + str(params['flush']))
-                        self._writers[acquisition_id].flush_frequency = params['flush']
-                        reply = IpcMessage(IpcMessage.ACK, 'configure', id=msg_id)
-                    else:
-                        self.logger.warn('No acquisition for acquisition_id: ' + str(acquisition_id))
-                        reply = IpcMessage(IpcMessage.NACK, 'configure', id=msg_id)
-                        reply.set_param('error', 'No current acquisition with acquisition_id: ' + str(acquisition_id))
+                    self.logger.debug(
+                        'Setting acquisition [' + str(acquisition_id) + '] flush to ' + str(params['flush']))
+                    self._writers[acquisition_id].flush_frequency = params['flush']
+                    reply = IpcMessage(IpcMessage.ACK, 'configure', id=msg_id)
 
                 if 'flush_timeout' in params:
-                    if acquisition_exists:
-                        self.logger.debug('Setting acquisition [' + str(acquisition_id) + '] flush timeout to ' + str(
-                            params['flush_timeout']))
-                        self._writers[acquisition_id].flush_timeout = params['flush_timeout']
-                        reply = IpcMessage(IpcMessage.ACK, 'configure', id=msg_id)
-                    else:
-                        self.logger.warn('No acquisition for acquisition_id: ' + str(acquisition_id))
-                        reply = IpcMessage(IpcMessage.NACK, 'configure', id=msg_id)
-                        reply.set_param('error', 'No current acquisition with acquisition_id: ' + str(acquisition_id))
+                    self.logger.debug('Setting acquisition [' + str(acquisition_id) + '] flush timeout to ' + str(
+                        params['flush_timeout']))
+                    self._writers[acquisition_id].flush_timeout = params['flush_timeout']
+                    reply = IpcMessage(IpcMessage.ACK, 'configure', id=msg_id)
 
                 if 'stop' in params:
-                    if acquisition_exists:
-                        self.logger.info('Stopping acquisition [' + str(acquisition_id) + ']')
-                        self._writers[acquisition_id].stop()
-                        reply = IpcMessage(IpcMessage.ACK, 'configure', id=msg_id)
-                    else:
-                        self.logger.warn('No acquisition for acquisition_id: ' + str(acquisition_id))
-                        reply = IpcMessage(IpcMessage.NACK, 'configure', id=msg_id)
-                        reply.set_param('error', 'No current acquisition with acquisition_id: ' + str(acquisition_id))
+                    self.logger.info('Stopping acquisition [' + str(acquisition_id) + ']')
+                    self._writers[acquisition_id].stop()
+                    reply = IpcMessage(IpcMessage.ACK, 'configure', id=msg_id)
             else:
                 # If the command is to stop without an acqID then stop all acquisitions
                 if 'stop' in params:
