@@ -75,10 +75,7 @@ class MetaListener:
                 if socks.get(ctrl_socket) == zmq.POLLIN:
                     self.handle_control_message(ctrl_socket)
 
-            for key in self._writers:
-                self.logger.info('Forcing close of writer for acquisition: ' + str(key))
-                writer = self._writers[key]
-                writer.stop()
+            self.stop_all_writers()
 
             self.logger.info('Finished listening')
         except Exception as err:
@@ -225,10 +222,7 @@ class MetaListener:
             else:
                 # If the command is to stop without an acqID then stop all acquisitions
                 if 'stop' in params:
-                    for key in self._writers:
-                        self.logger.info('Forcing close of writer for acquisition: ' + str(key))
-                        writer = self._writers[key]
-                        writer.stop()
+                    self.stop_all_writers()
                     reply = IpcMessage(IpcMessage.ACK, 'configure', id=msg_id)
                 else:
                     reply = IpcMessage(IpcMessage.NACK, 'configure', id=msg_id)
@@ -297,6 +291,13 @@ class MetaListener:
             for key, value in self._writers.items():
                 if value.finished:
                     del self._writers[key]
+                    
+    def stop_all_writers(self):
+        """Force stop all writers."""
+        for key in self._writers:
+            self.logger.info('Forcing close of writer for acquisition: ' + str(key))
+            writer = self._writers[key]
+            writer.stop()
 
     def create_new_writer(self, directory, acquisition_id):
         """Create a the appropriate writer object.
