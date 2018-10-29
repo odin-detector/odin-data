@@ -47,10 +47,16 @@ class IpcTornadoClient(object):
     def _callback(self, msg):
         # Handle the multi-part message
         reply = IpcMessage(from_str=msg[0])
+        if 'request_version' in reply.get_msg_val():
+            self._update_versions(reply.attrs)
         if 'request_configuration' in reply.get_msg_val():
             self._update_configuration(reply.attrs)
         if 'status' in reply.get_msg_val():
             self._update_status(reply.attrs)
+
+    def _update_versions(self, version_msg):
+        params = version_msg['params']
+        self._parameters['version'] = params['version']
 
     def _update_configuration(self, config_msg):
         params = config_msg['params']
