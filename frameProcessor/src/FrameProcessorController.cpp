@@ -9,6 +9,7 @@
 
 #include "FrameProcessorController.h"
 #include "DebugLevelLogger.h"
+#include "version.h"
 
 namespace FrameProcessor
 {
@@ -134,6 +135,20 @@ void FrameProcessorController::handleCtrlChannel()
       this->provideStatus(replyMsg);
       LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (status): "
                              << replyMsg.encode());
+    }
+    else if ((ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) &&
+             (ctrlMsg.get_msg_val() == OdinData::IpcMessage::MsgValCmdRequestVersion)) {
+      replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
+      this->provideVersion(replyMsg);
+      LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (rquest version): "
+                             << replyMsg.encode());
+    }
+    else if ((ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) &&
+             (ctrlMsg.get_msg_val() == OdinData::IpcMessage::MsgValCmdResetStatistics)) {
+      replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
+      this->resetStatistics(replyMsg);
+      LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (reset statistics): "
+              << replyMsg.encode());
     }
     else {
       LOG4CXX_ERROR(logger_, "Control thread got unexpected message: " << ctrlMsgEncoded);
@@ -266,6 +281,33 @@ void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply)
   for (error_iter = error_messages.begin(); error_iter != error_messages.end(); ++error_iter) {
     reply.set_param("error[]", *error_iter);
   }
+
+}
+
+/** Provide version information to requesting clients.
+ *
+ * This is called in response to a version request from a connected client. The reply to the
+ * request is populated with version information from application and all the
+ * plugins currently loaded.
+ *
+ * @param[in,out] reply - response IPC message to be populated with version information
+ */
+void FrameProcessorController::provideVersion(OdinData::IpcMessage& reply)
+{
+
+  // Populate the reply with top-level odin-data application version information
+  reply.set_param("version/odin-data/major", ODIN_DATA_VERSION_MAJOR);
+  reply.set_param("version/odin-data/minor", ODIN_DATA_VERSION_MINOR);
+  reply.set_param("version/odin-data/patch", ODIN_DATA_VERSION_PATCH);
+  reply.set_param("version/odin-data/short", std::string(ODIN_DATA_VERSION_STR_SHORT));
+  reply.set_param("version/odin-data/full", std::string(ODIN_DATA_VERSION_STR));
+ 
+  // Loop over plugins, list version information from each
+  std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
+  for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
+    iter->second->version(reply);
+  }
+
 }
 
 /**
@@ -383,6 +425,32 @@ void FrameProcessorController::requestConfiguration(OdinData::IpcMessage& reply)
   std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
   for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
     iter->second->requestConfiguration(reply);
+  }
+}
+
+/**
+ * Reset statistics on all of the loaded plugins.
+ *
+ * The method calls reset statistics on all of the loaded plugins.
+ *
+ * \param[out] reply - Response IpcMessage with the current status.
+ */
+void FrameProcessorController::resetStatistics(OdinData::IpcMessage& reply)
+{
+  LOG4CXX_DEBUG_LEVEL(1, logger_, "Reset statistics requested");
+  bool reset_ok = true;
+
+  // Loop over plugins and call reset statistics on each
+  std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
+  for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
+    reset_ok = iter->second->reset_statistics();
+    // Check for failure
+    if (!reset_ok){
+      reply.set_msg_type(OdinData::IpcMessage::MsgTypeNack);
+      std::stringstream sstr;
+      sstr << "Failed to reset statistics on plugin " << iter->first;
+      reply.set_param("error", sstr.str());
+    }
   }
 }
 
@@ -549,8 +617,6 @@ void FrameProcessorController::run() {
 
   // Start worker thread (for IFrameCallback) to monitor frames passed through
   start();
-
-  LOG4CXX_INFO(logger_, "Running FrameProcessor")
 
   // Now wait for the shutdown command from either the control interface or the worker thread
   waitForShutdown();

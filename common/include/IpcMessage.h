@@ -55,6 +55,9 @@ private:
 } // namespace OdinData
 
 // Override rapidsjon assertion mechanism before including appropriate headers
+#ifdef RAPIDJSON_ASSERT
+#undef RAPIDJSON_ASSERT
+#endif
 #define RAPIDJSON_ASSERT(x) if (!(x)) throw OdinData::IpcMessageException("rapidjson assertion thrown");
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
@@ -87,8 +90,10 @@ public:
     MsgValCmdStatus,                 //!< Status command message
     MsgValCmdConfigure,              //!< Configure command message
     MsgValCmdRequestConfiguration,   //!< Request configuration command message
+    MsgValCmdRequestVersion,         //!< Request version information message
     MsgValCmdBufferConfigRequest,    //!< Buffer configuration request
     MsgValCmdBufferPrechargeRequest, //!< Buffer precharge request
+    MsgValCmdResetStatistics,        //!< Reset statistics command
     MsgValCmdShutdown,               //!< Process shutdown request
     MsgValNotifyIdentity,            //!< Identity notification message
     MsgValNotifyFrameReady,          //!< Frame ready notification message

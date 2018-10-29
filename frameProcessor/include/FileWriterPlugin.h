@@ -54,6 +54,11 @@ public:
   void start_close_file_timeout();
   void run_close_file_timeout();
   size_t calc_num_frames(size_t total_frames);
+  int get_version_major();
+  int get_version_minor();
+  int get_version_patch();
+  std::string get_version_short();
+  std::string get_version_long();
 
 private:
   /** Configuration constant for process related items */

@@ -26,6 +26,7 @@ using namespace log4cxx::helpers;
 #include "IpcMessage.h"
 #include "OdinDataException.h"
 #include "SharedBufferManager.h"
+#include "IVersionedObject.h"
 
 namespace FrameReceiver
 {
@@ -43,7 +44,7 @@ typedef boost::function<void(int, int)> FrameReadyCallback;
 typedef std::queue<int> EmptyBufferQueue;
 typedef std::map<int, int> FrameBufferMap;
 
-class FrameDecoder
+class FrameDecoder : public OdinData::IVersionedObject
 {
 public:
 
@@ -76,6 +77,8 @@ public:
   const unsigned int get_num_frames_timedout(void) const;
   virtual void monitor_buffers(void) = 0;
   virtual void get_status(const std::string param_prefix, OdinData::IpcMessage& status_msg) = 0;
+  void version(const std::string param_prefix, OdinData::IpcMessage& status);
+  virtual void reset_statistics(void);
 
 protected:
   LoggerPtr logger_;  //!< Pointer to the logging facility

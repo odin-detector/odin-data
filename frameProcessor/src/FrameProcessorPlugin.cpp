@@ -83,6 +83,16 @@ void FrameProcessorPlugin::clear_errors()
   error_messages_.clear();
 }
 
+/** Reset any statistics.
+ *
+ * Any counters in the plugin should be reset by this method
+ */
+bool FrameProcessorPlugin::reset_statistics()
+{
+  // Default method does nothing
+  return true;
+}
+
 /** Return the current error message.
  *
  */
@@ -128,6 +138,22 @@ void FrameProcessorPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 void FrameProcessorPlugin::status(OdinData::IpcMessage& status)
 {
   // Default method simply does nothing
+}
+
+/**
+ * Collate version information for the plugin.
+ *
+ * The version information is added to the status IpcMessage object.
+ *
+ * \param[out] status - Reference to an IpcMessage value to store the version.
+ */
+void FrameProcessorPlugin::version(OdinData::IpcMessage& status)
+{
+  status.set_param("version/" + get_name() + "/major", get_version_major());
+  status.set_param("version/" + get_name() + "/minor", get_version_minor());
+  status.set_param("version/" + get_name() + "/patch", get_version_patch());
+  status.set_param("version/" + get_name() + "/short", get_version_short());
+  status.set_param("version/" + get_name() + "/full", get_version_long());
 }
 
 /**

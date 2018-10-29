@@ -30,6 +30,12 @@ public:
   DummyUDPFrameDecoder();
   ~DummyUDPFrameDecoder();
 
+  int get_version_major();
+  int get_version_minor();
+  int get_version_patch();
+  std::string get_version_short();
+  std::string get_version_long();
+  
   void init(LoggerPtr& logger, OdinData::IpcMessage& config_msg);
 
   const size_t get_frame_buffer_size(void) const { return static_cast<const size_t>(1000000); };
@@ -47,12 +53,14 @@ public:
 
   void monitor_buffers(void) { };
   void get_status(const std::string param_prefix, OdinData::IpcMessage& status_msg);
+  void reset_statistics(void);
 
   void* get_packet_header_buffer(void){ return reinterpret_cast<void *>(0); };
 
 private:
 
   unsigned int udp_packets_per_frame_;
+  unsigned int status_get_count_;
 
 };
 

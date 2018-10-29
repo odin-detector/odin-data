@@ -14,6 +14,7 @@
 
 #include "logging.h"
 #include "DebugLevelLogger.h"
+#include "version.h"
 
 namespace FrameProcessor
 {
@@ -72,7 +73,7 @@ FileWriterPlugin::FileWriterPlugin() :
 {
   this->logger_ = Logger::getLogger("FP.FileWriterPlugin");
   this->logger_->setLevel(Level::getTrace());
-  LOG4CXX_TRACE(logger_, "FileWriterPlugin constructor.");
+  LOG4CXX_INFO(logger_, "FileWriterPlugin version " << this->get_version_long() << " loaded");
   this->current_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition());
   this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition());
 }
@@ -787,6 +788,31 @@ size_t FileWriterPlugin::calc_num_frames(size_t totalFrames)
   }
 
   return num_of_frames;
+}
+
+int FileWriterPlugin::get_version_major()
+{
+  return ODIN_DATA_VERSION_MAJOR;
+}
+
+int FileWriterPlugin::get_version_minor()
+{
+  return ODIN_DATA_VERSION_MINOR;
+}
+
+int FileWriterPlugin::get_version_patch()
+{
+  return ODIN_DATA_VERSION_PATCH;
+}
+
+std::string FileWriterPlugin::get_version_short()
+{
+  return ODIN_DATA_VERSION_STR_SHORT;
+}
+
+std::string FileWriterPlugin::get_version_long()
+{
+  return ODIN_DATA_VERSION_STR;
 }
 
 } /* namespace FrameProcessor */

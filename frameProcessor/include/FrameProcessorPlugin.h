@@ -9,6 +9,7 @@
 #define TOOLS_FILEWRITER_FrameProcessorPlugin_H_
 
 #include "IFrameCallback.h"
+#include "IVersionedObject.h"
 #include "MetaMessage.h"
 #include "IpcMessage.h"
 #include "IpcChannel.h"
@@ -24,7 +25,7 @@ namespace FrameProcessor
  * Frame objects between plugins. It also provides methods for configuring
  * plugins and for retrieving status from plugins.
  */
-class FrameProcessorPlugin : public IFrameCallback, public MetaMessagePublisher
+class FrameProcessorPlugin : public IFrameCallback, public OdinData::IVersionedObject, public MetaMessagePublisher
 {
 public:
   FrameProcessorPlugin();
@@ -33,10 +34,12 @@ public:
   std::string get_name();
   void set_error(const std::string& msg);
   void clear_errors();
+  virtual bool reset_statistics();
   std::vector<std::string> get_errors();
   virtual void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   virtual void requestConfiguration(OdinData::IpcMessage& reply);
   virtual void status(OdinData::IpcMessage& status);
+  void version(OdinData::IpcMessage& status);
   void register_callback(const std::string& name, boost::shared_ptr<IFrameCallback> cb, bool blocking=false);
   void remove_callback(const std::string& name);
 

@@ -6,6 +6,7 @@
  */
 
 #include "FrameReceiverController.h"
+#include "version.h"
 
 using namespace FrameReceiver;
 
@@ -759,9 +760,21 @@ void FrameReceiverController::handle_ctrl_channel(void)
             break;
 
           case IpcMessage::MsgValCmdStatus:
+            LOG4CXX_DEBUG_LEVEL(3, logger_,
+                "Got control channel status request from client " << client_identity);
+            this->get_status(ctrl_reply);
+            break;
+
+          case IpcMessage::MsgValCmdRequestVersion:
+            LOG4CXX_DEBUG_LEVEL(3, logger_,
+                "Got control channel version request from client " << client_identity);
+            this->get_version(ctrl_reply);
+            break;
+            
+          case IpcMessage::MsgValCmdResetStatistics:
               LOG4CXX_DEBUG_LEVEL(3, logger_,
-                  "Got control channel status request from client " << client_identity);
-              this->get_status(ctrl_reply);
+                "Got reset statistics request from client " << client_identity);
+              this->reset_statistics(ctrl_reply);
               break;
 
           case IpcMessage::MsgValCmdShutdown:
@@ -1054,6 +1067,32 @@ void FrameReceiverController::get_status(OdinData::IpcMessage& status_reply)
 
 }
 
+//! Get the frame receiver version information.
+//!
+//! This method retrieves version information from the frame receiver in response to a client version request,
+//! filling salient information into the parameter block of the reply message passed as an argument.
+//!
+//! \param[in,out] version_reply - IpcMessage reply to version request
+//!
+void FrameReceiverController::get_version(OdinData::IpcMessage& version_reply)
+{
+
+  version_reply.set_msg_type(IpcMessage::MsgTypeAck);
+
+  // Populate the reply with top-level odin-data application version information
+  version_reply.set_param("version/odin-data/major", ODIN_DATA_VERSION_MAJOR);
+  version_reply.set_param("version/odin-data/minor", ODIN_DATA_VERSION_MINOR);
+  version_reply.set_param("version/odin-data/patch", ODIN_DATA_VERSION_PATCH);
+  version_reply.set_param("version/odin-data/short", std::string(ODIN_DATA_VERSION_STR_SHORT));
+  version_reply.set_param("version/odin-data/full", std::string(ODIN_DATA_VERSION_STR));
+
+  // If there is a decoder loaded, append its version information to the reply
+  if (frame_decoder_) {
+    frame_decoder_->version("version/decoder/", version_reply);
+  }
+
+}
+
 //! Get the frame receiver configuration.
 //!
 //! This method retrieves the current configuration of the frame receiver in response to a client
@@ -1097,6 +1136,31 @@ void FrameReceiverController::request_configuration(OdinData::IpcMessage& config
 
   // Add frame count to reply parameters
   config_reply.set_param(CONFIG_FRAME_COUNT, config_.frame_count_);
+
+}
+
+//! Reset the frame receiver statistics.
+//!
+//! This method resets the frame receiver statistics present in status responses.
+//! If a frame decoder is configured, its reset method is called to clear any
+//! decoder specific values.
+//!
+//! \param[in,out] reset_reply - IpcMessage reply to reset request
+//!
+void FrameReceiverController::reset_statistics(OdinData::IpcMessage& reset_reply)
+{
+
+  // Set the reply type to acknowledge
+  reset_reply.set_msg_type(IpcMessage::MsgTypeAck);
+
+  // If a decoder is configured, call its reset method
+  if (frame_decoder_) {
+    frame_decoder_->reset_statistics();
+  }
+
+  // Reset frames recevied and released counters
+  frames_received_ = 0;
+  frames_released_ = 0;
 
 }
 

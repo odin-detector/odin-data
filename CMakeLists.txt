@@ -102,6 +102,24 @@ ELSE(HDF5_ROOT)
                  COMPONENTS C HL)
 ENDIF(HDF5_ROOT)
 
+message("Determining odin-data version")
+include(GetGitRevisionDescription)
+git_describe(GIT_DESC_STR)
+
+string(REGEX REPLACE "^([0-9]+)[\\.-].*" "\\1" VERSION_MAJOR "${GIT_DESC_STR}")
+string(REGEX REPLACE "^[0-9]+[\\.-]([0-9]+).*" "\\1" VERSION_MINOR "${GIT_DESC_STR}")
+string(REGEX REPLACE "^[0-9]+[\\.-][0-9]+[\\.-]([0-9]+).*" "\\1" VERSION_PATCH "${GIT_DESC_STR}")
+string(REGEX REPLACE "^[0-9]+[\\.-][0-9]+[\\.-][0-9]+-[0-9]+-(.*)" "\\1" VERSION_SHA1 "${GIT_DESC_STR}")
+
+set(VERSION_SHORT "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
+set(VERSION_STR ${GIT_DESC_STR})
+message("-- Git describe version: ${GIT_DESC_STR}")
+message("-- major:${VERSION_MAJOR} minor:${VERSION_MINOR} patch:${VERSION_PATCH} sha1:${VERSION_SHA1}")
+message("-- short version: ${VERSION_SHORT}")
+
+configure_file(${COMMON_DIR}/include/version.h.in "${CMAKE_BINARY_DIR}/include/version.h")
+include_directories(${CMAKE_BINARY_DIR}/include)
+
 # Add common/include directory to include path
 include_directories(${COMMON_DIR}/include)
 

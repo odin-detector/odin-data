@@ -174,3 +174,29 @@ void FrameDecoder::drop_all_buffers(void)
   }
 }
 
+//! Collate version information for the decoder.
+//!
+//! The version information is added to the status IpcMessage object.
+//! 
+//! \param[in,out] status - Reference to an IpcMessage value to store the version.
+//!
+void FrameDecoder::version(const std::string param_prefix, OdinData::IpcMessage& status)
+{
+  status.set_param(param_prefix + "major", get_version_major());
+  status.set_param(param_prefix + "minor", get_version_minor());
+  status.set_param(param_prefix + "patch", get_version_patch());
+  status.set_param(param_prefix + "short", get_version_short());
+  status.set_param(param_prefix + "full", get_version_long());
+}
+
+//! Reset frame decoder statistics.
+//!
+//! This method resets the frame decoder statistics. In this base class this
+//! is limited to setting the timed-out frames count to zero. Dervied decoder classes
+//! which override this method should ensure the base class version is explicitly called.
+//!
+void FrameDecoder::reset_statistics(void)
+{
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Resetting frame decoder statistics");
+    frames_timedout_ = 0;
+}
