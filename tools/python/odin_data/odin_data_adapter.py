@@ -24,7 +24,7 @@ class OdinDataAdapter(ApiAdapter):
     ERROR_FAILED_GET = "Unable to successfully complete the GET request"
     ERROR_PUT_MISMATCH = "The size of parameter array does not match the number of clients"
 
-    SUPPORTED_COMMANDS = ['reset_statistics']
+    SUPPORTED_COMMANDS = ['reset_statistics', 'request_version']
     
     def __init__(self, **kwargs):
         """
@@ -230,6 +230,9 @@ class OdinDataAdapter(ApiAdapter):
                         status_code = 503
                         response['error'] = 'Invalid command requested: {}'.format(command)
 
+            # Request a version update from the application after any configuration changes
+            self.request_version()
+
         except Exception as ex:
             self.set_error(str(ex))
             raise
@@ -355,6 +358,12 @@ class OdinDataAdapter(ApiAdapter):
                     self.process_configuration(request_command, parameters)
                 except Exception as ex:
                     logging.error(ex)
+
+        # Finally request version information
+        self.request_version(client)
+
+    def request_version(self, client_index=-1):
+        self.send_command_to_clients('request_version', client_index)
 
     @request_types('application/json')
     @response_types('application/json', default='application/json')
