@@ -28,6 +28,8 @@ class FrameProcessorAdapter(OdinDataAdapter):
     This class provides the adapter interface between the ODIN server and the ODIN-DATA detector system,
     transforming the REST-like API HTTP verbs into the appropriate frameProcessor ZeroMQ control messages
     """
+    VERSION_CHECK_CONFIG_ITEMS = ['plugin']
+
     def __init__(self, **kwargs):
         """
         Initialise the OdinDataAdapter object
@@ -154,6 +156,7 @@ class FrameProcessorAdapter(OdinDataAdapter):
 
             else:
                 return super(FrameProcessorAdapter, self).put(path, request)
+
         except Exception as ex:
             logging.error("Error: %s", ex)
             self.set_error(str(ex))
@@ -161,6 +164,12 @@ class FrameProcessorAdapter(OdinDataAdapter):
             response = {'error': str(ex)}
 
         return ApiAdapterResponse(response, status_code=status_code)
+
+    def require_version_check(self, param):
+        # If the parameter is in the version check list then request a version update
+        if param in self.VERSION_CHECK_CONFIG_ITEMS:
+            return True
+        return False
 
     def setup_rank(self):
         # Attempt initialisation of the connected clients
