@@ -230,9 +230,6 @@ class OdinDataAdapter(ApiAdapter):
                         status_code = 503
                         response['error'] = 'Invalid command requested: {}'.format(command)
 
-            # Request a version update from the application after any configuration changes
-            self.request_version()
-
         except Exception as ex:
             self.set_error(str(ex))
             raise
@@ -363,6 +360,7 @@ class OdinDataAdapter(ApiAdapter):
         self.request_version(client)
 
     def request_version(self, client_index=-1):
+        logging.debug("Requesting version information from client index: %d", client_index)
         self.send_command_to_clients('request_version', client_index)
 
     @request_types('application/json')
