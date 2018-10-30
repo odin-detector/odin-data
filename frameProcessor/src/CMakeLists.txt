@@ -63,6 +63,10 @@ add_library(LiveViewPlugin SHARED LiveViewPlugin.cpp LiveViewPluginLib.cpp)
 target_link_libraries(LiveViewPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${COMMON_LIBRARY})
 install(TARGETS LiveViewPlugin DESTINATION lib)
 
+# Add library for Sum plugin
+add_library(SumPlugin SHARED SumPlugin.cpp SumPluginLib.cpp)
+target_link_libraries(SumPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${COMMON_LIBRARY})
+install(TARGETS SumPlugin DESTINATION lib)
 
 # Add test and project source files to executable
 if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
