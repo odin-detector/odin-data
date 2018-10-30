@@ -155,17 +155,7 @@ class FrameProcessorAdapter(OdinDataAdapter):
                     client.send_configuration(config)
 
             else:
-                response = super(FrameProcessorAdapter, self).put(path, request)
-                # Check that the base call has been successful
-                if response.status_code == 200:
-                    if path.startswith("config/"):
-                        path = remove_prefix(path, "config/")
-                    # Retrieve the top level command from the path and parameters
-                    command, parameters = self.uri_params_to_dictionary(path, request.body)
-                    # If the top level command is in the version check list then request a version update
-                    if command in self.VERSION_CHECK_CONFIG_ITEMS:
-                        self.request_version()
-                return response
+                return super(FrameProcessorAdapter, self).put(path, request)
 
         except Exception as ex:
             logging.error("Error: %s", ex)
@@ -174,6 +164,12 @@ class FrameProcessorAdapter(OdinDataAdapter):
             response = {'error': str(ex)}
 
         return ApiAdapterResponse(response, status_code=status_code)
+
+    def require_version_check(self, param):
+        # If the parameter is in the version check list then request a version update
+        if param in self.VERSION_CHECK_CONFIG_ITEMS:
+            return True
+        return False
 
     def setup_rank(self):
         # Attempt initialisation of the connected clients

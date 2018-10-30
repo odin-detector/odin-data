@@ -210,6 +210,9 @@ class OdinDataAdapter(ApiAdapter):
                     logging.debug("Stored config items: %s", self._config_params)
                 response, status_code = self.process_configuration(request_command, parameters)
 
+                if self.require_version_check(request_command):
+                    self.request_version()
+
             elif request_command.startswith("command/"):
                 request_command = remove_prefix(request_command, "command/")  # Take the rest of the URI
 
@@ -533,6 +536,14 @@ class OdinDataAdapter(ApiAdapter):
 
         # Schedule the update loop to run in the IOLoop instance again after appropriate interval
         IOLoop.instance().call_later(self._update_interval, self.update_loop)
+
+    def require_version_check(self, parameter):
+        """Check if a version request is required after the configuration parameter has been submitted.
+
+        Child classes can implement logic here to force a version request.
+
+        """
+        return False
 
     def process_updates(self):
         """Handle additional background update loop tasks

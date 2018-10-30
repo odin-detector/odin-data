@@ -32,43 +32,11 @@ class FrameReceiverAdapter(OdinDataAdapter):
         for ep in self._endpoints:
             self._decoder_config.append(None)
 
-    @request_types('application/json')
-    @response_types('application/json', default='application/json')
-    def put(self, path, request):  # pylint: disable=W0613
-
-        """
-        Implementation of the HTTP PUT verb for FrameReceiverAdapter
-
-        :param path: URI path of the PUT request
-        :param request: Tornado HTTP request object
-        :return: ApiAdapterResponse object to be returned to the client
-        """
-        status_code = 200
-        response = {}
-        logging.debug("PUT path: %s", path)
-        logging.debug("PUT request: %s", request)
-
-        # First call the base class implementation
-        try:
-            response = super(FrameProcessorAdapter, self).put(path, request)
-            # If the response is OK then request a version update
-            if response.status_code == 200:
-                if path.startswith("config/"):
-                    path = remove_prefix(path, "config/")
-                # Retrieve the top level command from the path and parameters
-                command, parameters = self.uri_params_to_dictionary(path, request.body)
-                # If the top level command is in the version check list then request a version update
-                if command in self.VERSION_CHECK_CONFIG_ITEMS:
-                    self.request_version()
-            return response
-
-        except Exception as ex:
-            logging.error("Error: %s", ex)
-            self.set_error(str(ex))
-            status_code = 503
-            response = {'error': str(ex)}
-
-        return ApiAdapterResponse(response, status_code=status_code)
+    def require_version_check(self, param):
+        # If the parameter is in the version check list then request a version update
+        if param in self.VERSION_CHECK_CONFIG_ITEMS:
+            return True
+        return False
 
     def send_to_clients(self, request_command, parameters, client_index=-1):
         """
