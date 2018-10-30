@@ -158,6 +158,8 @@ class FrameProcessorAdapter(OdinDataAdapter):
                 response = super(FrameProcessorAdapter, self).put(path, request)
                 # Check that the base call has been successful
                 if response.status_code == 200:
+                    if path.startswith("config/"):
+                        path = remove_prefix(path, "config/")
                     # Retrieve the top level command from the path and parameters
                     command, parameters = self.uri_params_to_dictionary(path, request.body)
                     # If the top level command is in the version check list then request a version update

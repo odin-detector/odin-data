@@ -6,6 +6,7 @@ Created on 2nd August 2018
 import copy
 import logging
 from odin_data.odin_data_adapter import OdinDataAdapter
+from odin_data.util import remove_prefix, remove_suffix
 
 
 class FrameReceiverAdapter(OdinDataAdapter):
@@ -52,6 +53,8 @@ class FrameReceiverAdapter(OdinDataAdapter):
             response = super(FrameProcessorAdapter, self).put(path, request)
             # If the response is OK then request a version update
             if response.status_code == 200:
+                if path.startswith("config/"):
+                    path = remove_prefix(path, "config/")
                 # Retrieve the top level command from the path and parameters
                 command, parameters = self.uri_params_to_dictionary(path, request.body)
                 # If the top level command is in the version check list then request a version update
