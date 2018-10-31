@@ -85,34 +85,46 @@ precedence over the configuration file if specified. The options and their defau
 by invoking the`--help` option:
 
 	$ bin/frameReceiver --help
-	usage: frameReceiver [options]
+    usage: frameReceiver [options]
 
 
-	Generic options:
-	  -h [ --help ]         Print this help message
-	  -v [ --version ]      Print program version string
-	  -c [ --config ] arg   Specify program configuration file
+    Generic options:
+      -h [ --help ]         Print this help message
+      -v [ --version ]      Print program version string
+      -c [ --config ] arg   Specify program configuration file
 
-	Configuration options:
-	  -d [ --debug ] arg (=0)                Set the debug level
-	  -n [ --node ] arg (=1)                 Set the frame receiver node ID
-	  -l [ --logconfig ] arg                 Set the log4cxx logging configuration
-	                                         file
-	  -m [ --maxmem ] arg (=1048576)         Set the maximum amount of shared
-	                                         memory to allocate for frame buffers
-	  -s [ --sensortype ] arg (=unknown)     Set the sensor type to receive frame
-	                                         data from
-	  -p [ --port ] arg (=8989,8990)         Set the port to receive frame data on
-	  -i [ --ipaddress ] arg (=0.0.0.0)      Set the IP address of the interface to
-	                                         receive frame data on
-	  --sharedbuf arg (=FrameReceiverBuffer) Set the name of the shared memory
-	                                         frame buffer
-	  --frametimeout arg (=1000)             Set the incomplete frame timeout in ms
-	  -f [ --frames ] arg (=0)               Set the number of frames to receive
-	                                         before terminating
-	  --packetlog arg (=0)                   Enable logging of packet diagnostics
-	                                         to file
-	  --rxbuffer arg (=30000000)             Set UDP receive buffer size
+    Configuration options:
+      -d [ --debug-level ] arg (=0)         Set the debug level
+      -n [ --node ] arg (=1)                Set the frame receiver node ID
+      -l [ --logconfig ] arg                Set the log4cxx logging configuration
+                                            file
+      -m [ --maxmem ] arg (=1048576)        Set the maximum amount of shared memory
+                                            to allocate for frame buffers
+      -t [ --decodertype ] arg (=unknown)   Set the decoder type to to handle data
+                                            reception
+      --path arg (=/home/gnx91527/work/tristan/odin-data/build_name/lib/)
+                                            Path to load the decoder library from
+      --rxtype arg (=udp)                   Set the interface to use for receiving
+                                            frame data (udp or zmq)
+      -p [ --port ] arg (=8989,8990)        Set the port to receive frame data on
+      -i [ --ipaddress ] arg (=0.0.0.0)     Set the IP address of the interface to
+                                            receive frame data on
+      --sharedbuf arg (=FrameReceiverBuffer)
+                                            Set the name of the shared memory frame
+                                            buffer
+      --frametimeout arg (=1000)            Set the incomplete frame timeout in ms
+      -f [ --frames ] arg (=0)              Set the number of frames to receive
+                                            before terminating
+      --packetlog arg (=0)                  Enable logging of packet diagnostics to
+                                            file
+      --rxbuffer arg (=30000000)            Set UDP receive buffer size
+      --iothreads arg (=1)                  Set number of IPC channel IO threads
+      --ctrl arg (=tcp://*:5000)            Set the control channel endpoint
+      --ready arg (=tcp://*:5001)           Set the frame ready channel endpoint
+      --release arg (=tcp://*:5002)         Set the frame release channel endpoint
+      -j [ --json_file ] arg                Path to a JSON configuration file to
+                                            submit to the application
+
 
 The meaning of the configuration options are as follows:
 
@@ -196,13 +208,13 @@ invocation of the frameReceiver in a test would be as follows:
 
 
 
-Running the FileWriter
-----------------------
+Running the FrameProcessor
+--------------------------
 
-The filewriter application communicate with the frameReceiver and receives notifications when
+The FrameProcessor application communicate with the FrameReceiver and receives notifications when
 incoming image frames are ready to be processed and written to disk. The frame data is transferred
 through a shared memory interface (i.e. the `--sharedbuf` argument) to minimise the required
-number of copies. Once a frame has been processed, the memory is handed back to the frameReceiver
+number of copies. Once a frame has been processed, the memory is handed back to the FrameReceiver
 to be re-used.
 
 The application can be used as a diagnostic without actually writing data to files: if the
@@ -223,28 +235,72 @@ in a configuration file (`-c,--config`) - but overriden by a user on the command
 	bin/filewriter --help
 	usage: filewriter [options]
 
+       odin-data version: 0-5-0dls1-155-g3ca9b51-dirty
 
 	Generic options:
 	  -h [ --help ]         Print this help message
 	  -c [ --config ] arg   Specify program configuration file
 
 	Configuration options:
-	  -l [ --logconfig ] arg                 Set the log4cxx logging configuration
-	                                         file
-	  --ready arg (=tcp://127.0.0.1:5001)    Ready ZMQ endpoint from frameReceiver
-	  --release arg (=tcp://127.0.0.1:5002)  Release frame ZMQ endpoint from
-	                                         frameReceiver
-	  -f [ --frames ] arg (=1)               Set the number of frames to be
-	                                         notified about before terminating
-	  --sharedbuf arg (=FrameReceiverBuffer) Set the name of the shared memory
-	                                         frame buffer
-	  -o [ --output ] arg                    Name of HDF5 file to write frames to
-	                                         (default: no file writing)
-	  -p [ --processes ] arg (=1)            Number of concurrent file writer
-	                                         processes
-	  -r [ --rank ] arg (=0)                 The rank (index number) of the current
-	                                         file writer process in relation to the
-	                                         other concurrent ones
+      -d [ --debug-level ] arg (=0)         Set the debug level
+      -l [ --logconfig ] arg                Set the log4cxx logging configuration
+                                            file
+      --iothreads arg (=1)                  Set number of IPC channel IO threads
+      --ctrl arg (=tcp://0.0.0.0:5004)      Set the control endpoint
+      --ready arg (=tcp://127.0.0.1:5001)   Ready ZMQ endpoint from frameReceiver
+      --release arg (=tcp://127.0.0.1:5002) Release frame ZMQ endpoint from
+                                            frameReceiver
+      --meta arg (=tcp://*:5558)            ZMQ meta data channel publish stream
+      -I [ --init ]                         Initialise frame receiver and meta
+                                            interfaces.
+      -N [ --no-client ]                    Enable full initial configuration to
+                                            run without any client controller.You
+                                            must also be provide: detector, path,
+                                            datasets, dtype and dims.
+      -p [ --processes ] arg (=1)           Number of concurrent file writer
+                                            processes
+      -r [ --rank ] arg (=0)                The rank (index number) of the current
+                                            file writer process in relation to the
+                                            other concurrent ones
+      --detector arg                        Detector to configure for
+      --path arg                            Path to detector shared library with
+                                            format 'lib<detector>ProcessPlugin.so'
+      --datasets arg                        Name(s) of datasets to write (space
+                                            separated)
+      --dtype arg                           Data type of raw detector data (0:
+                                            8bit, 1: 16bit, 2: 32bit, 3:64bit)
+      --dims arg                            Dimensions of each frame (space
+                                            separated)
+      -C [ --chunk-dims ] arg               Chunk size of each sub-frame (space
+                                            separated)
+      --bit-depth arg                       Bit-depth mode of detector
+      --compression arg                     Compression type of input data (0:
+                                            None, 1: LZ4, 2: BSLZ4)
+      -o [ --output ] arg (=test.hdf5)      Name of HDF5 file to write frames to
+                                            (default: test.hdf5)
+      --output-dir arg (=/tmp/)             Directory to write HDF5 file to
+                                            (default: /tmp/)
+      --extension arg (=h5)                 Set the file extension of the data
+                                            files (default: h5)
+      -S [ --single-shot ]                  Shutdown after one dataset completed
+      -f [ --frames ] arg (=0)              Set the number of frames to write into
+                                            dataset
+      --acqid arg                           Set the Acquisition Id of the
+                                            acquisition
+      --timeout arg (=0)                    Set the timeout period for closing the
+                                            file (milliseconds)
+      --block-size arg (=1)                 Set the number of consecutive frames to
+                                            write per block
+      --blocks-per-file arg (=0)            Set the number of blocks to write to
+                                            file. Default is 0 (unlimited)
+      --earliest-hdf-ver                    Set to use earliest hdf5 file version.
+                                            Default is off (use latest)
+      --alignment-threshold arg (=1)        Set the hdf5 alignment threshold.
+                                            Default is 1 (no alignment)
+      --alignment-value arg (=1)            Set the hdf5 alignment value. Default
+                                            is 1 (no alignment)
+      -j [ --json_file ] arg                Path to a JSON configuration file to
+                                            submit to the application
 
 ### Limitations
 
@@ -259,6 +315,77 @@ Currently the application has a number of limitations (which will be addressed):
    gain data can be generated in the file by a post-processing step (see python script
    `decode_raw_frames_hdf5.py`)
 
+
+Using JSON Configuration Files
+------------------------------
+
+Both the FrameReceiver and FrameProcessor applications support the use of JSON formatted configuration files
+supplied from the command line to set them up without the need for a control connection.  All configuration
+messages that are supported from the control interface are also supported through the configuration file.
+
+To supply a JSON configuration file from the command line use the `-j` or `--json_file` options and supply the
+full path and filename of the configuration file.  The file must be correctly formatted JSON otherwise the
+parsing will fail.
+
+### File Structure
+
+The file must specify a list of dictionaries, with each dictionary representing a single configuration message
+that is to be submitted through the control interface.  When the configuration file is parsed each dictionary is
+processed in turn and submitted as a single control message, which allows for multiple instances of the same control
+message to be submitted in a specific order (something that is required when loading plugins into a FrameProcessor
+application.
+
+The example below demonstrates setting up a FrameProcessor with two plugins.  There are five control messages
+defined here, with two sets of duplicated messages (for loading and connecting plugins).  The first message will
+setup the interface from the FrameProcessor to the FrameReceiver application.  The second message loads the
+FileWriter plugin into the FrameProcessor application.  The third message loads another plugin (ExcaliburProcessPlugin)
+into the FrameProcessor application.  The final two messages connect the plugins together in a chain with the
+shared memory buffer manager.
+
+```
+[
+  {
+    "fr_setup": {
+      "fr_ready_cnxn": "tcp://127.0.0.1:5001",
+      "fr_release_cnxn": "tcp://127.0.0.1:5002"
+    }
+  },
+  {
+    "plugin": {
+      "load": {
+        "index": "hdf",
+        "name": "FileWriterPlugin",
+        "library": "/dls_sw/prod/tools/RHEL6-x86_64/odin-data/0-5-0dls1/prefix/lib/libHdf5Plugin.so"
+      }
+    }
+  },
+  {
+    "plugin": {
+      "load": {
+        "index": "excalibur",
+        "name": "ExcaliburProcessPlugin",
+        "library": "/dls_sw/prod/tools/RHEL6-x86_64/excalibur-detector/0-3-0/prefix/lib/libExcaliburProcessPlugin.so"
+      }
+    }
+  },
+  {
+    "plugin": {
+      "connect": {
+        "index": "excalibur",
+        "connection": "frame_receiver"
+      }
+    }
+  },
+  {
+    "plugin": {
+      "connect": {
+        "index": "hdf",
+        "connection": "excalibur"
+      }
+    }
+  }
+]
+```
 
 Using the python tools
 ----------------------
