@@ -76,12 +76,12 @@ function populateDropdown()
 function colormap_change(value)
 {
     console.log("colormap Changed: " + value)
-//    $.ajax({
-//    type: "PUT",
-//    url: api_url,
-//    contentType: "application/json",
-//    data: '{"colormap_selected": "' + value +'" }'
-//    });
+    $.ajax({
+    type: "PUT",
+    url: api_url,
+    contentType: "application/json",
+    data: '{"colormap_selected": "' + value +'" }'
+    });
     colormap = value;
     getImage(value);
 }
