@@ -141,41 +141,33 @@ class LiveViewer(object):
             logging.warning(
                 "Warning: No subscriptions made. Check the configuration file for valid endpoints")
 
-        self.colormap_options = {
-            "autumn": cv2.COLORMAP_AUTUMN,
-            "bone": cv2.COLORMAP_BONE,
-            "jet": cv2.COLORMAP_JET,
-            "winter": cv2.COLORMAP_WINTER,
-            "rainbow": cv2.COLORMAP_RAINBOW,
-            "ocean": cv2.COLORMAP_OCEAN,
-            "summer": cv2.COLORMAP_SUMMER,
-            "spring": cv2.COLORMAP_SPRING,
-            "cool": cv2.COLORMAP_COOL,
-            "hsv": cv2.COLORMAP_HSV,
-            "pink": cv2.COLORMAP_PINK,
-            "hot": cv2.COLORMAP_HOT,
-            "parula": cv2.COLORMAP_PARULA
-        }
-        self.colormap_keys_capitalisation = {
-            "autumn": "Autumn",
-            "bone": "Bone",
-            "jet": "Jet",
-            "winter": "Winter",
-            "rainbow": "Rainbow",
-            "ocean": "Ocean",
-            "summer": "Summer",
-            "spring": "Spring",
-            "cool": "Cool",
-            "hsv": "HSV",
-            "pink": "Pink",
-            "hot": "Hot",
-            "parula": "Parula"
+        # Define a list of available cv2 colormaps
+        self.cv2_colormaps = {
+            "Autumn": cv2.COLORMAP_AUTUMN,
+            "Bone": cv2.COLORMAP_BONE,
+            "Jet": cv2.COLORMAP_JET,
+            "Winter": cv2.COLORMAP_WINTER,
+            "Rainbow": cv2.COLORMAP_RAINBOW,
+            "Ocean": cv2.COLORMAP_OCEAN,
+            "Summer": cv2.COLORMAP_SUMMER,
+            "Spring": cv2.COLORMAP_SPRING,
+            "Cool": cv2.COLORMAP_COOL,
+            "HSV": cv2.COLORMAP_HSV,
+            "Pink": cv2.COLORMAP_PINK,
+            "Hot": cv2.COLORMAP_HOT,
+            "Parula": cv2.COLORMAP_PARULA
         }
 
+        # Build a sorted list of colormap options mapping readable name to lowercase option
+        self.colormap_options = OrderedDict()
+        for colormap_name in sorted(self.cv2_colormaps.keys()):
+            self.colormap_options[colormap_name.lower()] = colormap_name
+
+        # Set the selected colormap to the default
         if default_colormap.lower() in self.colormap_options:
-            self.selected_colormap = self.colormap_options[default_colormap.lower()]
+            self.selected_colormap = default_colormap.lower()
         else:
-            self.selected_colormap = self.colormap_options["jet"]
+            self.selected_colormap = "jet"
 
         self.rendered_image = self.render_image()
 
@@ -183,7 +175,7 @@ class LiveViewer(object):
             "name": "Live View Adapter",
             "endpoints": (self.get_channel_endpoints, None),
             "frame": (lambda: self.header, None),
-            "colormap_options": (self.get_colormap_options_list, None),
+            "colormap_options": self.colormap_options,
             "colormap_selected": (self.get_selected_colormap, self.set_selected_colormap),
             "data_min_max": (lambda: [int(self.img_data.min()), int(self.img_data.max())], None),
             "frame_counts": (self.get_channel_counts, self.set_channel_counts),
@@ -284,7 +276,10 @@ class LiveViewer(object):
         img_scaled = self.scale_array(img_clipped, 0, 255).astype(dtype=np.uint8)
 
         # Apply colormap
-        img_colormapped = cv2.applyColorMap(img_scaled, colormap)
+        cv2_colormap = self.cv2_colormaps[self.colormap_options[colormap]]
+        img_colormapped = cv2.applyColorMap(img_scaled, cv2_colormap)
+        print(colormap)
+        print(self.colormap_options[colormap])
 
         # Most time consuming step, depending on image size and the type of image
         img_encode = cv2.imencode(
@@ -333,26 +328,13 @@ class LiveViewer(object):
         for channel in self.ipc_channels:
             channel.cleanup()
 
-    def get_colormap_options_list(self):
-        """
-        Get an ordered list of colormap options from the colormap dictionary.
-
-        :return: an ordered list of colormap options.
-        """
-        options_dict = OrderedDict(sorted(self.colormap_keys_capitalisation.items()))
-        return options_dict
-
     def get_selected_colormap(self):
         """
         Get the default colormap for the adapter.
 
         :return: the default colormap for the adapter
         """
-        for name, value in self.colormap_options.items():
-            if self.selected_colormap == value:
-                return name.lower()
-
-        return None
+        return self.selected_colormap
 
     def set_selected_colormap(self, colormap):
         """
@@ -361,7 +343,7 @@ class LiveViewer(object):
         :param colormap: colormap to select
         """
         if colormap.lower() in self.colormap_options:
-            self.selected_colormap = self.colormap_options[colormap.lower()]
+            self.selected_colormap = colormap.lower()
 
     def set_clip(self, clip_array):
         """
