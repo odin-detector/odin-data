@@ -48,7 +48,7 @@ function populateDropdown()
 
     $.getJSON(api_url, function (response)
     {
-        colormap = response.colormap_default;
+        colormap = response.colormap_selected;
         console.log(response);
         $.each(response.colormap_options, function(key, value){
             console.log("Option: " + value);
@@ -68,8 +68,8 @@ function populateDropdown()
         })
 
         console.log(response);
-        $('#img_max').val(parseInt(response.data_min_max[1]));
-        $('#img_min').val(parseInt(response.data_min_max[0]));
+        $('#img_max').text(parseInt(response.data_min_max[1]));
+        $('#img_min').text(parseInt(response.data_min_max[0]));
     });
 }
 
@@ -104,8 +104,8 @@ function getImage(colormap)
 
     $.getJSON(api_url + "data_min_max", function(response)
     {
-        $('#img_max').val(parseInt(response.data_min_max[1]));
-        $('#img_min').val(parseInt(response.data_min_max[0]));
+        $('#img_max').text(parseInt(response.data_min_max[1]));
+        $('#img_min').text(parseInt(response.data_min_max[0]));
     });
 
 }

@@ -43,7 +43,7 @@
             <div class="row">
                 <div class="center-fit">
                     <div class="col-md-2">
-                        <label><b>Enable:</b></label>
+                        <label><b>Auto-update:</b></label>
                     </div>
                     <div class="col-md-2">
                         <input type="checkbox" name="preview_enable" data-size="small">
@@ -54,18 +54,18 @@
             <div class="row">
                 <img class='center-fit' id='preview_image' src='/api/0.1/live_viewer/image' data-src='/api/0.1/live_viewer/image'>
             </div>
-            <div class="row">
-                <div class="col-md-2">
-                    <label for="img_max"><b>Data Max:</b></label>
-                </div>
-                <div class="col-md-2">
-                    <input type="number" id="img_max" readonly/>
-                </div>
+            <div class="row center-fit">
                 <div class="col-md-2">
                     <label for="img_min"><b>Data Min:</b></label>
                 </div>
                 <div class="col-md-2">
-                    <input type="number" id="img_min" readonly/>
+                    <div id="img_min">--</div>
+                </div>
+                <div class="col-md-2">
+                    <label for="img_max"><b>Data Max:</b></label>
+                </div>
+                <div class="col-md-2">
+                    <div id="img_max">--</div>
                 </div>
             </div>
             <div class="row">
@@ -79,19 +79,11 @@
                 <div class="col-md-2">
                     <input type="range" min="0" max="100" value="0" steps="1">
                 </div>
-
-
             </div>
-            <div class="row"><div class="col-md-2">&nbsp;</div></div>
             <div class="row">
-                <select id="colormap_dropdown" name="colormap" onchange="colormap_change(this.value);">
-                </select>
-            </div>
-
-
-            <div class="row">
-                <p>API version is:&nbsp;<span id="api-version">&nbsp;</span></p>
-                <p>Registered API adapters:&nbsp;<span id="api-adapters">&nbsp;</span></p>
+                <div class="col-md2">Colourmap: 
+                    <select id="colormap_dropdown" name="colormap" onchange="colormap_change(this.value);"/>
+                </div>      
             </div>
         </div>
       </div><!-- /.container -->
