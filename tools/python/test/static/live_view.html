@@ -10,13 +10,15 @@
     <!-- Bootstrap -->
     <link href="js/bootstrap-3.3.6-dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="js/bootstrap-3.3.6-dist/css/bootstrap-switch.min.css" rel="stylesheet">
+    <link href="js/bootstrap-slider-10.2.1/css/bootstrap-slider.css" rel="stylesheet">
+    <link href="js/bootstrap-slider-10.2.1/css/bootstrap-slider.min.css" rel="stylesheet">
     <link href="css/odin-server.css" rel="stylesheet">
 
   </head>
   <body>
 
       <nav class="navbar navbar-inverse navbar-fixed-top">
-        <div class="container">
+        <div class="container-fluid">
           <div class="navbar-header">
             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
               <span class="sr-only">Toggle navigation</span>
@@ -37,62 +39,75 @@
       </nav>
 
       <div class="container-fluid">
-        <div class="odin-server">
-            <div class="row"><h1>ODIN Server</h1></div>
-            <div class="row"><p class="lead">Live View Demo</p></div>
-            <div class="row">
-                <div class="center-fit">
-                    <div class="col-md-12">
-                        <label for="liveview_enable"><b>Auto-update:</b></label>
-                        <input type="checkbox" name="liveview_enable" data-size="small">
-                    </div>
-                </div>
-            </div>
-            <div class="row"><div class="col-md-2">&nbsp;</div></div>
-            <div class="row">
-                <img class='center-fit' id='liveview_image' src='/api/0.1/live_view/image' data-src='/api/0.1/live_view/image'>
-            </div>
-            <div class="row center-fit">
-                <div class="col-md-2">
-                    <label for="img_min"><b>Data Min:</b></label>
-                </div>
-                <div class="col-md-2">
-                    <div id="img_min">--</div>
-                </div>
-                <div class="col-md-2">
-                    <label for="img_max"><b>Data Max:</b></label>
-                </div>
-                <div class="col-md-2">
-                    <div id="img_max">--</div>
-                </div>
-            </div>
-            <div class="row">
-                <!--Clip Div -->
-                <div class="col-md-2">
-                        <label><b>Clipping Enabled:</b></label>
-                </div>
-                <div class="col-md-2">
-                    <input type="checkbox" name="clip_enable" data-size="small"/>
-                </div>
-                <div class="col-md-2">
-                    <input type="range" min="0" max="100" value="0" steps="1">
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md2">
-                    <label for="colormap_dripdown"><b>Colourmap:</b></label>&nbsp;</label>
-                    <select id="colormap_dropdown" name="colormap" onchange="changeColormap(this.value);"/>
-                </div>      
-            </div>
-        </div>
-      </div><!-- /.container -->
+            <div class="row fluid-row">
 
-    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="js/jquery-2.2.3.min.js"></script>
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="js/bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
-    <script src="js/bootstrap-3.3.6-dist/js/bootstrap-switch.min.js"></script>
-    <script src="js/odin_server.js"></script>
-    <script src='js/live_view.js'></script>
-  </body>
+                <div class="span3">
+                    <div class="well sidebar-nav-fixed">
+                        <div class="container-fluid">
+                            <div class="row sidebar-title">
+                                <h3>Live View Demo</h3>
+                            </div>
+                            <div class="row sidebar-row vertical-align">
+                                <div class="col-xs-5">
+                                    <b>Auto&#8209;update:</b> 
+                                </div>
+                                <div class="col-xs-7">
+                                    <input type="checkbox" name="liveview_enable" data-size="small">
+                                </div>
+                            </div>
+                            <div class="row sidebar-row vertical-align">
+                                <div class="col-xs-5">
+                                    <b>Colourmap:</b> 
+                                </div>
+                                <div class="col-xs-7">
+                                    <select class="form-control" id="colormap_select" onchange="changeColormap(this.value);">
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row sidebar-row vertical-align">
+                                <div class="col-xs-5">
+                                    <b>Clipping:</b> 
+                                </div>
+                                <div class="col-xs-7">
+                                    <input type="checkbox" name="clip_enable" data-size="small":">
+                                </div>
+                            </div>
+                            <div class="row sidebar-row vertical-align row-bold">
+                                <div class="col-xs-3 text-left" id="clip_min">&nbsp;</div>
+                                <div class="col-xs-6 text-center">Range</div>
+                                <div class="col-xs-3 text-right" id="clip_max">&nbsp;</div>
+                            </div>
+                            <div class="row sidebar-row sidebar-row-full">
+                                <div class="col-xs12 clip-range-col">
+                                    <input id="clip_range"
+                                        type="text" value="" data-slider-id="clip-range" 
+                                        data-slider-min="0" data-slider-max="100" 
+                                        data-slider-step="1" data-slider-value="[0,100]"
+                                    />
+                                </div>
+                            </div>
+                        </div> <!-- container-fluid --> 
+                    </div> <!-- well sidebar-nav-fixed -->
+                </div> <!-- span3 -->
+
+                <div class="span9 span-fixed-sidebar">
+                    <div class="odin-server live-image">
+                        <div class="row">
+                            <img id='liveview_image' src='/api/0.1/live_view/image' data-src='/api/0.1/live_view/image'>
+                        </div>
+                    </div> <!-- odin-server -->
+                </div> <!-- span9 -->
+                
+            </div> <!-- row fluid-row -->
+        </div> <!-- container-fluid-->
+
+        <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+        <script src="js/jquery-2.2.3.min.js"></script>
+        <!-- Include all compiled plugins (below), or include individual files as needed -->
+        <script src="js/bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
+        <script src="js/bootstrap-3.3.6-dist/js/bootstrap-switch.min.js"></script>
+        <script src="js/bootstrap-slider-10.2.1/js/bootstrap-slider.min.js"></script>
+        <script src="js/odin_server.js"></script>
+        <script src='js/live_view.js'></script>
+    </body>
 </html>

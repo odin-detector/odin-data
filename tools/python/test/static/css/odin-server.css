@@ -12,3 +12,60 @@ body {
    max-height: 100vh;
    margin: auto;
   }
+
+.sidebar-title
+{
+	text-align: center;
+}
+.sidebar-nav-fixed {
+	padding: 9px 9px;
+	position: fixed;
+	left: 0px;
+	top: 55px;
+	width: 300px;
+	background-color: #f9f9f9;
+}
+
+.sidebar-row {
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+
+.sidebar-row-full {
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+.sidebar-slider {
+    width: 90%;
+    float: center;
+}
+
+.row-fluid > .span-fixed-sidebar {
+	margin-left: 320px;
+}
+
+.row-bold {
+    font-weight: bold;
+}
+
+.live-image {
+	margin-left: 320px;
+    padding: 5px;
+    float: left;
+}
+
+.clip-range-col {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+#clip-range {
+    width: 100%;
+}
+
+#clip-range .slider-selection {
+	background: #BABABA;
+}
+
+
