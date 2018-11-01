@@ -1,22 +1,23 @@
-var preview_enable = 0;
+var liveview_enable = 0;
 var clip_enable = 0;
 var api_url = '/api/0.1/live_view/';
-var colormap;
+var image_element = "liveview_image";
 
-function pollPreview(image_elem)
+function pollLiveView(image_elem)
 {
-    if (preview_enable) {
-       getImage(colormap);
+    if (liveview_enable) {
+       getImage(image_elem);
     }
-    setTimeout(pollPreview, 100, image_elem);      
+    setTimeout(pollLiveView, 100, image_elem);      
 }
 
-function configPreview() 
+function configureLiveView() 
 {
-    $("[name='preview_enable']").bootstrapSwitch();
-    $("[name='preview_enable']").bootstrapSwitch('state', preview_enable, true);
-    $('input[name="preview_enable"]').on('switchChange.bootstrapSwitch', function(event,state) {
-	    changePreviewEnable();
+    // Configure switch elements
+    $("[name='liveview_enable']").bootstrapSwitch();
+    $("[name='liveview_enable']").bootstrapSwitch('state', liveview_enable, true);
+    $('input[name="liveview_enable"]').on('switchChange.bootstrapSwitch', function(event,state) {
+	    changeLiveViewEnable();
 	});
 
 	$("[name='clip_enable']").bootstrapSwitch();
@@ -25,11 +26,44 @@ function configPreview()
 	    changeClipEnable();
 	});
 
+    // Retrieve API data and populate controls
+    $.getJSON(api_url, function (response)
+    {
+        buildColormapDropdown(response.colormap_selected, response.colormap_options);
+        updateDataMinMax(response.data_min_max);
+    });
+
 }
 
-function changePreviewEnable() 
+function buildColormapDropdown(selected_colormap, colormap_options)
 {
-    preview_enable = $("[name='preview_enable']").bootstrapSwitch('state');
+    let dropdown = $('#colormap_dropdown');
+
+    dropdown.empty();
+
+    var colormaps_sorted = Object.keys(colormap_options).sort();
+
+    $.each(colormaps_sorted, function(idx, colormap) {
+        var colormap_name = colormap_options[colormap];
+        var selected = '';
+        if (colormap.localeCompare(selected_colormap) === 0)
+        {
+            selected = 'selected="true"'
+        }
+        dropdown.append('<option ' + selected + 
+            ' value=' + colormap + '>' + colormap_name + '</option>');
+    });
+}
+ 
+function updateDataMinMax(data_min_max)
+{
+    $('#img_min').text(parseInt(data_min_max[0]));
+    $('#img_max').text(parseInt(data_min_max[1]));
+}
+
+function changeLiveViewEnable() 
+{
+    liveview_enable = $("[name='liveview_enable']").bootstrapSwitch('state');
 }
 
 function changeClipEnable()
@@ -37,83 +71,33 @@ function changeClipEnable()
     clip_enable = $("[name='clip_enable']").bootstrapSwitch('state');
 }
 
-function populateDropdown()
+function changeColormap(value)
 {
-    let dropdown = $('#colormap_dropdown');
-
-    dropdown.empty();
-
-    var options_count = 0;
-
-
-    $.getJSON(api_url, function (response)
-    {
-        colormap = response.colormap_selected;
-        console.log(response);
-        $.each(response.colormap_options, function(key, value){
-            console.log("Option: " + value);
-            options_count ++;
-            var option = new Option(value, key);
-            console.log("Comparing " + key + " with " + colormap)
-            console.log("Comparison: " + key.localeCompare(colormap))
-            var selected = ''
-            if(key.localeCompare(colormap) === 0)
-            {
-                console.log("Selecting option " + options_count +": " + key)
-                selected = 'selected="true"'
-            }
-
-            dropdown.append('<option ' + selected + ' value=' + key + '>' + value + '</option>');
-
-        })
-
-        console.log(response);
-        $('#img_max').text(parseInt(response.data_min_max[1]));
-        $('#img_min').text(parseInt(response.data_min_max[0]));
-    });
-}
-
-function colormap_change(value)
-{
-    console.log("colormap Changed: " + value)
+    console.log("Colormap changed to " + value)
     $.ajax({
-    type: "PUT",
-    url: api_url,
-    contentType: "application/json",
-    data: '{"colormap_selected": "' + value +'" }'
+        type: "PUT",
+        url: api_url,
+        contentType: "application/json",
+        data: '{"colormap_selected": "' + value +'" }'
     });
-    colormap = value;
-    getImage(value);
+    getImage(image_element);
 }
 
-function getImage(colormap)
+function getImage(image_elem)
 {
 
-    var options = 'colormap=' + colormap;
-    if(clip_enable)
-    {
-        options += '&clip-min=' + 1000 +
-                   '&clip-max=' + 2000;
-    }
-
-     //+
-//                  '&clip-min=' + 1000 +
-//                  '&clip-max=' + 2000;
-    var $image = $( '#' + "preview_image" );
-    $image.attr("src", $image.attr("data-src")  + '?' + options + '&' +  new Date().getTime());
+    var $image = $('#' + image_elem);
+    $image.attr("src", $image.attr("data-src") + '?' +  new Date().getTime());
 
     $.getJSON(api_url + "data_min_max", function(response)
     {
-        $('#img_max').text(parseInt(response.data_min_max[1]));
-        $('#img_min').text(parseInt(response.data_min_max[0]));
+        updateDataMinMax(response.data_min_max);
     });
 
 }
 
 $( document ).ready(function() 
 {
-
-    configPreview();
-    populateDropdown();
-    pollPreview("preview_image");
+    configureLiveView();
+    pollLiveView(image_element);
 });

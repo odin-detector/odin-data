@@ -36,23 +36,21 @@
         </div>
       </nav>
 
-      <div class="container">
+      <div class="container-fluid">
         <div class="odin-server">
             <div class="row"><h1>ODIN Server</h1></div>
             <div class="row"><p class="lead">Live View Demo</p></div>
             <div class="row">
                 <div class="center-fit">
-                    <div class="col-md-2">
-                        <label><b>Auto-update:</b></label>
-                    </div>
-                    <div class="col-md-2">
-                        <input type="checkbox" name="preview_enable" data-size="small">
+                    <div class="col-md-12">
+                        <label for="liveview_enable"><b>Auto-update:</b></label>
+                        <input type="checkbox" name="liveview_enable" data-size="small">
                     </div>
                 </div>
             </div>
             <div class="row"><div class="col-md-2">&nbsp;</div></div>
             <div class="row">
-                <img class='center-fit' id='preview_image' src='/api/0.1/live_view/image' data-src='/api/0.1/live_view/image'>
+                <img class='center-fit' id='liveview_image' src='/api/0.1/live_view/image' data-src='/api/0.1/live_view/image'>
             </div>
             <div class="row center-fit">
                 <div class="col-md-2">
@@ -81,8 +79,9 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-md2">Colourmap: 
-                    <select id="colormap_dropdown" name="colormap" onchange="colormap_change(this.value);"/>
+                <div class="col-md2">
+                    <label for="colormap_dripdown"><b>Colourmap:</b></label>&nbsp;</label>
+                    <select id="colormap_dropdown" name="colormap" onchange="changeColormap(this.value);"/>
                 </div>      
             </div>
         </div>
@@ -94,6 +93,6 @@
     <script src="js/bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
     <script src="js/bootstrap-3.3.6-dist/js/bootstrap-switch.min.js"></script>
     <script src="js/odin_server.js"></script>
-    <script src='js/img_loader.js'></script>
+    <script src='js/live_view.js'></script>
   </body>
 </html>
