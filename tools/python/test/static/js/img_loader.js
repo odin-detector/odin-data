@@ -1,6 +1,6 @@
 var preview_enable = 0;
 var clip_enable = 0;
-var api_url = '/api/0.1/live_viewer/';
+var api_url = '/api/0.1/live_view/';
 var colormap;
 
 function pollPreview(image_elem)
