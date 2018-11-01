@@ -179,7 +179,7 @@ class LiveViewer(object):
             "colormap_selected": (self.get_selected_colormap, self.set_selected_colormap),
             "data_min_max": (lambda: [int(self.img_data.min()), int(self.img_data.max())], None),
             "frame_counts": (self.get_channel_counts, self.set_channel_counts),
-            "img_clip": (lambda: [self.clip_min, self.clip_max], self.set_clip)
+            "clip_range": (lambda: [self.clip_min, self.clip_max], self.set_clip)
         })
 
     def get(self, path, _request=None):
@@ -278,8 +278,6 @@ class LiveViewer(object):
         # Apply colormap
         cv2_colormap = self.cv2_colormaps[self.colormap_options[colormap]]
         img_colormapped = cv2.applyColorMap(img_scaled, cv2_colormap)
-        print(colormap)
-        print(self.colormap_options[colormap])
 
         # Most time consuming step, depending on image size and the type of image
         img_encode = cv2.imencode(
@@ -351,21 +349,10 @@ class LiveViewer(object):
 
         :param clip_array: array of min and max values to clip
         """
-        clip_array = self.convert_to_string(clip_array)
-        if isinstance(clip_array[0], str):
-            if clip_array[0].lower() == 'none':
-                self.clip_min = None
-            else:
-                self.clip_min = int(clip_array[0])
-        elif isinstance(clip_array[0], int):
+        if (clip_array[0] is None) or isinstance(clip_array[0], int):
             self.clip_min = clip_array[0]
-
-        if isinstance(clip_array[1], str):
-            if clip_array[1].lower() == 'none':
-                self.clip_max = None
-            else:
-                self.clip_max = int(clip_array[1])
-        elif isinstance(clip_array[1], int):
+            
+        if (clip_array[1] is None) or isinstance(clip_array[1], int):
             self.clip_max = clip_array[1]
 
     def get_channel_endpoints(self):
