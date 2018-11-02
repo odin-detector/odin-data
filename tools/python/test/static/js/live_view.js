@@ -1,5 +1,6 @@
 var LiveViewApp = (function()
 {
+    'use strict';
 
     var liveview_enable = false;
     var clip_enable = false;
@@ -56,6 +57,15 @@ var LiveViewApp = (function()
             changeClipEnable();
         });
 
+        // Bind the window resize event
+        $( window ).on('resize', function()
+        {
+            if (!liveview_enable) {
+                resizeImage();
+            }
+        });
+
+        // Start the update polling loop
         pollUpdate();
     };
 
@@ -105,7 +115,6 @@ var LiveViewApp = (function()
         $('#clip_min').text(data_min);
         $('#clip_max').text(data_max);
 
-        //var clip_slider = $("#clip_range");
         var current_values = clip_slider.data('slider').getValue();
 
         if (reset_current) {
@@ -201,7 +210,7 @@ var LiveViewApp = (function()
 
             var img_container_width =  $("#liveview_container").width();
             var img_container_height = $("#liveview_container").height();
-        
+
             var width_scaling = Math.min(img_container_width / img_width, 1.0);
             var height_scaling = Math.min(img_container_height / img_height, 1.0);
 
@@ -214,55 +223,42 @@ var LiveViewApp = (function()
 
     };
 
-    var handleWindowResize = function()
-    {
-        if (!liveview_enable) {
-            resizeImage();
-        }
-    };
-
     return {
         init: init,
-        handleWindowResize: handleWindowResize
     };
 
 })();
-
 
 $( document ).ready(function() 
 {
     LiveViewApp.init();
 });
 
-$( window ).on('resize', function()
-{
-    LiveViewApp.handleWindowResize();
-});
-
+// Generate naturalWidth/naturalHeight methods for images in JQuery
 (function($){
     var
     props = ['Width', 'Height'],
     prop;
-  
+
     while (prop = props.pop()) {
-    (function (natural, prop) {
-      $.fn[natural] = (natural in new Image()) ? 
-      function () {
-      return this[0][natural];
-      } : 
-      function () {
-      var 
-      node = this[0],
-      img,
-      value;
-  
-      if (node.tagName.toLowerCase() === 'img') {
-        img = new Image();
-        img.src = node.src,
-        value = img[prop];
-      }
-      return value;
-      };
-    }('natural' + prop, prop.toLowerCase()));
+        (function (natural, prop) {
+            $.fn[natural] = (natural in new Image()) ?
+            function () {
+                return this[0][natural];
+            } :
+            function () {
+                var
+                node = this[0],
+                img,
+                value;
+
+                if (node.tagName.toLowerCase() === 'img') {
+                    img = new Image();
+                    img.src = node.src,
+                    value = img[prop];
+                }
+                return value;
+            };
+        }('natural' + prop, prop.toLowerCase()));
     }
-  }(jQuery));
+}(jQuery));
