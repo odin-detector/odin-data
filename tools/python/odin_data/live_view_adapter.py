@@ -229,12 +229,12 @@ class LiveViewer(object):
         """
         # Message should be a list from multi part message.
         # First part will be the json header from the live view, second part is the raw image data
-        logging.debug("Creating Image from message")
         header = json_decode(msg[0])
-        logging.debug(header)
+
         # json_decode returns dictionary encoded in unicode. Convert to normal strings
         header = self.convert_to_string(header)
-        logging.debug(header)
+        logging.debug("Got image with header: %s", header)
+
         # create a np array of the image data, of type specified in the frame header
         img_data = np.fromstring(msg[1], dtype=np.dtype(header['dtype']))
 
@@ -243,7 +243,6 @@ class LiveViewer(object):
 
         self.rendered_image = self.render_image(
             self.selected_colormap, self.clip_min, self.clip_max)
-        logging.debug("Image Size: %d", len(self.rendered_image))
 
     def render_image(self, colormap=None, clip_min=None, clip_max=None):
         """
@@ -351,7 +350,7 @@ class LiveViewer(object):
         """
         if (clip_array[0] is None) or isinstance(clip_array[0], int):
             self.clip_min = clip_array[0]
-            
+          
         if (clip_array[1] is None) or isinstance(clip_array[1], int):
             self.clip_max = clip_array[1]
 
