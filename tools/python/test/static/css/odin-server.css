@@ -52,7 +52,6 @@ body {
 .live-image {
     margin-left: 320px;
     padding: 5px;
-    background-color: #ffff00;
     height: 100vh;
     height: -webkit-calc(100vh - 50px);
     height: -moz-calc(100vh - 50px);
