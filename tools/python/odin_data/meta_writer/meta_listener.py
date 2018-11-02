@@ -137,7 +137,7 @@ class MetaListener:
         for key in self._writers:
             writer = self._writers[key]
             status_dict[key] = {'filename': writer.full_file_name, 'num_processors': writer.number_processes_running,
-                                'written': writer.write_count, 'writing': not writer.finished}
+                                'written': writer.write_count, 'writing': writer.file_created and not writer.finished}
             writer.write_timeout_count = writer.write_timeout_count + 1
 
         reply = IpcMessage(IpcMessage.ACK, 'status', id=msg_id)
