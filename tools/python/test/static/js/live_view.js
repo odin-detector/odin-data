@@ -1,19 +1,29 @@
-var liveview_enable = 0;
-var clip_enable = 0;
+var liveview_enable = false;
+var clip_enable = false;
+var autosize_enable = true;
 var clip_slider = null;
+var size_slider = null;
 var api_url = '/api/0.1/live_view/';
-var image_element = "liveview_image";
+var img_elem = null;
+var img_scaling = 1.0;
 
-function pollLiveView(image_elem)
+function pollLiveView()
 {
     if (liveview_enable) {
-       getImage(image_elem);
+       updateImage();
     }
-    setTimeout(pollLiveView, 100, image_elem);      
+    setTimeout(pollLiveView, 100);      
 }
 
 function configureLiveView() 
 {
+
+    img_elem = $('#liveview_image');
+    img_elem.load(function() 
+    {
+        resizeImage();
+    });
+
     // Configure auto-update switch
     $("[name='liveview_enable']").bootstrapSwitch();
     $("[name='liveview_enable']").bootstrapSwitch('state', liveview_enable, true);
@@ -27,9 +37,20 @@ function configureLiveView()
     $('input[name="clip_enable"]').on('switchChange.bootstrapSwitch', function(event,state) {
 	    changeClipEnable();
 	});
-    
+
     // Configure clipping range slider
     clip_slider = $("#clip_range").slider({}).on('slideStop', changeClipEvent);
+
+    // Configure autosizing enable switch
+	$("[name='autosize_enable']").bootstrapSwitch();
+	$("[name='autosize_enable']").bootstrapSwitch('state', autosize_enable, true);
+    $('input[name="autosize_enable"]').on('switchChange.bootstrapSwitch', function(event,state) {
+	    changeAutosizeEnable();
+	});
+
+    // Configure sizing range slider
+    size_slider = $("#size_range").slider({}).on('slideStop', changeSizeEvent);
+    size_slider.slider(!autosize_enable ? "enable" : "disable");
 
     // Retrieve API data and populate controls
     $.getJSON(api_url, function (response)
@@ -94,6 +115,13 @@ function changeClipEnable()
     changeClipRange();
 }
 
+function changeAutosizeEnable()
+{
+    autosize_enable = $("[name='autosize_enable']").bootstrapSwitch('state');
+    size_slider.slider(!autosize_enable ? "enable" : "disable");
+    console.log("Change autosize enable to " + autosize_enable);
+}
+
 function changeClipEvent(slide_event)
 {
     var new_range = slide_event.value;
@@ -124,6 +152,14 @@ function changeClipRange(clip_range=null) {
 
 }
 
+function changeSizeEvent(size_event)
+{
+    var new_size = size_event.value;
+    img_scaling = new_size / 100;
+    console.log("Image sclaling changed to " + img_scaling);
+    resizeImage();
+}
+
 function changeColormap(value)
 {
     console.log("Colormap changed to " + value)
@@ -133,24 +169,90 @@ function changeColormap(value)
         contentType: "application/json",
         data: '{"colormap_selected": "' + value +'" }'
     });
-    getImage(image_element);
+    updateImage();
 }
 
-function getImage(image_elem)
+function updateImage()
 {
-
-    var $image = $('#' + image_elem);
-    $image.attr("src", $image.attr("data-src") + '?' +  new Date().getTime());
+    img_elem.attr("src", img_elem.attr("data-src") + '?' +  new Date().getTime());
 
     $.getJSON(api_url + "data_min_max", function(response)
     {
         updateClipRange(response.data_min_max, !clip_enable);
     });
+}
+
+function resizeImage()
+{
+
+    var img_width = img_elem.naturalWidth();
+    var img_height = img_elem.naturalHeight();
+
+    var resize_width = img_width;
+    var resize_height = img_height;
+
+    if (autosize_enable) {
+
+        var img_container_width =  $("#liveview_container").width();
+        var img_container_height = $("#liveview_container").height();
+    
+        var width_scaling = Math.min(img_container_width / img_width, 1.0);
+        var height_scaling = Math.min(img_container_height / img_height, 1.0);
+        var final_scaling = Math.min(width_scaling, height_scaling);
+
+        resize_width = Math.floor(final_scaling * img_width);
+        resize_height = Math.floor(final_scaling * img_height);
+
+    }
+    else
+    {
+        resize_width = Math.floor(img_scaling * img_width);
+        resize_height = Math.floor(img_scaling * img_height);
+    }
+
+    img_elem.width(resize_width);
+    img_elem.height(resize_height);
 
 }
 
 $( document ).ready(function() 
 {
     configureLiveView();
-    pollLiveView(image_element);
+    resizeImage();
+    pollLiveView();
 });
+
+$( window ).on('resize', function()
+{
+    if (!liveview_enable) {
+        resizeImage();
+    }
+});
+
+(function($){
+    var
+    props = ['Width', 'Height'],
+    prop;
+  
+    while (prop = props.pop()) {
+    (function (natural, prop) {
+      $.fn[natural] = (natural in new Image()) ? 
+      function () {
+      return this[0][natural];
+      } : 
+      function () {
+      var 
+      node = this[0],
+      img,
+      value;
+  
+      if (node.tagName.toLowerCase() === 'img') {
+        img = new Image();
+        img.src = node.src,
+        value = img[prop];
+      }
+      return value;
+      };
+    }('natural' + prop, prop.toLowerCase()));
+    }
+  }(jQuery));

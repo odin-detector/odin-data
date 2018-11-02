@@ -50,12 +50,22 @@ body {
 }
 
 .live-image {
-	margin-left: 320px;
+    margin-left: 320px;
     padding: 5px;
-    float: left;
+    background-color: #ffff00;
+    height: 100vh;
+    height: -webkit-calc(100vh - 50px);
+    height: -moz-calc(100vh - 50px);
+    height: calc(100vh - 50px);
 }
 
-.clip-range-col {
+.live-image img {
+    display: block;
+    float: left;
+    object-fit: cover;
+}
+
+.range-col {
     padding-left: 10px;
     padding-right: 10px;
 }
@@ -67,5 +77,14 @@ body {
 #clip-range .slider-selection {
 	background: #BABABA;
 }
+
+#size-range {
+    width: 100%;
+}
+
+#size-range .slider-selection {
+	background: #BABABA;
+}
+
 
 
