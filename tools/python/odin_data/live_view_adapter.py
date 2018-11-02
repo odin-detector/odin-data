@@ -350,7 +350,7 @@ class LiveViewer(object):
         """
         if (clip_array[0] is None) or isinstance(clip_array[0], int):
             self.clip_min = clip_array[0]
-          
+
         if (clip_array[1] is None) or isinstance(clip_array[1], int):
             self.clip_max = clip_array[1]
 
