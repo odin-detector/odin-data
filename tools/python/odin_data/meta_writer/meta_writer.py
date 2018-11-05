@@ -43,7 +43,12 @@ class MetaWriter(object):
         self._data_set_definition = {}
         self._hdf5_datasets = {}
         self._data_set_arrays = {}
-
+        
+    @staticmethod    
+    def get_version():
+        """Override to return the version of the writer class."""
+        return {}
+        
     def start_new_acquisition(self):
         """Override to perform actions needed when the acquisition is started."""
         self._logger.warn("Parent start_new_acquisition has been called. Should be overridden")
@@ -140,4 +145,3 @@ class MetaWriter(object):
     def stop(self):
         """Override to perform actions needed to stop writing."""
         self.close_file()
-
