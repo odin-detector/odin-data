@@ -20,18 +20,23 @@ class MetaListenerAdapter(OdinDataAdapter):
         self.acquisitions = []
         # These parameters are stored under an acquisition tree, so we need to
         # parse out the parameters for the acquisition we have stored
-        self._acquisition_parameters = [
-            "status/filename",
-            "status/num_processors",
-            "status/writing",
-            "status/written",
-            "config/output_dir",
-            "config/flush"
-        ]
+        self._acquisition_parameters = {}
+        self._set_defaults()
 
         # Parameters must be created before base init called
         super(MetaListenerAdapter, self).__init__(**kwargs)
         self._client = self._clients[0]  # We only have one client
+
+    def _set_defaults(self):
+        self.acquisitionID = ""
+        self._acquisition_parameters = {
+            "status/filename": "",
+            "status/num_processors": 0,
+            "status/writing": False,
+            "status/written": 0,
+            "config/output_dir": "",
+            "config/flush": 1
+        }
 
     def _map_acquisition_parameter(self, path):
         """Map acquisition parameter path string to full uri item list"""
@@ -61,23 +66,19 @@ class MetaListenerAdapter(OdinDataAdapter):
 
         if path == "config/acquisition_id":
             response["value"] = self.acquisitionID
+        elif path == "status/acquisition_active":
+            response["value"] = self.acquisition_active
         elif path == "config/acquisitions":
             acquisition_tree = self.traverse_parameters(
                 self._clients[0].parameters,
                 ["config", "acquisitions"]
             )
-            response["value"] = "," .join(acquisition_tree.keys())
-        elif path in self._acquisition_parameters:
-            if self.acquisitionID:
-                response["value"] = self.traverse_parameters(
-                    self._client.parameters,
-                    self._map_acquisition_parameter(path)
-                )
-            elif path == "status/writing":
-                # Must return False, not None, if acquisition does not exist
-                response["value"] = False
+            if acquisition_tree is not None:
+                response["value"] = "," .join(acquisition_tree.keys())
             else:
                 response["value"] = None
+        elif path in self._acquisition_parameters:
+            response["value"] = self._acquisition_parameters[path]
         else:
             return super(MetaListenerAdapter, self).get(path, request)
 
@@ -114,6 +115,7 @@ class MetaListenerAdapter(OdinDataAdapter):
         elif path == "config/stop":
             self.acquisitionID = ""
             self.acquisition_active = False
+            self._set_defaults()
 
             # By default we stop all acquisitions by passing None
             config = {
@@ -153,14 +155,24 @@ class MetaListenerAdapter(OdinDataAdapter):
     def process_updates(self):
         """Handle additional background update loop tasks
 
-        Reset acquisitionID if it finishes writing.
+        Store a copy of all parameters so they don't disappear
 
         """
         if self.acquisitionID:
-            currently_writing = self.traverse_parameters(
-                self._clients[0].parameters,
-                ["status", "acquisitions", self.acquisitionID, "writing"]
+            acquisition_active = self.acquisitionID in self.traverse_parameters(
+                self._client.parameters, ["status", "acquisitions"]
             )
-            if self.acquisition_active and not currently_writing:
-                self.acquisitionID = ""
-            self.acquisition_active = currently_writing
+            if acquisition_active:
+                self.acquisition_active = True
+                for parameter in self._acquisition_parameters.keys():
+                    value = self.traverse_parameters(
+                        self._client.parameters,
+                        self._map_acquisition_parameter(parameter)
+                    )
+                    if parameter.startswith("config/") and value is None:
+                        continue  # Work around config being set to None on last poll of acquisition
+                    self._acquisition_parameters[parameter] = value
+            else:
+                self.acquisition_active = False
+        else:
+            self._set_defaults()

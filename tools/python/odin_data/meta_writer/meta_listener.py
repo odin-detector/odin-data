@@ -7,8 +7,13 @@ Matt Taylor, Diamond Light Source
 """
 import zmq
 import logging
+import re
 from odin_data.ipc_message import IpcMessage
+import odin_data._version as versioneer
 
+MAJOR_VER_REGEX = r"^([0-9]+)[\\.-].*|$"
+MINOR_VER_REGEX = r"^[0-9]+[\\.-]([0-9]+).*|$"
+PATCH_VER_REGEX = r"^[0-9]+[\\.-][0-9]+[\\.-]([0-9]+).|$"
 
 class MetaListener:
     """Meta Listener class.
@@ -111,6 +116,8 @@ class MetaListener:
                 reply = self.handle_status_message(message_id)
             elif message.get_msg_val() == 'request_configuration':
                 reply = self.handle_request_config_message(message_id)
+            elif message.get_msg_val() == 'request_version':
+                reply = self.handle_request_version_message(message_id)
             elif message.get_msg_val() == 'configure':
                 self.logger.debug('handling control configure message')
                 self.logger.debug(message)
@@ -137,7 +144,7 @@ class MetaListener:
         for key in self._writers:
             writer = self._writers[key]
             status_dict[key] = {'filename': writer.full_file_name, 'num_processors': writer.number_processes_running,
-                                'written': writer.write_count, 'writing': not writer.finished}
+                                'written': writer.write_count, 'writing': writer.file_created and not writer.finished}
             writer.write_timeout_count = writer.write_timeout_count + 1
 
         reply = IpcMessage(IpcMessage.ACK, 'status', id=msg_id)
@@ -169,6 +176,34 @@ class MetaListener:
         reply.set_param('inputs', self._inputs)
         reply.set_param('default_directory', self._directory)
         reply.set_param('ctrl_port', self._ctrl_port)
+        return reply
+        
+    def handle_request_version_message(self, msg_id):
+        """Handle request version message.
+
+        :param: msg_id: message id to use for reply
+        """
+        reply = IpcMessage(IpcMessage.ACK, 'request_version', id=msg_id)
+        
+        version=versioneer.get_versions()["version"]
+        major_version = re.findall(MAJOR_VER_REGEX, version)[0]
+        minor_version = re.findall(MINOR_VER_REGEX, version)[0]
+        patch_version = re.findall(PATCH_VER_REGEX, version)[0]
+        short_version = major_version + "." + minor_version + "." + patch_version
+        
+        version_dict = {}
+        odin_data_dict = {}
+        
+        odin_data_dict["full"] = version
+        odin_data_dict["major"] = major_version
+        odin_data_dict["minor"] = minor_version
+        odin_data_dict["patch"] = patch_version
+        odin_data_dict["short"] = short_version
+        
+        version_dict["odin-data"] = odin_data_dict
+        version_dict["writer"] = self.get_writer_version()
+        
+        reply.set_param('version', version_dict)
         return reply
 
     def handle_configure_message(self, params, msg_id):
@@ -313,3 +348,11 @@ class MetaListener:
         self.logger.debug(writer_instance)
         return writer_instance
 
+    def get_writer_version(self):
+        """Get the version from the writer object."""
+        module_name = self._writer_module[:self._writer_module.rfind('.')]
+        class_name = self._writer_module[self._writer_module.rfind('.') + 1:]
+        module = __import__(module_name)
+        writer_class = getattr(module, class_name)
+        writer_version = writer_class.get_version()
+        return writer_version
