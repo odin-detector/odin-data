@@ -13,7 +13,7 @@ var LiveViewApp = (function()
 
     var img_start_time = new Date().getTime();
     var img_end_time = null;
-    var img_pol_freq = 1000;
+    var img_pol_freq = 1;
 
     var init = function() 
     {
@@ -39,6 +39,14 @@ var LiveViewApp = (function()
                 {
                     console.log("Remaining time for image: " + (img_pol_freq - load_time));
                     setTimeout(updateImage, img_pol_freq - load_time);
+                }
+                if(load_time < img_pol_freq)
+                {
+                    $('#frame_rate').text((1000 / img_pol_freq).toFixed(2) + "Hz");
+                }
+                else
+                {
+                    $('#frame_rate').text((1000 / load_time).toFixed(2) + "Hz");
                 }
             }
         });
