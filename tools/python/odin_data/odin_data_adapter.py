@@ -24,7 +24,7 @@ class OdinDataAdapter(ApiAdapter):
     ERROR_FAILED_GET = "Unable to successfully complete the GET request"
     ERROR_PUT_MISMATCH = "The size of parameter array does not match the number of clients"
 
-    SUPPORTED_COMMANDS = ['reset_statistics']
+    SUPPORTED_COMMANDS = ['reset_statistics', 'request_version']
     
     def __init__(self, **kwargs):
         """
@@ -210,6 +210,9 @@ class OdinDataAdapter(ApiAdapter):
                     logging.debug("Stored config items: %s", self._config_params)
                 response, status_code = self.process_configuration(request_command, parameters)
 
+                if self.require_version_check(request_command):
+                    self.request_version()
+
             elif request_command.startswith("command/"):
                 request_command = remove_prefix(request_command, "command/")  # Take the rest of the URI
 
@@ -355,6 +358,13 @@ class OdinDataAdapter(ApiAdapter):
                     self.process_configuration(request_command, parameters)
                 except Exception as ex:
                     logging.error(ex)
+
+        # Finally request version information
+        self.request_version(client)
+
+    def request_version(self, client_index=-1):
+        logging.debug("Requesting version information from client index: %d", client_index)
+        self.send_command_to_clients('request_version', client_index)
 
     @request_types('application/json')
     @response_types('application/json', default='application/json')
@@ -526,6 +536,14 @@ class OdinDataAdapter(ApiAdapter):
 
         # Schedule the update loop to run in the IOLoop instance again after appropriate interval
         IOLoop.instance().call_later(self._update_interval, self.update_loop)
+
+    def require_version_check(self, parameter):
+        """Check if a version request is required after the configuration parameter has been submitted.
+
+        Child classes can implement logic here to force a version request.
+
+        """
+        return False
 
     def process_updates(self):
         """Handle additional background update loop tasks

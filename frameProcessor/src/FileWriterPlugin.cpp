@@ -655,9 +655,10 @@ bool FileWriterPlugin::frame_in_acquisition(boost::shared_ptr<Frame> frame) {
       start_writing();
     } else {
       std::stringstream ss;
-      ss << "Unexpected acquisition ID on frame [" << frame->get_acquisition_id() << "] "
-            "for frame " << frame->get_frame_number();
+      ss << "Unexpected acquisition ID on frame (" << frame->get_acquisition_id() << ")";
       set_error(ss.str());
+      ss << " for frame " << frame->get_frame_number();
+      LOG4CXX_WARN(logger_, ss.str());
       return false;
     }
   }

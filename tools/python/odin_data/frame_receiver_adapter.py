@@ -6,6 +6,7 @@ Created on 2nd August 2018
 import copy
 import logging
 from odin_data.odin_data_adapter import OdinDataAdapter
+from odin_data.util import remove_prefix, remove_suffix
 
 
 class FrameReceiverAdapter(OdinDataAdapter):
@@ -15,6 +16,8 @@ class FrameReceiverAdapter(OdinDataAdapter):
     This class provides the adapter interface between the ODIN server and the ODIN-DATA detector system,
     transforming the REST-like API HTTP verbs into the appropriate frameProcessor ZeroMQ control messages
     """
+    VERSION_CHECK_CONFIG_ITEMS = ['decoder_path', 'decoder_type']
+
     def __init__(self, **kwargs):
         """
         Initialise the OdinDataAdapter object
@@ -28,6 +31,12 @@ class FrameReceiverAdapter(OdinDataAdapter):
         self._decoder_config = []
         for ep in self._endpoints:
             self._decoder_config.append(None)
+
+    def require_version_check(self, param):
+        # If the parameter is in the version check list then request a version update
+        if param in self.VERSION_CHECK_CONFIG_ITEMS:
+            return True
+        return False
 
     def send_to_clients(self, request_command, parameters, client_index=-1):
         """
