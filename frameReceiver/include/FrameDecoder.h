@@ -75,6 +75,7 @@ public:
   void drop_all_buffers(void);
   const unsigned int get_frame_timeout_ms(void) const;
   const unsigned int get_num_frames_timedout(void) const;
+  const unsigned int get_num_frames_dropped(void) const;
   virtual void monitor_buffers(void) = 0;
   virtual void get_status(const std::string param_prefix, OdinData::IpcMessage& status_msg) = 0;
   void version(const std::string param_prefix, OdinData::IpcMessage& status);
@@ -94,6 +95,7 @@ protected:
 
   unsigned int frame_timeout_ms_; //!< Incomplete frame timeout in ms
   unsigned int frames_timedout_;  //!< Number of frames timed out in decoder
+  unsigned int frames_dropped_;   //!< Number of frames dropped due to lack of buffers
 };
 
 inline FrameDecoder::~FrameDecoder() {};
