@@ -20,8 +20,15 @@ class MetaListenerAdapter(OdinDataAdapter):
         self.acquisitions = []
         # These parameters are stored under an acquisition tree, so we need to
         # parse out the parameters for the acquisition we have stored
-        self._acquisition_parameters = {}
+        self._readback_parameters = {}
         self._set_defaults()
+        # These config parameters are buffered so they can be included whenever a new acquisition
+        # is created. This helps to abstract the idea of acquisitions being created and removed and
+        # means the client does not need to send things in a certain order.
+        self._config_parameters = {
+            "config/output_dir": "",
+            "config/flush": 100
+        }
 
         # Parameters must be created before base init called
         super(MetaListenerAdapter, self).__init__(**kwargs)
@@ -29,13 +36,11 @@ class MetaListenerAdapter(OdinDataAdapter):
 
     def _set_defaults(self):
         self.acquisitionID = ""
-        self._acquisition_parameters = {
+        self._readback_parameters = {
             "status/filename": "",
             "status/num_processors": 0,
             "status/writing": False,
-            "status/written": 0,
-            "config/output_dir": "",
-            "config/flush": 1
+            "status/written": 0
         }
 
     def _map_acquisition_parameter(self, path):
@@ -77,8 +82,10 @@ class MetaListenerAdapter(OdinDataAdapter):
                 response["value"] = "," .join(acquisition_tree.keys())
             else:
                 response["value"] = None
-        elif path in self._acquisition_parameters:
-            response["value"] = self._acquisition_parameters[path]
+        elif path in self._readback_parameters:
+            response["value"] = self._readback_parameters[path]
+        elif path in self._config_parameters:
+            response["value"] = self._config_parameters[path]
         else:
             return super(MetaListenerAdapter, self).get(path, request)
 
@@ -107,10 +114,12 @@ class MetaListenerAdapter(OdinDataAdapter):
             self.acquisitionID = value
             # Set inactive so process_updates doesn't clear acquisition ID
             self.acquisition_active = False
-
-            config = {
-                "acquisition_id": self.acquisitionID,
-            }
+            # Send entire config with new acquisition ID
+            config = dict(
+                acquisition_id=self.acquisitionID,
+                output_dir=self._config_parameters["config/output_dir"],
+                flush=self._config_parameters["config/flush"]
+            )
             status_code, response = self._send_config(config)
         elif path == "config/stop":
             self.acquisitionID = ""
@@ -126,8 +135,9 @@ class MetaListenerAdapter(OdinDataAdapter):
                 # If we have an Acquisition ID then stop that one only
                 config["acquisition_id"] = self.acquisitionID
             status_code, response = self._send_config(config)
-        elif path in self._acquisition_parameters:
-            # Send the PUT request on with the acquisitionID attached
+        elif path in self._config_parameters:
+            # Store config to re-send with acquisition ID when it is changed
+            self._config_parameters[path] = value
             parameter = path.split("/", 1)[-1]  # Remove 'config/'
             config = {
                 "acquisition_id": self.acquisitionID,
@@ -164,14 +174,12 @@ class MetaListenerAdapter(OdinDataAdapter):
             )
             if acquisition_active:
                 self.acquisition_active = True
-                for parameter in self._acquisition_parameters.keys():
+                for parameter in self._readback_parameters.keys():
                     value = self.traverse_parameters(
                         self._client.parameters,
                         self._map_acquisition_parameter(parameter)
                     )
-                    if parameter.startswith("config/") and value is None:
-                        continue  # Work around config being set to None on last poll of acquisition
-                    self._acquisition_parameters[parameter] = value
+                    self._readback_parameters[parameter] = value
             else:
                 self.acquisition_active = False
         else:
