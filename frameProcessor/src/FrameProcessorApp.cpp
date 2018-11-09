@@ -396,6 +396,25 @@ void configureDetector(boost::shared_ptr<FrameProcessorController> fwc, po::vari
   fwc->configure(cfg, reply);
 }
 
+void configureDetectorDecoder(boost::shared_ptr<FrameProcessorController> fwc, po::variables_map vm) {
+  OdinData::IpcMessage cfg;
+  OdinData::IpcMessage reply;
+
+  string detector_decoder = vm["detector"].as<string>();
+  detector_decoder[0] = std::tolower(detector_decoder[0]);
+
+  if (vm.count("bit-depth")) {
+    cfg.set_param<string>(detector_decoder + "/bitdepth", vm["bit-depth"].as<string>());
+  }
+
+  if (vm.count("dims")) {
+    std::vector<int> dims = vm["dims"].as<std::vector<int> >();
+    cfg.set_param<int>(detector_decoder + "/height", dims[0]);
+    cfg.set_param<int>(detector_decoder + "/width", dims[1]);
+  }
+  fwc->configure(cfg, reply);
+}
+
 void configureBlosc(boost::shared_ptr<FrameProcessorController> fwc, po::variables_map vm) {
   OdinData::IpcMessage cfg;
   OdinData::IpcMessage reply;
@@ -490,6 +509,7 @@ void configureFileWriter(boost::shared_ptr<FrameProcessorController> fwc, po::va
 
 void configurePlugins(boost::shared_ptr<FrameProcessorController> fwc, po::variables_map vm) {
   configureDetector(fwc, vm);
+  configureDetectorDecoder(fwc, vm);
   if (isBloscRequired(vm)) {
     configureBlosc(fwc, vm);
   }
