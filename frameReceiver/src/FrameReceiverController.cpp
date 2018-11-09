@@ -1044,11 +1044,14 @@ void FrameReceiverController::get_status(OdinData::IpcMessage& status_reply)
   unsigned int empty_buffers = 0;
   unsigned int mapped_buffers = 0;
   unsigned int frames_timedout = 0;
+  unsigned int frames_dropped = 0;
+
   if (rx_thread_status_) 
   {
     empty_buffers = rx_thread_status_->get_param<unsigned int>("rx_thread/empty_buffers");
     mapped_buffers = rx_thread_status_->get_param<unsigned int>("rx_thread/mapped_buffers");
     frames_timedout = rx_thread_status_->get_param<unsigned int>("rx_thread/frames_timedout");
+    frames_dropped = rx_thread_status_->get_param<unsigned int>("rx_thread/frames_dropped");
 
     // If there is decoder status info present, also copy that into the reply
     if (rx_thread_status_->has_param("decoder"))
@@ -1064,6 +1067,7 @@ void FrameReceiverController::get_status(OdinData::IpcMessage& status_reply)
   status_reply.set_param("frames/timedout", frames_timedout);
   status_reply.set_param("frames/received", frames_received_);
   status_reply.set_param("frames/released", frames_released_);
+  status_reply.set_param("frames/dropped", frames_dropped);
 
 }
 

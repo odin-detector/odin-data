@@ -377,6 +377,7 @@ void FrameReceiverRxThread::fill_status_params(IpcMessage& status_msg)
   status_msg.set_param("rx_thread/empty_buffers", frame_decoder_->get_num_empty_buffers());
   status_msg.set_param("rx_thread/mapped_buffers", frame_decoder_->get_num_mapped_buffers());
   status_msg.set_param("rx_thread/frames_timedout", frame_decoder_->get_num_frames_timedout());
+  status_msg.set_param("rx_thread/frames_dropped", frame_decoder_->get_num_frames_dropped());
 
   // Get the specific frame decoder instance to fill its own status into message
   frame_decoder_->get_status(std::string("decoder/"), status_msg);

@@ -19,7 +19,8 @@ FrameDecoder::FrameDecoder() :
      logger_(0),
      enable_packet_logging_(FrameReceiver::Defaults::default_enable_packet_logging),
      frame_timeout_ms_(FrameReceiver::Defaults::default_frame_timeout_ms),
-     frames_timedout_(0)
+     frames_timedout_(0),
+     frames_dropped_(0)
  {
  };
 
@@ -148,6 +149,18 @@ const unsigned int FrameDecoder::get_num_frames_timedout(void) const
     return frames_timedout_;
 }
 
+//! Get the number of frames dropped in the decoder
+//!
+//! This method returns the number of frames that have been dropped by the frame decoder.
+//! This is typically determined by specialised decoders subclassed from this class.
+//!
+//! \return - number of frames dropped
+//!
+const unsigned int FrameDecoder::get_num_frames_dropped(void) const
+{
+    return frames_dropped_;
+}
+
 //! Drop all buffers currently held by the decoder.
 //!
 //! This method forces the decoder to drop all buffers currently held either in the empty
@@ -199,4 +212,5 @@ void FrameDecoder::reset_statistics(void)
 {
     LOG4CXX_DEBUG_LEVEL(1, logger_, "Resetting frame decoder statistics");
     frames_timedout_ = 0;
+    frames_dropped_ = 0;
 }
