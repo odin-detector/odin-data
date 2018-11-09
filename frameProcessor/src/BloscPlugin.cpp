@@ -133,7 +133,7 @@ boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> sr
     dest_frame->set_frame_number(src_frame->get_frame_number());
     dest_frame->set_acquisition_id(src_frame->get_acquisition_id());
     // TODO: is this the correct way to get and set dimensions?
-    dest_frame->set_dimensions("data", src_frame->get_dimensions("data"));
+    dest_frame->set_dimensions(src_frame->get_dimensions());
   }
   catch (const std::exception& e) {
     LOG4CXX_ERROR(logger_, "Serious error in Blosc compression: " << e.what());
