@@ -46,7 +46,7 @@ current_acquisition_("")
   this->commanded_compression_settings_.blosc_compressor = BLOSC_LZ4;
   this->commanded_compression_settings_.shuffle = BLOSC_BITSHUFFLE;
   this->commanded_compression_settings_.compression_level = 1;
-  this->commanded_compression_settings_.type_size = 2;
+  this->commanded_compression_settings_.type_size = 0;
   this->commanded_compression_settings_.uncompressed_size = 0;
   this->compression_settings_ = this->commanded_compression_settings_;
 
@@ -86,7 +86,8 @@ boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> sr
       static_cast<const char*>(src_frame->get_data())
   );
 
-  c_settings = this->update_compression_settings(src_frame->get_acquisition_id());
+  this->update_compression_settings(src_frame->get_acquisition_id());
+  c_settings = this->compression_settings_;
   if (src_frame->get_data_type() >= 0) {
     c_settings.type_size = src_frame->get_data_type_size();
   }
@@ -147,18 +148,17 @@ boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> sr
  * i.e. if a new acquisition has been started.
  *
  * @param acquisition_id
- * @return a const ref to the compression settings
  */
-const BloscCompressionSettings& BloscPlugin::update_compression_settings(const std::string &acquisition_id)
+void BloscPlugin::update_compression_settings(const std::string &acquisition_id)
 {
   if (acquisition_id != this->current_acquisition_){
     LOG4CXX_TRACE(logger_, "New acquisition detected: "<< acquisition_id);
     this->compression_settings_ = this->commanded_compression_settings_;
     this->current_acquisition_ = acquisition_id;
     int ret = 0;
-    const char ** p_compressor_name;
-    blosc_compcode_to_compname(this->compression_settings_.blosc_compressor, p_compressor_name);
-    ret = blosc_set_compressor(*p_compressor_name);
+    const char * p_compressor_name;
+    ret = blosc_compcode_to_compname(this->compression_settings_.blosc_compressor, &p_compressor_name);
+    ret = blosc_set_compressor(p_compressor_name);
     if (ret < 0) {
       LOG4CXX_ERROR(logger_, "Blosc failed to set compressor: "
           << " " << this->compression_settings_.blosc_compressor
@@ -166,7 +166,6 @@ const BloscCompressionSettings& BloscPlugin::update_compression_settings(const s
       throw std::runtime_error("Blosc failed to set compressor");
     }
   }
-  return this->compression_settings_;
 }
 
   /**

@@ -43,7 +43,7 @@ public:
 
 private:
   void process_frame(boost::shared_ptr<Frame> frame);
-  const BloscCompressionSettings &update_compression_settings(const std::string &acquisition_id);
+  void update_compression_settings(const std::string &acquisition_id);
 
   /** Pointer to logger */
   LoggerPtr logger_;
