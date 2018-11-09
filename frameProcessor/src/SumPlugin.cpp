@@ -12,7 +12,7 @@ namespace FrameProcessor {
  */
   SumPlugin::SumPlugin() {
     // Setup logging for the class
-    logger_ = Logger::getLogger("FW.SumPlugin");
+    logger_ = Logger::getLogger("FP.SumPlugin");
     logger_->setLevel(Level::getAll());
     LOG4CXX_TRACE(logger_, "SumPlugin constructor.");
   }
