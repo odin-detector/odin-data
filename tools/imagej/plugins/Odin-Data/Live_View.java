@@ -4,24 +4,29 @@ import ij.gui.*;
 import ij.process.*;
 import ij.plugin.PlugIn;
 
+import org.zeromq.ZMQ.Context;
+import org.zeromq.ZMQ.Socket;
+import static org.zeromq.ZMQ.SUB;
+import static org.zeromq.ZMQ.context;
+
 /** This a prototype ImageJ plugin. */
-public class Live_View implements PlugIn {
+public class Live_View implements PlugIn{
 
 	public void run(String arg) {
 		long start = System.currentTimeMillis();
 		int w = 400, h = 400;
-		ImageProcessor ip = new ColorProcessor(w, h);
-		int[] pixels = (int[])ip.getPixels();
+		ImageProcessor ip = new ShortProcessor(w, h);
+		short[] pixels = (short[])ip.getPixels();
 		int i = 0;
 		for (int y = 0; y < h; y++) {
-			int red = (y * 255) / (h - 1);
+			short red = (short)((y * 255) / (h - 1));
 			for (int x = 0; x < w; x++) {
-				int blue = (x * 255) / (w - 1);
-				pixels[i++] = (255 << 24) | (red << 16) | blue;
+				
+				pixels[i++] = red;
 			}
 		}
-		new ImagePlus("Red and Blue", ip).show();
-		IJ.showStatus(""+(System.currentTimeMillis()-start));
+		new ImagePlus("Live View", ip).show();
+		IJ.showStatus("Time Taken: "+(System.currentTimeMillis()-start));
 	 }
 
 }
