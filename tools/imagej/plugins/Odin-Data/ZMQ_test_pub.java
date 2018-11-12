@@ -12,7 +12,7 @@ class publisher{
         {
             String message1 = String.format("Sending message at %d", System.currentTimeMillis());
             System.out.println(message1);
-            socket.send(message1, ZMQ.SNDMORE);
+            socket.send(message1, 0);
             try
             {
                 Thread.sleep(1000);
@@ -22,17 +22,17 @@ class publisher{
                 System.out.println("Thread.sleep interrupted");
                 break;
             }
-            String message2 = "Second part of multi part message";
-            socket.send(message2, 0);
-            try
-            {
-                Thread.sleep(100);
-            }
-            catch(InterruptedException e)
-            {
-                System.out.println("Thread.sleep interrupted");
-                break;
-            }
+            // String message2 = "Second part of multi part message";
+            // socket.send(message2, 0);
+            // try
+            // {
+            //     Thread.sleep(100);
+            // }
+            // catch(InterruptedException e)
+            // {
+            //     System.out.println("Thread.sleep interrupted");
+            //     break;
+            // }
         }
 
         System.out.println("THREAD INTERRUPTED");

@@ -6,13 +6,14 @@ import ij.plugin.PlugIn;
 
 import org.zeromq.ZMQ.Context;
 import org.zeromq.ZMQ.Socket;
-import static org.zeromq.ZMQ.SUB;
-import static org.zeromq.ZMQ.context;
+import org.zeromq.ZMQ;
+
 
 /** This a prototype ImageJ plugin. */
 public class Live_View implements PlugIn{
 
-	public void run(String arg) {
+	public void run(String arg) 
+	{
 		long start = System.currentTimeMillis();
 		int w = 400, h = 400;
 		ImageProcessor ip = new ShortProcessor(w, h);
@@ -26,7 +27,78 @@ public class Live_View implements PlugIn{
 			}
 		}
 		new ImagePlus("Live View", ip).show();
-		IJ.showStatus("Time Taken: "+(System.currentTimeMillis()-start));
-	 }
+		PrintMessage("Time Taken: "+(System.currentTimeMillis()-start));
 
+		setup_socket("tcp://127.0.0.1:2020");
+	}
+
+	public void run_socket(Socket socket, Context context)
+	{
+		while(!Thread.currentThread().isInterrupted())
+        {
+            ZMQ.Poller items = new ZMQ.Poller(1);
+            items.register(socket, ZMQ.Poller.POLLIN);
+
+            if(items.poll(0) == -1)
+            {
+                PrintMessage("POLL RETURN -1");
+                break;
+            }
+
+            if(items.pollin(0))
+            {
+                byte[] msg = socket.recv(ZMQ.NOBLOCK);
+
+                String message = new String(msg);
+                PrintMessage("RECIVED MESSAGE: '" + message + "'");
+            }
+        }
+        
+        PrintMessage("THREAD INTERRUPTED");
+        socket.close();
+        context.term();
+	}
+
+	public void setup_socket(String socket_addr)
+	{
+		PrintMessage("CREATING ZMQ SOCKET");
+		Context context = ZMQ.context(1);
+		Socket subscriber = context.socket(ZMQ.SUB);
+		subscriber.connect(socket_addr);
+		subscriber.subscribe("".getBytes());
+		PrintMessage(String.format("Subscribed to addr %s",socket_addr));
+
+		Thread zmqThread = new Thread(){
+			@Override
+			public void run()
+			{
+				run_socket(subscriber, context);
+			}
+		};
+
+		Runtime.getRuntime().addShutdownHook(new Thread(){
+            @Override
+            public void run(){
+                PrintMessage("Interrupt received, killing server…");
+                
+                try {
+                    zmqThread.interrupt();
+                    
+                    zmqThread.join();
+                } catch (Exception e) 
+                {
+                    PrintMessage("INTERRUPT ERROR: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        zmqThread.start();
+	}
+
+	public void PrintMessage(String message)
+	{
+		System.out.println(message);
+		IJ.log(message);
+	}
 }
