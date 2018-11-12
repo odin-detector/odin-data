@@ -4,7 +4,7 @@
  */
 
 #include <boost/test/unit_test.hpp>
-
+#include <DebugLevelLogger.h>
 #include "FrameProcessorDefinitions.h"
 #include "BloscPlugin.h"
 
@@ -13,6 +13,7 @@ class BloscPluginTestFixture
 public:
   BloscPluginTestFixture()
   {
+    set_debug_level(3);
     unsigned short img[12] =  { 1, 2, 3, 4,
                                 5, 6, 7, 8,
                                 9,10,11,12 };
