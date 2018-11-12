@@ -121,6 +121,12 @@ boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> sr
                                      c_settings.type_size,
                                      c_settings.uncompressed_size, src_data_ptr,
                                      dest_data_ptr, dest_data_size);
+    if (compressed_size < 0) {
+      std::stringstream ss;
+      ss << "blosc_compress failed. error=" << compressed_size << ss_blosc_settings.str();
+      LOG4CXX_ERROR(logger_, ss.str());
+      throw std::runtime_error(ss.str());
+    }
     double factor = 0.;
     if (compressed_size > 0) {
       factor = (double)src_frame->get_data_size() / (double)compressed_size;
