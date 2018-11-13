@@ -10,7 +10,8 @@ namespace FrameProcessor {
 /**
  * The constructor sets up logging used within the class.
  */
-  SumPlugin::SumPlugin() {
+  SumPlugin::SumPlugin()
+  {
     // Setup logging for the class
     logger_ = Logger::getLogger("FP.SumPlugin");
     logger_->setLevel(Level::getAll());
@@ -20,18 +21,21 @@ namespace FrameProcessor {
 /**
  * Destructor.
  */
-  SumPlugin::~SumPlugin() {
+  SumPlugin::~SumPlugin()
+  {
     LOG4CXX_TRACE(logger_, "SumPlugin destructor.");
   }
 
   template<class PixelType>
-  static uint64_t calculate_sum(boost::shared_ptr <Frame> frame) {
+  static uint64_t calculate_sum(boost::shared_ptr <Frame> frame)
+  {
     uint64_t sum_value = 0;
     const PixelType *data = static_cast<const PixelType *>(frame->get_data());
     size_t elements_count = frame->get_data_size() / sizeof(data[0]);
 
-    for (size_t pixel_index = 0; pixel_index < elements_count; pixel_index++)
+    for (size_t pixel_index = 0; pixel_index < elements_count; pixel_index++) {
       sum_value += data[pixel_index];
+    }
 
     return sum_value;
   }
@@ -41,7 +45,8 @@ namespace FrameProcessor {
  *
  * \param[in] frame - Pointer to a Frame object.
  */
-  void SumPlugin::process_frame(boost::shared_ptr <Frame> frame) {
+  void SumPlugin::process_frame(boost::shared_ptr <Frame> frame)
+  {
     LOG4CXX_TRACE(logger_, "Received a new frame...");
     uint64_t sum_val = 0;
     switch (frame->get_data_type()) {
