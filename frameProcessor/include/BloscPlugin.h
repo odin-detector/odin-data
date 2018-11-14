@@ -22,7 +22,8 @@ typedef struct{
   unsigned int shuffle;
   size_t type_size;
   size_t uncompressed_size;
-  unsigned int blosc_compressor;
+  unsigned int threads;
+  unsigned int blosc_compressor; // TODO: change from using blosc compressor definition as unsigned int to string
 } BloscCompressionSettings;
 void create_cd_values(const BloscCompressionSettings& settings, std::vector<unsigned int> cd_values);
 
@@ -42,11 +43,25 @@ public:
   boost::shared_ptr<Frame> compress_frame(boost::shared_ptr<Frame> frame);
 
 private:
+  // Baseclass API to implement:
   void process_frame(boost::shared_ptr<Frame> frame);
+  void status(OdinData::IpcMessage& status);
+  void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
+  void requestConfiguration(OdinData::IpcMessage& reply);
+  int get_version_major();
+  int get_version_minor();
+  int get_version_patch();
+  std::string get_version_short();
+  std::string get_version_long();
+
+  // Methods unique to this class
   void update_compression_settings(const std::string &acquisition_id);
 
+  // private data
   /** Pointer to logger */
   LoggerPtr logger_;
+  /** Mutex used to make this class thread safe */
+  boost::recursive_mutex mutex_;
   /** Current acquisition ID */
   std::string current_acquisition_;
   /** Compression settings */
@@ -54,11 +69,13 @@ private:
   /** Compression settings for the next acquisition */
   BloscCompressionSettings commanded_compression_settings_;
 
-  int get_version_major();
-  int get_version_minor();
-  int get_version_patch();
-  std::string get_version_short();
-  std::string get_version_long();
+private:
+  /** Configuration constants */
+  static const std::string CONFIG_BLOSC_COMPRESSOR;
+  static const std::string CONFIG_BLOSC_THREADS;
+  static const std::string CONFIG_BLOSC_LEVEL;
+  static const std::string CONFIG_BLOSC_SHUFFLE;
+
 };
 
 /**

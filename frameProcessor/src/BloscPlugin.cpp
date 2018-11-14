@@ -10,11 +10,16 @@
 #include <BloscPlugin.h>
 #include <DebugLevelLogger.h>
 
-
 namespace FrameProcessor
 {
 
-/**
+const std::string BloscPlugin::CONFIG_BLOSC_COMPRESSOR = "compressor";
+const std::string BloscPlugin::CONFIG_BLOSC_THREADS    = "threads";
+const std::string BloscPlugin::CONFIG_BLOSC_LEVEL      = "level";
+const std::string BloscPlugin::CONFIG_BLOSC_SHUFFLE    = "shuffle";
+
+
+  /**
  * cd_values[7] meaning (see blosc.h):
  *   0: reserved
  *   1: reserved
@@ -190,10 +195,95 @@ void BloscPlugin::update_compression_settings(const std::string &acquisition_id)
  */
 void BloscPlugin::process_frame(boost::shared_ptr<Frame> src_frame)
 {
+  // Protect this method
+  boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+
   LOG4CXX_DEBUG_LEVEL(3, logger_, "Received a new frame...");
   boost::shared_ptr <Frame> compressed_frame = this->compress_frame(src_frame);
   LOG4CXX_DEBUG_LEVEL(3, logger_, "Pushing compressed frame");
   this->push(compressed_frame);
+}
+
+void BloscPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
+{
+  // Protect this method
+  boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+
+  LOG4CXX_INFO(logger_, config.encode());
+
+  if (config.has_param(BloscPlugin::CONFIG_BLOSC_LEVEL)) {
+    // NOTE: we don't catch exceptions here because the get_param basically only throws IpcMessagException
+    //       if the parameter isn't found - and we've just checked for that in the previous line...
+    int blosc_level = config.get_param<int>(BloscPlugin::CONFIG_BLOSC_LEVEL);
+    // Range checking: check and cap at upper and lower bounds
+    if (blosc_level < 1) {
+      this->commanded_compression_settings_.compression_level = 1;
+      LOG4CXX_WARN(logger_, "Commanded blosc level: " << blosc_level << "Capped at lower range: 1");
+      reply.set_param<std::string>("warning: level", "Capped at lower range: 1");
+    } else if(blosc_level > 9) {
+      this->commanded_compression_settings_.compression_level = 9;
+      LOG4CXX_WARN(logger_, "Commanded blosc level: " << blosc_level << "Capped at upper range: 9");
+      reply.set_param<std::string>("warning: level", "Capped at upper range: 9");
+    } else {
+      this->commanded_compression_settings_.compression_level = blosc_level;
+    }
+  }
+
+  if (config.has_param(BloscPlugin::CONFIG_BLOSC_SHUFFLE)) {
+    unsigned int blosc_shuffle = config.get_param<unsigned int>(BloscPlugin::CONFIG_BLOSC_SHUFFLE);
+    // Range checking: 0, 1, 2 are valid values. Anything else result in setting value 0 (no shuffle)
+    if (blosc_shuffle > BLOSC_BITSHUFFLE) {
+      this->commanded_compression_settings_.shuffle = 0;
+      LOG4CXX_WARN(logger_, "Commanded blosc shuffle: " << blosc_shuffle << " is invalid. Disabling SHUFFLE filter");
+      reply.set_param<std::string>("warning: shuffle filter", "Disabled");
+    } else {
+      this->commanded_compression_settings_.shuffle = blosc_shuffle;
+    }
+  }
+
+  if (config.has_param(BloscPlugin::CONFIG_BLOSC_THREADS)) {
+    unsigned int blosc_threads = config.get_param<unsigned int>(BloscPlugin::CONFIG_BLOSC_THREADS);
+    if (blosc_threads > BLOSC_MAX_THREADS) {
+      this->commanded_compression_settings_.threads = 8;
+      LOG4CXX_WARN(logger_, "Commanded blosc threads: " << blosc_threads << " is too large. Setting 8 threads.");
+      reply.set_param<int>("warning: threads", 4);
+    } else {
+      this->commanded_compression_settings_.threads = blosc_threads;
+    }
+  }
+
+  if (config.has_param(BloscPlugin::CONFIG_BLOSC_COMPRESSOR)) {
+    unsigned int blosc_compressor = config.get_param<unsigned int>(BloscPlugin::CONFIG_BLOSC_COMPRESSOR);
+    if (blosc_compressor > BLOSC_ZSTD) {
+      this->commanded_compression_settings_.blosc_compressor = BLOSC_LZ4;
+      LOG4CXX_WARN(logger_, "Commanded blosc compressor: "
+                            << blosc_compressor << " is invalid. Setting compressor: "
+                            << BLOSC_LZ4 << "(" << BLOSC_LZ4_COMPNAME << ")");
+      reply.set_param<int>("warning: compressor", BLOSC_LZ4);
+    } else {
+      this->commanded_compression_settings_.blosc_compressor = blosc_compressor;
+    }
+  }
+}
+
+void BloscPlugin::requestConfiguration(OdinData::IpcMessage& reply)
+{
+  reply.set_param(this->get_name() + "/" + BloscPlugin::CONFIG_BLOSC_COMPRESSOR,
+                  this->commanded_compression_settings_.blosc_compressor);
+  reply.set_param(this->get_name() + "/" + BloscPlugin::CONFIG_BLOSC_THREADS,
+                  this->commanded_compression_settings_.threads);
+  reply.set_param(this->get_name() + "/" + BloscPlugin::CONFIG_BLOSC_SHUFFLE,
+                  this->commanded_compression_settings_.shuffle);
+  reply.set_param(this->get_name() + "/" + BloscPlugin::CONFIG_BLOSC_LEVEL,
+                  this->commanded_compression_settings_.compression_level);
+}
+
+void BloscPlugin::status(OdinData::IpcMessage& status)
+{
+  status.set_param(this->get_name() + "/compressor", this->compression_settings_.blosc_compressor);
+  status.set_param(this->get_name() + "/threads", this->compression_settings_.threads);
+  status.set_param(this->get_name() + "/shuffle", this->compression_settings_.shuffle);
+  status.set_param(this->get_name() + "/level", this->compression_settings_.compression_level);
 }
 
 int BloscPlugin::get_version_major()
