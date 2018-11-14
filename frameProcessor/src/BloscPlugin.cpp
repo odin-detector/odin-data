@@ -102,57 +102,51 @@ boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> sr
   void *dest_data_ptr = malloc(dest_data_size);
   if (dest_data_ptr == NULL) {throw std::runtime_error("Failed to malloc buffer for Blosc compression output");}
 
-  try {
-    std::stringstream ss_blosc_settings;
-    ss_blosc_settings << " compressor=" << blosc_get_compressor()
-                      << " threads=" << blosc_get_nthreads()
-                      << " clevel=" << c_settings.compression_level
-                      << " doshuffle=" << c_settings.shuffle
-                      << " typesize=" << c_settings.type_size
-                      << " nbytes=" << c_settings.uncompressed_size
-                      << " destsize=" << dest_data_size;
+  std::stringstream ss_blosc_settings;
+  ss_blosc_settings << " compressor=" << blosc_get_compressor()
+                    << " threads=" << blosc_get_nthreads()
+                    << " clevel=" << c_settings.compression_level
+                    << " doshuffle=" << c_settings.shuffle
+                    << " typesize=" << c_settings.type_size
+                    << " nbytes=" << c_settings.uncompressed_size
+                    << " destsize=" << dest_data_size;
 
-    LOG4CXX_DEBUG_LEVEL(2, logger_, "Blosc compression: frame=" << src_frame->get_frame_number()
-                            << " acquisition=\"" << src_frame->get_acquisition_id() << "\""
-                            << ss_blosc_settings.str()
-                            << " src=" << src_data_ptr
-                            << " dest=" << dest_data_ptr);
-    compressed_size = blosc_compress(c_settings.compression_level, c_settings.shuffle,
-                                     c_settings.type_size,
-                                     c_settings.uncompressed_size, src_data_ptr,
-                                     dest_data_ptr, dest_data_size);
-    if (compressed_size < 0) {
-      std::stringstream ss;
-      ss << "blosc_compress failed. error=" << compressed_size << ss_blosc_settings.str();
-      LOG4CXX_ERROR(logger_, ss.str());
-      throw std::runtime_error(ss.str());
-    }
-    double factor = 0.;
-    if (compressed_size > 0) {
-      factor = (double)src_frame->get_data_size() / (double)compressed_size;
-    }
-    LOG4CXX_DEBUG_LEVEL(2, logger_, "Blosc compression complete: frame=" << src_frame->get_frame_number()
-                                    << " compressed_size=" << compressed_size
-                                    << " factor=" << factor);
-
-    dest_frame = boost::shared_ptr<Frame>(new Frame(src_frame->get_dataset_name()));
-
-    LOG4CXX_DEBUG_LEVEL(3, logger_, "Copying compressed data to output frame. (" << compressed_size << " bytes)");
-    // I wish we had a pointer swap feature on the Frame class and avoid this unnecessary copy...
-    dest_frame->copy_data(dest_data_ptr, compressed_size);
-    if (dest_data_ptr != NULL) {free(dest_data_ptr); dest_data_ptr = NULL;}
-
-    // I wish we had a shallow-copy feature on the Frame class...
-    dest_frame->set_data_type(src_frame->get_data_type());
-    dest_frame->set_frame_number(src_frame->get_frame_number());
-    dest_frame->set_acquisition_id(src_frame->get_acquisition_id());
-    // TODO: is this the correct way to get and set dimensions?
-    dest_frame->set_dimensions(src_frame->get_dimensions());
+  LOG4CXX_DEBUG_LEVEL(2, logger_, "Blosc compression: frame=" << src_frame->get_frame_number()
+                          << " acquisition=\"" << src_frame->get_acquisition_id() << "\""
+                          << ss_blosc_settings.str()
+                          << " src=" << src_data_ptr
+                          << " dest=" << dest_data_ptr);
+  compressed_size = blosc_compress(c_settings.compression_level, c_settings.shuffle,
+                                   c_settings.type_size,
+                                   c_settings.uncompressed_size, src_data_ptr,
+                                   dest_data_ptr, dest_data_size);
+  if (compressed_size < 0) {
+    std::stringstream ss;
+    ss << "blosc_compress failed. error=" << compressed_size << ss_blosc_settings.str();
+    LOG4CXX_ERROR(logger_, ss.str());
+    throw std::runtime_error(ss.str());
   }
-  catch (const std::exception& e) {
-    LOG4CXX_ERROR(logger_, "Serious error in Blosc compression: " << e.what());
-    if (dest_data_ptr != NULL) {free(dest_data_ptr); dest_data_ptr = NULL;}
+  double factor = 0.;
+  if (compressed_size > 0) {
+    factor = (double)src_frame->get_data_size() / (double)compressed_size;
   }
+  LOG4CXX_DEBUG_LEVEL(2, logger_, "Blosc compression complete: frame=" << src_frame->get_frame_number()
+                                  << " compressed_size=" << compressed_size
+                                  << " factor=" << factor);
+
+  dest_frame = boost::shared_ptr<Frame>(new Frame(src_frame->get_dataset_name()));
+
+  LOG4CXX_DEBUG_LEVEL(3, logger_, "Copying compressed data to output frame. (" << compressed_size << " bytes)");
+  // I wish we had a pointer swap feature on the Frame class and avoid this unnecessary copy...
+  dest_frame->copy_data(dest_data_ptr, compressed_size);
+  if (dest_data_ptr != NULL) {free(dest_data_ptr); dest_data_ptr = NULL;}
+
+  // I wish we had a shallow-copy feature on the Frame class...
+  dest_frame->set_data_type(src_frame->get_data_type());
+  dest_frame->set_frame_number(src_frame->get_frame_number());
+  dest_frame->set_acquisition_id(src_frame->get_acquisition_id());
+  // TODO: is this the correct way to get and set dimensions?
+  dest_frame->set_dimensions(src_frame->get_dimensions());
   return dest_frame;
 }
 
