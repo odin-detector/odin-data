@@ -18,6 +18,9 @@ set(FRAMERECEIVER_DIR ${OdinData_SOURCE_DIR}/frameReceiver)
 # Set the frameProcessor directory
 set(FRAMEPROCESSOR_DIR ${OdinData_SOURCE_DIR}/frameProcessor)
 
+# Set the frameSimulator directory
+set(FRAMESIMULATOR_DIR ${OdinData_SOURCE_DIR}/frameSimulator)
+
 # Set the name of the common library
 set(COMMON_LIBRARY ${PROJECT_NAME})
 
@@ -25,9 +28,11 @@ set(COMMON_LIBRARY ${PROJECT_NAME})
 if (NOT APPLE)
     set(LIB_RECEIVER FrameReceiver)
     set(LIB_PROCESSOR FrameProcessor)
+    set(LIB_SIMULATOR FrameSimulator)
 else(NOT APPLE)
     set(LIB_RECEIVER OdinFrameReceiver)
     set(LIB_PROCESSOR OdinFrameProcessor)
+    set(LIB_SIMULATOR OdinFrameSimulator)
 endif(NOT APPLE)
 
 # Appends the cmake/modules path inside the MAKE_MODULE_PATH variable which stores the
@@ -134,6 +139,9 @@ IF (NOT HDF5_FOUND)
 ELSE (NOT HDF5_FOUND)
     add_subdirectory(${FRAMEPROCESSOR_DIR})
 ENDIF (NOT HDF5_FOUND)
+
+# Add the frameSimulator subdirectory
+add_subdirectory(${FRAMESIMULATOR_DIR})
 
 # Add the tools subdirectory
 add_subdirectory(tools)
