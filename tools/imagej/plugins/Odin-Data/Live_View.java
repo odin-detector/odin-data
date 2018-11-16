@@ -61,24 +61,25 @@ public class Live_View extends PlugInFrame implements ActionListener
 			public void windowClosing(WindowEvent e)
 			{
 				printMessage("Window Closing");
-				socket.shutdown_socket();
-
+				if(socket != null)
+				{
+					socket.shutdown_socket();
+				}
 			}
 		});
 
-		Runtime.getRuntime().addShutdownHook(new Thread(){
+		Runtime.getRuntime().addShutdownHook(new Thread()
+		{
 			@Override
 			public void run(){
 				// printMessage("Interrupt received, shutting down plugin");
-				try {
-					if(socket != null)
-					{
-						socket.shutdown_socket();
-					}
-				} catch (Exception e) 
+				try
+				{
+					socket.shutdown_socket();
+				} 
+				catch (Exception e) 
 				{
 					printMessage("INTERRUPT ERROR: " + e.getMessage());
-					e.printStackTrace();
 				}
 			}
 		});
@@ -299,6 +300,7 @@ public class Live_View extends PlugInFrame implements ActionListener
 			zmqThread.interrupt();
 			socket.close();
 			context.close();
+			img.hide();
 
 		}
 
