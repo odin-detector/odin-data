@@ -394,14 +394,15 @@ public class Live_View extends PlugInFrame implements ActionListener
 					floatBuf.get((float[])img_pixels);
 					break;
 			}
+
+			ip.setPixels(img_pixels);
+			img.updateAndDraw();
+			img.updateStatusbarValue();
 			if(!img.isVisible())
 			{
 				img.setTitle("Live View From: "+ socket_addr);
 				img.show();
 			}
-			ip.setPixels(img_pixels);
-			img.updateAndDraw();
-			img.updateStatusbarValue();
 		}
 
 		public boolean invert_is_running()
