@@ -122,9 +122,7 @@ class MetaListenerAdapter(OdinDataAdapter):
             )
             status_code, response = self._send_config(config)
         elif path == "config/stop":
-            self.acquisitionID = ""
             self.acquisition_active = False
-            self._set_defaults()
 
             # By default we stop all acquisitions by passing None
             config = {
@@ -135,6 +133,8 @@ class MetaListenerAdapter(OdinDataAdapter):
                 # If we have an Acquisition ID then stop that one only
                 config["acquisition_id"] = self.acquisitionID
             status_code, response = self._send_config(config)
+
+            self.acquisitionID = ""
         elif path in self._config_parameters:
             # Store config to re-send with acquisition ID when it is changed
             self._config_parameters[path] = value
