@@ -5,8 +5,6 @@ import java.nio.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.lang.model.util.ElementScanner6;
-
 import org.json.*;
 
 import ij.plugin.frame.*;
@@ -16,6 +14,7 @@ import ij.gui.*;
 
 import org.zeromq.ZMQ.Socket;
 import org.zeromq.ZMQ;
+import org.zeromq.ZMQException;
 
 /** This a prototype ImageJ plugin. */
 public class Live_View extends PlugInFrame implements ActionListener
@@ -27,13 +26,12 @@ public class Live_View extends PlugInFrame implements ActionListener
 	TextField txt_status;
 
 	private static Frame instance;
-	private ImagePlus img = null;
 	
 	private String socket_addr = "tcp://127.0.0.1:5020";
 
 	private Map<String, Integer> dtype_map;
 
-	private boolean is_running = false;
+	LiveViewSocket socket = null;
 
 	public Live_View()
 	{
@@ -56,10 +54,36 @@ public class Live_View extends PlugInFrame implements ActionListener
 		add(panel);
 		
 		pack();
-		GUI.center(this);
-		setVisible(true);
+
+		//add listener to window close events to shutdown socket
+		addWindowListener(new WindowAdapter() 
+		{
+			public void windowClosing(WindowEvent e)
+			{
+				printMessage("Window Closing");
+				socket.shutdown_socket();
+
+			}
+		});
+
+		Runtime.getRuntime().addShutdownHook(new Thread(){
+			@Override
+			public void run(){
+				// printMessage("Interrupt received, shutting down plugin");
+				try {
+					if(socket != null)
+					{
+						socket.shutdown_socket();
+					}
+				} catch (Exception e) 
+				{
+					printMessage("INTERRUPT ERROR: " + e.getMessage());
+					e.printStackTrace();
+				}
+			}
+		});
 	}
-	
+
 	private Panel buildGUI(Frame instance)
 	{
 		panel = new Panel();
@@ -73,6 +97,7 @@ public class Live_View extends PlugInFrame implements ActionListener
 		
 		txt_socket_addr = new TextField(socket_addr, 25);
 		txt_socket_addr.setEditable(true);
+		txt_socket_addr.setBackground(Color.red);
 		txt_image_dims = new TextField("[0 , 0]", 12);
 		txt_image_dims.setEditable(false);
 		txt_dataset = new TextField("None", 12);
@@ -80,7 +105,8 @@ public class Live_View extends PlugInFrame implements ActionListener
 		txt_status = new TextField("", 40);
 		txt_status.setEditable(false);
 		
-		Button btn_live_on_off = new Button("OFF");
+		Button btn_live_on_off = new Button("PAUSE");
+		Button btn_connect = new Button("CONNECT"); 
 		
 		//constraints for components.
 		GridBagConstraints constraints = new GridBagConstraints();
@@ -89,15 +115,17 @@ public class Live_View extends PlugInFrame implements ActionListener
 
 		//top row
 		addComponent(lbl_socket_addr, panel, 0, 0, constraints);
-		addComponent(lbl_dataset, panel,     1, 0, constraints);
-		addComponent(lbl_image_dims, panel,  2, 0, constraints);
-		addComponent(lbl_live_on_off, panel, 3, 0, constraints);
+
+		addComponent(lbl_dataset, panel,     2, 0, constraints);
+		addComponent(lbl_image_dims, panel,  3, 0, constraints);
+		addComponent(lbl_live_on_off, panel, 4, 0, constraints);
 
 		//middle row
 		addComponent(txt_socket_addr, panel, 0, 1, constraints);
-		addComponent(txt_dataset, panel,     1, 1, constraints);
-		addComponent(txt_image_dims, panel,  2, 1, constraints);
-		addComponent(btn_live_on_off, panel, 3, 1, constraints);
+		addComponent(btn_connect, panel,     1, 1, constraints);
+		addComponent(txt_dataset, panel,     2, 1, constraints);
+		addComponent(txt_image_dims, panel,  3, 1, constraints);
+		addComponent(btn_live_on_off, panel, 4, 1, constraints);
 
 		//bottom row
 		constraints.anchor = GridBagConstraints.EAST;
@@ -111,20 +139,60 @@ public class Live_View extends PlugInFrame implements ActionListener
 		{
 			public void actionPerformed(ActionEvent event)
 			{
-				is_running = !is_running;
+				boolean is_running = socket.invert_is_running();
 				
 				if(is_running)
 				{
-					btn_live_on_off.setLabel("ON");
-					txt_socket_addr.setBackground(Color.green);
+					btn_live_on_off.setLabel("PAUSE");
+					// txt_socket_addr.setBackground(Color.green);
 				}
 				else
 				{
-					btn_live_on_off.setLabel("OFF");
-					txt_socket_addr.setBackground(Color.red);
+					btn_live_on_off.setLabel("UNPAUSE");
+					// txt_socket_addr.setBackground(Color.red);
 				}
 			}
 
+		});
+
+		btn_connect.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent event)
+			{
+				if(socket == null)
+				{
+					try
+					{
+					socket = new LiveViewSocket(socket_addr);
+					btn_connect.setLabel("DISCONNECT");
+					txt_socket_addr.setBackground(Color.green);
+					txt_socket_addr.setEditable(false);
+					}
+					catch(ZMQException except)
+					{
+						return;
+					}
+				}
+				else
+				{
+					socket.shutdown_socket();
+					socket = null;
+					btn_connect.setLabel("CONNECT");
+					txt_socket_addr.setEditable(true);
+					txt_socket_addr.setBackground(Color.red);
+				}
+			}
+		});
+
+		txt_socket_addr.addFocusListener(new FocusListener()
+		{
+			public void focusLost(FocusEvent event)
+			{
+				socket_addr = txt_socket_addr.getText();
+				printMessage("SOCKET ADDR CHANGED");
+			}
+			//has to have this method even if we dont want to do anything on focus Gained
+			public void focusGained(FocusEvent event){}
 		});
 
 		return panel;
@@ -141,84 +209,9 @@ public class Live_View extends PlugInFrame implements ActionListener
 
 	public void run(String arg) 
 	{
-		long start = System.currentTimeMillis();
-		int w = 400, h = 400;
-		ImageProcessor ip = new ByteProcessor(w, h);
-		byte[] pixels = (byte[])ip.getPixels();
-		int i = 0;
-		for (int y = 0; y < h; y++) {
-			byte red = (byte)((y * 255) / (h - 1));
-			for (int x = 0; x < w; x++) {
-				
-				pixels[i++] = red;
-			}
-		}
-		img = new ImagePlus("Live View", ip);
-		img.show();
-		printMessage("Time Taken: "+(System.currentTimeMillis()-start));
-
-		setup_socket(socket_addr);
-	}
-
-	public void run_socket(Socket socket, ZMQ.Context context)
-	{
-		while(!Thread.currentThread().isInterrupted())
-        {
-            ZMQ.Poller items = new ZMQ.Poller(1);
-            items.register(socket, ZMQ.Poller.POLLIN);
-
-            if(items.poll(0) == -1)
-            {
-                printMessage("POLL RETURN -1");
-                break;
-            }
-
-            if(items.pollin(0))
-            {
-				recvFrame(socket);
-            }
-        }
-        
-        printMessage("Socket recieved an interrupt signal. Closing down socket");
-        socket.close();
-        context.term();
-	}
-
-	public void setup_socket(String socket_addr)
-	{
-		printMessage("CREATING ZMQ SOCKET");
-		ZMQ.Context context = ZMQ.context(1);
-		ZMQ.Socket subscriber = context.socket(ZMQ.SUB);
-		subscriber.connect(socket_addr);
-		subscriber.subscribe("".getBytes());
-		printMessage(String.format("Subscribed to addr %s",socket_addr));
-
-		Thread zmqThread = new Thread(){
-			@Override
-			public void run()
-			{
-				run_socket(subscriber, context);
-			}
-		};
-
-		Runtime.getRuntime().addShutdownHook(new Thread(){
-            @Override
-            public void run(){
-                printMessage("Interrupt received, shutting down plugin");
-                
-                try {
-                    zmqThread.interrupt();
-                    
-                    zmqThread.join();
-                } catch (Exception e) 
-                {
-                    printMessage("INTERRUPT ERROR: " + e.getMessage());
-                    e.printStackTrace();
-                }
-            }
-        });
-
-        zmqThread.start();
+		GUI.center(this);
+		setVisible(true);
+		// socket = new LiveViewSocket(socket_addr);	
 	}
 
 	public void printMessage(String message)
@@ -232,89 +225,192 @@ public class Live_View extends PlugInFrame implements ActionListener
 		printMessage("Action Performed: " + e.toString());
 	}
 
-	public void recvFrame(ZMQ.Socket socket)
+
+	private class LiveViewSocket 
 	{
-		//Get header from first ZMQ message, turn it into a JSON Object
-		JSONObject header = new JSONObject(new String(socket.recv()));
-		ByteBuffer img_data = ByteBuffer.wrap(socket.recv());
-		try
+		private ZMQ.Socket socket;
+		private ZMQ.Context context;
+		private ImagePlus img = null;
+
+		private boolean is_running = true;
+
+		private Thread zmqThread;
+
+		public LiveViewSocket(String socket_addr) throws ZMQException
 		{
-			JSONArray JSONshape = header.optJSONArray("shape");
-			int[] shape = new int[]{JSONshape.getInt(0), JSONshape.getInt(1)};
+			printMessage("CREATING ZMQ SOCKET");
+			context = ZMQ.context(1);
+			socket = context.socket(ZMQ.SUB);
+			try
+			{
+				socket.connect(socket_addr);
+			}
+			catch(ZMQException except)
+			{
+				printMessage("EXCEPTION CONNECTING SOCKET");
+				throw except;
+				
+			}
+			
+			socket.subscribe("".getBytes());
+			printMessage(String.format("Subscribed to addr %s",socket_addr));
 
-			String dtype = header.optString("dtype");
+			img = new ImagePlus();
+	
+			zmqThread = new Thread(){
+				@Override
+				public void run()
+				{
+					run_socket();
+				}
+			};
+		
+			zmqThread.start();
+		}
+		   
+		private void run_socket()
+		{
+			while(!Thread.currentThread().isInterrupted())
+			{
+				if(is_running)
+				{
+					ZMQ.Poller items = new ZMQ.Poller(1);
+					items.register(socket, ZMQ.Poller.POLLIN);
 
-			refreshImage(img_data, dtype, shape);
+					if(items.poll(0) == -1)
+					{
+						printMessage("POLL RETURN -1");
+						break;
+					}
+
+					if(items.pollin(0))
+					{
+						recvFrame();
+					}
+				}		
+			}
+			
+			// shutdown_socket();
+		}
+
+		public void shutdown_socket()
+		{
+			printMessage("Socket Shutdown Signal Received. Closing socket");
+			zmqThread.interrupt();
+			socket.close();
+			context.close();
+
+		}
+
+		private void recvFrame()
+		{
+			//Get header from first ZMQ message, turn it into a JSON Object
+			JSONObject header = new JSONObject(new String(socket.recv()));
+			ByteBuffer img_data = ByteBuffer.wrap(socket.recv());
+			printMessage(header.toString());
+			try
+			{
+				JSONArray JSONshape = header.optJSONArray("shape");
+				int[] shape = new int[]{JSONshape.getInt(0), JSONshape.getInt(1)};
+
+				String dtype = header.optString("dtype");
+
+				refreshImage(img_data, dtype, shape);
+				
+			}
+			catch(JSONException except)
+			{
+				printMessage("Error receiving header: "+ except.getMessage());
+				return;
+			}
 			
 		}
-		catch(JSONException except)
+
+		private void refreshImage(ByteBuffer data, String dtype, int[] shape)
 		{
-			printMessage("Error receiving header: "+ except.getMessage());
-			return;
-		}
-		
-	}
-
-	private void refreshImage(ByteBuffer data, String dtype, int[] shape)
-	{
-		int bitdepth = dtype_map.get(dtype);
-		ImageProcessor ip = img.getProcessor();
-		boolean need_new_processor = false;
-		Object img_pixels = null;
-
-		txt_image_dims.setText(String.format("[%d, %d]", shape[0], shape[1]));
-
-		//need to check if the shape or the data type of the image have changed. If they have, we need to create a new Processor
-		int current_bitdepth = ip.getBitDepth();
-		int[] current_shape = new int[]{ip.getWidth(), ip.getHeight()};
-
-		if(current_shape[0] != shape[0] || current_shape[1] != shape[1])
-		{
-			need_new_processor = true;
-			printMessage(String.format("Shape Does not match: current: [%d,%d], new: [%d,%d]", current_shape[0], current_shape[1], shape[0], shape[1]));
-		}
-		else
-		if(bitdepth != current_bitdepth)
-		{
-			need_new_processor = true;
-		}
-
-		switch (bitdepth)
-		{
-			case 8:
-				if(need_new_processor)
+			boolean need_new_processor = false;
+			int bitdepth = dtype_map.get(dtype);
+			ImageProcessor ip = img.getProcessor();
+			Object img_pixels = null;
+			
+			//image window may have been closed by user, which causes null pointer exceptions if trying to get the bit depth. 
+			if(!img.isVisible())
+			{
+				need_new_processor = true;
+			}
+			txt_image_dims.setText(String.format("[%d, %d]", shape[0], shape[1]));
+	
+			//need to check if the shape or the data type of the image have changed. If they have, we need to create a new Processor
+			
+			
+			if(!need_new_processor)
+			{
+				int current_bitdepth = ip.getBitDepth();
+				int[] current_shape = new int[]{ip.getWidth(), ip.getHeight()};
+				if(current_shape[0] != shape[0] || current_shape[1] != shape[1])
 				{
-					ip = new ByteProcessor(shape[0], shape[1]);
-					img.setProcessor(ip);
+					need_new_processor = true;
+					printMessage(String.format("Shape Does not match: current: [%d,%d], new: [%d,%d]", current_shape[0], current_shape[1], shape[0], shape[1]));
 				}
-				img_pixels = new byte[data.limit()];
-				data.get((byte[])img_pixels);
-				break;
-
-			case 16:
-				if(need_new_processor)
+				else
+				if(bitdepth != current_bitdepth)
 				{
-					ip = new ShortProcessor(shape[0], shape[1]);
-					img.setProcessor(ip);
+					need_new_processor = true;
 				}
-				ShortBuffer shortBuf = data.asShortBuffer();
-				img_pixels = new short[shortBuf.limit()];
-				shortBuf.get((short[])img_pixels);
-				break;
-
-			case 32:
-				if(need_new_processor){
-					ip = new FloatProcessor(shape[0], shape[1]);
-					img.setProcessor(ip);
-				}
-				FloatBuffer floatBuf = data.asFloatBuffer();
-				img_pixels = new float[floatBuf.limit()];
-				floatBuf.get((float[])img_pixels);
-				break;
+			}
+	
+			switch (bitdepth)
+			{
+				case 8:
+					if(need_new_processor)
+					{
+						ip = new ByteProcessor(shape[0], shape[1]);
+						img.setProcessor(ip);
+					}
+					img_pixels = new byte[data.limit()];
+					data.get((byte[])img_pixels);
+					break;
+	
+				case 16:
+					if(need_new_processor)
+					{
+						ip = new ShortProcessor(shape[0], shape[1]);
+						img.setProcessor(ip);
+					}
+					ShortBuffer shortBuf = data.asShortBuffer();
+					img_pixels = new short[shortBuf.limit()];
+					shortBuf.get((short[])img_pixels);
+					break;
+	
+				case 32:
+					if(need_new_processor){
+						ip = new FloatProcessor(shape[0], shape[1]);
+						img.setProcessor(ip);
+					}
+					FloatBuffer floatBuf = data.asFloatBuffer();
+					img_pixels = new float[floatBuf.limit()];
+					floatBuf.get((float[])img_pixels);
+					break;
+			}
+			if(!img.isVisible())
+			{
+				img.setTitle("Live View From: "+ socket_addr);
+				img.show();
+			}
+			ip.setPixels(img_pixels);
+			img.updateAndDraw();
+			img.updateStatusbarValue();
 		}
 
-		ip.setPixels(img_pixels);
-		img.updateAndDraw();
-		img.updateStatusbarValue();
-	}
+		public boolean invert_is_running()
+		{
+			is_running = !is_running;
+			return is_running;
+		}
+
+		public boolean is_running()
+		{
+			return is_running;
+		}
+	}//Class LiveViewSocket
 }
