@@ -6,7 +6,7 @@ ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK)
 include_directories(${FRAMESIMULATOR_DIR}/include ${Boost_INCLUDE_DIRS} ${LOG4CXX_INCLUDE_DIRS}/.. )
 add_definitions(${HDF5_DEFINITIONS})
 
-file(GLOB LIB_SOURCES FrameSimulatorPlugin.cpp FrameSimulatorOptions.cpp)
+file(GLOB LIB_SOURCES FrameSimulatorPlugin.cpp pcapFrameSimulatorPlugin.cpp)
 
 # Add library for common plugin code
 add_library(${LIB_SIMULATOR} SHARED ${LIB_SOURCES})
@@ -15,11 +15,12 @@ install(TARGETS ${LIB_SIMULATOR} DESTINATION lib)
 
 file(GLOB APP_SOURCES
         FrameSimulatorPlugin.cpp
-        FrameSimulatorOptions.cpp)
+        FrameSimulatorOptions.cpp
+        pcapFrameSimulatorPlugin.cpp)
 
 add_executable(frameSimulator ${APP_SOURCES} FrameSimulatorApp.cpp)
 
-target_link_libraries(frameSimulator ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${COMMON_LIBRARY})
+target_link_libraries(frameSimulator ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${COMMON_LIBRARY} /usr/lib64/libpcap.so )
 
 if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
     find_library(PTHREAD_LIBRARY

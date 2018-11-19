@@ -3,13 +3,15 @@
 
 #include <map>
 #include <string>
+#include <vector>
 #include <boost/program_options.hpp>
+#include <boost/optional.hpp>
 
 namespace po = boost::program_options;
 
 namespace FrameSimulator {
 
-    template<class T>
+    template <class T>
     class FrameSimulatorOption {
 
     public:

@@ -32,6 +32,8 @@
  <logger name="FS.App">
   <appender-ref ref="FrameSimulatorAppender" />
  </logger>
-
+ <logger name="FS.pcapFrameSimulatorPlugin">
+  <appender-ref ref="FrameSimulatorAppender" />
+ </logger>
 
 </log4j:configuration>
