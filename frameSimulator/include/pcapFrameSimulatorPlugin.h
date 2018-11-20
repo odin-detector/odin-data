@@ -38,11 +38,16 @@ namespace FrameSimulator {
         virtual void prepare_packets(const struct pcap_pkthdr *header, const u_char *buffer) = 0;
         virtual void replay_packets() = 0;
 
-        std::vector<int> m_sockets;
         std::vector<struct sockaddr_in> m_addrs;
 
         pcap_t *m_handle;
         char errbuf[PCAP_ERRBUF_SIZE];
+
+        int m_socket;
+
+        boost::optional<int> packet_gap;
+        boost::optional<float> drop_frac;
+        boost::optional<std::vector<std::string> > drop_packets;
 
     private:
 

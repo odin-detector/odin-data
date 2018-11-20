@@ -16,7 +16,8 @@ install(TARGETS ${LIB_SIMULATOR} DESTINATION lib)
 file(GLOB APP_SOURCES
         FrameSimulatorPlugin.cpp
         FrameSimulatorOptions.cpp
-        pcapFrameSimulatorPlugin.cpp)
+        pcapFrameSimulatorPlugin.cpp
+        Packet.cpp)
 
 add_executable(frameSimulator ${APP_SOURCES} FrameSimulatorApp.cpp)
 

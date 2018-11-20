@@ -15,7 +15,7 @@
 
 namespace FrameSimulator {
 
-    pcapFrameSimulatorPlugin::pcapFrameSimulatorPlugin() {
+    pcapFrameSimulatorPlugin::pcapFrameSimulatorPlugin() : FrameSimulatorPlugin() {
 
         // Setup logging for the class
         logger_ = Logger::getLogger("FS.pcapFrameSimulatorPlugin");
@@ -24,6 +24,8 @@ namespace FrameSimulator {
     }
 
     bool pcapFrameSimulatorPlugin::setup(const po::variables_map& vm) {
+
+        FrameSimulatorPlugin::setup(vm);
 
         LOG4CXX_DEBUG(logger_, "Setting up pcap_loop to read packet(s) from packet capture file");
 
@@ -42,7 +44,17 @@ namespace FrameSimulator {
             return false;
         }
 
-        std::string dest_ip = opt_ports.get_val(vm);
+        opt_packetgap.get_val(vm, packet_gap);
+        opt_dropfrac.get_val(vm, drop_frac);
+
+        if (opt_droppackets.is_specified(vm)) {
+            std::vector<std::string> drop_packets_vec;
+            std::string drop_packets_string = opt_droppackets.get_val(vm);
+            boost::split(drop_packets_vec, drop_packets_string, boost::is_any_of(","), boost::token_compress_on);
+            drop_packets = drop_packets_vec;
+        }
+
+        std::string dest_ip = opt_destip.get_val(vm);
 
         std::vector<std::string> dest_ports;
         std::string dest_ports_string = opt_ports.get_val(vm);
@@ -51,6 +63,8 @@ namespace FrameSimulator {
         int num_ports = dest_ports.size();
 
         LOG4CXX_DEBUG(logger_, "Using destination IP address " + dest_ip);
+
+        m_socket = socket(PF_INET, SOCK_DGRAM, 0);
 
         for (int p=0; p<num_ports; p++) {
 
@@ -62,12 +76,9 @@ namespace FrameSimulator {
             addr.sin_port = htons(atoi(dest_ports[p].c_str()));
             addr.sin_addr.s_addr = inet_addr(dest_ip.c_str());
 
-            int sckt = socket(PF_INET, SOCK_DGRAM, 0);
-
             LOG4CXX_DEBUG(logger_, "Opening socket on port " + dest_ports[p]);
 
             m_addrs.push_back(addr);
-            m_sockets.push_back(sckt);
 
         }
 
@@ -96,13 +107,7 @@ namespace FrameSimulator {
 
     pcapFrameSimulatorPlugin::~pcapFrameSimulatorPlugin() {
 
-        int num_sockets = m_sockets.size();
-
-        if (num_sockets > 0) {
-            LOG4CXX_DEBUG(logger_, "Closing socket(s)");
-            for (int n = 0; n < num_sockets; n++)
-                close(m_sockets[n]);
-        }
+        close(m_socket);
 
     }
 
