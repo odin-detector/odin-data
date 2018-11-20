@@ -52,7 +52,7 @@ public class Live_View extends PlugInFrame implements ActionListener
 		dtype_map.put("uint8", 8);
 		dtype_map.put("uint16", 16);
 		dtype_map.put("uint32", 32);
-		dtype_map.put("float", 32);
+		dtype_map.put("float", 33);
 
 		instance = this;
 		addKeyListener(IJ.getInstance());
@@ -300,15 +300,17 @@ public class Live_View extends PlugInFrame implements ActionListener
 				long prev_time = System.currentTimeMillis();
 				@Override
 				public void run() {
-					long start_time = System.currentTimeMillis();
-					float elapsed_time = (start_time - prev_time)/1000f;
-					float fps = image_count / elapsed_time;
-					
-					txt_fps.setText(String.format("%.2f fps", fps));
-					printMessage(String.format("Received %d images in %.3f seconds", image_count, elapsed_time));
-					prev_time = start_time;
-					image_count = 0;
-
+					if(is_running)
+					{
+						long start_time = System.currentTimeMillis();
+						float elapsed_time = (start_time - prev_time)/1000f;
+						float fps = image_count / elapsed_time;
+						
+						txt_fps.setText(String.format("%.2f fps", fps));
+						printMessage(String.format("Received %d images in %.3f seconds", image_count, elapsed_time));
+						prev_time = start_time;
+						image_count = 0;
+					}
 				}
 			};
 			frame_counter = new Timer(true);
@@ -457,11 +459,12 @@ public class Live_View extends PlugInFrame implements ActionListener
 					break;
 	
 				case 32:
-					if(need_new_processor){ //we may need to create a new processor every time for 32 bit images
+					if(need_new_processor){ 
 						ip = new FloatProcessor(shape[0], shape[1]);
 						
 						img.setProcessor(ip);
 					}
+					//copying data from the buffer is a little more involved as it requires casting from int to float. Fun times
 					IntBuffer floatBuf = data.asIntBuffer();
 					int[] tmp_array = new int[floatBuf.limit()];
 					img_pixels = new float[floatBuf.limit()];
@@ -471,6 +474,10 @@ public class Live_View extends PlugInFrame implements ActionListener
 						((float[])img_pixels)[i] = tmp_array[i];
 					}
 					break;
+
+				default:
+					IJ.error("Sorry, the datatype of this image is currently unsupported");
+					return;
 
 			}
 
