@@ -404,6 +404,7 @@ public class Live_View extends PlugInFrame implements ActionListener
 			int bitdepth = dtype_map.get(dtype);
 			ImageProcessor ip = img.getProcessor();
 			Object img_pixels = null;
+			LUT[] luts = img.getLuts();
 			
 			//image window may have been closed by user, which causes null pointer exceptions if trying to get the bit depth. 
 			if(!img.isVisible())
@@ -467,6 +468,10 @@ public class Live_View extends PlugInFrame implements ActionListener
 			}
 
 			ip.setPixels(img_pixels);
+			if(need_new_processor && luts.length != 0)
+			{
+				img.setLut(luts[0]);
+			}
 			img.updateAndDraw();
 			img.updateStatusbarValue();
 			if(!img.isVisible())
