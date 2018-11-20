@@ -457,14 +457,21 @@ public class Live_View extends PlugInFrame implements ActionListener
 					break;
 	
 				case 32:
-					if(need_new_processor){
+					if(need_new_processor){ //we may need to create a new processor every time for 32 bit images
 						ip = new FloatProcessor(shape[0], shape[1]);
+						
 						img.setProcessor(ip);
 					}
-					FloatBuffer floatBuf = data.asFloatBuffer();
+					IntBuffer floatBuf = data.asIntBuffer();
+					int[] tmp_array = new int[floatBuf.limit()];
 					img_pixels = new float[floatBuf.limit()];
-					floatBuf.get((float[])img_pixels);
+					floatBuf.get((int[])tmp_array);
+					for(int i = 0; i < tmp_array.length; i++)
+					{
+						((float[])img_pixels)[i] = tmp_array[i];
+					}
 					break;
+
 			}
 
 			ip.setPixels(img_pixels);
