@@ -2,8 +2,12 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.nio.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.json.*;
 
@@ -244,12 +248,16 @@ public class Live_View extends PlugInFrame implements ActionListener
 
 	public void printMessage(String message)
 	{
-		IJ.showStatus(message);
-		txt_status.setText(message);
+		Date date = new Date();
+		SimpleDateFormat simple_date = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss.SSS");
+
+		String full_message = simple_date.format(date) + ": " + message;
+		IJ.showStatus(full_message);
+		txt_status.setText(full_message);
 		if(is_logging)
 		{
-			System.out.println(message);
-			IJ.log(message);
+			System.out.println(full_message);
+			IJ.log(full_message);
 		}
 	}
 
@@ -269,6 +277,9 @@ public class Live_View extends PlugInFrame implements ActionListener
 
 		private Thread zmqThread;
 
+		private TimerTask status_update;
+		private Timer frame_counter;
+
 		long time_last_image = System.currentTimeMillis();
 		int image_count = 0;
 
@@ -284,7 +295,27 @@ public class Live_View extends PlugInFrame implements ActionListener
 					run_socket();
 				}
 			};
-		
+
+			status_update = new TimerTask(){
+				long prev_time = System.currentTimeMillis();
+				@Override
+				public void run() {
+					long start_time = System.currentTimeMillis();
+					float elapsed_time = (start_time - prev_time)/1000f;
+					float fps = image_count / elapsed_time;
+					
+					txt_fps.setText(String.format("%.2f fps", fps));
+					printMessage(String.format("Received %d images in %.3f seconds", image_count, elapsed_time));
+					prev_time = start_time;
+					image_count = 0;
+
+				}
+			};
+			frame_counter = new Timer(true);
+			int timer_delay = 2000;
+			frame_counter.schedule(status_update, 0, timer_delay);
+			
+
 			zmqThread.start();
 		}
 		   
@@ -319,7 +350,7 @@ public class Live_View extends PlugInFrame implements ActionListener
 			socket.close();
 			context.close();
 			img.hide();
-
+			frame_counter.cancel();
 		}
 
 		public boolean setup_socket(String addr)
@@ -402,6 +433,7 @@ public class Live_View extends PlugInFrame implements ActionListener
 	
 			switch (bitdepth)
 			{
+				//different bitdepths require different Image Processors for the data type, as well as different buffer types
 				case 8:
 					if(need_new_processor)
 					{
@@ -443,8 +475,6 @@ public class Live_View extends PlugInFrame implements ActionListener
 				img.show();
 			}
 			long time_taken = System.currentTimeMillis() - time_last_image;
-
-			txt_fps.setText(String.format("%.2f fps", 1000f/time_taken));
 			time_last_image = System.currentTimeMillis();
 			image_count++;
 		}
