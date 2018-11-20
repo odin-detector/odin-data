@@ -32,7 +32,7 @@ namespace FrameSimulator {
 
     protected:
 
-        boost::optional<int> replay_frames;
+        boost::optional<int> replay_numframes;
         boost::optional<int> replay_interval;
 
     private:

@@ -4,9 +4,9 @@
 #include<unistd.h>
 #include<functional>
 
-#include<net/ethernet.h>
-#include<netinet/udp.h>
-#include<netinet/ip.h>
+#include <net/ethernet.h>
+#include <netinet/udp.h>
+#include <netinet/ip.h>
 
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -20,6 +20,9 @@ namespace FrameSimulator {
         // Setup logging for the class
         logger_ = Logger::getLogger("FS.pcapFrameSimulatorPlugin");
         logger_->setLevel(Level::getAll());
+
+        curr_frame = 0;
+        curr_port_index = 0;
 
     }
 
@@ -93,6 +96,32 @@ namespace FrameSimulator {
 
     }
 
+    void pcapFrameSimulatorPlugin::prepare_packets(const struct pcap_pkthdr *header, const u_char *buffer) {
+
+        LOG4CXX_DEBUG(logger_, "Preparing packet(s)");
+
+        int size = header->len;
+        struct iphdr *iph = (struct iphdr *) (buffer + sizeof(struct ethhdr));
+        struct udphdr *udph = (struct udphdr *) (buffer + iph->ihl * 4 + sizeof(struct ethhdr));
+        const u_char *d = &buffer[sizeof(struct ethhdr) + iph->ihl * 4 + sizeof udph];
+
+        int header_size = sizeof(struct ethhdr) + iph->ihl * 4 + sizeof(udph);
+
+        const u_char *data = buffer + header_size;
+
+        this->extract_frames(data, header->len - header_size);
+
+    }
+
+    int pcapFrameSimulatorPlugin::send_packet(const Packet& packet, const int& frame) const {
+        if (frame != curr_frame) {
+            curr_port_index = (curr_port_index + 1 < m_addrs.size()) ? curr_port_index + 1 : 0;
+            curr_frame = frame;
+        }
+        bind(m_socket, (struct sockaddr *) (&m_addrs[curr_port_index]), sizeof(m_addrs[curr_port_index]));
+        return sendto(m_socket, packet.data, packet.size, 0, (struct sockaddr *) (&m_addrs[curr_port_index]), sizeof(m_addrs[curr_port_index]));
+    }
+
     void pcapFrameSimulatorPlugin::populate_options(po::options_description& config) {
 
         FrameSimulatorPlugin::populate_options(config);
@@ -118,7 +147,7 @@ namespace FrameSimulator {
 
     void pcapFrameSimulatorPlugin::simulate() {
 
-        this->replay_packets();
+        this->replay_frames();
 
     }
 

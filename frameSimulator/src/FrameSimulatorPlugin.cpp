@@ -24,7 +24,7 @@ namespace FrameSimulator {
 
         LOG4CXX_DEBUG(logger_, "Setting up base FrameSimulatorPlugin");
 
-        opt_frames.get_val(vm, replay_frames);
+        opt_frames.get_val(vm, replay_numframes);
         opt_interval.get_val(vm, replay_interval);
 
     }
