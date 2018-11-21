@@ -55,17 +55,19 @@ current_acquisition_("")
   this->commanded_compression_settings_.compression_level = 1;
   this->commanded_compression_settings_.type_size = 0;
   this->commanded_compression_settings_.uncompressed_size = 0;
+  this->commanded_compression_settings_.threads = 1;
   this->compression_settings_ = this->commanded_compression_settings_;
 
   // Setup logging for the class
   logger_ = Logger::getLogger("FP.BloscPlugin");
   logger_->setLevel(Level::getAll());
-  LOG4CXX_TRACE(logger_, "BloscPlugin constructor");
+  LOG4CXX_TRACE(logger_, "BloscPlugin constructor. Version: " << this->get_version_long());
 
   //blosc_init(); // not required for blosc >= v1.9
   int ret = 0;
   ret = blosc_set_compressor(BLOSC_LZ4_COMPNAME);
   if (ret < 0) LOG4CXX_ERROR(logger_, "Blosc unable to set compressor: " << BLOSC_LZ4_COMPNAME);
+  blosc_set_nthreads(this->compression_settings_.threads);
   LOG4CXX_TRACE(logger_, "Blosc Version: " << blosc_get_version_string());
   LOG4CXX_TRACE(logger_, "Blosc list available compressors: " << blosc_list_compressors());
   LOG4CXX_TRACE(logger_, "Blosc current compressor: " << blosc_get_compressor());
