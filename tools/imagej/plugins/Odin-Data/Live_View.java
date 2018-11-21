@@ -485,6 +485,7 @@ public class Live_View extends PlugInFrame implements ActionListener
 			if(need_new_processor && luts.length != 0)
 			{
 				img.setLut(luts[0]);
+				ip.resetMinAndMax();
 			}
 			img.updateAndDraw();
 			img.updateStatusbarValue();
