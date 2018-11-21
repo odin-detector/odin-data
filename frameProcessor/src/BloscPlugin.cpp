@@ -223,15 +223,17 @@ void BloscPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& 
     int blosc_level = config.get_param<int>(BloscPlugin::CONFIG_BLOSC_LEVEL);
     // Range checking: check and cap at upper and lower bounds
     if (blosc_level < 1) {
-      this->commanded_compression_settings_.compression_level = 1;
       LOG4CXX_WARN(logger_, "Commanded blosc level: " << blosc_level << "Capped at lower range: 1");
+      blosc_level = 1;
       reply.set_param<std::string>("warning: level", "Capped at lower range: 1");
     } else if(blosc_level > 9) {
-      this->commanded_compression_settings_.compression_level = 9;
       LOG4CXX_WARN(logger_, "Commanded blosc level: " << blosc_level << "Capped at upper range: 9");
+      blosc_level = 9;
       reply.set_param<std::string>("warning: level", "Capped at upper range: 9");
-    } else {
-      this->commanded_compression_settings_.compression_level = blosc_level;
+    }
+    this->commanded_compression_settings_.compression_level = blosc_level;
+    if (this->current_acquisition_ == "") {
+      this->update_compression_settings();
     }
   }
 
@@ -239,35 +241,41 @@ void BloscPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& 
     unsigned int blosc_shuffle = config.get_param<unsigned int>(BloscPlugin::CONFIG_BLOSC_SHUFFLE);
     // Range checking: 0, 1, 2 are valid values. Anything else result in setting value 0 (no shuffle)
     if (blosc_shuffle > BLOSC_BITSHUFFLE) {
-      this->commanded_compression_settings_.shuffle = 0;
       LOG4CXX_WARN(logger_, "Commanded blosc shuffle: " << blosc_shuffle << " is invalid. Disabling SHUFFLE filter");
+      blosc_shuffle = 0;
       reply.set_param<std::string>("warning: shuffle filter", "Disabled");
-    } else {
-      this->commanded_compression_settings_.shuffle = blosc_shuffle;
+    }
+    this->commanded_compression_settings_.shuffle = blosc_shuffle;
+    if (this->current_acquisition_ == "") {
+      this->update_compression_settings();
     }
   }
 
   if (config.has_param(BloscPlugin::CONFIG_BLOSC_THREADS)) {
     unsigned int blosc_threads = config.get_param<unsigned int>(BloscPlugin::CONFIG_BLOSC_THREADS);
     if (blosc_threads > BLOSC_MAX_THREADS) {
-      this->commanded_compression_settings_.threads = 8;
       LOG4CXX_WARN(logger_, "Commanded blosc threads: " << blosc_threads << " is too large. Setting 8 threads.");
-      reply.set_param<int>("warning: threads", 4);
-    } else {
-      this->commanded_compression_settings_.threads = blosc_threads;
+      blosc_threads = 8;
+      reply.set_param<int>("warning: threads", blosc_threads);
+    }
+    this->commanded_compression_settings_.threads = blosc_threads;
+    if (this->current_acquisition_ == "") {
+      this->update_compression_settings();
     }
   }
 
   if (config.has_param(BloscPlugin::CONFIG_BLOSC_COMPRESSOR)) {
     unsigned int blosc_compressor = config.get_param<unsigned int>(BloscPlugin::CONFIG_BLOSC_COMPRESSOR);
     if (blosc_compressor > BLOSC_ZSTD) {
-      this->commanded_compression_settings_.blosc_compressor = BLOSC_LZ4;
       LOG4CXX_WARN(logger_, "Commanded blosc compressor: "
                             << blosc_compressor << " is invalid. Setting compressor: "
                             << BLOSC_LZ4 << "(" << BLOSC_LZ4_COMPNAME << ")");
+      blosc_compressor = BLOSC_LZ4;
       reply.set_param<int>("warning: compressor", BLOSC_LZ4);
-    } else {
-      this->commanded_compression_settings_.blosc_compressor = blosc_compressor;
+    }
+    this->commanded_compression_settings_.blosc_compressor = blosc_compressor;
+    if (this->current_acquisition_ == "") {
+      this->update_compression_settings();
     }
   }
 }
