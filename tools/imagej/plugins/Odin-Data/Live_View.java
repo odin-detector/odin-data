@@ -20,7 +20,11 @@ import org.zeromq.ZMQ.Socket;
 import org.zeromq.ZMQ;
 import org.zeromq.ZMQException;
 
-/** This a prototype ImageJ plugin. */
+/**
+ * This is an ImageJ Plugin that allows ImageJ to receive and display images from the Odin Data Live View Plugin.
+ * @author Adam Neaves
+ * @version 0.1.0
+ */
 public class Live_View extends PlugInFrame implements ActionListener
 {
 	private Panel panel;
@@ -40,10 +44,17 @@ public class Live_View extends PlugInFrame implements ActionListener
 
 	boolean is_logging = false;
 
+	/**
+	 * Constructs the Live View Plugin.
+	 * It creates and displays the Control GUI and sets up required objects.
+	 * It also sets up the action listeners that listen for the window closing or being shut down, so it
+	 * can tear down cleanly.
+	 */
 	public Live_View()
 	{
 		super("Live View Controls");
 		if (instance!=null) {
+			instance.setVisible(true);
 			instance.toFront();
 			return;
 		}
@@ -57,10 +68,12 @@ public class Live_View extends PlugInFrame implements ActionListener
 		instance = this;
 		addKeyListener(IJ.getInstance());
 		setLayout(new FlowLayout());
-		panel = buildGUI(instance);
+		panel = buildGUI();
 		add(panel);
 		
 		pack();
+		GUI.center(this);
+		setVisible(true);
 
 		//add listener to window close events to shutdown socket
 		addWindowListener(new WindowAdapter() 
@@ -72,6 +85,7 @@ public class Live_View extends PlugInFrame implements ActionListener
 				{
 					socket.shutdown_socket();
 				}
+				instance = null;
 			}
 		});
 
@@ -80,6 +94,7 @@ public class Live_View extends PlugInFrame implements ActionListener
 			@Override
 			public void run(){
 				// printMessage("Interrupt received, shutting down plugin");
+				instance = null;
 				try
 				{
 					socket.shutdown_socket();
@@ -92,7 +107,13 @@ public class Live_View extends PlugInFrame implements ActionListener
 		});
 	}
 
-	private Panel buildGUI(Frame instance)
+	/**
+	 * Creates the panel containing the control GUI components.
+	 * It also adds the event listeners required for some of the
+	 * buttons and editable text fields.
+	 * @return the constructed panel with all components added.
+	 */
+	private Panel buildGUI()
 	{
 		panel = new Panel();
 		panel.setLayout(new GridBagLayout());
@@ -159,9 +180,8 @@ public class Live_View extends PlugInFrame implements ActionListener
 			public void actionPerformed(ActionEvent event)
 			{
 				if(socket != null){
-					boolean is_running = socket.invert_is_running();
-					
-					if(is_running)
+					boolean is_paused = socket.invert_paused();		
+					if(!is_paused)
 					{
 						btn_live_on_off.setLabel("PAUSE");
 						// txt_socket_addr.setBackground(Color.green);
@@ -231,7 +251,14 @@ public class Live_View extends PlugInFrame implements ActionListener
 		
 	}
 
-	//Add a component to the supplied panel, using the suppiled constraints, at the grid position (x,y)
+	/**
+	 * Add a component to the supplied panel, using the suppiled constraints, at the grid position (x,y).
+	 * @param item  the component being added
+	 * @param panel the panel to add the compoent to
+	 * @param x     the horizontal position on the grid where the component should be placed.
+	 * @param y     the vertical position on the grid where the component should be placed.
+	 * @param c     the constraints used for the item.
+	 */
 	private void addComponent(Component item, Panel panel, int x, int y, GridBagConstraints c)
 	{
 		c.gridx = x;
@@ -239,13 +266,11 @@ public class Live_View extends PlugInFrame implements ActionListener
 		panel.add(item, c);
 	}
 
-	public void run(String arg) 
-	{
-		GUI.center(this);
-		setVisible(true);
-		// socket = new LiveViewSocket(socket_addr);	
-	}
-
+	/**
+	 * Print a message to the status bar, and also potentionally to the console and log window.
+	 * Adds a timestamp to the front of the message.
+	 * @param message the string to print. usually some debug or status information
+	 */
 	public void printMessage(String message)
 	{
 		Date date = new Date();
@@ -267,13 +292,18 @@ public class Live_View extends PlugInFrame implements ActionListener
 	}
 
 
+	/**
+	 * Class that contains the ZMQ subscriber socket and logic for what to do with an image when it arrives.
+	 * @author Adam Neaves
+	 * @version 0.1.0
+	 */
 	private class LiveViewSocket 
 	{
 		private ZMQ.Socket socket;
 		private ZMQ.Context context;
 		private ImagePlus img = null;
 
-		private boolean is_running = true;
+		private boolean is_paused = false;
 
 		private Thread zmqThread;
 
@@ -283,6 +313,11 @@ public class Live_View extends PlugInFrame implements ActionListener
 		long time_last_image = System.currentTimeMillis();
 		int image_count = 0;
 
+		/**
+		 * Constructor for the class. Sets up threads that run the ZMQ socket and background timer which counts the frames.
+		 * @param socket_addr    the address of the live view that the socket needs to subscribe to.
+		 * @throws ZMQException  if the socket address is invalid or malformed
+		 */
 		public LiveViewSocket(String socket_addr) throws ZMQException
 		{
 			setup_socket(socket_addr);
@@ -300,7 +335,7 @@ public class Live_View extends PlugInFrame implements ActionListener
 				long prev_time = System.currentTimeMillis();
 				@Override
 				public void run() {
-					if(is_running)
+					if(!is_paused)
 					{
 						long start_time = System.currentTimeMillis();
 						float elapsed_time = (start_time - prev_time)/1000f;
@@ -320,12 +355,15 @@ public class Live_View extends PlugInFrame implements ActionListener
 
 			zmqThread.start();
 		}
-		   
+		
+		/**
+		 * Repeatedly Polls the ZMQ socket and reacts to incoming messages.
+		 */
 		private void run_socket()
 		{
 			while(!Thread.currentThread().isInterrupted())
 			{
-				if(is_running)
+				if(!is_paused)
 				{
 					ZMQ.Poller items = new ZMQ.Poller(1);
 					items.register(socket, ZMQ.Poller.POLLIN);
@@ -335,7 +373,7 @@ public class Live_View extends PlugInFrame implements ActionListener
 						break;
 					}
 
-					if(items.pollin(0))
+					if(items.pollin(0)) //something has arrived at the socket, need to read it.
 					{
 						recvFrame();
 					}
@@ -345,6 +383,10 @@ public class Live_View extends PlugInFrame implements ActionListener
 			// shutdown_socket();
 		}
 
+		/**
+		 * Closes down the socket and context, allowing the plugin to close cleanly.
+		 * Interrupts the thread running the socket.
+		 */
 		public void shutdown_socket()
 		{
 			printMessage("Socket Shutdown Signal Received. Closing socket");
@@ -355,7 +397,12 @@ public class Live_View extends PlugInFrame implements ActionListener
 			frame_counter.cancel();
 		}
 
-		public boolean setup_socket(String addr)
+		/**
+		 * Sets up the socket, subscribing it to the supplied socket address
+		 * @param addr the socket address to subscribe to.
+		 * @throws ZMQException if the socket address supplied is malformed or otherwise invalid.
+		 */
+		public void setup_socket(String addr) throws ZMQException
 		{
 			printMessage("CREATING ZMQ SOCKET");
 			context = ZMQ.context(1);
@@ -367,15 +414,19 @@ public class Live_View extends PlugInFrame implements ActionListener
 			catch(ZMQException except)
 			{
 				printMessage("EXCEPTION CONNECTING SOCKET");
-				return false;
+				throw except;
 				
 			}
 			
 			socket.subscribe("".getBytes());
 			printMessage(String.format("Subscribed to addr %s",socket_addr));
-			return true;
+			return;
 		}
 
+		/**
+		 * Receives a frame from the ZMQ socket. The frame consists of a JSON header message,
+		 * and then a message containing a blob of binary data for the image itself.
+		 */
 		private void recvFrame()
 		{
 			//Get header from first ZMQ message, turn it into a JSON Object
@@ -400,6 +451,14 @@ public class Live_View extends PlugInFrame implements ActionListener
 			
 		}
 
+		/**
+		 * Displays the new image. Either updates an existing image with the new data, or creates one
+		 * if either one does not exist, or if it is of the wrong size/data type.
+		 * @param data    a buffer of the raw image data
+		 * @param dtype   the data type of the image, as described by the header. Should be either uint8, uint16, or uint32
+		 * @param shape   the dimensions of the image, as an array of [width, height]
+		 * @param dataset the name of the dataset, if present.
+		 */
 		private void refreshImage(ByteBuffer data, String dtype, int[] shape, String dataset)
 		{
 			boolean need_new_processor = false;
@@ -499,15 +558,16 @@ public class Live_View extends PlugInFrame implements ActionListener
 			image_count++;
 		}
 
-		public boolean invert_is_running()
+		/**
+		 * Inverts the value that tells the socket wether to keep checking for new data on the socket.
+		 * @return the inverted value. If it was <code>true</code> before calling this method, it's now <code>false</code>
+		 * and vice versa
+		 */
+		public boolean invert_paused()
 		{
-			is_running = !is_running;
-			return is_running;
+			is_paused = !is_paused;
+			return is_paused;
 		}
 
-		public boolean is_running()
-		{
-			return is_running;
-		}
 	}//Class LiveViewSocket
 }
