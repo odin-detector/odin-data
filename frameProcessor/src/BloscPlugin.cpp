@@ -94,7 +94,6 @@ boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> sr
       static_cast<const char*>(src_frame->get_data())
   );
 
-  this->update_compression_settings(src_frame->get_acquisition_id());
   c_settings = this->compression_settings_;
   if (src_frame->get_data_type() >= 0) {
     c_settings.type_size = src_frame->get_data_type_size();
@@ -163,31 +162,29 @@ boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> sr
  *
  * @param acquisition_id
  */
-void BloscPlugin::update_compression_settings(const std::string &acquisition_id)
+void BloscPlugin::update_compression_settings()
 {
-  if (acquisition_id != this->current_acquisition_){
-    LOG4CXX_DEBUG_LEVEL(1, logger_, "New acquisition detected: "<< acquisition_id);
-    this->compression_settings_ = this->commanded_compression_settings_;
-    this->current_acquisition_ = acquisition_id;
+  this->compression_settings_ = this->commanded_compression_settings_;
 
-    int ret = 0;
-    const char * p_compressor_name;
-    ret = blosc_compcode_to_compname(this->compression_settings_.blosc_compressor, &p_compressor_name);
-    LOG4CXX_DEBUG_LEVEL(1, logger_, "Blosc compression new acquisition=\"" << acquisition_id << "\":"
-                                    << " compressor=" << p_compressor_name
-                                    << " threads=" << blosc_get_nthreads()
-                                    << " clevel=" << this->compression_settings_.compression_level
-                                    << " doshuffle=" << this->compression_settings_.shuffle
-                                    << " typesize=" << this->compression_settings_.type_size
-                                    << " nbytes=" << this->compression_settings_.uncompressed_size);
-    ret = blosc_set_compressor(p_compressor_name);
-    if (ret < 0) {
-      LOG4CXX_ERROR(logger_, "Blosc failed to set compressor: "
-          << " " << this->compression_settings_.blosc_compressor
-          << " " << *p_compressor_name)
-      throw std::runtime_error("Blosc failed to set compressor");
-    }
+  int ret = 0;
+  const char * p_compressor_name;
+  ret = blosc_compcode_to_compname(this->compression_settings_.blosc_compressor, &p_compressor_name);
+  LOG4CXX_DEBUG_LEVEL(1, logger_, "Blosc compression settings: "
+                                  << " acquisition=\"" << this->current_acquisition_ << "\""
+                                  << " compressor=" << p_compressor_name
+                                  << " threads=" << blosc_get_nthreads()
+                                  << " clevel=" << this->compression_settings_.compression_level
+                                  << " doshuffle=" << this->compression_settings_.shuffle
+                                  << " typesize=" << this->compression_settings_.type_size
+                                  << " nbytes=" << this->compression_settings_.uncompressed_size);
+  ret = blosc_set_compressor(p_compressor_name);
+  if (ret < 0) {
+    LOG4CXX_ERROR(logger_, "Blosc failed to set compressor: "
+        << " " << this->compression_settings_.blosc_compressor
+        << " " << *p_compressor_name)
+    throw std::runtime_error("Blosc failed to set compressor");
   }
+  blosc_set_nthreads(this->compression_settings_.threads);
 }
 
   /**
@@ -201,6 +198,13 @@ void BloscPlugin::process_frame(boost::shared_ptr<Frame> src_frame)
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
 
   LOG4CXX_DEBUG_LEVEL(3, logger_, "Received a new frame...");
+
+  if (src_frame->get_acquisition_id() != this->current_acquisition_) {
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "New acquisition detected: " << src_frame->get_acquisition_id());
+    this->current_acquisition_ = src_frame->get_acquisition_id();
+    this->update_compression_settings();
+  }
+
   boost::shared_ptr <Frame> compressed_frame = this->compress_frame(src_frame);
   LOG4CXX_DEBUG_LEVEL(3, logger_, "Pushing compressed frame");
   this->push(compressed_frame);

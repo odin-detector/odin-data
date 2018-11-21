@@ -55,7 +55,7 @@ private:
   std::string get_version_long();
 
   // Methods unique to this class
-  void update_compression_settings(const std::string &acquisition_id);
+  void update_compression_settings();
 
   // private data
   /** Pointer to logger */
