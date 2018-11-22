@@ -1,23 +1,14 @@
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
 import java.nio.*;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Timer;
-import java.util.TimerTask;
 
-import org.json.*;
-
-import ij.plugin.frame.*;
-import ij.*;
+import ij.IJ;
+import ij.ImagePlus;
 import ij.process.*;
-import ij.gui.*;
 
 import org.zeromq.ZMQ.Socket;
 import org.zeromq.ZMQ;
 import org.zeromq.ZMQException;
+import org.json.*;
 
 /**
  * Class that contains the ZMQ subscriber socket and logic for what to do with an image when it arrives.
@@ -27,8 +18,9 @@ import org.zeromq.ZMQException;
 public class LiveViewSocket 
 {
     private ZMQ.Socket socket;
-    private ZMQ.Context context;
+    private ZMQ.Context context;    
     private ImagePlus img = null;
+    private ImageFrame frame;   
 
     private String socket_addr;
 
@@ -36,13 +28,9 @@ public class LiveViewSocket
 
     private Thread zmqThread;
 
-    private TimerTask status_update;
-    private Timer frame_counter;
-
-    private long time_last_image = System.currentTimeMillis();
     private int image_count = 0;
 
-    private HashMap<String, Integer> dtype_map;
+    private static HashMap<String, Integer> dtype_map;
 
     /**
      * Constructor for the class. Sets up threads that run the ZMQ socket and background timer which counts the frames.
@@ -58,7 +46,7 @@ public class LiveViewSocket
 		dtype_map.put("uint8", 8);
 		dtype_map.put("uint16", 16);
 		dtype_map.put("uint32", 32);
-		dtype_map.put("float", 33);
+		dtype_map.put("float", 33); //set to 33 so it can be parsed separately to the uint32
 
         zmqThread = new Thread(){
             @Override
@@ -66,29 +54,7 @@ public class LiveViewSocket
             {
                 run_socket();
             }
-        };
-
-        status_update = new TimerTask(){
-            long prev_time = System.currentTimeMillis();
-            @Override
-            public void run() {
-                if(!is_paused)
-                {
-                    long start_time = System.currentTimeMillis();
-                    float elapsed_time = (start_time - prev_time)/1000f;
-                    float fps = image_count / elapsed_time;
-                    
-                    //txt_fps.setText(String.format("%.2f fps", fps));
-                    //printMessage(String.format("Received %d images in %.3f seconds", image_count, elapsed_time));
-                    prev_time = start_time;
-                    image_count = 0;
-                }
-            }
-        };
-        frame_counter = new Timer(true);
-        int timer_delay = 2000;
-        frame_counter.schedule(status_update, 0, timer_delay);
-        
+        };     
 
         zmqThread.start();
     }
@@ -131,7 +97,6 @@ public class LiveViewSocket
         socket.close();
         context.close();
         img.hide();
-        frame_counter.cancel();
     }
 
     /**
@@ -178,7 +143,9 @@ public class LiveViewSocket
             String dtype = header.optString("dtype");
             String dataset = header.optString("dataset");
 
-            refreshImage(img_data, dtype, shape, dataset);
+            frame = new ImageFrame(dataset, dtype_map.get(dtype), shape);
+
+            refreshImage(img_data, dtype, shape);
             
         }
         catch(JSONException except)
@@ -195,9 +162,8 @@ public class LiveViewSocket
      * @param data    a buffer of the raw image data
      * @param dtype   the data type of the image, as described by the header. Should be either uint8, uint16, or uint32
      * @param shape   the dimensions of the image, as an array of [width, height]
-     * @param dataset the name of the dataset, if present.
      */
-    private void refreshImage(ByteBuffer data, String dtype, int[] shape, String dataset)
+    private void refreshImage(ByteBuffer data, String dtype, int[] shape)
     {
         boolean need_new_processor = false;
         int bitdepth = dtype_map.get(dtype);
@@ -210,22 +176,13 @@ public class LiveViewSocket
         {
             need_new_processor = true;
         }
-        //txt_image_dims.setText(String.format("[%d, %d]", shape[0], shape[1])); //TODO: remove GUI changes from socket class
-        //txt_dataset.setText(dataset);
-
-        //need to check if the shape or the data type of the image have changed. If they have, we need to create a new Processor
         
+        //need to check if the shape or the data type of the image have changed. If they have, we need to create a new Processor       
         if(!need_new_processor)
         {
             int current_bitdepth = ip.getBitDepth();
             int[] current_shape = new int[]{ip.getWidth(), ip.getHeight()};
-            if(current_shape[0] != shape[0] || current_shape[1] != shape[1])
-            {
-                need_new_processor = true;
-                //printMessage(String.format("Shape Does not match: current: [%d,%d], new: [%d,%d]", current_shape[0], current_shape[1], shape[0], shape[1]));
-            }
-            else
-            if(bitdepth != current_bitdepth)
+            if(current_shape[0] != shape[0] || current_shape[1] != shape[1] || bitdepth != current_bitdepth)
             {
                 need_new_processor = true;
             }
@@ -261,7 +218,7 @@ public class LiveViewSocket
                     
                     img.setProcessor(ip);
                 }
-                //copying data from the buffer is a little more involved as it requires casting from int to float. Fun times
+                //copying data from the buffer is a little more involved as it requires casting from int to float.
                 IntBuffer floatBuf = data.asIntBuffer();
                 int[] tmp_array = new int[floatBuf.limit()];
                 img_pixels = new float[floatBuf.limit()];
@@ -291,8 +248,6 @@ public class LiveViewSocket
             img.setTitle("Live View From: "+ socket_addr);
             img.show();
         }
-        long time_taken = System.currentTimeMillis() - time_last_image;
-        time_last_image = System.currentTimeMillis();
         image_count++;
     }
 
@@ -304,7 +259,55 @@ public class LiveViewSocket
     public boolean invert_paused()
     {
         is_paused = !is_paused;
+        
         return is_paused;
     }
 
+    public boolean is_paused()
+    {
+        return is_paused;
+    }
+
+    public int get_image_count()
+    {
+        return image_count;
+    }
+
+    public void set_image_count(int val)
+    {
+        image_count = val;
+    }
+
+    public int[] get_shape()
+    {
+        if(frame != null)
+            return frame.shape;
+        else
+        { 
+            int[] val = {0,0};
+            return val;
+        }
+    }
+
+    public String get_dataset()
+    {
+        if(frame != null && frame.dataset != null)
+            return frame.dataset;
+        else return "None";
+    }
+
+    private class ImageFrame
+    {
+        private String dataset;
+        private int bitdepth;
+        private int[] shape;
+
+
+        public ImageFrame(String dataset, int bitdepth, int[] shape)
+        {
+            this.dataset = dataset;
+            this.bitdepth = bitdepth;
+            this.shape = shape;
+        }
+    }
 }//Class LiveViewSocket
