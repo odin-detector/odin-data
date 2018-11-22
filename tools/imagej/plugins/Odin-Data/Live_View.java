@@ -125,6 +125,18 @@ public class Live_View extends PlugInFrame implements ActionListener
         frame_counter.schedule(status_update, 0, timer_delay);
 	}
 
+	public void run(String args)
+	{
+		if("help".equalsIgnoreCase(args))
+		{
+			String help_text;
+			help_text = new String("Live View Plugin designed to pair with the Odin Data Live View Plugin.\n"+
+								   "Subscribes to the supplied ZMQ socket address, and receives header and image data\n"+
+								   " and displays it in an ImageJ Window.");
+
+			IJ.showMessage("Odin live View Help", help_text);
+		}
+	}
 	/**
 	 * Creates the panel containing the control GUI components.
 	 * It also adds the event listeners required for some of the
