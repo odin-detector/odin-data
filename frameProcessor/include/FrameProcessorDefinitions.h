@@ -80,6 +80,10 @@ namespace FrameProcessor
     std::vector<long long unsigned int> chunks;
     /** Compression state of data **/
     CompressionType compression;
+    /** Compression configuration settings **/
+    unsigned int blosc_compressor;
+    unsigned int blosc_level;
+    unsigned int blosc_shuffle;
     /** Whether to create Low/High indexes for this dataset **/
     bool create_low_high_indexes;
   };

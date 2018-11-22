@@ -8,7 +8,7 @@
 #include "HDF5File.h"
 
 #include <hdf5_hl.h>
-
+#include <blosc.h>
 #include "logging.h"
 #include "DebugLevelLogger.h"
 
@@ -410,12 +410,13 @@ void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index
     // Create cd_values for filter to set default block size and to enable LZ4
     unsigned int cd_values[7] = {0, 0, 0, 0, 0, 0, 0};
     size_t cd_values_length = 7;
-    // TODO: configure the filter parameters dynamically instead of hardcoding like this.
-    cd_values[2] = static_cast<unsigned int>(pixel_type_size);       // type size
-    cd_values[3] = frame_num_pixels * pixel_type_size;     // uncompressed size
-    cd_values[4] = 1;       // compression level
-    cd_values[5] = 2;       // 0: shuffle not active, 1: shuffle, 2: bitshuffle
-    cd_values[6] = 1;       // the actual Blosc compressor to use (default: LZ4). See blosc.h
+    cd_values[0] = 2;                                          // Blosc filter version: 2 (multiple compressors since Blosc 1.3)
+    cd_values[1] = BLOSC_VERSION_FORMAT;                       // Blosc buffer format version
+    cd_values[2] = static_cast<unsigned int>(pixel_type_size); // type size
+    cd_values[3] = frame_num_pixels * pixel_type_size;         // uncompressed size
+    cd_values[4] = definition.blosc_level;                     // compression level
+    cd_values[5] = definition.blosc_shuffle;                   // 0: shuffle not active, 1: shuffle, 2: bitshuffle
+    cd_values[6] = definition.blosc_compressor;                // the actual Blosc compressor to use (default: LZ4). See blosc.h
     ensure_h5_result(H5Pset_filter(prop, BLOSC_FILTER, H5Z_FLAG_OPTIONAL,
                                    cd_values_length, cd_values), "H5Pset_filter failed to set the Blosc filter");
   }

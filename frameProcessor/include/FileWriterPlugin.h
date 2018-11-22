@@ -99,6 +99,10 @@ private:
   static const std::string CONFIG_DATASET_COMPRESSION;
   /** Configuration constant for data high/low indexes */
   static const std::string CONFIG_DATASET_INDEXES;
+  /** Configurations for Blosc compression */
+  static const std::string CONFIG_DATASET_BLOSC_COMPRESSOR;
+  static const std::string CONFIG_DATASET_BLOSC_LEVEL;
+  static const std::string CONFIG_DATASET_BLOSC_SHUFFLE;
 
   /** Configuration constant for number of frames to write */
   static const std::string CONFIG_FRAMES;
