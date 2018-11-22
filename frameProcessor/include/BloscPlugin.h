@@ -56,6 +56,7 @@ private:
 
   // Methods unique to this class
   void update_compression_settings();
+  void * get_buffer(size_t nbytes);
 
   // private data
   /** Pointer to logger */
@@ -68,6 +69,9 @@ private:
   BloscCompressionSettings compression_settings_;
   /** Compression settings for the next acquisition */
   BloscCompressionSettings commanded_compression_settings_;
+  /** Temporary buffer for compressed data */
+  void * data_buffer_ptr_;
+  size_t data_buffer_size_;
 
 private:
   /** Configuration constants */

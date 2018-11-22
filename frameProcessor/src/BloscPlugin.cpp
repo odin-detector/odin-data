@@ -48,7 +48,7 @@ void create_cd_values(const BloscCompressionSettings& settings, std::vector<unsi
 * The constructor sets up logging used within the class.
 */
 BloscPlugin::BloscPlugin() :
-current_acquisition_("")
+current_acquisition_(""), data_buffer_ptr_(NULL), data_buffer_size_(0)
 {
   this->commanded_compression_settings_.blosc_compressor = BLOSC_LZ4;
   this->commanded_compression_settings_.shuffle = BLOSC_BITSHUFFLE;
@@ -79,6 +79,7 @@ current_acquisition_("")
 BloscPlugin::~BloscPlugin()
 {
   LOG4CXX_DEBUG_LEVEL(3, logger_, "BloscPlugin destructor.");
+  if (this->data_buffer_ptr_ != NULL) { free(data_buffer_ptr_); }
 }
 
 /**
@@ -104,9 +105,7 @@ boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> sr
   c_settings.uncompressed_size = src_frame->get_data_size();
 
   size_t dest_data_size = c_settings.uncompressed_size + BLOSC_MAX_OVERHEAD;
-  // TODO: is this malloc really necessary? Can't we get writable DataBlocks somehow?
-  void *dest_data_ptr = malloc(dest_data_size);
-  if (dest_data_ptr == NULL) {throw std::runtime_error("Failed to malloc buffer for Blosc compression output");}
+  void *dest_data_ptr = this->get_buffer(dest_data_size);
 
   std::stringstream ss_blosc_settings;
   ss_blosc_settings << " compressor=" << blosc_get_compressor()
@@ -145,7 +144,6 @@ boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> sr
   LOG4CXX_DEBUG_LEVEL(3, logger_, "Copying compressed data to output frame. (" << compressed_size << " bytes)");
   // I wish we had a pointer swap feature on the Frame class and avoid this unnecessary copy...
   dest_frame->copy_data(dest_data_ptr, compressed_size);
-  if (dest_data_ptr != NULL) {free(dest_data_ptr); dest_data_ptr = NULL;}
 
   // I wish we had a shallow-copy feature on the Frame class...
   dest_frame->set_data_type(src_frame->get_data_type());
@@ -185,6 +183,29 @@ void BloscPlugin::update_compression_settings()
     throw std::runtime_error("Blosc failed to set compressor");
   }
   blosc_set_nthreads(this->compression_settings_.threads);
+}
+
+void * BloscPlugin::get_buffer(size_t nbytes)
+{
+  // Simple case: we have a buffer that's large enough so return that
+  if (this->data_buffer_size_ >= nbytes && this->data_buffer_ptr_ != NULL) {
+    return this->data_buffer_ptr_;
+  }
+  // Else: we don't have a buffer that's large enough
+
+  // If we have a buffer at all then free it and reset size to 0
+  if (this->data_buffer_ptr_ != NULL) {
+    free(this->data_buffer_ptr_);
+    this->data_buffer_size_ = 0;
+    this->data_buffer_ptr_ = NULL;
+  }
+
+  // Allocate a new buffer of the required size and return the pointer
+  // TODO: is this malloc really necessary? Can't we get writable DataBlocks somehow?
+  this->data_buffer_ptr_ = malloc(nbytes);
+  if (this->data_buffer_ptr_ == NULL) {throw std::runtime_error("Failed to malloc buffer for Blosc compression output");}
+  this->data_buffer_size_ = nbytes;
+  return this->data_buffer_ptr_;
 }
 
   /**
