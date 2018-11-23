@@ -3,6 +3,10 @@ import java.awt.event.*;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.Observer;
+import java.util.Queue;
+import java.util.Observable;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -18,7 +22,7 @@ import org.zeromq.ZMQException;
  * @author Adam Neaves
  * @version 0.1.0
  */
-public class Live_View extends PlugInFrame implements ActionListener
+public class Live_View extends PlugInFrame implements ActionListener, Observer
 {
 	private Panel panel;
 	TextField txt_socket_addr;
@@ -27,11 +31,21 @@ public class Live_View extends PlugInFrame implements ActionListener
 	TextField txt_status;
 	TextField txt_fps;
 
+	Button btn_live_on_off;
+	Button btn_connect;
+	Checkbox chk_logging;
+
 	private static Frame instance;
 	
 	private String socket_addr = "tcp://127.0.0.1:5020";
 
 	LiveViewSocket socket = null;
+	LiveViewSocket.ImageFrame image_frame;
+
+	long last_image_time = new Date().getTime();
+	Queue<Long> time_avg_queue;
+	long total = 0;
+	int avg_size = 50;
 
 	boolean is_logging = false;
 
@@ -52,8 +66,9 @@ public class Live_View extends PlugInFrame implements ActionListener
 			instance.toFront();
 			return;
 		}
-		
 		instance = this;
+		time_avg_queue = new LinkedList<>();
+
 		addKeyListener(IJ.getInstance());
 		setLayout(new FlowLayout());
 		panel = buildGUI();
@@ -95,35 +110,54 @@ public class Live_View extends PlugInFrame implements ActionListener
 			}
 		});
 
-
         status_update = new TimerTask(){
             long prev_time = System.currentTimeMillis();
             @Override
             public void run() {
-                if(socket != null && !socket.is_paused())
+                if(socket != null)
 				{
-					int image_count = socket.get_image_count();
-					socket.set_image_count(0);
-                    long start_time = System.currentTimeMillis();
-                    float elapsed_time = (start_time - prev_time)/1000f;
-                    float fps = image_count / elapsed_time;
-                    
-					txt_fps.setText(String.format("%.2f fps", fps));
-					txt_dataset.setText(socket.get_dataset());
-					int[] shape = socket.get_shape();
-					txt_image_dims.setText(String.format("[%d, %d]", shape[0], shape[1]));
-                    printMessage(String.format("Received %d images in %.3f seconds", image_count, elapsed_time));
-                    prev_time = start_time;
-					
-					
+					long start_time = System.currentTimeMillis();
+					long time_of_frame = image_frame.getTimestamp().getTime();
+                    printMessage(String.format("Time since last frame was received: %.3f seconds", (start_time-time_of_frame)/1000f));
                 }
             }
         };
         frame_counter = new Timer(true);
-        int timer_delay = 2000;
+        int timer_delay = 5000;
         frame_counter.schedule(status_update, 0, timer_delay);
 	}
 
+	@Override
+	public void update(Observable o, Object arg)
+	{
+		switch(arg.toString().toLowerCase())
+		{
+			case "timestamp":
+				long new_time = image_frame.getTimestamp().getTime(); //get timestamp
+				long time_diff = new_time - last_image_time; //get time between recieiving frames
+				last_image_time = new_time;
+				total += time_diff;
+				time_avg_queue.add(time_diff);
+				if(time_avg_queue.size() > avg_size)
+				{
+					total -= time_avg_queue.remove();
+				}
+				printMessage(String.format("Time since last frame was received: %.3f seconds", time_diff/1000f));
+				txt_fps.setText(String.format("%.3f/s", 1000f/(total/time_avg_queue.size())));
+				break;
+			case "dataset":
+				txt_dataset.setText(image_frame.getDataset());
+				break;
+			case "shape":
+				int[] new_shape = image_frame.getShape();
+				txt_image_dims.setText(String.format("[%d, %d]", new_shape[0], new_shape[1]));
+				break;
+			case "bitdepth":
+				break;
+		}
+	}
+
+	@Override
 	public void run(String args)
 	{
 		if("help".equalsIgnoreCase(args))
@@ -179,9 +213,9 @@ public class Live_View extends PlugInFrame implements ActionListener
 		txt_fps = new TextField("", 8);
 		txt_fps.setEditable(false);
 		
-		Button btn_live_on_off = new Button("  PAUSE  ");
-		Button btn_connect = new Button(" CONNECT  ");
-		Checkbox chk_logging = new Checkbox();
+		btn_live_on_off = new Button("  PAUSE  ");
+		btn_connect = new Button(" CONNECT  ");
+		chk_logging = new Checkbox();
 		chk_logging.setState(is_logging);
 		
 		//constraints for components.
@@ -242,28 +276,11 @@ public class Live_View extends PlugInFrame implements ActionListener
 			{
 				if(socket == null)
 				{
-					try
-					{
-					socket = new LiveViewSocket(socket_addr);
-					btn_connect.setLabel("DISCONNECT");
-					txt_socket_addr.setBackground(Color.green);
-					txt_socket_addr.setForeground(Color.black);
-					txt_socket_addr.setEditable(false);
-					printMessage(String.format("Socket Subscribed to address: %s", socket_addr));
-					}
-					catch(ZMQException except)
-					{
-						IJ.error("ERROR CONNECTING SOCKET", "Check if the socket address is valid.");
-					}
+					activateSocket();
 				}
 				else
 				{
-					socket.shutdown_socket();
-					socket = null;
-					btn_connect.setLabel("CONNECT");
-					txt_socket_addr.setEditable(true);
-					txt_socket_addr.setBackground(Color.red);
-					txt_socket_addr.setForeground(Color.white);
+					deactivateSocket();
 				}
 			}
 		});
@@ -289,7 +306,6 @@ public class Live_View extends PlugInFrame implements ActionListener
 		 });
 
 		return panel;
-		
 	}
 
 	/**
@@ -330,6 +346,36 @@ public class Live_View extends PlugInFrame implements ActionListener
 	public void actionPerformed(ActionEvent e)
 	{
 		printMessage("Action Performed: " + e.toString());
+	}
+
+	private void activateSocket()
+	{
+		try
+		{
+		socket = new LiveViewSocket(socket_addr);
+		image_frame = socket.getImageFrame();
+		image_frame.addObserver(this);
+		btn_connect.setLabel("DISCONNECT");
+		txt_socket_addr.setBackground(Color.green);
+		txt_socket_addr.setForeground(Color.black);
+		txt_socket_addr.setEditable(false);
+		printMessage(String.format("Socket Subscribed to address: %s", socket_addr));
+		}
+		catch(ZMQException except)
+		{
+			IJ.error("ERROR CONNECTING SOCKET", "Check if the socket address is valid.");
+		}
+	}
+
+	private void deactivateSocket()
+	{
+		socket.shutdown_socket();
+		image_frame.deleteObservers();
+		socket = null;
+		btn_connect.setLabel("CONNECT");
+		txt_socket_addr.setEditable(true);
+		txt_socket_addr.setBackground(Color.red);
+		txt_socket_addr.setForeground(Color.white);
 	}
 
 }

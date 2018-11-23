@@ -1,5 +1,7 @@
 import java.nio.*;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Observable;
 
 import ij.IJ;
 import ij.ImagePlus;
@@ -20,7 +22,7 @@ public class LiveViewSocket
     private ZMQ.Socket socket;
     private ZMQ.Context context;    
     private ImagePlus img = null;
-    private ImageFrame frame;   
+    private static ImageFrame frame;   
 
     private String socket_addr;
 
@@ -41,6 +43,7 @@ public class LiveViewSocket
     {
         setup_socket(socket_addr);
         img = new ImagePlus();
+        frame = new ImageFrame();
 
         dtype_map = new HashMap<String, Integer>();
 		dtype_map.put("uint8", 8);
@@ -143,7 +146,10 @@ public class LiveViewSocket
             String dtype = header.optString("dtype");
             String dataset = header.optString("dataset");
 
-            frame = new ImageFrame(dataset, dtype_map.get(dtype), shape);
+            frame.setDataset(dataset); 
+            frame.setBitdepth(dtype_map.get(dtype));
+            frame.setShape(shape);
+            frame.setTimestamp(new Date());
 
             refreshImage(img_data, dtype, shape);
             
@@ -277,30 +283,17 @@ public class LiveViewSocket
     {
         image_count = val;
     }
-
-    public int[] get_shape()
+    public ImageFrame getImageFrame()
     {
-        if(frame != null)
-            return frame.shape;
-        else
-        { 
-            int[] val = {0,0};
-            return val;
-        }
+        return frame;
     }
 
-    public String get_dataset()
-    {
-        if(frame != null && frame.dataset != null)
-            return frame.dataset;
-        else return "None";
-    }
-
-    private class ImageFrame
+    public class ImageFrame extends Observable
     {
         private String dataset;
         private int bitdepth;
         private int[] shape;
+        private Date timestamp;
 
 
         public ImageFrame(String dataset, int bitdepth, int[] shape)
@@ -308,6 +301,67 @@ public class LiveViewSocket
             this.dataset = dataset;
             this.bitdepth = bitdepth;
             this.shape = shape;
+            this.timestamp = new Date();
+        }
+
+        public ImageFrame()
+        {
+            this("None", 0, new int[]{0,0});
+        }
+
+        public void setDataset(String dataset)
+        {
+            if(!dataset.equals(this.dataset))
+            {
+                this.dataset = dataset;
+                setChanged();
+                notifyObservers("dataset");
+            }
+        }
+
+        public void setBitdepth(int bitdepth)
+        {
+            if(this.bitdepth != bitdepth)
+            {
+                this.bitdepth = bitdepth;
+                setChanged();
+                notifyObservers("bitdepth");
+            }
+        }
+
+        public void setShape(int[] shape)
+        {
+            if(shape[0] != this.shape[0] || shape[1] != this.shape[1])
+            {
+                this.shape[0] = shape[0];
+                this.shape[1] = shape[1];
+                setChanged();
+                notifyObservers("shape");
+            }
+        }
+
+        public void setTimestamp(Date timestamp)
+        {
+            this.timestamp = timestamp;
+            setChanged();
+            notifyObservers("timestamp");
+        }
+
+        public String getDataset()
+        {
+            return dataset;
+        }
+        public int getBitDepth()
+        {
+            return bitdepth;
+        }
+        public int[] getShape()
+        {
+            return shape;
+        }
+        public Date getTimestamp()
+        {
+            return timestamp;
         }
     }
 }//Class LiveViewSocket
