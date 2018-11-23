@@ -61,7 +61,6 @@ public class Live_View extends PlugInFrame implements ActionListener
 		
 		pack();
 		GUI.center(this);
-		setVisible(true);
 
 		//add listener to window close events to shutdown socket
 		addWindowListener(new WindowAdapter() 
@@ -134,7 +133,18 @@ public class Live_View extends PlugInFrame implements ActionListener
 								   "Subscribes to the supplied ZMQ socket address, and receives header and image data\n"+
 								   " and displays it in an ImageJ Window.");
 
-			IJ.showMessage("Odin live View Help", help_text);
+			IJ.showMessage("Odin live View Help", help_text);			
+		}
+		else
+		{
+			if(instance ==  null)
+			{
+				this.setVisible(true);
+			}
+			else
+			{
+				instance.setVisible(true);
+			}
 		}
 	}
 	/**
