@@ -37,10 +37,6 @@ static const FrameSimulatorOption<std::string> opt_libpath("lib-path", "Path to 
 static const FrameSimulatorOption<unsigned int> opt_debuglevel("debug-level", "Set the debug level");
 static const FrameSimulatorOption<std::string> opt_logconfig("logconfig", "Set the log4cxx logging configuration file");
 
-static const FrameSimulatorOption<std::string> opt_acqid("acquisition-id", "Acquisition ID");
-static const FrameSimulatorOption<std::string> opt_filepattern("file-pattern", "File pattern");
-static const FrameSimulatorOption<int> opt_delay("delay-adjustment", "Delay adjustment");
-
 boost::shared_ptr<FrameSimulator::FrameSimulatorPlugin> get_requested_plugin(const po::variables_map& vm) {
 
     std::string pluginClass = opt_detector.get_val(vm) + librarySuffix;

@@ -8,6 +8,8 @@
 using namespace log4cxx;
 using namespace log4cxx::helpers;
 
+#include <vector>
+#include <string>
 #include <boost/program_options.hpp>
 #include <boost/optional.hpp>
 
@@ -33,7 +35,7 @@ namespace FrameSimulator {
     protected:
 
         boost::optional<int> replay_numframes;
-        boost::optional<int> replay_interval;
+        boost::optional<float> replay_interval;
 
     private:
 

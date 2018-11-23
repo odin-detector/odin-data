@@ -8,9 +8,6 @@
 #include <netinet/udp.h>
 #include <netinet/ip.h>
 
-#include <boost/algorithm/string/classification.hpp>
-#include <boost/algorithm/string/split.hpp>
-
 #include "pcapFrameSimulatorOptions.h"
 
 namespace FrameSimulator {
@@ -32,11 +29,6 @@ namespace FrameSimulator {
 
         LOG4CXX_DEBUG(logger_, "Setting up pcap_loop to read packet(s) from packet capture file");
 
-        if (!opt_ports.is_specified(vm)) {
-            LOG4CXX_ERROR(logger_, "Destination ports not specified");
-            return false;
-        }
-
         if (!opt_destip.is_specified(vm)) {
             LOG4CXX_ERROR(logger_, "Destination IP address not specified");
             return false;
@@ -50,18 +42,13 @@ namespace FrameSimulator {
         opt_packetgap.get_val(vm, packet_gap);
         opt_dropfrac.get_val(vm, drop_frac);
 
-        if (opt_droppackets.is_specified(vm)) {
-            std::vector<std::string> drop_packets_vec;
-            std::string drop_packets_string = opt_droppackets.get_val(vm);
-            boost::split(drop_packets_vec, drop_packets_string, boost::is_any_of(","), boost::token_compress_on);
-            drop_packets = drop_packets_vec;
-        }
+        if (opt_droppackets.is_specified(vm))
+            set_optionallist_option(opt_droppackets.get_val(vm), drop_packets);
 
         std::string dest_ip = opt_destip.get_val(vm);
 
         std::vector<std::string> dest_ports;
-        std::string dest_ports_string = opt_ports.get_val(vm);
-        boost::split(dest_ports, dest_ports_string, boost::is_any_of(","), boost::token_compress_on);
+        set_list_option(opt_ports.get_val(vm), dest_ports);
 
         int num_ports = dest_ports.size();
 

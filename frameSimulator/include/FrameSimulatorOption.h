@@ -11,6 +11,9 @@ namespace po = boost::program_options;
 
 namespace FrameSimulator {
 
+    void set_list_option(const std::string& option_val, std::vector<std::string>& list);
+    void set_optionallist_option(const std::string& option_val, boost::optional<std::vector<std::string> >& list);
+
     template <class T>
     class FrameSimulatorOption {
 
@@ -34,6 +37,9 @@ namespace FrameSimulator {
         void get_val(const po::variables_map& vm, boost::optional<T>& val) const {
             if (is_specified(vm))
                 val = get_val(vm);
+            else if(defaultval) {
+                val = defaultval.get();
+           }
         }
 
         void add_option_to(po::options_description& options) const {

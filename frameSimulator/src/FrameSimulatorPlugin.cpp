@@ -24,8 +24,15 @@ namespace FrameSimulator {
 
         LOG4CXX_DEBUG(logger_, "Setting up base FrameSimulatorPlugin");
 
+        if (!opt_ports.is_specified(vm)) {
+            LOG4CXX_ERROR(logger_, "Destination ports not specified");
+            return false;
+        }
+
         opt_frames.get_val(vm, replay_numframes);
         opt_interval.get_val(vm, replay_interval);
+
+        return true;
 
     }
 
