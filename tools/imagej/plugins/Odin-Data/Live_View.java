@@ -31,8 +31,11 @@ public class Live_View extends PlugInFrame implements ActionListener, Observer
 	TextField txt_status;
 	TextField txt_fps;
 
+	Label lbl_is_connected;
+
 	Button btn_live_on_off;
 	Button btn_connect;
+	Button btn_snapshot;
 	Checkbox chk_logging;
 
 	private static Frame instance;
@@ -45,7 +48,7 @@ public class Live_View extends PlugInFrame implements ActionListener, Observer
 	long last_image_time = new Date().getTime();
 	Queue<Long> time_avg_queue;
 	long total = 0;
-	int avg_size = 50;
+	int avg_size = 10;
 
 	boolean is_logging = false;
 
@@ -153,6 +156,7 @@ public class Live_View extends PlugInFrame implements ActionListener, Observer
 				txt_image_dims.setText(String.format("[%d, %d]", new_shape[0], new_shape[1]));
 				break;
 			case "bitdepth":
+			default:
 				break;
 		}
 	}
@@ -199,6 +203,7 @@ public class Live_View extends PlugInFrame implements ActionListener, Observer
 		Label lbl_status = new Label("Status:");
 		Label lbl_logging = new Label("Log To Window");
 		Label lbl_fps = new Label("Frames/s");
+		lbl_is_connected = new Label("DISCONNECTED");
 
 		txt_socket_addr = new TextField(socket_addr, 25);
 		txt_socket_addr.setEditable(true);
@@ -208,13 +213,14 @@ public class Live_View extends PlugInFrame implements ActionListener, Observer
 		txt_image_dims.setEditable(false);
 		txt_dataset = new TextField("None", 12);
 		txt_dataset.setEditable(false);
-		txt_status = new TextField("", 79);
+		txt_status = new TextField("", 70);
 		txt_status.setEditable(false);
 		txt_fps = new TextField("", 8);
 		txt_fps.setEditable(false);
 		
 		btn_live_on_off = new Button("  PAUSE  ");
 		btn_connect = new Button(" CONNECT  ");
+		btn_snapshot = new Button("SNAP");
 		chk_logging = new Checkbox();
 		chk_logging.setState(is_logging);
 		
@@ -222,31 +228,26 @@ public class Live_View extends PlugInFrame implements ActionListener, Observer
 		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.insets = new Insets(2,2,2,2);
 		constraints.anchor = GridBagConstraints.CENTER;
-
-		//top row
-		addComponent(lbl_socket_addr, panel, 0, 0, constraints);
-
-		addComponent(lbl_dataset, panel,     2, 0, constraints);
-		addComponent(lbl_image_dims, panel,  3, 0, constraints);
-		addComponent(lbl_fps, panel,         4, 0, constraints);
-		addComponent(lbl_logging, panel,     5, 0, constraints);
-		addComponent(lbl_live_on_off, panel, 6, 0, constraints);
-
-		//middle row
-		addComponent(txt_socket_addr, panel, 0, 1, constraints);
-		addComponent(btn_connect, panel,     1, 1, constraints);
-		addComponent(txt_dataset, panel,     2, 1, constraints);
-		addComponent(txt_image_dims, panel,  3, 1, constraints);
-		addComponent(txt_fps, panel,         4, 1, constraints);
-		addComponent(chk_logging, panel,     5, 1, constraints);
-		addComponent(btn_live_on_off, panel, 6, 1, constraints);
+		int x = 0; //horizontal grid position
+		constraints.gridwidth = 2;
+		addComponent(txt_socket_addr, lbl_socket_addr, panel, x++, constraints);
+		constraints.gridwidth = 1;
+		x++;
+		addComponent(btn_connect, null,                panel, x++, constraints);
+		addComponent(btn_live_on_off, null,            panel, x++, constraints);
+		addComponent(txt_dataset, lbl_dataset,         panel, x++, constraints);
+		addComponent(txt_image_dims, lbl_image_dims,   panel, x++, constraints);
+		addComponent(txt_fps, lbl_fps,                 panel, x++, constraints);
+		addComponent(btn_snapshot, null,               panel, x++, constraints);
+		addComponent(chk_logging, lbl_logging,         panel, x++, constraints);
 
 		//bottom row
+		addComponent(lbl_is_connected, panel, 0, 2, constraints);
 		constraints.anchor = GridBagConstraints.EAST;
-		addComponent(lbl_status, panel, 0, 2, constraints);
+		addComponent(lbl_status, panel, 1, 2, constraints);
 		constraints.anchor = GridBagConstraints.WEST;
 		constraints.gridwidth = 6;		
-		addComponent(txt_status, panel, 1, 2, constraints);
+		addComponent(txt_status, panel, 2, 2, constraints);
 
 		//attatching event listeners
 		btn_live_on_off.addActionListener(new ActionListener()
@@ -281,6 +282,21 @@ public class Live_View extends PlugInFrame implements ActionListener, Observer
 				else
 				{
 					deactivateSocket();
+				}
+			}
+		});
+
+		btn_snapshot.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent event)
+			{
+				if(socket != null)
+				{
+					boolean duplicate = socket.makeImageCopy();
+					if(!duplicate)
+					{
+						printMessage("COPY FAILED");
+					}
 				}
 			}
 		});
@@ -323,6 +339,18 @@ public class Live_View extends PlugInFrame implements ActionListener, Observer
 		panel.add(item, c);
 	}
 
+	private void addComponent(Component comp, Component label, Panel panel, int x, GridBagConstraints constraints)
+	{
+		constraints.gridx = x;
+		if(label != null)
+		{
+			constraints.gridy = 0;
+			panel.add(label, constraints);
+		}
+		constraints.gridy = 1;
+		panel.add(comp, constraints);
+	}
+
 	/**
 	 * Print a message to the status bar, and also potentionally to the console and log window.
 	 * Adds a timestamp to the front of the message.
@@ -359,6 +387,7 @@ public class Live_View extends PlugInFrame implements ActionListener, Observer
 		txt_socket_addr.setBackground(Color.green);
 		txt_socket_addr.setForeground(Color.black);
 		txt_socket_addr.setEditable(false);
+		lbl_is_connected.setText("CONNECTED");
 		printMessage(String.format("Socket Subscribed to address: %s", socket_addr));
 		}
 		catch(ZMQException except)
@@ -376,6 +405,7 @@ public class Live_View extends PlugInFrame implements ActionListener, Observer
 		txt_socket_addr.setEditable(true);
 		txt_socket_addr.setBackground(Color.red);
 		txt_socket_addr.setForeground(Color.white);
+		lbl_is_connected.setText("DISCONNECTED");
 	}
 
 }

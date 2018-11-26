@@ -30,8 +30,6 @@ public class LiveViewSocket
 
     private Thread zmqThread;
 
-    private int image_count = 0;
-
     private static HashMap<String, Integer> dtype_map;
 
     /**
@@ -254,7 +252,20 @@ public class LiveViewSocket
             img.setTitle("Live View From: "+ socket_addr);
             img.show();
         }
-        image_count++;
+
+    }
+
+    public boolean makeImageCopy()
+    {
+        ImageProcessor ip = img.getProcessor();
+        if(ip != null)
+        {
+            ImagePlus img_copy = img.duplicate();
+            img_copy.setTitle(String.format("Snapshot of Image at %s", frame.getTimestamp().toString()));
+            img_copy.show();
+            return true;
+        }
+        else return false;
     }
 
     /**
@@ -274,20 +285,16 @@ public class LiveViewSocket
         return is_paused;
     }
 
-    public int get_image_count()
-    {
-        return image_count;
-    }
-
-    public void set_image_count(int val)
-    {
-        image_count = val;
-    }
     public ImageFrame getImageFrame()
     {
         return frame;
     }
 
+
+    /**
+     * Class to hold information about the current image frame being displayed.
+     * Notifies any observers should any of its values change. 
+     */
     public class ImageFrame extends Observable
     {
         private String dataset;
