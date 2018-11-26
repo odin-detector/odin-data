@@ -48,7 +48,7 @@ public class Live_View extends PlugInFrame implements ActionListener, Observer
 	long last_image_time = new Date().getTime();
 	Queue<Long> time_avg_queue;
 	long total = 0;
-	int avg_size = 10;
+	int avg_size = 10; //size of the queue used for the rolling average of time between frames
 
 	boolean is_logging = false;
 
@@ -346,7 +346,15 @@ public class Live_View extends PlugInFrame implements ActionListener, Observer
 		c.gridy = y;
 		panel.add(item, c);
 	}
-
+	/**
+	 * Add a component and it's matching label to the supplied panel. Adds the label to the top row, and the
+	 * component below the label in the same column.
+	 * @param comp the component to be added
+	 * @param label the label of the component. This can be null for no label.
+	 * @param panel the panel that the components need to be added to
+	 * @param x the horizontal grid poisiton of the components. Starts at 0 for far left.
+	 * @param constraints the grid bag constraints that provide other constraints, such as margins and anchor.
+	 */
 	private void addComponent(Component comp, Component label, Panel panel, int x, GridBagConstraints constraints)
 	{
 		constraints.gridx = x;
@@ -379,11 +387,16 @@ public class Live_View extends PlugInFrame implements ActionListener, Observer
 		}
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent e)
 	{
 		printMessage("Action Performed: " + e.toString());
 	}
 
+	/**
+	 * Creates the Live View socket and collects the required references from the newly created socket.
+	 * If the socket cannot connect, the method will fail and a IJ Error window displayed.
+	 */
 	private void activateSocket()
 	{
 		try
@@ -404,6 +417,9 @@ public class Live_View extends PlugInFrame implements ActionListener, Observer
 		}
 	}
 
+	/**
+	 * Closes the Live View Socket and removes any references to any part of it so it can be collected by Java's garbage collection.
+	 */
 	private void deactivateSocket()
 	{
 		socket.shutdown_socket();

@@ -83,8 +83,6 @@ public class LiveViewSocket
                 }
             }		
         }
-        
-        // shutdown_socket();
     }
 
     /**
@@ -255,6 +253,10 @@ public class LiveViewSocket
 
     }
 
+    /**
+     * Creates a copy of the image window, displaying it alongside the live image
+     * @return <code>True</code> if the image is successfully duplicated, else <code>False</code>
+     */
     public boolean makeImageCopy()
     {
         ImageProcessor ip = img.getProcessor();
@@ -269,7 +271,7 @@ public class LiveViewSocket
     }
 
     /**
-     * Inverts the value that tells the socket wether to keep checking for new data on the socket.
+     * Inverts the value that tells the socket whether to keep checking for new data on the socket.
      * @return the inverted value. If it was <code>true</code> before calling this method, it's now <code>false</code>
      * and vice versa
      */
@@ -279,12 +281,20 @@ public class LiveViewSocket
         
         return is_paused;
     }
-
+    
+    /**
+     * 
+     * @return If the socket is currently paused.
+     */
     public boolean is_paused()
     {
         return is_paused;
     }
 
+    /**
+     * 
+     * @return the current Image Frame.
+     */
     public ImageFrame getImageFrame()
     {
         return frame;
@@ -292,8 +302,9 @@ public class LiveViewSocket
 
 
     /**
-     * Class to hold information about the current image frame being displayed.
-     * Notifies any observers should any of its values change. 
+     * This class holds the metadata of the current image. It can be "Observed",
+     * meaning it can automatically inform other parts of the program if any of its
+     * values change.
      */
     public class ImageFrame extends Observable
     {
@@ -302,7 +313,12 @@ public class LiveViewSocket
         private int[] shape;
         private Date timestamp;
 
-
+        /**
+         * Constructor that sets the inital values for the image metadata.
+         * @param dataset  the dataset the image came from. Not always used, depending on the detector
+         * @param bitdepth The bitdepth of the image. Usually either 8, 16, or 32
+         * @param shape    The Dimensions of the data in pixels, as an array of two values: <code>[width, height]</code>
+         */
         public ImageFrame(String dataset, int bitdepth, int[] shape)
         {
             this.dataset = dataset;
@@ -311,11 +327,19 @@ public class LiveViewSocket
             this.timestamp = null; //new Date();
         }
 
+        /**
+         * Generic Constructor, which sets some default values for the metadata.
+         * @see ImageFrame#ImageFrame(String, int, int[])
+         */
         public ImageFrame()
         {
             this("None", 0, new int[]{0,0});
         }
 
+        /**
+         * Sets the dataset of the image. If this changes, it will notify observers of the change.
+         * @param dataset the new name of the dataset.
+         */
         public void setDataset(String dataset)
         {
             if(!dataset.equals(this.dataset))
@@ -326,6 +350,10 @@ public class LiveViewSocket
             }
         }
 
+        /**
+         * Sets the bitdepth of the image. If this changes, it will notify observers of the change.
+         * @param bitdepth the new bitdepth. Should be either 8, 16 or 32.
+         */
         public void setBitdepth(int bitdepth)
         {
             if(this.bitdepth != bitdepth)
@@ -336,6 +364,10 @@ public class LiveViewSocket
             }
         }
 
+        /**
+         * Sets the new dimensions of the image. If this changes, it will notify observers of the change.
+         * @param shape The new dimensions, measured in pixels, as an array: <code>[width, height]</code>
+         */
         public void setShape(int[] shape)
         {
             if(shape[0] != this.shape[0] || shape[1] != this.shape[1])
@@ -347,6 +379,11 @@ public class LiveViewSocket
             }
         }
 
+        /**
+         * Sets the timestamp of the current image, representing the time it was read from the socket.
+         * @param timestamp the time the image was read from the socket. 
+         * As this should always be a new value, it always alerts observers of the change.
+         */
         public void setTimestamp(Date timestamp)
         {
             this.timestamp = timestamp;
@@ -354,18 +391,22 @@ public class LiveViewSocket
             notifyObservers("timestamp");
         }
 
+        /**@return the current dataset of the image */
         public String getDataset()
         {
             return dataset;
         }
+        /**@return the current bitdepth of the image */
         public int getBitDepth()
         {
             return bitdepth;
         }
+        /**@return the dimensions of the image in an array */
         public int[] getShape()
         {
             return shape;
         }
+        /**@return the time and date the image was created from the socket */
         public Date getTimestamp()
         {
             return timestamp;
