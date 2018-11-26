@@ -120,8 +120,16 @@ public class Live_View extends PlugInFrame implements ActionListener, Observer
                 if(socket != null)
 				{
 					long start_time = System.currentTimeMillis();
-					long time_of_frame = image_frame.getTimestamp().getTime();
-                    printMessage(String.format("Time since last frame was received: %.3f seconds", (start_time-time_of_frame)/1000f));
+					Date image_timestamp = image_frame.getTimestamp();
+					if(image_timestamp != null)
+					{
+						long time_of_frame = image_timestamp.getTime();
+						printMessage(String.format("Time since last frame was received: %.3f seconds", (start_time-time_of_frame)/1000f));
+					}
+					else
+					{
+						printMessage("No Images recieved yet.");
+					}
                 }
             }
         };

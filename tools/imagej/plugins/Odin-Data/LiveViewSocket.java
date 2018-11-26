@@ -308,7 +308,7 @@ public class LiveViewSocket
             this.dataset = dataset;
             this.bitdepth = bitdepth;
             this.shape = shape;
-            this.timestamp = new Date();
+            this.timestamp = null; //new Date();
         }
 
         public ImageFrame()
