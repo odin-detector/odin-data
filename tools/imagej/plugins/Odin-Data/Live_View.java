@@ -88,7 +88,7 @@ public class Live_View extends PlugInFrame implements ActionListener, Observer
 				printMessage("Window Closing");
 				if(socket != null)
 				{
-					socket.shutdown_socket();
+					socket.shutdownSocket();
 				}
 				instance = null;
 				frame_counter.cancel();
@@ -103,7 +103,7 @@ public class Live_View extends PlugInFrame implements ActionListener, Observer
 				instance = null;
 				try
 				{
-					socket.shutdown_socket();
+					socket.shutdownSocket();
 					frame_counter.cancel();
 				} 
 				catch (Exception e) 
@@ -263,7 +263,7 @@ public class Live_View extends PlugInFrame implements ActionListener, Observer
 			public void actionPerformed(ActionEvent event)
 			{
 				if(socket != null){
-					boolean is_paused = socket.invert_paused();		
+					boolean is_paused = socket.invertPaused();		
 					if(!is_paused)
 					{
 						btn_live_on_off.setLabel("PAUSE");
@@ -401,7 +401,7 @@ public class Live_View extends PlugInFrame implements ActionListener, Observer
 	{
 		try
 		{
-		socket = new LiveViewSocket(socket_addr);
+		socket = new LiveViewSocket(socket_addr, this);
 		image_frame = socket.getImageFrame();
 		image_frame.addObserver(this);
 		btn_connect.setLabel("DISCONNECT");
@@ -422,7 +422,7 @@ public class Live_View extends PlugInFrame implements ActionListener, Observer
 	 */
 	private void deactivateSocket()
 	{
-		socket.shutdown_socket();
+		socket.shutdownSocket();
 		image_frame.deleteObservers();
 		socket = null;
 		btn_connect.setLabel("CONNECT");

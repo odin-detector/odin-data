@@ -23,6 +23,7 @@ public class LiveViewSocket
     private ZMQ.Context context;    
     private ImagePlus img = null;
     private static ImageFrame frame;   
+    private Live_View parent; 
 
     private String socket_addr;
 
@@ -37,9 +38,9 @@ public class LiveViewSocket
      * @param socket_addr    the address of the live view that the socket needs to subscribe to.
      * @throws ZMQException  if the socket address is invalid or malformed
      */
-    public LiveViewSocket(String socket_addr) throws ZMQException
+    public LiveViewSocket(String socket_addr, Live_View parent) throws ZMQException
     {
-        setup_socket(socket_addr);
+        setupSocket(socket_addr);
         img = new ImagePlus();
         frame = new ImageFrame();
 
@@ -56,7 +57,7 @@ public class LiveViewSocket
                 run_socket();
             }
         };     
-
+        this.parent = parent;
         zmqThread.start();
     }
     
@@ -89,7 +90,7 @@ public class LiveViewSocket
      * Closes down the socket and context, allowing the plugin to close cleanly.
      * Interrupts the thread running the socket.
      */
-    public void shutdown_socket()
+    public void shutdownSocket()
     {
         //printMessage("Socket Shutdown Signal Received. Closing socket");
         zmqThread.interrupt();
@@ -103,7 +104,7 @@ public class LiveViewSocket
      * @param addr the socket address to subscribe to.
      * @throws ZMQException if the socket address supplied is malformed or otherwise invalid.
      */
-    public void setup_socket(String addr) throws ZMQException
+    public void setupSocket(String addr) throws ZMQException
     {
         //printMessage("CREATING ZMQ SOCKET");
         context = ZMQ.context(1);
@@ -132,10 +133,10 @@ public class LiveViewSocket
     private void recvFrame()
     {
         //Get header from first ZMQ message, turn it into a JSON Object
-        JSONObject header = new JSONObject(new String(socket.recv()));
-        ByteBuffer img_data = ByteBuffer.wrap(socket.recv());
         try
         {
+            JSONObject header = new JSONObject(new String(socket.recv()));
+            ByteBuffer img_data = ByteBuffer.wrap(socket.recv());
             JSONArray JSONshape = header.optJSONArray("shape");
             int[] shape = new int[]{JSONshape.getInt(1), JSONshape.getInt(0)};
 
@@ -152,7 +153,7 @@ public class LiveViewSocket
         }
         catch(JSONException except)
         {
-            IJ.error("Error receiving header: "+ except.getMessage());
+            parent.printMessage("ERROR: Header Received was not formatted as expected.");
             return;
         }
         
@@ -189,7 +190,12 @@ public class LiveViewSocket
                 need_new_processor = true;
             }
         }
-
+        int expected_image_size = shape[0]*shape[1]*bitdepth/8; //image size in bytes
+        if(expected_image_size != data.limit())
+        {
+            parent.printMessage("ERROR: Image size seems wrong. Please ensure the image matches the header.");
+            return;
+        }
         switch (bitdepth)
         {
             //different bitdepths require different Image Processors for the data type, as well as different buffer types
@@ -232,25 +238,30 @@ public class LiveViewSocket
                 break;
 
             default:
-                IJ.error("Sorry, the datatype of this image is currently unsupported");
+                parent.printMessage("ERROR: the datatype of this image is currently unsupported");
                 return;
 
         }
-
-        ip.setPixels(img_pixels);
-        if(need_new_processor && luts.length != 0)
-        {
-            img.setLut(luts[0]);
-            ip.resetMinAndMax();
+        try{
+            ip.setPixels(img_pixels);
+            if(need_new_processor && luts.length != 0)
+            {
+                img.setLut(luts[0]);
+                ip.resetMinAndMax();
+            }
+            img.updateAndDraw();
+            img.updateStatusbarValue();
+            if(!img.isVisible())
+            {
+                img.setTitle("Live View From: "+ socket_addr);
+                img.show();
+            }
         }
-        img.updateAndDraw();
-        img.updateStatusbarValue();
-        if(!img.isVisible())
+        catch(ArrayIndexOutOfBoundsException except)
         {
-            img.setTitle("Live View From: "+ socket_addr);
-            img.show();
+            parent.printMessage("ERROR: Image recieved seems incorrect. Ensure it matches the header sent.");
+            return; 
         }
-
     }
 
     /**
@@ -275,18 +286,18 @@ public class LiveViewSocket
      * @return the inverted value. If it was <code>true</code> before calling this method, it's now <code>false</code>
      * and vice versa
      */
-    public boolean invert_paused()
+    public boolean invertPaused()
     {
         is_paused = !is_paused;
         
         return is_paused;
     }
-    
+
     /**
      * 
      * @return If the socket is currently paused.
      */
-    public boolean is_paused()
+    public boolean isPaused()
     {
         return is_paused;
     }
