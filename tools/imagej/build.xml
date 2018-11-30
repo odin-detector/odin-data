@@ -1,0 +1,34 @@
+<!-- Ant makefile for ImageJ -->
+
+<project name="ImageJ" default="run">
+    <description>
+        This buildfile is used to build ImageJ, along with the Odin Live View Plugin.
+    </description>
+    <!-- set global properties for this build -->
+    <property name="src" location="src"/>
+    <property name="build" location="build"/>
+    <property name="dist" location="dist"/>
+
+    <target name="init" description="Initialize for build process">
+        <!--Make sure the build folder exists -->
+        <mkdir dir="${build}" />
+    </target>
+
+    <target name="compile" depends="init" description="Compile the source code in class files">
+        <!--First Ensure the build folder exists -->
+        
+    </target>
+
+    <target name="build" depends="compile" description="Build the jar">
+    
+    </target>
+
+    <target name="run" depends="build" description="Run ImageJ">
+
+    </target>
+
+    <target name="clean" depends="build" description="Delete the built files">
+
+    </target>
+
+</project>
