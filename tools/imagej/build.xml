@@ -8,6 +8,7 @@
     <property name="imagej_jar" location="/aeg_sw/apps/imagej/1.52/ImageJ/ij.jar"/>
     <property name="zmq_jar"    location="/u/wbd45595/develop/Java/jzmq-install/share/java/zmq.jar"/>
     <property name="json_jar"   location="/u/wbd45595/develop/Java/json.jar"/>
+    <property name="LD_LIBRARY_PATH" value="/aeg_sw/tools/CentOS7-x86_64/zeromq/4-2-3/prefix/lib:/u/wbd45595/develop/Java/jzmq-install/lib/"/>
     <!--Set the three above to the locations of the external libraries
         so they can be included in the classpath and copied when building. -->
     <property name="src" location="plugins/Odin-Data"/>
@@ -42,21 +43,29 @@
         <!--Copy required files into the build directory -->
         <copy file="${src}/plugins.config" todir="${build}"/>
         <jar jarfile="Live_View.jar"
-             basedir="${build}"
-             manifest="MANIFEST.MF"/>
+             basedir="${build}">
+            <manifest>
+                <attribute name="classpath" value="${classpathProp}"/>
+            </manifest>
+
+        </jar>
         <move file="Live_View.jar" todir="${src}"/>
+        <copy file="${zmq_jar}" todir="${src}"/>
+        <copy file="${json_jar}" todir="${src}"/>
 
     </target>
 
     <target name="run" depends="build" description="Run ImageJ">
-        <echo>CLASSPATH: ${classpathProp}</echo>
         <java jar="${imagej_jar}" fork="true" classpathref="classpath">
+            <sysproperty key="java.library.path" path="${LD_LIBRARY_PATH}"/>
         </java>
     </target>
 
     <target name="clean" description="Delete the built files">
-        <delete dir="${build}"/>
-        <delete file="Live_View.jar"/>
+        <delete dir="${build}" verbose="true"/>
+        <delete verbose="true">
+            <fileset dir="${src}" includes="*.jar"/>
+        </delete>
     </target>
 
 </project>
