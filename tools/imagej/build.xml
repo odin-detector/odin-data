@@ -5,20 +5,15 @@
         This buildfile is used to build ImageJ, along with the Odin Live View Plugin.
     </description>
     <!-- set global properties for this build -->
-    <property name="imagej_jar" location="/aeg_sw/apps/imagej/1.52/ImageJ/ij.jar"/>
-    <property name="zmq_jar"    location="/u/wbd45595/develop/Java/jzmq-install/share/java/zmq.jar"/>
-    <property name="json_jar"   location="/u/wbd45595/develop/Java/json.jar"/>
-    <property name="LD_LIBRARY_PATH" value="/aeg_sw/tools/CentOS7-x86_64/zeromq/4-2-3/prefix/lib:/u/wbd45595/develop/Java/jzmq-install/lib/"/>
-    <!--Set the three above to the locations of the external libraries
-        so they can be included in the classpath and copied when building. -->
+    <property file = "build.properties"/>
     <property name="src" location="plugins/Odin-Data"/>
     <property name="build" location="plugins/Odin-Data/build"/>
 
     <path id="classpath">
         <pathelement location="."/>
-        <pathelement location="${imagej_jar}"/>
-        <pathelement location="${zmq_jar}"/>
-        <pathelement location="${json_jar}"/>
+        <pathelement location="${source.ij}"/>
+        <pathelement location="${source.zmq}"/>
+        <pathelement location="${source.json}"/>
     </path>
     <pathconvert property="classpathProp" refid="classpath"/>
 
@@ -50,14 +45,14 @@
 
         </jar>
         <move file="Live_View.jar" todir="${src}"/>
-        <copy file="${zmq_jar}" todir="${src}"/>
-        <copy file="${json_jar}" todir="${src}"/>
+        <copy file="${source.zmq}" todir="${src}"/>
+        <copy file="${source.json}" todir="${src}"/>
 
     </target>
 
     <target name="run" depends="build" description="Run ImageJ">
-        <java jar="${imagej_jar}" fork="true" classpathref="classpath">
-            <sysproperty key="java.library.path" path="${LD_LIBRARY_PATH}"/>
+        <java jar="${source.ij}" fork="true" classpathref="classpath">
+            <sysproperty key="java.library.path" path="${lib.zmq}"/>
         </java>
     </target>
 
