@@ -18,7 +18,5 @@ cmake-build*/
 
 tools/imagej/plugins/*
 !tools/imagej/plugins/Odin-Data/
-tools/imagej/plugins/Odin-Data/*.class
-tools/imagej/plugins/Odin-Data/bin/*
-tools/imagej/plugins/Odin-Data/load_java.sh
+tools/imagej/plugins/Odin-Data/build/**
 *.jar

@@ -1,34 +1,62 @@
-<!-- Ant makefile for ImageJ -->
+<!-- Ant makefile for the Odin ImageJ Plugins -->
 
 <project name="ImageJ" default="run">
     <description>
         This buildfile is used to build ImageJ, along with the Odin Live View Plugin.
     </description>
     <!-- set global properties for this build -->
-    <property name="src" location="src"/>
-    <property name="build" location="build"/>
-    <property name="dist" location="dist"/>
+    <property name="imagej_jar" location="/aeg_sw/apps/imagej/1.52/ImageJ/ij.jar"/>
+    <property name="zmq_jar"    location="/u/wbd45595/develop/Java/jzmq-install/share/java/zmq.jar"/>
+    <property name="json_jar"   location="/u/wbd45595/develop/Java/json.jar"/>
+    <!--Set the three above to the locations of the external libraries
+        so they can be included in the classpath and copied when building. -->
+    <property name="src" location="plugins/Odin-Data"/>
+    <property name="build" location="plugins/Odin-Data/build"/>
+
+    <path id="classpath">
+        <pathelement location="."/>
+        <pathelement location="${imagej_jar}"/>
+        <pathelement location="${zmq_jar}"/>
+        <pathelement location="${json_jar}"/>
+    </path>
+    <pathconvert property="classpathProp" refid="classpath"/>
+
 
     <target name="init" description="Initialize for build process">
         <!--Make sure the build folder exists -->
-        <mkdir dir="${build}" />
+        <tstamp/>
+        <mkdir dir="${build}"/>
     </target>
 
     <target name="compile" depends="init" description="Compile the source code in class files">
-        <!--First Ensure the build folder exists -->
+        <!--Compile the source into the build folder -->
+        <javac srcdir="${src}" 
+               destdir="${build}"
+               includeantruntime="false">
+            <classpath refid="classpath"/>
+        </javac>
         
     </target>
 
     <target name="build" depends="compile" description="Build the jar">
-    
+        <!--Copy required files into the build directory -->
+        <copy file="${src}/plugins.config" todir="${build}"/>
+        <jar jarfile="Live_View.jar"
+             basedir="${build}"
+             manifest="MANIFEST.MF"/>
+        <move file="Live_View.jar" todir="${src}"/>
+
     </target>
 
     <target name="run" depends="build" description="Run ImageJ">
-
+        <echo>CLASSPATH: ${classpathProp}</echo>
+        <java jar="${imagej_jar}" fork="true" classpathref="classpath">
+        </java>
     </target>
 
-    <target name="clean" depends="build" description="Delete the built files">
-
+    <target name="clean" description="Delete the built files">
+        <delete dir="${build}"/>
+        <delete file="Live_View.jar"/>
     </target>
 
 </project>
