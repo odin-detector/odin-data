@@ -62,6 +62,7 @@
         <delete verbose="true">
             <fileset dir="${src}" includes="*.jar"/>
         </delete>
+        <delete file="odin-imagej"/>
     </target>
 
 </project>
