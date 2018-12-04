@@ -22,6 +22,7 @@ target_link_libraries(frameProcessorTest
         UIDAdjustmentPlugin
         OffsetAdjustmentPlugin
         LiveViewPlugin
+        SumPlugin
         ${COMMON_LIBRARY})
 
 if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
