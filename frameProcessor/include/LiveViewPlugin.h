@@ -46,6 +46,8 @@ public:
   static const std::string DEFAULT_IMAGE_VIEW_SOCKET_ADDR;
   /** The default value for the dataset name filter*/
   static const std::string DEFAULT_DATASET_NAME;
+  /** The default value for the Tagged Filter*/
+  static const bool DEFAULT_TAGGED_FILTER;
 
   /*Config Names*/
   /** The name of the Frame Frequency config in the json file*/
@@ -56,6 +58,8 @@ public:
   static const std::string CONFIG_SOCKET_ADDR;
   /** The name of the Dataset Name config in the json file*/
   static const std::string CONFIG_DATASET_NAME;
+  /** The name of the Tagged Filter config in the json file*/
+  static const std::string CONFIG_TAGGED_FILTER_NAME;
 
 private:
 
@@ -72,6 +76,7 @@ private:
   void set_frame_freq_config(int32_t value);
   void set_socket_addr_config(std::string value);
   void set_dataset_name_config(std::string value);
+  void set_tagged_filter_config(bool value);
 
 
   /**time between frames in milliseconds, calculated from the per_second config*/
@@ -91,6 +96,8 @@ private:
   OdinData::IpcChannel publish_socket_;
   /**List of the dataset names to publish. If a frame comes in with a dataset name not on the list it will be ignored*/
   std::vector<std::string>datasets_;
+  /**Bool saying if the plugin should check frames for tags and only display those with the tag*/
+  bool filter_tagged_;
 
 };
 

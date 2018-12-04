@@ -16,12 +16,14 @@ const int32_t     LiveViewPlugin::DEFAULT_FRAME_FREQ = 1;
 const int32_t     LiveViewPlugin::DEFAULT_PER_SECOND = 0;
 const std::string LiveViewPlugin::DEFAULT_IMAGE_VIEW_SOCKET_ADDR = "tcp://127.0.0.1:5020";
 const std::string LiveViewPlugin::DEFAULT_DATASET_NAME = "";
+const bool        LiveViewPlugin::DEFAULT_TAGGED_FILTER = false;
 
 /* Config Names*/
 const std::string LiveViewPlugin::CONFIG_FRAME_FREQ =  "frame_frequency";
 const std::string LiveViewPlugin::CONFIG_PER_SECOND =  "per_second";
 const std::string LiveViewPlugin::CONFIG_SOCKET_ADDR = "live_view_socket_addr";
 const std::string LiveViewPlugin::CONFIG_DATASET_NAME = "dataset_name";
+const std::string LiveViewPlugin::CONFIG_TAGGED_FILTER_NAME = "filter_tagged";
 
 /**
  * Constructor for this class. Sets up ZMQ pub socket and other default values for the config
@@ -65,20 +67,27 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
   /* If datasets is empty, or contains the frame's dataset, then we can potentially send it*/
   if (datasets_.empty() || std::find(datasets_.begin(), datasets_.end(), frame_dataset) != datasets_.end())
   {
-
-    boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
-    /*int32_t frame_num = frame->get_frame_number();*/
-    int32_t elapsed_time = (now - time_last_frame_).total_milliseconds();
-
-    if (per_second_ != 0 && elapsed_time > time_between_frames_) //time between frames too large, showing frame no matter what the frame number is
+    /* If either filtering by tag is disabled, or the frame has the tagged param */
+    if(!filter_tagged_ || frame->has_parameter("live_view_tag"))
     {
-      LOG4CXX_TRACE(logger_, "Elapsed time " << elapsed_time << " > " << time_between_frames_);
-      pass_live_frame(frame);
+      boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
+      /*int32_t frame_num = frame->get_frame_number();*/
+      int32_t elapsed_time = (now - time_last_frame_).total_milliseconds();
+
+      if (per_second_ != 0 && elapsed_time > time_between_frames_) //time between frames too large, showing frame no matter what the frame number is
+      {
+        LOG4CXX_TRACE(logger_, "Elapsed time " << elapsed_time << " > " << time_between_frames_);
+        pass_live_frame(frame);
+      }
+      else if (frame_freq_ != 0 && frame_count_ % frame_freq_ == 0)
+      {
+        LOG4CXX_TRACE(logger_, "LiveViewPlugin Frame " << frame->get_frame_number() << " to be displayed.");
+        pass_live_frame(frame);
+      }
     }
-    else if (frame_freq_ != 0 && frame_count_ % frame_freq_ == 0)
+    else
     {
-      LOG4CXX_TRACE(logger_, "LiveViewPlugin Frame " << frame->get_frame_number() << " to be displayed.");
-      pass_live_frame(frame);
+      LOG4CXX_TRACE(logger_, "NO TAG FOUND WITH TAG FILTER ENABLED. Not showing frame");
     }
   }
   else
@@ -120,7 +129,10 @@ void LiveViewPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessag
     {
       set_dataset_name_config(config.get_param<std::string>(CONFIG_DATASET_NAME));
     }
-
+    if(config.has_param(CONFIG_TAGGED_FILTER_NAME))
+    {
+      set_tagged_filter_config(config.get_param<bool>(CONFIG_TAGGED_FILTER_NAME));
+    }
     /* Display warning if configuration sets the plugin to do nothing*/
     if(per_second_ == 0 && frame_freq_ == 0)
     {
@@ -347,6 +359,15 @@ void LiveViewPlugin::set_dataset_name_config(std::string value)
     dataset_string += datasets_[i] + ",";
   }
   LOG4CXX_INFO(logger_, "Setting the datasets allowed to: " << dataset_string);
+}
+
+void LiveViewPlugin::set_tagged_filter_config(bool value)
+{
+  filter_tagged_ = value;
+  if(filter_tagged_)
+  {
+    LOG4CXX_INFO(logger_, "Filtering by tagged images.");
+  }
 }
 
 }/*namespace FrameProcessor*/
