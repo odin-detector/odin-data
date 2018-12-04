@@ -16,8 +16,6 @@ namespace FrameProcessor
 
 const std::string FrameProcessorController::META_RX_INTERFACE        = "inproc://meta_rx";
 
-const std::string FrameProcessorController::CONFIG_SHUTDOWN          = "shutdown";
-
 const std::string FrameProcessorController::CONFIG_DEBUG             = "debug_level";
 
 const std::string FrameProcessorController::CONFIG_FR_RELEASE        = "fr_release_cnxn";
@@ -140,7 +138,7 @@ void FrameProcessorController::handleCtrlChannel()
              (ctrlMsg.get_msg_val() == OdinData::IpcMessage::MsgValCmdRequestVersion)) {
       replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
       this->provideVersion(replyMsg);
-      LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (rquest version): "
+      LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (request version): "
                              << replyMsg.encode());
     }
     else if ((ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) &&
@@ -148,6 +146,13 @@ void FrameProcessorController::handleCtrlChannel()
       replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
       this->resetStatistics(replyMsg);
       LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (reset statistics): "
+              << replyMsg.encode());
+    }
+    else if ((ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) &&
+             (ctrlMsg.get_msg_val() == OdinData::IpcMessage::MsgValCmdShutdown)) {
+      replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
+      exitCondition_.notify_all();
+      LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (shutdown): "
               << replyMsg.encode());
     }
     else {
@@ -359,11 +364,6 @@ void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData:
     unsigned int debug_level = config.get_param<unsigned int>(FrameProcessorController::CONFIG_DEBUG);
     LOG4CXX_DEBUG_LEVEL(1, logger_, "Debug level set to  " << debug_level);
     set_debug_level(debug_level);
-  }
-
-  // Check if we are being asked to shutdown
-  if (config.has_param(FrameProcessorController::CONFIG_SHUTDOWN)) {
-    exitCondition_.notify_all();
   }
 
   if (config.has_param(FrameProcessorController::CONFIG_CTRL_ENDPOINT)) {
