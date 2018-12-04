@@ -20,3 +20,4 @@ tools/imagej/plugins/*
 !tools/imagej/plugins/Odin-Data/
 tools/imagej/plugins/Odin-Data/build/**
 *.jar
+tools/imagej/odin-imagej

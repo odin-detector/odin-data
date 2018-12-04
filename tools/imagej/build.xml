@@ -2,12 +2,13 @@
 
 <project name="ImageJ" default="run">
     <description>
-        This buildfile is used to build ImageJ, along with the Odin Live View Plugin.
+        This buildfile is used to build the Odin Live View Plugin.
+        It can also run ImageJ with the required env variables set.
     </description>
     <!-- set global properties for this build -->
-    <property file = "build.properties"/>
-    <property name="src" location="plugins/Odin-Data"/>
-    <property name="build" location="plugins/Odin-Data/build"/>
+    <property file="build.properties"/>
+    <property name="src" location="${source.plugins}/Odin-Data"/>
+    <property name="build" location="${source.plugins}/Odin-Data/build"/>
 
     <path id="classpath">
         <pathelement location="."/>
@@ -44,8 +45,8 @@
             </manifest>
 
         </jar>
-        <move file="Live_View.jar" todir="${src}"/>
-        <copy file="${source.zmq}" todir="${src}"/>
+        <move file="Live_View.jar"  todir="${src}"/>
+        <copy file="${source.zmq}"  todir="${src}"/>
         <copy file="${source.json}" todir="${src}"/>
 
     </target>
