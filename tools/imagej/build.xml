@@ -41,9 +41,9 @@
         <jar jarfile="Live_View.jar"
              basedir="${build}">
             <manifest>
-                <attribute name="classpath" value="${classpathProp}"/>
+                <attribute name="Built-By" value="${user.name}"/>
+                <attribute name="Build-Date" value="${DSTAMP}:${TSTAMP}"/>
             </manifest>
-
         </jar>
         <move file="Live_View.jar"  todir="${src}"/>
         <copy file="${source.zmq}"  todir="${src}"/>
