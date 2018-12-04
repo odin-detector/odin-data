@@ -24,8 +24,7 @@ function build_imagej
 
     echo "#!/bin/bash
     echo 'Running ImageJ for Odin'
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH
-    java -Xmx32000m -jar $SOURCE_IJ -ijpath $SOURCE_PLUGINS -port0 $@" > odin-imagej
+    java -Djava.library.path=$LD_LIBRARY_PATH -Xmx32000m -jar $SOURCE_IJ -ijpath $SOURCE_PLUGINS -port0 $@" > odin-imagej
 }
 
 build_imagej
