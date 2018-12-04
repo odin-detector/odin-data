@@ -247,13 +247,13 @@ class MetaListener:
                 if 'flush' in params:
                     self.logger.debug(
                         'Setting acquisition [' + str(acquisition_id) + '] flush to ' + str(params['flush']))
-                    self._writers[acquisition_id].flush_frequency = params['flush']
+                    self._writers[acquisition_id].flush_frequency = int(params['flush'])
                     reply = IpcMessage(IpcMessage.ACK, 'configure', id=msg_id)
 
                 if 'flush_timeout' in params:
                     self.logger.debug('Setting acquisition [' + str(acquisition_id) + '] flush timeout to ' + str(
                         params['flush_timeout']))
-                    self._writers[acquisition_id].flush_timeout = params['flush_timeout']
+                    self._writers[acquisition_id].flush_timeout = int(params['flush_timeout'])
                     reply = IpcMessage(IpcMessage.ACK, 'configure', id=msg_id)
 
                 if 'stop' in params:
