@@ -16,7 +16,7 @@ const int32_t     LiveViewPlugin::DEFAULT_FRAME_FREQ = 1;
 const int32_t     LiveViewPlugin::DEFAULT_PER_SECOND = 0;
 const std::string LiveViewPlugin::DEFAULT_IMAGE_VIEW_SOCKET_ADDR = "tcp://127.0.0.1:5020";
 const std::string LiveViewPlugin::DEFAULT_DATASET_NAME = "";
-const bool        LiveViewPlugin::DEFAULT_TAGGED_FILTER = false;
+const std::string LiveViewPlugin::DEFAULT_TAGGED_FILTER = "";
 
 /* Config Names*/
 const std::string LiveViewPlugin::CONFIG_FRAME_FREQ =  "frame_frequency";
@@ -40,6 +40,7 @@ LiveViewPlugin::LiveViewPlugin() :
   set_per_second_config(DEFAULT_PER_SECOND);
   set_socket_addr_config(DEFAULT_IMAGE_VIEW_SOCKET_ADDR);
   set_dataset_name_config(DEFAULT_DATASET_NAME);
+  set_tagged_filter_config(DEFAULT_TAGGED_FILTER);
 }
 
 /**
@@ -68,7 +69,19 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
   if (datasets_.empty() || std::find(datasets_.begin(), datasets_.end(), frame_dataset) != datasets_.end())
   {
     /* If either filtering by tag is disabled, or the frame has the tagged param */
-    if(!filter_tagged_ || frame->has_parameter("live_view_tag"))
+    bool is_tagged = tags_.empty();
+    if(!is_tagged)
+    {
+      for (int i = 0; i < tags_.size(); i++)
+      {
+        if(frame->has_parameter(tags_[i]))
+        {
+          is_tagged = true;
+          break;
+        }
+      }
+    }
+    if(is_tagged)
     {
       boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
       /*int32_t frame_num = frame->get_frame_number();*/
@@ -87,7 +100,7 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
     }
     else
     {
-      LOG4CXX_TRACE(logger_, "NO TAG FOUND WITH TAG FILTER ENABLED. Not showing frame");
+      LOG4CXX_TRACE(logger_, "LiveViewPlugin No Tag(s) found, frame skipped.");
     }
   }
   else
@@ -131,7 +144,7 @@ void LiveViewPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessag
     }
     if(config.has_param(CONFIG_TAGGED_FILTER_NAME))
     {
-      set_tagged_filter_config(config.get_param<bool>(CONFIG_TAGGED_FILTER_NAME));
+      set_tagged_filter_config(config.get_param<std::string>(CONFIG_TAGGED_FILTER_NAME));
     }
     /* Display warning if configuration sets the plugin to do nothing*/
     if(per_second_ == 0 && frame_freq_ == 0)
@@ -361,13 +374,21 @@ void LiveViewPlugin::set_dataset_name_config(std::string value)
   LOG4CXX_INFO(logger_, "Setting the datasets allowed to: " << dataset_string);
 }
 
-void LiveViewPlugin::set_tagged_filter_config(bool value)
+void LiveViewPlugin::set_tagged_filter_config(std::string value)
 {
-  filter_tagged_ = value;
-  if(filter_tagged_)
+  std::string delim = ",";
+  tags_.clear();
+  if(!value.empty())
   {
-    LOG4CXX_INFO(logger_, "Filtering by tagged images.");
+    boost::split(tags_, value, boost::is_any_of(delim));
   }
+  std::string tags_string = "";
+  for (int i = 0; i < tags_.size(); i++)
+  {
+    boost::trim(tags_[i]);
+    tags_string += tags_[i] + ", ";
+  }
+  LOG4CXX_INFO(logger_, "Only Displaying images with the following tags: " << tags_string);
 }
 
 }/*namespace FrameProcessor*/

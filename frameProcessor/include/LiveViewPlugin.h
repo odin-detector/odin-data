@@ -47,7 +47,7 @@ public:
   /** The default value for the dataset name filter*/
   static const std::string DEFAULT_DATASET_NAME;
   /** The default value for the Tagged Filter*/
-  static const bool DEFAULT_TAGGED_FILTER;
+  static const std::string DEFAULT_TAGGED_FILTER;
 
   /*Config Names*/
   /** The name of the Frame Frequency config in the json file*/
@@ -70,13 +70,11 @@ private:
   static const std::string COMPRESS_TYPES[];
 
   void requestConfiguration(OdinData::IpcMessage& reply);
-//  std::string get_type_from_enum(int32_t type);
-//  std::string get_compress_from_enum(int32_t compress);
   void set_per_second_config(int32_t value);
   void set_frame_freq_config(int32_t value);
   void set_socket_addr_config(std::string value);
   void set_dataset_name_config(std::string value);
-  void set_tagged_filter_config(bool value);
+  void set_tagged_filter_config(std::string value);
 
 
   /**time between frames in milliseconds, calculated from the per_second config*/
@@ -95,9 +93,9 @@ private:
   /**The socket the live view image frames will be sent to*/
   OdinData::IpcChannel publish_socket_;
   /**List of the dataset names to publish. If a frame comes in with a dataset name not on the list it will be ignored*/
-  std::vector<std::string>datasets_;
-  /**Bool saying if the plugin should check frames for tags and only display those with the tag*/
-  bool filter_tagged_;
+  std::vector<std::string> datasets_;
+  /**List of Parameter names to look for. If a frame comes in without one of these tags it will be ignored*/
+  std::vector<std::string> tags_;
 
 };
 
