@@ -22,9 +22,10 @@ class OdinDataAdapter(ApiAdapter):
     ERROR_NO_RESPONSE = "No response from client, check it is running"
     ERROR_FAILED_TO_SEND = "Unable to successfully send request to client"
     ERROR_FAILED_GET = "Unable to successfully complete the GET request"
+    ERROR_FAILED_PUT = "Unable to successfully complete the PUT request"
     ERROR_PUT_MISMATCH = "The size of parameter array does not match the number of clients"
 
-    SUPPORTED_COMMANDS = ['reset_statistics', 'request_version']
+    SUPPORTED_COMMANDS = ['reset_statistics', 'request_version', 'shutdown']
     
     def __init__(self, **kwargs):
         """

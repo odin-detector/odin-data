@@ -40,6 +40,7 @@ class FrameProcessorAdapter(OdinDataAdapter):
         super(FrameProcessorAdapter, self).__init__(**kwargs)
 
         self._param = {
+            'config/hdf/acquisition_id': '',
             'config/hdf/file/path': '',
             'config/hdf/file/name': '',
             'config/hdf/file/extension': 'h5',
@@ -141,11 +142,12 @@ class FrameProcessorAdapter(OdinDataAdapter):
                         client.send_configuration(parameters)
                         parameters = {
                             'hdf': {
+                                'acquisition_id': self._param['config/hdf/acquisition_id'],
                                 'file': {
                                     'path': str(self._param['config/hdf/file/path']),
                                     'name': str(self._param['config/hdf/file/name']),
                                     'extension': str(self._param['config/hdf/file/extension'])
-                                    }
+                                }
                             }
                         }
                         client.send_configuration(parameters)

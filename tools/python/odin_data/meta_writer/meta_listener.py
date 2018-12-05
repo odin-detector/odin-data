@@ -8,6 +8,8 @@ Matt Taylor, Diamond Light Source
 import zmq
 import logging
 import re
+import importlib
+
 from odin_data.ipc_message import IpcMessage
 import odin_data._version as versioneer
 
@@ -216,9 +218,13 @@ class MetaListener:
         reply.set_param('error', 'Unable to process configure command')
 
         if 'kill' in params:
-            self.logger.info('Kill reqeusted')
+            self.logger.info('Kill requested')
             reply = IpcMessage(IpcMessage.ACK, 'configure', id=msg_id)
             self._kill_requested = True
+        elif 'writer' in params:
+            self.logger.info('Setting writer module to ' + str(params['writer']))
+            self._writer_module = params['writer']
+            reply = IpcMessage(IpcMessage.ACK, 'configure', id=msg_id)
         elif 'acquisition_id' in params:
             acquisition_id = params['acquisition_id']
 
@@ -227,7 +233,7 @@ class MetaListener:
                     self.logger.debug('Writer is in writers for acq ' + str(acquisition_id))
                 else:
                     self.logger.debug('Writer not in writers for acquisition [' + str(acquisition_id) + ']')
-                    self.logger.info(
+                    self.logger.debug(
                         'Creating new acquisition [' + str(acquisition_id) + '] with default directory ' + str(
                             self._directory))
                     self.create_new_acquisition(self._directory, acquisition_id)
@@ -241,13 +247,13 @@ class MetaListener:
                 if 'flush' in params:
                     self.logger.debug(
                         'Setting acquisition [' + str(acquisition_id) + '] flush to ' + str(params['flush']))
-                    self._writers[acquisition_id].flush_frequency = params['flush']
+                    self._writers[acquisition_id].flush_frequency = int(params['flush'])
                     reply = IpcMessage(IpcMessage.ACK, 'configure', id=msg_id)
 
                 if 'flush_timeout' in params:
                     self.logger.debug('Setting acquisition [' + str(acquisition_id) + '] flush timeout to ' + str(
                         params['flush_timeout']))
-                    self._writers[acquisition_id].flush_timeout = params['flush_timeout']
+                    self._writers[acquisition_id].flush_timeout = int(params['flush_timeout'])
                     reply = IpcMessage(IpcMessage.ACK, 'configure', id=msg_id)
 
                 if 'stop' in params:
@@ -318,7 +324,7 @@ class MetaListener:
                 value.finished = True
 
         # Now create new acquisition
-        self.logger.info('Creating new acquisition for: ' + str(acquisition_id))
+        self.logger.info('Creating new acquisition [' + str(acquisition_id) + '] with directory ' + str(directory))
         self._writers[acquisition_id] = self.create_new_writer(directory, acquisition_id)
 
         # Then check if we have built up too many finished acquisitions and delete them if so
@@ -339,10 +345,13 @@ class MetaListener:
 
         :param: directory: Directory to create the meta file in
         :param: acquisition_id: Acquisition ID of the new acquisition
-        """
+        """        
+        if self._writer_module is None:
+            raise Exception('No writer class configured')
+        
         module_name = self._writer_module[:self._writer_module.rfind('.')]
-        class_name = self._writer_module[self._writer_module.rfind('.') + 1:]
-        module = __import__(module_name)
+        class_name = self._writer_module[self._writer_module.rfind('.') + 1:]        
+        module = importlib.import_module(module_name, package=None)
         writer_class = getattr(module, class_name)
         writer_instance = writer_class(self.logger, directory, acquisition_id)
         self.logger.debug(writer_instance)
@@ -350,9 +359,12 @@ class MetaListener:
 
     def get_writer_version(self):
         """Get the version from the writer object."""
+        if self._writer_module is None:
+            raise Exception('No writer class configured')
+          
         module_name = self._writer_module[:self._writer_module.rfind('.')]
         class_name = self._writer_module[self._writer_module.rfind('.') + 1:]
-        module = __import__(module_name)
+        module = importlib.import_module(module_name, package=None)
         writer_class = getattr(module, class_name)
         writer_version = writer_class.get_version()
         return writer_version
