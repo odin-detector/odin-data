@@ -209,37 +209,31 @@ void LiveViewPlugin::pass_live_frame(boost::shared_ptr<Frame> frame)
   LOG4CXX_TRACE(logger_, "LiveViewPlugin Building Frame Header");
   //building image header
 
-  //getting frame num
-  rapidjson::Value keyFrame("frame_num", document.GetAllocator());
-  rapidjson::Value valueFrame(frame_num);
-  document.AddMember(keyFrame, valueFrame, document.GetAllocator());
+  add_json_member(&document, "frame_num", frame_num);
+  add_json_member(&document, "acquisition_id", aqqID);
+  add_json_member(&document, "dtype", type);
+  add_json_member(&document, "dsize", static_cast<uint64_t>(size));
+  add_json_member(&document, "dataset", dataset);
+  add_json_member(&document, "compression", compress);
 
-  //getting Acquisition ID
-  rapidjson::Value keyAqq("acquisition_id", document.GetAllocator());
-  rapidjson::Value valueAqq(aqqID.c_str(), document.GetAllocator());
-  document.AddMember(keyAqq, valueAqq, document.GetAllocator());
 
-  //getting data type
-  rapidjson::Value keyType("dtype", document.GetAllocator());
-  rapidjson::Value valueType(type.c_str(), document.GetAllocator());
-  document.AddMember(keyType, valueType, document.GetAllocator());
+  //getting tags manually because it is an array
+  rapidjson::Value keyTags("tags", document.GetAllocator());
+  rapidjson::Value valueTags(rapidjson::kArrayType);
+  if(!tags_.empty())
+  {
+    for(int i = 0; i < tags_.size(); i++)
+    {
+      if(frame->has_parameter(tags_[i]))
+      {
+        rapidjson::Value tagStringVal(tags_[i].c_str(), document.GetAllocator());
+        valueTags.PushBack(tagStringVal, document.GetAllocator());
+      }
+    }
+    document.AddMember(keyTags, valueTags, document.GetAllocator());
+  }
 
-  //getting Data Size
-  rapidjson::Value keySize("dsize", document.GetAllocator());
-  rapidjson::Value valueSize(static_cast<uint64_t>(size));
-  document.AddMember(keySize, valueSize, document.GetAllocator());
-
-  //getting dataset
-  rapidjson::Value keySet("dataset", document.GetAllocator());
-  rapidjson::Value valueSet(dataset.c_str(), document.GetAllocator());
-  document.AddMember(keySet, valueSet, document.GetAllocator());
-
-  //getting compression
-  rapidjson::Value keyCompress("compression", document.GetAllocator());
-  rapidjson::Value valueCompress(compress.c_str(), document.GetAllocator());
-  document.AddMember(keyCompress, valueCompress, document.GetAllocator());
-
-  //getting dimensions
+  //getting dimensions manually because its an array
   rapidjson::Value keyDims("shape", document.GetAllocator());
   rapidjson::Value valueDims(rapidjson::kArrayType);
 
@@ -268,6 +262,19 @@ void LiveViewPlugin::pass_live_frame(boost::shared_ptr<Frame> frame)
   time_last_frame_ = boost::posix_time::microsec_clock::local_time();
 }
 
+void LiveViewPlugin::add_json_member(rapidjson::Document* document, std::string key, std::string value)
+{
+  rapidjson::Value rkey(key.c_str(), document->GetAllocator());
+  rapidjson::Value rvalue(value.c_str(), document->GetAllocator());
+  document->AddMember(rkey, rvalue, document->GetAllocator());
+}
+
+void LiveViewPlugin::add_json_member(rapidjson::Document* document, std::string key, uint32_t value)
+{
+  rapidjson::Value rkey(key.c_str(), document->GetAllocator());
+  rapidjson::Value rvalue(value);
+  document->AddMember(rkey, rvalue, document->GetAllocator());
+}
 int LiveViewPlugin::get_version_major()
 {
   return ODIN_DATA_VERSION_MAJOR;

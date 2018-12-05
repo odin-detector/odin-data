@@ -68,6 +68,7 @@ public:
     frame_16->set_compression(0);
     frame_16->copy_data(static_cast<void*>(img_16), 24);
 
+
     //create multiple test frames
     for(int i = 0; i < 10; i++)
     {
@@ -76,7 +77,10 @@ public:
       tmp_frame->set_dimensions(img_dims);
       tmp_frame->set_data_type(FrameProcessor::raw_8bit);
       tmp_frame->set_dataset_name(i % 4 ? "data" : "not_data");
-
+      if(i % 4)
+      {
+        tmp_frame->set_parameter("test_tag", (uint8_t)0);
+      }
       tmp_frame->copy_data(static_cast<void*>(img_8), 12);
 
       frames.push_back(tmp_frame);
@@ -96,6 +100,7 @@ public:
     {
       recv_socket.recv();
     }
+
     BOOST_TEST_MESSAGE("FIXTURE SETUP COMPLETE");
   }
 
@@ -301,6 +306,41 @@ BOOST_AUTO_TEST_CASE(LiveViewOtherDatatypeTest)
   doc.Parse(message.c_str());
   BOOST_CHECK_EQUAL(doc["dsize"].GetInt() , frame_16->get_data_size()); //test that the plugin got the correct size for the frame
   BOOST_CHECK_EQUAL(doc["dtype"].GetString(), DATA_TYPES[frame_16->get_data_type()]); //test that the plugin got the correct data type for the frame
+
+}
+
+BOOST_AUTO_TEST_CASE(LiveViewTagFilterTest)
+{
+  cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_FRAME_FREQ, 1);
+  cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_TAGGED_FILTER_NAME, std::string("test_tag"));
+  BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
+
+  plugin.configure(cfg, reply); //configure the plugin to push any frame with the "data" dataset to the live view socket
+
+  while(recv_socket.poll(10))
+  {
+    recv_socket.recv(); //clear any extra data from the above while loop
+  }
+
+  for(int i = 0; i < frames.size(); i++)
+  {
+    plugin.process_frame(frames[i]);
+  }
+
+  std::vector<std::string> tagged_processed_frames;
+  while(recv_socket.poll(10))
+  {
+    std::string tmp_string = recv_socket.recv();
+    BOOST_TEST_MESSAGE( "Received Header: " << tmp_string);
+    tagged_processed_frames.push_back(tmp_string);
+    recv_socket.recv_raw(pbuf); //we dont need the data for this test but still need to read from the socket to clear it from the queue
+  }
+  for(int i = 0; i < tagged_processed_frames.size(); i++)
+  {
+    doc.Parse(tagged_processed_frames[i].c_str());
+    BOOST_CHECK_EQUAL(doc["tags"][0].GetString(), "test_tag"); //check to make sure only tagged frames were passed through
+  }
+  BOOST_CHECK_EQUAL(tagged_processed_frames.size(), 7); // check to make sure all the frames expected were passed through
 
 }
 

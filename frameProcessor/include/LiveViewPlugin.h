@@ -69,6 +69,8 @@ private:
   /** List of possible compression type strings*/
   static const std::string COMPRESS_TYPES[];
 
+  void add_json_member(rapidjson::Document *document, std::string key, std::string value);
+  void add_json_member(rapidjson::Document *document, std::string key, uint32_t value);
   void requestConfiguration(OdinData::IpcMessage& reply);
   void set_per_second_config(int32_t value);
   void set_frame_freq_config(int32_t value);
