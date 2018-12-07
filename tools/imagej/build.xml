@@ -1,17 +1,18 @@
 <!-- Ant makefile for the Odin ImageJ Plugins -->
 
-<project name="ImageJ" default="run">
+<project name="ImageJ" default="build">
     <description>
         This buildfile is used to build the Odin Live View Plugin.
         It can also run ImageJ with the required env variables set.
     </description>
     <!-- set global properties for this build -->
     <property file="build.properties"/>
-    <property name="src" location="${source.plugins}/Odin-Data"/>
-    <property name="build" location="${source.plugins}/Odin-Data/build"/>
+    <property name="src" location="src/"/>
+    <property name="build" location="build/"/>
+    <property name="prefix" location="${source.plugins}/Odin Data/"/>
 
     <path id="classpath">
-        <pathelement location="."/>
+        <pathelement location="${src}"/>
         <pathelement location="${source.ij}"/>
         <pathelement location="${source.zmq}"/>
         <pathelement location="${source.json}"/>
@@ -23,6 +24,7 @@
         <!--Make sure the build folder exists -->
         <tstamp/>
         <mkdir dir="${build}"/>
+        <mkdir dir="${prefix}"/>
     </target>
 
     <target name="compile" depends="init" description="Compile the source code in class files">
@@ -38,17 +40,20 @@
     <target name="build" depends="compile" description="Build the jar">
         <!--Copy required files into the build directory -->
         <copy file="${src}/plugins.config" todir="${build}"/>
-        <jar jarfile="Live_View.jar"
-             basedir="${build}">
+        <jar jarfile="${build}/Live_View.jar"
+             basedir="${build}"
+             includes="*.class">
             <manifest>
                 <attribute name="Built-By" value="${user.name}"/>
                 <attribute name="Build-Date" value="${DSTAMP}:${TSTAMP}"/>
             </manifest>
         </jar>
-        <move file="Live_View.jar"  todir="${src}"/>
-        <copy file="${source.zmq}"  todir="${src}"/>
-        <copy file="${source.json}" todir="${src}"/>
+    </target>
 
+    <target name="install" depends="build" description="Install the Plugins into the ImageJ plugin folders">
+        <copy file="${build}/Live_View.jar" todir="${prefix}"/>
+        <copy file="${source.zmq}" todir="${prefix}"/>
+        <copy file="${source.json}" todir="${prefix}"/>
     </target>
 
     <target name="run" depends="build" description="Run ImageJ">
