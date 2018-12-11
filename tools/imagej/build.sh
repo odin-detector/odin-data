@@ -15,8 +15,8 @@ OPTIONAL ARGUMENTS:
 function getProperty
 {
     PROP_KEY=$1
-    PROP_VALUE=`cat $PROPERTY_FILE | grep "$PROP_KEY" | cut -d'=' -f2`
-    echo "$PROP_KEY=$PROP_VALUE"
+    PROP_VALUE=`cat $PROPERTY_FILE | grep "$PROP_KEY\s*=" | cut -d'=' -f2`
+    echo $PROP_VALUE
 }
 
 function setProperty
