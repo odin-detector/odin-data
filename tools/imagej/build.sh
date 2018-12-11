@@ -12,9 +12,9 @@ OPTIONAL ARGUMENTS:
   -j: Path to the json jar library.
   -h: Display this help text"
 
-ZMQ_LIB_STANDARD="/aeg_sw/tools/CentOS7-x86_64/zeromq/4-2-3/prefix/lib/"
+ZMQ_LIB_STANDARD="../../../../../Java/jzmq-install/lib"
 ZMQ_JAR_STANDARD="lib/zmq.jar"
-JZON_JAR_STANDARD="lib/json.jar"
+JSON_JAR_STANDARD="lib/json.jar"
 IJ_JAR_STANDARD="/aeg_sw/apps/imagej/1.52/ImageJ/ij.jar"
 IJ_PLUGIN_STANDARD="plugins/"
 function getProperty
@@ -89,8 +89,8 @@ function setAllProperties
     then
         # standard library location
         echo "USING STANDARD ZMQ LIBRARY LOCATION"
-        setProperty "lib.zmq" $ZMQ_LIB_STANDARD
         ZMQ_LIBRARY_PATH=$ZMQ_LIB_STANDARD
+        setProperty "lib.zmq" "$ZMQ_LIBRARY_PATH"
     else
         echo "ZMQ LIBRARIES NOT FOUND"
         exit -1
@@ -107,6 +107,7 @@ function setAllProperties
     then
         echo "USING STANDARD IMAGEJ LOCATION"
         SOURCE_IJ=$IJ_JAR_STANDARD
+        setProperty "source.ij" "$SOURCE_IJ"
     else
         echo "IMAGEJ NOT FOUND"
         exit -1
@@ -123,6 +124,7 @@ function setAllProperties
     then
         echo "USING STANDARD PLUGIN LOCATION"
         SOURCE_PLUGINS=$IJ_PLUGIN_STANDARD
+        setProperty "source.plugins" "$SOURCE_PLUGINS"
     else
         echo "NO PLUGIN FOLDER FOUND"
         exit -1
@@ -135,10 +137,11 @@ function setAllProperties
     then
         echo "SOURCE_ZMQ UNSET. READING FROM FILE"
         SOURCE_ZMQ=$(getProperty "source.zmq")
-    elif [ -f $ZMQ_JAR_STANDARD]
+    elif [ -f $ZMQ_JAR_STANDARD ]
     then
-        echo "USING STANDARD IMAGEJ LOCATION"
+        echo "USING STANDARD ZMQ LOCATION"
         SOURCE_ZMQ=$ZMQ_JAR_STANDARD
+        setProperty "source.zmq" "$SOURCE_ZMQ"
     else
         echo "ZMQ JAR NOT FOUND"
         exit -1
@@ -153,8 +156,9 @@ function setAllProperties
         SOURCE_JSON=$(getProperty "source.json")
     elif [ -f $JSON_JAR_STANDARD ]
     then
-        echo "USING STANDARD IMAGEJ LOCATION"
+        echo "USING STANDARD JSON LOCATION"
         SOURCE_JSON=$JSON_JAR_STANDARD
+        setProperty "source.json" "$SOURCE_JSON"
     else
         echo "JSON JAR NOT FOUND"
         exit -1
