@@ -17,8 +17,12 @@
         <pathelement location="${source.zmq}"/>
         <pathelement location="${source.json}"/>
     </path>
-    <pathconvert property="classpathProp" refid="classpath"/>
 
+    <path id="build_classpath">
+        <fileset dir=".">
+            <include name="lib/*.jar"/>
+        </fileset>
+    </path>
 
     <target name="init" description="Initialize for build process">
         <!--Make sure the build folder exists -->
@@ -39,6 +43,10 @@
 
     <target name="build" depends="compile" description="Build the jar">
         <!--Copy required files into the build directory -->
+        <manifestclasspath property="lib.list" jarfile="${prefix}/Live_View.jar">
+            <classpath refid="build_classpath"/>
+        </manifestclasspath>
+
         <copy file="${src}/plugins.config" todir="${build}"/>
         <jar jarfile="${build}/Live_View.jar"
              basedir="${build}"
@@ -46,14 +54,15 @@
             <manifest>
                 <attribute name="Built-By" value="${user.name}"/>
                 <attribute name="Build-Date" value="${DSTAMP}:${TSTAMP}"/>
+                <attribute name="Class-Path" value=". lib/zmq.jar lib/json.jar"/>
             </manifest>
         </jar>
     </target>
 
     <target name="install" depends="build" description="Install the Plugins into the ImageJ plugin folders">
         <copy file="${build}/Live_View.jar" todir="${prefix}"/>
-        <copy file="${source.zmq}" todir="${prefix}"/>
-        <copy file="${source.json}" todir="${prefix}"/>
+        <copy file="${source.zmq}" todir="${prefix}/lib"/>
+        <copy file="${source.json}" todir="${prefix}/lib"/>
     </target>
 
     <target name="run" depends="build" description="Run ImageJ">
@@ -66,6 +75,7 @@
         <delete dir="${build}" verbose="true"/>
         <delete verbose="true">
             <fileset dir="${src}" includes="*.jar"/>
+            <fileset dir="${prefix}" includes="**/*.jar"/>
         </delete>
         <delete file="odin-imagej"/>
     </target>
