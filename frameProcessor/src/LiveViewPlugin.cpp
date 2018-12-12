@@ -102,6 +102,8 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
     {
       LOG4CXX_TRACE(logger_, "LiveViewPlugin No Tag(s) found, frame skipped.");
     }
+    //push frame down the pipeline no matter if frame was passed to live viewer or not
+    frame_count_ ++;
   }
   else
   {
@@ -109,8 +111,6 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
   }
 
   LOG4CXX_TRACE(logger_, "Pushing Data Frame" );
-  //push frame down the pipeline no matter if frame was passed to live viewer or not
-  frame_count_ ++;
   this->push(frame);
 }
 
