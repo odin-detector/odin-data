@@ -97,13 +97,13 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
         LOG4CXX_TRACE(logger_, "LiveViewPlugin Frame " << frame->get_frame_number() << " to be displayed.");
         pass_live_frame(frame);
       }
+      //Count all frames that match the dataset(s) and tag(s)
+      frame_count_ ++;
     }
     else
     {
       LOG4CXX_TRACE(logger_, "LiveViewPlugin No Tag(s) found, frame skipped.");
     }
-    //push frame down the pipeline no matter if frame was passed to live viewer or not
-    frame_count_ ++;
   }
   else
   {
