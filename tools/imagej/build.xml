@@ -10,7 +10,7 @@
     <property name="src" location="src/"/>
     <property name="build" location="build/"/>
     <property name="bin" location="${prefix.install}/bin/"/>
-    <property name="lib" location="${prefix.install}/lib/plugins"/>
+    <property name="lib" location="${prefix.install}/lib/"/>
 
     <path id="classpath">
         <pathelement location="${src}"/>
@@ -60,10 +60,10 @@
     </target>
 
     <target name="install" depends="build" description="Install the Plugins into the ImageJ plugin folders">
-        <copy file="${build}/Live_View.jar" todir="${lib}"/>
-        <copy file="${source.zmq}" todir="${lib}"/>
-        <copy file="${source.json}" todir="${lib}"/>
-        <copy file="${source.ij}" todir="${bin}"/>
+        <copy file="${build}/Live_View.jar" todir="${lib}/plugins"/>
+        <copy file="${source.zmq}" todir="${lib}/plugins"/>
+        <copy file="${source.json}" todir="${lib}/plugins"/>
+        <copy file="${source.ij}" todir="${lib}"/>
     </target>
 
     <target name="run" depends="build" description="Run ImageJ">
@@ -75,7 +75,7 @@
     <target name="clean" description="Delete the built files">
         <delete verbose="true">
             <fileset dir="${src}" includes="*.jar"/>
-            <fileset dir="${prefix.install}" includes="**/*.jar"/>
+            <fileset dir="${prefix.install}" includes="*.jar"/>
             <fileset dir="${build}" excludes="*.properties"/>
         </delete>
         <delete file="odin-imagej"/>
