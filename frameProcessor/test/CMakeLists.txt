@@ -27,6 +27,7 @@ target_link_libraries(frameProcessorTest
         UIDAdjustmentPlugin
         OffsetAdjustmentPlugin
         LiveViewPlugin
+        SumPlugin
         ${COMMON_LIBRARY})
 
 # Link for BloscPlugin if Blosc is present

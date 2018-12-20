@@ -21,6 +21,7 @@ using namespace log4cxx::xml;
 #include "UIDAdjustmentPlugin.h"
 #include "OffsetAdjustmentPlugin.h"
 #include "LiveViewPlugin.h"
+#include "SumPlugin.h"
 
 class GlobalConfig {
 public:
@@ -944,3 +945,67 @@ BOOST_AUTO_TEST_CASE( FileWriterPluginCalcNumFramesTest1000fpb )
 }
 
 BOOST_AUTO_TEST_SUITE_END(); //FileWriterPluginTest
+
+BOOST_AUTO_TEST_SUITE(SumPluginUnitTest);
+
+BOOST_AUTO_TEST_CASE( SumFrame )
+{
+  FrameProcessor::SumPlugin plugin;
+  unsigned short img[12] =  {
+    1, 2, 3, 4,
+    5, 6, 7, 8,
+    9, 10, 11, 12
+  };
+  dimensions_t img_dims(2); img_dims[0] = 3; img_dims[1] = 4;
+
+  boost::shared_ptr<FrameProcessor::Frame> frame(new FrameProcessor::Frame("raw"));
+
+  frame->set_dimensions(img_dims);
+  frame->set_data_type(FrameProcessor::raw_16bit);
+
+  BOOST_CHECK_NO_THROW(frame->copy_data(static_cast<void*>(img), 24));
+
+  plugin.process_frame(frame);
+
+  BOOST_CHECK(frame->has_parameter(FrameProcessor::SUM_PARAM_NAME));
+
+  // check that the sum of each pixel is the correct value
+  BOOST_CHECK_EQUAL(78, frame->get_i64_parameter(FrameProcessor::SUM_PARAM_NAME));
+}
+
+BOOST_AUTO_TEST_CASE( SumEmptyFrame )
+{
+  FrameProcessor::SumPlugin plugin;
+
+  boost::shared_ptr<FrameProcessor::Frame> frame(new FrameProcessor::Frame("empty"));
+  dimensions_t dims(2, 0);
+  frame->set_dimensions(dims);
+  frame->set_data_type(FrameProcessor::raw_16bit);
+  char dummy_data[2] = {0, 0};
+  frame->copy_data(static_cast<void*>(dummy_data), 2);
+
+  plugin.process_frame(frame);
+  BOOST_CHECK(frame->has_parameter(FrameProcessor::SUM_PARAM_NAME));
+  // check that a empty frame sum is zero
+  BOOST_CHECK_EQUAL(0, frame->get_i64_parameter(FrameProcessor::SUM_PARAM_NAME));
+}
+
+BOOST_AUTO_TEST_CASE( SumNotSupportedDataType )
+{
+  // check that sum parameter is not set in unsupported data types
+  FrameProcessor::SumPlugin plugin;
+  boost::shared_ptr<FrameProcessor::Frame> frame(new FrameProcessor::Frame("raw"));
+  // undefined data type
+  plugin.process_frame(frame);
+  BOOST_CHECK(!frame->has_parameter(FrameProcessor::SUM_PARAM_NAME));
+
+  frame->set_data_type(FrameProcessor::raw_float);
+  plugin.process_frame(frame);
+  BOOST_CHECK(!frame->has_parameter(FrameProcessor::SUM_PARAM_NAME));
+
+  frame->set_data_type(FrameProcessor::raw_64bit);
+  plugin.process_frame(frame);
+  BOOST_CHECK(!frame->has_parameter(FrameProcessor::SUM_PARAM_NAME));
+}
+
+BOOST_AUTO_TEST_SUITE_END(); //SumPluginUnitTest

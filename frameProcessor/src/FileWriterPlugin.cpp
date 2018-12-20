@@ -117,6 +117,7 @@ FileWriterPlugin::~FileWriterPlugin()
 void FileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame)
 {
   // Protect this method
+  boost::mutex::scoped_lock cflock(close_file_mutex_);
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
 
   // Check the frame against the current acquisition and start a new one if
@@ -144,7 +145,6 @@ void FileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame)
       this->push(frame);
 
       // Notify the close timeout thread that a frame has been processed
-      boost::mutex::scoped_lock lock(close_file_mutex_);
       timeout_condition_.notify_all();
     }
   }
