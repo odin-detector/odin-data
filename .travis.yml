@@ -15,6 +15,7 @@ matrix:
         - libboost-test-dev
         - libboost-thread-dev
         - libzmq3-dev
+        - libpcap-dev
     env: PYTHONPATH=./lib/python FR_TEST_CONFIG=test_config/fr_test.config FP_TEST_CONFIG=test_config/fp_test.config
       HDF5_ROOT=$HOME/hdf5-1.10.1 INSTALL_PREFIX=$HOME/install_prefix
     before_install:
