@@ -25,20 +25,24 @@ namespace FrameSimulator {
 
     bool pcapFrameSimulatorPlugin::setup(const po::variables_map& vm) {
 
+        // Call base class setup method: extract common options (ports, number of frames etc.)
         FrameSimulatorPlugin::setup(vm);
 
         LOG4CXX_DEBUG(logger_, "Setting up pcap_loop to read packet(s) from packet capture file");
 
+        // Destination IP is a required argument
         if (!opt_destip.is_specified(vm)) {
             LOG4CXX_ERROR(logger_, "Destination IP address not specified");
             return false;
         }
 
+        // PCAP file is a required argument
         if (!opt_pcapfile.is_specified(vm)) {
             LOG4CXX_ERROR(logger_, "pcap file is not specified");
             return false;
         }
 
+        // Optional arguments
         opt_packetgap.get_val(vm, packet_gap);
         opt_dropfrac.get_val(vm, drop_frac);
 
@@ -54,24 +58,21 @@ namespace FrameSimulator {
 
         LOG4CXX_DEBUG(logger_, "Using destination IP address " + dest_ip);
 
+        // Create socket
         m_socket = socket(PF_INET, SOCK_DGRAM, 0);
 
+        // Setup sockaddr_in for each port and store
         for (int p=0; p<num_ports; p++) {
-
             struct sockaddr_in addr;
-
             memset(&addr, 0, sizeof(addr));
-
             addr.sin_family = AF_INET;
             addr.sin_port = htons(atoi(dest_ports[p].c_str()));
             addr.sin_addr.s_addr = inet_addr(dest_ip.c_str());
-
             LOG4CXX_DEBUG(logger_, "Opening socket on port " + dest_ports[p]);
-
             m_addrs.push_back(addr);
-
         }
 
+        // Open a handle to the pcap file
         m_handle = pcap_open_offline(opt_pcapfile.get_val(vm).c_str(), errbuf);
 
         if (m_handle == NULL) {
@@ -79,10 +80,17 @@ namespace FrameSimulator {
             return false;
         }
 
+        // Loop over the pcap file to read the frames for replay
         pcap_loop(m_handle, -1, pkt_callback, reinterpret_cast<u_char *>(this));
 
     }
 
+    /** Prepare frame(s) for replay by processing the pcap file
+     * /param[in] pcap header
+     * /param[in] buffer
+     * calls extract_frames which should be implemented by each parent class to extract
+     * frames of the appropriate type
+     */
     void pcapFrameSimulatorPlugin::prepare_packets(const struct pcap_pkthdr *header, const u_char *buffer) {
 
         LOG4CXX_DEBUG(logger_, "Preparing packet(s)");
@@ -100,6 +108,11 @@ namespace FrameSimulator {
 
     }
 
+    /** All Packets should be sent using send_packet
+     * /param[in] packet to send
+     * /param[in] frame to which packet belongs
+     * this ensures each frame is sent to the appropriate destination port
+     */
     int pcapFrameSimulatorPlugin::send_packet(const Packet& packet, const int& frame) const {
         if (frame != curr_frame) {
             curr_port_index = (curr_port_index + 1 < m_addrs.size()) ? curr_port_index + 1 : 0;
@@ -127,6 +140,9 @@ namespace FrameSimulator {
 
     }
 
+    /** Packet callback function
+     *
+     */
     void pcapFrameSimulatorPlugin::pkt_callback(u_char *user, const pcap_pkthdr *hdr, const u_char *buffer) {
         pcapFrameSimulatorPlugin* replayer = reinterpret_cast<pcapFrameSimulatorPlugin*>(user);
         replayer->prepare_packets(hdr, buffer);

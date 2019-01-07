@@ -6,6 +6,9 @@
 
 namespace FrameSimulator {
 
+    /** pcapFrameSimulatorPlugin simulator options
+     * specific options for a pcap frame simulator
+     */
     static const FrameSimulatorOption<std::string> opt_destip("dest-ip", "Destination IP address");
     static const FrameSimulatorOption<std::string> opt_pcapfile("pcap-file", "Packet capture file");
     static const FrameSimulatorOption<int> opt_packetgap("packet-gap", "Pause between N packets");

@@ -21,6 +21,16 @@ namespace po = boost::program_options;
 
 namespace FrameSimulator {
 
+    /** Abstract plugin class
+     *
+     *  All frame simulator plugins must inherit from this class.
+     *  Once an instance of a plugin is constructed the plugin options are populated
+     *  from the command line program options with a call to 'setup'. Once setup successfully
+     *  the simulation is executed with a call to 'simulate'.
+     *
+     *  'populate_options' is called by the main executable (FrameSimulatorApp.cpp) to determine
+     *  the plugin options required
+     */
     class FrameSimulatorPlugin : public OdinData::IVersionedObject {
 
     public:
@@ -34,7 +44,9 @@ namespace FrameSimulator {
 
     protected:
 
+        //Number of frames to replay; if simulator plugin has insufficient frames defined, available frames are cycled
         boost::optional<int> replay_numframes;
+        // Time (in s) between frames during replay
         boost::optional<float> replay_interval;
 
     private:

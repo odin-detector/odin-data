@@ -14,11 +14,21 @@ namespace FrameSimulator {
     void set_list_option(const std::string& option_val, std::vector<std::string>& list);
     void set_optionallist_option(const std::string& option_val, boost::optional<std::vector<std::string> >& list);
 
+    /** Helper class for specifying frame simulator plugin command line options
+     * specifies argument string for option
+     * displayed description
+     * and (optional) a default value
+     */
     template <class T>
     class FrameSimulatorOption {
 
     public:
 
+        /** constructors for a FrameSimulatorOption
+         * \param[in] astr argument string used for specifying option
+         * \param[in] desc description of program option to be displayed
+         * \param[in] dval (optional) default value
+         */
         FrameSimulatorOption(const std::string& astr, const std::string& desc) : argstring(astr), description(desc) {}
         FrameSimulatorOption(const std::string& astr, const std::string& desc, const T& dval) : argstring(astr), description(desc), defaultval(dval) {}
 

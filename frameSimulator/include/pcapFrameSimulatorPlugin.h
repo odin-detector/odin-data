@@ -19,6 +19,13 @@ using namespace log4cxx::helpers;
 
 namespace FrameSimulator {
 
+    /** pcapFrameSimulatorPlugin
+     *
+     *  Any frame simulator plugin which reads pcap files should inherit from this class
+     *  not FrameSimulatorPlugin
+     *  'extract_frames' is called on setup: this takes the content of the pcap file and organises it in frames to store
+     *  'replay_frames' is called by simulate: this will replay the stored frames
+     */
     class pcapFrameSimulatorPlugin : public FrameSimulatorPlugin {
 
     public:
@@ -41,8 +48,11 @@ namespace FrameSimulator {
         virtual void extract_frames(const u_char* data, const int& size) = 0;
         virtual void replay_frames() = 0;
 
+        //Packet gap: insert pause between packet_gap packets
         boost::optional<int> packet_gap;
+        //Fraction of packets to drop
         boost::optional<float> drop_frac;
+        //List of packets to drop
         boost::optional<std::vector<std::string> > drop_packets;
 
     private:
@@ -50,6 +60,7 @@ namespace FrameSimulator {
         std::vector<struct sockaddr_in> m_addrs;
         int m_socket;
 
+        //Used by send_packet to send each frame to the correct port
         mutable int curr_port_index;
         mutable int curr_frame;
 

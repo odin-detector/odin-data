@@ -32,11 +32,17 @@ namespace po = boost::program_options;
 
 static const std::string librarySuffix = "FrameSimulatorPlugin";
 
+// Basic command line options
 static const FrameSimulatorOption<std::string> opt_detector("detector", "Set the detector (Excalibur, Eiger etc.)");
 static const FrameSimulatorOption<std::string> opt_libpath("lib-path", "Path to detector plugin library");
 static const FrameSimulatorOption<unsigned int> opt_debuglevel("debug-level", "Set the debug level");
 static const FrameSimulatorOption<std::string> opt_logconfig("logconfig", "Set the log4cxx logging configuration file");
 
+/** Load requested plugin
+ * /param[in] map of command line specified variables
+ * /return shared pointer to an instance of the requested FrameSimulatorPlugin  class
+ * the 'detector' argument must match the library name prefix i.e. 'lib<detector>FrameSimulatorPlugin.so'
+ */
 boost::shared_ptr<FrameSimulator::FrameSimulatorPlugin> get_requested_plugin(const po::variables_map& vm) {
 
     std::string pluginClass = opt_detector.get_val(vm) + librarySuffix;
@@ -185,8 +191,9 @@ int main(int argc, char* argv[]) {
         if (!plugin)
             LOG4CXX_ERROR(logger, "Unable to create simulator plugin, application will terminate");
 
+        // Setup plugin from command line arguments
         if (plugin->setup(vm))
-            plugin->simulate();
+            plugin->simulate(); // and if successful, run simulation
 
 
     } catch (const std::exception &e) {
