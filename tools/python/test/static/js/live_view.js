@@ -96,17 +96,7 @@ var LiveViewApp = (function()
         });
 
         updateImage();
-        // Start the update polling loop
-        //pollUpdate();
     };
-
-//    var pollUpdate = function()
-//    {
-//        if (liveview_enable) {
-//            updateImage();
-//        }
-//        setTimeout(pollUpdate, 100);
-//    };
 
     var buildColormapSelect = function(selected_colormap, colormap_options)
     {

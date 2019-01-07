@@ -1,4 +1,4 @@
-import java.nio.*;
+ import java.nio.*;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Observable;
@@ -36,6 +36,7 @@ public class LiveViewSocket
     /**
      * Constructor for the class. Sets up threads that run the ZMQ socket and background timer which counts the frames.
      * @param socket_addr    the address of the live view that the socket needs to subscribe to.
+     * @param parent         The Live View class that created this instance. Used to print messages on the GUI.
      * @throws ZMQException  if the socket address is invalid or malformed
      */
     public LiveViewSocket(String socket_addr, Live_View parent) throws ZMQException
@@ -45,10 +46,10 @@ public class LiveViewSocket
         frame = new ImageFrame();
 
         dtype_map = new HashMap<String, Integer>();
-		dtype_map.put("uint8", 8);
-		dtype_map.put("uint16", 16);
-		dtype_map.put("uint32", 32);
-		dtype_map.put("float", 33); //set to 33 so it can be parsed separately to the uint32
+        dtype_map.put("uint8", 8);
+        dtype_map.put("uint16", 16);
+        dtype_map.put("uint32", 32);
+        dtype_map.put("float", 33); //set to 33 so it can be parsed separately to the uint32
 
         zmqThread = new Thread(){
             @Override
@@ -82,7 +83,7 @@ public class LiveViewSocket
                 {
                     recvFrame();
                 }
-            }		
+            }        
         }
     }
 
@@ -92,7 +93,6 @@ public class LiveViewSocket
      */
     public void shutdownSocket()
     {
-        //printMessage("Socket Shutdown Signal Received. Closing socket");
         zmqThread.interrupt();
         socket.close();
         context.close();
@@ -106,7 +106,6 @@ public class LiveViewSocket
      */
     public void setupSocket(String addr) throws ZMQException
     {
-        //printMessage("CREATING ZMQ SOCKET");
         context = ZMQ.context(1);
         socket = context.socket(ZMQ.SUB);
         try
@@ -116,13 +115,11 @@ public class LiveViewSocket
         }
         catch(ZMQException except)
         {
-            //printMessage("EXCEPTION CONNECTING SOCKET");
             throw except;
             
         }
         
         socket.subscribe("".getBytes());
-        //printMessage(String.format("Subscribed to addr %s",socket_addr));
         return;
     }
 
@@ -236,7 +233,7 @@ public class LiveViewSocket
                     ((float[])img_pixels)[i] = tmp_array[i];
                 }
                 break;
-
+            case 33: //For floats. Automatically goes to default for now
             default:
                 parent.printMessage("ERROR: the datatype of this image is currently unsupported");
                 return;
@@ -335,7 +332,7 @@ public class LiveViewSocket
             this.dataset = dataset;
             this.bitdepth = bitdepth;
             this.shape = shape;
-            this.timestamp = null; //new Date();
+            this.timestamp = null;
         }
 
         /**
