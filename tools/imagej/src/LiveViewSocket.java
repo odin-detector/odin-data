@@ -156,6 +156,12 @@ public class LiveViewSocket
         
     }
 
+    /**
+     * Works out if the current Image Processor needs to be replaced due to a change in bitdepth, size, or the closing of the window
+     * @param shape    the shape of the new image
+     * @param bitdepth the bitdepth of the new image
+     * @return false, if the shape and bitdepth are the same, true if anything has changed.
+     */
     private boolean needsNewProcessor(int[] shape, int bitdepth)
     {
         boolean need_new_processor = false;
