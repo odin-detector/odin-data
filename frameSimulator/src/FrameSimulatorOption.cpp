@@ -17,7 +17,7 @@ namespace FrameSimulator {
      * /param[in] string of comma separated values
      * /param[out] required output list as std::vector
      */
-    void set_optionallist_option(const std::string &option_val, boost::optional <std::vector<std::string>> &list) {
+    void set_optionallist_option(const std::string &option_val, boost::optional <std::vector<std::string> > &list) {
         std::vector <std::string> tmp_list;
         set_list_option(option_val, tmp_list);
         list = tmp_list;
