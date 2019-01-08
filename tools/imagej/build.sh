@@ -151,7 +151,7 @@ function setAllProperties
     then
         # set from properties file
         ZMQ_LIBRARY_PATH=$(getProperty "lib.zmq")
-    elif [ -d $INSTALL_PREFIX/lib ]
+    elif [ -d $INSTALL_PREFIX/lib ] && [ -f "$INSTALL_PREFIX/lib/libjzmq.so" ]
     then
         ZMQ_LIBRARY_PATH=$INSTALL_PREFIX/lib
         setProperty "lib.zmq" "$ZMQ_LIBRARY_PATH"
