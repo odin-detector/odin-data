@@ -53,6 +53,8 @@ function buildImagej
     echo "#!/bin/bash
     echo 'Running ImageJ for Odin'
     java -Djava.library.path=$ZMQ_LIBRARY_PATH -Xmx32000m -jar $INSTALL_PREFIX/lib/ij.jar -ijpath $INSTALL_PREFIX/lib/plugins" > $INSTALL_PREFIX/bin/odin-imagej
+    
+    chmod 751 $INSTALL_PREFIX/bin/odin-imagej
 }
 
 function setAllProperties
