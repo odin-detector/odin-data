@@ -15,7 +15,7 @@ namespace FrameSimulator {
      * \param[out] config - boost::program_options::options_description to populate with
      * appropriate plugin command line options
      */
-    void FrameSimulatorPlugin::populate_options(po::options_description& config) {
+    void FrameSimulatorPlugin::populate_options(po::options_description &config) {
 
         LOG4CXX_DEBUG(logger_, "Populating base FrameSimulatorPlugin options");
 
@@ -27,13 +27,13 @@ namespace FrameSimulator {
 
     /** Setup frame simulator plugin class from store of command line options
      *
-     * \param[in] store of given command line options
-     * \param[out] true (false) if required program options are (not) specified
+     * \param[in] vm - store of given command line options
+     * \return true (false) if required program options are (not) specified
      * and the simulator plugin is not ready to use
      *
-     * Drived plugins must additionally call this base method even if overridden
+     * Derived plugins must additionally call this base method even if overridden
      */
-    bool FrameSimulatorPlugin::setup(const po::variables_map& vm) {
+    bool FrameSimulatorPlugin::setup(const po::variables_map &vm) {
 
         LOG4CXX_DEBUG(logger_, "Setting up base FrameSimulatorPlugin");
 

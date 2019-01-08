@@ -12,6 +12,10 @@
 
 namespace FrameSimulator {
 
+    /** Construct a pcapFrameSimulatorPlugin
+     * setup an instance of the logger
+     * initialises curr_frame and curr_port_index for handling assignment of frames to appropriate ports
+     */
     pcapFrameSimulatorPlugin::pcapFrameSimulatorPlugin() : FrameSimulatorPlugin() {
 
         // Setup logging for the class
@@ -23,7 +27,15 @@ namespace FrameSimulator {
 
     }
 
-    bool pcapFrameSimulatorPlugin::setup(const po::variables_map& vm) {
+    /** Setup frame simulator plugin class from store of command line options
+     *
+     * \param[in] vm - store of given command line options
+     * \return true (false) if required program options are (not) specified
+     * and the simulator plugin is not ready to use
+     *
+     * Derived plugins must additionally call this base method even if overridden
+     */
+    bool pcapFrameSimulatorPlugin::setup(const po::variables_map &vm) {
 
         // Call base class setup method: extract common options (ports, number of frames etc.)
         FrameSimulatorPlugin::setup(vm);
@@ -46,12 +58,13 @@ namespace FrameSimulator {
         opt_packetgap.get_val(vm, packet_gap);
         opt_dropfrac.get_val(vm, drop_frac);
 
-        if (opt_droppackets.is_specified(vm))
+        if (opt_droppackets.is_specified(vm)) {
             set_optionallist_option(opt_droppackets.get_val(vm), drop_packets);
+        }
 
         std::string dest_ip = opt_destip.get_val(vm);
 
-        std::vector<std::string> dest_ports;
+        std::vector <std::string> dest_ports;
         set_list_option(opt_ports.get_val(vm), dest_ports);
 
         int num_ports = dest_ports.size();
@@ -62,7 +75,7 @@ namespace FrameSimulator {
         m_socket = socket(PF_INET, SOCK_DGRAM, 0);
 
         // Setup sockaddr_in for each port and store
-        for (int p=0; p<num_ports; p++) {
+        for (int p = 0; p < num_ports; p++) {
             struct sockaddr_in addr;
             memset(&addr, 0, sizeof(addr));
             addr.sin_family = AF_INET;
@@ -113,16 +126,21 @@ namespace FrameSimulator {
      * /param[in] frame to which packet belongs
      * this ensures each frame is sent to the appropriate destination port
      */
-    int pcapFrameSimulatorPlugin::send_packet(const Packet& packet, const int& frame) const {
+    int pcapFrameSimulatorPlugin::send_packet(const Packet &packet, const int &frame) const {
         if (frame != curr_frame) {
             curr_port_index = (curr_port_index + 1 < m_addrs.size()) ? curr_port_index + 1 : 0;
             curr_frame = frame;
         }
         bind(m_socket, (struct sockaddr *) (&m_addrs[curr_port_index]), sizeof(m_addrs[curr_port_index]));
-        return sendto(m_socket, packet.data, packet.size, 0, (struct sockaddr *) (&m_addrs[curr_port_index]), sizeof(m_addrs[curr_port_index]));
+        return sendto(m_socket, packet.data, packet.size, 0, (struct sockaddr *) (&m_addrs[curr_port_index]),
+                      sizeof(m_addrs[curr_port_index]));
     }
 
-    void pcapFrameSimulatorPlugin::populate_options(po::options_description& config) {
+    /** Populate boost program options with appropriate command line options for plugin
+     * /param[out] config - boost::program_options::options_description to populate with
+     * appropriate plugin command line options
+     */
+    void pcapFrameSimulatorPlugin::populate_options(po::options_description &config) {
 
         FrameSimulatorPlugin::populate_options(config);
 
@@ -134,6 +152,9 @@ namespace FrameSimulator {
 
     }
 
+    /** Class destructor
+     * closes socket
+     */
     pcapFrameSimulatorPlugin::~pcapFrameSimulatorPlugin() {
 
         close(m_socket);
@@ -141,13 +162,19 @@ namespace FrameSimulator {
     }
 
     /** Packet callback function
-     *
+     * callback for pcap_loop(m_handle, -1, pkt_callback, reinterpret_cast<u_char *>(this));
+     * /param[in] user - final argument of pcap_loop; this class instance
+     * /param[in] hdr - pcap header
+     * /param[in] buffer pointer to first byte of chunk of data containing the entire packet
      */
     void pcapFrameSimulatorPlugin::pkt_callback(u_char *user, const pcap_pkthdr *hdr, const u_char *buffer) {
-        pcapFrameSimulatorPlugin* replayer = reinterpret_cast<pcapFrameSimulatorPlugin*>(user);
+        pcapFrameSimulatorPlugin *replayer = reinterpret_cast<pcapFrameSimulatorPlugin *>(user);
         replayer->prepare_packets(hdr, buffer);
     }
 
+    /** Simulate detector by replaying frames
+     *
+     */
     void pcapFrameSimulatorPlugin::simulate() {
 
         this->replay_frames();

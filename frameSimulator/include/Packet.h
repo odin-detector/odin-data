@@ -12,5 +12,4 @@ namespace FrameSimulator {
 
 }
 
-
 #endif //FRAMESIMULATOR_PACKET_H

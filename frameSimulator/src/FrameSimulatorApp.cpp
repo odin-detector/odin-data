@@ -14,6 +14,7 @@
 #include <log4cxx/propertyconfigurator.h>
 #include <log4cxx/helpers/exception.h>
 #include <log4cxx/xml/domconfigurator.h>
+
 using namespace log4cxx;
 using namespace log4cxx::helpers;
 
@@ -33,38 +34,49 @@ namespace po = boost::program_options;
 static const std::string librarySuffix = "FrameSimulatorPlugin";
 
 // Basic command line options
-static const FrameSimulatorOption<std::string> opt_detector("detector", "Set the detector (Excalibur, Eiger etc.)");
-static const FrameSimulatorOption<std::string> opt_libpath("lib-path", "Path to detector plugin library");
+static const FrameSimulatorOption <std::string> opt_detector("detector", "Set the detector (Excalibur, Eiger etc.)");
+static const FrameSimulatorOption <std::string> opt_libpath("lib-path", "Path to detector plugin library");
 static const FrameSimulatorOption<unsigned int> opt_debuglevel("debug-level", "Set the debug level");
-static const FrameSimulatorOption<std::string> opt_logconfig("logconfig", "Set the log4cxx logging configuration file");
+static const FrameSimulatorOption <std::string> opt_logconfig("logconfig",
+                                                              "Set the log4cxx logging configuration file");
 
 /** Load requested plugin
  * /param[in] map of command line specified variables
  * /return shared pointer to an instance of the requested FrameSimulatorPlugin  class
  * the 'detector' argument must match the library name prefix i.e. 'lib<detector>FrameSimulatorPlugin.so'
  */
-boost::shared_ptr<FrameSimulator::FrameSimulatorPlugin> get_requested_plugin(const po::variables_map& vm) {
+boost::shared_ptr <FrameSimulator::FrameSimulatorPlugin> get_requested_plugin(const po::variables_map &vm) {
 
     std::string pluginClass = opt_detector.get_val(vm) + librarySuffix;
 
     boost::filesystem::path libraryPathAndName = boost::filesystem::path(opt_libpath.get_val(vm)) /
-        boost::filesystem::path("lib" + pluginClass + ".so");
+                                                 boost::filesystem::path("lib" + pluginClass + ".so");
 
-boost::shared_ptr<FrameSimulator::FrameSimulatorPlugin> plugin = \
+    boost::shared_ptr <FrameSimulator::FrameSimulatorPlugin> plugin = \
     OdinData::ClassLoader<FrameSimulator::FrameSimulatorPlugin>::load_class(pluginClass, libraryPathAndName.string());
 
     return plugin;
 
 }
 
-static bool has_suffix(const std::string &str, const std::string &suffix)
-{
+/** Check that str contains suffix
+ * /param[in] str - string to test
+ * /param[in] str - test suffix
+ * /return true if suffix found; else false
+ */
+static bool has_suffix(const std::string &str, const std::string &suffix) {
     return str.size() >= suffix.size() &&
            str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
 }
 
-int parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& logger,
-                    boost::shared_ptr<FrameSimulator::FrameSimulatorPlugin>& plugin) {
+/** Parse command line arguments
+ * /param[in] argc - argument count; number of arguments to parse
+ * /param[in] argv - one-dimensional string array of command line arguments
+ * /param[in] logger - pointer to logging instance
+ * /param[in] plugin - pointer to plugin instance
+ */
+int parse_arguments(int argc, char **argv, po::variables_map &vm, LoggerPtr &logger,
+                    boost::shared_ptr <FrameSimulator::FrameSimulatorPlugin> &plugin) {
 
     int rc = 0;
 
@@ -75,7 +87,7 @@ int parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& log
         po::options_description generic("Generic options");
         generic.add_options()
                 ("help", "Print help message")
-                ("subargs", po::value<std::vector<std::string> >(), "Detector specific arguments");
+                ("subargs", po::value < std::vector < std::string > > (), "Detector specific arguments");
         opt_detector.add_option_to(generic);
         opt_libpath.add_option_to(generic);
 
@@ -123,16 +135,18 @@ int parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& log
             po::options_description config("Configuration options");
 
             boost::filesystem::path libraryPathAndName = boost::filesystem::path(opt_libpath.get_val(vm)) /
-                                                         boost::filesystem::path("lib"+detector+librarySuffix+".so");
+                                                         boost::filesystem::path(
+                                                                 "lib" + detector + librarySuffix + ".so");
 
             std::string pluginClass = detector + librarySuffix;
 
             plugin = get_requested_plugin(vm);
 
-            if (plugin)
+            if (plugin) {
                 plugin->populate_options(config);
+            }
 
-            std::vector<std::string> opts = po::collect_unrecognized(parsed.options, po::include_positional);
+            std::vector <std::string> opts = po::collect_unrecognized(parsed.options, po::include_positional);
 
             opts.erase(opts.begin());
 
@@ -141,7 +155,8 @@ int parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& log
             po::notify(vm);
 
             if (vm.count("help")) {
-                std::cout << "usage: frameSimulator " + detector << " --lib-path <path-to-detector-plugin> "<<std::endl << std::endl;
+                std::cout << "usage: frameSimulator " + detector << " --lib-path <path-to-detector-plugin> "
+                          << std::endl << std::endl;
                 std::cout << "       odin-data version: " << ODIN_DATA_VERSION_STR << std::endl << std::endl;
                 std::cout << config << std::endl;
                 exit(1);
@@ -149,9 +164,10 @@ int parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& log
 
         }
 
-        // If the command-line help option was given, print help and exit
+            // If the command-line help option was given, print help and exit
         else if (vm.count("help")) {
-            std::cout << "usage: frameSimulator <detector> --lib-path <path-to-detector-plugin> [options]" << std::endl << std::endl;
+            std::cout << "usage: frameSimulator <detector> --lib-path <path-to-detector-plugin> [options]" << std::endl
+                      << std::endl;
             std::cout << "       odin-data version: " << ODIN_DATA_VERSION_STR << std::endl << std::endl;
             exit(1);
         }
@@ -177,24 +193,25 @@ int parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& log
 
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
 
     LoggerPtr logger(Logger::getLogger("FS.App"));
 
     try {
 
-        boost::shared_ptr<FrameSimulator::FrameSimulatorPlugin> plugin;
+        boost::shared_ptr <FrameSimulator::FrameSimulatorPlugin> plugin;
 
         po::variables_map vm;
         parse_arguments(argc, argv, vm, logger, plugin);
 
-        if (!plugin)
+        if (!plugin) {
             LOG4CXX_ERROR(logger, "Unable to create simulator plugin, application will terminate");
+        }
 
         // Setup plugin from command line arguments
-        if (plugin->setup(vm))
+        if (plugin->setup(vm)) {
             plugin->simulate(); // and if successful, run simulation
-
+        }
 
     } catch (const std::exception &e) {
         //LOG4CXX_ERROR(logger, "Caught unhandled exception in FrameSimulator, application will terminate: " << e.what());
