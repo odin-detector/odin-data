@@ -156,6 +156,28 @@ public class LiveViewSocket
         
     }
 
+    private boolean needsNewProcessor(int[] shape, int bitdepth)
+    {
+        boolean need_new_processor = false;
+        ImageProcessor ip = img.getProcessor();
+
+        if(!img.isVisible())
+        {
+            need_new_processor = true;
+        }
+        else
+        {   //this block must be in an else, because "ip" is null if the img is not visible,
+            //and trying to access it causes null pointer issues
+            int current_bitdepth = ip.getBitDepth();
+            int[] current_shape = new int[]{ip.getWidth(), ip.getHeight()};
+            if(current_shape[0] != shape[0] || current_shape[1] != shape[1] || bitdepth != current_bitdepth)
+            {
+                need_new_processor = true;
+            }
+        }
+
+        return need_new_processor;
+    }
     /**
      * Displays the new image. Either updates an existing image with the new data, or creates one
      * if either one does not exist, or if it is of the wrong size/data type.
@@ -165,28 +187,13 @@ public class LiveViewSocket
      */
     private void refreshImage(ByteBuffer data, String dtype, int[] shape)
     {
-        boolean need_new_processor = false;
         int bitdepth = dtype_map.get(dtype);
         ImageProcessor ip = img.getProcessor();
         Object img_pixels = null;
         LUT[] luts = img.getLuts();
-        
-        //image window may have been closed by user, which causes null pointer exceptions if trying to get the bit depth. 
-        if(!img.isVisible())
-        {
-            need_new_processor = true;
-        }
-        
-        //need to check if the shape or the data type of the image have changed. If they have, we need to create a new Processor       
-        if(!need_new_processor)
-        {
-            int current_bitdepth = ip.getBitDepth();
-            int[] current_shape = new int[]{ip.getWidth(), ip.getHeight()};
-            if(current_shape[0] != shape[0] || current_shape[1] != shape[1] || bitdepth != current_bitdepth)
-            {
-                need_new_processor = true;
-            }
-        }
+
+        boolean need_new_processor = needsNewProcessor(shape, bitdepth);
+
         int expected_image_size = shape[0]*shape[1]*bitdepth/8; //image size in bytes
         if(expected_image_size != data.limit())
         {
