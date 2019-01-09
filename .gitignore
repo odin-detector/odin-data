@@ -15,3 +15,10 @@ tools/python/.coverage
 .idea/
 cmake-build*/
 .vscode/
+
+tools/imagej/plugins/*
+!tools/imagej/plugins/Odin-Data/
+tools/imagej/plugins/Odin-Data/build/**
+*.jar
+tools/imagej/odin-imagej
+tools/imagej/build/
