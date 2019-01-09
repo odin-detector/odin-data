@@ -15,6 +15,8 @@
 #  PCAP_INCLUDE_DIR          The libpcap include directories.
 #  PCAP_LIBRARY              The libpcap library
 
+message ("\nLooking for pcap headers and libraries")
+
 find_path(PCAP_ROOT_DIR
     NAMES include/pcap.h
 )
