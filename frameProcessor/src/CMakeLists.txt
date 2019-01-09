@@ -46,7 +46,7 @@ install(TARGETS DummyPlugin DESTINATION lib)
 # Add library for Blosc plugin
 if (${BLOSC_FOUND})
   include_directories(${BLOSC_INCLUDE_DIR})
-  add_library(BloscPlugin SHARED BloscPlugin.cpp)
+  add_library(BloscPlugin SHARED BloscPlugin.cpp BloscPluginLib.cpp)
   target_link_libraries(BloscPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${BLOSC_LIBRARIES} ${COMMON_LIBRARY})
   install(TARGETS BloscPlugin DESTINATION lib)
 endif()
