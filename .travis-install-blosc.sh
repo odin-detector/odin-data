@@ -3,7 +3,7 @@ set -e
 BLOSC=c-blosc-1.13.1
 
 # check to see if blosc folder is empty
-if [ ! -d "$HOME/${BLOSC}/" ]; then
+if [ ! -d "$HOME/${BLOSC}/blosc" ]; then
   curl --output ${BLOSC}.tar.gz -L https://codeload.github.com/Blosc/c-blosc/tar.gz/v1.13.1;
   tar -zxf ${BLOSC}.tar.gz;
   cd ${BLOSC};
