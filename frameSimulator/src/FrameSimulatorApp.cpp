@@ -166,7 +166,7 @@ int parse_arguments(int argc, char **argv, po::variables_map &vm, LoggerPtr &log
             if (vm.count("help")) {
                 std::cout << "usage: frameSimulator " + detector << " --lib-path <path-to-detector-plugin> "
                           << std::endl << std::endl;
-                std::cout << "  --version" << std::endl;
+                std::cout << "  --version            Print version information" << std::endl;
                 std::cout << "  --" + opt_debuglevel.get_argstring() + "        " + opt_debuglevel.get_description() << std::endl;
                 std::cout << "  --" + opt_logconfig.get_argstring() + "          " + opt_logconfig.get_description() << std::endl << std::endl;
                 std::cout << config << std::endl;
@@ -179,14 +179,14 @@ int parse_arguments(int argc, char **argv, po::variables_map &vm, LoggerPtr &log
         else if (vm.count("help")) {
             std::cout << "usage: frameSimulator <detector> --lib-path <path-to-detector-plugin> [options]" << std::endl
                       << std::endl;
-            std::cout << "  --version" << std::endl;
+            std::cout << "  --version            Print version information" << std::endl;
             std::cout << "  --" + opt_debuglevel.get_argstring() + "        " + opt_debuglevel.get_description() << std::endl;
             std::cout << "  --" + opt_logconfig.get_argstring() + "          " + opt_logconfig.get_description() << std::endl;
             exit(1);
         }
 
         if (vm.count("version")) {
-            std::cout << "       odin-data version: " << ODIN_DATA_VERSION_STR << std::endl;
+            std::cout << "frameSimulator version " << ODIN_DATA_VERSION_STR << std::endl;
             exit(1);
         }
 
