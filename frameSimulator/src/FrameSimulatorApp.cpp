@@ -45,15 +45,21 @@ static const FrameSimulatorOption <std::string> opt_logconfig("logconfig",
  * /return shared pointer to an instance of the requested FrameSimulatorPlugin  class
  * the 'detector' argument must match the library name prefix i.e. 'lib<detector>FrameSimulatorPlugin.so'
  */
-boost::shared_ptr <FrameSimulator::FrameSimulatorPlugin> get_requested_plugin(const po::variables_map &vm) {
+boost::shared_ptr <FrameSimulator::FrameSimulatorPlugin> get_requested_plugin(const po::variables_map &vm, LoggerPtr &logger) {
 
     std::string pluginClass = opt_detector.get_val(vm) + librarySuffix;
 
     boost::filesystem::path libraryPathAndName = boost::filesystem::path(opt_libpath.get_val(vm)) /
                                                  boost::filesystem::path("lib" + pluginClass + ".so");
 
-    boost::shared_ptr <FrameSimulator::FrameSimulatorPlugin> plugin = \
-    OdinData::ClassLoader<FrameSimulator::FrameSimulatorPlugin>::load_class(pluginClass, libraryPathAndName.string());
+    boost::shared_ptr <FrameSimulator::FrameSimulatorPlugin> plugin;
+    
+    try {
+        plugin = OdinData::ClassLoader<FrameSimulator::FrameSimulatorPlugin>::load_class(pluginClass, libraryPathAndName.string());
+    }
+    catch (std::exception& e){
+        LOG4CXX_ERROR(logger, "library not found " << libraryPathAndName.string());
+    }
 
     return plugin;
 
@@ -140,7 +146,7 @@ int parse_arguments(int argc, char **argv, po::variables_map &vm, LoggerPtr &log
 
             std::string pluginClass = detector + librarySuffix;
 
-            plugin = get_requested_plugin(vm);
+            plugin = get_requested_plugin(vm, logger);
 
             if (plugin) {
                 plugin->populate_options(config);
@@ -206,6 +212,7 @@ int main(int argc, char *argv[]) {
 
         if (!plugin) {
             LOG4CXX_ERROR(logger, "Unable to create simulator plugin, application will terminate");
+            return 0;
         }
 
         // Setup plugin from command line arguments
