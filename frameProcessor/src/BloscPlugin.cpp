@@ -167,7 +167,7 @@ void BloscPlugin::update_compression_settings()
   this->compression_settings_ = this->commanded_compression_settings_;
 
   int ret = 0;
-  const char * p_compressor_name;
+  char * p_compressor_name;
   ret = blosc_compcode_to_compname(this->compression_settings_.blosc_compressor, &p_compressor_name);
   LOG4CXX_DEBUG_LEVEL(1, logger_, "Blosc compression settings: "
                                   << " acquisition=\"" << this->current_acquisition_ << "\""
@@ -181,7 +181,7 @@ void BloscPlugin::update_compression_settings()
   if (ret < 0) {
     LOG4CXX_ERROR(logger_, "Blosc failed to set compressor: "
         << " " << this->compression_settings_.blosc_compressor
-        << " " << *p_compressor_name)
+        << " " << *p_compressor_name);
     throw std::runtime_error("Blosc failed to set compressor");
   }
   blosc_set_nthreads(this->compression_settings_.threads);
