@@ -34,10 +34,10 @@ namespace po = boost::program_options;
 static const std::string librarySuffix = "FrameSimulatorPlugin";
 
 // Basic command line options
-static const FrameSimulatorOption <std::string> opt_detector("detector", "Set the detector (Excalibur, Eiger etc.)");
-static const FrameSimulatorOption <std::string> opt_libpath("lib-path", "Path to detector plugin library");
+static const FrameSimulatorOption<std::string> opt_detector("detector", "Set the detector (Excalibur, Eiger etc.)");
+static const FrameSimulatorOption<std::string> opt_libpath("lib-path", "Path to detector plugin library");
 static const FrameSimulatorOption<unsigned int> opt_debuglevel("debug-level", "Set the debug level");
-static const FrameSimulatorOption <std::string> opt_logconfig("logconfig",
+static const FrameSimulatorOption<std::string> opt_logconfig("logconfig",
                                                               "Set the log4cxx logging configuration file");
 
 /** Load requested plugin
@@ -93,9 +93,12 @@ int parse_arguments(int argc, char **argv, po::variables_map &vm, LoggerPtr &log
         po::options_description generic("Generic options");
         generic.add_options()
                 ("help", "Print help message")
+                ("version", "Print version information")
                 ("subargs", po::value < std::vector < std::string > > (), "Detector specific arguments");
         opt_detector.add_option_to(generic);
         opt_libpath.add_option_to(generic);
+        opt_debuglevel.add_option_to(generic);
+        opt_logconfig.add_option_to(generic);
 
         po::positional_options_description pos;
         pos.add(opt_detector.get_arg(), 1).add("subargs", -1);
@@ -138,7 +141,7 @@ int parse_arguments(int argc, char **argv, po::variables_map &vm, LoggerPtr &log
 
             std::string detector = opt_detector.get_val(vm);
 
-            po::options_description config("Configuration options");
+            po::options_description config("Detector options");
 
             boost::filesystem::path libraryPathAndName = boost::filesystem::path(opt_libpath.get_val(vm)) /
                                                          boost::filesystem::path(
@@ -163,18 +166,25 @@ int parse_arguments(int argc, char **argv, po::variables_map &vm, LoggerPtr &log
             if (vm.count("help")) {
                 std::cout << "usage: frameSimulator " + detector << " --lib-path <path-to-detector-plugin> "
                           << std::endl << std::endl;
-                std::cout << "       odin-data version: " << ODIN_DATA_VERSION_STR << std::endl << std::endl;
+                std::cout << "  --" + opt_debuglevel.get_argstring() + "        " + opt_debuglevel.get_description() << std::endl;
+                std::cout << "  --" + opt_logconfig.get_argstring() + "          " + opt_logconfig.get_description() << std::endl << std::endl;
                 std::cout << config << std::endl;
                 exit(1);
             }
 
         }
 
-            // If the command-line help option was given, print help and exit
+        // If the command-line help option was given, print help and exit
         else if (vm.count("help")) {
             std::cout << "usage: frameSimulator <detector> --lib-path <path-to-detector-plugin> [options]" << std::endl
                       << std::endl;
-            std::cout << "       odin-data version: " << ODIN_DATA_VERSION_STR << std::endl << std::endl;
+            std::cout << "  --" + opt_debuglevel.get_argstring() + "        " + opt_debuglevel.get_description() << std::endl;
+            std::cout << "  --" + opt_logconfig.get_argstring() + "          " + opt_logconfig.get_description() << std::endl;
+            exit(1);
+        }
+
+        if (vm.count("version")) {
+            std::cout << "       odin-data version: " << ODIN_DATA_VERSION_STR << std::endl;
             exit(1);
         }
 

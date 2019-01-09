@@ -36,6 +36,14 @@ namespace FrameSimulator {
             return argstring.c_str();
         }
 
+        std::string get_argstring() const {
+            return argstring;
+        }
+
+        std::string get_description() const {
+            return description;
+        }
+
         bool is_specified(const po::variables_map& vm) const {
             return vm.count(argstring);
         }
