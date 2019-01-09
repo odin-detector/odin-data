@@ -23,7 +23,7 @@ typedef struct{
   size_t type_size;
   size_t uncompressed_size;
   unsigned int threads;
-  unsigned int blosc_compressor; // TODO: change from using blosc compressor definition as unsigned int to string
+  unsigned int blosc_compressor;
 } BloscCompressionSettings;
 void create_cd_values(const BloscCompressionSettings& settings, std::vector<unsigned int> cd_values);
 

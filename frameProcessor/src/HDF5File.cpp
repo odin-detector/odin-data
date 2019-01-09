@@ -356,7 +356,9 @@ void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index
   std::vector<hsize_t> frame_dims = definition.frame_dimensions;
   unsigned int frame_num_pixels = 1;
   std::vector<hsize_t>::iterator it;
-  for (it=frame_dims.begin(); it != frame_dims.end(); ++it) {frame_num_pixels *= *it;}
+  for (it=frame_dims.begin(); it != frame_dims.end(); ++it) {
+    frame_num_pixels *= *it;
+  }
 
   // Dataset dims: {1, <image size Y>, <image size X>}
   std::vector<hsize_t> dset_dims(1,1);

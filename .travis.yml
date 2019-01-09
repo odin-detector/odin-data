@@ -30,7 +30,7 @@ install:
 - mkdir -p build
 - mkdir -p $INSTALL_PREFIX
 - cd build
-- cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX -DHDF5_ROOT=$HDF5_ROOT -DBLOSC_ROOT=$BLOSC_ROOT ..
+- cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX -DHDF5_ROOT=$HDF5_ROOT -DBLOSC_ROOT_DIR=$BLOSC_ROOT ..
 - make -j 4 VERBOSE=1
 - make install
 - HDF5_DIR=$HDF5_ROOT pip install --user h5py

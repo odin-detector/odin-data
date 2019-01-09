@@ -30,7 +30,7 @@ const std::string BloscPlugin::CONFIG_BLOSC_SHUFFLE    = "shuffle";
  *   6: the actual Blosc compressor to use. See blosc.h
  *
  * @param settings
- * @return
+ * @param cd_values
  */
 void create_cd_values(const BloscCompressionSettings& settings, std::vector<unsigned int>& cd_values)
 {
@@ -63,10 +63,11 @@ current_acquisition_(""), data_buffer_ptr_(NULL), data_buffer_size_(0)
   logger_->setLevel(Level::getAll());
   LOG4CXX_TRACE(logger_, "BloscPlugin constructor. Version: " << this->get_version_long());
 
-  //blosc_init(); // not required for blosc >= v1.9
   int ret = 0;
   ret = blosc_set_compressor(BLOSC_LZ4_COMPNAME);
-  if (ret < 0) LOG4CXX_ERROR(logger_, "Blosc unable to set compressor: " << BLOSC_LZ4_COMPNAME);
+  if (ret < 0) {
+    LOG4CXX_ERROR(logger_, "Blosc unable to set compressor: " << BLOSC_LZ4_COMPNAME);
+  }
   blosc_set_nthreads(this->compression_settings_.threads);
   LOG4CXX_TRACE(logger_, "Blosc Version: " << blosc_get_version_string());
   LOG4CXX_TRACE(logger_, "Blosc list available compressors: " << blosc_list_compressors());
@@ -84,6 +85,8 @@ BloscPlugin::~BloscPlugin()
 
 /**
  * Compress one frame, return compressed frame.
+ * @param src_frame - source frame to compress
+ * @return compressed frame
  */
 boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> src_frame)
 {
@@ -99,8 +102,11 @@ boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> sr
   if (src_frame->get_data_type() >= 0) {
     c_settings.type_size = src_frame->get_data_type_size();
   }
-  else { // TODO: This if/else is a hack to work around Frame::data_type_ not being set. See https://jira.diamond.ac.uk/browse/BC-811
-    c_settings.type_size = 2; // hack: just default to 16bit per pixel as Excalibur use that
+  else {
+    std::stringstream ss;
+    ss << "blosc_compress failed. Frame::data_type_ not set";
+    LOG4CXX_ERROR(logger_, ss.str());
+    throw std::runtime_error(ss.str());
   }
   c_settings.uncompressed_size = src_frame->get_data_size();
 
@@ -149,16 +155,12 @@ boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> sr
   dest_frame->set_data_type(src_frame->get_data_type());
   dest_frame->set_frame_number(src_frame->get_frame_number());
   dest_frame->set_acquisition_id(src_frame->get_acquisition_id());
-  // TODO: is this the correct way to get and set dimensions?
   dest_frame->set_dimensions(src_frame->get_dimensions());
   return dest_frame;
 }
 
 /**
- * Update the compression settings used if the acquisition ID differs from the current one.
- * i.e. if a new acquisition has been started.
- *
- * @param acquisition_id
+ * Update the compression settings
  */
 void BloscPlugin::update_compression_settings()
 {
@@ -185,6 +187,11 @@ void BloscPlugin::update_compression_settings()
   blosc_set_nthreads(this->compression_settings_.threads);
 }
 
+  /** Return data buffer
+ *
+ * @param nbytes
+ * @return
+ */
 void * BloscPlugin::get_buffer(size_t nbytes)
 {
   // Simple case: we have a buffer that's large enough so return that
@@ -201,7 +208,6 @@ void * BloscPlugin::get_buffer(size_t nbytes)
   }
 
   // Allocate a new buffer of the required size and return the pointer
-  // TODO: is this malloc really necessary? Can't we get writable DataBlocks somehow?
   this->data_buffer_ptr_ = malloc(nbytes);
   if (this->data_buffer_ptr_ == NULL) {throw std::runtime_error("Failed to malloc buffer for Blosc compression output");}
   this->data_buffer_size_ = nbytes;
@@ -231,6 +237,10 @@ void BloscPlugin::process_frame(boost::shared_ptr<Frame> src_frame)
   this->push(compressed_frame);
 }
 
+  /** Configure
+ * @param config
+ * @param reply
+ */
 void BloscPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
   // Protect this method
@@ -247,7 +257,7 @@ void BloscPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& 
       LOG4CXX_WARN(logger_, "Commanded blosc level: " << blosc_level << "Capped at lower range: 1");
       blosc_level = 1;
       reply.set_param<std::string>("warning: level", "Capped at lower range: 1");
-    } else if(blosc_level > 9) {
+    } else if (blosc_level > 9) {
       LOG4CXX_WARN(logger_, "Commanded blosc level: " << blosc_level << "Capped at upper range: 9");
       blosc_level = 9;
       reply.set_param<std::string>("warning: level", "Capped at upper range: 9");
@@ -301,6 +311,10 @@ void BloscPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& 
   }
 }
 
+  /** Get configuration settings for the BloscPlugin
+ *
+ * @param reply - Response IpcMessage.
+ */
 void BloscPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
   reply.set_param(this->get_name() + "/" + BloscPlugin::CONFIG_BLOSC_COMPRESSOR,
@@ -313,6 +327,10 @@ void BloscPlugin::requestConfiguration(OdinData::IpcMessage& reply)
                   this->commanded_compression_settings_.compression_level);
 }
 
+  /** Collate status information for the plugin
+ *
+ * @param status - Reference to an IpcMessage value to store the status
+ */
 void BloscPlugin::status(OdinData::IpcMessage& status)
 {
   status.set_param(this->get_name() + "/compressor", this->compression_settings_.blosc_compressor);

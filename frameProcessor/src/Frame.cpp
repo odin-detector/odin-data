@@ -299,6 +299,10 @@ void Frame::set_data_type(int data_type)
   data_type_ = data_type;
 }
 
+/** Get the size of the data type
+ *
+ * \return data type size
+ */
 size_t Frame::get_data_type_size()
 {
   int dt = this->get_data_type();
