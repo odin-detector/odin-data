@@ -36,7 +36,7 @@ SharedMemoryController::SharedMemoryController(boost::shared_ptr<OdinData::IpcRe
     sharedBufferConfigRequestDeferred_(false)
 {
   // Setup logging for the class
-  logger_ = Logger::getLogger("FW.SharedMemoryController");
+  logger_ = Logger::getLogger("FP.SharedMemoryController");
   logger_->setLevel(Level::getAll());
   LOG4CXX_TRACE(logger_, "SharedMemoryController constructor.");
 
