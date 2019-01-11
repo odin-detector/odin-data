@@ -55,6 +55,8 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
     generic.add_options()
         ("help,h",
          "Print this help message")
+        ("version,v",
+         "Print program version string")
         ("config,c",    po::value<string>(&config_file),
          "Specify program configuration file")
         ;
@@ -144,8 +146,13 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
     if (vm.count("help"))
     {
       std::cout << "usage: fileWriter [options]" << std::endl << std::endl;
-      std::cout << "       odin-data version: " << ODIN_DATA_VERSION_STR << std::endl << std::endl;
       std::cout << cmdline_options << std::endl;
+      exit(1);
+    }
+
+    // If the command line version option was given, print version and exit
+    if (vm.count("version")) {
+      std::cout << "frameProcessor version " << ODIN_DATA_VERSION_STR << std::endl;
       exit(1);
     }
 

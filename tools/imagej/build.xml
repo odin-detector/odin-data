@@ -1,0 +1,84 @@
+<!-- Ant makefile for the Odin ImageJ Plugins -->
+
+<project name="ImageJ" default="build">
+    <description>
+        This buildfile is used to build the Odin Live View Plugin.
+        It can also run ImageJ with the required env variables set.
+    </description>
+    <!-- set global properties for this build -->
+    <property file="build/build.properties"/>
+    <property name="src" location="src/"/>
+    <property name="build" location="build/"/>
+    <property name="bin" location="${prefix.install}/bin/"/>
+    <property name="lib" location="${prefix.install}/lib/"/>
+
+    <path id="classpath">
+        <pathelement location="${src}"/>
+        <pathelement location="${source.ij}"/>
+        <pathelement location="${source.zmq}"/>
+        <pathelement location="${source.json}"/>
+    </path>
+
+    <path id="build_classpath">
+        <fileset dir=".">
+            <include name="${lib}/*.jar"/>
+        </fileset>
+    </path>
+
+    <target name="init" description="Initialize for build process">
+        <!--Make sure the build folder exists -->
+        <tstamp/>
+        <mkdir dir="${build}"/>
+    </target>
+
+    <target name="compile" depends="init" description="Compile the source code in class files">
+        <!--Compile the source into the build folder -->
+        <javac srcdir="${src}" 
+               destdir="${build}"
+               includeantruntime="false">
+            <classpath refid="classpath"/>
+        </javac>
+        
+    </target>
+
+    <target name="build" depends="compile" description="Build the jar">
+        <!--Copy required files into the build directory -->
+        <manifestclasspath property="lib.list" jarfile="${bin}/Live_View.jar">
+            <classpath refid="build_classpath"/>
+        </manifestclasspath>
+
+        <copy file="${src}/plugins.config" todir="${build}"/>
+        <jar jarfile="${build}/Live_View.jar"
+             basedir="${build}"
+             includes="*.class plugins.config">
+            <manifest>
+                <attribute name="Built-By" value="${user.name}"/>
+                <attribute name="Build-Date" value="${DSTAMP}:${TSTAMP}"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="install" depends="build" description="Install the Plugins into the ImageJ plugin folders">
+        <copy file="${build}/Live_View.jar" todir="${lib}/plugins"/>
+        <copy file="${source.zmq}" todir="${lib}/plugins"/>
+        <copy file="${source.json}" todir="${lib}/plugins"/>
+        <copy file="${source.ij}" todir="${lib}"/>
+    </target>
+
+    <target name="run" depends="build" description="Run ImageJ">
+        <java jar="${source.ij}" fork="true" classpathref="classpath">
+            <sysproperty key="java.library.path" path="${lib.zmq}"/>
+        </java>
+    </target>
+
+    <target name="clean" description="Delete the built files">
+        <delete verbose="true">
+            <fileset dir="${src}" includes="*.jar"/>
+            <fileset dir="${prefix.install}" includes="*.jar"/>
+            <fileset dir="${build}" excludes="*.properties"/>
+        </delete>
+        <delete file="odin-imagej"/>
+    </target>
+
+</project>

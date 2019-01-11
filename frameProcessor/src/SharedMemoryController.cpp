@@ -32,7 +32,8 @@ SharedMemoryController::SharedMemoryController(boost::shared_ptr<OdinData::IpcRe
     reactor_(reactor),
     rxChannel_(ZMQ_SUB),
     txChannel_(ZMQ_PUB),
-    sharedBufferConfigured_(false)
+    sharedBufferConfigured_(false),
+    sharedBufferConfigRequestDeferred_(false)
 {
   // Setup logging for the class
   logger_ = Logger::getLogger("FW.SharedMemoryController");
@@ -125,15 +126,25 @@ void SharedMemoryController::requestSharedBufferConfig(const bool deferred)
 {
   if (deferred)
   {
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Registering timer for deferred shared buffer configuration request");
     reactor_->register_timer(1000, 1, boost::bind(&SharedMemoryController::requestSharedBufferConfig, this, false));
+    sharedBufferConfigRequestDeferred_ = true;
   }
   else
   {
-    LOG4CXX_DEBUG_LEVEL(1, logger_, "Requesting shared buffer configuration from frame receiver");
-
-    OdinData::IpcMessage config_request(OdinData::IpcMessage::MsgTypeCmd, OdinData::IpcMessage::MsgValCmdBufferConfigRequest);
-
-    txChannel_.send(config_request.encode());
+    // If this is being called by a deferred request timer but the shared buffer has been configured in the meantime, 
+    // do not send the request
+    if (sharedBufferConfigRequestDeferred_ && sharedBufferConfigured_)
+    {
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Not executing deferred configuration request as shared buffer is now configured");  
+    }
+    else
+    {
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Requesting shared buffer configuration from frame receiver");
+      OdinData::IpcMessage config_request(OdinData::IpcMessage::MsgTypeCmd, OdinData::IpcMessage::MsgValCmdBufferConfigRequest);
+      txChannel_.send(config_request.encode());
+    }
+    sharedBufferConfigRequestDeferred_ = false;
   }
 }
 

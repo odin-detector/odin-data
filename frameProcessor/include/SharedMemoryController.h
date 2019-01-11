@@ -63,6 +63,8 @@ private:
   OdinData::IpcChannel             txChannel_;
   /** Shared buffer configured status flag */
   bool sharedBufferConfigured_;
+  /** Shared buffer config request deferred flag */
+  bool sharedBufferConfigRequestDeferred_;
 
   /** Name of class used in status messages */
   static const std::string SHARED_MEMORY_CONTROLLER_NAME;

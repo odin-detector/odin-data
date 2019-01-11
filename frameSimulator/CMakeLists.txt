@@ -1,0 +1,3 @@
+# Add subdirectories for frameProcessor
+add_subdirectory(include)
+add_subdirectory(src)
