@@ -5,8 +5,8 @@
  <appender name="ApplicationConsoleAppender" class="org.apache.log4j.ConsoleAppender">
   <param name="Target" value="System.out" />
   <layout class="org.apache.log4j.PatternLayout">
-   <!-- <param name="ConversionPattern" value="%d{HH:mm:ss,SSS} %-14c %-5p (%F:%L) - %m%n"/> -->
-   <param name="ConversionPattern" value="%d{HH:mm:ss,SSS}  %-14c %-5p - %m%n" />
+   <!-- <param name="ConversionPattern" value="%d{HH:mm:ss,SSS}  %-16c %-5p (%F:%L) - %m%n"/> -->
+   <param name="ConversionPattern" value="%d{HH:mm:ss,SSS}  %-16c %-5p - %m%n" />
   </layout>
  </appender>
 
@@ -15,7 +15,7 @@
   <param name="file" value="/tmp/frameReceiver.log" />
   <param name="append" value="false" />
   <layout class="org.apache.log4j.PatternLayout">
-   <param name="ConversionPattern" value="%d %-5p %c{1} - %m%n" />
+   <param name="ConversionPattern" value="%d  %-16c %-5p - %m%n" />
   </layout>
  </appender>
 
@@ -23,7 +23,7 @@
   <param name="file" value="/tmp/frameReceiver_packetDump.log" />
   <param name="append" value="false" />
   <layout class="org.apache.log4j.PatternLayout">
-   <param name="ConversionPattern" value="%d %-5p %c{1} - %m%n" />
+   <param name="ConversionPattern" value="%d  %-16c %-5p - %m%n" />
   </layout>
  </appender>
 
@@ -36,10 +36,9 @@
  <!-- The frame receiver application logger hierachy -->
  <logger name="FR">
   <priority value="all" />
- </logger>
- <logger name="FR.App">
   <appender-ref ref="FrameReceiverAppender" />
  </logger>
+ 
  <logger name="FR.PacketLogger" additivity="false">
   <priority value="info" />
   <appender-ref ref="FrameReceiverPacketAppender" />

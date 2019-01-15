@@ -28,7 +28,7 @@ Frame::Frame(const std::string& index) :
     shared_channel_(0),
     data_type_(-1),
     compression_(-1),
-    logger(log4cxx::Logger::getLogger("FW.Frame"))
+    logger(log4cxx::Logger::getLogger("FP.Frame"))
 {
   logger->setLevel(log4cxx::Level::getAll());
   LOG4CXX_TRACE(logger, "Frame constructed");

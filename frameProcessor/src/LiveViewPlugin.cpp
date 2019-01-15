@@ -31,7 +31,7 @@ const std::string LiveViewPlugin::CONFIG_TAGGED_FILTER_NAME = "filter_tagged";
 LiveViewPlugin::LiveViewPlugin() :
     publish_socket_(ZMQ_PUB)
 {
-  logger_ = Logger::getLogger("FW.LiveViewPlugin");
+  logger_ = Logger::getLogger("FP.LiveViewPlugin");
   logger_->setLevel(Level::getAll());
   LOG4CXX_INFO(logger_, "LiveViewPlugin version " << this->get_version_long() << " loaded");
 

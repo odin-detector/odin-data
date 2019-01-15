@@ -5,8 +5,8 @@
  <appender name="ApplicationConsoleAppender" class="org.apache.log4j.ConsoleAppender">
   <param name="Target" value="System.out" />
   <layout class="org.apache.log4j.PatternLayout">
-   <!-- <param name="ConversionPattern" value="%d{HH:mm:ss,SSS} %-14c %-5p (%F:%L) - %m%n"/> -->
-   <param name="ConversionPattern" value="%d{HH:mm:ss,SSS}  %-14c %-5p - %m%n" />
+   <!-- <param name="ConversionPattern" value="%d{HH:mm:ss,SSS} %-16c %-5p (%F:%L) - %m%n"/> -->
+   <param name="ConversionPattern" value="%d{HH:mm:ss,SSS}  %-16c %-5p - %m%n" />
   </layout>
  </appender>
 
@@ -15,7 +15,7 @@
   <param name="file" value="/tmp/frameSimulator.log" />
   <param name="append" value="false" />
   <layout class="org.apache.log4j.PatternLayout">
-   <param name="ConversionPattern" value="%d %-5p %c{1} - %m%n" />
+   <param name="ConversionPattern" value="%d %-16c %-5p - %m%n" />
   </layout>
  </appender>
 
@@ -25,14 +25,9 @@
   <appender-ref ref="ApplicationConsoleAppender" />
  </root>
 
- <!-- The frame receiver application logger hierachy -->
+ <!-- The frame simulator application logger hierachy -->
  <logger name="FS">
   <priority value="all" />
- </logger>
- <logger name="FS.App">
-  <appender-ref ref="FrameSimulatorAppender" />
- </logger>
- <logger name="FS.pcapFrameSimulatorPlugin">
   <appender-ref ref="FrameSimulatorAppender" />
  </logger>
 
