@@ -45,5 +45,6 @@
  <logger name="FW.SHM"></logger>
  <logger name="FW.Frame"></logger>
  <logger name="FW.FileWriter"></logger>
+ <logger name="FW.BloscPlugin"></logger>
 
 </log4j:configuration>

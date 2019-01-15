@@ -173,6 +173,7 @@ public:
   bool has_parameter(const std::string& index);
   void set_compression(int compression);
   void set_data_type(int data_type);
+  size_t get_data_type_size();
 
 private:
   Frame();
