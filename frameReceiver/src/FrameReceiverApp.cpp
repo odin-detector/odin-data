@@ -18,6 +18,7 @@ namespace po = boost::program_options;
 
 #include "logging.h"
 #include "FrameReceiverApp.h"
+#include "SegFaultHandler.h"
 #include "version.h"
 
 using namespace FrameReceiver;
@@ -409,7 +410,7 @@ void FrameReceiverApp::stop(void)
 
 void intHandler (int sig)
 {
-  FrameReceiver::FrameReceiverApp::stop ();
+  FrameReceiver::FrameReceiverApp::stop();
 }
 
 //! Main application entry point
@@ -417,6 +418,9 @@ void intHandler (int sig)
 int main (int argc, char** argv)
 {
   int rc = 0;
+
+  // Initialise unexpected fault handling
+  OdinData::init_seg_fault_handler();
 
   // Trap Ctrl-C and pass to interrupt handler
   signal (SIGINT, intHandler);
