@@ -29,5 +29,5 @@
   <priority value="all" />
   <appender-ref ref="FrameProcessorAppender" />
  </logger>
- 
+
 </log4j:configuration>

@@ -69,6 +69,8 @@ private:
   static const H5Z_filter_t LZ4_FILTER = (H5Z_filter_t)32004;
   /** Filter definition to write datasets with bitshuffle processed data */
   static const H5Z_filter_t BSLZ4_FILTER = (H5Z_filter_t)32008;
+  /** Filter definition to write datasets with Blosc processed data */
+  static const H5Z_filter_t BLOSC_FILTER = (H5Z_filter_t)32001;
 
   /** Flush rate for parameter datasets in miliseconds */
   static const int PARAM_FLUSH_RATE = 1000;
