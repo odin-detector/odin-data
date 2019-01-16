@@ -8,7 +8,7 @@
 #include "HDF5File.h"
 
 #include <hdf5_hl.h>
-
+#include <blosc.h>
 #include "logging.h"
 #include "DebugLevelLogger.h"
 
@@ -351,8 +351,14 @@ void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index
   hid_t prop = 0;
   hid_t dapl = 0;
   hid_t dtype = datatype_to_hdf_type(definition.data_type);
+  size_t pixel_type_size = H5Tget_size(dtype);
 
   std::vector<hsize_t> frame_dims = definition.frame_dimensions;
+  unsigned int frame_num_pixels = 1;
+  std::vector<hsize_t>::iterator it;
+  for (it=frame_dims.begin(); it != frame_dims.end(); ++it) {
+    frame_num_pixels *= *it;
+  }
 
   // Dataset dims: {1, <image size Y>, <image size X>}
   std::vector<hsize_t> dset_dims(1,1);
@@ -400,6 +406,21 @@ void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index
     size_t cd_values_length = 2;
     ensure_h5_result(H5Pset_filter(prop, BSLZ4_FILTER, H5Z_FLAG_MANDATORY,
         cd_values_length, cd_values), "H5Pset_filter failed to set the BSLZ4 filter");
+  }
+  else if (definition.compression == blosc) {
+    LOG4CXX_INFO(logger_, "Compression type: Blosc");
+    // Create cd_values for filter to set default block size and to enable LZ4
+    unsigned int cd_values[7] = {0, 0, 0, 0, 0, 0, 0};
+    size_t cd_values_length = 7;
+    cd_values[0] = 2;                                          // Blosc filter version: 2 (multiple compressors since Blosc 1.3)
+    cd_values[1] = BLOSC_VERSION_FORMAT;                       // Blosc buffer format version
+    cd_values[2] = static_cast<unsigned int>(pixel_type_size); // type size
+    cd_values[3] = frame_num_pixels * pixel_type_size;         // uncompressed size
+    cd_values[4] = definition.blosc_level;                     // compression level
+    cd_values[5] = definition.blosc_shuffle;                   // 0: shuffle not active, 1: shuffle, 2: bitshuffle
+    cd_values[6] = definition.blosc_compressor;                // the actual Blosc compressor to use (default: LZ4). See blosc.h
+    ensure_h5_result(H5Pset_filter(prop, BLOSC_FILTER, H5Z_FLAG_OPTIONAL,
+                                   cd_values_length, cd_values), "H5Pset_filter failed to set the Blosc filter");
   }
 
   ensure_h5_result(H5Pset_chunk(prop, dset_dims.size(), &chunk_dims.front()), "H5Pset_chunk failed");

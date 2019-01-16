@@ -28,7 +28,7 @@ Frame::Frame(const std::string& index) :
     shared_channel_(0),
     data_type_(-1),
     compression_(-1),
-    logger(log4cxx::Logger::getLogger("FW.Frame"))
+    logger(log4cxx::Logger::getLogger("FP.Frame"))
 {
   logger->setLevel(log4cxx::Level::getAll());
   LOG4CXX_TRACE(logger, "Frame constructed");
@@ -279,7 +279,7 @@ void Frame::set_parameter(const std::string& index, float value)
 
 /** Set the compression type of the raw data.
  *
- * 0: None, 1: LZ4, 2: BSLZ4
+ * 0: None, 1: LZ4, 2: BSLZ4, 3: Blosc
  *
  * \param compression type.
  */
@@ -297,6 +297,29 @@ void Frame::set_compression(int compression)
 void Frame::set_data_type(int data_type)
 {
   data_type_ = data_type;
+}
+
+/** Get the size of the data type
+ *
+ * \return data type size
+ */
+size_t Frame::get_data_type_size()
+{
+  int dt = this->get_data_type();
+  if (dt == -1) {
+    LOG4CXX_ERROR(logger, "Unable to determine data type size as data type have not been defined in this Frame ("
+                          << this->blockIndex_ << ")");
+    throw std::runtime_error("Unable to determine data type size as data type have not been defined in this Frame");
+  }
+  else if (dt == 0) return sizeof(uint8_t);  // 1 byte
+  else if (dt == 1) return sizeof(uint16_t); // 2 bytes
+  else if (dt == 2) return sizeof(uint32_t); // 4 bytes
+  else {
+    std::stringstream msg; msg << "Unable to determine data type size as enumerated data type: " << dt
+                               << " is not known for this frame (" << this->blockIndex_ << ")";
+    LOG4CXX_ERROR(logger, msg.str());
+    throw std::runtime_error(msg.str());
+  }
 }
 
 /** Return a parameter for this Frame.

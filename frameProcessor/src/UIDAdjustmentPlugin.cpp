@@ -20,7 +20,7 @@ UIDAdjustmentPlugin::UIDAdjustmentPlugin() :
     first_frame_number_(DEFAULT_FIRST_FRAME)
 {
   // Setup logging for the class
-  logger_ = Logger::getLogger("FW.UIDAdjustmentPlugin");
+  logger_ = Logger::getLogger("FP.UIDAdjustmentPlugin");
   logger_->setLevel(Level::getAll());
   LOG4CXX_INFO(logger_, "UIDAdjustmentPlugin version " << this->get_version_long() << " loaded");
 

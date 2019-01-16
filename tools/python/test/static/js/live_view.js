@@ -11,14 +11,44 @@ var LiveViewApp = (function()
     var img_elem = null;
     var img_scaling = 1.0;
 
+    var img_start_time = new Date().getTime();
+    var img_end_time = null;
+    var img_pol_freq = 1;
+
     var init = function() 
     {
 
-        // Get reference to image element and attch the resize function to its onLoad event
+        // Get reference to image element and attach the resize function to its onLoad event
         img_elem = $('#liveview_image');
         img_elem.load(function() 
         {
+            img_end_time = new Date().getTime();
             resizeImage();
+            var load_time = img_end_time - img_start_time;
+            console.log("Image Load Time: " + load_time);
+
+            if(liveview_enable){
+
+                if (img_pol_freq - load_time < 0)
+                {
+                    console.log("Time elapsed, loading new image");
+
+                    updateImage();
+                }
+                else
+                {
+                    console.log("Remaining time for image: " + (img_pol_freq - load_time));
+                    setTimeout(updateImage, img_pol_freq - load_time);
+                }
+                if(load_time < img_pol_freq)
+                {
+                    $('#frame_rate').text((1000 / img_pol_freq).toFixed(2) + "Hz");
+                }
+                else
+                {
+                    $('#frame_rate').text((1000 / load_time).toFixed(2) + "Hz");
+                }
+            }
         });
 
         // Configure auto-update switch
@@ -65,16 +95,7 @@ var LiveViewApp = (function()
             }
         });
 
-        // Start the update polling loop
-        pollUpdate();
-    };
-
-    var pollUpdate = function()
-    {
-        if (liveview_enable) {
-            updateImage();
-        }
-        setTimeout(pollUpdate, 100);      
+        updateImage();
     };
 
     var buildColormapSelect = function(selected_colormap, colormap_options)
@@ -105,6 +126,10 @@ var LiveViewApp = (function()
     var changeLiveViewEnable = function() 
     {
         liveview_enable = $("[name='liveview_enable']").bootstrapSwitch('state');
+        if(liveview_enable)
+        {
+            updateImage();
+        }
     };
 
     var updateClipRange = function(data_min_max, reset_current=false)
@@ -192,6 +217,7 @@ var LiveViewApp = (function()
 
     var updateImage = function()
     {
+        img_start_time = new Date().getTime();
         img_elem.attr("src", img_elem.attr("data-src") + '?' +  new Date().getTime());
 
         $.getJSON(api_url + "data_min_max", function(response)

@@ -20,7 +20,7 @@ OffsetAdjustmentPlugin::OffsetAdjustmentPlugin() :
     first_frame_number_(DEFAULT_OFFSET_FIRST_FRAME)
 {
   // Setup logging for the class
-  logger_ = Logger::getLogger("FW.OffsetAdjustmentPlugin");
+  logger_ = Logger::getLogger("FP.OffsetAdjustmentPlugin");
   logger_->setLevel(Level::getAll());
   LOG4CXX_INFO(logger_, "OffsetAdjustmentPlugin version " << this->get_version_long() << " loaded");
 

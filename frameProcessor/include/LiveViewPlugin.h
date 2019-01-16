@@ -46,6 +46,8 @@ public:
   static const std::string DEFAULT_IMAGE_VIEW_SOCKET_ADDR;
   /** The default value for the dataset name filter*/
   static const std::string DEFAULT_DATASET_NAME;
+  /** The default value for the Tagged Filter*/
+  static const std::string DEFAULT_TAGGED_FILTER;
 
   /*Config Names*/
   /** The name of the Frame Frequency config in the json file*/
@@ -56,6 +58,8 @@ public:
   static const std::string CONFIG_SOCKET_ADDR;
   /** The name of the Dataset Name config in the json file*/
   static const std::string CONFIG_DATASET_NAME;
+  /** The name of the Tagged Filter config in the json file*/
+  static const std::string CONFIG_TAGGED_FILTER_NAME;
 
 private:
 
@@ -65,13 +69,14 @@ private:
   /** List of possible compression type strings*/
   static const std::string COMPRESS_TYPES[];
 
+  void add_json_member(rapidjson::Document *document, std::string key, std::string value);
+  void add_json_member(rapidjson::Document *document, std::string key, uint32_t value);
   void requestConfiguration(OdinData::IpcMessage& reply);
-//  std::string get_type_from_enum(int32_t type);
-//  std::string get_compress_from_enum(int32_t compress);
   void set_per_second_config(int32_t value);
   void set_frame_freq_config(int32_t value);
   void set_socket_addr_config(std::string value);
   void set_dataset_name_config(std::string value);
+  void set_tagged_filter_config(std::string value);
 
 
   /**time between frames in milliseconds, calculated from the per_second config*/
@@ -90,7 +95,9 @@ private:
   /**The socket the live view image frames will be sent to*/
   OdinData::IpcChannel publish_socket_;
   /**List of the dataset names to publish. If a frame comes in with a dataset name not on the list it will be ignored*/
-  std::vector<std::string>datasets_;
+  std::vector<std::string> datasets_;
+  /**List of Parameter names to look for. If a frame comes in without one of these tags it will be ignored*/
+  std::vector<std::string> tags_;
 
 };
 

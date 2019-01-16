@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+ <!-- Output the log message to system console -->
+ <appender name="ApplicationConsoleAppender" class="org.apache.log4j.ConsoleAppender">
+  <param name="Target" value="System.out" />
+  <layout class="org.apache.log4j.PatternLayout">
+   <!-- <param name="ConversionPattern" value="%d{HH:mm:ss,SSS} %-16c %-5p (%F:%L) - %m%n"/> -->
+   <param name="ConversionPattern" value="%d{HH:mm:ss,SSS}  %-16c %-5p - %m%n" />
+  </layout>
+ </appender>
+
+ <!-- Output the log messages to log files -->
+ <appender name="FrameSimulatorAppender" class="org.apache.log4j.FileAppender">
+  <param name="file" value="/tmp/frameSimulator.log" />
+  <param name="append" value="false" />
+  <layout class="org.apache.log4j.PatternLayout">
+   <param name="ConversionPattern" value="%d %-16c %-5p - %m%n" />
+  </layout>
+ </appender>
+
+ <!-- all of the loggers inherit settings from the root -->
+ <root>
+  <priority value="all" />
+  <appender-ref ref="ApplicationConsoleAppender" />
+ </root>
+
+ <!-- The frame simulator application logger hierachy -->
+ <logger name="FS">
+  <priority value="all" />
+  <appender-ref ref="FrameSimulatorAppender" />
+ </logger>
+
+</log4j:configuration>
