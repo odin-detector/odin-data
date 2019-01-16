@@ -17,6 +17,7 @@ build()
                        -DHDF5_ROOT=${HDF5_PREFIX} \
                        -DZEROMQ_ROOTDIR=${ZEROMQ_PREFIX} \
                        -DLOG4CXX_ROOT_DIR=${LOG4CXX_PREFIX} \
+                       -DBLOSC_ROOT_DIR=${BLOSC_PREFIX} \
                        -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
                        -DCMAKE_INSTALL_PREFIX=${TARGET_PREFIX} \
                        ${BUILD_SCRIPT_DIR}
