@@ -39,7 +39,6 @@ LiveViewPlugin::LiveViewPlugin() :
 
   set_frame_freq_config(DEFAULT_FRAME_FREQ);
   set_per_second_config(DEFAULT_PER_SECOND);
-  set_socket_addr_config(DEFAULT_IMAGE_VIEW_SOCKET_ADDR);
   set_dataset_name_config(DEFAULT_DATASET_NAME);
   set_tagged_filter_config(DEFAULT_TAGGED_FILTER);
 
@@ -169,6 +168,11 @@ void LiveViewPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessag
     {
       set_socket_addr_config(config.get_param<std::string>(CONFIG_SOCKET_ADDR));
     }
+    else
+    {
+      set_socket_addr_config(DEFAULT_IMAGE_VIEW_SOCKET_ADDR);
+    }
+    
   }
   catch (std::runtime_error& e)
   {
