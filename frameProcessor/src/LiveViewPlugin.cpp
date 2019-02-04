@@ -36,16 +36,10 @@ LiveViewPlugin::LiveViewPlugin() :
   logger_->setLevel(Level::getAll());
   LOG4CXX_INFO(logger_, "LiveViewPlugin version " << this->get_version_long() << " loaded");
 
-
   set_frame_freq_config(DEFAULT_FRAME_FREQ);
   set_per_second_config(DEFAULT_PER_SECOND);
   set_dataset_name_config(DEFAULT_DATASET_NAME);
   set_tagged_filter_config(DEFAULT_TAGGED_FILTER);
-
-  if(!is_bound_)
-  {
-    LOG4CXX_WARN(logger_, "Socket is unbound after initilization. Check if default address " << DEFAULT_IMAGE_VIEW_SOCKET_ADDR << " is already in use");
-  }
 }
 
 /**
