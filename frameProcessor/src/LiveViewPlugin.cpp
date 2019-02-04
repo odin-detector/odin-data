@@ -45,7 +45,7 @@ LiveViewPlugin::LiveViewPlugin() :
 
   if(!is_bound_)
   {
-    LOG4CXX_WARN(logger_, "Socket is unbound. Check if default address " << DEFAULT_IMAGE_VIEW_SOCKET_ADDR << " is already in use");
+    LOG4CXX_WARN(logger_, "Socket is unbound after initilization. Check if default address " << DEFAULT_IMAGE_VIEW_SOCKET_ADDR << " is already in use");
   }
 }
 
@@ -69,53 +69,60 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
   /** Static Frame Count will increment each time this method is called, basically as a count of how many frames have been processed by the plugin*/
   static uint32_t frame_count_;
   LOG4CXX_TRACE(logger_, "LiveViewPlugin Process Frame.");
-
-  std::string frame_dataset = frame->get_dataset_name();
-  /* If datasets is empty, or contains the frame's dataset, then we can potentially send it*/
-  if (datasets_.empty() || std::find(datasets_.begin(), datasets_.end(), frame_dataset) != datasets_.end())
+  if(is_bound_)
   {
-    /* If either filtering by tag is disabled, or the frame has the tagged param */
-    bool tag_filter_active = !tags_.empty();
-    bool is_tagged = false;
-    if (tag_filter_active)
+    std::string frame_dataset = frame->get_dataset_name();
+    /* If datasets is empty, or contains the frame's dataset, then we can potentially send it*/
+    if (datasets_.empty() || std::find(datasets_.begin(), datasets_.end(), frame_dataset) != datasets_.end())
     {
-      for (int i = 0; i < tags_.size(); i++)
+      /* If either filtering by tag is disabled, or the frame has the tagged param */
+      bool tag_filter_active = !tags_.empty();
+      bool is_tagged = false;
+      if (tag_filter_active)
       {
-        if (frame->has_parameter(tags_[i]))
+        for (int i = 0; i < tags_.size(); i++)
         {
-          is_tagged = true;
-          break;
+          if (frame->has_parameter(tags_[i]))
+          {
+            is_tagged = true;
+            break;
+          }
         }
       }
-    }
-    if (!tag_filter_active || is_tagged)
-    {
-      boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
-      int32_t elapsed_time = (now - time_last_frame_).total_milliseconds();
+      if (!tag_filter_active || is_tagged)
+      {
+        boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
+        int32_t elapsed_time = (now - time_last_frame_).total_milliseconds();
 
-      if (per_second_ != 0 && elapsed_time > time_between_frames_) //time between frames too large, showing frame no matter what the frame number is
-      {
-        LOG4CXX_TRACE(logger_, "Elapsed time " << elapsed_time << " > " << time_between_frames_);
-        pass_live_frame(frame);
+        if (per_second_ != 0 && elapsed_time > time_between_frames_) //time between frames too large, showing frame no matter what the frame number is
+        {
+          LOG4CXX_TRACE(logger_, "Elapsed time " << elapsed_time << " > " << time_between_frames_);
+          pass_live_frame(frame);
+        }
+        else if (frame_freq_ != 0 && frame_count_ % frame_freq_ == 0)
+        {
+          LOG4CXX_TRACE(logger_, "LiveViewPlugin Frame " << frame->get_frame_number() << " to be displayed.");
+          pass_live_frame(frame);
+        }
+        //Count all frames that match the dataset(s) and tag(s)
+        frame_count_ ++;
       }
-      else if (frame_freq_ != 0 && frame_count_ % frame_freq_ == 0)
+      else
       {
-        LOG4CXX_TRACE(logger_, "LiveViewPlugin Frame " << frame->get_frame_number() << " to be displayed.");
-        pass_live_frame(frame);
+        LOG4CXX_TRACE(logger_, "LiveViewPlugin No Tag(s) found, frame skipped.");
       }
-      //Count all frames that match the dataset(s) and tag(s)
-      frame_count_ ++;
     }
     else
     {
-      LOG4CXX_TRACE(logger_, "LiveViewPlugin No Tag(s) found, frame skipped.");
+      LOG4CXX_TRACE(logger_,"Frame dataset: " << frame_dataset << " not desired");
     }
+
   }
   else
   {
-    LOG4CXX_TRACE(logger_,"Frame dataset: " << frame_dataset << " not desired");
+    LOG4CXX_WARN(logger_, "Socket is unbound. Check if address " << image_view_socket_addr_ << " is in use.");
   }
-
+  
   LOG4CXX_TRACE(logger_, "Pushing Data Frame" );
   this->push(frame);
 }
@@ -200,11 +207,6 @@ void LiveViewPlugin::requestConfiguration(OdinData::IpcMessage& reply)
  */
 void LiveViewPlugin::pass_live_frame(boost::shared_ptr<Frame> frame)
 {
-  if(!is_bound_)
-  {
-    LOG4CXX_WARN(logger_, "Socket is unbound. Check if address " << image_view_socket_addr_ << " is in use.");
-    return;
-  }
   void* frame_data_copy = (void*)frame->get_data();
 
   uint32_t frame_num = frame->get_frame_number();
