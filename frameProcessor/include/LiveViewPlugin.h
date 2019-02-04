@@ -99,6 +99,8 @@ private:
   /**List of Parameter names to look for. If a frame comes in without one of these tags it will be ignored*/
   std::vector<std::string> tags_;
 
+  /**Boolean that shows if the plugin has a successfully bound ZMQ endpoint*/
+  bool is_bound_;
 };
 
 }/* namespace FrameProcessor */

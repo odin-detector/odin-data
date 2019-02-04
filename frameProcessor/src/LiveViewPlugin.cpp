@@ -29,7 +29,8 @@ const std::string LiveViewPlugin::CONFIG_TAGGED_FILTER_NAME = "filter_tagged";
  * Constructor for this class. Sets up ZMQ pub socket and other default values for the config
  */
 LiveViewPlugin::LiveViewPlugin() :
-    publish_socket_(ZMQ_PUB)
+    publish_socket_(ZMQ_PUB),
+    is_bound_(false)
 {
   logger_ = Logger::getLogger("FP.LiveViewPlugin");
   logger_->setLevel(Level::getAll());
@@ -41,6 +42,11 @@ LiveViewPlugin::LiveViewPlugin() :
   set_socket_addr_config(DEFAULT_IMAGE_VIEW_SOCKET_ADDR);
   set_dataset_name_config(DEFAULT_DATASET_NAME);
   set_tagged_filter_config(DEFAULT_TAGGED_FILTER);
+
+  if(!is_bound_)
+  {
+    LOG4CXX_WARN(logger_, "Socket is unbound. Check if default address " << DEFAULT_IMAGE_VIEW_SOCKET_ADDR << " is already in use");
+  }
 }
 
 /**
@@ -149,7 +155,7 @@ void LiveViewPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessag
     /* Display warning if configuration sets the plugin to do nothing*/
     if (per_second_ == 0 && frame_freq_ == 0)
     {
-      LOG4CXX_WARN(logger_, "CURRENT LIVE VIEW CONFIGURATION RESULTS IN IT DOING NOTHING");
+      LOG4CXX_WARN(logger_, "Current Live View Config results in it doing nothing.");
     }
     /* Check if we're setting the address of the socket to send the live view frames to.*/
     if (config.has_param(CONFIG_SOCKET_ADDR))
@@ -194,6 +200,11 @@ void LiveViewPlugin::requestConfiguration(OdinData::IpcMessage& reply)
  */
 void LiveViewPlugin::pass_live_frame(boost::shared_ptr<Frame> frame)
 {
+  if(!is_bound_)
+  {
+    LOG4CXX_WARN(logger_, "Socket is unbound. Check if address " << image_view_socket_addr_ << " is in use.");
+    return;
+  }
   void* frame_data_copy = (void*)frame->get_data();
 
   uint32_t frame_num = frame->get_frame_number();
@@ -349,13 +360,24 @@ void LiveViewPlugin::set_socket_addr_config(std::string value)
     LOG4CXX_WARN(logger_, "Socket already bound to " << value << ". Doing nothing");
     return;
   }
-  uint32_t linger = 0;
-  publish_socket_.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
-  publish_socket_.unbind(image_view_socket_addr_.c_str());
 
-  image_view_socket_addr_ = value;
-  LOG4CXX_INFO(logger_, "Setting Live View Socket Address to " << image_view_socket_addr_);
-  publish_socket_.bind(image_view_socket_addr_);
+  try
+  {
+    uint32_t linger = 0;
+    publish_socket_.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
+    publish_socket_.unbind(image_view_socket_addr_.c_str());
+    //set global variable as soon as socket is unbound in case any errors are caused by rebinding.
+    is_bound_ = false;
+    image_view_socket_addr_ = value;
+    LOG4CXX_INFO(logger_, "Setting Live View Socket Address to " << image_view_socket_addr_);
+    publish_socket_.bind(image_view_socket_addr_);
+    is_bound_ = true;
+    LOG4CXX_INFO(logger_, "Live View Socket bound successfully")
+  }
+  catch(zmq::error_t& e)
+  {
+    LOG4CXX_ERROR(logger_, "Error binding socket to address " << value << " Error Number: " << e.num());
+  }
 }
 
 /**
