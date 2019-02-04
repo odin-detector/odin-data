@@ -29,16 +29,15 @@ const std::string LiveViewPlugin::CONFIG_TAGGED_FILTER_NAME = "filter_tagged";
  * Constructor for this class. Sets up ZMQ pub socket and other default values for the config
  */
 LiveViewPlugin::LiveViewPlugin() :
-    publish_socket_(ZMQ_PUB)
+    publish_socket_(ZMQ_PUB),
+    is_bound_(false)
 {
   logger_ = Logger::getLogger("FP.LiveViewPlugin");
   logger_->setLevel(Level::getAll());
   LOG4CXX_INFO(logger_, "LiveViewPlugin version " << this->get_version_long() << " loaded");
 
-
   set_frame_freq_config(DEFAULT_FRAME_FREQ);
   set_per_second_config(DEFAULT_PER_SECOND);
-  set_socket_addr_config(DEFAULT_IMAGE_VIEW_SOCKET_ADDR);
   set_dataset_name_config(DEFAULT_DATASET_NAME);
   set_tagged_filter_config(DEFAULT_TAGGED_FILTER);
 }
@@ -63,53 +62,60 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
   /** Static Frame Count will increment each time this method is called, basically as a count of how many frames have been processed by the plugin*/
   static uint32_t frame_count_;
   LOG4CXX_TRACE(logger_, "LiveViewPlugin Process Frame.");
-
-  std::string frame_dataset = frame->get_dataset_name();
-  /* If datasets is empty, or contains the frame's dataset, then we can potentially send it*/
-  if (datasets_.empty() || std::find(datasets_.begin(), datasets_.end(), frame_dataset) != datasets_.end())
+  if(is_bound_)
   {
-    /* If either filtering by tag is disabled, or the frame has the tagged param */
-    bool tag_filter_active = !tags_.empty();
-    bool is_tagged = false;
-    if (tag_filter_active)
+    std::string frame_dataset = frame->get_dataset_name();
+    /* If datasets is empty, or contains the frame's dataset, then we can potentially send it*/
+    if (datasets_.empty() || std::find(datasets_.begin(), datasets_.end(), frame_dataset) != datasets_.end())
     {
-      for (int i = 0; i < tags_.size(); i++)
+      /* If either filtering by tag is disabled, or the frame has the tagged param */
+      bool tag_filter_active = !tags_.empty();
+      bool is_tagged = false;
+      if (tag_filter_active)
       {
-        if (frame->has_parameter(tags_[i]))
+        for (int i = 0; i < tags_.size(); i++)
         {
-          is_tagged = true;
-          break;
+          if (frame->has_parameter(tags_[i]))
+          {
+            is_tagged = true;
+            break;
+          }
         }
       }
-    }
-    if (!tag_filter_active || is_tagged)
-    {
-      boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
-      int32_t elapsed_time = (now - time_last_frame_).total_milliseconds();
+      if (!tag_filter_active || is_tagged)
+      {
+        boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
+        int32_t elapsed_time = (now - time_last_frame_).total_milliseconds();
 
-      if (per_second_ != 0 && elapsed_time > time_between_frames_) //time between frames too large, showing frame no matter what the frame number is
-      {
-        LOG4CXX_TRACE(logger_, "Elapsed time " << elapsed_time << " > " << time_between_frames_);
-        pass_live_frame(frame);
+        if (per_second_ != 0 && elapsed_time > time_between_frames_) //time between frames too large, showing frame no matter what the frame number is
+        {
+          LOG4CXX_TRACE(logger_, "Elapsed time " << elapsed_time << " > " << time_between_frames_);
+          pass_live_frame(frame);
+        }
+        else if (frame_freq_ != 0 && frame_count_ % frame_freq_ == 0)
+        {
+          LOG4CXX_TRACE(logger_, "LiveViewPlugin Frame " << frame->get_frame_number() << " to be displayed.");
+          pass_live_frame(frame);
+        }
+        //Count all frames that match the dataset(s) and tag(s)
+        frame_count_ ++;
       }
-      else if (frame_freq_ != 0 && frame_count_ % frame_freq_ == 0)
+      else
       {
-        LOG4CXX_TRACE(logger_, "LiveViewPlugin Frame " << frame->get_frame_number() << " to be displayed.");
-        pass_live_frame(frame);
+        LOG4CXX_TRACE(logger_, "LiveViewPlugin No Tag(s) found, frame skipped.");
       }
-      //Count all frames that match the dataset(s) and tag(s)
-      frame_count_ ++;
     }
     else
     {
-      LOG4CXX_TRACE(logger_, "LiveViewPlugin No Tag(s) found, frame skipped.");
+      LOG4CXX_TRACE(logger_,"Frame dataset: " << frame_dataset << " not desired");
     }
+
   }
   else
   {
-    LOG4CXX_TRACE(logger_,"Frame dataset: " << frame_dataset << " not desired");
+    LOG4CXX_WARN(logger_, "Socket is unbound. Check if address " << image_view_socket_addr_ << " is in use.");
   }
-
+  
   LOG4CXX_TRACE(logger_, "Pushing Data Frame" );
   this->push(frame);
 }
@@ -149,13 +155,18 @@ void LiveViewPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessag
     /* Display warning if configuration sets the plugin to do nothing*/
     if (per_second_ == 0 && frame_freq_ == 0)
     {
-      LOG4CXX_WARN(logger_, "CURRENT LIVE VIEW CONFIGURATION RESULTS IN IT DOING NOTHING");
+      LOG4CXX_WARN(logger_, "Current Live View Config results in it doing nothing.");
     }
     /* Check if we're setting the address of the socket to send the live view frames to.*/
     if (config.has_param(CONFIG_SOCKET_ADDR))
     {
       set_socket_addr_config(config.get_param<std::string>(CONFIG_SOCKET_ADDR));
     }
+    else
+    {
+      set_socket_addr_config(DEFAULT_IMAGE_VIEW_SOCKET_ADDR);
+    }
+    
   }
   catch (std::runtime_error& e)
   {
@@ -349,13 +360,24 @@ void LiveViewPlugin::set_socket_addr_config(std::string value)
     LOG4CXX_WARN(logger_, "Socket already bound to " << value << ". Doing nothing");
     return;
   }
-  uint32_t linger = 0;
-  publish_socket_.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
-  publish_socket_.unbind(image_view_socket_addr_.c_str());
 
-  image_view_socket_addr_ = value;
-  LOG4CXX_INFO(logger_, "Setting Live View Socket Address to " << image_view_socket_addr_);
-  publish_socket_.bind(image_view_socket_addr_);
+  try
+  {
+    uint32_t linger = 0;
+    publish_socket_.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
+    publish_socket_.unbind(image_view_socket_addr_.c_str());
+    //set global variable as soon as socket is unbound in case any errors are caused by rebinding.
+    is_bound_ = false;
+    image_view_socket_addr_ = value;
+    LOG4CXX_INFO(logger_, "Setting Live View Socket Address to " << image_view_socket_addr_);
+    publish_socket_.bind(image_view_socket_addr_);
+    is_bound_ = true;
+    LOG4CXX_INFO(logger_, "Live View Socket bound successfully")
+  }
+  catch(zmq::error_t& e)
+  {
+    LOG4CXX_ERROR(logger_, "Error binding socket to address " << value << " Error Number: " << e.num());
+  }
 }
 
 /**
