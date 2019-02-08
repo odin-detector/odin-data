@@ -113,4 +113,9 @@ const void* DataBlock::get_data()
   return blockPtr_;
 }
 
+void* DataBlock::get_writeable_data()
+{
+  return blockPtr_;
+}
+
 } /* namespace FrameProcessor */

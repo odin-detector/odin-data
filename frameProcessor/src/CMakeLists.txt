@@ -9,6 +9,10 @@ file(GLOB LIB_SOURCES DataBlock.cpp
                       DataBlockPool.cpp
                       FrameProcessorPlugin.cpp
                       Frame.cpp
+                      IFrameMetaData.cpp
+                      IFrame.cpp
+                      SharedBufferFrame.cpp
+                      DataBlockFrame.cpp
                       MetaMessage.cpp
                       MetaMessagePublisher.cpp
                       IFrameCallback.cpp )

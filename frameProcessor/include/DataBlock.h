@@ -28,32 +28,38 @@ namespace FrameProcessor
  * Data block memory should NOT be freed outside of the block, when a data block
  * is destroyed it frees its own memory.
  */
-class DataBlock
-{
-  friend class DataBlockPool;
+    class DataBlock {
+        friend class DataBlockPool;
 
-public:
-  DataBlock(size_t nbytes);
-  virtual ~DataBlock();
-  int getIndex();
-  size_t getSize();
-  void copyData(const void* data_src, size_t nbytes);
-  const void* get_data();
+    public:
+        DataBlock(size_t nbytes);
 
-private:
-  void resize(size_t nbytes);
+        virtual ~DataBlock();
 
-  /** Pointer to logger */
-  log4cxx::LoggerPtr logger_;
-  /** Number of bytes allocated for this DataBlock */
-  size_t allocatedBytes_;
-  /** Unique index of this DataBlock */
-  int index_;
-  /** Void pointer to the allocated memory */
-  void *blockPtr_;
-  /** Static counter for the unique index */
-  static int indexCounter_;
-};
+        int getIndex();
+
+        size_t getSize();
+
+        void copyData(const void *data_src, size_t nbytes);
+
+        const void *get_data();
+
+        void *get_writeable_data();
+
+    private:
+        void resize(size_t nbytes);
+
+        /** Pointer to logger */
+        log4cxx::LoggerPtr logger_;
+        /** Number of bytes allocated for this DataBlock */
+        size_t allocatedBytes_;
+        /** Unique index of this DataBlock */
+        int index_;
+        /** Void pointer to the allocated memory */
+        void *blockPtr_;
+        /** Static counter for the unique index */
+        static int indexCounter_;
+    };
 
 } /* namespace FrameProcessor */
 
