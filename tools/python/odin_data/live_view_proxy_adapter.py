@@ -13,7 +13,11 @@ from queue import PriorityQueue
 from queue import Full as QueueFullException
 from queue import Empty as QueueEmptyException
 
-from tornado.escape import json_decode
+import time
+from concurrent import futures
+from tornado.escape import json_decode, json_encode
+from tornado.ioloop import IOLoop
+from tornado.concurrent import run_on_executor
 
 from odin_data.ipc_tornado_channel import IpcTornadoChannel
 from odin_data.ipc_channel import IpcChannelException
@@ -27,7 +31,7 @@ QUEUE_LENGTH_CONFIG_NAME = 'queue_length'
 
 DEFAULT_SOURCE_ENDPOINTS = ["tcp://127.0.0.1:5010"]
 DEFAULT_DEST_ENDPOINT = "tcp://127.0.0.1:5020"
-DEFAULT_QUEUE_LENGTH = 5
+DEFAULT_QUEUE_LENGTH = 10
 
 
 class LiveViewProxyAdapter(ApiAdapter):
@@ -36,6 +40,9 @@ class LiveViewProxyAdapter(ApiAdapter):
 
     Implements the live view proxy adapter for odin control
     """
+
+    # Thread executor used for background tasks
+    executor = futures.ThreadPoolExecutor(max_workers=1)
 
     def __init__(self, **kwargs):
 
@@ -82,6 +89,27 @@ class LiveViewProxyAdapter(ApiAdapter):
         self.last_sent_frame = 0
         self.dropped_frame_count = 0
 
+        self.get_frame_from_queue(1)
+
+    @run_on_executor
+    def get_frame_from_queue(self, task_interval):
+        """Run the adapter background task.
+
+        loop to pop frames off the queue and send them to the destination ZMQ socket
+        """
+        try:
+            frame = self.queue.get_nowait()
+            logging.debug("Got frame %d from queue", frame.get_number())
+            self.last_sent_frame = frame.get_number()
+            self.publish_channel.send_multipart([frame.get_header(), frame.get_data()])
+        except QueueEmptyException:
+            # queue is empty but thats fine, no need to report
+            # or there'd be far too much output
+            logging.debug("Queue of frames empty. Nothing to send")
+        finally:
+            time.sleep(task_interval)
+            IOLoop.instance().add_callback(self.get_frame_from_queue, task_interval)
+
     @response_types('application/json', 'image/*', default='application/json')
     def get(self, path, request):
         response = self.param_tree.get(path)
@@ -97,18 +125,12 @@ class LiveViewProxyAdapter(ApiAdapter):
     def cleanup(self):
         pass
 
-    def get_target_endpoint(self):
-        return self.dest_endpoint
-    
-    def get_dropped_frames(self):
-        return self.dropped_frame_count
-
     def add_to_queue(self, frame, source):
         logging.debug("Add to queue called from %s", source.get_name())
         logging.debug("Adding frame number: %d", frame.get_number())
-        if(frame.get_number() < self.last_sent_frame):
+        if frame.get_number() < self.last_sent_frame:
             logging.debug("Frame too old, disgarding")
-            source.dropped_frame_count += 1
+            source.dropped_frame()
             return
         try:
             self.queue.put_nowait(frame)
@@ -120,6 +142,12 @@ class LiveViewProxyAdapter(ApiAdapter):
 
     def get_last_frame(self):
         return self.last_sent_frame
+
+    def get_target_endpoint(self):
+        return self.dest_endpoint
+
+    def get_dropped_frames(self):
+        return self.dropped_frame_count
 
 
 class LiveViewProxyNode(object):
@@ -133,6 +161,7 @@ class LiveViewProxyNode(object):
         self.endpoint = endpoint
         self.callback = callback
         self.dropped_frame_count = 0
+        self.received_frame_count = 0
 
         self.channel = IpcTornadoChannel(IpcTornadoChannel.CHANNEL_TYPE_SUB, endpoint=endpoint)
         self.channel.subscribe()
@@ -142,6 +171,7 @@ class LiveViewProxyNode(object):
         self.param_tree = ParameterTree({
             'endpoint': (self.get_endpoint, None),
             'dropped_frames': (self.get_dropped_frames, None),
+            'received_frames': (self.get_received_frames, None)
         })
 
         logging.debug("Proxy Connected to Socket: %s", endpoint)
@@ -153,6 +183,7 @@ class LiveViewProxyNode(object):
         If the priority queue is full, it will throw an exception and this frame will be discarded
         """
         tmp_frame = Frame(msg)
+        self.received_frame_count += 1
         self.callback(tmp_frame, self)
 
     def get_endpoint(self):
@@ -161,12 +192,20 @@ class LiveViewProxyNode(object):
     def get_dropped_frames(self):
         return self.dropped_frame_count
 
+    def get_received_frames(self):
+        return self.received_frame_count
+
     def get_name(self):
         return self.name
 
+    def dropped_frame(self):
+        self.dropped_frame_count += 1
+
 
 class Frame(object):
-
+    """
+    Class to hold the frame data. Also has a method that allows it to be sorted via the frame number
+    """
     def __init__(self, msg):
         self.header = json_decode(msg[0])
         self.data = msg[1]
@@ -176,7 +215,10 @@ class Frame(object):
         return self.num < other.num
 
     def get_header(self):
-        return self.header
+        return json_encode(self.header)
 
     def get_number(self):
         return self.num
+
+    def get_data(self):
+        return self.data

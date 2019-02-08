@@ -121,6 +121,14 @@ class IpcChannel(object):
         # Send the data
         self.socket.send(data)
 
+    def send_multipart(self, data):
+        """
+        Send data to the IpcChannel as a multi part message
+        :param: data to send, as an iterable object
+        """
+                
+        self.socket.send_multipart(data)
+
     def recv(self):
         """Recieve data from the IpcChannel.
 
