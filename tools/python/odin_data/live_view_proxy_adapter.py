@@ -89,7 +89,7 @@ class LiveViewProxyAdapter(ApiAdapter):
 
         self.queue = PriorityQueue(self.max_queue)
 
-        self.last_sent_frame = 0
+        self.last_sent_frame = (0, 0)
         self.dropped_frame_count = 0
 
         self.get_frame_from_queue(0)
@@ -101,13 +101,12 @@ class LiveViewProxyAdapter(ApiAdapter):
         """
         try:
             frame = self.queue.get_nowait()
-            logging.debug("Got frame %d from queue", frame.get_number())
-            self.last_sent_frame = frame.get_number()
+            logging.debug("Got frame %d:%d from queue", frame.acq_id, frame.get_number())
+            self.last_sent_frame = (frame.get_acq(), frame.get_number())
             self.publish_channel.send_multipart([frame.get_header(), frame.get_data()])
         except QueueEmptyException:
             # queue is empty but thats fine, no need to report
             # or there'd be far too much output
-            # logging.debug("Queue of frames empty. Nothing to send")
             pass
         finally:
             time.sleep(task_interval)
@@ -143,7 +142,7 @@ class LiveViewProxyAdapter(ApiAdapter):
         """
         logging.debug("Add to queue called from %s", source.get_name())
         logging.debug("Adding frame number: %d", frame.get_number())
-        if frame.get_number() < self.last_sent_frame:
+        if (frame.get_acq(), frame.get_number()) < self.last_sent_frame:
             logging.debug("Frame too old, disgarding")
             source.dropped_frame()
             return
@@ -181,7 +180,7 @@ class LiveViewProxyAdapter(ApiAdapter):
         # TODO: find way to stop queue accepting new frames while resetting
         while not self.queue.empty():
             pass  # wait for queue to empty before resetting
-        self.last_sent_frame = 0
+        self.last_sent_frame = (0, 0)
         self.dropped_frame_count = 0
         for node in self.source_endpoints:
             node.set_reset()
@@ -199,6 +198,8 @@ class LiveViewProxyNode(object):
         self.callback = callback
         self.dropped_frame_count = 0
         self.received_frame_count = 0
+        self.last_frame = 0
+        self.current_acq = 0
 
         self.channel = IpcTornadoChannel(IpcTornadoChannel.CHANNEL_TYPE_SUB, endpoint=endpoint)
         self.channel.subscribe()
@@ -208,7 +209,9 @@ class LiveViewProxyNode(object):
         self.param_tree = ParameterTree({
             'endpoint': (self.get_endpoint, None),
             'dropped_frames': (self.get_dropped_frames, None),
-            'received_frames': (self.get_received_frames, None)
+            'received_frames': (self.get_received_frames, None),
+            'last_frame': (self.get_last_frame, None),
+            'current_acquisition': (self.get_current_acq, None)
         })
 
         logging.debug("Proxy Connected to Socket: %s", endpoint)
@@ -220,6 +223,15 @@ class LiveViewProxyNode(object):
         """
         tmp_frame = Frame(msg)
         self.received_frame_count += 1
+        if tmp_frame.get_number() < self.last_frame:
+            logging.debug(
+                "New Frame %d has lower number than last frame %d. Has a new acquisition started?",
+                tmp_frame.get_number(), self.last_frame
+            )
+            self.current_acq += 1
+
+        tmp_frame.set_acq(self.current_acq)
+        self.last_frame = tmp_frame.get_number()
         self.callback(tmp_frame, self)
 
     def get_endpoint(self):
@@ -246,6 +258,18 @@ class LiveViewProxyNode(object):
         """
         return self.name
 
+    def get_last_frame(self):
+        """
+        return the number of the last frame received by this node
+        """
+        return self.last_frame
+
+    def get_current_acq(self):
+        """
+        return current acquisition number
+        """
+        return self.current_acq
+
     def dropped_frame(self):
         """
         increase the count of dropped frames due to frame age
@@ -259,6 +283,8 @@ class LiveViewProxyNode(object):
         """
         self.dropped_frame_count = 0
         self.received_frame_count = 0
+        self.last_frame = 0
+        self.current_acq = 0
 
 
 class Frame(object):
@@ -269,9 +295,12 @@ class Frame(object):
         self.header = json_decode(msg[0])
         self.data = msg[1]
         self.num = self.header["frame_num"]
+        self.acq_id = 0
 
     def __lt__(self, other):  # used for sorting
-        return self.num < other.num
+        if self.acq_id == other.acq_id:  # if from same acquisition, use the frame number
+            return self.num < other.num
+        return self.acq_id < other.acq_id
 
     def get_header(self):
         """
@@ -290,3 +319,15 @@ class Frame(object):
         Return the data of the frame
         """
         return self.data
+    
+    def get_acq(self):
+        """
+        Return the acquisition ID for the frame
+        """
+        return self.acq_id
+
+    def set_acq(self, acq):
+        """
+        Sets the acquisition ID for the frame
+        """
+        self.acq_id = acq
