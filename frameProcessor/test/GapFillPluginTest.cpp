@@ -81,8 +81,7 @@ BOOST_AUTO_TEST_CASE( GapFillPlugin_process_frame )
     gap_fill_plugin.configure(bad_cfg_1, reply_bad_cfg_1);
 
     // The following call should produce no return frame
-    boost::shared_ptr<FrameProcessor::Frame> bad_frame_1 = gap_fill_plugin.insert_gaps(frame);
-    BOOST_CHECK(!bad_frame_1);
+    BOOST_CHECK(!gap_fill_plugin.configuration_valid(frame));
 
     // Test an inconsistent gap array compared with the grid config
     OdinData::IpcMessage reply_bad_cfg_2;
@@ -99,8 +98,7 @@ BOOST_AUTO_TEST_CASE( GapFillPlugin_process_frame )
     gap_fill_plugin.configure(bad_cfg_2, reply_bad_cfg_2);
 
     // The following call should produce no return frame
-    boost::shared_ptr<FrameProcessor::Frame> bad_frame_2 = gap_fill_plugin.insert_gaps(frame);
-    BOOST_CHECK(!bad_frame_2);
+    BOOST_CHECK(!gap_fill_plugin.configuration_valid(frame));
 
     // Setup the plugin ready to insert gaps in both x and y direction
     OdinData::IpcMessage reply;
