@@ -113,6 +113,52 @@ BOOST_AUTO_TEST_CASE( CreateAndModifyParametersInEmptyIpcMessage )
 
 }
 
+BOOST_AUTO_TEST_CASE( UpdateParametersInExistingIpcMessage )
+{
+  OdinData::IpcMessage msg1;
+
+  // Define and set some parameters
+  int paramIntVal = 1234;
+  int paramIntVal2 = 90210;
+  int paramIntVal3 = 4567;
+  std::string paramStringVal("paramString");
+
+  msg1.set_param("paramInt", paramIntVal);
+  msg1.set_param("paramInt2", paramIntVal2);
+  msg1.set_param("paramInt3", paramIntVal3);
+  msg1.set_param("paramStr", paramStringVal);
+
+  // Read them back and check they have correct values
+  BOOST_CHECK_EQUAL(msg1.get_param<int>("paramInt"), paramIntVal);
+  BOOST_CHECK_EQUAL(msg1.get_param<int>("paramInt2"), paramIntVal2);
+  BOOST_CHECK_EQUAL(msg1.get_param<int>("paramInt3"), paramIntVal3);
+  BOOST_CHECK_EQUAL(msg1.get_param<std::string>("paramStr"), paramStringVal);
+
+  OdinData::IpcMessage msg2;
+
+  // Create a different message and update the first with it
+  int newParamIntVal2 = 90310;
+  int paramIntVal4 = 42;
+  std::string newParamStringVal("newParamStr");
+  std::string paramStringVal2("paramStr2");
+
+  msg2.set_param("paramInt2", newParamIntVal2);
+  msg2.set_param("paramInt4", paramIntVal4);
+  msg2.set_param("paramStr", newParamStringVal);
+  msg2.set_param("paramStr2", paramStringVal2);
+
+  msg1.update(msg2);
+
+  // Check that values are overwritten / added / still there
+  BOOST_CHECK_EQUAL(msg1.get_param<int>("paramInt"), paramIntVal);
+  BOOST_CHECK_EQUAL(msg1.get_param<int>("paramInt2"), newParamIntVal2);
+  BOOST_CHECK_EQUAL(msg1.get_param<int>("paramInt3"), paramIntVal3);
+  BOOST_CHECK_EQUAL(msg1.get_param<int>("paramInt4"), paramIntVal4);
+  BOOST_CHECK_EQUAL(msg1.get_param<std::string>("paramStr"), newParamStringVal);
+  BOOST_CHECK_EQUAL(msg1.get_param<std::string>("paramStr2"), paramStringVal2);
+
+}
+
 BOOST_AUTO_TEST_CASE( RoundTripFromEmptyIpcMessage )
 {
 
