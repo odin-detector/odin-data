@@ -76,15 +76,43 @@ namespace FrameProcessor
                << " compared with (grid[1] x chip[1]) => "
                << grid_[1] * chip_[1];
             this->set_error(ss.str());
+        } else if (grid_[1]+1 > gaps_x_.size()){
+            std::stringstream ss;
+            ss << "GapFill - Grid size [1] => "
+               << grid_[1]
+               << " not enough x gap values speficied (should be "
+               << grid_[1]+1 << ")";
+            this->set_error(ss.str());
+        } else if (grid_[0]+1 > gaps_y_.size()){
+            std::stringstream ss;
+            ss << "GapFill - Grid size [0] => "
+               << grid_[0]
+               << " not enough y gap values speficied (should be "
+               << grid_[0]+1 << ")";
+            this->set_error(ss.str());
+        } else if (grid_[1]+1 < gaps_x_.size()){
+            std::stringstream ss;
+            ss << "GapFill - Grid size [1] => "
+               << grid_[1]
+               << " too many x gap values speficied (should be "
+               << grid_[1]+1 << ")";
+            this->set_error(ss.str());
+        } else if (grid_[0]+1 < gaps_y_.size()){
+            std::stringstream ss;
+            ss << "GapFill - Grid size [0] => "
+               << grid_[0]
+               << " too many y gap values speficied (should be "
+               << grid_[0]+1 << ")";
+            this->set_error(ss.str());
         } else {
             // Create the new image
             int img_x = grid_[1] * chip_[1];
-            for (int index = 0; index < grid_[1]+1; index++){
+            for (int index = 0; index <= grid_[1]; index++){
                 img_x += gaps_x_[index];
             }
             LOG4CXX_TRACE(logger_, "New image width: " << img_x);
             int img_y = grid_[0] * chip_[0];
-            for (int index = 0; index < grid_[0]+1; index++){
+            for (int index = 0; index <= grid_[0]; index++){
                 img_y += gaps_y_[index];
             }
             LOG4CXX_TRACE(logger_, "New image height: " << img_y);
