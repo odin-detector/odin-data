@@ -97,10 +97,10 @@ namespace FrameProcessor
             // Loop over the y grid
             int current_gap_y = 0;
             for (int y_index = 0; y_index < grid_[0]; y_index++) {
-                int current_gap_x = 0;
                 current_gap_y += gaps_y_[y_index];
                 // Loop over the individual y rows for the grid item
                 for (int y_row = 0; y_row < chip_[0]; y_row++) {
+                    int current_gap_x = 0;
                     int current_src_row = (y_index * chip_[0]) + y_row;
                     int current_dest_row = current_src_row + current_gap_y;
                     // Loop over the x grid
