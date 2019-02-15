@@ -142,18 +142,18 @@ namespace FrameProcessor
         memset(new_image, 0, img_x * img_y * frame->get_data_type_size());
 
         // Loop over the y grid
-        int current_gap_y = 0;
+        int current_offset_y = 0;
         for (int y_index = 0; y_index < grid_[0]; y_index++) {
-            current_gap_y += gaps_y_[y_index];
+            current_offset_y += gaps_y_[y_index];
             // Loop over the individual y rows for the grid item
             for (int y_row = 0; y_row < chip_[0]; y_row++) {
-                int current_gap_x = 0;
+                int current_offset_x = 0;
                 int current_src_row = (y_index * chip_[0]) + y_row;
-                int current_dest_row = current_src_row + current_gap_y;
+                int current_dest_row = current_src_row + current_offset_y;
                 // Loop over the x grid
                 for (int x_index = 0; x_index < grid_[1]; x_index++) {
                     // Calculate the current total x gap in pixels
-                    current_gap_x += gaps_x_[x_index];
+                    current_offset_x += gaps_x_[x_index];
 
                     // src offset is the src row multiplied by the width + the current grid multiplied by chip width
                     int src_offset = (current_src_row * frame->get_dimensions()[1]) + (x_index * chip_[1]);
@@ -164,7 +164,7 @@ namespace FrameProcessor
                     src_ptr += src_offset;
 
                     // Dest offset is full width * (current_y_gap + (y_grid_index * chip_y) + y_row)
-                    int dest_offset = (current_dest_row * img_x) + current_gap_x + (x_index * chip_[1]);
+                    int dest_offset = (current_dest_row * img_x) + current_offset_x + (x_index * chip_[1]);
                     // Multiply dest_offset by the data type size
                     dest_offset *= frame->get_data_type_size();
 
