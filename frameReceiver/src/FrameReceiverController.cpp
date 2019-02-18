@@ -461,7 +461,16 @@ void FrameReceiverController::configure_frame_decoder(OdinData::IpcMessage& conf
         new IpcMessage(config_msg.get_param<const rapidjson::Value&>(CONFIG_DECODER_CONFIG)));
     if (*new_decoder_config != *(config_.decoder_config_))
     {
-      config_.decoder_config_->update(*new_decoder_config);
+      if (new_decoder_class(config_msg))
+      {
+        // We have been asked to load a different decoder class - Replace entire configuration
+        config_.decoder_config_.swap(new_decoder_config);
+      }
+      else
+      {
+        // Just update the configuration for the currently loaded decoder
+        config_.decoder_config_->update(*new_decoder_config);
+      }
       LOG4CXX_DEBUG_LEVEL(3, logger_,
         "Built new decoder configuration message: " << config_.decoder_config_->encode()
       );
@@ -532,6 +541,32 @@ void FrameReceiverController::configure_frame_decoder(OdinData::IpcMessage& conf
       LOG4CXX_INFO(logger_, "No frame decoder loaded: type not specified");
     }
   }
+}
+
+//! Check if configuration message defines a new decoder class.
+//!
+//! \param[in] config_msg - IPC message containing configuration parameters
+//! \param[out] bool - true if config_msg defines a new decoder class to be loaded, else false
+//!
+bool FrameReceiverController::new_decoder_class(OdinData::IpcMessage& config_msg)
+{
+  if (config_msg.has_param(CONFIG_DECODER_PATH))
+  {
+    std::string new_path = config_msg.get_param<std::string>(CONFIG_DECODER_PATH);
+    if (config_.decoder_path_ != new_path)
+    {
+      return true;
+    }
+  }
+  if (config_msg.has_param(CONFIG_DECODER_TYPE))
+  {
+    std::string new_type = config_msg.get_param<std::string>(CONFIG_DECODER_TYPE);
+    if (config_.decoder_type_ != new_type)
+    {
+      return true;
+    }
+  }
+  return false;
 }
 
 //! Configure the frame buffer manager.
