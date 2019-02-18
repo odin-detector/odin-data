@@ -2,7 +2,7 @@
  * GapFillPlugin.cpp
  *
  *  Created on: 5 Feb 2019
- *      Author: gnx91527
+ *      Author: Alan Greer
  */
 #include "GapFillPlugin.h"
 #include "version.h"
@@ -183,7 +183,7 @@ namespace FrameProcessor
         gap_frame->set_frame_number(frame->get_frame_number());
         gap_frame->set_dimensions(img_dims);
         gap_frame->copy_data(static_cast<void*>(new_image), img_x * img_y * frame->get_data_type_size());
-        gap_frame->set_data_type(frame->get_data_type()); // 0: UINT8, 1: UINT16, 2: UINT32
+        gap_frame->set_data_type(frame->get_data_type());
         gap_frame->set_acquisition_id(frame->get_acquisition_id());
 
         // Free the allocated memory

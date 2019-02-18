@@ -2,7 +2,7 @@
  * GapFillPlugin.h
  *
  *  Created on: 5 Feb 2019
- *      Author: gnx91527
+ *      Author: Alan Greer
  */
 
 #ifndef ODINDATA_GAPFILLPLUGIN_H
