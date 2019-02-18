@@ -141,11 +141,19 @@ IpcMessage::IpcMessage(const rapidjson::Value& value,
   doc_.AddMember("params", newValue, doc_.GetAllocator());
 }
 
+void IpcMessage::update(const IpcMessage& other)
+{
+  std::vector<std::string> params = other.get_param_names();
+  for (std::vector<std::string>::const_iterator itr = params.begin(); itr != params.end(); ++itr) {
+    this->set_param<const rapidjson::Value&>(*itr, other.get_param<const rapidjson::Value&>(*itr));
+  }
+}
+
 //! Returns a vector of all parameter names contained in the message.
 //!
 //! \return A vector of all parameter names in this message
 
-std::vector<std::string> IpcMessage::get_param_names()
+std::vector<std::string> IpcMessage::get_param_names() const
 {
   std::vector<std::string> names;
   rapidjson::Value::ConstMemberIterator itr = doc_.FindMember("params");

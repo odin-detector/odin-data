@@ -69,6 +69,7 @@ namespace FrameReceiver
     void cleanup_ipc_channels(void);
 
     void configure_frame_decoder(OdinData::IpcMessage& config_msg);
+    bool new_decoder_class(OdinData::IpcMessage& config_msg);
     void configure_buffer_manager(OdinData::IpcMessage& config_msg);
     void configure_rx_thread(OdinData::IpcMessage& config_msg);
     void stop_rx_thread(void);
