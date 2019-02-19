@@ -76,6 +76,11 @@ add_library(SumPlugin SHARED SumPlugin.cpp SumPluginLib.cpp)
 target_link_libraries(SumPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${COMMON_LIBRARY})
 install(TARGETS SumPlugin DESTINATION lib)
 
+# Add library for Gap Fill plugin
+add_library(GapFillPlugin SHARED GapFillPlugin.cpp GapFillPluginLib.cpp)
+target_link_libraries(GapFillPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${COMMON_LIBRARY})
+install(TARGETS GapFillPlugin DESTINATION lib)
+
 # Add test and project source files to executable
 if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
   # librt required for timing functions
