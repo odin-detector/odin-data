@@ -34,6 +34,7 @@ using namespace rapidjson;
 #include "logging.h"
 #include "FrameProcessorController.h"
 #include "DebugLevelLogger.h"
+#include "SegFaultHandler.h"
 #include "version.h"
 
 using namespace FrameProcessor;
@@ -544,6 +545,9 @@ void checkNoClientArgs(po::variables_map vm) {
 
 int main(int argc, char** argv)
 {
+  // Initialise unexpected fault handling
+  OdinData::init_seg_fault_handler();
+
   setlocale(LC_CTYPE, "UTF-8");
   OdinData::app_path = argv[0];
   OdinData::configure_logging_mdc(OdinData::app_path.c_str());

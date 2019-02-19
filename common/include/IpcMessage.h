@@ -121,6 +121,14 @@ public:
              MsgVal msg_val=MsgValIllegal,
              bool strict_validation=true);
 
+  //! Update parameters from another IPCMessage.
+  //!
+  //! This will iterate the parameters in the given IPCMessage and set them on this instance.
+  //!
+  //! \param other - IPCMessage to take parameters from
+
+  void update(const IpcMessage& other);
+
   //! Gets the value of a named parameter in the message.
   //!
   //! This template method returns the value of the specified parameter stored in the
@@ -190,7 +198,7 @@ public:
   //! Returns a vector of all parameter names contained in the message.
   //!
   //! \return A vector of all parameter names in this message
-  std::vector<std::string> get_param_names();
+  std::vector<std::string> get_param_names() const;
 
   //! Returns true if the parameter is found within the message
   bool has_param(const std::string& param_name) const;
