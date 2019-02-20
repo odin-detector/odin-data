@@ -133,9 +133,6 @@ class LiveViewProxyAdapter(ApiAdapter):
             status_code = 400
         return ApiAdapterResponse(response, status_code=status_code)
 
-    def cleanup(self):
-        pass
-
     def add_to_queue(self, frame, source):
         """
         Add the frame to the priority queue, so long as it's "new enough" (the frame number is
