@@ -4,7 +4,6 @@ from nose.tools import assert_equals, assert_true, assert_false,\
     assert_equal, assert_not_equal
 
 from tornado.escape import json_encode
-from odin_data.ipc_tornado_channel import IpcTornadoChannel
 
 from odin_data.live_view_proxy_adapter import LiveViewProxyAdapter, LiveViewProxyNode, Frame, \
     DEFAULT_DEST_ENDPOINT, DEFAULT_DROP_WARN_PERCENT, DEFAULT_QUEUE_LENGTH, DEFAULT_SOURCE_ENDPOINT
@@ -28,17 +27,17 @@ class TestFrame():
         self.frame_2 = Frame([json_encode({"frame_num": 2}), 0])
 
     def test_frame_init(self):
-        assert_equal(self.frame_1.get_number(), self.frame_1_header["frame_num"])
+        assert_equal(self.frame_1.num, self.frame_1_header["frame_num"])
 
     def test_frame_get_header(self):
         assert_equal(self.frame_1.get_header(), json_encode(self.frame_1_header))
 
     def test_frame_get_data(self):
-        assert_equal(self.frame_1.get_data(), 0)
+        assert_equal(self.frame_1.data, 0)
 
     def test_frame_set_acq(self):
         self.frame_1.set_acq(5)
-        assert_equal(self.frame_1.get_acq(), 5)
+        assert_equal(self.frame_1.acq_id, 5)
 
     def test_frame_order(self):
         assert_true(self.frame_1 < self.frame_2)
@@ -78,8 +77,8 @@ class TestProxyNode(object):
         self.callback_count = 0
 
     def test_node_init(self):
-        assert_equal(self.node_1.get_name(), self.node_1_info["name"])
-        assert_equal(self.node_1.get_endpoint(), self.node_1_info["endpoint"])
+        assert_equal(self.node_1.name, self.node_1_info["name"])
+        assert_equal(self.node_1.endpoint, self.node_1_info["endpoint"])
 
     def test_node_reset(self):
         self.node_1.received_frame_count = 10
@@ -95,7 +94,7 @@ class TestProxyNode(object):
         for _ in range(9):
             self.node_1.dropped_frame()
 
-        assert_equal(self.node_1.get_dropped_frames(), 9)
+        assert_equal(self.node_1.dropped_frame_count, 9)
         assert_true(self.node_1.has_warned)
 
     def test_node_callback(self):
@@ -105,9 +104,9 @@ class TestProxyNode(object):
             self.node_1.local_callback([json_encode(test_header), 0])
         test_header["frame_num"] = 1
         self.node_1.local_callback([json_encode(test_header), 0])
-        assert_equal(self.node_1.get_current_acq(), 1)
-        assert_equal(self.node_1.get_received_frames(), 11)
-        assert_equal(self.node_1.get_last_frame(), 1)
+        assert_equal(self.node_1.current_acq, 1)
+        assert_equal(self.node_1.received_frame_count, 11)
+        assert_equal(self.node_1.last_frame, 1)
 
 
 class TestLiveViewProxyAdapter(OdinTestServer):
@@ -153,7 +152,7 @@ class TestLiveViewProxyAdapter(OdinTestServer):
         assert_equal(self.adapter.dest_endpoint, self.adapter_config["destination_endpoint"])
         assert_true(self.adapter.source_endpoints)
         for node in self.adapter.source_endpoints:
-            assert_true("{}={}".format(node.get_name(), node.get_endpoint()) in self.adapter_config["source_endpoints"])
+            assert_true("{}={}".format(node.name, node.endpoint) in self.adapter_config["source_endpoints"])
 
     def test_adapter_default_init(self):
         default_adapter = LiveViewProxyAdapter(**{})
@@ -161,7 +160,7 @@ class TestLiveViewProxyAdapter(OdinTestServer):
         assert_equal(default_adapter.dest_endpoint, DEFAULT_DEST_ENDPOINT)
         assert_equal(default_adapter.drop_warn_percent, DEFAULT_DROP_WARN_PERCENT)
         assert_equal(default_adapter.max_queue, DEFAULT_QUEUE_LENGTH)
-        assert_equal(default_adapter.source_endpoints[0].get_endpoint(), DEFAULT_SOURCE_ENDPOINT)
+        assert_equal(default_adapter.source_endpoints[0].endpoint, DEFAULT_SOURCE_ENDPOINT)
     
     def test_adapter_queue(self):
         for frame in reversed(self.test_frames):
@@ -235,7 +234,7 @@ class TestLiveViewProxyAdapter(OdinTestServer):
         self.adapter.add_to_queue(frame_new, self)
         get_frame = self.adapter.get_frame_from_queue()
         assert_equal(frame_new, get_frame)
-        assert_equal(self.adapter.get_last_frame(), (0, 5))
+        assert_equal(self.adapter.last_sent_frame, (0, 5))
         self.adapter.add_to_queue(frame_old, self)
         assert_true(self.has_dropped_frame)
         assert_true(self.adapter.queue.empty())       
