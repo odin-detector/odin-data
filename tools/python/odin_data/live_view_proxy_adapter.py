@@ -21,6 +21,8 @@ from odin_data.ipc_channel import IpcChannelException
 from odin.adapters.adapter import ApiAdapter, ApiAdapterResponse, response_types
 from odin.adapters.parameter_tree import ParameterTree, ParameterTreeError
 
+from zmq.error import ZMQError
+
 
 SOURCE_ENDPOINTS_CONFIG_NAME = 'source_endpoints'
 DEST_ENDPOINT_CONFIG_NAME = 'destination_endpoint'
@@ -56,7 +58,7 @@ class LiveViewProxyAdapter(ApiAdapter):
             self.publish_channel = IpcTornadoChannel(IpcTornadoChannel.CHANNEL_TYPE_PUB,
                                                      self.dest_endpoint)
             self.publish_channel.bind()
-        except IpcChannelException as channel_err:
+        except ZMQError as channel_err:
             logging.error("Connection Failed. Error given: %s", channel_err.message)
         self.max_queue = self.options.get(QUEUE_LENGTH_CONFIG_NAME, DEFAULT_QUEUE_LENGTH)
 
@@ -70,7 +72,7 @@ class LiveViewProxyAdapter(ApiAdapter):
                         url.strip(),
                         self.drop_warn_percent,
                         self.add_to_queue))
-                except ValueError:
+                except (ValueError, ZMQError):
                     logging.debug("Error parsing target list: %s", target_str)
         else:
             self.source_endpoints = [LiveViewProxyNode(
@@ -98,10 +100,16 @@ class LiveViewProxyAdapter(ApiAdapter):
 
         self.get_frame_from_queue()
 
+    def cleanup(self):
+        self.publish_channel.close()
+        for node in self.source_endpoints:
+            node.cleanup()
+
     def get_frame_from_queue(self):
         """
         loop to pop frames off the queue and send them to the destination ZMQ socket
         """
+        frame = None
         try:
             frame = self.queue.get_nowait()
             # logging.debug("Got frame %d:%d from queue", frame.acq_id, frame.get_number())
@@ -113,6 +121,7 @@ class LiveViewProxyAdapter(ApiAdapter):
             pass
         finally:
             IOLoop.instance().call_later(0, self.get_frame_from_queue)
+        return frame  # returned for testing
 
     @response_types('application/json', default='application/json')
     def get(self, path, request):
@@ -173,9 +182,6 @@ class LiveViewProxyAdapter(ApiAdapter):
         reset the statistics for a new aquisition, setting dropped frames and sent frame
         counters back to 0
         """
-        # TODO: find way to stop queue accepting new frames while resetting
-        while not self.queue.empty():
-            pass  # wait for queue to empty before resetting
         self.last_sent_frame = (0, 0)
         self.dropped_frame_count = 0
         for node in self.source_endpoints:
@@ -215,6 +221,9 @@ class LiveViewProxyNode(object):
 
         logging.debug("Proxy Connected to Socket: %s", endpoint)
 
+    def cleanup(self):
+        self.channel.close()
+        
     def local_callback(self, msg):
         """
         Create an instance of the Frame class using the data from the socket.
