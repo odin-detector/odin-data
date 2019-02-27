@@ -124,8 +124,6 @@ class TestLiveViewProxyAdapter(OdinTestServer):
             "dropped_frame_warning_cutoff": 0.2,
             "queue_length": 15
         }
-        # access_logging = 'debug'
-        # super(TestLiveViewProxyAdapter, self).setup_cTestLiveViewProxyAdapterlass(self.adapter_config, access_logging)
         self.test_frames = []
         for i in range(10):
             tmp_frame = Frame([json_encode({"frame_num": i}), "0"])

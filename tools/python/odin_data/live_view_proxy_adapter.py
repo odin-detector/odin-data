@@ -62,6 +62,7 @@ class LiveViewProxyAdapter(ApiAdapter):
                                                      self.dest_endpoint)
             self.publish_channel.bind()
         except ZMQError as channel_err:
+            # ZMQError raised here if the socket addr is already in use.
             logging.error("Connection Failed. Error given: %s", channel_err.message)
         self.max_queue = self.options.get(QUEUE_LENGTH_CONFIG_NAME, DEFAULT_QUEUE_LENGTH)
 
@@ -69,6 +70,7 @@ class LiveViewProxyAdapter(ApiAdapter):
             self.source_endpoints = []
             for target_str in self.options[SOURCE_ENDPOINTS_CONFIG_NAME].split(','):
                 try:
+                    # config provides the nodes as "node_name=socket_URI" pairs. Split those strings
                     (target, url) = target_str.split("=")
                     self.source_endpoints.append(LiveViewProxyNode(
                         target.strip(),
@@ -176,6 +178,8 @@ class LiveViewProxyAdapter(ApiAdapter):
         Reset the statistics for a new aquisition, setting dropped frames and sent frame
         counters back to 0
         """
+        # we ignore the "data" parameter, as it doesn't matter what was actually PUT to
+        # the method to reset.
         self.last_sent_frame = (0, 0)
         self.dropped_frame_count = 0
         for node in self.source_endpoints:
@@ -204,10 +208,11 @@ class LiveViewProxyNode(object):
         self.drop_warn_cutoff = drop_warn_cutoff
         self.drop_unwarn_cutoff = drop_warn_cutoff * 0.75
         self.has_warned = False
-
+        # subscribe to the given socket address.
         self.channel = IpcTornadoChannel(IpcTornadoChannel.CHANNEL_TYPE_SUB, endpoint=endpoint)
         self.channel.subscribe()
         self.channel.connect()
+        # callback is called whenever data 'arrives' at the socket. This is driven by the IOLoop
         self.channel.register_callback(self.local_callback)
 
         self.param_tree = ParameterTree({
@@ -234,6 +239,8 @@ class LiveViewProxyNode(object):
         frame = Frame(msg)
         self.received_frame_count += 1
         if frame.num < self.last_frame:
+            # Frames are assumed to be in order for each socket. If a frame suddenly has
+            # a lower frame number, it can be assumed that a new acquisition has begun.
             logging.debug(
                 "Frame number has reset, new acquisition started on Node %s",
                 self.name
@@ -252,6 +259,9 @@ class LiveViewProxyNode(object):
         self.dropped_frame_count += 1
         current_dropped_percent = float(self.dropped_frame_count) / float(self.received_frame_count)
         if current_dropped_percent > self.drop_warn_cutoff and not self.has_warned:
+            # If the number of dropped frames reaches a certain percentage threshold of the total
+            # received, warn the user, as it likely means one node is running slow and is unlikely
+            # to display any frames.
             logging.warning(
                 "Node %s has dropped %d%% of frames",
                 self.name,
