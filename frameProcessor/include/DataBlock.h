@@ -32,33 +32,33 @@ namespace FrameProcessor
         friend class DataBlockPool;
 
     public:
-        DataBlock(size_t nbytes);
+        DataBlock(size_t block_size);
 
         virtual ~DataBlock();
 
         int getIndex();
 
-        size_t getSize();
+        size_t get_size();
 
-        void copyData(const void *data_src, size_t nbytes);
+        void copy_data(const void* data_src, size_t block_size);
 
-        const void *get_data();
+        const void* get_data();
 
-        void *get_writeable_data();
+        void* get_writeable_data();
 
     private:
-        void resize(size_t nbytes);
+        void resize(size_t block_size);
 
         /** Pointer to logger */
         log4cxx::LoggerPtr logger_;
         /** Number of bytes allocated for this DataBlock */
-        size_t allocatedBytes_;
+        size_t allocated_bytes_;
         /** Unique index of this DataBlock */
         int index_;
         /** Void pointer to the allocated memory */
-        void *blockPtr_;
+        void* block_ptr_;
         /** Static counter for the unique index */
-        static int indexCounter_;
+        static int index_counter_;
     };
 
 } /* namespace FrameProcessor */

@@ -7,7 +7,7 @@ namespace FrameProcessor {
  * @param meta-data - frame IFrameMetaData
  * @param image_offset - between start of data memory and image
  */
-IFrame::IFrame(const IFrameMetaData &meta_data, const int &image_offset) :
+IFrame::IFrame(const IFrameMetaData& meta_data, const int& image_offset) :
     meta_data_(meta_data),
     image_offset_(image_offset) {}
 
@@ -15,7 +15,7 @@ IFrame::IFrame(const IFrameMetaData &meta_data, const int &image_offset) :
  * implement as shallow copy
  * @param frame - source frame
  */
-IFrame::IFrame(const IFrame &frame) {
+IFrame::IFrame(const IFrame& frame) {
   meta_data_ = frame.meta_data_;
   image_offset_ = frame.image_offset_;
 }
@@ -25,7 +25,7 @@ IFrame::IFrame(const IFrame &frame) {
  * @param frame - source frame
  * @return IFrame
  */
-IFrame &IFrame::operator=(IFrame &frame) {
+IFrame& IFrame::operator=(const IFrame& frame) {
   meta_data_ = frame.meta_data_;
   image_offset_ = frame.image_offset_;
   return *this;
@@ -34,7 +34,7 @@ IFrame &IFrame::operator=(IFrame &frame) {
 /** Return a void pointer to the image data
  * @ return void poiter to image data
  */
-void *IFrame::get_image_ptr() const {
+void* IFrame::get_image_ptr() const {
   return this->get_data_ptr() + image_offset_;
 }
 

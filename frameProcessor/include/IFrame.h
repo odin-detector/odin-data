@@ -13,7 +13,7 @@ namespace FrameProcessor {
 /** Interface class for a Frame; all Frames must sub-class this.
  *
  */
-class IFrame {
+class IFrame : public IFrameMetaData {
 
  public:
 
@@ -24,7 +24,7 @@ class IFrame {
   IFrame(const IFrame &frame);
 
   /** Deep-copy assignment */
-  IFrame &operator=(IFrame &frame);
+  IFrame &operator=(const IFrame& frame);
 
   /** Return a void pointer to the raw data */
   virtual void *get_data_ptr() const = 0;

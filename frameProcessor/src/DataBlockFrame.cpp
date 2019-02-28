@@ -7,29 +7,30 @@ namespace FrameProcessor {
  *
  * @param meta_data - frame IFrameMetaData
  * @param data_src - data to copy into block memory
- * @param nbytes - size of data
+ * @param block_size - size of data in bytes
  * @param image_offset - between start of data memory and image
  */
 DataBlockFrame::DataBlockFrame(const IFrameMetaData &meta_data,
-                               const void *data_src,
-                               size_t nbytes,
-                               const int &image_offset) : IFrame(meta_data, image_offset) {
-
-  //raw_data_block_ptr_ = DataBlockPool::take(nbytes, nbytes); TO DO: modify DataBlockPool to take nbytes as 'identifier'
-  raw_data_block_ptr_->copyData(data_src, nbytes);
-
+                               const void* data_src,
+                               size_t block_size,
+                               const int& image_offset) :
+    IFrame(meta_data, image_offset)
+{
+  raw_data_block_ptr_ = DataBlockPool::take(block_size);
+  raw_data_block_ptr_->copy_data(data_src, block_size);
 }
 
 /** DataBlockFrame constructor
  *
  * @param meta_data - frame IFrameMetaData
- * @param nbytes - size of data
+ * @param block_size - size of data in bytes
  * @param image_offset - between start of data memory and image
  */
 DataBlockFrame::DataBlockFrame(const IFrameMetaData &meta_data,
-                               size_t nbytes,
-                               const int &image_offset) : IFrame(meta_data, image_offset) {
-  //raw_data_block_ptr_ = DataBlockPool::take(nbytes, nbytes); TO DO: modify DataBlockPool to take nbytes as 'identifier'
+                               size_t block_size,
+                               const int &image_offset) : IFrame(meta_data, image_offset)
+{
+  raw_data_block_ptr_ = DataBlockPool::take(block_size);
 }
 
 /** Copy constructor;
@@ -48,10 +49,10 @@ DataBlockFrame::DataBlockFrame(const DataBlockFrame &frame) : IFrame(frame) {
 DataBlockFrame &DataBlockFrame::operator=(DataBlockFrame &frame) {
   IFrame::operator=(frame);
   if (raw_data_block_ptr_) {
-      //DataBlockPool::release(this->get_data_size(), raw_data_block_ptr_); TO DO: modify DataBlockPool to take nbytes as 'identifier'
+    DataBlockPool::release(raw_data_block_ptr_);
+    raw_data_block_ptr_ = DataBlockPool::take(frame.get_data_size());
   }
-  //raw_data_block_ptr_ =  DataBlockPool::take(frame.get_data_size(), frame.get_data_size()); TO DO: modify DataBlockPool to take nbytes as 'identifier'
-  raw_data_block_ptr_->copyData(frame.get_data_ptr(), frame.get_data_size());
+  raw_data_block_ptr_->copy_data(frame.get_data_ptr(), frame.get_data_size());
   return *this;
 }
 
@@ -59,7 +60,7 @@ DataBlockFrame &DataBlockFrame::operator=(DataBlockFrame &frame) {
  *
  */
 DataBlockFrame::~DataBlockFrame() {
-   /DataBlockPool::release(this->get_data_size(), raw_data_block_ptr_); TO DO: modify DataBlockPool to take nbytes as 'identifier'
+  DataBlockPool::release(raw_data_block_ptr_);
 }
 
 /** Return a void pointer to the raw data.
@@ -75,7 +76,7 @@ void *DataBlockFrame::get_data_ptr() const {
  * @return size_t data size
  */
 size_t DataBlockFrame::get_data_size() const {
-  return raw_data_block_ptr_->getSize();
+  return raw_data_block_ptr_->get_size();
 }
 
 }

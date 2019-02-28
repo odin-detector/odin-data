@@ -10,28 +10,30 @@ namespace FrameProcessor {
 
 class DataBlockFrame : public IFrame {
 
-  /** Construct a DataBlockFrame */
-  DataBlockFrame(const IFrameMetaData &meta_data,
-                 const void *data_src,
-                 size_t nbytes,
-                 const int &image_offset = 0);
+ public:
 
   /** Construct a DataBlockFrame */
-  DataBlockFrame(const IFrameMetaData &meta_data,
-                 size_t nbytes,
+  DataBlockFrame(const IFrameMetaData& meta_data,
+                 const void* data_src,
+                 size_t block_size,
+                 const int& image_offset = 0);
+
+  /** Construct a DataBlockFrame */
+  DataBlockFrame(const IFrameMetaData& meta_data,
+                 size_t block_size,
                  const int &image_offset = 0);
 
   /** Shallow-copy copy */
   DataBlockFrame(const DataBlockFrame &frame);
 
   /** Deep-copy assignment */
-  DataBlockFrame &operator=(DataBlockFrame &frame);
+  DataBlockFrame& operator=(DataBlockFrame &frame);
 
   /** Destructor */
   ~DataBlockFrame();
 
   /** Return a void pointer to the raw data */
-  virtual void *get_data_ptr() const;
+  virtual void* get_data_ptr() const;
 
   /** Return the data size */
   virtual size_t get_data_size() const;
