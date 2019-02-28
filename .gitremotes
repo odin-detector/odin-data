@@ -1,0 +1,3 @@
+gitlab git@gitlab.diamond.ac.uk:controls/tools/odin-data.git
+dls-controls git@github.com:dls-controls/odin-data.git
+upstream git@github.com:odin-detector/odin-data.git
