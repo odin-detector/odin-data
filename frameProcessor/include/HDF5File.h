@@ -22,7 +22,7 @@ using namespace log4cxx;
 #include <hdf5.h>
 #include "H5Zpublic.h"
 
-#include "Frame.h"
+#include "IFrame.h"
 #include "FrameProcessorDefinitions.h"
 #include "MetaMessagePublisher.h"
 
@@ -56,8 +56,8 @@ public:
   void create_file(std::string file_name, size_t file_index, bool use_earliest_version, size_t alignment_threshold, size_t alignment_value);
   void close_file();
   void create_dataset(const DatasetDefinition& definition, int low_index, int high_index);
-  void write_frame(const Frame& frame, hsize_t frame_offset, uint64_t outer_chunk_dimension);
-  void write_parameter(const Frame& frame, DatasetDefinition dataset_definition, hsize_t frame_offset);
+  void write_frame(const IFrame& frame, hsize_t frame_offset, uint64_t outer_chunk_dimension);
+  void write_parameter(const IFrame& frame, DatasetDefinition dataset_definition, hsize_t frame_offset);
   size_t get_dataset_frames(const std::string dset_name);
   void start_swmr();
   size_t get_file_index();

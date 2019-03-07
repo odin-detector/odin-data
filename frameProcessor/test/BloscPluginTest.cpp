@@ -7,6 +7,8 @@
 #include <DebugLevelLogger.h>
 #include "FrameProcessorDefinitions.h"
 #include "BloscPlugin.h"
+#include "IFrame.h"
+#include "DataBlockFrame.h"
 
 class BloscPluginTestFixture
 {
@@ -28,28 +30,22 @@ public:
     dset_def.frame_dimensions[1] = 4;
     dset_def.chunks = chunk_dims;
 
-    frame = boost::shared_ptr<FrameProcessor::Frame>(new FrameProcessor::Frame("data"));
-    frame->set_frame_number(7);
-    frame->set_dimensions(img_dims);
-    frame->copy_data(static_cast<void*>(img), 24);
-    frame->set_data_type(1); // 0: UINT8, 1: UINT16, 2: UINT32
-    frame->set_acquisition_id("scan1");
+    FrameProcessor::IFrameMetaData frame_meta("data", FrameProcessor::raw_16bit, "scan1", img_dims, FrameProcessor::no_compression);
+    frame = boost::shared_ptr<FrameProcessor::DataBlockFrame>(new FrameProcessor::DataBlockFrame(7, frame_meta, static_cast<void*>(img), 24));
 
     for (int i = 1; i<6; i++)
     {
-      boost::shared_ptr<FrameProcessor::Frame> tmp_frame(new FrameProcessor::Frame("data")); //2, img_dims));
-      tmp_frame->set_frame_number(i);
       img[0] = i;
-      tmp_frame->copy_data(static_cast<void*>(img), 24);
-      tmp_frame->set_data_type(sizeof(img[0]));
-      tmp_frame->set_acquisition_id("scan2");
-      tmp_frame->set_dimensions(img_dims);
+      FrameProcessor::IFrameMetaData tmp_frame_meta = frame->get_meta_data_copy();
+      tmp_frame_meta.set_acquisition_ID("scan2");
+      tmp_frame_meta.set_data_type(FrameProcessor::raw_32bit);
+      boost::shared_ptr<FrameProcessor::DataBlockFrame> tmp_frame(new FrameProcessor::DataBlockFrame(i, tmp_frame_meta, static_cast<void*>(img), 24));
       frames.push_back(tmp_frame);
     }
   }
   ~BloscPluginTestFixture() {}
-  boost::shared_ptr<FrameProcessor::Frame> frame;
-  std::vector< boost::shared_ptr<FrameProcessor::Frame> >frames;
+  boost::shared_ptr<FrameProcessor::IFrame> frame;
+  std::vector< boost::shared_ptr<FrameProcessor::IFrame> >frames;
   FrameProcessor::BloscPlugin blosc_plugin;
   FrameProcessor::DatasetDefinition dset_def;
 };

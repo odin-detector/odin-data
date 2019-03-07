@@ -13,13 +13,15 @@ class DataBlockFrame : public IFrame {
  public:
 
   /** Construct a DataBlockFrame */
-  DataBlockFrame(const IFrameMetaData& meta_data,
-                 const void* data_src,
+  DataBlockFrame(const long long &frame_number,
+                 const IFrameMetaData &meta_data,
+                 const void *data_src,
                  size_t block_size,
-                 const int& image_offset = 0);
+                 const int &image_offset = 0);
 
   /** Construct a DataBlockFrame */
-  DataBlockFrame(const IFrameMetaData& meta_data,
+  DataBlockFrame(const long long &frame_number,
+                 const IFrameMetaData& meta_data,
                  size_t block_size,
                  const int &image_offset = 0);
 
@@ -37,6 +39,9 @@ class DataBlockFrame : public IFrame {
 
   /** Return the data size */
   virtual size_t get_data_size() const;
+
+  /** Change the data size */
+  virtual void resize(size_t size);
 
  private:
 

@@ -18,7 +18,7 @@
 using namespace log4cxx;
 using namespace log4cxx::helpers;
 
-#include "Frame.h"
+#include "IFrame.h"
 #include "WorkQueue.h"
 
 namespace FrameProcessor
@@ -35,7 +35,7 @@ class IFrameCallback
 public:
   IFrameCallback();
   virtual ~IFrameCallback();
-  boost::shared_ptr<WorkQueue<boost::shared_ptr<Frame> > > getWorkQueue();
+  boost::shared_ptr<WorkQueue<boost::shared_ptr<IFrame> > > getWorkQueue();
   void start();
   void stop();
   bool isWorking() const;
@@ -49,7 +49,7 @@ public:
    *
    * \param[in] frame - pointer to Frame object ready for processing by the IFrameCallback subclass.
    */
-  virtual void callback(boost::shared_ptr<Frame> frame) = 0;
+  virtual void callback(boost::shared_ptr<IFrame> frame) = 0;
 
 private:
   /** Pointer to logger */
@@ -57,7 +57,7 @@ private:
   /** Pointer to worker queue thread */
   boost::thread *thread_;
   /** Pointer to WorkQueue for Frame object pointers */
-  boost::shared_ptr<WorkQueue<boost::shared_ptr<Frame> > > queue_;
+  boost::shared_ptr<WorkQueue<boost::shared_ptr<IFrame> > > queue_;
   /** Is this IFrameCallback working */
   bool working_;
   /** Map of confirmed registrations to this worker queue */

@@ -119,7 +119,7 @@ private:
   void closeMetaTxInterface();
   void runIpcService(void);
   void tickTimer(void);
-  void callback(boost::shared_ptr<Frame> frame);
+  void callback(boost::shared_ptr<IFrame> frame);
 
   /** Pointer to the logging facility */
   log4cxx::LoggerPtr                                              logger_;

@@ -27,10 +27,10 @@ namespace FrameProcessor {
   }
 
   template<class PixelType>
-  static uint64_t calculate_sum(boost::shared_ptr <Frame> frame)
+  static uint64_t calculate_sum(boost::shared_ptr <IFrame> frame)
   {
     uint64_t sum_value = 0;
-    const PixelType *data = static_cast<const PixelType *>(frame->get_data());
+    const PixelType *data = static_cast<const PixelType *>(frame->get_data_ptr());
     size_t elements_count = frame->get_data_size() / sizeof(data[0]);
 
     for (size_t pixel_index = 0; pixel_index < elements_count; pixel_index++) {
@@ -45,26 +45,30 @@ namespace FrameProcessor {
  *
  * \param[in] frame - Pointer to a Frame object.
  */
-  void SumPlugin::process_frame(boost::shared_ptr <Frame> frame)
+  void SumPlugin::process_frame(boost::shared_ptr <IFrame> frame)
   {
     LOG4CXX_TRACE(logger_, "Received a new frame...");
     uint64_t sum_val = 0;
-    switch (frame->get_data_type()) {
+    switch (frame->get_meta_data().get_data_type()) {
       case raw_8bit:
         sum_val = calculate_sum<uint8_t>(frame);
-        frame->set_parameter(SUM_PARAM_NAME, sum_val);
+        frame->meta_data().set_parameter<uint8_t>(SUM_PARAM_NAME, sum_val);
         break;
       case raw_16bit:
         sum_val = calculate_sum<uint16_t>(frame);
-        frame->set_parameter(SUM_PARAM_NAME, sum_val);
+        frame->meta_data().set_parameter<uint16_t>(SUM_PARAM_NAME, sum_val);
         break;
       case raw_32bit:
         sum_val = calculate_sum<uint32_t>(frame);
-        frame->set_parameter(SUM_PARAM_NAME, sum_val);
+        frame->meta_data().set_parameter<uint32_t>(SUM_PARAM_NAME, sum_val);
+        break;
+      case raw_64bit:
+        sum_val = calculate_sum<uint64_t>(frame);
+        frame->meta_data().set_parameter<uint64_t>(SUM_PARAM_NAME, sum_val);
         break;
       default:
         LOG4CXX_ERROR(logger_, "SumPlugin doesn't support data type:"
-            << get_type_from_enum(static_cast<DataType>(frame->get_data_type())));
+            << get_type_from_enum(static_cast<DataType>(frame->get_meta_data().get_data_type())));
     }
     this->push(frame);
   }

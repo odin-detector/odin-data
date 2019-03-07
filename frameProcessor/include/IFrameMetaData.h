@@ -15,18 +15,22 @@ typedef std::vector<dimsize_t> dimensions_t;
 
 namespace FrameProcessor {
 
-struct IFrameMetaData {
+class IFrameMetaData {
+
+public:
 
   IFrameMetaData(const std::string& dataset_name,
-                 const long long& frame_number,
                  const DataType& data_type,
-                 const std::string& acquisition_ID_,
+                 const std::string& acquisition_ID,
                  const std::vector<unsigned long long>& dimensions,
                  const CompressionType& compression_type = no_compression);
 
   IFrameMetaData();
 
   IFrameMetaData(const IFrameMetaData& frame);
+
+  /** Return frame parameters */
+  const std::map <std::string, boost::any> &get_parameters() const;
 
   /** Get frame parameter
    *
@@ -35,8 +39,13 @@ struct IFrameMetaData {
    * @return
    */
   template<class T>
-  T get_parameter(const std::string &parameter_name) {
-    return boost::any_cast<T>(parameters_[parameter_name]);
+  T get_parameter(const std::string &parameter_name) const {
+    std::map<std::string, boost::any>::const_iterator iter = parameters_.find(parameter_name);
+    if (iter == parameters_.end())
+    {
+      throw std::runtime_error("Unable to find parameter:");
+    }
+    return boost::any_cast<T>(iter->second);
   }
 
   /** Set frame parameter
@@ -55,15 +64,50 @@ struct IFrameMetaData {
    * @param index
    * @return
    */
-  bool has_parameter(const std::string& index) {
+  bool has_parameter(const std::string& index) const {
     return (parameters_.count(index) == 1);
   }
 
+  /** Return dataset_name */
+  const std::string &get_dataset_name() const;
+
+  /** Set dataset name */
+  void set_dataset_name(const std::string &dataset_name);
+
+  /** Return data type */
+  DataType get_data_type() const;
+
+  /** Set data type */
+  void set_data_type(DataType data_type);
+
+  /** Return acquisition ID */
+  const std::string &get_acquisition_ID() const;
+
+  /** Set acquisition ID */
+  void set_acquisition_ID(const std::string &acquisition_ID);
+
+  /** Return dimensions */
+  const dimensions_t &get_dimensions() const;
+
+  /** Set dimensions */
+  void set_dimensions(const dimensions_t &dimensions);
+
+  /** Return compression type */
+  CompressionType get_compression_type() const;
+
+  /** Return frame offset */
+  int64_t get_frame_offset() const;
+
+  /** Set frame offset */
+  void set_frame_offset(const int64_t &offset);
+
+  /** Adjust frame offset by increment */
+  void adjust_frame_offset(const int64_t &increment);
+
+private:
+
   /** Name of this dataset */
   std::string dataset_name_;
-
-  /** Frame number */
-  long long frame_number_;
 
   /** Data type of raw data */
   DataType data_type_;
@@ -79,6 +123,9 @@ struct IFrameMetaData {
 
   /** Map of parameters */
   std::map <std::string, boost::any> parameters_;
+
+  /** Frame offset */
+  int64_t frame_offset_;
 
 };
 

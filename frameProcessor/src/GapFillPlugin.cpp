@@ -9,6 +9,8 @@
 #include "DebugLevelLogger.h"
 #include <boost/algorithm/string.hpp>
 
+#include "DataBlockFrame.h"
+
 namespace FrameProcessor
 {
     /* Config Names*/
@@ -37,13 +39,13 @@ namespace FrameProcessor
      *
      * \param[in] frame - pointer to a frame object.
      */
-    void GapFillPlugin::process_frame(boost::shared_ptr<Frame> frame)
+    void GapFillPlugin::process_frame(boost::shared_ptr<IFrame> frame)
     {
         LOG4CXX_TRACE(logger_, "GapFillPlugin Process Frame.");
 
         // Call the insert gaps method and push the resulting frame if it is not null
         if (this->configuration_valid(frame)){
-            boost::shared_ptr<Frame> gap_frame = this->insert_gaps(frame);
+            boost::shared_ptr<IFrame> gap_frame = this->insert_gaps(frame);
             if (gap_frame){
                 this->push(gap_frame);
             }
@@ -59,21 +61,22 @@ namespace FrameProcessor
      * \param[in] frame - pointer to a frame object.
      * \return verified - true if the configuration is valid, false otherwise.
      */
-    bool GapFillPlugin::configuration_valid(boost::shared_ptr<Frame> frame)
+    bool GapFillPlugin::configuration_valid(boost::shared_ptr<IFrame> frame)
     {
         bool verified = false;
+        dimensions_t frame_dimensions = frame->get_meta_data().get_dimensions();
         // Check the size of the incoming image is correct for the defined grid and chip size
-        if (frame->get_dimensions()[0] != grid_[0] * chip_[0]){
+        if (frame_dimensions[0] != grid_[0] * chip_[0]){
             std::stringstream ss;
             ss << "GapFill - Inconsistent frame dimension[0] => "
-               << frame->get_dimensions()[0]
+               << frame_dimensions[0]
                << " compared with (grid[0] x chip[0]) => "
                << grid_[0] * chip_[0];
             this->set_error(ss.str());
-        } else if (frame->get_dimensions()[1] != grid_[1] * chip_[1]){
+        } else if (frame_dimensions[1] != grid_[1] * chip_[1]){
             std::stringstream ss;
             ss << "GapFill - Inconsistent frame dimension[1] => "
-               << frame->get_dimensions()[1]
+               << frame_dimensions[1]
                << " compared with (grid[1] x chip[1]) => "
                << grid_[1] * chip_[1];
             this->set_error(ss.str());
@@ -120,11 +123,12 @@ namespace FrameProcessor
      * \param[in] frame - pointer to a frame object.
      * \return gap_frame - pointer to a frame that has gaps inserted.
      */
-    boost::shared_ptr<Frame> GapFillPlugin::insert_gaps(boost::shared_ptr<Frame> frame)
+    boost::shared_ptr<IFrame> GapFillPlugin::insert_gaps(boost::shared_ptr<IFrame> frame)
     {
-        boost::shared_ptr<Frame> gap_frame;
+        boost::shared_ptr<IFrame> gap_frame;
 
-        // Create the new image
+        dimensions_t frame_dimensions = frame->get_meta_data().get_dimensions();
+
         int img_x = grid_[1] * chip_[1];
         for (int index = 0; index <= grid_[1]; index++){
             img_x += gaps_x_[index];
@@ -136,10 +140,11 @@ namespace FrameProcessor
         }
         LOG4CXX_TRACE(logger_, "New image height: " << img_y);
 
+        size_t frame_data_type_size = get_size_from_enum(frame->get_meta_data().get_data_type());
         // Malloc the required memory
-        void *new_image = malloc(img_x * img_y * frame->get_data_type_size());
+        void *new_image = malloc(img_x * img_y * frame_data_type_size);
         // Memset to ensure empty values
-        memset(new_image, 0, img_x * img_y * frame->get_data_type_size());
+        memset(new_image, 0, img_x * img_y * frame_data_type_size);
 
         // Loop over the y grid
         int current_offset_y = 0;
@@ -156,22 +161,22 @@ namespace FrameProcessor
                     current_offset_x += gaps_x_[x_index];
 
                     // src offset is the src row multiplied by the width + the current grid multiplied by chip width
-                    int src_offset = (current_src_row * frame->get_dimensions()[1]) + (x_index * chip_[1]);
+                    int src_offset = (current_src_row * frame_dimensions[1]) + (x_index * chip_[1]);
                     // Multiply dest_offset by the data type size
-                    src_offset *= frame->get_data_type_size();
+                    src_offset *= frame_data_type_size;
 
-                    char *src_ptr = (char *)frame->get_data();
+                    char *src_ptr = (char *)frame->get_data_ptr();
                     src_ptr += src_offset;
 
                     // Dest offset is full width * (current_y_gap + (y_grid_index * chip_y) + y_row)
                     int dest_offset = (current_dest_row * img_x) + current_offset_x + (x_index * chip_[1]);
                     // Multiply dest_offset by the data type size
-                    dest_offset *= frame->get_data_type_size();
+                    dest_offset *= frame_data_type_size;
 
                     char *dest_ptr = (char *)new_image;
                     dest_ptr += dest_offset;
                     // Now copy a single row of a single chip from the src to the destination
-                    memcpy(dest_ptr, src_ptr, chip_[1] * frame->get_data_type_size());
+                    memcpy(dest_ptr, src_ptr, chip_[1] * frame_data_type_size);
                 }
             }
         }
@@ -179,13 +184,13 @@ namespace FrameProcessor
         dimensions_t img_dims(2);
         img_dims[0] = img_y;
         img_dims[1] = img_x;
-        gap_frame = boost::shared_ptr<FrameProcessor::Frame>(new FrameProcessor::Frame(frame->get_dataset_name()));
-        gap_frame->set_frame_number(frame->get_frame_number());
-        gap_frame->set_parameters(frame->get_parameters());
-        gap_frame->set_dimensions(img_dims);
-        gap_frame->copy_data(static_cast<void*>(new_image), img_x * img_y * frame->get_data_type_size());
-        gap_frame->set_data_type(frame->get_data_type());
-        gap_frame->set_acquisition_id(frame->get_acquisition_id());
+
+
+       FrameProcessor::IFrameMetaData frame_meta = frame->get_meta_data_copy();
+       frame_meta.set_dimensions(img_dims);
+
+       gap_frame = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
+                new FrameProcessor::DataBlockFrame(frame->get_frame_number(), frame_meta, static_cast<void*>(new_image), img_x * img_y * get_size_from_enum(frame->get_meta_data().get_data_type())));
 
         // Free the allocated memory
         free(new_image);

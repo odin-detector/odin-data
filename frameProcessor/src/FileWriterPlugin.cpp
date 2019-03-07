@@ -8,7 +8,7 @@
 #include <boost/filesystem.hpp>
 #include <hdf5_hl.h>
 
-#include "Frame.h"
+#include "IFrame.h"
 #include "FileWriterPlugin.h"
 #include "FrameProcessorDefinitions.h"
 
@@ -114,7 +114,7 @@ FileWriterPlugin::~FileWriterPlugin()
  *
  * \param[in] frame - Pointer to the Frame object.
  */
-void FileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame)
+void FileWriterPlugin::process_frame(boost::shared_ptr<IFrame> frame)
 {
   // Protect this method
   boost::mutex::scoped_lock cflock(close_file_mutex_);
@@ -673,23 +673,26 @@ void FileWriterPlugin::status(OdinData::IpcMessage& status)
  *
  * \param[in] frame - Pointer to the Frame object.
  */
-bool FileWriterPlugin::frame_in_acquisition(boost::shared_ptr<Frame> frame) {
-  if (!frame->get_acquisition_id().empty()) {
+bool FileWriterPlugin::frame_in_acquisition(boost::shared_ptr<IFrame> frame) {
+
+  std::string frame_acquisition_ID = frame->get_meta_data().get_acquisition_ID();
+
+  if (!frame_acquisition_ID.empty()) {
     if (writing_) {
-      if (frame->get_acquisition_id() == current_acquisition_->acquisition_id_) {
+      if (frame_acquisition_ID == current_acquisition_->acquisition_id_) {
         // On same file, take no action
         return true;
       }
     }
 
-    if (frame->get_acquisition_id() == next_acquisition_->acquisition_id_) {
+    if (frame_acquisition_ID == next_acquisition_->acquisition_id_) {
       LOG4CXX_DEBUG_LEVEL(1, logger_, "Acquisition ID sent in frame matches next acquisition ID. "
                                       "Closing current file and starting next");
       stop_writing();
       start_writing();
     } else {
       std::stringstream ss;
-      ss << "Unexpected acquisition ID on frame (" << frame->get_acquisition_id() << ")";
+      ss << "Unexpected acquisition ID on frame (" << frame_acquisition_ID << ")";
       set_error(ss.str());
       ss << " for frame " << frame->get_frame_number();
       LOG4CXX_WARN(logger_, ss.str());

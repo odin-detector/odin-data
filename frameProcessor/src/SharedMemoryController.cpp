@@ -7,6 +7,7 @@
 
 #include <SharedMemoryController.h>
 #include "DebugLevelLogger.h"
+#include "SharedBufferFrame.h"
 
 namespace FrameProcessor
 {
@@ -177,15 +178,16 @@ void SharedMemoryController::handleRxChannel()
         if (sbm_) {
 
           // Create a frame object and copy in the raw frame data
-          boost::shared_ptr<Frame> frame;
-          frame = boost::shared_ptr<Frame>(new Frame("raw"));
-          frame->wrap_shared_buffer(sbm_->get_buffer_address(bufferID),
+          int frame_number = rxMsg.get_param<int>("frame", 0);
+          FrameProcessor::IFrameMetaData frame_meta("raw",
+                                                    FrameProcessor::raw_16bit,
+                                                    0,
+                                                    std::vector<unsigned long long>());
+          boost::shared_ptr<SharedBufferFrame> frame;
+          frame = boost::shared_ptr<SharedBufferFrame>(new SharedBufferFrame(frame_number, frame_meta, sbm_->get_buffer_address(bufferID),
                                     sbm_->get_buffer_size(),
-                                    bufferID,rxMsg.get_param<int>("frame", 0),
-                                    &txChannel_);
-
-          // Set the frame number
-          frame->set_frame_number(rxMsg.get_param<int>("frame", 0));
+                                    bufferID,
+                                    &txChannel_));
 
           // Loop over registered callbacks, placing the frame onto each queue
           std::map<std::string, boost::shared_ptr<IFrameCallback> >::iterator cbIter;

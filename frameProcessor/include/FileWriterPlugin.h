@@ -24,7 +24,7 @@ using namespace log4cxx;
 namespace FrameProcessor
 {
 
-class Frame;
+class IFrame;
 
 /** Plugin that writes Frame objects to HDF5 files.
  *
@@ -124,8 +124,8 @@ private:
    */
   FileWriterPlugin(const FileWriterPlugin& src); // prevent copying one of these
 
-  void process_frame(boost::shared_ptr<Frame> frame);
-  bool frame_in_acquisition(boost::shared_ptr<Frame> frame);
+  void process_frame(boost::shared_ptr<IFrame> frame);
+  bool frame_in_acquisition(boost::shared_ptr<IFrame> frame);
 
   /** Pointer to logger */
   LoggerPtr logger_;

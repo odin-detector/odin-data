@@ -40,7 +40,7 @@ public:
   std::string get_version_long();
 
 private:
-  void process_frame(boost::shared_ptr<Frame> frame);
+  void process_frame(boost::shared_ptr<IFrame> frame);
 
   /** Pointer to logger */
   LoggerPtr logger_;

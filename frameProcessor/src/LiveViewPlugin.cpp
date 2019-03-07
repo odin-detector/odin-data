@@ -57,14 +57,14 @@ LiveViewPlugin::~LiveViewPlugin()
  * 
  * \param[in] frame - pointer to a frame object.
  */
-void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
+void LiveViewPlugin::process_frame(boost::shared_ptr<IFrame> frame)
 {
   /** Static Frame Count will increment each time this method is called, basically as a count of how many frames have been processed by the plugin*/
   static uint32_t frame_count_;
   LOG4CXX_TRACE(logger_, "LiveViewPlugin Process Frame.");
   if(is_bound_)
   {
-    std::string frame_dataset = frame->get_dataset_name();
+    std::string frame_dataset = frame->get_meta_data().get_dataset_name();
     /* If datasets is empty, or contains the frame's dataset, then we can potentially send it*/
     if (datasets_.empty() || std::find(datasets_.begin(), datasets_.end(), frame_dataset) != datasets_.end())
     {
@@ -75,7 +75,7 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
       {
         for (int i = 0; i < tags_.size(); i++)
         {
-          if (frame->has_parameter(tags_[i]))
+          if (frame->get_meta_data().has_parameter(tags_[i]))
           {
             is_tagged = true;
             break;
@@ -203,17 +203,19 @@ void LiveViewPlugin::requestConfiguration(OdinData::IpcMessage& reply)
  * \param[in] frame_num - the number of the frame
  * 
  */
-void LiveViewPlugin::pass_live_frame(boost::shared_ptr<Frame> frame)
+void LiveViewPlugin::pass_live_frame(boost::shared_ptr<IFrame> frame)
 {
-  void* frame_data_copy = (void*)frame->get_data();
+  void* frame_data_copy = (void*)frame->get_data_ptr();
+
+  const IFrameMetaData meta_data = frame->get_meta_data();
 
   uint32_t frame_num = frame->get_frame_number();
-  std::string aqqID = frame->get_acquisition_id();
-  dimensions_t dim = frame->get_dimensions();
-  std::string type = get_type_from_enum((DataType)frame->get_data_type());
+  std::string aqqID = meta_data.get_acquisition_ID();
+  dimensions_t dim = meta_data.get_dimensions();
+  std::string type = get_type_from_enum((DataType)meta_data.get_data_type());
   std::size_t size = frame->get_data_size();
-  std::string compress = get_compress_from_enum((CompressionType)frame->get_compression());
-  std::string dataset = frame->get_dataset_name();
+  std::string compress = get_compress_from_enum((CompressionType)meta_data.get_compression_type());
+  std::string dataset = meta_data.get_dataset_name();
 
   rapidjson::Document document; /* Header info*/
   document.SetObject();
@@ -235,7 +237,7 @@ void LiveViewPlugin::pass_live_frame(boost::shared_ptr<Frame> frame)
   {
     for(int i = 0; i < tags_.size(); i++)
     {
-      if (frame->has_parameter(tags_[i]))
+      if (meta_data.has_parameter(tags_[i]))
       {
         rapidjson::Value tagStringVal(tags_[i].c_str(), document.GetAllocator());
         valueTags.PushBack(tagStringVal, document.GetAllocator());

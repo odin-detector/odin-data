@@ -9,6 +9,7 @@
 #include <version.h>
 #include <BloscPlugin.h>
 #include <DebugLevelLogger.h>
+#include "DataBlockFrame.h"
 
 namespace FrameProcessor
 {
@@ -88,30 +89,28 @@ BloscPlugin::~BloscPlugin()
  * @param src_frame - source frame to compress
  * @return compressed frame
  */
-boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> src_frame)
+boost::shared_ptr<IFrame> BloscPlugin::compress_frame(boost::shared_ptr<IFrame> src_frame)
 {
+
   int compressed_size = 0;
   BloscCompressionSettings c_settings;
-  boost::shared_ptr <Frame> dest_frame;
+
+
+  boost::shared_ptr<IFrame> dest_frame = boost::shared_ptr<DataBlockFrame>(
+                  new DataBlockFrame(src_frame->get_frame_number(),
+                                        src_frame->get_meta_data_copy(),
+                                        compressed_size));
 
   const void* src_data_ptr = static_cast<const void*>(
-      static_cast<const char*>(src_frame->get_data())
+      static_cast<const char*>(src_frame->get_data_ptr())
   );
 
   c_settings = this->compression_settings_;
-  if (src_frame->get_data_type() >= 0) {
-    c_settings.type_size = src_frame->get_data_type_size();
-  }
-  else {
-    std::stringstream ss;
-    ss << "blosc_compress failed. Frame::data_type_ not set";
-    LOG4CXX_ERROR(logger_, ss.str());
-    throw std::runtime_error(ss.str());
-  }
+
+  c_settings.type_size = get_size_from_enum(src_frame->get_meta_data().get_data_type());
   c_settings.uncompressed_size = src_frame->get_data_size();
 
   size_t dest_data_size = c_settings.uncompressed_size + BLOSC_MAX_OVERHEAD;
-  void *dest_data_ptr = this->get_buffer(dest_data_size);
 
   std::stringstream ss_blosc_settings;
   ss_blosc_settings << " compressor=" << blosc_get_compressor()
@@ -123,14 +122,14 @@ boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> sr
                     << " destsize=" << dest_data_size;
 
   LOG4CXX_DEBUG_LEVEL(2, logger_, "Blosc compression: frame=" << src_frame->get_frame_number()
-                          << " acquisition=\"" << src_frame->get_acquisition_id() << "\""
+                          << " acquisition=\"" << src_frame->get_meta_data().get_acquisition_ID() << "\""
                           << ss_blosc_settings.str()
                           << " src=" << src_data_ptr
-                          << " dest=" << dest_data_ptr);
+                          << " dest=" << dest_frame->get_data_ptr());
   compressed_size = blosc_compress(c_settings.compression_level, c_settings.shuffle,
                                    c_settings.type_size,
                                    c_settings.uncompressed_size, src_data_ptr,
-                                   dest_data_ptr, dest_data_size);
+                                   dest_frame->get_data_ptr(), dest_data_size);
   if (compressed_size < 0) {
     std::stringstream ss;
     ss << "blosc_compress failed. error=" << compressed_size << ss_blosc_settings.str();
@@ -145,18 +144,9 @@ boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> sr
                                   << " compressed_size=" << compressed_size
                                   << " factor=" << factor);
 
-  dest_frame = boost::shared_ptr<Frame>(new Frame(src_frame->get_dataset_name()));
 
-  LOG4CXX_DEBUG_LEVEL(3, logger_, "Copying compressed data to output frame. (" << compressed_size << " bytes)");
-  // I wish we had a pointer swap feature on the Frame class and avoid this unnecessary copy...
-  dest_frame->copy_data(dest_data_ptr, compressed_size);
+  dest_frame->resize(compressed_size);
 
-  // I wish we had a shallow-copy feature on the Frame class...
-  dest_frame->set_data_type(src_frame->get_data_type());
-  dest_frame->set_frame_number(src_frame->get_frame_number());
-  dest_frame->set_parameters(src_frame->get_parameters());
-  dest_frame->set_acquisition_id(src_frame->get_acquisition_id());
-  dest_frame->set_dimensions(src_frame->get_dimensions());
   return dest_frame;
 }
 
@@ -168,7 +158,7 @@ void BloscPlugin::update_compression_settings()
   this->compression_settings_ = this->commanded_compression_settings_;
 
   int ret = 0;
-  const char * p_compressor_name;
+  char * p_compressor_name;
   ret = blosc_compcode_to_compname(this->compression_settings_.blosc_compressor, &p_compressor_name);
   LOG4CXX_DEBUG_LEVEL(1, logger_, "Blosc compression settings: "
                                   << " acquisition=\"" << this->current_acquisition_ << "\""
@@ -220,20 +210,22 @@ void * BloscPlugin::get_buffer(size_t nbytes)
  *
  * \param[in] frame - Pointer to a Frame object.
  */
-void BloscPlugin::process_frame(boost::shared_ptr<Frame> src_frame)
+void BloscPlugin::process_frame(boost::shared_ptr<IFrame> src_frame)
 {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
 
   LOG4CXX_DEBUG_LEVEL(3, logger_, "Received a new frame...");
 
-  if (src_frame->get_acquisition_id() != this->current_acquisition_) {
-    LOG4CXX_DEBUG_LEVEL(1, logger_, "New acquisition detected: " << src_frame->get_acquisition_id());
-    this->current_acquisition_ = src_frame->get_acquisition_id();
+  std::string src_frame_acquisition_ID = src_frame->get_meta_data().get_acquisition_ID();
+
+  if (src_frame_acquisition_ID != this->current_acquisition_) {
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "New acquisition detected: " << src_frame_acquisition_ID);
+    this->current_acquisition_ = src_frame_acquisition_ID;
     this->update_compression_settings();
   }
 
-  boost::shared_ptr <Frame> compressed_frame = this->compress_frame(src_frame);
+  boost::shared_ptr <IFrame> compressed_frame = this->compress_frame(src_frame);
   LOG4CXX_DEBUG_LEVEL(3, logger_, "Pushing compressed frame");
   this->push(compressed_frame);
 }

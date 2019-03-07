@@ -4,12 +4,13 @@
 
 namespace FrameProcessor {
 
-SharedBufferFrame::SharedBufferFrame(const IFrameMetaData& meta_data,
+SharedBufferFrame::SharedBufferFrame(const long long &frame_number,
+                                     const IFrameMetaData &meta_data,
                                      void* data_src,
                                      size_t nbytes,
                                      uint64_t bufferID,
                                      OdinData::IpcChannel *relCh,
-                                     const int& image_offset) : IFrame(meta_data, image_offset) {
+                                     const int& image_offset) : IFrame(frame_number, meta_data, image_offset) {
   data_ptr_ = data_src;
   data_size_ = nbytes;
   shared_id_ = bufferID;
@@ -31,7 +32,7 @@ SharedBufferFrame::SharedBufferFrame(const SharedBufferFrame& frame) : IFrame(fr
 SharedBufferFrame::~SharedBufferFrame () {
   OdinData::IpcMessage txMsg(OdinData::IpcMessage::MsgTypeNotify,
                              OdinData::IpcMessage::MsgValNotifyFrameRelease);
-  txMsg.set_param("frame", meta_data_.dataset_name_);
+  txMsg.set_param("frame", meta_data_.get_dataset_name());
   txMsg.set_param("buffer_id", shared_id_);
   // Now publish the release message, to notify the frame receiver that we are
   // finished with that block of shared memory
@@ -52,6 +53,13 @@ void *SharedBufferFrame::get_data_ptr() const {
  */
 size_t SharedBufferFrame::get_data_size() const {
   return data_size_;
+}
+
+/** Change the data size
+ * @param size_t size
+ */
+void SharedBufferFrame::resize(size_t size) {
+ //TO DO // raise?
 }
 
 }

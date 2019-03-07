@@ -194,16 +194,16 @@ void HDF5File::close_file() {
  *
  * \param[in] frame - Reference to the frame.
  */
-void HDF5File::write_frame(const Frame& frame, hsize_t frame_offset, uint64_t outer_chunk_dimension) {
+void HDF5File::write_frame(const IFrame& frame, hsize_t frame_offset, uint64_t outer_chunk_dimension) {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
   hsize_t frame_no = frame.get_frame_number();
 
   LOG4CXX_TRACE(logger_, "Writing frame [" << frame.get_frame_number()
-      << "] size [" << frame.get_data_size()
-      << "] type [" << frame.get_data_type()
-      << "] name [" << frame.get_dataset_name() << "]");
-  HDF5Dataset_t& dset = this->get_hdf5_dataset(frame.get_dataset_name());
+      << "] size [" << get_size_from_enum(frame.get_meta_data().get_data_type())
+      << "] type [" << frame.get_meta_data().get_data_type()
+      << "] name [" << frame.get_meta_data().get_dataset_name() << "]");
+  HDF5Dataset_t& dset = this->get_hdf5_dataset(frame.get_meta_data().get_dataset_name());
 
 
   // We will need to extend the dataset in 1 dimension by the outer chunk dimension
@@ -214,7 +214,7 @@ void HDF5File::write_frame(const Frame& frame, hsize_t frame_offset, uint64_t ou
 
   LOG4CXX_TRACE(logger_, "Writing frame offset=" << frame_no  <<
       " (" << frame_offset << ")" <<
-      " dset=" << frame.get_dataset_name());
+      " dset=" <<frame.get_meta_data().get_dataset_name());
 
   // Set the offset
   std::vector<hsize_t>offset(dset.dataset_dimensions.size());
@@ -223,7 +223,7 @@ void HDF5File::write_frame(const Frame& frame, hsize_t frame_offset, uint64_t ou
   uint32_t filter_mask = 0x0;
   ensure_h5_result(H5DOwrite_chunk(dset.dataset_id, H5P_DEFAULT,
       filter_mask, &offset.front(),
-      frame.get_data_size(), frame.get_data()), "H5DOwrite_chunk failed");
+      frame.get_data_size(), frame.get_data_ptr()), "H5DOwrite_chunk failed");
 
 #if H5_VERSION_GE(1,9,178)
   if (!use_earliest_version_) {
@@ -239,7 +239,7 @@ void HDF5File::write_frame(const Frame& frame, hsize_t frame_offset, uint64_t ou
  * \param[in] dataset_definition - The dataset definition for this parameter.
  * \param[in] frame_offset - The offset to write the value to
  */
-void HDF5File::write_parameter(const Frame& frame, DatasetDefinition dataset_definition, hsize_t frame_offset) {
+void HDF5File::write_parameter(const IFrame& frame, DatasetDefinition dataset_definition, hsize_t frame_offset) {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
 
@@ -251,6 +251,7 @@ void HDF5File::write_parameter(const Frame& frame, DatasetDefinition dataset_def
   uint64_t u64value = 0;
   float f32value = 0;
 
+  /*
   // Get the correct value and size from the parameter given its type
   switch( dataset_definition.data_type ) {
   case raw_8bit:
@@ -284,6 +285,7 @@ void HDF5File::write_parameter(const Frame& frame, DatasetDefinition dataset_def
     size = sizeof(uint16_t);
     break;
   }
+   */
 
   HDF5Dataset_t& dset = this->get_hdf5_dataset(dataset_definition.name);
 

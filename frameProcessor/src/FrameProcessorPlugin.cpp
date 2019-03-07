@@ -255,7 +255,7 @@ void FrameProcessorPlugin::remove_all_callbacks()
  *
  * \param[in] frame - Pointer to the frame.
  */
-void FrameProcessorPlugin::callback(boost::shared_ptr<Frame> frame)
+void FrameProcessorPlugin::callback(boost::shared_ptr<IFrame> frame)
 {
   // Calls process frame
   this->process_frame(frame);
@@ -269,7 +269,7 @@ void FrameProcessorPlugin::callback(boost::shared_ptr<Frame> frame)
  *
  * \param[in] frame - Pointer to the frame.
  */
-void FrameProcessorPlugin::push(boost::shared_ptr<Frame> frame)
+void FrameProcessorPlugin::push(boost::shared_ptr<IFrame> frame)
 {
   // Loop over blocking callbacks, calling each function and waiting for return
   std::map<std::string, boost::shared_ptr<IFrameCallback> >::iterator bcbIter;

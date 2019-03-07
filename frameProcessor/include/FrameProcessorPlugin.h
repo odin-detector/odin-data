@@ -14,6 +14,7 @@
 #include "IpcMessage.h"
 #include "IpcChannel.h"
 #include "MetaMessagePublisher.h"
+#include "IFrame.h"
 
 namespace FrameProcessor
 {
@@ -45,13 +46,13 @@ public:
   void remove_all_callbacks();
 
 protected:
-  void push(boost::shared_ptr<Frame> frame);
+  void push(boost::shared_ptr<IFrame> frame);
 
 private:
   /** Pointer to logger */
   LoggerPtr logger_;
 
-  void callback(boost::shared_ptr<Frame> frame);
+  void callback(boost::shared_ptr<IFrame> frame);
 
   /**
    * This is called by the callback method when any new frames have
@@ -59,7 +60,7 @@ private:
    *
    * \param[in] frame - Pointer to the frame.
    */
-  virtual void process_frame(boost::shared_ptr<Frame> frame) = 0;
+  virtual void process_frame(boost::shared_ptr<IFrame> frame) = 0;
 
   /** Name of this plugin */
   std::string name_;

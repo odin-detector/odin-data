@@ -40,9 +40,9 @@ UIDAdjustmentPlugin::~UIDAdjustmentPlugin()
  *
  * \param[in] frame - Pointer to a Frame object.
  */
-void UIDAdjustmentPlugin::process_frame(boost::shared_ptr<Frame> frame)
+void UIDAdjustmentPlugin::process_frame(boost::shared_ptr<IFrame> frame)
 {
-  if (frame->has_parameter(UID_PARAM_NAME))
+  if (frame->get_meta_data().has_parameter(UID_PARAM_NAME))
   {
     if (frame->get_frame_number() == first_frame_number_)
     {
@@ -50,8 +50,8 @@ void UIDAdjustmentPlugin::process_frame(boost::shared_ptr<Frame> frame)
       current_uid_adjustment_ = configured_uid_adjustment_;
     }
 
-    uint64_t uid_adjusted = frame->get_i64_parameter(UID_PARAM_NAME) + current_uid_adjustment_;
-    frame->set_parameter(UID_PARAM_NAME, uid_adjusted);
+    uint64_t uid_adjusted = frame->get_meta_data().get_parameter<uint64_t>(UID_PARAM_NAME) + current_uid_adjustment_;
+    frame->meta_data().set_parameter<uint64_t>(UID_PARAM_NAME, uid_adjusted);
   }
   this->push(frame);
 }

@@ -13,7 +13,8 @@ class SharedBufferFrame : public IFrame {
  public:
 
   /** Construct a SharedBufferFrame */
-  SharedBufferFrame(const IFrameMetaData& meta_data,
+  SharedBufferFrame(const long long &frame_number,
+                    const IFrameMetaData &meta_data,
                     void *data_src,
                     size_t nbytes,
                     uint64_t bufferID,
@@ -32,7 +33,10 @@ class SharedBufferFrame : public IFrame {
   /** Return the data size */
   virtual size_t get_data_size() const;
 
- private:
+  /** Change the data size */
+  virtual void resize(size_t size);
+
+private:
 
   /** Pointer to shared memory raw block **/
   void *data_ptr_;

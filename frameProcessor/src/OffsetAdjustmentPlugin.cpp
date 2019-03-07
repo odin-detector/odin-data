@@ -40,7 +40,7 @@ OffsetAdjustmentPlugin::~OffsetAdjustmentPlugin()
  *
  * \param[in] frame - Pointer to a Frame object.
  */
-void OffsetAdjustmentPlugin::process_frame(boost::shared_ptr<Frame> frame)
+void OffsetAdjustmentPlugin::process_frame(boost::shared_ptr<IFrame> frame)
 {
   if (frame->get_frame_number() == first_frame_number_)
   {
@@ -48,7 +48,7 @@ void OffsetAdjustmentPlugin::process_frame(boost::shared_ptr<Frame> frame)
     current_offset_adjustment_ = configured_offset_adjustment_;
   }
 
-  frame->set_frame_offset(frame->get_frame_offset() + current_offset_adjustment_);
+  frame->meta_data().adjust_frame_offset(current_offset_adjustment_);
   this->push(frame);
 }
 

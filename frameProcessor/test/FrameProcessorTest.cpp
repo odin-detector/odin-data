@@ -24,6 +24,7 @@ using namespace log4cxx::xml;
 #include "LiveViewPlugin.h"
 #include "SumPlugin.h"
 #include "FrameProcessorDefinitions.h"
+#include "TestHelperFunctions.h"
 
 class GlobalConfig {
 public:
@@ -137,13 +138,13 @@ BOOST_AUTO_TEST_CASE( DataBlockFrameTest )
   dimensions_t img_dims(2); img_dims[0] = 3; img_dims[1] = 4;
 
   FrameProcessor::IFrameMetaData frame_meta(
-      "data", 7, FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
+      "data", FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
   );
-  FrameProcessor::DataBlockFrame frame(frame_meta, 24, 0);
+  FrameProcessor::DataBlockFrame frame(7, frame_meta, 24, 0);
   BOOST_REQUIRE_EQUAL(frame.get_data_size(), 24);
-  BOOST_REQUIRE_EQUAL(frame.get_meta_data().dimensions_[0], 3);
-  BOOST_REQUIRE_EQUAL(frame.get_meta_data().dimensions_[1], 4);
-  BOOST_CHECK_EQUAL(frame.get_meta_data().frame_number_, 7);
+  BOOST_REQUIRE_EQUAL(frame.get_meta_data().get_dimensions()[0], 3);
+  BOOST_REQUIRE_EQUAL(frame.get_meta_data().get_dimensions()[1], 4);
+  BOOST_CHECK_EQUAL(frame.get_frame_number(), 7);
   const unsigned short* img_copy = static_cast<const unsigned short*>(frame.get_data_ptr());
   BOOST_CHECK_EQUAL(img_copy[0], img[0]);
   BOOST_CHECK_EQUAL(img_copy[11], img[11]);
@@ -176,17 +177,16 @@ public:
     dset_def.create_low_high_indexes = false;
 
     FrameProcessor::IFrameMetaData frame_meta(
-        "data", 7, FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
+        "data", FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
     );
     frame = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
-        new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(img), 24)
+        new FrameProcessor::DataBlockFrame(7, frame_meta, static_cast<void*>(img), 24)
     );
 
     for (unsigned short i = 1; i<6; i++)
     {
-      frame_meta.frame_number_ = i;
       boost::shared_ptr<FrameProcessor::DataBlockFrame> tmp_frame(
-          new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(img), 24));
+          new FrameProcessor::DataBlockFrame(i, frame_meta, static_cast<void*>(img), 24));
       img[0] = i;
       frames.push_back(tmp_frame);
     }
@@ -205,7 +205,7 @@ BOOST_AUTO_TEST_CASE( HDF5FileTest )
 {
   BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/blah.h5", 0, false, 1, 1));
   BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def, -1, -1));
-  BOOST_REQUIRE_EQUAL(dset_def.name, frame->get_dataset_name());
+  BOOST_REQUIRE_EQUAL(dset_def.name, frame->get_meta_data().get_dataset_name());
 
   BOOST_REQUIRE_NO_THROW(hdf5f.write_frame(*frame, frame->get_frame_number(), 1));
   BOOST_REQUIRE_NO_THROW(hdf5f.close_file());
@@ -217,7 +217,7 @@ BOOST_AUTO_TEST_CASE( HDF5FileMultiDatasetTest )
 
   // Create the first dataset "data"
   BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def, -1, -1));
-  BOOST_CHECK_EQUAL(dset_def.name, frame->get_dataset_name());
+  BOOST_CHECK_EQUAL(dset_def.name, frame->get_meta_data().get_dataset_name());
 
   // Create the second dataset "stuff"
   dset_def.name = "stuff";
@@ -227,15 +227,15 @@ BOOST_AUTO_TEST_CASE( HDF5FileMultiDatasetTest )
   BOOST_REQUIRE_NO_THROW(hdf5f.write_frame(*frame, frame->get_frame_number(), 1));
 
   // Write the frame to "stuff"
-  BOOST_CHECK_NO_THROW(frame->set_dataset_name("stuff"));
-  BOOST_CHECK_EQUAL(dset_def.name, frame->get_dataset_name());
+  BOOST_CHECK_NO_THROW(frame->meta_data().set_dataset_name("stuff"));
+  BOOST_CHECK_EQUAL(dset_def.name, frame->get_meta_data().get_dataset_name());
   BOOST_REQUIRE_NO_THROW(hdf5f.write_frame(*frame, frame->get_frame_number(), 1));
 
   // write another frame to "data"
-  BOOST_CHECK_EQUAL("data", frames[2]->get_dataset_name());
+  BOOST_CHECK_EQUAL("data", frames[2]->get_meta_data().get_dataset_name());
   BOOST_REQUIRE_NO_THROW(hdf5f.write_frame(*frames[2], frames[2]->get_frame_number(), 1));
   // and yet another frame to "stuff"
-  BOOST_CHECK_NO_THROW(frames[2]->set_dataset_name("stuff"));
+  BOOST_CHECK_NO_THROW(frames[2]->meta_data().set_dataset_name("stuff"));
   BOOST_REQUIRE_NO_THROW(hdf5f.write_frame(*frames[2], frames[2]->get_frame_number(), 1));
 
   BOOST_REQUIRE_NO_THROW(hdf5f.close_file());
@@ -269,7 +269,7 @@ BOOST_AUTO_TEST_CASE( HDF5FileInvalidDatasetTest )
 {
   BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/blah_throw.h5", 0, false, 1, 1));
   BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def, -1, -1));
-  BOOST_REQUIRE_NO_THROW(frame->set_dataset_name("non_existing_dataset_name"));
+  BOOST_REQUIRE_NO_THROW(frame->meta_data().set_dataset_name("non_existing_dataset_name"));
 
   BOOST_CHECK_THROW(hdf5f.write_frame(*frame, frame->get_frame_number(), 1), std::runtime_error);
   BOOST_REQUIRE_NO_THROW(hdf5f.close_file());
@@ -322,7 +322,7 @@ BOOST_AUTO_TEST_CASE( HDF5FileAdjustHugeOffset )
     //PercivalEmulator::FrameHeader img_header = *((*it)->get_header());
     //img_header.frame_number = frame_no + huge_offset;
     //(*it)->copy_header(&img_header);
-    (*it)->set_frame_offset(huge_offset);
+    (*it)->meta_data().set_frame_offset(huge_offset);
     (*it)->set_frame_number(frame_no + huge_offset);
     BOOST_REQUIRE_NO_THROW(hdf5f.write_frame(*(*it), (*it)->get_frame_number(), 1));
   }
@@ -345,7 +345,7 @@ BOOST_AUTO_TEST_CASE( FileWriterPluginWriteParamTest )
   std::vector<boost::shared_ptr<FrameProcessor::DataBlockFrame> >::iterator it;
   for (it = frames.begin(); it != frames.end(); ++it) {
     uint64_t val = 123;
-    (*it)->get_meta_data().set_parameter("p1", val);
+    (*it)->meta_data().set_parameter("p1", val);
     BOOST_TEST_MESSAGE("Writing frame: " <<  (*it)->get_frame_number());
     BOOST_REQUIRE_NO_THROW(hdf5f.write_parameter(*(*it), param_dset_def, (*it)->get_frame_number()));
   }
@@ -368,7 +368,7 @@ BOOST_AUTO_TEST_CASE( FileWriterPluginWriteParamWrongTypeTest )
   std::vector<boost::shared_ptr<FrameProcessor::DataBlockFrame> >::iterator it;
   for (it = frames.begin(); it != frames.end(); ++it) {
     uint64_t val = 123;
-    (*it)->set_parameter("p1", val);
+    (*it)->meta_data().set_parameter("p1", val);
     BOOST_TEST_MESSAGE("Writing frame: " <<  (*it)->get_frame_number());
     BOOST_CHECK_THROW(hdf5f.write_parameter(*(*it), param_dset_def, (*it)->get_frame_number()), std::runtime_error);
   }
@@ -391,7 +391,7 @@ BOOST_AUTO_TEST_CASE( FileWriterPluginWriteParamNoParamTest )
   std::vector<boost::shared_ptr<FrameProcessor::DataBlockFrame> >::iterator it;
   for (it = frames.begin(); it != frames.end(); ++it) {
     uint64_t val = 123;
-    (*it)->set_parameter("p2", val);
+    (*it)->meta_data().set_parameter("p2", val);
     BOOST_TEST_MESSAGE("Writing frame: " <<  (*it)->get_frame_number());
     BOOST_CHECK_THROW(hdf5f.write_parameter(*(*it), param_dset_def, (*it)->get_frame_number()), std::runtime_error);
   }
@@ -608,9 +608,8 @@ BOOST_AUTO_TEST_CASE( AcquisitionAdjustFrameOffset )
 {
   FrameProcessor::Acquisition acquisition;
 
-  boost::shared_ptr<FrameProcessor::DataBlockFrame> frame(new FrameProcessor::DataBlockFrame("raw"));
-  frame->set_frame_number(0);
-  frame->set_frame_offset(0);
+  boost::shared_ptr<FrameProcessor::DataBlockFrame> frame = get_dummy_frame();
+  frame->meta_data().set_frame_offset(0);
 
   size_t adjusted_offset = acquisition.adjust_frame_offset(frame);
   BOOST_CHECK_EQUAL(0, adjusted_offset);
@@ -620,22 +619,22 @@ BOOST_AUTO_TEST_CASE( AcquisitionAdjustFrameOffset )
   BOOST_CHECK_EQUAL(1, adjusted_offset);
 
   frame->set_frame_number(0);
-  frame->set_frame_offset(1);
+  frame->meta_data().set_frame_offset(1);
   adjusted_offset = acquisition.adjust_frame_offset(frame);
   BOOST_CHECK_EQUAL(1, adjusted_offset);
 
   frame->set_frame_number(1);
-  frame->set_frame_offset(1);
+  frame->meta_data().set_frame_offset(1);
   adjusted_offset = acquisition.adjust_frame_offset(frame);
   BOOST_CHECK_EQUAL(2, adjusted_offset);
 
   frame->set_frame_number(1);
-  frame->set_frame_offset(-1);
+  frame->meta_data().set_frame_offset(-1);
   adjusted_offset = acquisition.adjust_frame_offset(frame);
   BOOST_CHECK_EQUAL(0, adjusted_offset);
 
   frame->set_frame_number(0);
-  frame->set_frame_offset(-1);
+  frame->meta_data().set_frame_offset(-1);
   BOOST_CHECK_THROW(acquisition.adjust_frame_offset(frame), std::range_error);
 }
 
@@ -646,20 +645,21 @@ BOOST_FIXTURE_TEST_SUITE(UIDAdjustmentPluginUnitTest, FileWriterPluginTestFixtur
 BOOST_AUTO_TEST_CASE( AdjustUID )
 {
   FrameProcessor::UIDAdjustmentPlugin plugin;
-  boost::shared_ptr<FrameProcessor::DataBlockFrame> frame(new FrameProcessor::DataBlockFrame("raw"));
+  boost::shared_ptr<FrameProcessor::DataBlockFrame> frame = get_dummy_frame();
+
   uint64_t uid = 0;
-  frame->set_parameter("UID", uid);
+  frame->meta_data().set_parameter("UID", uid);
 
   // Check 0 goes to 0 when no config has been sent
   plugin.process_frame(frame);
-  BOOST_CHECK_EQUAL(0, frame->get_i64_parameter("UID"));
+  BOOST_CHECK_EQUAL(0, frame->get_meta_data().get_parameter<uint64_t>("UID"));
 
   // Check a non 0 goes to the same when no config has been sent
   uid = 27;
   frame->set_frame_number(uid);
-  frame->set_parameter("UID", uid);
+  frame->meta_data().set_parameter("UID", uid);
   plugin.process_frame(frame);
-  BOOST_CHECK_EQUAL(27, frame->get_i64_parameter("UID"));
+  BOOST_CHECK_EQUAL(27, frame->get_meta_data().get_parameter<uint64_t>("UID"));
 
   // Configure a frame offset of 4
   OdinData::IpcMessage reply;
@@ -670,30 +670,30 @@ BOOST_AUTO_TEST_CASE( AdjustUID )
   // Check the offset is not applied as not seen first frame since configuring
   uid = 28;
   frame->set_frame_number(uid);
-  frame->set_parameter("UID", uid);
+  frame->meta_data().set_parameter("UID", uid);
   plugin.process_frame(frame);
-  BOOST_CHECK_EQUAL(28, frame->get_i64_parameter("UID"));
+  BOOST_CHECK_EQUAL(28, frame->get_meta_data().get_parameter<uint64_t>("UID"));
 
   // Check the offset is applied when a new first frame is now sent
   uid = 0;
   frame->set_frame_number(uid);
-  frame->set_parameter("UID", uid);
+  frame->meta_data().set_parameter("UID", uid);
   plugin.process_frame(frame);
-  BOOST_CHECK_EQUAL(4, frame->get_i64_parameter("UID"));
+  BOOST_CHECK_EQUAL(4, frame->get_meta_data().get_parameter<uint64_t>("UID"));
 
   // Check the offset is still applied when not on frame 0
   uid = 10;
   frame->set_frame_number(uid);
-  frame->set_parameter("UID", uid);
+  frame->meta_data().set_parameter("UID", uid);
   plugin.process_frame(frame);
-  BOOST_CHECK_EQUAL(14, frame->get_i64_parameter("UID"));
+  BOOST_CHECK_EQUAL(14, frame->get_meta_data().get_parameter<uint64_t>("UID"));
 
   // Check the offset is still applied when uid is different to frame number
   uid = 100;
   frame->set_frame_number(27);
-  frame->set_parameter("UID", uid);
+  frame->meta_data().set_parameter("UID", uid);
   plugin.process_frame(frame);
-  BOOST_CHECK_EQUAL(104, frame->get_i64_parameter("UID"));
+  BOOST_CHECK_EQUAL(104, frame->get_meta_data().get_parameter<uint64_t>("UID"));
 
   // Configure a start frame of 1
   cfg.set_param(FrameProcessor::UID_ADJUSTMENT_CONFIG, 33);
@@ -703,30 +703,30 @@ BOOST_AUTO_TEST_CASE( AdjustUID )
   // Check the new offset is not applied when not on frame 0
   uid = 12;
   frame->set_frame_number(uid);
-  frame->set_parameter("UID", uid);
+  frame->meta_data().set_parameter("UID", uid);
   plugin.process_frame(frame);
-  BOOST_CHECK_EQUAL(16, frame->get_i64_parameter("UID"));
+  BOOST_CHECK_EQUAL(16, frame->get_meta_data().get_parameter<uint64_t>("UID"));
 
   // Check the new offset is not applied when on frame 0
   uid = 0;
   frame->set_frame_number(uid);
-  frame->set_parameter("UID", uid);
+  frame->meta_data().set_parameter("UID", uid);
   plugin.process_frame(frame);
-  BOOST_CHECK_EQUAL(4, frame->get_i64_parameter("UID"));
+  BOOST_CHECK_EQUAL(4, frame->get_meta_data().get_parameter<uint64_t>("UID"));
 
   // Check the new offset is applied when on frame 1
   uid = 1;
   frame->set_frame_number(uid);
-  frame->set_parameter("UID", uid);
+  frame->meta_data().set_parameter("UID", uid);
   plugin.process_frame(frame);
-  BOOST_CHECK_EQUAL(34, frame->get_i64_parameter("UID"));
+  BOOST_CHECK_EQUAL(34, frame->get_meta_data().get_parameter<uint64_t>("UID"));
 
   // Check the new offset is applied when on frame 2
   uid = 2;
   frame->set_frame_number(uid);
-  frame->set_parameter("UID", uid);
+  frame->meta_data().set_parameter("UID", uid);
   plugin.process_frame(frame);
-  BOOST_CHECK_EQUAL(35, frame->get_i64_parameter("UID"));
+  BOOST_CHECK_EQUAL(35, frame->get_meta_data().get_parameter<uint64_t>("UID"));
 }
  
 BOOST_AUTO_TEST_SUITE_END(); //UIDAdjustmentPluginUnitTest
@@ -736,20 +736,28 @@ BOOST_FIXTURE_TEST_SUITE(OffsetAdjustmentPluginUnitTest, FileWriterPluginTestFix
 BOOST_AUTO_TEST_CASE( AdjustOffset )
 {
   FrameProcessor::OffsetAdjustmentPlugin plugin;
-  boost::shared_ptr<FrameProcessor::DataBlockFrame> frame(new FrameProcessor::DataBlockFrame("raw"));
+
+  dimensions_t dims(2, 0);
+  FrameProcessor::IFrameMetaData frame_meta(
+          "raw", FrameProcessor::raw_16bit, "test", dims, FrameProcessor::no_compression
+  );
+  char dummy_data[2] = {0, 0};
+
+  boost::shared_ptr<FrameProcessor::DataBlockFrame> frame(
+          new FrameProcessor::DataBlockFrame(0, frame_meta, static_cast<void*>(dummy_data), 2));
   uint64_t offset = 0;
-  frame->set_frame_offset(offset);
+  frame->meta_data().set_frame_offset(offset);
 
   // Check 0 goes to 0 when no config has been sent
   plugin.process_frame(frame);
-  BOOST_CHECK_EQUAL(0, frame->get_frame_offset());
+  BOOST_CHECK_EQUAL(0, frame->get_meta_data().get_frame_offset());
 
   // Check a non 0 goes to the same when no config has been sent
   offset = 27;
   frame->set_frame_number(offset);
-  frame->set_frame_offset(offset);
+  frame->meta_data().set_frame_offset(offset);
   plugin.process_frame(frame);
-  BOOST_CHECK_EQUAL(27, frame->get_frame_offset());
+  BOOST_CHECK_EQUAL(27, frame->get_meta_data().get_frame_offset());
 
   // Configure a frame offset of 4
   OdinData::IpcMessage reply;
@@ -760,30 +768,30 @@ BOOST_AUTO_TEST_CASE( AdjustOffset )
   // Check the offset is not applied as not seen first frame since configuring
   offset = 28;
   frame->set_frame_number(offset);
-  frame->set_frame_offset(offset);
+  frame->meta_data().set_frame_offset(offset);
   plugin.process_frame(frame);
-  BOOST_CHECK_EQUAL(28, frame->get_frame_offset());
+  BOOST_CHECK_EQUAL(28, frame->get_meta_data().get_frame_offset());
 
   // Check the offset is applied when a new first frame is now sent
   offset = 0;
   frame->set_frame_number(offset);
-  frame->set_frame_offset(offset);
+  frame->meta_data().set_frame_offset(offset);
   plugin.process_frame(frame);
-  BOOST_CHECK_EQUAL(4, frame->get_frame_offset());
+  BOOST_CHECK_EQUAL(4, frame->get_meta_data().get_frame_offset());
 
   // Check the offset is still applied when not on frame 0
   offset = 10;
   frame->set_frame_number(offset);
-  frame->set_frame_offset(offset);
+  frame->meta_data().set_frame_offset(offset);
   plugin.process_frame(frame);
-  BOOST_CHECK_EQUAL(14, frame->get_frame_offset());
+  BOOST_CHECK_EQUAL(14, frame->get_meta_data().get_frame_offset());
 
   // Check the offset is still applied when uid is different to frame number
   offset = 100;
   frame->set_frame_number(27);
-  frame->set_frame_offset(offset);
+  frame->meta_data().set_frame_offset(offset);
   plugin.process_frame(frame);
-  BOOST_CHECK_EQUAL(104, frame->get_frame_offset());
+  BOOST_CHECK_EQUAL(104, frame->get_meta_data().get_frame_offset());
 
   // Configure a start frame of 1
   cfg.set_param(FrameProcessor::OFFSET_ADJUSTMENT_CONFIG, 33);
@@ -793,30 +801,30 @@ BOOST_AUTO_TEST_CASE( AdjustOffset )
   // Check the new offset is not applied when not on frame 0
   offset = 12;
   frame->set_frame_number(offset);
-  frame->set_frame_offset(offset);
+  frame->meta_data().set_frame_offset(offset);
   plugin.process_frame(frame);
-  BOOST_CHECK_EQUAL(16, frame->get_frame_offset());
+  BOOST_CHECK_EQUAL(16, frame->get_meta_data().get_frame_offset());
 
   // Check the new offset is not applied when on frame 0
   offset = 0;
   frame->set_frame_number(offset);
-  frame->set_frame_offset(offset);
+  frame->meta_data().set_frame_offset(offset);
   plugin.process_frame(frame);
-  BOOST_CHECK_EQUAL(4, frame->get_frame_offset());
+  BOOST_CHECK_EQUAL(4, frame->get_meta_data().get_frame_offset());
 
   // Check the new offset is applied when on frame 1
   offset = 1;
   frame->set_frame_number(offset);
-  frame->set_frame_offset(offset);
+  frame->meta_data().set_frame_offset(offset);
   plugin.process_frame(frame);
-  BOOST_CHECK_EQUAL(34, frame->get_frame_offset());
+  BOOST_CHECK_EQUAL(34, frame->get_meta_data().get_frame_offset());
 
   // Check the new offset is applied when on frame 2
   offset = 2;
   frame->set_frame_number(offset);
-  frame->set_frame_offset(offset);
+  frame->meta_data().set_frame_offset(offset);
   plugin.process_frame(frame);
-  BOOST_CHECK_EQUAL(35, frame->get_frame_offset());
+  BOOST_CHECK_EQUAL(35, frame->get_meta_data().get_frame_offset());
 }
 
 BOOST_AUTO_TEST_SUITE_END(); //UIDAdjustmentPluginUnitTest
@@ -958,54 +966,48 @@ BOOST_AUTO_TEST_CASE( SumFrame )
   };
   dimensions_t img_dims(2); img_dims[0] = 3; img_dims[1] = 4;
 
-  boost::shared_ptr<FrameProcessor::DataBlockFrame> frame(new FrameProcessor::DataBlockFrame("raw"));
+  FrameProcessor::IFrameMetaData frame_meta(
+          "raw", FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
+  );
 
-  frame->set_dimensions(img_dims);
-  frame->set_data_type(FrameProcessor::raw_16bit);
-
-  BOOST_CHECK_NO_THROW(frame->copy_data(static_cast<void*>(img), 24));
+  boost::shared_ptr<FrameProcessor::DataBlockFrame> frame(
+          new FrameProcessor::DataBlockFrame(1, frame_meta, static_cast<void*>(img), 24));
 
   plugin.process_frame(frame);
 
-  BOOST_CHECK(frame->has_parameter(FrameProcessor::SUM_PARAM_NAME));
+  BOOST_CHECK(frame->get_meta_data().has_parameter(FrameProcessor::SUM_PARAM_NAME));
 
   // check that the sum of each pixel is the correct value
-  BOOST_CHECK_EQUAL(78, frame->get_i64_parameter(FrameProcessor::SUM_PARAM_NAME));
+  BOOST_CHECK_EQUAL(78, frame->get_meta_data().get_parameter<uint64_t>(FrameProcessor::SUM_PARAM_NAME));
 }
 
 BOOST_AUTO_TEST_CASE( SumEmptyFrame )
 {
   FrameProcessor::SumPlugin plugin;
 
-  boost::shared_ptr<FrameProcessor::DataBlockFrame> frame(new FrameProcessor::DataBlockFrame("empty"));
   dimensions_t dims(2, 0);
-  frame->set_dimensions(dims);
-  frame->set_data_type(FrameProcessor::raw_16bit);
+  FrameProcessor::IFrameMetaData frame_meta(
+          "raw", FrameProcessor::raw_16bit, "test", dims, FrameProcessor::no_compression
+  );
   char dummy_data[2] = {0, 0};
-  frame->copy_data(static_cast<void*>(dummy_data), 2);
+  boost::shared_ptr<FrameProcessor::DataBlockFrame> frame(
+          new FrameProcessor::DataBlockFrame(0, frame_meta, static_cast<void*>(dummy_data), 2));
 
   plugin.process_frame(frame);
-  BOOST_CHECK(frame->has_parameter(FrameProcessor::SUM_PARAM_NAME));
+  BOOST_CHECK(frame->get_meta_data().has_parameter(FrameProcessor::SUM_PARAM_NAME));
   // check that a empty frame sum is zero
-  BOOST_CHECK_EQUAL(0, frame->get_i64_parameter(FrameProcessor::SUM_PARAM_NAME));
+  BOOST_CHECK_EQUAL(0, frame->get_meta_data().get_parameter<uint64_t>(FrameProcessor::SUM_PARAM_NAME));
 }
 
 BOOST_AUTO_TEST_CASE( SumNotSupportedDataType )
 {
-  // check that sum parameter is not set in unsupported data types
   FrameProcessor::SumPlugin plugin;
-  boost::shared_ptr<FrameProcessor::DataBlockFrame> frame(new FrameProcessor::DataBlockFrame("raw"));
-  // undefined data type
+  // check that sum parameter is not set in unsupported data types
+  boost::shared_ptr<FrameProcessor::DataBlockFrame> frame = get_dummy_frame();
+  frame->meta_data().set_data_type(FrameProcessor::raw_float);
   plugin.process_frame(frame);
-  BOOST_CHECK(!frame->has_parameter(FrameProcessor::SUM_PARAM_NAME));
+  BOOST_CHECK(!frame->get_meta_data().has_parameter(FrameProcessor::SUM_PARAM_NAME));
 
-  frame->set_data_type(FrameProcessor::raw_float);
-  plugin.process_frame(frame);
-  BOOST_CHECK(!frame->has_parameter(FrameProcessor::SUM_PARAM_NAME));
-
-  frame->set_data_type(FrameProcessor::raw_64bit);
-  plugin.process_frame(frame);
-  BOOST_CHECK(!frame->has_parameter(FrameProcessor::SUM_PARAM_NAME));
 }
 
 BOOST_AUTO_TEST_SUITE_END(); //SumPluginUnitTest

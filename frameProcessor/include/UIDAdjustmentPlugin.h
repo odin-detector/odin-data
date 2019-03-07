@@ -36,7 +36,7 @@ class UIDAdjustmentPlugin : public FrameProcessorPlugin
 public:
   UIDAdjustmentPlugin();
   virtual ~UIDAdjustmentPlugin();
-  void process_frame(boost::shared_ptr<Frame> frame);
+  void process_frame(boost::shared_ptr<IFrame> frame);
   void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   int get_version_major();
   int get_version_minor();

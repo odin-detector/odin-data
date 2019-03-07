@@ -8,6 +8,10 @@
 #ifndef FRAMEPROCESSOR_FrameProcessorDefinitions_H_
 #define FRAMEPROCESSOR_FrameProcessorDefinitions_H_
 
+#include <sstream>
+#include <stdexcept>
+#include "stdint.h"
+
 namespace FrameProcessor
 {
   /**
@@ -28,6 +32,29 @@ namespace FrameProcessor
   const std::string DATA_TYPES[] = {"uint8","uint16","uint32","uint64","float"};
   const std::string COMPRESS_TYPES[] = {"none","LZ4","BSLZ4"};
 
+  /**
+   * Gets the size of the data type
+   * \param[in] type - enum value
+   * \return size_t data type size
+   */
+  static size_t get_size_from_enum(DataType type)
+  {
+    if (type == raw_8bit)
+      return sizeof(uint8_t); // 1 byte
+    else if (type == raw_16bit)
+      return sizeof(uint16_t); // 2 bytes
+    else if (type == raw_32bit)
+      return sizeof(uint32_t); // 4 bytes
+    else if (type == raw_64bit)
+      return sizeof(uint64_t); // 8 bytes
+    else if (type == raw_float)
+        return sizeof(float);
+    else {
+      std::stringstream msg;
+      msg << "Unable to determine data type size " << type;
+      throw std::runtime_error(msg.str());
+    }
+  }
 
   /**
    * Gets the type of the data, based on the enum value
