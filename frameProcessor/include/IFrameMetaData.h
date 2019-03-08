@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <boost/any.hpp>
+#include <log4cxx/logger.h>
 
 #include "FrameProcessorDefinitions.h"
 
@@ -43,9 +44,21 @@ public:
     std::map<std::string, boost::any>::const_iterator iter = parameters_.find(parameter_name);
     if (iter == parameters_.end())
     {
-      throw std::runtime_error("Unable to find parameter:");
+      LOG4CXX_ERROR(logger, "Unable to find parameter: " + parameter_name);
+      throw std::runtime_error("Unable to find parameter");
     }
-    return boost::any_cast<T>(iter->second);
+    try
+    {
+      return boost::any_cast<T>(iter->second);
+    }
+    catch (boost::bad_any_cast &e)
+    {
+      LOG4CXX_ERROR(logger, "Parameter has wrong type");
+      throw std::runtime_error("Parameter has wrong type");
+    }
+    catch (std::exception &e) {
+      throw std::runtime_error("Unknown exception fetching parameter");
+    }
   }
 
   /** Set frame parameter
@@ -105,6 +118,9 @@ public:
   void adjust_frame_offset(const int64_t &increment);
 
 private:
+
+  /** Pointer to logger */
+  log4cxx::LoggerPtr logger;
 
   /** Name of this dataset */
   std::string dataset_name_;

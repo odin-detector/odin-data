@@ -251,41 +251,39 @@ void HDF5File::write_parameter(const IFrame& frame, DatasetDefinition dataset_de
   uint64_t u64value = 0;
   float f32value = 0;
 
-  /*
   // Get the correct value and size from the parameter given its type
   switch( dataset_definition.data_type ) {
   case raw_8bit:
-    u8value = frame.get_i8_parameter(dataset_definition.name);
+    u8value = frame.get_meta_data().get_parameter<uint8_t>(dataset_definition.name);
     data_ptr = &u8value;
     size = sizeof(uint8_t);
     break;
   case raw_16bit:
-    u16value = frame.get_i16_parameter(dataset_definition.name);
+    u16value = frame.get_meta_data().get_parameter<uint16_t>(dataset_definition.name);
     data_ptr = &u16value;
     size = sizeof(uint16_t);
     break;
   case raw_32bit:
-    u32value = frame.get_i32_parameter(dataset_definition.name);
+    u32value = frame.get_meta_data().get_parameter<uint32_t>(dataset_definition.name);
     data_ptr = &u32value;
     size = sizeof(uint32_t);
     break;
   case raw_64bit:
-    u64value = frame.get_i64_parameter(dataset_definition.name);
+    u64value = frame.get_meta_data().get_parameter<uint64_t>(dataset_definition.name);
     data_ptr = &u64value;
     size = sizeof(uint64_t);
     break;
   case raw_float:
-    f32value = frame.get_float_parameter(dataset_definition.name);
+    f32value = frame.get_meta_data().get_parameter<float>(dataset_definition.name);
     data_ptr = &f32value;
     size = sizeof(float);
     break;
   default:
-    u16value = frame.get_i16_parameter(dataset_definition.name);
+    u16value = frame.get_meta_data().get_parameter<uint16_t>(dataset_definition.name);
     data_ptr = &u16value;
     size = sizeof(uint16_t);
     break;
   }
-   */
 
   HDF5Dataset_t& dset = this->get_hdf5_dataset(dataset_definition.name);
 

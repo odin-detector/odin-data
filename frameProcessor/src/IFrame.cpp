@@ -8,10 +8,13 @@ namespace FrameProcessor {
  * @param meta-data - frame IFrameMetaData
  * @param image_offset - between start of data memory and image
  */
-    IFrame::IFrame(const long long &frame_number, const IFrameMetaData &meta_data, const int &image_offset) :
+    IFrame::IFrame(const long long &frame_number, const IFrameMetaData& meta_data, const int &image_offset) :
             frame_number_(frame_number),
             meta_data_(meta_data),
-            image_offset_(image_offset) {}
+            image_offset_(image_offset),
+            logger(log4cxx::Logger::getLogger("FP.IFrame")) {
+      logger->setLevel(log4cxx::Level::getAll());
+    }
 
 /** Copy constructor;
  * implement as shallow copy
@@ -20,6 +23,7 @@ namespace FrameProcessor {
     IFrame::IFrame(const IFrame &frame) {
       meta_data_ = frame.meta_data_;
       image_offset_ = frame.image_offset_;
+      logger = frame.logger;
     }
 
 /** Assignment operator;
@@ -30,6 +34,7 @@ namespace FrameProcessor {
     IFrame &IFrame::operator=(const IFrame &frame) {
       meta_data_ = frame.meta_data_;
       image_offset_ = frame.image_offset_;
+      logger = frame.logger;
       return *this;
     }
 

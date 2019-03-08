@@ -12,13 +12,19 @@ namespace FrameProcessor {
             acquisition_ID_(acquisition_ID),
             dimensions_(dimensions),
             compression_type_(compression_type),
-            frame_offset_(0) {}
+            frame_offset_(0),
+            logger(log4cxx::Logger::getLogger("FP.IFrameMetaData")) {
+      logger->setLevel(log4cxx::Level::getAll());
+    }
 
     IFrameMetaData::IFrameMetaData() :
             dataset_name_(""),
             data_type_(raw_8bit),
             compression_type_(no_compression),
-            frame_offset_(0) {}
+            frame_offset_(0),
+            logger(log4cxx::Logger::getLogger("FP.IFrameMetaData")) {
+      logger->setLevel(log4cxx::Level::getAll());
+    }
 
     IFrameMetaData::IFrameMetaData(const IFrameMetaData &frame) {
       dataset_name_ = frame.dataset_name_;
@@ -28,6 +34,7 @@ namespace FrameProcessor {
       compression_type_ = frame.compression_type_;
       parameters_ = frame.parameters_;
       frame_offset_ = frame.frame_offset_;
+      logger = frame.logger;
     }
 
     /** Get frame parameters
