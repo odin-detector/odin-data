@@ -195,10 +195,10 @@ boost::shared_ptr<DataBlock> DataBlockPool::internal_take(size_t block_size)
       memory_allocated_ += block_size;
     }
     free_list_.pop_front();
-    used_map_[block->getIndex()] = block;
+    used_map_[block->get_index()] = block;
     free_blocks_--;
     used_blocks_++;
-    LOG4CXX_DEBUG_LEVEL(2, logger_, "Providing DataBlock [id=" << block->getIndex() << "]");
+    LOG4CXX_DEBUG_LEVEL(2, logger_, "Providing DataBlock [id=" << block->get_index() << "]");
   }
   return block;
 }
@@ -211,13 +211,13 @@ boost::shared_ptr<DataBlock> DataBlockPool::internal_take(size_t block_size)
  */
 void DataBlockPool::internal_release(boost::shared_ptr<DataBlock> block)
 {
-  LOG4CXX_DEBUG_LEVEL(2, logger_, "Releasing DataBlock [id=" << block->getIndex() << "]");
+  LOG4CXX_DEBUG_LEVEL(2, logger_, "Releasing DataBlock [id=" << block->get_index() << "]");
 
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
 
-  if (used_map_.count(block->getIndex()) > 0) {
-    used_map_.erase(block->getIndex());
+  if (used_map_.count(block->get_index()) > 0) {
+    used_map_.erase(block->get_index());
   }
   free_list_.push_front(block);
   used_blocks_--;

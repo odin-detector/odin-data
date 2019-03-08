@@ -43,7 +43,7 @@ DataBlock::~DataBlock()
  *
  * \return - unique index of this data block.
  */
-int DataBlock::getIndex()
+int DataBlock::get_index()
 {
   return index_;
 }
@@ -110,9 +110,24 @@ const void* DataBlock::get_data()
   return block_ptr_;
 }
 
+/**
+ * Returns a non-const void pointer to the memory that this data block owns.
+ *
+ * \return - non-const void pointer to memory owned by this data block
+ */
 void* DataBlock::get_writeable_data()
 {
   return block_ptr_;
 }
+
+/**
+ * Returns the current index counter value
+ *
+ * \return - int current index count
+ */
+int DataBlock::get_current_index_count() {
+  return DataBlock::index_counter_;
+}
+
 
 } /* namespace FrameProcessor */
