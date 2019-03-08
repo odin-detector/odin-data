@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE( DataBlockFrameTest )
   FrameProcessor::IFrameMetaData frame_meta(
       "data", FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
   );
-  FrameProcessor::DataBlockFrame frame(7, frame_meta, 24, 0);
+  FrameProcessor::DataBlockFrame frame(7, frame_meta, static_cast<void*>(img), 24);
   BOOST_REQUIRE_EQUAL(frame.get_data_size(), 24);
   BOOST_REQUIRE_EQUAL(frame.get_meta_data().get_dimensions()[0], 3);
   BOOST_REQUIRE_EQUAL(frame.get_meta_data().get_dimensions()[1], 4);
