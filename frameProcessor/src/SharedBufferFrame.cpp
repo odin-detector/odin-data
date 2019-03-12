@@ -14,6 +14,7 @@ SharedBufferFrame::SharedBufferFrame(const long long &frame_number,
   data_ptr_ = data_src;
   data_size_ = nbytes;
   shared_id_ = bufferID;
+  shared_channel_ = relCh;
 }
 
 /** Copy constructor;
