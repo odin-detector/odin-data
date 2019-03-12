@@ -30,6 +30,7 @@ class MetaWriter(object):
         self._num_frames_to_write = -1
         self.number_processes_running = 0
         self.directory = directory
+        self.file_prefix = None
         self.finished = False
         self.write_count = 0
         self.write_timeout_count = 0
@@ -66,7 +67,10 @@ class MetaWriter(object):
 
     def create_file(self):
         """Create the meta file to write data into."""
-        meta_file_name = self._acquisition_id + self.FILE_SUFFIX
+        if self.file_prefix:
+            meta_file_name = self.file_prefix + self.FILE_SUFFIX
+        else:
+            meta_file_name = self._acquisition_id + self.FILE_SUFFIX
         self.full_file_name = os.path.join(self.directory, meta_file_name)
         self._logger.info("Writing meta data to: %s" % self.full_file_name)
         self._hdf5_file = h5py.File(self.full_file_name, "w", libver='latest')
