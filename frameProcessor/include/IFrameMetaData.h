@@ -53,7 +53,7 @@ public:
     }
     catch (boost::bad_any_cast &e)
     {
-      LOG4CXX_ERROR(logger, "Parameter has wrong type");
+      LOG4CXX_ERROR(logger, "Parameter has wrong type: " + parameter_name);
       throw std::runtime_error("Parameter has wrong type");
     }
     catch (std::exception &e) {
