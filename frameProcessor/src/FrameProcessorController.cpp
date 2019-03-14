@@ -559,6 +559,7 @@ void FrameProcessorController::configurePlugin(OdinData::IpcMessage& config, Odi
   if (config.has_param(FrameProcessorController::CONFIG_PLUGIN_DISCONNECT)) {
     try
     {
+      // A standard disconnect will contain a dictionary with the plugin index and connection to remove
       OdinData::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FrameProcessorController::CONFIG_PLUGIN_DISCONNECT));
       if (pluginConfig.has_param(FrameProcessorController::CONFIG_PLUGIN_CONNECTION) &&
           pluginConfig.has_param(FrameProcessorController::CONFIG_PLUGIN_INDEX)) {
@@ -567,6 +568,8 @@ void FrameProcessorController::configurePlugin(OdinData::IpcMessage& config, Odi
         this->disconnectPlugin(index, cnxn);
       }
     }
+    // If the JSON parser fails to parse a dictionary out of the disconnect parameter then it might be a simple string
+    // which contains the 'all' keyword.  In this case disconnect all of the plugins.
     catch (OdinData::IpcMessageException& e)
     {
       // Test to see if we have the keyword for dicsonnecting all
