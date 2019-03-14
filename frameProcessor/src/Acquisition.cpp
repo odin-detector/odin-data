@@ -314,6 +314,7 @@ void Acquisition::validate_dataset_definition(DatasetDefinition definition) {
  * \param[in] use_earliest_hdf5 - Whether to use an early version of hdf5 library
  * \param[in] alignment_threshold - Alignment threshold for hdf5 chunking
  * \param[in] alignment_value - Alignment value for hdf5 chunking
+ * \param[in] master_frame - The master frame dataset name
  * \return - true if the acquisition was started successfully
  */
 bool Acquisition::start_acquisition(
@@ -324,7 +325,8 @@ bool Acquisition::start_acquisition(
     std::string file_extension,
     bool use_earliest_hdf5,
     size_t alignment_threshold,
-    size_t alignment_value) {
+    size_t alignment_value,
+    std::string master_frame) {
 
   concurrent_rank_ = concurrent_rank;
   concurrent_processes_ = concurrent_processes;
@@ -334,6 +336,7 @@ bool Acquisition::start_acquisition(
   alignment_threshold_ = alignment_threshold;
   alignment_value_ = alignment_value;
   file_extension_ = file_extension;
+  master_frame_ = master_frame;
 
   // Sanitise the file extension, ensuring there is a . at the start if the extension is not empty
   if (!file_extension_.empty())

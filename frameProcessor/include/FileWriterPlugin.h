@@ -171,6 +171,8 @@ private:
   boost::thread timeout_thread_;
   /** The file extension to use */
   std::string file_extension_;
+  /** Name of master frame. When a master frame is received frame numbers increment */
+  std::string master_frame_;
 };
 
 } /* namespace FrameProcessor */
