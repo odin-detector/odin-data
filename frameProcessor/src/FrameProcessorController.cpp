@@ -33,6 +33,7 @@ const std::string FrameProcessorController::CONFIG_PLUGIN_NAME       = "name";
 const std::string FrameProcessorController::CONFIG_PLUGIN_INDEX      = "index";
 const std::string FrameProcessorController::CONFIG_PLUGIN_LIBRARY    = "library";
 const std::string FrameProcessorController::CONFIG_PLUGIN_CONNECTION = "connection";
+const std::string FrameProcessorController::CONFIG_PLUGIN_DISCONNECT_ALL = "all";
 
 const int FrameProcessorController::META_TX_HWM = 10000;
 
@@ -499,12 +500,24 @@ void FrameProcessorController::configurePlugin(OdinData::IpcMessage& config, Odi
 
   // Check if we are being asked to disconnect a plugin
   if (config.has_param(FrameProcessorController::CONFIG_PLUGIN_DISCONNECT)) {
-    OdinData::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FrameProcessorController::CONFIG_PLUGIN_DISCONNECT));
-    if (pluginConfig.has_param(FrameProcessorController::CONFIG_PLUGIN_CONNECTION) &&
-        pluginConfig.has_param(FrameProcessorController::CONFIG_PLUGIN_INDEX)) {
-      std::string index = pluginConfig.get_param<std::string>(FrameProcessorController::CONFIG_PLUGIN_INDEX);
-      std::string cnxn = pluginConfig.get_param<std::string>(FrameProcessorController::CONFIG_PLUGIN_CONNECTION);
-      this->disconnectPlugin(index, cnxn);
+    try
+    {
+      OdinData::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FrameProcessorController::CONFIG_PLUGIN_DISCONNECT));
+      if (pluginConfig.has_param(FrameProcessorController::CONFIG_PLUGIN_CONNECTION) &&
+          pluginConfig.has_param(FrameProcessorController::CONFIG_PLUGIN_INDEX)) {
+        std::string index = pluginConfig.get_param<std::string>(FrameProcessorController::CONFIG_PLUGIN_INDEX);
+        std::string cnxn = pluginConfig.get_param<std::string>(FrameProcessorController::CONFIG_PLUGIN_CONNECTION);
+        this->disconnectPlugin(index, cnxn);
+      }
+    }
+    catch (OdinData::IpcMessageException& e)
+    {
+      // Test to see if we have the keyword for dicsonnecting all
+      std::string index = config.get_param<std::string>(FrameProcessorController::CONFIG_PLUGIN_DISCONNECT);
+      if (index == FrameProcessorController::CONFIG_PLUGIN_DISCONNECT_ALL){
+        LOG4CXX_DEBUG_LEVEL(1, logger_, "Calling disconnect on all plugins");
+        this->disconnectAllPlugins();
+      }
     }
   }
 }
@@ -608,6 +621,19 @@ void FrameProcessorController::disconnectPlugin(const std::string& index, const 
     std::stringstream is;
     is << "Cannot disconnect plugin with index = " << index << ", plugin isn't loaded";
     throw std::runtime_error(is.str().c_str());
+  }
+}
+
+/** Disconnect all plugins from each other.
+ *
+ */
+void FrameProcessorController::disconnectAllPlugins()
+{
+  // Loop over all plugins and remove the callbacks from each one
+  std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator it;
+  for (it = plugins_.begin(); it != plugins_.end(); it++) {
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Disconnecting plugin callbacks for " << it->first);
+    it->second->remove_all_callbacks();
   }
 }
 

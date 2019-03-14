@@ -227,6 +227,28 @@ void FrameProcessorPlugin::remove_callback(const std::string& name)
 }
 
 /**
+ * Remove all registered callbacks for this plugin.
+ */
+void FrameProcessorPlugin::remove_all_callbacks()
+{
+  // Loop over blocking callbacks, removing each one
+  std::map<std::string, boost::shared_ptr<IFrameCallback> >::iterator bcbIter;
+  for (bcbIter = blocking_callbacks_.begin(); bcbIter != blocking_callbacks_.end(); ++bcbIter) {
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Removing callback " << bcbIter->first << " from " << name_);
+    bcbIter->second->confirmRemoval(name_);
+  }
+  // Loop over non-blocking callbacks, removing each one
+  std::map<std::string, boost::shared_ptr<IFrameCallback> >::iterator cbIter;
+  for (cbIter = callbacks_.begin(); cbIter != callbacks_.end(); ++cbIter) {
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Removing callback " << cbIter->first << " from " << name_);
+    cbIter->second->confirmRemoval(name_);
+  }
+  // Now empty the two callback stores
+  callbacks_.clear();
+  blocking_callbacks_.clear();
+}
+
+/**
  * We have been called back with a frame from a plugin that we registered
  * with. This method calls the processFrame pure virtual method that
  * must be overridden by any children of this abstract class.
