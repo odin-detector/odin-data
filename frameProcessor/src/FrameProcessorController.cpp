@@ -14,26 +14,31 @@
 namespace FrameProcessor
 {
 
-const std::string FrameProcessorController::META_RX_INTERFACE        = "inproc://meta_rx";
+const std::string FrameProcessorController::META_RX_INTERFACE            = "inproc://meta_rx";
 
-const std::string FrameProcessorController::CONFIG_DEBUG             = "debug_level";
+const std::string FrameProcessorController::CONFIG_DEBUG                 = "debug_level";
 
-const std::string FrameProcessorController::CONFIG_FR_RELEASE        = "fr_release_cnxn";
-const std::string FrameProcessorController::CONFIG_FR_READY          = "fr_ready_cnxn";
-const std::string FrameProcessorController::CONFIG_FR_SETUP          = "fr_setup";
+const std::string FrameProcessorController::CONFIG_FR_RELEASE            = "fr_release_cnxn";
+const std::string FrameProcessorController::CONFIG_FR_READY              = "fr_ready_cnxn";
+const std::string FrameProcessorController::CONFIG_FR_SETUP              = "fr_setup";
 
-const std::string FrameProcessorController::CONFIG_CTRL_ENDPOINT     = "ctrl_endpoint";
-const std::string FrameProcessorController::CONFIG_META_ENDPOINT     = "meta_endpoint";
+const std::string FrameProcessorController::CONFIG_CTRL_ENDPOINT         = "ctrl_endpoint";
+const std::string FrameProcessorController::CONFIG_META_ENDPOINT         = "meta_endpoint";
 
-const std::string FrameProcessorController::CONFIG_PLUGIN            = "plugin";
-const std::string FrameProcessorController::CONFIG_PLUGIN_LOAD       = "load";
-const std::string FrameProcessorController::CONFIG_PLUGIN_CONNECT    = "connect";
-const std::string FrameProcessorController::CONFIG_PLUGIN_DISCONNECT = "disconnect";
-const std::string FrameProcessorController::CONFIG_PLUGIN_NAME       = "name";
-const std::string FrameProcessorController::CONFIG_PLUGIN_INDEX      = "index";
-const std::string FrameProcessorController::CONFIG_PLUGIN_LIBRARY    = "library";
-const std::string FrameProcessorController::CONFIG_PLUGIN_CONNECTION = "connection";
+const std::string FrameProcessorController::CONFIG_PLUGIN                = "plugin";
+const std::string FrameProcessorController::CONFIG_PLUGIN_LOAD           = "load";
+const std::string FrameProcessorController::CONFIG_PLUGIN_CONNECT        = "connect";
+const std::string FrameProcessorController::CONFIG_PLUGIN_DISCONNECT     = "disconnect";
 const std::string FrameProcessorController::CONFIG_PLUGIN_DISCONNECT_ALL = "all";
+const std::string FrameProcessorController::CONFIG_PLUGIN_NAME           = "name";
+const std::string FrameProcessorController::CONFIG_PLUGIN_INDEX          = "index";
+const std::string FrameProcessorController::CONFIG_PLUGIN_LIBRARY        = "library";
+const std::string FrameProcessorController::CONFIG_PLUGIN_CONNECTION     = "connection";
+
+const std::string FrameProcessorController::CONFIG_STORE                 = "store";
+const std::string FrameProcessorController::CONFIG_EXECUTE               = "execute";
+const std::string FrameProcessorController::CONFIG_INDEX                 = "index";
+const std::string FrameProcessorController::CONFIG_VALUE                 = "value";
 
 const int FrameProcessorController::META_TX_HWM = 10000;
 
@@ -390,6 +395,58 @@ void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData:
       std::string pubString = frConfig.get_param<std::string>(FrameProcessorController::CONFIG_FR_RELEASE);
       std::string subString = frConfig.get_param<std::string>(FrameProcessorController::CONFIG_FR_READY);
       this->setupFrameReceiverInterface(pubString, subString);
+    }
+  }
+
+  // Check if we are being asked to store a configuration object
+  if (config.has_param(FrameProcessorController::CONFIG_STORE)) {
+    OdinData::IpcMessage storeConfig(config.get_param<const rapidjson::Value&>(FrameProcessorController::CONFIG_STORE));
+
+    if (storeConfig.has_param(FrameProcessorController::CONFIG_INDEX) &&
+        storeConfig.has_param(FrameProcessorController::CONFIG_VALUE)) {
+      std::string index = storeConfig.get_param<std::string>(FrameProcessorController::CONFIG_INDEX);
+
+      const rapidjson::Value& json_value = storeConfig.get_param<const rapidjson::Value&>(FrameProcessorController::CONFIG_VALUE);
+      rapidjson::StringBuffer buffer;
+      rapidjson::Writer<rapidjson::StringBuffer, rapidjson::UTF8<> > writer(buffer);
+      json_value.Accept(writer);
+      std::string string_value = std::string(buffer.GetString());
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Saving configuration [" << index << "] as " << string_value);
+      stored_configs_[index] = string_value;
+    }
+  }
+
+  // Check if we are being asked to execute a previously stored configuration object
+  if (config.has_param(FrameProcessorController::CONFIG_EXECUTE)) {
+    OdinData::IpcMessage storeConfig(config.get_param<const rapidjson::Value&>(FrameProcessorController::CONFIG_EXECUTE));
+
+    if (storeConfig.has_param(FrameProcessorController::CONFIG_INDEX)) {
+      std::string index = storeConfig.get_param<std::string>(FrameProcessorController::CONFIG_INDEX);
+      if (stored_configs_.count(index) > 0){
+        LOG4CXX_DEBUG_LEVEL(1, logger_, "Applying configuration [" << index << "] => " << stored_configs_[index]);
+        rapidjson::Document param_doc;
+        param_doc.Parse(stored_configs_[index].c_str());
+        // Check if the top level object is an array
+        if (param_doc.IsArray()) {
+          // Loop over the array submitting the child objects in order
+          for (rapidjson::SizeType i = 0; i < param_doc.Size(); ++i) {
+            // Create a configuration message
+            OdinData::IpcMessage json_config_msg(param_doc[i],
+                                                 OdinData::IpcMessage::MsgTypeCmd,
+                                                 OdinData::IpcMessage::MsgValCmdConfigure);
+            // Now submit the config to the controller
+            this->configure(json_config_msg, reply);
+          }
+        } else {
+          // Single level JSON object
+          // Create a configuration message
+          OdinData::IpcMessage json_config_msg(param_doc,
+                                               OdinData::IpcMessage::MsgTypeCmd,
+                                               OdinData::IpcMessage::MsgValCmdConfigure);
+          // Now submit the config to the controller
+          this->configure(json_config_msg, reply);
+        }
+      }
     }
   }
 

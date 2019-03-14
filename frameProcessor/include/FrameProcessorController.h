@@ -127,6 +127,8 @@ private:
   boost::shared_ptr<SharedMemoryController>                       sharedMemController_;
   /** Map of plugins loaded, indexed by plugin index */
   std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> > plugins_;
+  /** Map of stored configuration objects */
+  std::map<std::string, std::string>                              stored_configs_;
   /** Condition for exiting this file writing process */
   boost::condition_variable                                       exitCondition_;
   /** Frames per dataset */
