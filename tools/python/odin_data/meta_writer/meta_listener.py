@@ -146,7 +146,8 @@ class MetaListener:
         for key in self._writers:
             writer = self._writers[key]
             status_dict[key] = {'filename': writer.full_file_name, 'num_processors': writer.number_processes_running,
-                                'written': writer.write_count, 'writing': writer.file_created and not writer.finished}
+                                'written': writer.write_count, 'writing': writer.file_created and not writer.finished,
+                                'file_prefix': writer.file_prefix}
             writer.write_timeout_count = writer.write_timeout_count + 1
 
         reply = IpcMessage(IpcMessage.ACK, 'status', id=msg_id)
@@ -242,6 +243,12 @@ class MetaListener:
                     self.logger.debug('Setting acquisition [' + str(acquisition_id) + '] directory to ' + str(
                         params['output_dir']))
                     self._writers[acquisition_id].directory = params['output_dir']
+                    reply = IpcMessage(IpcMessage.ACK, 'configure', id=msg_id)
+
+                if 'file_prefix' in params:
+                    self.logger.debug('Setting acquisition [' + str(acquisition_id) + '] file_prefix to ' + str(
+                        params['file_prefix']))
+                    self._writers[acquisition_id].file_prefix = params['file_prefix']
                     reply = IpcMessage(IpcMessage.ACK, 'configure', id=msg_id)
 
                 if 'flush' in params:
