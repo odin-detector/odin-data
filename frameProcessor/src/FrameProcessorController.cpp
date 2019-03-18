@@ -422,7 +422,7 @@ void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData:
 
     if (storeConfig.has_param(FrameProcessorController::CONFIG_INDEX)) {
       std::string index = storeConfig.get_param<std::string>(FrameProcessorController::CONFIG_INDEX);
-      if (stored_configs_.count(index) > 0){
+      if (stored_configs_.count(index) > 0) {
         LOG4CXX_DEBUG_LEVEL(1, logger_, "Applying configuration [" << index << "] => " << stored_configs_[index]);
         rapidjson::Document param_doc;
         param_doc.Parse(stored_configs_[index].c_str());
