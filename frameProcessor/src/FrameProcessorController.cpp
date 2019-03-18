@@ -14,25 +14,31 @@
 namespace FrameProcessor
 {
 
-const std::string FrameProcessorController::META_RX_INTERFACE        = "inproc://meta_rx";
+const std::string FrameProcessorController::META_RX_INTERFACE            = "inproc://meta_rx";
 
-const std::string FrameProcessorController::CONFIG_DEBUG             = "debug_level";
+const std::string FrameProcessorController::CONFIG_DEBUG                 = "debug_level";
 
-const std::string FrameProcessorController::CONFIG_FR_RELEASE        = "fr_release_cnxn";
-const std::string FrameProcessorController::CONFIG_FR_READY          = "fr_ready_cnxn";
-const std::string FrameProcessorController::CONFIG_FR_SETUP          = "fr_setup";
+const std::string FrameProcessorController::CONFIG_FR_RELEASE            = "fr_release_cnxn";
+const std::string FrameProcessorController::CONFIG_FR_READY              = "fr_ready_cnxn";
+const std::string FrameProcessorController::CONFIG_FR_SETUP              = "fr_setup";
 
-const std::string FrameProcessorController::CONFIG_CTRL_ENDPOINT     = "ctrl_endpoint";
-const std::string FrameProcessorController::CONFIG_META_ENDPOINT     = "meta_endpoint";
+const std::string FrameProcessorController::CONFIG_CTRL_ENDPOINT         = "ctrl_endpoint";
+const std::string FrameProcessorController::CONFIG_META_ENDPOINT         = "meta_endpoint";
 
-const std::string FrameProcessorController::CONFIG_PLUGIN            = "plugin";
-const std::string FrameProcessorController::CONFIG_PLUGIN_LOAD       = "load";
-const std::string FrameProcessorController::CONFIG_PLUGIN_CONNECT    = "connect";
-const std::string FrameProcessorController::CONFIG_PLUGIN_DISCONNECT = "disconnect";
-const std::string FrameProcessorController::CONFIG_PLUGIN_NAME       = "name";
-const std::string FrameProcessorController::CONFIG_PLUGIN_INDEX      = "index";
-const std::string FrameProcessorController::CONFIG_PLUGIN_LIBRARY    = "library";
-const std::string FrameProcessorController::CONFIG_PLUGIN_CONNECTION = "connection";
+const std::string FrameProcessorController::CONFIG_PLUGIN                = "plugin";
+const std::string FrameProcessorController::CONFIG_PLUGIN_LOAD           = "load";
+const std::string FrameProcessorController::CONFIG_PLUGIN_CONNECT        = "connect";
+const std::string FrameProcessorController::CONFIG_PLUGIN_DISCONNECT     = "disconnect";
+const std::string FrameProcessorController::CONFIG_PLUGIN_DISCONNECT_ALL = "all";
+const std::string FrameProcessorController::CONFIG_PLUGIN_NAME           = "name";
+const std::string FrameProcessorController::CONFIG_PLUGIN_INDEX          = "index";
+const std::string FrameProcessorController::CONFIG_PLUGIN_LIBRARY        = "library";
+const std::string FrameProcessorController::CONFIG_PLUGIN_CONNECTION     = "connection";
+
+const std::string FrameProcessorController::CONFIG_STORE                 = "store";
+const std::string FrameProcessorController::CONFIG_EXECUTE               = "execute";
+const std::string FrameProcessorController::CONFIG_INDEX                 = "index";
+const std::string FrameProcessorController::CONFIG_VALUE                 = "value";
 
 const int FrameProcessorController::META_TX_HWM = 10000;
 
@@ -392,6 +398,58 @@ void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData:
     }
   }
 
+  // Check if we are being asked to store a configuration object
+  if (config.has_param(FrameProcessorController::CONFIG_STORE)) {
+    OdinData::IpcMessage storeConfig(config.get_param<const rapidjson::Value&>(FrameProcessorController::CONFIG_STORE));
+
+    if (storeConfig.has_param(FrameProcessorController::CONFIG_INDEX) &&
+        storeConfig.has_param(FrameProcessorController::CONFIG_VALUE)) {
+      std::string index = storeConfig.get_param<std::string>(FrameProcessorController::CONFIG_INDEX);
+
+      const rapidjson::Value& json_value = storeConfig.get_param<const rapidjson::Value&>(FrameProcessorController::CONFIG_VALUE);
+      rapidjson::StringBuffer buffer;
+      rapidjson::Writer<rapidjson::StringBuffer, rapidjson::UTF8<> > writer(buffer);
+      json_value.Accept(writer);
+      std::string string_value = std::string(buffer.GetString());
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Saving configuration [" << index << "] as " << string_value);
+      stored_configs_[index] = string_value;
+    }
+  }
+
+  // Check if we are being asked to execute a previously stored configuration object
+  if (config.has_param(FrameProcessorController::CONFIG_EXECUTE)) {
+    OdinData::IpcMessage storeConfig(config.get_param<const rapidjson::Value&>(FrameProcessorController::CONFIG_EXECUTE));
+
+    if (storeConfig.has_param(FrameProcessorController::CONFIG_INDEX)) {
+      std::string index = storeConfig.get_param<std::string>(FrameProcessorController::CONFIG_INDEX);
+      if (stored_configs_.count(index) > 0) {
+        LOG4CXX_DEBUG_LEVEL(1, logger_, "Applying configuration [" << index << "] => " << stored_configs_[index]);
+        rapidjson::Document param_doc;
+        param_doc.Parse(stored_configs_[index].c_str());
+        // Check if the top level object is an array
+        if (param_doc.IsArray()) {
+          // Loop over the array submitting the child objects in order
+          for (rapidjson::SizeType i = 0; i < param_doc.Size(); ++i) {
+            // Create a configuration message
+            OdinData::IpcMessage json_config_msg(param_doc[i],
+                                                 OdinData::IpcMessage::MsgTypeCmd,
+                                                 OdinData::IpcMessage::MsgValCmdConfigure);
+            // Now submit the config to the controller
+            this->configure(json_config_msg, reply);
+          }
+        } else {
+          // Single level JSON object
+          // Create a configuration message
+          OdinData::IpcMessage json_config_msg(param_doc,
+                                               OdinData::IpcMessage::MsgTypeCmd,
+                                               OdinData::IpcMessage::MsgValCmdConfigure);
+          // Now submit the config to the controller
+          this->configure(json_config_msg, reply);
+        }
+      }
+    }
+  }
+
   // Loop over plugins, checking for configuration messages
   std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
   for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
@@ -499,12 +557,27 @@ void FrameProcessorController::configurePlugin(OdinData::IpcMessage& config, Odi
 
   // Check if we are being asked to disconnect a plugin
   if (config.has_param(FrameProcessorController::CONFIG_PLUGIN_DISCONNECT)) {
-    OdinData::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FrameProcessorController::CONFIG_PLUGIN_DISCONNECT));
-    if (pluginConfig.has_param(FrameProcessorController::CONFIG_PLUGIN_CONNECTION) &&
-        pluginConfig.has_param(FrameProcessorController::CONFIG_PLUGIN_INDEX)) {
-      std::string index = pluginConfig.get_param<std::string>(FrameProcessorController::CONFIG_PLUGIN_INDEX);
-      std::string cnxn = pluginConfig.get_param<std::string>(FrameProcessorController::CONFIG_PLUGIN_CONNECTION);
-      this->disconnectPlugin(index, cnxn);
+    try
+    {
+      // A standard disconnect will contain a dictionary with the plugin index and connection to remove
+      OdinData::IpcMessage pluginConfig(config.get_param<const rapidjson::Value&>(FrameProcessorController::CONFIG_PLUGIN_DISCONNECT));
+      if (pluginConfig.has_param(FrameProcessorController::CONFIG_PLUGIN_CONNECTION) &&
+          pluginConfig.has_param(FrameProcessorController::CONFIG_PLUGIN_INDEX)) {
+        std::string index = pluginConfig.get_param<std::string>(FrameProcessorController::CONFIG_PLUGIN_INDEX);
+        std::string cnxn = pluginConfig.get_param<std::string>(FrameProcessorController::CONFIG_PLUGIN_CONNECTION);
+        this->disconnectPlugin(index, cnxn);
+      }
+    }
+    // If the JSON parser fails to parse a dictionary out of the disconnect parameter then it might be a simple string
+    // which contains the 'all' keyword.  In this case disconnect all of the plugins.
+    catch (OdinData::IpcMessageException& e)
+    {
+      // Test to see if we have the keyword for dicsonnecting all
+      std::string index = config.get_param<std::string>(FrameProcessorController::CONFIG_PLUGIN_DISCONNECT);
+      if (index == FrameProcessorController::CONFIG_PLUGIN_DISCONNECT_ALL){
+        LOG4CXX_DEBUG_LEVEL(1, logger_, "Calling disconnect on all plugins");
+        this->disconnectAllPlugins();
+      }
     }
   }
 }
@@ -608,6 +681,19 @@ void FrameProcessorController::disconnectPlugin(const std::string& index, const 
     std::stringstream is;
     is << "Cannot disconnect plugin with index = " << index << ", plugin isn't loaded";
     throw std::runtime_error(is.str().c_str());
+  }
+}
+
+/** Disconnect all plugins from each other.
+ *
+ */
+void FrameProcessorController::disconnectAllPlugins()
+{
+  // Loop over all plugins and remove the callbacks from each one
+  std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator it;
+  for (it = plugins_.begin(); it != plugins_.end(); it++) {
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Disconnecting plugin callbacks for " << it->first);
+    it->second->remove_all_callbacks();
   }
 }
 

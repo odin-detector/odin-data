@@ -49,6 +49,7 @@ public:
   void loadPlugin(const std::string& index, const std::string& name, const std::string& library);
   void connectPlugin(const std::string& index, const std::string& connectTo);
   void disconnectPlugin(const std::string& index, const std::string& disconnectFrom);
+  void disconnectAllPlugins();
   void run();
   void waitForShutdown();
   void shutdown();
@@ -84,6 +85,8 @@ private:
   static const std::string CONFIG_PLUGIN_CONNECT;
   /** Configuration constant for disconnecting plugins **/
   static const std::string CONFIG_PLUGIN_DISCONNECT;
+  /** Configuration keyword for disconnecting all plugins **/
+  static const std::string CONFIG_PLUGIN_DISCONNECT_ALL;
   /** Configuration constant for a plugin name **/
   static const std::string CONFIG_PLUGIN_NAME;
   /** Configuration constant for a plugin index **/
@@ -92,6 +95,15 @@ private:
   static const std::string CONFIG_PLUGIN_LIBRARY;
   /** Configuration constant for setting up a plugin connection **/
   static const std::string CONFIG_PLUGIN_CONNECTION;
+
+  /** Configuration constant for storing a named configuration object **/
+  static const std::string CONFIG_STORE;
+  /** Configuration constant for executing a named configuration object **/
+  static const std::string CONFIG_EXECUTE;
+  /** Configuration constant for the name of a stored configuration object **/
+  static const std::string CONFIG_INDEX;
+  /** Configuration constant for the value of a stored configuration object **/
+  static const std::string CONFIG_VALUE;
 
   /** Configuration constant for the meta TX channel high water mark **/
   static const int META_TX_HWM;
@@ -115,6 +127,8 @@ private:
   boost::shared_ptr<SharedMemoryController>                       sharedMemController_;
   /** Map of plugins loaded, indexed by plugin index */
   std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> > plugins_;
+  /** Map of stored configuration objects */
+  std::map<std::string, std::string>                              stored_configs_;
   /** Condition for exiting this file writing process */
   boost::condition_variable                                       exitCondition_;
   /** Frames per dataset */
