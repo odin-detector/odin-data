@@ -61,6 +61,7 @@ class MetaListener:
             # Socket to receive messages on
             for x in inputs_list:
                 new_receiver = context.socket(zmq.SUB)
+                new_receiver.set_hwm(10000)
                 new_receiver.connect(x)
                 new_receiver.setsockopt(zmq.SUBSCRIBE, '')
                 receiver_list.append(new_receiver)
