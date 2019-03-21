@@ -54,6 +54,16 @@ class IpcTornadoChannel(IpcChannel):
         else:
             super(IpcTornadoChannel, self).send(data)
 
+    def send_multipart(self, data):
+        """
+        Send data to the IpcChannel, in multiple parts.
+        :param: data to send, as an iterable object
+        """
+        if self._stream:
+            self._stream.send_multipart(data)
+        else:
+            super(IpcTornadoChannel, self).send_multipart(data)
+
     def register_monitor(self, callback):
         self._monitor_callback = callback
         self._monitor_socket = self.socket.get_monitor_socket(IpcChannel.EVENT_ACCEPTED | IpcChannel.EVENT_DISCONNECTED)

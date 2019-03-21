@@ -181,7 +181,8 @@ void FileWriterPlugin::start_writing()
         file_extension_,
         use_earliest_hdf5_,
         alignment_threshold_,
-        alignment_value_);
+        alignment_value_,
+        master_frame_);
   }
 }
 
@@ -272,7 +273,8 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
 
     // Check to see if the master dataset is being set
     if (config.has_param(FileWriterPlugin::CONFIG_MASTER_DATASET)) {
-      next_acquisition_->master_frame_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_MASTER_DATASET);
+      master_frame_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_MASTER_DATASET);
+      LOG4CXX_INFO(logger_, "Setting master frame dataset to " << master_frame_);
     }
 
     // Check to see if the acquisition id is being set
@@ -344,7 +346,7 @@ void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
   reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_EXTENSION, file_extension_);
 
   reply.set_param(get_name() + "/" + FileWriterPlugin::CONFIG_FRAMES, next_acquisition_->total_frames_);
-  reply.set_param(get_name() + "/" + FileWriterPlugin::CONFIG_MASTER_DATASET, next_acquisition_->master_frame_);
+  reply.set_param(get_name() + "/" + FileWriterPlugin::CONFIG_MASTER_DATASET, master_frame_);
   reply.set_param(get_name() + "/" + FileWriterPlugin::ACQUISITION_ID, next_acquisition_->acquisition_id_);
   reply.set_param(get_name() + "/" + FileWriterPlugin::CLOSE_TIMEOUT_PERIOD, timeout_period_);
 

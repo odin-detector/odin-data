@@ -44,7 +44,8 @@ public:
       std::string file_extension,
       bool use_earliest_hdf5,
       size_t alignment_threshold,
-      size_t alignment_value);
+      size_t alignment_value,
+      std::string master_frame);
   void stop_acquisition();
   bool check_frame_valid(boost::shared_ptr<Frame> frame);
   size_t get_frame_offset_in_file(size_t frame_offset) const;

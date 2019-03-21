@@ -42,6 +42,7 @@ public:
   void version(OdinData::IpcMessage& status);
   void register_callback(const std::string& name, boost::shared_ptr<IFrameCallback> cb, bool blocking=false);
   void remove_callback(const std::string& name);
+  void remove_all_callbacks();
 
 protected:
   void push(boost::shared_ptr<Frame> frame);
