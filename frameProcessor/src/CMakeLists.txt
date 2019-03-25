@@ -81,6 +81,11 @@ add_library(GapFillPlugin SHARED GapFillPlugin.cpp GapFillPluginLib.cpp)
 target_link_libraries(GapFillPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${COMMON_LIBRARY})
 install(TARGETS GapFillPlugin DESTINATION lib)
 
+# Add library for Kafka Producer plugin
+add_library(KafkaProducerPlugin SHARED KafkaProducerPlugin.cpp KafkaProducerPluginLib.cpp)
+target_link_libraries(KafkaProducerPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${COMMON_LIBRARY})
+install(TARGETS KafkaProducerPlugin DESTINATION lib)
+
 # Add test and project source files to executable
 if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
   # librt required for timing functions
