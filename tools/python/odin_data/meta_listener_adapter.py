@@ -27,7 +27,8 @@ class MetaListenerAdapter(OdinDataAdapter):
         # means the client does not need to send things in a certain order.
         self._config_parameters = {
             "config/output_dir": "",
-            "config/flush": 100
+            "config/flush": 100,
+            "config/file_prefix": ""
         }
 
         # Parameters must be created before base init called
@@ -118,7 +119,8 @@ class MetaListenerAdapter(OdinDataAdapter):
             config = dict(
                 acquisition_id=self.acquisitionID,
                 output_dir=self._config_parameters["config/output_dir"],
-                flush=self._config_parameters["config/flush"]
+                flush=self._config_parameters["config/flush"],
+                file_prefix=self._config_parameters["config/file_prefix"]
             )
             status_code, response = self._send_config(config)
         elif path == "config/stop":

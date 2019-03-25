@@ -147,8 +147,7 @@ class MetaListener:
         for key in self._writers:
             writer = self._writers[key]
             status_dict[key] = {'filename': writer.full_file_name, 'num_processors': writer.number_processes_running,
-                                'written': writer.write_count, 'writing': writer.file_created and not writer.finished,
-                                'file_prefix': writer.file_prefix}
+                                'written': writer.write_count, 'writing': writer.file_created and not writer.finished}
             writer.write_timeout_count = writer.write_timeout_count + 1
 
         reply = IpcMessage(IpcMessage.ACK, 'status', id=msg_id)
@@ -173,7 +172,8 @@ class MetaListener:
         acquisitions_dict = {}
         for key in self._writers:
             writer = self._writers[key]
-            acquisitions_dict[key] = {'output_dir': writer.directory, 'flush': writer.flush_frequency}
+            acquisitions_dict[key] = {'output_dir': writer.directory, 'flush': writer.flush_frequency,
+                                      'file_prefix': writer.file_prefix}
 
         reply = IpcMessage(IpcMessage.ACK, 'request_configuration', id=msg_id)
         reply.set_param('acquisitions', acquisitions_dict)
