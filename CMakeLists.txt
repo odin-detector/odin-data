@@ -76,6 +76,7 @@ find_package(Log4CXX 0.10.0 REQUIRED)
 find_package(ZeroMQ 3.2.4 REQUIRED)
 find_package(PCAP 1.4.0 REQUIRED)
 find_package(Blosc REQUIRED)
+find_package(Kafka)
 
 # find package HDF5
 # FindHDF5.cmake is essentially broken and does not allow
