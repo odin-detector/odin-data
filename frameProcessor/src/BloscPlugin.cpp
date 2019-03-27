@@ -154,6 +154,7 @@ boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> sr
   // I wish we had a shallow-copy feature on the Frame class...
   dest_frame->set_data_type(src_frame->get_data_type());
   dest_frame->set_frame_number(src_frame->get_frame_number());
+  dest_frame->set_parameters(src_frame->get_parameters());
   dest_frame->set_acquisition_id(src_frame->get_acquisition_id());
   dest_frame->set_dimensions(src_frame->get_dimensions());
   return dest_frame;

@@ -452,6 +452,18 @@ std::map<std::string, Parameter> & Frame::get_parameters()
   return parameters_;
 }
 
+/** Set all of the supplied parameters into this Frame.
+ *
+ * \param[in] parameters - a map of parameters to set.
+ */
+void Frame::set_parameters(std::map<std::string, Parameter>& parameters)
+{
+  std::map<std::string, Parameter>::const_iterator iter;
+  for (iter = parameters.begin(); iter != parameters.end(); ++iter){
+    parameters_[iter->first] = iter->second;
+  }
+}
+
 /** Check if the Frame contains a parameter.
  *
  * This method checks if the parameter exists within the Frame.
