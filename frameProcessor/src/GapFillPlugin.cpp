@@ -181,6 +181,7 @@ namespace FrameProcessor
         img_dims[1] = img_x;
         gap_frame = boost::shared_ptr<FrameProcessor::Frame>(new FrameProcessor::Frame(frame->get_dataset_name()));
         gap_frame->set_frame_number(frame->get_frame_number());
+        gap_frame->set_parameters(frame->get_parameters());
         gap_frame->set_dimensions(img_dims);
         gap_frame->copy_data(static_cast<void*>(new_image), img_x * img_y * frame->get_data_type_size());
         gap_frame->set_data_type(frame->get_data_type());

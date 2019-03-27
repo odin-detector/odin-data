@@ -164,6 +164,7 @@ public:
   void set_parameter(const std::string& index, uint64_t value);
   void set_parameter(const std::string& index, float value);
   std::map<std::string, Parameter> & get_parameters();
+  void set_parameters(std::map<std::string, Parameter>& parameters);
   Parameter get_parameter(const std::string& index) const;
   uint8_t get_i8_parameter(const std::string& index) const;
   uint16_t get_i16_parameter(const std::string& index) const;
