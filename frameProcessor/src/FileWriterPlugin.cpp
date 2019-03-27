@@ -358,11 +358,9 @@ void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 
     // Add the dataset compression
     reply.set_param(get_name() + "/dataset/" + iter->first + "/" + FileWriterPlugin::CONFIG_DATASET_COMPRESSION, (int)iter->second.compression);
-    if ((int)iter->second.compression == blosc) {
-      reply.set_param(get_name() + "/dataset/" + iter->first + "/" + FileWriterPlugin::CONFIG_DATASET_BLOSC_COMPRESSOR, (int)iter->second.blosc_compressor);
-      reply.set_param(get_name() + "/dataset/" + iter->first + "/" + FileWriterPlugin::CONFIG_DATASET_BLOSC_LEVEL, (int)iter->second.blosc_level);
-      reply.set_param(get_name() + "/dataset/" + iter->first + "/" + FileWriterPlugin::CONFIG_DATASET_BLOSC_SHUFFLE, (int)iter->second.blosc_shuffle);
-    }
+    reply.set_param(get_name() + "/dataset/" + iter->first + "/" + FileWriterPlugin::CONFIG_DATASET_BLOSC_COMPRESSOR, (int)iter->second.blosc_compressor);
+    reply.set_param(get_name() + "/dataset/" + iter->first + "/" + FileWriterPlugin::CONFIG_DATASET_BLOSC_LEVEL, (int)iter->second.blosc_level);
+    reply.set_param(get_name() + "/dataset/" + iter->first + "/" + FileWriterPlugin::CONFIG_DATASET_BLOSC_SHUFFLE, (int)iter->second.blosc_shuffle);
 
     // Check for and add dimensions
     if (iter->second.frame_dimensions.size() > 0) {
@@ -586,27 +584,29 @@ void FileWriterPlugin::configure_dataset(const std::string& dataset_name, OdinDa
   if (config.has_param(FileWriterPlugin::CONFIG_DATASET_COMPRESSION)) {
     dset.compression = (CompressionType)config.get_param<int>(FileWriterPlugin::CONFIG_DATASET_COMPRESSION);
     LOG4CXX_INFO(logger_, "Enabling compression: " << dset.compression);
-
-    // Blosc compression require a set of parameters to be defined
-    if (dset.compression == blosc) {
-      if (config.has_param(FileWriterPlugin::CONFIG_DATASET_BLOSC_COMPRESSOR)) {
-        dset.blosc_compressor = config.get_param<unsigned int>(FileWriterPlugin::CONFIG_DATASET_BLOSC_COMPRESSOR);
-        if (dset.blosc_compressor<0 || dset.blosc_compressor>5)
-          LOG4CXX_ERROR(logger_, "Invalid blosc compression setting " << dset.blosc_compressor);
-      }
-      if (config.has_param(FileWriterPlugin::CONFIG_DATASET_BLOSC_LEVEL)) {
-        dset.blosc_level = config.get_param<unsigned int>(FileWriterPlugin::CONFIG_DATASET_BLOSC_LEVEL);
-        if (dset.blosc_level<0 || dset.blosc_level>9)
-          LOG4CXX_ERROR(logger_, "Invalid blosc level setting " << dset.blosc_level);
-      }
-      if (config.has_param(FileWriterPlugin::CONFIG_DATASET_BLOSC_SHUFFLE)) {
-        dset.blosc_shuffle = config.get_param<unsigned int>(FileWriterPlugin::CONFIG_DATASET_BLOSC_SHUFFLE);
-        if (dset.blosc_shuffle<-1 || dset.blosc_shuffle>2)
-          LOG4CXX_ERROR(logger_, "Invalid blosc shuffle setting " << dset.blosc_shuffle);
-      }
-      LOG4CXX_INFO(logger_, "Blosc compression settings: compressor=" << dset.blosc_compressor
-                             << " level=" << dset.blosc_level << " shuffle=" << dset.blosc_shuffle);
+  }
+  // Blosc compression require a set of parameters to be defined
+  if (config.has_param(FileWriterPlugin::CONFIG_DATASET_BLOSC_COMPRESSOR)) {
+    dset.blosc_compressor = config.get_param<unsigned int>(FileWriterPlugin::CONFIG_DATASET_BLOSC_COMPRESSOR);
+    if (dset.blosc_compressor<0 || dset.blosc_compressor>5) {
+      LOG4CXX_ERROR(logger_, "Invalid blosc compression setting " << dset.blosc_compressor);
     }
+  }
+  if (config.has_param(FileWriterPlugin::CONFIG_DATASET_BLOSC_LEVEL)) {
+    dset.blosc_level = config.get_param<unsigned int>(FileWriterPlugin::CONFIG_DATASET_BLOSC_LEVEL);
+    if (dset.blosc_level<0 || dset.blosc_level>9) {
+      LOG4CXX_ERROR(logger_, "Invalid blosc level setting " << dset.blosc_level);
+    }
+  }
+  if (config.has_param(FileWriterPlugin::CONFIG_DATASET_BLOSC_SHUFFLE)) {
+    dset.blosc_shuffle = config.get_param<unsigned int>(FileWriterPlugin::CONFIG_DATASET_BLOSC_SHUFFLE);
+    if (dset.blosc_shuffle<-1 || dset.blosc_shuffle>2) {
+      LOG4CXX_ERROR(logger_, "Invalid blosc shuffle setting " << dset.blosc_shuffle);
+    }
+  }
+  if (dset.compression == blosc) {
+    LOG4CXX_INFO(logger_, "Blosc compression settings: compressor=" << dset.blosc_compressor
+                           << " level=" << dset.blosc_level << " shuffle=" << dset.blosc_shuffle);
   }
 
   // Check if creating the high/low indexes has been specified
