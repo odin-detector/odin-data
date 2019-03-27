@@ -330,6 +330,7 @@ void HDF5File::write_parameter(const Frame& frame, DatasetDefinition dataset_def
   }
 
   if (flush && !use_earliest_version_) {
+    LOG4CXX_TRACE(logger_, "Flushing parameter [" << dataset_definition.name << "]");
     ensure_h5_result(H5Dflush(dset.dataset_id), "Failed to flush data to disk");
   }
 #endif
