@@ -30,16 +30,17 @@ public:
     dset_def.frame_dimensions[1] = 4;
     dset_def.chunks = chunk_dims;
 
-    FrameProcessor::IFrameMetaData frame_meta("data", FrameProcessor::raw_16bit, "scan1", img_dims, FrameProcessor::no_compression);
-    frame = boost::shared_ptr<FrameProcessor::DataBlockFrame>(new FrameProcessor::DataBlockFrame(7, frame_meta, static_cast<void*>(img), 24));
+    FrameProcessor::IFrameMetaData frame_meta(7, "data", FrameProcessor::raw_16bit, "scan1", img_dims, FrameProcessor::no_compression);
+    frame = boost::shared_ptr<FrameProcessor::DataBlockFrame>(new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(img), 24));
 
     for (int i = 1; i<6; i++)
     {
       img[0] = i;
       FrameProcessor::IFrameMetaData tmp_frame_meta = frame->get_meta_data_copy();
+      tmp_frame_meta.set_frame_number(i);
       tmp_frame_meta.set_acquisition_ID("scan2");
       tmp_frame_meta.set_data_type(FrameProcessor::raw_32bit);
-      boost::shared_ptr<FrameProcessor::DataBlockFrame> tmp_frame(new FrameProcessor::DataBlockFrame(i, tmp_frame_meta, static_cast<void*>(img), 24));
+      boost::shared_ptr<FrameProcessor::DataBlockFrame> tmp_frame(new FrameProcessor::DataBlockFrame(tmp_frame_meta, static_cast<void*>(img), 24));
       frames.push_back(tmp_frame);
     }
   }

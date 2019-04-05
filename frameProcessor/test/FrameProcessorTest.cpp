@@ -142,9 +142,9 @@ BOOST_AUTO_TEST_CASE( DataBlockFrameTest )
   dimensions_t img_dims(2); img_dims[0] = 3; img_dims[1] = 4;
 
   FrameProcessor::IFrameMetaData frame_meta(
-      "data", FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
+      7, "data", FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
   );
-  FrameProcessor::DataBlockFrame frame(7, frame_meta, static_cast<void*>(img), 24);
+  FrameProcessor::DataBlockFrame frame(frame_meta, static_cast<void*>(img), 24);
   BOOST_REQUIRE_EQUAL(frame.get_data_size(), 24);
   BOOST_REQUIRE_EQUAL(frame.get_meta_data().get_dimensions()[0], 3);
   BOOST_REQUIRE_EQUAL(frame.get_meta_data().get_dimensions()[1], 4);
@@ -181,16 +181,19 @@ public:
     dset_def.create_low_high_indexes = false;
 
     FrameProcessor::IFrameMetaData frame_meta(
-        "data", FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
+            7, "data", FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
     );
     frame = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
-        new FrameProcessor::DataBlockFrame(7, frame_meta, static_cast<void*>(img), 24)
+        new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(img), 24)
     );
 
     for (unsigned short i = 1; i<6; i++)
     {
+      FrameProcessor::IFrameMetaData loop_frame_meta(
+              i, "data", FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
+      );
       boost::shared_ptr<FrameProcessor::DataBlockFrame> tmp_frame(
-          new FrameProcessor::DataBlockFrame(i, frame_meta, static_cast<void*>(img), 24));
+          new FrameProcessor::DataBlockFrame(loop_frame_meta, static_cast<void*>(img), 24));
       img[0] = i;
       frames.push_back(tmp_frame);
     }
@@ -743,12 +746,12 @@ BOOST_AUTO_TEST_CASE( AdjustOffset )
 
   dimensions_t dims(2, 0);
   FrameProcessor::IFrameMetaData frame_meta(
-          "raw", FrameProcessor::raw_16bit, "test", dims, FrameProcessor::no_compression
+          0, "raw", FrameProcessor::raw_16bit, "test", dims, FrameProcessor::no_compression
   );
   char dummy_data[2] = {0, 0};
 
   boost::shared_ptr<FrameProcessor::DataBlockFrame> frame(
-          new FrameProcessor::DataBlockFrame(0, frame_meta, static_cast<void*>(dummy_data), 2));
+          new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(dummy_data), 2));
   uint64_t offset = 0;
   frame->meta_data().set_frame_offset(offset);
 
@@ -971,11 +974,11 @@ BOOST_AUTO_TEST_CASE( SumFrame )
   dimensions_t img_dims(2); img_dims[0] = 3; img_dims[1] = 4;
 
   FrameProcessor::IFrameMetaData frame_meta(
-          "raw", FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
+          1, "raw", FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
   );
 
   boost::shared_ptr<FrameProcessor::DataBlockFrame> frame(
-          new FrameProcessor::DataBlockFrame(1, frame_meta, static_cast<void*>(img), 24));
+          new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(img), 24));
 
   plugin.process_frame(frame);
 
@@ -991,11 +994,11 @@ BOOST_AUTO_TEST_CASE( SumEmptyFrame )
 
   dimensions_t dims(2, 0);
   FrameProcessor::IFrameMetaData frame_meta(
-          "raw", FrameProcessor::raw_16bit, "test", dims, FrameProcessor::no_compression
+          0, "raw", FrameProcessor::raw_16bit, "test", dims, FrameProcessor::no_compression
   );
   char dummy_data[2] = {0, 0};
   boost::shared_ptr<FrameProcessor::DataBlockFrame> frame(
-          new FrameProcessor::DataBlockFrame(0, frame_meta, static_cast<void*>(dummy_data), 2));
+          new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(dummy_data), 2));
 
   plugin.process_frame(frame);
   BOOST_CHECK(frame->get_meta_data().has_parameter(FrameProcessor::SUM_PARAM_NAME));

@@ -2,11 +2,13 @@
 
 namespace FrameProcessor {
 
-    IFrameMetaData::IFrameMetaData(const std::string &dataset_name,
+    IFrameMetaData::IFrameMetaData(const long long& frame_number,
+                                   const std::string &dataset_name,
                                    const DataType &data_type,
                                    const std::string &acquisition_ID,
                                    const std::vector<unsigned long long> &dimensions,
                                    const CompressionType &compression_type) :
+            frame_number_(frame_number),
             dataset_name_(dataset_name),
             data_type_(data_type),
             acquisition_ID_(acquisition_ID),
@@ -18,6 +20,7 @@ namespace FrameProcessor {
     }
 
     IFrameMetaData::IFrameMetaData() :
+            frame_number_(-1),
             dataset_name_(""),
             data_type_(raw_8bit),
             compression_type_(no_compression),
@@ -27,6 +30,7 @@ namespace FrameProcessor {
     }
 
     IFrameMetaData::IFrameMetaData(const IFrameMetaData &frame) {
+      frame_number_ = frame.frame_number_;
       dataset_name_ = frame.dataset_name_;
       data_type_ = frame.data_type_;
       acquisition_ID_ = frame.acquisition_ID_;
@@ -43,6 +47,20 @@ namespace FrameProcessor {
     const std::map <std::string, boost::any> &IFrameMetaData::get_parameters() const {
       return this->parameters_;
     };
+
+    /** Return frame number
+     * @return long long - frame number
+     */
+    long long IFrameMetaData::get_frame_number() const {
+      return this->frame_number_;
+    }
+
+    /** Set frame number
+     * @param long long - frame number
+     */
+    void IFrameMetaData::set_frame_number(const long long& frame_number) {
+      this->frame_number_ = frame_number;
+    }
 
     /** Return dataset name
      * @return std::string - dataset name
@@ -105,6 +123,13 @@ namespace FrameProcessor {
      */
     CompressionType IFrameMetaData::get_compression_type() const {
       return this->compression_type_;
+    }
+
+    /** Set compression type
+     * @ param CompressionType compression type
+     */
+    void IFrameMetaData::set_compression_type(CompressionType compression_type) {
+      this->compression_type_ = compression_type;
     }
 
     /** Return frame offset

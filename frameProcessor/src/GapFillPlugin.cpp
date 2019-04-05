@@ -190,7 +190,7 @@ namespace FrameProcessor
        frame_meta.set_dimensions(img_dims);
 
        gap_frame = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
-                new FrameProcessor::DataBlockFrame(frame->get_frame_number(), frame_meta, static_cast<void*>(new_image), img_x * img_y * get_size_from_enum(frame->get_meta_data().get_data_type())));
+                new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(new_image), img_x * img_y * get_size_from_enum(frame->get_meta_data().get_data_type())));
 
         // Free the allocated memory
         free(new_image);

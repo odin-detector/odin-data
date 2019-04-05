@@ -95,11 +95,11 @@ boost::shared_ptr<IFrame> BloscPlugin::compress_frame(boost::shared_ptr<IFrame> 
   int compressed_size = 0;
   BloscCompressionSettings c_settings;
 
+  IFrameMetaData dest_meta_data = src_frame->get_meta_data_copy();
+  dest_meta_data.set_compression_type(blosc);
 
   boost::shared_ptr<IFrame> dest_frame = boost::shared_ptr<DataBlockFrame>(
-                  new DataBlockFrame(src_frame->get_frame_number(),
-                                        src_frame->get_meta_data_copy(),
-                                        compressed_size));
+                  new DataBlockFrame(dest_meta_data, compressed_size));
 
   const void* src_data_ptr = static_cast<const void*>(
       static_cast<const char*>(src_frame->get_data_ptr())

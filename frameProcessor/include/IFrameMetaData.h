@@ -20,7 +20,8 @@ class IFrameMetaData {
 
 public:
 
-  IFrameMetaData(const std::string& dataset_name,
+  IFrameMetaData(const long long& frame_number,
+                 const std::string& dataset_name,
                  const DataType& data_type,
                  const std::string& acquisition_ID,
                  const std::vector<unsigned long long>& dimensions,
@@ -81,6 +82,12 @@ public:
     return (parameters_.count(index) == 1);
   }
 
+  /** Return frame number */
+  long long get_frame_number() const;
+
+  /** Set frame number */
+  void set_frame_number(const long long& frame_number);
+
   /** Return dataset_name */
   const std::string &get_dataset_name() const;
 
@@ -108,6 +115,9 @@ public:
   /** Return compression type */
   CompressionType get_compression_type() const;
 
+  /** Set compression type */
+  void set_compression_type(CompressionType compression_type);
+
   /** Return frame offset */
   int64_t get_frame_offset() const;
 
@@ -118,6 +128,9 @@ public:
   void adjust_frame_offset(const int64_t &increment);
 
 private:
+
+  /** Frame number */
+  long long frame_number_;
 
   /** Pointer to logger */
   log4cxx::LoggerPtr logger;

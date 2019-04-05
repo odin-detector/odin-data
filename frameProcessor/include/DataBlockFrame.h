@@ -13,15 +13,13 @@ class DataBlockFrame : public IFrame {
  public:
 
   /** Construct a DataBlockFrame */
-  DataBlockFrame(const long long &frame_number,
-                 const IFrameMetaData &meta_data,
+  DataBlockFrame(const IFrameMetaData &meta_data,
                  const void *data_src,
                  size_t block_size,
                  const int &image_offset = 0);
 
   /** Construct a DataBlockFrame */
-  DataBlockFrame(const long long &frame_number,
-                 const IFrameMetaData& meta_data,
+  DataBlockFrame(const IFrameMetaData& meta_data,
                  size_t block_size,
                  const int &image_offset = 0);
 

@@ -8,8 +8,7 @@ namespace FrameProcessor {
  * @param meta-data - frame IFrameMetaData
  * @param image_offset - between start of data memory and image
  */
-    IFrame::IFrame(const long long &frame_number, const IFrameMetaData& meta_data, const int &image_offset) :
-            frame_number_(frame_number),
+    IFrame::IFrame(const IFrameMetaData& meta_data, const int &image_offset) :
             meta_data_(meta_data),
             image_offset_(image_offset),
             logger(log4cxx::Logger::getLogger("FP.IFrame")) {
@@ -38,7 +37,18 @@ namespace FrameProcessor {
       return *this;
     }
 
-/** Return a void pointer to the image data
+/** Return if frame is valid
+ * @return bool - frame is valid
+ */
+    bool IFrame::is_valid() const {
+      if (meta_data_.get_data_type() == raw_unknown)
+        return false;
+      if (meta_data_.get_compression_type() == unknown_compression)
+        return false;
+      return true;
+    }
+    
+    /** Return a void pointer to the image data
  * @ return void poiter to image data
  */
     void *IFrame::get_image_ptr() const {
@@ -49,14 +59,14 @@ namespace FrameProcessor {
  * @return frame frame number
  */
     long long IFrame::get_frame_number() const {
-      return this->frame_number_;
+      return this->meta_data_.get_frame_number();
     }
 
 /** Set the frame number
  * @param frame_number - new frame number
  */
     void IFrame::set_frame_number(long long frame_number) {
-      this->frame_number_ = frame_number;
+      this->meta_data_.set_frame_number(frame_number);
     }
 
 /** Return a reference to the MetaData

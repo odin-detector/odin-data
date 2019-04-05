@@ -27,12 +27,10 @@ public:
         chunk_dims[1] = 3;
         chunk_dims[2] = 4;
 
-        FrameProcessor::IFrameMetaData frame_meta(
-                "data", FrameProcessor::raw_16bit, "scan1", img_dims, FrameProcessor::no_compression
-        );
+        FrameProcessor::IFrameMetaData frame_meta(7, "data", FrameProcessor::raw_16bit, "scan1", img_dims, FrameProcessor::no_compression);
 
         frame = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
-                new FrameProcessor::DataBlockFrame(7, frame_meta, static_cast<void *>(img), 24));
+                new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void *>(img), 24));
 
         unsigned short img_2[16] = {1, 1, 2, 2,
                                     1, 1, 2, 2,
@@ -45,11 +43,11 @@ public:
         chunk_dims[2] = 4;
 
         FrameProcessor::IFrameMetaData frame_2_meta(
-                "data", FrameProcessor::raw_16bit, "scan1", img_dims, FrameProcessor::no_compression
+                7, "data", FrameProcessor::raw_16bit, "scan1", img_dims, FrameProcessor::no_compression
         );
 
         frame_2 = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
-                new FrameProcessor::DataBlockFrame(7, frame_2_meta, static_cast<void *>(img_2), 32));
+                new FrameProcessor::DataBlockFrame(frame_2_meta, static_cast<void *>(img_2), 32));
 
     }
 

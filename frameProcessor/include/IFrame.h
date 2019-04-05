@@ -17,12 +17,15 @@ class IFrame {
  public:
 
   /** Base constructor */
-  IFrame(const long long& frame_number, const IFrameMetaData &meta_data, const int &image_offset = 0);
+  IFrame(const IFrameMetaData &meta_data, const int &image_offset = 0);
   /** Shallow-copy copy */
   IFrame(const IFrame &frame);
 
   /** Deep-copy assignment */
   IFrame &operator=(const IFrame& frame);
+
+  /** Return if frame is valid */
+  bool is_valid() const;
 
   /** Return a void pointer to the raw data */
   virtual void *get_data_ptr() const = 0;
@@ -61,9 +64,6 @@ class IFrame {
   void set_image_offset(const int &offset);
 
  protected:
-
-  /** Frame number */
-  long long frame_number_;
 
   /** Pointer to logger */
   log4cxx::LoggerPtr logger;

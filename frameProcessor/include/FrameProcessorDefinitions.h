@@ -17,11 +17,11 @@ namespace FrameProcessor
   /**
    * Enumeration to store the pixel type of the incoming image
    */
-  enum DataType { raw_8bit, raw_16bit, raw_32bit, raw_64bit, raw_float };
+  enum DataType { raw_unknown, raw_8bit, raw_16bit, raw_32bit, raw_64bit, raw_float };
   /**
    * Enumeration to store the compression type of the incoming image
    */
-  enum CompressionType { no_compression, lz4, bslz4, blosc };
+  enum CompressionType { unknown_compression, no_compression, lz4, bslz4, blosc };
   /**
    * Enumeration to store the compression type of the incoming image
    */

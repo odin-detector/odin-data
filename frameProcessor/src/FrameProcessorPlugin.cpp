@@ -271,6 +271,8 @@ void FrameProcessorPlugin::callback(boost::shared_ptr<IFrame> frame)
  */
 void FrameProcessorPlugin::push(boost::shared_ptr<IFrame> frame)
 {
+  if (!frame->is_valid())
+      throw std::runtime_error("Invalid frame");
   // Loop over blocking callbacks, calling each function and waiting for return
   std::map<std::string, boost::shared_ptr<IFrameCallback> >::iterator bcbIter;
   for (bcbIter = blocking_callbacks_.begin(); bcbIter != blocking_callbacks_.end(); ++bcbIter) {

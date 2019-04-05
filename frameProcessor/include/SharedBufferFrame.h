@@ -13,8 +13,7 @@ class SharedBufferFrame : public IFrame {
  public:
 
   /** Construct a SharedBufferFrame */
-  SharedBufferFrame(const long long &frame_number,
-                    const IFrameMetaData &meta_data,
+  SharedBufferFrame(const IFrameMetaData &meta_data,
                     void *data_src,
                     size_t nbytes,
                     uint64_t bufferID,
