@@ -32,6 +32,7 @@ namespace FrameProcessor {
   const std::string KafkaProducerPlugin::CONFIG_SERVERS = "servers";
   const std::string KafkaProducerPlugin::CONFIG_PARTITION = "partition";
   const std::string KafkaProducerPlugin::CONFIG_DATASET = "dataset";
+  const std::string KafkaProducerPlugin::CONFIG_INCLUDE_PARAMETERS = "include_parameters";
   const std::string KafkaProducerPlugin::CONFIG_SENT = "sent";
   const std::string KafkaProducerPlugin::CONFIG_LOST = "lost";
   const std::string KafkaProducerPlugin::CONFIG_ACK = "ack";
@@ -42,7 +43,8 @@ namespace FrameProcessor {
   KafkaProducerPlugin::KafkaProducerPlugin()
       : dataset_name_(KAFKA_DEFAULT_DATASET), topic_name_(KAFKA_DEFAULT_DATASET),
         kafka_producer_(NULL), kafka_topic_(NULL),
-        kafka_partition_(RD_KAFKA_PARTITION_UA)
+        kafka_partition_(RD_KAFKA_PARTITION_UA),
+        include_parameters_(true)
   {
     // Setup logging for the class
     logger_ = Logger::getLogger("FP.KafkaProducer");
@@ -76,6 +78,10 @@ namespace FrameProcessor {
     if (config.has_param(CONFIG_DATASET)) {
       configure_dataset(config.get_param<std::string>(CONFIG_DATASET));
       configure_kafka_topic(this->topic_name_);
+    }
+
+    if (config.has_param(CONFIG_INCLUDE_PARAMETERS)) {
+      this->include_parameters_ = config.get_param<bool>(CONFIG_INCLUDE_PARAMETERS);
     }
   }
 
@@ -250,6 +256,12 @@ namespace FrameProcessor {
     writer.Int(frame->get_data_type());
     writer.String(MSG_HEADER_FRAME_NUMBER_KEY);
     writer.Uint64(frame->get_frame_number());
+    writer.String(MSG_HEADER_ACQUISITION_ID_KEY);
+    writer.String(frame->get_acquisition_id().c_str());
+    writer.String(MSG_HEADER_COMPRESSION_KEY);
+    writer.Uint(frame->get_compression());
+    writer.String(MSG_HEADER_FRAME_OFFSET_KEY);
+    writer.Uint64(frame->get_frame_offset());
     writer.String(MSG_HEADER_FRAME_DIMENSIONS_KEY);
     writer.StartArray();
     dimensions_t dims = frame->get_dimensions();
@@ -257,6 +269,32 @@ namespace FrameProcessor {
       writer.Uint64(*it);
     }
     writer.EndArray();
+    if (this->include_parameters_) {
+      std::map<std::string, Parameter>& parameters = frame->get_parameters();
+      writer.String(MSG_HEADER_FRAME_PARAMETERS_KEY);
+      writer.StartObject();
+      for (std::map<std::string, Parameter>::iterator it = parameters.begin(); it != parameters.end(); it++) {
+        writer.String(it->first.c_str());
+        switch (it->second.type) {
+        case raw_8bit:
+          writer.Uint(it->second.value.i8_val);
+          break;
+        case raw_16bit:
+          writer.Uint(it->second.value.i16_val);
+          break;
+        case raw_32bit:
+          writer.Uint(it->second.value.i32_val);
+          break;
+        case raw_64bit:
+          writer.Uint64(it->second.value.i64_val);
+          break;
+        case raw_float:
+          writer.Double(it->second.value.float_val);
+          break;
+        }
+      }
+      writer.EndObject();
+    }
     writer.EndObject();
 
     if (string_buffer.GetSize() > USHRT_MAX) {

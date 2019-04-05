@@ -28,6 +28,10 @@ using namespace log4cxx::helpers;
 #define MSG_HEADER_DATA_TYPE_KEY "data_type"
 #define MSG_HEADER_FRAME_NUMBER_KEY "frame_number"
 #define MSG_HEADER_FRAME_DIMENSIONS_KEY "dims"
+#define MSG_HEADER_ACQUISITION_ID_KEY "acquisition_id"
+#define MSG_HEADER_COMPRESSION_KEY "compression"
+#define MSG_HEADER_FRAME_OFFSET_KEY "frame_offset"
+#define MSG_HEADER_FRAME_PARAMETERS_KEY "parameters"
 
 /**
  * This plugin class creates and send messages containing
@@ -104,6 +108,9 @@ namespace FrameProcessor {
      * want to poll or produce while the handlers are been destroyed */
     boost::recursive_mutex mutex_;
 
+    /* True if frame parameters need to be included in the message header */
+    bool include_parameters_;
+
     /* plugin specific parameters */
     static const std::string CONFIG_SERVERS;
     static const std::string CONFIG_PARTITION;
@@ -112,6 +119,7 @@ namespace FrameProcessor {
     static const std::string CONFIG_SENT;
     static const std::string CONFIG_LOST;
     static const std::string CONFIG_ACK;
+    static const std::string CONFIG_INCLUDE_PARAMETERS;
 
   };
 
