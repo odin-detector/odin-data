@@ -13,17 +13,16 @@
 
 namespace FrameProcessor {
 
-
   // Callback function used to report status of a delivered message
-  static void kafka_message_callback(rd_kafka_t* kafka_producer,
-      const rd_kafka_message_t* kafka_message, void* opaque)
+  static void kafka_message_callback(rd_kafka_t *kafka_producer,
+                                     const rd_kafka_message_t *kafka_message,
+                                     void *opaque)
   {
-    KafkaProducerPlugin* kafka_producer_plugin = static_cast<KafkaProducerPlugin*>(kafka_message->_private);
+    KafkaProducerPlugin *kafka_producer_plugin = static_cast<KafkaProducerPlugin *>(kafka_message->_private);
     if (kafka_message->err) {
       kafka_producer_plugin->on_message_error(
-          rd_kafka_err2str(kafka_message->err));
-    }
-    else {
+        rd_kafka_err2str(kafka_message->err));
+    } else {
       // count message as acknowledged
       kafka_producer_plugin->on_message_ack();
     }
@@ -41,10 +40,10 @@ namespace FrameProcessor {
    * The constructor sets up logging used within the class.
    */
   KafkaProducerPlugin::KafkaProducerPlugin()
-      : dataset_name_(KAFKA_DEFAULT_DATASET), topic_name_(KAFKA_DEFAULT_DATASET),
-        kafka_producer_(NULL), kafka_topic_(NULL),
-        kafka_partition_(RD_KAFKA_PARTITION_UA),
-        include_parameters_(true)
+    : dataset_name_(KAFKA_DEFAULT_DATASET), topic_name_(KAFKA_DEFAULT_DATASET),
+      kafka_producer_(NULL), kafka_topic_(NULL),
+      kafka_partition_(RD_KAFKA_PARTITION_UA),
+      include_parameters_(true)
   {
     // Setup logging for the class
     logger_ = Logger::getLogger("FP.KafkaProducer");
@@ -62,8 +61,8 @@ namespace FrameProcessor {
     destroy_kafka();
   }
 
-  void KafkaProducerPlugin::configure(OdinData::IpcMessage& config,
-      OdinData::IpcMessage& reply)
+  void KafkaProducerPlugin::configure(OdinData::IpcMessage &config,
+                                      OdinData::IpcMessage &reply)
   {
     boost::lock_guard<boost::recursive_mutex> lock(mutex_);
     if (config.has_param(CONFIG_SERVERS)) {
@@ -85,17 +84,17 @@ namespace FrameProcessor {
     }
   }
 
-  void KafkaProducerPlugin::requestConfiguration(OdinData::IpcMessage& reply)
+  void KafkaProducerPlugin::requestConfiguration(OdinData::IpcMessage &reply)
   {
     // Make sure statistics are updated
     poll_delivery_message_report_queue();
 
     reply.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_SENT,
-        frames_sent_);
+                    frames_sent_);
     reply.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_LOST,
-        frames_lost_);
+                    frames_lost_);
     reply.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_ACK,
-        frames_ack_);
+                    frames_ack_);
   }
 
   bool KafkaProducerPlugin::reset_statistics()
@@ -136,33 +135,33 @@ namespace FrameProcessor {
   void KafkaProducerPlugin::configure_kafka_servers(std::string servers)
   {
     destroy_kafka();
-    rd_kafka_t* kafka_producer;
-    rd_kafka_conf_t* kafka_config;
+    rd_kafka_t *kafka_producer;
+    rd_kafka_conf_t *kafka_config;
     char errBuf[KAFKA_ERROR_BUFFER_LEN];
     kafka_config = rd_kafka_conf_new();
     int status;
 
     status = rd_kafka_conf_set(kafka_config,
-        "message.max.bytes",
-        KAFKA_MESSAGE_MAX_BYTES,
-        errBuf,
-        sizeof(errBuf));
+                               "message.max.bytes",
+                               KAFKA_MESSAGE_MAX_BYTES,
+                               errBuf,
+                               sizeof(errBuf));
 
     if (status != RD_KAFKA_CONF_OK) {
       LOG4CXX_ERROR(logger_, "Kafka configuration error while setting max message size: "
-          << errBuf);
+        << errBuf);
       return;
     }
 
     status = rd_kafka_conf_set(kafka_config,
-        "bootstrap.servers",
-        servers.c_str(),
-        errBuf,
-        sizeof(errBuf));
+                               "bootstrap.servers",
+                               servers.c_str(),
+                               errBuf,
+                               sizeof(errBuf));
 
     if (status != RD_KAFKA_CONF_OK) {
       LOG4CXX_ERROR(logger_, "Kafka configuration error while setting botstrap servers"
-          << errBuf);
+        << errBuf);
       return;
     }
 
@@ -171,7 +170,7 @@ namespace FrameProcessor {
 
     // kafkaProducer will free kafka_config when destroyed
     kafka_producer = rd_kafka_new(RD_KAFKA_PRODUCER, kafka_config, errBuf,
-        sizeof(errBuf));
+                                  sizeof(errBuf));
     if (!kafka_producer) {
       LOG4CXX_ERROR(logger_, "Kafka handle error: " << errBuf);
       return;
@@ -200,8 +199,8 @@ namespace FrameProcessor {
     }
 
     this->kafka_topic_ = rd_kafka_topic_new(kafka_producer_,
-        this->topic_name_.c_str(),
-        NULL);
+                                            this->topic_name_.c_str(),
+                                            NULL);
     if (!this->kafka_topic_) {
       LOG4CXX_ERROR(logger_, "Kafka topic error");
     }
@@ -222,8 +221,7 @@ namespace FrameProcessor {
     if (sep == std::string::npos) {
       this->dataset_name_ = dataset;
       this->topic_name_ = dataset;
-    }
-    else {
+    } else {
       this->dataset_name_ = dataset.substr(0, sep);
       this->topic_name_ = dataset.substr(sep + 1, std::string::npos);
     }
@@ -243,8 +241,8 @@ namespace FrameProcessor {
 
   /* Create a message with the following structure:
    * [ json header length (2 bytes) ] + [ json header ] + [ frame data]  */
-  void* KafkaProducerPlugin::create_message(boost::shared_ptr<Frame> frame,
-      size_t& nbytes)
+  void *KafkaProducerPlugin::create_message(boost::shared_ptr<Frame> frame,
+                                            size_t &nbytes)
   {
     // creates header information
     rapidjson::StringBuffer string_buffer;
@@ -270,27 +268,27 @@ namespace FrameProcessor {
     }
     writer.EndArray();
     if (this->include_parameters_) {
-      std::map<std::string, Parameter>& parameters = frame->get_parameters();
+      std::map<std::string, Parameter> &parameters = frame->get_parameters();
       writer.String(MSG_HEADER_FRAME_PARAMETERS_KEY);
       writer.StartObject();
       for (std::map<std::string, Parameter>::iterator it = parameters.begin(); it != parameters.end(); it++) {
         writer.String(it->first.c_str());
         switch (it->second.type) {
-        case raw_8bit:
-          writer.Uint(it->second.value.i8_val);
-          break;
-        case raw_16bit:
-          writer.Uint(it->second.value.i16_val);
-          break;
-        case raw_32bit:
-          writer.Uint(it->second.value.i32_val);
-          break;
-        case raw_64bit:
-          writer.Uint64(it->second.value.i64_val);
-          break;
-        case raw_float:
-          writer.Double(it->second.value.float_val);
-          break;
+          case raw_8bit:
+            writer.Uint(it->second.value.i8_val);
+            break;
+          case raw_16bit:
+            writer.Uint(it->second.value.i16_val);
+            break;
+          case raw_32bit:
+            writer.Uint(it->second.value.i32_val);
+            break;
+          case raw_64bit:
+            writer.Uint64(it->second.value.i64_val);
+            break;
+          case raw_float:
+            writer.Double(it->second.value.float_val);
+            break;
         }
       }
       writer.EndObject();
@@ -299,23 +297,23 @@ namespace FrameProcessor {
 
     if (string_buffer.GetSize() > USHRT_MAX) {
       LOG4CXX_ERROR(logger_, "Header size is too big, it should be less than "
-          << USHRT_MAX);
+        << USHRT_MAX);
       nbytes = 0;
       return NULL;
     }
 
     size_t message_size = sizeof(uint16_t) + string_buffer.GetSize() + 1
-        + frame->get_data_size();
-    char* msg = (char*) malloc(message_size);
+      + frame->get_data_size();
+    char *msg = (char *) malloc(message_size);
     uint16_t header_size = static_cast<uint16_t>(string_buffer.GetSize() + 1);
 
-    *(reinterpret_cast<uint16_t*>(msg)) = header_size;
+    *(reinterpret_cast<uint16_t *>(msg)) = header_size;
     // copy header data, this includes an ending null byte
     memcpy(msg + sizeof(uint16_t), string_buffer.GetString(),
-        header_size);
+           header_size);
     // copy frame data
     memcpy(msg + sizeof(uint16_t) + header_size, frame->get_data(),
-        frame->get_data_size());
+           frame->get_data_size());
     nbytes = message_size;
     return msg;
   }
@@ -331,34 +329,33 @@ namespace FrameProcessor {
       return;
     }
     boost::lock_guard<boost::recursive_mutex> lock(mutex_);
-    char* buf;
+    char *buf;
     size_t len;
     // This buffer is freed by kafka (when there are no errors)
-    buf = (char*) create_message(frame, len);
+    buf = (char *) create_message(frame, len);
     if (!buf) {
       return;
     }
     // enqueue message
     int status = rd_kafka_produce(
-        this->kafka_topic_,
-        kafka_partition_,
-        /* free buffer when enqueued */
-        RD_KAFKA_MSG_F_FREE,
-        /* Data */
-        buf, len,
-        /* No key */
-        NULL, 0,
-        /* Opaque pointer */
-        this);
+      this->kafka_topic_,
+      kafka_partition_,
+      /* free buffer when enqueued */
+      RD_KAFKA_MSG_F_FREE,
+      /* Data */
+      buf, len,
+      /* No key */
+      NULL, 0,
+      /* Opaque pointer */
+      this);
 
     if (status) {
       // Dropping frame, probably the queue is full
       LOG4CXX_ERROR(logger_, "Error while producing: "
-          << rd_kafka_err2str(rd_kafka_last_error()));
+        << rd_kafka_err2str(rd_kafka_last_error()));
       free(buf);
       frames_lost_++;
-    }
-    else {
+    } else {
       frames_sent_++;
     }
     rd_kafka_poll(this->kafka_producer_, 0);
@@ -375,7 +372,7 @@ namespace FrameProcessor {
   /**
    * It logs an error when a message delivery has failed
    */
-  void KafkaProducerPlugin::on_message_error(const char* error)
+  void KafkaProducerPlugin::on_message_error(const char *error)
   {
     LOG4CXX_ERROR(logger_, "Error while delivering message: " << error);
   }
@@ -388,8 +385,9 @@ namespace FrameProcessor {
   void KafkaProducerPlugin::process_frame(boost::shared_ptr<Frame> frame)
   {
     LOG4CXX_TRACE(logger_, "Received a new frame...");
-    if (frame->get_dataset_name() == this->dataset_name_)
+    if (frame->get_dataset_name() == this->dataset_name_) {
       this->enqueue_frame(frame);
+    }
     this->push(frame);
   }
 
