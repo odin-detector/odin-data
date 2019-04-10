@@ -20,8 +20,8 @@ using namespace log4cxx::helpers;
 #define KAFKA_ERROR_BUFFER_LEN 512
 #define KAFKA_MAX_MSG_LEN 512
 #define KAFKA_LINGER_MS 1000
-#define KAFKA_DATASET_TOPIC_SEPARATOR ":"
 #define KAFKA_DEFAULT_DATASET "data"
+#define KAFKA_DEFAULT_TOPIC   "data"
 #define KAFKA_POLLING_MS 5000
 #define KAFKA_MESSAGE_MAX_BYTES "134217728"
 #define MSG_HEADER_FRAME_SIZE_KEY "data_size"
@@ -52,6 +52,8 @@ namespace FrameProcessor {
 
     void requestConfiguration(OdinData::IpcMessage &reply);
 
+    void status(OdinData::IpcMessage &status);
+
     void process_frame(boost::shared_ptr <Frame> frame);
 
     bool reset_statistics();
@@ -69,12 +71,12 @@ namespace FrameProcessor {
 
     void configure_kafka_topic(std::string topic_name);
 
-    void configure_kafka_partition(int32_t partition);
+    void configure_partition(int32_t partition);
 
     void configure_dataset(std::string dataset);
 
     void *create_message(boost::shared_ptr<Frame> frame,
-            size_t &nbytes);
+                         size_t &nbytes);
 
     void enqueue_frame(boost::shared_ptr<Frame> frame);
 
@@ -93,10 +95,11 @@ namespace FrameProcessor {
     LoggerPtr logger_;
     std::string dataset_name_;
     std::string topic_name_;
+    std::string servers_;
+    int32_t partition_;
     /* Kafka related attributes */
     rd_kafka_t *kafka_producer_;
     rd_kafka_topic_t *kafka_topic_;
-    int32_t kafka_partition_;
     /* Frames statistics */
     uint32_t frames_sent_;
     uint32_t frames_lost_;
@@ -113,13 +116,14 @@ namespace FrameProcessor {
 
     /* plugin specific parameters */
     static const std::string CONFIG_SERVERS;
+    static const std::string CONFIG_TOPIC;
     static const std::string CONFIG_PARTITION;
     /* the datasets that will be published */
     static const std::string CONFIG_DATASET;
+    static const std::string CONFIG_INCLUDE_PARAMETERS;
     static const std::string CONFIG_SENT;
     static const std::string CONFIG_LOST;
     static const std::string CONFIG_ACK;
-    static const std::string CONFIG_INCLUDE_PARAMETERS;
 
   };
 

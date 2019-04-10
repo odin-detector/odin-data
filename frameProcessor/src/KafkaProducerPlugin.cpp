@@ -29,6 +29,7 @@ namespace FrameProcessor {
   }
 
   const std::string KafkaProducerPlugin::CONFIG_SERVERS = "servers";
+  const std::string KafkaProducerPlugin::CONFIG_TOPIC = "topic";
   const std::string KafkaProducerPlugin::CONFIG_PARTITION = "partition";
   const std::string KafkaProducerPlugin::CONFIG_DATASET = "dataset";
   const std::string KafkaProducerPlugin::CONFIG_INCLUDE_PARAMETERS = "include_parameters";
@@ -40,9 +41,9 @@ namespace FrameProcessor {
    * The constructor sets up logging used within the class.
    */
   KafkaProducerPlugin::KafkaProducerPlugin()
-    : dataset_name_(KAFKA_DEFAULT_DATASET), topic_name_(KAFKA_DEFAULT_DATASET),
+    : dataset_name_(KAFKA_DEFAULT_DATASET), topic_name_(KAFKA_DEFAULT_TOPIC),
       kafka_producer_(NULL), kafka_topic_(NULL),
-      kafka_partition_(RD_KAFKA_PARTITION_UA),
+      partition_(RD_KAFKA_PARTITION_UA),
       include_parameters_(true)
   {
     // Setup logging for the class
@@ -66,19 +67,22 @@ namespace FrameProcessor {
   {
     boost::lock_guard<boost::recursive_mutex> lock(mutex_);
     if (config.has_param(CONFIG_SERVERS)) {
+      destroy_kafka();
       configure_kafka_servers(config.get_param<std::string>(CONFIG_SERVERS));
       configure_kafka_topic(this->topic_name_);
     }
 
+    if (config.has_param(CONFIG_TOPIC)) {
+      configure_kafka_topic(config.get_param<std::string>(CONFIG_TOPIC));
+    }
+
     if (config.has_param(CONFIG_PARTITION)) {
-      configure_kafka_partition(config.get_param<uint32_t>(CONFIG_PARTITION));
+      configure_partition(config.get_param<uint32_t>(CONFIG_PARTITION));
     }
 
     if (config.has_param(CONFIG_DATASET)) {
       configure_dataset(config.get_param<std::string>(CONFIG_DATASET));
-      configure_kafka_topic(this->topic_name_);
     }
-
     if (config.has_param(CONFIG_INCLUDE_PARAMETERS)) {
       this->include_parameters_ = config.get_param<bool>(CONFIG_INCLUDE_PARAMETERS);
     }
@@ -86,15 +90,29 @@ namespace FrameProcessor {
 
   void KafkaProducerPlugin::requestConfiguration(OdinData::IpcMessage &reply)
   {
+    reply.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_SERVERS,
+                    this->servers_);
+    reply.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_TOPIC,
+                    this->topic_name_);
+    reply.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_PARTITION,
+                    this->partition_);
+    reply.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_DATASET,
+                    this->dataset_name_);
+    reply.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_INCLUDE_PARAMETERS,
+                    this->include_parameters_);
+  }
+
+  void KafkaProducerPlugin::status(OdinData::IpcMessage &status)
+  {
     // Make sure statistics are updated
     poll_delivery_message_report_queue();
 
-    reply.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_SENT,
-                    frames_sent_);
-    reply.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_LOST,
-                    frames_lost_);
-    reply.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_ACK,
-                    frames_ack_);
+    status.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_SENT,
+                     frames_sent_);
+    status.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_LOST,
+                     frames_lost_);
+    status.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_ACK,
+                     frames_ack_);
   }
 
   bool KafkaProducerPlugin::reset_statistics()
@@ -134,7 +152,6 @@ namespace FrameProcessor {
    */
   void KafkaProducerPlugin::configure_kafka_servers(std::string servers)
   {
-    destroy_kafka();
     rd_kafka_t *kafka_producer;
     rd_kafka_conf_t *kafka_config;
     char errBuf[KAFKA_ERROR_BUFFER_LEN];
@@ -178,6 +195,7 @@ namespace FrameProcessor {
 
     this->kafka_producer_ = kafka_producer;
 
+    this->servers_ = servers;
     LOG4CXX_TRACE(logger_, "Configured kafka servers: " << servers);
 
   }
@@ -199,32 +217,23 @@ namespace FrameProcessor {
     }
 
     this->kafka_topic_ = rd_kafka_topic_new(kafka_producer_,
-                                            this->topic_name_.c_str(),
+                                            topic_name.c_str(),
                                             NULL);
+
     if (!this->kafka_topic_) {
       LOG4CXX_ERROR(logger_, "Kafka topic error");
     }
+
+    this->topic_name_ = topic_name;
     LOG4CXX_TRACE(logger_, "Configured kafka topic: " << topic_name);
   }
 
   /**
-   * Configure the dataset that will be published, the topic name
-   * might be specified after a colon character, i.e: following the format {dataset}:{topic}
-   *
-   * If no topic is specified, it is assumed as the dataset name
+   * Configure the dataset that will be published
    */
   void KafkaProducerPlugin::configure_dataset(std::string dataset)
   {
-    // Parse "dataset:topic", if only dataset is provided
-    // the same name will be used as topic
-    size_t sep = dataset.find(KAFKA_DATASET_TOPIC_SEPARATOR);
-    if (sep == std::string::npos) {
-      this->dataset_name_ = dataset;
-      this->topic_name_ = dataset;
-    } else {
-      this->dataset_name_ = dataset.substr(0, sep);
-      this->topic_name_ = dataset.substr(sep + 1, std::string::npos);
-    }
+    this->dataset_name_ = dataset;
     LOG4CXX_TRACE(logger_, "Configured dataset " << this->dataset_name_);
   }
 
@@ -234,9 +243,9 @@ namespace FrameProcessor {
    * If it is not configured, it defaults to automatic partitioning (using
    * the topic's partitioner function)
    */
-  void KafkaProducerPlugin::configure_kafka_partition(int32_t partition)
+  void KafkaProducerPlugin::configure_partition(int32_t partition)
   {
-    kafka_partition_ = partition;
+    this->partition_ = partition;
   }
 
   /* Create a message with the following structure:
@@ -339,7 +348,7 @@ namespace FrameProcessor {
     // enqueue message
     int status = rd_kafka_produce(
       this->kafka_topic_,
-      kafka_partition_,
+      partition_,
       /* free buffer when enqueued */
       RD_KAFKA_MSG_F_FREE,
       /* Data */
