@@ -20,6 +20,7 @@ namespace po = boost::program_options;
 #include "FrameReceiverApp.h"
 #include "SegFaultHandler.h"
 #include "version.h"
+#include "stringparse.h"
 
 using namespace FrameReceiver;
 
@@ -355,7 +356,16 @@ void FrameReceiverApp::run(void)
 
       // Parse the JSON file
       rapidjson::Document param_doc;
-      param_doc.Parse(json.c_str());
+
+      if (param_doc.Parse(json.c_str()).HasParseError()) {
+        std::stringstream msg;
+        std::string error_snippet = extract_substr_at_pos(json, param_doc.GetErrorOffset(), 15);
+        msg << "Parsing JSON configuration failed at offset "
+            << param_doc.GetErrorOffset() << ": "
+            << rapidjson::GetParseError_En(param_doc.GetParseError()) << " " << error_snippet;
+        throw OdinData::OdinDataException(msg.str());
+      }
+
       // Check if the top level object is an array
       if (param_doc.IsArray()) {
         // Loop over the array submitting the child objects in order
