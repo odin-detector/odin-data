@@ -3,5 +3,4 @@ pysnmp>=4.3.0
 numpy>=1.9.1
 h5py>=2.9.0
 pyzmq>=16.0.2
-npyscreen>=4.10.0
 pygelf>=0.3.1
