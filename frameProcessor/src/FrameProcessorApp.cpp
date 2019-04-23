@@ -599,8 +599,8 @@ int main(int argc, char** argv)
       if (param_doc.Parse(json.c_str()).HasParseError()) {
         std::stringstream msg;
         std::string error_snippet = extract_substr_at_pos(json, param_doc.GetErrorOffset(), 15);
-        msg << "Parsing JSON configuration failed at offset "
-            << param_doc.GetErrorOffset() << ": "
+        msg << "Parsing JSON configuration failed at line "
+            << extract_line_no(json, param_doc.GetErrorOffset()) << ": "
             << rapidjson::GetParseError_En(param_doc.GetParseError()) << " " << error_snippet;
         throw OdinData::OdinDataException(msg.str());
       }
