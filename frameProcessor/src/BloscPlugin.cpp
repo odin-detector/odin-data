@@ -158,7 +158,7 @@ void BloscPlugin::update_compression_settings()
   this->compression_settings_ = this->commanded_compression_settings_;
 
   int ret = 0;
-  char * p_compressor_name;
+  const char * p_compressor_name;
   ret = blosc_compcode_to_compname(this->compression_settings_.blosc_compressor, &p_compressor_name);
   LOG4CXX_DEBUG_LEVEL(1, logger_, "Blosc compression settings: "
                                   << " acquisition=\"" << this->current_acquisition_ << "\""
