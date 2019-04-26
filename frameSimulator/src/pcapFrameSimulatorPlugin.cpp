@@ -96,6 +96,8 @@ namespace FrameSimulator {
         // Loop over the pcap file to read the frames for replay
         pcap_loop(m_handle, -1, pkt_callback, reinterpret_cast<u_char *>(this));
 
+        return true;
+
     }
 
     /** Prepare frame(s) for replay by processing the pcap file
