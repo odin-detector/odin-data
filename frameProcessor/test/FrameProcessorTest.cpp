@@ -985,7 +985,7 @@ BOOST_AUTO_TEST_CASE( SumFrame )
   BOOST_CHECK(frame->get_meta_data().has_parameter(FrameProcessor::SUM_PARAM_NAME));
 
   // check that the sum of each pixel is the correct value
-  BOOST_CHECK_EQUAL(78, frame->get_meta_data().get_parameter<uint16_t>(FrameProcessor::SUM_PARAM_NAME));
+  BOOST_CHECK_EQUAL(78, frame->get_meta_data().get_parameter<uint64_t>(FrameProcessor::SUM_PARAM_NAME));
 }
 
 BOOST_AUTO_TEST_CASE( SumEmptyFrame )
@@ -1003,7 +1003,7 @@ BOOST_AUTO_TEST_CASE( SumEmptyFrame )
   plugin.process_frame(frame);
   BOOST_CHECK(frame->get_meta_data().has_parameter(FrameProcessor::SUM_PARAM_NAME));
   // check that a empty frame sum is zero
-  BOOST_CHECK_EQUAL(0, frame->get_meta_data().get_parameter<uint16_t>(FrameProcessor::SUM_PARAM_NAME));
+  BOOST_CHECK_EQUAL(0, frame->get_meta_data().get_parameter<uint64_t>(FrameProcessor::SUM_PARAM_NAME));
 }
 
 BOOST_AUTO_TEST_CASE( SumNotSupportedDataType )

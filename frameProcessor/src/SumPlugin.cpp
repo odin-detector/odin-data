@@ -50,13 +50,13 @@ namespace FrameProcessor {
     LOG4CXX_TRACE(logger_, "Received a new frame...");
     switch (frame->get_meta_data().get_data_type()) {
       case raw_8bit:
-        frame->meta_data().set_parameter<uint8_t>(SUM_PARAM_NAME, calculate_sum<uint8_t>(frame));
+        frame->meta_data().set_parameter<uint64_t>(SUM_PARAM_NAME, calculate_sum<uint8_t>(frame));
         break;
       case raw_16bit:
-        frame->meta_data().set_parameter<uint16_t>(SUM_PARAM_NAME, calculate_sum<uint16_t>(frame));
+        frame->meta_data().set_parameter<uint64_t>(SUM_PARAM_NAME, calculate_sum<uint16_t>(frame));
         break;
       case raw_32bit:
-        frame->meta_data().set_parameter<uint32_t>(SUM_PARAM_NAME, calculate_sum<uint32_t>(frame));
+        frame->meta_data().set_parameter<uint64_t>(SUM_PARAM_NAME, calculate_sum<uint32_t>(frame));
         break;
       case raw_64bit:
         frame->meta_data().set_parameter<uint64_t>(SUM_PARAM_NAME, calculate_sum<uint64_t>(frame));
