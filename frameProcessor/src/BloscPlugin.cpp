@@ -98,9 +98,6 @@ boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> sr
   FrameMetaData dest_meta_data = src_frame->get_meta_data_copy();
   dest_meta_data.set_compression_type(blosc);
 
-  boost::shared_ptr<Frame> dest_frame = boost::shared_ptr<DataBlockFrame>(
-                  new DataBlockFrame(dest_meta_data, compressed_size));
-
   const void* src_data_ptr = static_cast<const void*>(
       static_cast<const char*>(src_frame->get_data_ptr())
   );
@@ -111,6 +108,9 @@ boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> sr
   c_settings.uncompressed_size = src_frame->get_data_size();
 
   size_t dest_data_size = c_settings.uncompressed_size + BLOSC_MAX_OVERHEAD;
+
+  boost::shared_ptr<Frame> dest_frame = boost::shared_ptr<DataBlockFrame>(
+          new DataBlockFrame(dest_meta_data, dest_data_size));
 
   std::stringstream ss_blosc_settings;
   ss_blosc_settings << " compressor=" << blosc_get_compressor()
@@ -145,7 +145,7 @@ boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> sr
                                   << " factor=" << factor);
 
 
-  dest_frame->resize(compressed_size);
+  dest_frame->set_data_size(compressed_size);
 
   return dest_frame;
 }

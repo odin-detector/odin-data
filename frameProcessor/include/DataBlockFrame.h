@@ -35,12 +35,6 @@ class DataBlockFrame : public Frame {
   /** Return a void pointer to the raw data */
   virtual void* get_data_ptr() const;
 
-  /** Return the data size */
-  virtual size_t get_data_size() const;
-
-  /** Change the data size */
-  virtual void resize(size_t size);
-
  private:
 
   /** Pointer to raw data block */

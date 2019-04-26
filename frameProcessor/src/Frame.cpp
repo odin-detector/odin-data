@@ -8,11 +8,12 @@ namespace FrameProcessor {
  * @param meta-data - frame FrameMetaData
  * @param image_offset - between start of data memory and image
  */
-    Frame::Frame(const FrameMetaData& meta_data, const int &image_offset) :
+    Frame::Frame(const FrameMetaData& meta_data, const size_t &data_size, const int &image_offset) :
             meta_data_(meta_data),
+            data_size_(data_size),
             image_offset_(image_offset),
-            logger(log4cxx::Logger::getLogger("FP.Frame")) {
-      logger->setLevel(log4cxx::Level::getAll());
+            logger_(log4cxx::Logger::getLogger("FP.Frame")) {
+      logger_->setLevel(log4cxx::Level::getAll());
     }
 
 /** Copy constructor;
@@ -22,7 +23,7 @@ namespace FrameProcessor {
     Frame::Frame(const Frame &frame) {
       meta_data_ = frame.meta_data_;
       image_offset_ = frame.image_offset_;
-      logger = frame.logger;
+      logger_ = frame.logger_;
     }
 
 /** Assignment operator;
@@ -33,7 +34,7 @@ namespace FrameProcessor {
     Frame &Frame::operator=(const Frame &frame) {
       meta_data_ = frame.meta_data_;
       image_offset_ = frame.image_offset_;
-      logger = frame.logger;
+      logger_ = frame.logger_;
       return *this;
     }
 
@@ -48,14 +49,31 @@ namespace FrameProcessor {
       return true;
     }
     
-    /** Return a void pointer to the image data
- * @ return void poiter to image data
+/** Return a void pointer to the image data
+ * @ return void pointer to image data
  */
     void *Frame::get_image_ptr() const {
       return this->get_data_ptr() + image_offset_;
     }
 
-/** Return the frame number
+/** Return the data size
+ * @ return data size
+ * */
+    size_t Frame::get_data_size() const {
+      return this->data_size_;
+    }
+
+/** Update the data size
+ * @param size new data size
+ * */
+    void Frame::set_data_size(size_t size) {
+      if (size > this->data_size_)
+        throw std::runtime_error("Can't set frame data size to be bigger than allocated memory size.");
+      LOG4CXX_INFO(logger_, "Updating size of frame data");
+      this->data_size_ = size;
+    }
+
+    /** Return the frame number
  * @return frame frame number
  */
     long long Frame::get_frame_number() const {

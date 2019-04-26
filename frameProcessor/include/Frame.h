@@ -17,7 +17,7 @@ class Frame {
  public:
 
   /** Base constructor */
-  Frame(const FrameMetaData &meta_data, const int &image_offset = 0);
+  Frame(const FrameMetaData &meta_data, const size_t &data_size, const int &image_offset = 0);
   /** Shallow-copy copy */
   Frame(const Frame &frame);
 
@@ -34,10 +34,10 @@ class Frame {
   virtual void *get_image_ptr() const;
 
   /** Return the data size */
-  virtual size_t get_data_size() const = 0;
+  size_t get_data_size() const;
 
-  /** Change the data size */
-  virtual void resize(size_t size) = 0;
+  /** Update the data size */
+  void set_data_size(size_t size);
 
   /** Return the frame number */
   long long get_frame_number() const;
@@ -66,10 +66,13 @@ class Frame {
  protected:
 
   /** Pointer to logger */
-  log4cxx::LoggerPtr logger;
+  log4cxx::LoggerPtr logger_;
 
   /** Frame MetaData */
   FrameMetaData meta_data_;
+
+  /** Shared memory size **/
+  size_t data_size_;
 
   /** Offset from frame memory start to image data */
   int image_offset_;

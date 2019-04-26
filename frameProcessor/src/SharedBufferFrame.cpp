@@ -9,9 +9,8 @@ SharedBufferFrame::SharedBufferFrame(const FrameMetaData &meta_data,
                                      size_t nbytes,
                                      uint64_t bufferID,
                                      OdinData::IpcChannel *relCh,
-                                     const int& image_offset) : Frame(meta_data, image_offset) {
+                                     const int& image_offset) : Frame(meta_data, nbytes, image_offset) {
   data_ptr_ = data_src;
-  data_size_ = nbytes;
   shared_id_ = bufferID;
   shared_channel_ = relCh;
 }
@@ -45,21 +44,6 @@ SharedBufferFrame::~SharedBufferFrame () {
  */
 void *SharedBufferFrame::get_data_ptr() const {
   return data_ptr_;
-}
-
-/** Get data size
- *
- * @return size_t data size
- */
-size_t SharedBufferFrame::get_data_size() const {
-  return data_size_;
-}
-
-/** Change the data size
- * @param size_t size
- */
-void SharedBufferFrame::resize(size_t size) {
- //TO DO // raise?
 }
 
 }

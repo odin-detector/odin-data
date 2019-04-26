@@ -14,7 +14,7 @@ DataBlockFrame::DataBlockFrame(const FrameMetaData &meta_data,
                                const void* data_src,
                                size_t block_size,
                                const int& image_offset) :
-    Frame(meta_data, image_offset)
+    Frame(meta_data, block_size, image_offset)
 {
   raw_data_block_ptr_ = DataBlockPool::take(block_size);
   raw_data_block_ptr_->copy_data(data_src, block_size);
@@ -28,7 +28,7 @@ DataBlockFrame::DataBlockFrame(const FrameMetaData &meta_data,
  */
 DataBlockFrame::DataBlockFrame(const FrameMetaData &meta_data,
                                size_t block_size,
-                               const int &image_offset) : Frame(meta_data, image_offset)
+                               const int &image_offset) : Frame(meta_data, block_size, image_offset)
 {
   raw_data_block_ptr_ = DataBlockPool::take(block_size);
 }
@@ -70,19 +70,5 @@ DataBlockFrame::~DataBlockFrame() {
 void *DataBlockFrame::get_data_ptr() const {
   return raw_data_block_ptr_->get_writeable_data();
 }
-
-/** Get data size
- *
- * @return size_t data size
- */
-size_t DataBlockFrame::get_data_size() const {
-  return raw_data_block_ptr_->get_size();
-}
-
-/** Set the data size */
-void DataBlockFrame::resize(size_t size) {
-  // TO DO
-}
-
 
 }
