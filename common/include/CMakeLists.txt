@@ -10,7 +10,8 @@ SET(HEADERS ClassLoader.h
         logging.h
         OdinDataException.h
         SegFaultHandler.h
-        SharedBufferManager.h)
+        SharedBufferManager.h
+        stringparse.h)
 SET(RAPIDJSON_INCLUDE_DIR rapidjson)
 SET(ZMQ_INCLUDE_DIR zmq)
 
