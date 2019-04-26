@@ -55,3 +55,5 @@ if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
 	       NAMES pthread)
   target_link_libraries(frameProcessorTest ${PTHREAD_LIBRARY} )
 endif()
+
+install(TARGETS frameProcessorTest RUNTIME DESTINATION bin)

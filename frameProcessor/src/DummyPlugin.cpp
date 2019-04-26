@@ -36,7 +36,7 @@ DummyPlugin::~DummyPlugin()
  *
  * \param[in] frame - Pointer to a Frame object.
  */
-void DummyPlugin::process_frame(boost::shared_ptr<IFrame> frame)
+void DummyPlugin::process_frame(boost::shared_ptr<Frame> frame)
 {
   LOG4CXX_TRACE(logger_, "Received a new frame...");
 }

@@ -4,12 +4,12 @@
 
 namespace FrameProcessor {
 
-SharedBufferFrame::SharedBufferFrame(const IFrameMetaData &meta_data,
+SharedBufferFrame::SharedBufferFrame(const FrameMetaData &meta_data,
                                      void* data_src,
                                      size_t nbytes,
                                      uint64_t bufferID,
                                      OdinData::IpcChannel *relCh,
-                                     const int& image_offset) : IFrame(meta_data, image_offset) {
+                                     const int& image_offset) : Frame(meta_data, image_offset) {
   data_ptr_ = data_src;
   data_size_ = nbytes;
   shared_id_ = bufferID;
@@ -20,7 +20,7 @@ SharedBufferFrame::SharedBufferFrame(const IFrameMetaData &meta_data,
  * implement as shallow copy
  * @param frame
  */
-SharedBufferFrame::SharedBufferFrame(const SharedBufferFrame& frame) : IFrame(frame) {
+SharedBufferFrame::SharedBufferFrame(const SharedBufferFrame& frame) : Frame(frame) {
   data_ptr_ = frame.data_ptr_;
   data_size_ = frame.data_size_;
   shared_id_ = frame.shared_id_;

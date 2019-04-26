@@ -243,7 +243,7 @@ void FrameProcessorController::handleMetaRxChannel()
  *
  * @param frame - Pointer to the frame
  */
-void FrameProcessorController::callback(boost::shared_ptr<IFrame> frame) {
+void FrameProcessorController::callback(boost::shared_ptr<Frame> frame) {
 
   // If frame is a master frame, or all frames are included (no master frames), increment frame count
   if (masterFrame == "" || frame->get_meta_data().get_dataset_name() == masterFrame) {

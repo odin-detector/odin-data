@@ -24,7 +24,7 @@ using namespace log4cxx;
 
 namespace FrameProcessor {
 
-class IFrame;
+class Frame;
 
 class Acquisition : public MetaMessagePublisher
 {
@@ -32,7 +32,7 @@ public:
   Acquisition();
   ~Acquisition();
   std::string get_last_error();
-  ProcessFrameStatus process_frame(boost::shared_ptr<IFrame> frame);
+  ProcessFrameStatus process_frame(boost::shared_ptr<Frame> frame);
   void create_file(size_t file_number=0);
   void close_file(boost::shared_ptr<HDF5File> file);
   void validate_dataset_definition(DatasetDefinition definition);
@@ -47,10 +47,10 @@ public:
       size_t alignment_value,
       std::string master_frame);
   void stop_acquisition();
-  bool check_frame_valid(boost::shared_ptr<IFrame> frame);
+  bool check_frame_valid(boost::shared_ptr<Frame> frame);
   size_t get_frame_offset_in_file(size_t frame_offset) const;
   size_t get_file_index(size_t frame_offset) const;
-  size_t adjust_frame_offset(boost::shared_ptr<IFrame> frame) const;
+  size_t adjust_frame_offset(boost::shared_ptr<Frame> frame) const;
   boost::shared_ptr<HDF5File> get_file(size_t frame_offset);
   std::string get_create_meta_header();
   std::string get_meta_header();

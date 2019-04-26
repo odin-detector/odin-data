@@ -255,7 +255,7 @@ void FrameProcessorPlugin::remove_all_callbacks()
  *
  * \param[in] frame - Pointer to the frame.
  */
-void FrameProcessorPlugin::callback(boost::shared_ptr<IFrame> frame)
+void FrameProcessorPlugin::callback(boost::shared_ptr<Frame> frame)
 {
   // Calls process frame
   this->process_frame(frame);
@@ -269,7 +269,7 @@ void FrameProcessorPlugin::callback(boost::shared_ptr<IFrame> frame)
  *
  * \param[in] frame - Pointer to the frame.
  */
-void FrameProcessorPlugin::push(boost::shared_ptr<IFrame> frame)
+void FrameProcessorPlugin::push(boost::shared_ptr<Frame> frame)
 {
   if (!frame->is_valid())
       throw std::runtime_error("Invalid frame");

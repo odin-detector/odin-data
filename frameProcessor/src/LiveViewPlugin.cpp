@@ -57,7 +57,7 @@ LiveViewPlugin::~LiveViewPlugin()
  * 
  * \param[in] frame - pointer to a frame object.
  */
-void LiveViewPlugin::process_frame(boost::shared_ptr<IFrame> frame)
+void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
 {
   /** Static Frame Count will increment each time this method is called, basically as a count of how many frames have been processed by the plugin*/
   static uint32_t frame_count_;
@@ -203,11 +203,11 @@ void LiveViewPlugin::requestConfiguration(OdinData::IpcMessage& reply)
  * \param[in] frame_num - the number of the frame
  * 
  */
-void LiveViewPlugin::pass_live_frame(boost::shared_ptr<IFrame> frame)
+void LiveViewPlugin::pass_live_frame(boost::shared_ptr<Frame> frame)
 {
   void* frame_data_copy = (void*)frame->get_data_ptr();
 
-  const IFrameMetaData meta_data = frame->get_meta_data();
+  const FrameMetaData meta_data = frame->get_meta_data();
 
   uint32_t frame_num = frame->get_frame_number();
   std::string aqqID = meta_data.get_acquisition_ID();

@@ -27,7 +27,7 @@ public:
         chunk_dims[1] = 3;
         chunk_dims[2] = 4;
 
-        FrameProcessor::IFrameMetaData frame_meta(7, "data", FrameProcessor::raw_16bit, "scan1", img_dims, FrameProcessor::no_compression);
+        FrameProcessor::FrameMetaData frame_meta(7, "data", FrameProcessor::raw_16bit, "scan1", img_dims, FrameProcessor::no_compression);
 
         frame = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
                 new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void *>(img), 24));
@@ -42,7 +42,7 @@ public:
         chunk_dims[1] = 4;
         chunk_dims[2] = 4;
 
-        FrameProcessor::IFrameMetaData frame_2_meta(
+        FrameProcessor::FrameMetaData frame_2_meta(
                 7, "data", FrameProcessor::raw_16bit, "scan1", img_dims, FrameProcessor::no_compression
         );
 
@@ -53,8 +53,8 @@ public:
 
     ~GapFillPluginTestFixture() {}
 
-    boost::shared_ptr <FrameProcessor::IFrame> frame;
-    boost::shared_ptr <FrameProcessor::IFrame> frame_2;
+    boost::shared_ptr <FrameProcessor::Frame> frame;
+    boost::shared_ptr <FrameProcessor::Frame> frame_2;
     FrameProcessor::GapFillPlugin gap_fill_plugin;
 };
 
@@ -122,7 +122,8 @@ BOOST_AUTO_TEST_CASE( GapFillPlugin_process_frame )
     gap_fill_plugin.configure(cfg, reply);
 
     // Push the frame through the plugin to force the gap fill
-    boost::shared_ptr<FrameProcessor::IFrame> gap_frame = gap_fill_plugin.insert_gaps(frame);
+    boost::shared_ptr<FrameProcessor::Frame
+> gap_frame = gap_fill_plugin.insert_gaps(frame);
 
     unsigned short gap_img[117] = {
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -166,7 +167,7 @@ BOOST_AUTO_TEST_CASE( GapFillPlugin_process_frame )
     gap_fill_plugin.configure(cfg_2, reply_2);
 
     // Push the frame through the plugin to force the gap fill
-    boost::shared_ptr<FrameProcessor::IFrame> gap_frame_2 = gap_fill_plugin.insert_gaps(frame_2);
+    boost::shared_ptr<FrameProcessor::Frame> gap_frame_2 = gap_fill_plugin.insert_gaps(frame_2);
 
     unsigned short gap_img_2[49] = {
             0, 0, 0, 0, 0, 0, 0,

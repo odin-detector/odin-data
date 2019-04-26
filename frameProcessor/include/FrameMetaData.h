@@ -1,5 +1,5 @@
-#ifndef FRAMEPROCESSOR_IFRAMEMETADATA_H
-#define FRAMEPROCESSOR_IFRAMEMETADATA_H
+#ifndef FRAMEPROCESSOR_FRAMEMETADATA_H
+#define FRAMEPROCESSOR_FRAMEMETADATA_H
 
 #include <string>
 #include <map>
@@ -16,20 +16,20 @@ typedef std::vector<dimsize_t> dimensions_t;
 
 namespace FrameProcessor {
 
-class IFrameMetaData {
+class FrameMetaData {
 
 public:
 
-  IFrameMetaData(const long long& frame_number,
+  FrameMetaData(const long long& frame_number,
                  const std::string& dataset_name,
                  const DataType& data_type,
                  const std::string& acquisition_ID,
                  const std::vector<unsigned long long>& dimensions,
                  const CompressionType& compression_type = no_compression);
 
-  IFrameMetaData();
+  FrameMetaData();
 
-  IFrameMetaData(const IFrameMetaData& frame);
+  FrameMetaData(const FrameMetaData& frame);
 
   /** Return frame parameters */
   const std::map <std::string, boost::any> &get_parameters() const;

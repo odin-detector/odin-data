@@ -20,7 +20,7 @@ IFrameCallback::IFrameCallback() :
     working_(false)
 {
   // Create the work queue for message offload
-  queue_ = boost::shared_ptr<WorkQueue<boost::shared_ptr<IFrame> > >(new WorkQueue<boost::shared_ptr<IFrame> >);
+  queue_ = boost::shared_ptr<WorkQueue<boost::shared_ptr<Frame> > >(new WorkQueue<boost::shared_ptr<Frame> >);
 }
 
 /**
@@ -34,7 +34,7 @@ IFrameCallback::~IFrameCallback()
  *
  * \return a pointer to the WorkQueue owned by this IFrameCallback class.
  */
-boost::shared_ptr<WorkQueue<boost::shared_ptr<IFrame> > > IFrameCallback::getWorkQueue()
+boost::shared_ptr<WorkQueue<boost::shared_ptr<Frame> > > IFrameCallback::getWorkQueue()
 {
   return queue_;
 }
@@ -66,7 +66,7 @@ void IFrameCallback::stop()
     // Set the working flag to false
     working_ = false;
     // Now notify the work queue we have finished by adding a null ptr
-    boost::shared_ptr<IFrame> nullMsg;
+    boost::shared_ptr<Frame> nullMsg;
     queue_->add(nullMsg);
   }
 }
@@ -119,7 +119,7 @@ void IFrameCallback::workerTask()
   // Main worker task of this callback
   // Check the queue for messages
   while (working_) {
-    boost::shared_ptr<IFrame> msg = queue_->remove();
+    boost::shared_ptr<Frame> msg = queue_->remove();
     if (msg) {
       // Once we have a message, call the callback
       this->callback(msg);

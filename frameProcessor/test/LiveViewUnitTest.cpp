@@ -53,7 +53,7 @@ public:
 
     dimensions_t img_dims(2); img_dims[0] = 3; img_dims[1] = 4;
 
-    FrameProcessor::IFrameMetaData frame_meta(
+    FrameProcessor::FrameMetaData frame_meta(
             "data", FrameProcessor::raw_8bit, "test", img_dims, FrameProcessor::no_compression
     );
 
@@ -61,7 +61,7 @@ public:
     frame = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
             new FrameProcessor::DataBlockFrame(2, frame_meta, static_cast<void*>(img_8), 12));
 
-    FrameProcessor::IFrameMetaData frame_16_meta(
+    FrameProcessor::FrameMetaData frame_16_meta(
             "data", FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
     );
 
@@ -72,7 +72,7 @@ public:
     //create multiple test frames
     for(int i = 0; i < 10; i++)
     {
-      FrameProcessor::IFrameMetaData tmp_frame_meta(
+      FrameProcessor::FrameMetaData tmp_frame_meta(
               i % 4 ? "data" : "not_data", FrameProcessor::raw_8bit, "test", img_dims, FrameProcessor::no_compression
       );
       if (i % 4)

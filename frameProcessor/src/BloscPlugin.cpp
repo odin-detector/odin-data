@@ -89,16 +89,16 @@ BloscPlugin::~BloscPlugin()
  * @param src_frame - source frame to compress
  * @return compressed frame
  */
-boost::shared_ptr<IFrame> BloscPlugin::compress_frame(boost::shared_ptr<IFrame> src_frame)
+boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> src_frame)
 {
 
   int compressed_size = 0;
   BloscCompressionSettings c_settings;
 
-  IFrameMetaData dest_meta_data = src_frame->get_meta_data_copy();
+  FrameMetaData dest_meta_data = src_frame->get_meta_data_copy();
   dest_meta_data.set_compression_type(blosc);
 
-  boost::shared_ptr<IFrame> dest_frame = boost::shared_ptr<DataBlockFrame>(
+  boost::shared_ptr<Frame> dest_frame = boost::shared_ptr<DataBlockFrame>(
                   new DataBlockFrame(dest_meta_data, compressed_size));
 
   const void* src_data_ptr = static_cast<const void*>(
@@ -158,7 +158,7 @@ void BloscPlugin::update_compression_settings()
   this->compression_settings_ = this->commanded_compression_settings_;
 
   int ret = 0;
-  const char * p_compressor_name;
+  char * p_compressor_name;
   ret = blosc_compcode_to_compname(this->compression_settings_.blosc_compressor, &p_compressor_name);
   LOG4CXX_DEBUG_LEVEL(1, logger_, "Blosc compression settings: "
                                   << " acquisition=\"" << this->current_acquisition_ << "\""
@@ -210,7 +210,7 @@ void * BloscPlugin::get_buffer(size_t nbytes)
  *
  * \param[in] frame - Pointer to a Frame object.
  */
-void BloscPlugin::process_frame(boost::shared_ptr<IFrame> src_frame)
+void BloscPlugin::process_frame(boost::shared_ptr<Frame> src_frame)
 {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
@@ -225,7 +225,7 @@ void BloscPlugin::process_frame(boost::shared_ptr<IFrame> src_frame)
     this->update_compression_settings();
   }
 
-  boost::shared_ptr <IFrame> compressed_frame = this->compress_frame(src_frame);
+  boost::shared_ptr <Frame> compressed_frame = this->compress_frame(src_frame);
   LOG4CXX_DEBUG_LEVEL(3, logger_, "Pushing compressed frame");
   this->push(compressed_frame);
 }

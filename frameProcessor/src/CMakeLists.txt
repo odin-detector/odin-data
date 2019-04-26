@@ -8,8 +8,8 @@ add_definitions(${HDF5_DEFINITIONS})
 file(GLOB LIB_SOURCES DataBlock.cpp
                       DataBlockPool.cpp
                       FrameProcessorPlugin.cpp
-                      IFrameMetaData.cpp
-                      IFrame.cpp
+                      FrameMetaData.cpp
+                      Frame.cpp
                       SharedBufferFrame.cpp
                       DataBlockFrame.cpp
                       MetaMessage.cpp

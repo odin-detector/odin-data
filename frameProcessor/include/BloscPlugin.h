@@ -40,11 +40,11 @@ class BloscPlugin : public FrameProcessorPlugin
 public:
   BloscPlugin();
   virtual ~BloscPlugin();
-  boost::shared_ptr<IFrame> compress_frame(boost::shared_ptr<IFrame> frame);
+  boost::shared_ptr<Frame> compress_frame(boost::shared_ptr<Frame> frame);
 
 private:
   // Baseclass API to implement:
-  void process_frame(boost::shared_ptr<IFrame> frame);
+  void process_frame(boost::shared_ptr<Frame> frame);
   void status(OdinData::IpcMessage& status);
   void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   void requestConfiguration(OdinData::IpcMessage& reply);

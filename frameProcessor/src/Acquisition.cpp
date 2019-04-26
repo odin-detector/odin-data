@@ -8,7 +8,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/any.hpp>
 
-#include "IFrame.h"
+#include "Frame.h"
 #include "Acquisition.h"
 #include "DebugLevelLogger.h"
 
@@ -71,7 +71,7 @@ std::string Acquisition::get_last_error()
  * \param[in] frame - The frame to process
  * \return - The Status of the processing.
  */
-ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<IFrame> frame) {
+ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
   ProcessFrameStatus return_status = status_ok;
 
   try {
@@ -381,10 +381,10 @@ void Acquisition::stop_acquisition() {
  * \param[in] frame - Pointer to the Frame object.
  * \return - true if the frame was valid
  */
-bool Acquisition::check_frame_valid(boost::shared_ptr<IFrame> frame)
+bool Acquisition::check_frame_valid(boost::shared_ptr<Frame> frame)
 {
   bool invalid = false;
-  const IFrameMetaData frame_meta_data = frame->get_meta_data();
+  const FrameMetaData frame_meta_data = frame->get_meta_data();
   DatasetDefinition dataset = dataset_defs_.at(frame_meta_data.get_dataset_name());
   CompressionType frame_compression_type = frame_meta_data.get_compression_type();
   if (frame_compression_type >= 0 && frame_compression_type != dataset.compression) {
@@ -530,7 +530,7 @@ boost::shared_ptr<HDF5File> Acquisition::get_file(size_t frame_offset) {
  *
  * Returns the dataset offset for frame number (frame_no)
  */
-size_t Acquisition::adjust_frame_offset(boost::shared_ptr<IFrame> frame) const {
+size_t Acquisition::adjust_frame_offset(boost::shared_ptr<Frame> frame) const {
   size_t frame_no = frame->get_frame_number();
   int64_t frame_offset_adjustment = frame->get_meta_data().get_frame_offset();
   size_t frame_offset = 0;

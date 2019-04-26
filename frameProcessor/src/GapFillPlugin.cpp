@@ -39,13 +39,13 @@ namespace FrameProcessor
      *
      * \param[in] frame - pointer to a frame object.
      */
-    void GapFillPlugin::process_frame(boost::shared_ptr<IFrame> frame)
+    void GapFillPlugin::process_frame(boost::shared_ptr<Frame> frame)
     {
         LOG4CXX_TRACE(logger_, "GapFillPlugin Process Frame.");
 
         // Call the insert gaps method and push the resulting frame if it is not null
         if (this->configuration_valid(frame)){
-            boost::shared_ptr<IFrame> gap_frame = this->insert_gaps(frame);
+            boost::shared_ptr<Frame> gap_frame = this->insert_gaps(frame);
             if (gap_frame){
                 this->push(gap_frame);
             }
@@ -61,7 +61,7 @@ namespace FrameProcessor
      * \param[in] frame - pointer to a frame object.
      * \return verified - true if the configuration is valid, false otherwise.
      */
-    bool GapFillPlugin::configuration_valid(boost::shared_ptr<IFrame> frame)
+    bool GapFillPlugin::configuration_valid(boost::shared_ptr<Frame> frame)
     {
         bool verified = false;
         dimensions_t frame_dimensions = frame->get_meta_data().get_dimensions();
@@ -123,9 +123,9 @@ namespace FrameProcessor
      * \param[in] frame - pointer to a frame object.
      * \return gap_frame - pointer to a frame that has gaps inserted.
      */
-    boost::shared_ptr<IFrame> GapFillPlugin::insert_gaps(boost::shared_ptr<IFrame> frame)
-    {
-        boost::shared_ptr<IFrame> gap_frame;
+    boost::shared_ptr<Frame> GapFillPlugin::insert_gaps(boost::shared_ptr<Frame> frame) {
+
+        boost::shared_ptr<Frame> gap_frame;
 
         dimensions_t frame_dimensions = frame->get_meta_data().get_dimensions();
 
@@ -186,7 +186,7 @@ namespace FrameProcessor
         img_dims[1] = img_x;
 
 
-       FrameProcessor::IFrameMetaData frame_meta = frame->get_meta_data_copy();
+       FrameProcessor::FrameMetaData frame_meta = frame->get_meta_data_copy();
        frame_meta.set_dimensions(img_dims);
 
        gap_frame = boost::shared_ptr<FrameProcessor::DataBlockFrame>(

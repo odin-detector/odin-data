@@ -40,7 +40,7 @@ UIDAdjustmentPlugin::~UIDAdjustmentPlugin()
  *
  * \param[in] frame - Pointer to a Frame object.
  */
-void UIDAdjustmentPlugin::process_frame(boost::shared_ptr<IFrame> frame)
+void UIDAdjustmentPlugin::process_frame(boost::shared_ptr<Frame> frame)
 {
   if (frame->get_meta_data().has_parameter(UID_PARAM_NAME))
   {

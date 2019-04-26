@@ -1,479 +1,114 @@
-/*
- * Frame.cpp
+#include "Frame.h"
+#include "FrameMetaData.h"
+
+namespace FrameProcessor {
+
+/** Base Frame constructor
  *
- *  Created on: 7 Jun 2016
- *      Author: gnx91527
+ * @param meta-data - frame FrameMetaData
+ * @param image_offset - between start of data memory and image
  */
-
-#include <Frame.h>
-#include "DebugLevelLogger.h"
-
-namespace FrameProcessor
-{
-
-/** Construct a new Frame object.
- *
- * The constructor sets up logging used within the class, and records
- * the supplied index.
- */
-Frame::Frame(const std::string& index) :
-    bytes_per_pixel(0),
-    frameNumber_(0),
-    frameOffset_(0),
-    shared_raw_(0),
-    shared_size_(0),
-    shared_memory_(false),
-    shared_id_(0),
-    shared_frame_id_(0),
-    shared_channel_(0),
-    data_type_(-1),
-    compression_(-1),
-    logger(log4cxx::Logger::getLogger("FP.Frame"))
-{
-  logger->setLevel(log4cxx::Level::getAll());
-  LOG4CXX_TRACE(logger, "Frame constructed");
-  // Store a default value for the dataset name
-  dataset_name = index;
-  // Block index is used for taking and releasing data block
-  blockIndex_ = index;
-}
-
-/** Destructor
- *
- * The destructor releases any allocated memory back into the pool.
- */
-Frame::~Frame()
-{
-  LOG4CXX_TRACE(logger, "Frame destroyed");
-  if (shared_memory_) {
-    // We must notify the frame receiver that the buffer is now available
-    // We want to send the notify frame release message back to the frameReceiver
-    OdinData::IpcMessage txMsg(OdinData::IpcMessage::MsgTypeNotify,
-                               OdinData::IpcMessage::MsgValNotifyFrameRelease);
-    txMsg.set_param("frame", shared_frame_id_);
-    txMsg.set_param("buffer_id", shared_id_);
-    LOG4CXX_DEBUG_LEVEL(2, logger, "Sending response: " << txMsg.encode());
-
-    // Now publish the release message, to notify the frame receiver that we are
-    // finished with that block of shared memory
-    shared_channel_->send(txMsg.encode());
-  } else {
-    // If header and raw buffers exist then we must release them
-    if (raw_) {
-      DataBlockPool::release(blockIndex_, raw_);
+    Frame::Frame(const FrameMetaData& meta_data, const int &image_offset) :
+            meta_data_(meta_data),
+            image_offset_(image_offset),
+            logger(log4cxx::Logger::getLogger("FP.Frame")) {
+      logger->setLevel(log4cxx::Level::getAll());
     }
-  }
-}
 
-/** Wrap this frame around an existing shared memory buffer.
- *
- * This method does not need to perform any copying of memory.
- * It simply wraps around the shared buffer.
- *
- * \param[in] data_src - pointer to the raw data of the shared memory buffer.
- * \param[in] nbytes - size of the shared memory buffer.
- * \param[in] bufferID - ID of the shared memory buffer.
+/** Copy constructor;
+ * implement as shallow copy
+ * @param frame - source frame
  */
-void Frame::wrap_shared_buffer(const void* data_src,
-                               size_t nbytes,
-                               uint64_t bufferID,
-                               int frameID,
-                               OdinData::IpcChannel *relCh)
-{
-  shared_raw_ = data_src;
-  shared_size_ = nbytes;
-  shared_id_ = bufferID;
-  shared_channel_ = relCh;
-  shared_frame_id_ = frameID;
-  shared_memory_ = true;
-}
-
-/** Copy raw data into the frame's data block.
- *
- * This method obtains a DataBlock from the DataBlockPool of the correct size.
- * It then copies the source data into the DataBlock.
- *
- * \param[in] data_src - pointer to the raw data to copy into this frame.
- * \param[in] nbytes - number of bytes to copy.
- */
-void Frame::copy_data(const void* data_src, size_t nbytes)
-{
-  LOG4CXX_TRACE(logger, "copy_data called with size: " << nbytes << " bytes");
-  if (!shared_memory_) {
-    // If we already have a data block then release it
-    if (!raw_) {
-      // Take a new data block from the pool
-      raw_ = DataBlockPool::take(blockIndex_, nbytes);
-    } else {
-      LOG4CXX_TRACE(logger, "Data block already exists");
-      DataBlockPool::release(blockIndex_, raw_);
-      raw_ = DataBlockPool::take(blockIndex_, nbytes);
+    Frame::Frame(const Frame &frame) {
+      meta_data_ = frame.meta_data_;
+      image_offset_ = frame.image_offset_;
+      logger = frame.logger;
     }
-    // Copy the data into the DataBlock
-    raw_->copyData(data_src, nbytes);
-  }
-}
 
-/** Return a void pointer to the raw data.
- *
- * Check to see that this Frame owns a DataBlock, and then return
- * the pointer to the raw data.
- *
- * \return pointer to the raw data.
+/** Assignment operator;
+ * implement as deep copy
+ * @param frame - source frame
+ * @return Frame
  */
-const void* Frame::get_data() const
-{
-  const void *rPtr = 0;
-  if (shared_memory_) {
-    rPtr = shared_raw_;
-  } else {
-    if (!raw_) {
-      throw std::runtime_error("No data allocated in DataBlock");
+    Frame &Frame::operator=(const Frame &frame) {
+      meta_data_ = frame.meta_data_;
+      image_offset_ = frame.image_offset_;
+      logger = frame.logger;
+      return *this;
     }
-    rPtr = raw_->get_data();
-  }
-  return rPtr;
-}
 
-/** Returns the size of the raw data.
- *
- * \return the size of the raw data in bytes.
+/** Return if frame is valid
+ * @return bool - frame is valid
  */
-size_t Frame::get_data_size() const
-{
-  size_t size = 0;
-  if (shared_memory_) {
-    size = shared_size_;
-  } else {
-    if (!raw_) {
-      throw std::runtime_error("No data allocated in DataBlock");
+    bool Frame::is_valid() const {
+      if (meta_data_.get_data_type() == raw_unknown)
+        return false;
+      if (meta_data_.get_compression_type() == unknown_compression)
+        return false;
+      return true;
     }
-    size = raw_->getSize();
-  }
-  return size;
-}
-
-/** Sets a particular set of dimension values.
- *
- * This method sets the dimensions of the frame.
- *
- * \param[in] dimensions - array of dimensions to store.
+    
+    /** Return a void pointer to the image data
+ * @ return void poiter to image data
  */
-void Frame::set_dimensions(const std::vector<unsigned long long>& dimensions)
-{
-  dimensions_ = dimensions;
-}
+    void *Frame::get_image_ptr() const {
+      return this->get_data_ptr() + image_offset_;
+    }
 
-/** Retrieves a particular set of dimension values.
- *
- * This method gets the dimensions of the frame.
- *
- * \return array of dimensions.
+/** Return the frame number
+ * @return frame frame number
  */
-dimensions_t Frame::get_dimensions() const
-{
-  return dimensions_;
-}
+    long long Frame::get_frame_number() const {
+      return this->meta_data_.get_frame_number();
+    }
 
-/** Retrieves the compression type of the raw data.
- *
- * -1: Unset, 0: None, 1: LZ4, 2: BSLZ4
- *
- * \return compression type.
+/** Set the frame number
+ * @param frame_number - new frame number
  */
-int Frame::get_compression() const
-{
-  return compression_;
-}
+    void Frame::set_frame_number(long long frame_number) {
+      this->meta_data_.set_frame_number(frame_number);
+    }
 
-/** Retrieves the data type of the raw data.
- *
- * -1: Unset, 0: UINT8, 1: UINT16, 2: UINT32
- *
- * \return data type.
+/** Return a reference to the MetaData
+ * @return reference to meta data
  */
-int Frame::get_data_type() const
-{
-  return data_type_;
-}
+    FrameMetaData &Frame::meta_data() {
+      return this->meta_data_;
+    }
 
-/** Set a uint8_t parameter for this Frame.
- *
- * This method sets a parameter of the Frame. The parameters are
- * stored in a map indexed by a string.
- *
- * \param[in] index - the string index under which to store the parameter.
- * \param[in] parameter - the parameter value to store.
+/** Return the MetaData
+ * @return frame meta data
  */
-void Frame::set_parameter(const std::string& index, uint8_t value)
-{
-  Parameter param;
-  param.type = raw_8bit;
-  param.value.i8_val = value;
-  parameters_[index] = param;
-}
+    const FrameMetaData &Frame::get_meta_data() const {
+      return this->meta_data_;
+    }
 
-/** Set a uint16_t parameter for this Frame.
- *
- * This method sets a parameter of the Frame. The parameters are
- * stored in a map indexed by a string.
- *
- * \param[in] index - the string index under which to store the parameter.
- * \param[in] parameter - the parameter value to store.
+/** Return deep copy of the MetaData
+ * @return FrameMetaDatacopy (deep) of the meta data
  */
-void Frame::set_parameter(const std::string& index, uint16_t value)
-{
-  Parameter param;
-  param.type = raw_16bit;
-  param.value.i16_val = value;
-  parameters_[index] = param;
+    FrameMetaData Frame::get_meta_data_copy() const {
+      return this->meta_data_;
+    }
+
+/** Return the image offset
+ * @return offset from beginning of data memory to image data
+ * */
+    int Frame::get_image_offset() const {
+      return this->image_offset_;
+    }
+
+/** Set MetaData
+ * @param FrameMetaData meta_data - new meta data
+ * */
+    void Frame::set_meta_data(const FrameMetaData &meta_data) {
+      this->meta_data_ = meta_data;
+    }
+
+/** Set the image offset
+ * @param offset - new offset
+ * */
+    void Frame::set_image_offset(const int &offset) {
+      this->image_offset_ = offset;
+    }
+
 }
-
-/** Set a uint32_t parameter for this Frame.
- *
- * This method sets a parameter of the Frame. The parameters are
- * stored in a map indexed by a string.
- *
- * \param[in] index - the string index under which to store the parameter.
- * \param[in] parameter - the parameter value to store.
- */
-void Frame::set_parameter(const std::string& index, uint32_t value)
-{
-  Parameter param;
-  param.type = raw_32bit;
-  param.value.i32_val = value;
-  parameters_[index] = param;
-}
-
-/** Set a uint64_t parameter for this Frame.
- *
- * This method sets a parameter of the Frame. The parameters are
- * stored in a map indexed by a string.
- *
- * \param[in] index - the string index under which to store the parameter.
- * \param[in] parameter - the parameter value to store.
- */
-void Frame::set_parameter(const std::string& index, uint64_t value)
-{
-  Parameter param;
-  param.type = raw_64bit;
-  param.value.i64_val = value;
-  parameters_[index] = param;
-}
-
-/** Set a float parameter for this Frame.
- *
- * This method sets a parameter of the Frame. The parameters are
- * stored in a map indexed by a string.
- *
- * \param[in] index - the string index under which to store the parameter.
- * \param[in] parameter - the parameter value to store.
- */
-void Frame::set_parameter(const std::string& index, float value)
-{
-  Parameter param;
-  param.type = raw_float;
-  param.value.float_val = value;
-  parameters_[index] = param;
-}
-
-/** Set the compression type of the raw data.
- *
- * 0: None, 1: LZ4, 2: BSLZ4, 3: Blosc
- *
- * \param compression type.
- */
-void Frame::set_compression(int compression)
-{
-  compression_ = compression;
-}
-
-/** Set the data type of the raw data.
- *
- * 0: UINT8, 1: UINT16, 2: UINT32
- *
- * \param data type.
- */
-void Frame::set_data_type(int data_type)
-{
-  data_type_ = data_type;
-}
-
-/** Get the size of the data type
- *
- * \return data type size
- */
-size_t Frame::get_data_type_size()
-{
-  int dt = this->get_data_type();
-  if (dt == -1) {
-    LOG4CXX_ERROR(logger, "Unable to determine data type size as data type have not been defined in this Frame ("
-                          << this->blockIndex_ << ")");
-    throw std::runtime_error("Unable to determine data type size as data type have not been defined in this Frame");
-  }
-  else if (dt == 0) return sizeof(uint8_t);  // 1 byte
-  else if (dt == 1) return sizeof(uint16_t); // 2 bytes
-  else if (dt == 2) return sizeof(uint32_t); // 4 bytes
-  else {
-    std::stringstream msg; msg << "Unable to determine data type size as enumerated data type: " << dt
-                               << " is not known for this frame (" << this->blockIndex_ << ")";
-    LOG4CXX_ERROR(logger, msg.str());
-    throw std::runtime_error(msg.str());
-  }
-}
-
-/** Return a parameter for this Frame.
- *
- * This method retrieves a parameter of the Frame. The parameters are
- * stored in a map indexed by a string.
- *
- * \param[in] index - the string index of the parameter to return.
- * \return the parameter.
- */
-Parameter Frame::get_parameter(const std::string& index) const
-{
-  std::map<std::string, Parameter>::const_iterator iter = parameters_.find(index);
-  if (iter == parameters_.end())
-  {
-    LOG4CXX_ERROR(logger, "Unable to find parameter: " << index);
-    throw std::runtime_error("Unable to find parameter:");
-  }
-  return iter->second;
-}
-
-/** Return the value of a uint8_t parameter for this Frame.
- *
- * This method retrieves a parameter of the Frame. The parameters are
- * stored in a map indexed by a string.
- *
- * \param[in] index - the string index of the parameter to return.
- * \return the parameter value.
- */
-uint8_t Frame::get_i8_parameter(const std::string& index) const
-{
-  Parameter param = get_parameter(index);
-  if (param.type != raw_8bit)
-  {
-    LOG4CXX_ERROR(logger, "Parameter: " << index << " has wrong type");
-    throw std::runtime_error("Parameter has wrong type");
-  }
-
-  return param.value.i8_val;
-}
-
-/** Return the value of a uint16_t parameter for this Frame.
- *
- * This method retrieves a parameter of the Frame. The parameters are
- * stored in a map indexed by a string.
- *
- * \param[in] index - the string index of the parameter to return.
- * \return the parameter value.
- */
-uint16_t Frame::get_i16_parameter(const std::string& index) const
-{
-  Parameter parameter = get_parameter(index);
-  if (parameter.type != raw_16bit)
-  {
-    LOG4CXX_ERROR(logger, "Parameter: " << index << " has wrong type");
-    throw std::runtime_error("Parameter has wrong type");
-  }
-
-  return parameter.value.i16_val;
-}
-
-/** Return the value of a uint32_t parameter for this Frame.
- *
- * This method retrieves a parameter of the Frame. The parameters are
- * stored in a map indexed by a string.
- *
- * \param[in] index - the string index of the parameter to return.
- * \return the parameter value.
- */
-uint32_t Frame::get_i32_parameter(const std::string& index) const
-{
-  Parameter parameter = get_parameter(index);
-  if (parameter.type != raw_32bit)
-  {
-    LOG4CXX_ERROR(logger, "Parameter: " << index << " has wrong type");
-    throw std::runtime_error("Parameter has wrong type");
-  }
-
-  return parameter.value.i32_val;
-}
-
-/** Return the value of a uint64_t parameter for this Frame.
- *
- * This method retrieves a parameter of the Frame. The parameters are
- * stored in a map indexed by a string.
- *
- * \param[in] index - the string index of the parameter to return.
- * \return the parameter value.
- */
-uint64_t Frame::get_i64_parameter(const std::string& index) const
-{
-  Parameter parameter = get_parameter(index);
-  if (parameter.type != raw_64bit)
-  {
-    LOG4CXX_ERROR(logger, "Parameter: " << index << " has wrong type");
-    throw std::runtime_error("Parameter has wrong type");
-  }
-
-  return parameter.value.i64_val;
-}
-
-/** Return the value of a float parameter for this Frame.
- *
- * This method retrieves a parameter of the Frame. The parameters are
- * stored in a map indexed by a string.
- *
- * \param[in] index - the string index of the parameter to return.
- * \return the parameter value.
- */
-float Frame::get_float_parameter(const std::string& index) const
-{
-  Parameter parameter = get_parameter(index);
-  if (parameter.type != raw_float)
-  {
-    LOG4CXX_ERROR(logger, "Parameter: " << index << " has wrong type");
-    throw std::runtime_error("Parameter has wrong type");
-  }
-
-  return parameter.value.float_val;
-}
-
-/** Return the parameters for this Frame.
- *
- * This method retrieves the map of Parameters
- *
- * \return the parameters.
- */
-std::map<std::string, Parameter> & Frame::get_parameters()
-{
-  return parameters_;
-}
-
-/** Set all of the supplied parameters into this Frame.
- *
- * \param[in] parameters - a map of parameters to set.
- */
-void Frame::set_parameters(std::map<std::string, Parameter>& parameters)
-{
-  std::map<std::string, Parameter>::const_iterator iter;
-  for (iter = parameters.begin(); iter != parameters.end(); ++iter){
-    parameters_[iter->first] = iter->second;
-  }
-}
-
-/** Check if the Frame contains a parameter.
- *
- * This method checks if the parameter exists within the Frame.
- *
- * \param[in] index - the string index of the parameter to check.
- * \return true if the parameter exists, false otherwise.
- */
-bool Frame::has_parameter(const std::string& index)
-{
-  return (parameters_.count(index) == 1);
-}
-
-} /* namespace FrameProcessor */

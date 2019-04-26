@@ -40,7 +40,7 @@ OffsetAdjustmentPlugin::~OffsetAdjustmentPlugin()
  *
  * \param[in] frame - Pointer to a Frame object.
  */
-void OffsetAdjustmentPlugin::process_frame(boost::shared_ptr<IFrame> frame)
+void OffsetAdjustmentPlugin::process_frame(boost::shared_ptr<Frame> frame)
 {
   if (frame->get_frame_number() == first_frame_number_)
   {

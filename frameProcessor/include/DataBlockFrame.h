@@ -1,25 +1,25 @@
 #ifndef FRAMEPROCSESOR_DATABLOCKFRAME_H
 #define FRAMEPROCESSOR_DATABLOCKFRAME_H
 
-#include "IFrame.h"
+#include "Frame.h"
 #include "DataBlock.h"
 
 #include <boost/shared_ptr.hpp>
 
 namespace FrameProcessor {
 
-class DataBlockFrame : public IFrame {
+class DataBlockFrame : public Frame {
 
  public:
 
   /** Construct a DataBlockFrame */
-  DataBlockFrame(const IFrameMetaData &meta_data,
+  DataBlockFrame(const FrameMetaData &meta_data,
                  const void *data_src,
                  size_t block_size,
                  const int &image_offset = 0);
 
   /** Construct a DataBlockFrame */
-  DataBlockFrame(const IFrameMetaData& meta_data,
+  DataBlockFrame(const FrameMetaData& meta_data,
                  size_t block_size,
                  const int &image_offset = 0);
 

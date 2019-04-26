@@ -1,19 +1,19 @@
 #ifndef FRAMEPROCESSOR_SHAREDBUFFERFRAME_H
 #define FRAMEPROCESSOR_SHAREDBUFFERFRAME_H
 
-#include "IFrame.h"
+#include "Frame.h"
 
 #include <stdint.h>
 #include "IpcChannel.h"
 
 namespace FrameProcessor {
 
-class SharedBufferFrame : public IFrame {
+class SharedBufferFrame : public Frame {
 
  public:
 
   /** Construct a SharedBufferFrame */
-  SharedBufferFrame(const IFrameMetaData &meta_data,
+  SharedBufferFrame(const FrameMetaData &meta_data,
                     void *data_src,
                     size_t nbytes,
                     uint64_t bufferID,

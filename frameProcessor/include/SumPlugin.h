@@ -30,7 +30,7 @@ namespace FrameProcessor {
 
     ~SumPlugin();
 
-    void process_frame(boost::shared_ptr <IFrame> frame);
+    void process_frame(boost::shared_ptr <Frame> frame);
 
     int get_version_major();
 

@@ -141,7 +141,7 @@ BOOST_AUTO_TEST_CASE( DataBlockFrameTest )
                               9,10,11,12 };
   dimensions_t img_dims(2); img_dims[0] = 3; img_dims[1] = 4;
 
-  FrameProcessor::IFrameMetaData frame_meta(
+  FrameProcessor::FrameMetaData frame_meta(
       7, "data", FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
   );
   FrameProcessor::DataBlockFrame frame(frame_meta, static_cast<void*>(img), 24);
@@ -180,7 +180,7 @@ public:
     dset_def.chunks = chunk_dims;
     dset_def.create_low_high_indexes = false;
 
-    FrameProcessor::IFrameMetaData frame_meta(
+    FrameProcessor::FrameMetaData frame_meta(
             7, "data", FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
     );
     frame = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
@@ -189,7 +189,7 @@ public:
 
     for (unsigned short i = 1; i<6; i++)
     {
-      FrameProcessor::IFrameMetaData loop_frame_meta(
+      FrameProcessor::FrameMetaData loop_frame_meta(
               i, "data", FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
       );
       boost::shared_ptr<FrameProcessor::DataBlockFrame> tmp_frame(
@@ -745,7 +745,7 @@ BOOST_AUTO_TEST_CASE( AdjustOffset )
   FrameProcessor::OffsetAdjustmentPlugin plugin;
 
   dimensions_t dims(2, 0);
-  FrameProcessor::IFrameMetaData frame_meta(
+  FrameProcessor::FrameMetaData frame_meta(
           0, "raw", FrameProcessor::raw_16bit, "test", dims, FrameProcessor::no_compression
   );
   char dummy_data[2] = {0, 0};
@@ -973,7 +973,7 @@ BOOST_AUTO_TEST_CASE( SumFrame )
   };
   dimensions_t img_dims(2); img_dims[0] = 3; img_dims[1] = 4;
 
-  FrameProcessor::IFrameMetaData frame_meta(
+  FrameProcessor::FrameMetaData frame_meta(
           1, "raw", FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
   );
 
@@ -993,7 +993,7 @@ BOOST_AUTO_TEST_CASE( SumEmptyFrame )
   FrameProcessor::SumPlugin plugin;
 
   dimensions_t dims(2, 0);
-  FrameProcessor::IFrameMetaData frame_meta(
+  FrameProcessor::FrameMetaData frame_meta(
           0, "raw", FrameProcessor::raw_16bit, "test", dims, FrameProcessor::no_compression
   );
   char dummy_data[2] = {0, 0};

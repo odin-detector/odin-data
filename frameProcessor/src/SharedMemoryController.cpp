@@ -180,7 +180,7 @@ void SharedMemoryController::handleRxChannel()
           // Create a frame object and copy in the raw frame data
           int frame_number = rxMsg.get_param<int>("frame", 0);
 
-          FrameProcessor::IFrameMetaData frame_meta(frame_number,
+          FrameProcessor::FrameMetaData frame_meta(frame_number,
                                                     "raw",
                                                     FrameProcessor::raw_64bit,
                                                     "0",

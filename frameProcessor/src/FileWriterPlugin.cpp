@@ -8,7 +8,7 @@
 #include <boost/filesystem.hpp>
 #include <hdf5_hl.h>
 
-#include "IFrame.h"
+#include "Frame.h"
 #include "FileWriterPlugin.h"
 #include "FrameProcessorDefinitions.h"
 
@@ -114,7 +114,7 @@ FileWriterPlugin::~FileWriterPlugin()
  *
  * \param[in] frame - Pointer to the Frame object.
  */
-void FileWriterPlugin::process_frame(boost::shared_ptr<IFrame> frame)
+void FileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame)
 {
   // Protect this method
   boost::mutex::scoped_lock cflock(close_file_mutex_);
@@ -673,7 +673,7 @@ void FileWriterPlugin::status(OdinData::IpcMessage& status)
  *
  * \param[in] frame - Pointer to the Frame object.
  */
-bool FileWriterPlugin::frame_in_acquisition(boost::shared_ptr<IFrame> frame) {
+bool FileWriterPlugin::frame_in_acquisition(boost::shared_ptr<Frame> frame) {
 
   std::string frame_acquisition_ID = frame->get_meta_data().get_acquisition_ID();
 

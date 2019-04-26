@@ -194,7 +194,7 @@ void HDF5File::close_file() {
  *
  * \param[in] frame - Reference to the frame.
  */
-void HDF5File::write_frame(const IFrame& frame, hsize_t frame_offset, uint64_t outer_chunk_dimension) {
+void HDF5File::write_frame(const Frame& frame, hsize_t frame_offset, uint64_t outer_chunk_dimension) {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
   hsize_t frame_no = frame.get_frame_number();
@@ -239,7 +239,7 @@ void HDF5File::write_frame(const IFrame& frame, hsize_t frame_offset, uint64_t o
  * \param[in] dataset_definition - The dataset definition for this parameter.
  * \param[in] frame_offset - The offset to write the value to
  */
-void HDF5File::write_parameter(const IFrame& frame, DatasetDefinition dataset_definition, hsize_t frame_offset) {
+void HDF5File::write_parameter(const Frame& frame, DatasetDefinition dataset_definition, hsize_t frame_offset) {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
 
