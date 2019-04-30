@@ -53,7 +53,7 @@ namespace FrameProcessor {
  * @ return void pointer to image data
  */
     void *Frame::get_image_ptr() const {
-      return this->get_data_ptr() + image_offset_;
+      return (void*)((char*)this->get_data_ptr() + image_offset_);
     }
 
 /** Return the data size
