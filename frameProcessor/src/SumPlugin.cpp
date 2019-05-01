@@ -30,8 +30,8 @@ namespace FrameProcessor {
   static uint64_t calculate_sum(boost::shared_ptr <Frame> frame)
   {
     uint64_t sum_value = 0;
-    const PixelType *data = static_cast<const PixelType *>(frame->get_data_ptr());
-    size_t elements_count = frame->get_data_size() / sizeof(data[0]);
+    const PixelType *data = static_cast<const PixelType *>(frame->get_image_ptr());
+    size_t elements_count = frame->get_image_size() / sizeof(data[0]);
 
     for (size_t pixel_index = 0; pixel_index < elements_count; pixel_index++) {
       sum_value += data[pixel_index];

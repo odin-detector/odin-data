@@ -223,7 +223,7 @@ void HDF5File::write_frame(const Frame& frame, hsize_t frame_offset, uint64_t ou
   uint32_t filter_mask = 0x0;
   ensure_h5_result(H5DOwrite_chunk(dset.dataset_id, H5P_DEFAULT,
       filter_mask, &offset.front(),
-      frame.get_data_size(), frame.get_data_ptr()), "H5DOwrite_chunk failed");
+      frame.get_image_size(), frame.get_image_ptr()), "H5DOwrite_chunk failed");
 
 #if H5_VERSION_GE(1,9,178)
   if (!use_earliest_version_) {

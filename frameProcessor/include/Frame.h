@@ -57,8 +57,8 @@ class Frame {
   /** Set MetaData */
   void set_meta_data(const FrameMetaData &meta_data);
 
-  /** Return the image offset */
-  int get_image_offset() const;
+  /** Return the image size */
+  int get_image_size() const;
 
   /** Set the image offset */
   void set_image_offset(const int &offset);

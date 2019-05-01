@@ -165,7 +165,7 @@ namespace FrameProcessor
                     // Multiply dest_offset by the data type size
                     src_offset *= frame_data_type_size;
 
-                    char *src_ptr = (char *)frame->get_data_ptr();
+                    char *src_ptr = (char *)frame->get_image_ptr();
                     src_ptr += src_offset;
 
                     // Dest offset is full width * (current_y_gap + (y_grid_index * chip_y) + y_row)

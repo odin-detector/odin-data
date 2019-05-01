@@ -99,13 +99,13 @@ boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> sr
   dest_meta_data.set_compression_type(blosc);
 
   const void* src_data_ptr = static_cast<const void*>(
-      static_cast<const char*>(src_frame->get_data_ptr())
+      static_cast<const char*>(src_frame->get_image_ptr())
   );
 
   c_settings = this->compression_settings_;
 
   c_settings.type_size = get_size_from_enum(src_frame->get_meta_data().get_data_type());
-  c_settings.uncompressed_size = src_frame->get_data_size();
+  c_settings.uncompressed_size = src_frame->get_image_size();
 
   size_t dest_data_size = c_settings.uncompressed_size + BLOSC_MAX_OVERHEAD;
 
@@ -125,11 +125,11 @@ boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> sr
                           << " acquisition=\"" << src_frame->get_meta_data().get_acquisition_ID() << "\""
                           << ss_blosc_settings.str()
                           << " src=" << src_data_ptr
-                          << " dest=" << dest_frame->get_data_ptr());
+                          << " dest=" << dest_frame->get_image_ptr());
   compressed_size = blosc_compress(c_settings.compression_level, c_settings.shuffle,
                                    c_settings.type_size,
                                    c_settings.uncompressed_size, src_data_ptr,
-                                   dest_frame->get_data_ptr(), dest_data_size);
+                                   dest_frame->get_image_ptr(), dest_data_size);
   if (compressed_size < 0) {
     std::stringstream ss;
     ss << "blosc_compress failed. error=" << compressed_size << ss_blosc_settings.str();
@@ -138,7 +138,7 @@ boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> sr
   }
   double factor = 0.;
   if (compressed_size > 0) {
-    factor = (double)src_frame->get_data_size() / (double)compressed_size;
+    factor = (double)src_frame->get_image_size() / (double)compressed_size;
   }
   LOG4CXX_DEBUG_LEVEL(2, logger_, "Blosc compression complete: frame=" << src_frame->get_frame_number()
                                   << " compressed_size=" << compressed_size

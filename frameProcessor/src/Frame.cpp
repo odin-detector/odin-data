@@ -116,11 +116,11 @@ namespace FrameProcessor {
       this->meta_data_ = meta_data;
     }
 
-/** Return the image offset
- * @return offset from beginning of data memory to image data
+/** Return the image size
+ * @return size of data minus offset (header size)
  * */
-    int Frame::get_image_offset() const {
-      return this->image_offset_;
+    int Frame::get_image_size() const {
+      return this->get_data_size() - this->image_offset_;
     }
 
 /** Set the image offset
