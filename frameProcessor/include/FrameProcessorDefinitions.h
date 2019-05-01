@@ -29,8 +29,8 @@ namespace FrameProcessor
 
 
   /* Enum style arrays for the header*/
-  const std::string DATA_TYPES[] = {"uint8","uint16","uint32","uint64","float"};
-  const std::string COMPRESS_TYPES[] = {"none","LZ4","BSLZ4"};
+  const std::string DATA_TYPES[] = {"unknown", "uint8","uint16","uint32","uint64","float"};
+  const std::string COMPRESS_TYPES[] = {"unknown", "none","LZ4","BSLZ4"};
 
   /**
    * Gets the size of the data type

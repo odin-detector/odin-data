@@ -69,10 +69,11 @@ namespace FrameProcessor {
     void Frame::set_data_size(size_t size) {
       if (size > this->data_size_)
         throw std::runtime_error("Can't set frame data size to be bigger than allocated memory size.");
-      LOG4CXX_INFO(logger_, "Updating size of frame data");
+      LOG4CXX_DEBUG(logger_, "Updating size of frame data");
       this->data_size_ = size;
     }
 
+    /** Return the frame number
     /** Return the frame number
  * @return frame frame number
  */
@@ -108,18 +109,18 @@ namespace FrameProcessor {
       return this->meta_data_;
     }
 
-/** Return the image offset
- * @return offset from beginning of data memory to image data
- * */
-    int Frame::get_image_offset() const {
-      return this->image_offset_;
-    }
-
 /** Set MetaData
  * @param FrameMetaData meta_data - new meta data
  * */
     void Frame::set_meta_data(const FrameMetaData &meta_data) {
       this->meta_data_ = meta_data;
+    }
+
+/** Return the image offset
+ * @return offset from beginning of data memory to image data
+ * */
+    int Frame::get_image_offset() const {
+      return this->image_offset_;
     }
 
 /** Set the image offset

@@ -54,11 +54,11 @@ class Frame {
   /** Return deep copy of the MetaData */
   FrameMetaData get_meta_data_copy() const;
 
-  /** Return the image offset */
-  int get_image_offset() const;
-
   /** Set MetaData */
   void set_meta_data(const FrameMetaData &meta_data);
+
+  /** Return the image offset */
+  int get_image_offset() const;
 
   /** Set the image offset */
   void set_image_offset(const int &offset);

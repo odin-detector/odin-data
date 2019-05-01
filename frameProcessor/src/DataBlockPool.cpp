@@ -24,9 +24,8 @@ DataBlockPool::~DataBlockPool()
  * Static method to force allocation of new DataBlocks which are added to
  * the pool specified by the index parameter.
  *
- * \param[in] index - Index of DataBlockPool to add new DataBlocks to.
  * \param[in] block_count - Number of DataBlocks to allocate.
- * \param[in] nBytes - Number of bytes to allocate to each block.
+ * \param[in] block_size - Number of bytes to allocate to each block.
  */
 void DataBlockPool::allocate(size_t block_count, size_t block_size)
 {
@@ -35,10 +34,9 @@ void DataBlockPool::allocate(size_t block_count, size_t block_size)
 
 /**
  * Static method to take a DataBlock from the DataBlockPool specified by the
- * index parameter. New DataBlocks will be allocated if necessary.
+ * block_size parameter. New DataBlocks will be allocated if necessary.
  *
- * \param[in] index - Index of DataBlockPool to take the DataBlocks from.
- * \param[in] nBytes - Size of the DataBlock required in bytes.
+ * \param[in] block_size - Size of the DataBlock required in bytes.
  * \return - DataBlock from the available pool.
  */
 boost::shared_ptr<DataBlock> DataBlockPool::take(size_t block_size)
@@ -48,10 +46,9 @@ boost::shared_ptr<DataBlock> DataBlockPool::take(size_t block_size)
 
 /**
  * Static method to release a DataBlock back into the DataBlockPool specified
- * by the index parameter. Once a DataBlock has been released it will become
+ * by the block size. Once a DataBlock has been released it will become
  * available for re-use.
  *
- * \param[in] index - Index of DataBlockPool to take the DataBlocks from.
  * \param[in] block - DataBlock to release.
  */
 void DataBlockPool::release(boost::shared_ptr<DataBlock> block)
@@ -61,9 +58,9 @@ void DataBlockPool::release(boost::shared_ptr<DataBlock> block)
 
 /**
  * Static method that returns the number of free DataBlocks present in
- * the DataBlockPool specified by the index parameter.
+ * the DataBlockPool specified by the block_size parameter.
  *
- * \param[in] index - Index of DataBlockPool to get the free count from.
+ * \param[in] block_size - Index of DataBlockPool to get the free count from.
  * \return - Number of free DataBlocks.
  */
 size_t DataBlockPool::get_free_blocks(size_t block_size)
@@ -73,9 +70,9 @@ size_t DataBlockPool::get_free_blocks(size_t block_size)
 
 /**
  * Static method that returns the number of in-use DataBlocks present in
- * the DataBlockPool specified by the index parameter.
+ * the DataBlockPool specified by the block_size parameter.
  *
- * \param[in] index - Index of DataBlockPool to get the in-use count from.
+ * \param[in] block_size - Index of DataBlockPool to get the in-use count from.
  * \return - Number of in-use DataBlocks.
  */
 size_t DataBlockPool::get_used_blocks(size_t block_size)
@@ -85,9 +82,9 @@ size_t DataBlockPool::get_used_blocks(size_t block_size)
 
 /**
  * Static method that returns the total number of DataBlocks present in
- * the DataBlockPool specified by the index parameter.
+ * the DataBlockPool specified by the block_size parameter.
  *
- * \param[in] index - Index of DataBlockPool to get the total count from.
+ * \param[in] block_size - Index of DataBlockPool to get the total count from.
  * \return - Total number of DataBlocks.
  */
 size_t DataBlockPool::get_total_blocks(size_t block_size)

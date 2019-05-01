@@ -43,13 +43,15 @@ public:
       img_16[i] = i+1;
     }
 
-    DATA_TYPES[0]  = "uint8";
-    DATA_TYPES[1]  = "uint16";
-    DATA_TYPES[2]  = "uint32";
+    DATA_TYPES[0] = "unknown"
+    DATA_TYPES[1]  = "uint8";
+    DATA_TYPES[2]  = "uint16";
+    DATA_TYPES[3]  = "uint32";
 
-    COMPRESS_TYPES[0] = "none";
-    COMPRESS_TYPES[1] = "LZ4";
-    COMPRESS_TYPES[2] = "BSLZ4";
+    COMPRESS_TYPES[0] = "unknown";
+    COMPRESS_TYPES[1] = "none";
+    COMPRESS_TYPES[2] = "LZ4";
+    COMPRESS_TYPES[3] = "BSLZ4";
 
     dimensions_t img_dims(2); img_dims[0] = 3; img_dims[1] = 4;
 

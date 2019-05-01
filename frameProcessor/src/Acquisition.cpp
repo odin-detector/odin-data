@@ -392,7 +392,7 @@ bool Acquisition::check_frame_valid(boost::shared_ptr<Frame> frame)
     ss << "Invalid frame: Frame has compression " << frame_compression_type <<
           ", expected " << dataset.compression <<
           " for dataset " << dataset.name <<
-          " (0: None, 1: LZ4, 2: BSLZ4, 3: Blosc)";
+          " (0: Unknown, 1: None, 2: LZ4, 3: BSLZ4, 4: Blosc)";
     last_error_ = ss.str();
     LOG4CXX_ERROR(logger_, last_error_);
     invalid = true;
@@ -403,7 +403,7 @@ bool Acquisition::check_frame_valid(boost::shared_ptr<Frame> frame)
     ss << "Invalid frame: Frame has data type " << frame_data_type <<
        ", expected " << dataset.data_type <<
        " for dataset " << dataset.name <<
-       " (0: UINT8, 1: UINT16, 2: UINT32, 3: UINT64, 4: FLOAT)";
+       " (0: UNKNOWN, 1: UINT8, 2: UINT16, 3: UINT32, 4: UINT64, 5: FLOAT)";
     last_error_ = ss.str();
     LOG4CXX_ERROR(logger_, last_error_);
     invalid = true;

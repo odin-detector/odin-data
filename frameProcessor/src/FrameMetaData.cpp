@@ -98,7 +98,7 @@ namespace FrameProcessor {
     }
 
     /** Set acquisition ID
-     * @param std::string acquisition id
+     * @param std::string acquisition_ID
      */
     void FrameMetaData::set_acquisition_ID(const std::string &acquisition_ID) {
       this->acquisition_ID_ = acquisition_ID;
@@ -126,7 +126,7 @@ namespace FrameProcessor {
     }
 
     /** Set compression type
-     * @ param CompressionType compression type
+     * @ param compression_type compression type
      */
     void FrameMetaData::set_compression_type(CompressionType compression_type) {
       this->compression_type_ = compression_type;
