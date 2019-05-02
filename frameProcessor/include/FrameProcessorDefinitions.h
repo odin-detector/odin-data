@@ -27,10 +27,31 @@ namespace FrameProcessor
    */
   enum ProcessFrameStatus { status_ok, status_complete, status_complete_missing_frames, status_invalid };
 
-
   /* Enum style arrays for the header*/
-  const std::string DATA_TYPES[] = {"unknown", "uint8","uint16","uint32","uint64","float"};
-  const std::string COMPRESS_TYPES[] = {"unknown", "none","LZ4","BSLZ4"};
+  const std::string DATA_TYPES[] = {"unknown","uint8","uint16","uint32","uint64","float"};
+  const std::string COMPRESS_TYPES[] = {"unknown","none","LZ4","BSLZ4","blosc"};
+
+  /**
+   * Gets the DataType from string
+   * @param str data type as string
+   * @return DataType data type
+   */
+  static DataType get_type_from_string(const std::string &str)
+  {
+    if (str == "unknown")
+      return raw_unknown;
+    else if (str == "uint8")
+      return raw_8bit;
+    else if (str == "uint16")
+      return raw_16bit;
+    else if (str == "uint32")
+      return raw_32bit;
+    else if (str == "uint64")
+      return raw_64bit;
+    else if (str == "float")
+      return raw_float;
+    return raw_unknown;
+  }
 
   /**
    * Gets the size of the data type
@@ -73,6 +94,26 @@ namespace FrameProcessor
     }else{
       return "unknown";
     }
+  }
+
+  /**
+   * Gets the CompressionType from string
+   * @param str compression type as string
+   * @return CompressionType compression type
+   */
+  static CompressionType get_compression_from_string(const std::string &str)
+  {
+    if (str == "unknown")
+      return unknown_compression;
+    else if (str == "none")
+      return no_compression;
+    else if (str == "LZ4")
+      return lz4;
+    else if (str == "BSLZ4")
+      return bslz4;
+    else if (str == "blosc")
+      return blosc;
+    return unknown_compression;
   }
 
   /**

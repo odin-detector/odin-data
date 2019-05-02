@@ -544,7 +544,7 @@ void FileWriterPlugin::configure_dataset(const std::string& dataset_name, OdinDa
 
   // If there is a type present then set it
   if (config.has_param(FileWriterPlugin::CONFIG_DATASET_TYPE)) {
-    dset.data_type = (DataType)config.get_param<int>(FileWriterPlugin::CONFIG_DATASET_TYPE);
+    dset.data_type = get_type_from_string(config.get_param<std::string>(FileWriterPlugin::CONFIG_DATASET_TYPE));
   }
 
   // If there are dimensions present for the dataset then set them
@@ -582,7 +582,7 @@ void FileWriterPlugin::configure_dataset(const std::string& dataset_name, OdinDa
 
   // Check if compression has been specified for the raw data
   if (config.has_param(FileWriterPlugin::CONFIG_DATASET_COMPRESSION)) {
-    dset.compression = (CompressionType)config.get_param<int>(FileWriterPlugin::CONFIG_DATASET_COMPRESSION);
+    dset.compression = get_compression_from_string(config.get_param<std::string>(FileWriterPlugin::CONFIG_DATASET_COMPRESSION));
     LOG4CXX_INFO(logger_, "Enabling compression: " << dset.compression);
   }
   // Blosc compression require a set of parameters to be defined
