@@ -31,7 +31,7 @@ SharedBufferFrame::SharedBufferFrame(const SharedBufferFrame& frame) : Frame(fra
 SharedBufferFrame::~SharedBufferFrame () {
   OdinData::IpcMessage txMsg(OdinData::IpcMessage::MsgTypeNotify,
                              OdinData::IpcMessage::MsgValNotifyFrameRelease);
-  txMsg.set_param("frame", meta_data_.get_frame_number());
+  txMsg.set_param("frame", static_cast<uint64_t>(meta_data_.get_frame_number()));
   txMsg.set_param("buffer_id", shared_id_);
   // Now publish the release message, to notify the frame receiver that we are
   // finished with that block of shared memory
