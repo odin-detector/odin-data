@@ -60,6 +60,9 @@ class Frame {
   /** Return the image size */
   int get_image_size() const;
 
+  /** Set the image size */
+  void set_image_size(const int &size);
+
   /** Set the image offset */
   void set_image_offset(const int &offset);
 
@@ -73,6 +76,9 @@ class Frame {
 
   /** Shared memory size **/
   size_t data_size_;
+
+  /** Size of the image **/
+  int image_size_;
 
   /** Offset from frame memory start to image data */
   int image_offset_;

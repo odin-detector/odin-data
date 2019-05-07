@@ -12,6 +12,7 @@ namespace FrameProcessor {
             meta_data_(meta_data),
             data_size_(data_size),
             image_offset_(image_offset),
+            image_size_(data_size-image_offset),
             logger_(log4cxx::Logger::getLogger("FP.Frame")) {
       logger_->setLevel(log4cxx::Level::getAll());
     }
@@ -118,16 +119,25 @@ namespace FrameProcessor {
 
 /** Return the image size
  * @return size of data minus offset (header size)
- * */
+ */
     int Frame::get_image_size() const {
-      return this->get_data_size() - this->image_offset_;
+      return image_size_;
+    }
+
+/** Set the image size
+ * If not called defaults to data_size minus image_offset
+ * @param size the image size
+ */
+    void Frame::set_image_size(const int &size) {
+      this->image_size_ = size;
     }
 
 /** Set the image offset
  * @param offset - new offset
- * */
+ */
     void Frame::set_image_offset(const int &offset) {
       this->image_offset_ = offset;
+      this->image_size_ = this->data_size_ - this->image_offset_;
     }
 
 }
