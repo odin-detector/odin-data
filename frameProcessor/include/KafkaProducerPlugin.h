@@ -1,7 +1,9 @@
-//
-// Created by hir12111 on 25/03/19.
-//
-
+/*
+ * KafkaProducerPlugin.h
+ *
+ *  Created on: 25 Mar 2019
+ *      Author: Emilio Perez
+ */
 #ifndef KAFKAPRODUCERPLUGIN_H
 #define KAFKAPRODUCERPLUGIN_H
 

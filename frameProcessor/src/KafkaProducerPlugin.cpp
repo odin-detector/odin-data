@@ -1,6 +1,9 @@
-//
-// Created by hir12111 on 25/03/19.
-//
+/*
+ * KafkaProducerPlugin.cpp
+ *
+ *  Created on: 25 Mar 2019
+ *      Author: Emilio Perez
+ */
 #include <cstring>
 #include <cstdlib>
 #include <boost/algorithm/string.hpp>

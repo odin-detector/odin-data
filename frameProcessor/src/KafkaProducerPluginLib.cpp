@@ -1,7 +1,9 @@
-//
-// Created by hir12111 on 25/03/19.
-//
-
+/*
+ * KafkaProducerPluginLib.cpp
+ *
+ *  Created on: 25 Mar 2019
+ *      Author: Emilio Perez
+ */
 #include "KafkaProducerPlugin.h"
 #include "ClassLoader.h"
 
