@@ -16,7 +16,15 @@
 
 namespace FrameProcessor {
 
-  // Callback function used to report status of a delivered message
+  /**
+   * Callback function used to report status of a delivered message.
+   *
+   * This function is only used internally.
+   *
+   * \param[in] kafka_producer- Pointer to a Kafka producer handler.
+   * \param[in] kafka_message - Pointer to the message structure of the message being reported
+   * \param[in] opaque - Opaque pointer (not used)
+   */
   static void kafka_message_callback(rd_kafka_t *kafka_producer,
                                      const rd_kafka_message_t *kafka_message,
                                      void *opaque)
@@ -54,7 +62,7 @@ namespace FrameProcessor {
   }
 
   /**
-   * Destructor.
+   * The destructor cleans up Kafka handlers.
    */
   KafkaProducerPlugin::~KafkaProducerPlugin()
   {
@@ -62,6 +70,15 @@ namespace FrameProcessor {
     destroy_kafka();
   }
 
+  /**
+   * Set configuration options for this Plugin.
+   *
+   * This sets up the Kafka Producer Plugin according to the configuration IpcMessage
+   * objects that are received.
+   *
+   * \param[in] config - IpcMessage containing configuration data.
+   * \param[out] reply - Response IpcMessage.
+   */
   void KafkaProducerPlugin::configure(OdinData::IpcMessage &config,
                                       OdinData::IpcMessage &reply)
   {
@@ -83,11 +100,17 @@ namespace FrameProcessor {
     if (config.has_param(CONFIG_DATASET)) {
       configure_dataset(config.get_param<std::string>(CONFIG_DATASET));
     }
+
     if (config.has_param(CONFIG_INCLUDE_PARAMETERS)) {
       this->include_parameters_ = config.get_param<bool>(CONFIG_INCLUDE_PARAMETERS);
     }
   }
 
+  /**
+   * Get the configuration values for this Plugin.
+   *
+   * \param[out] reply - Response IpcMessage.
+   */
   void KafkaProducerPlugin::requestConfiguration(OdinData::IpcMessage &reply)
   {
     reply.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_SERVERS,
@@ -102,6 +125,11 @@ namespace FrameProcessor {
                     this->include_parameters_);
   }
 
+  /**
+   * Collate status information for the plugin. The status is added to the status IpcMessage object.
+   *
+   * \param[out] status - Reference to an IpcMessage value to store the status.
+   */
   void KafkaProducerPlugin::status(OdinData::IpcMessage &status)
   {
     // Make sure statistics are updated
@@ -114,6 +142,9 @@ namespace FrameProcessor {
     status.set_param(get_name() + "/" + "ack", frames_ack_);
   }
 
+  /**
+   * Clear frame statistics
+   */
   bool KafkaProducerPlugin::reset_statistics()
   {
     this->frames_sent_ = 0;
@@ -138,6 +169,10 @@ namespace FrameProcessor {
     }
   }
 
+  /**
+   * Poll the delivery message report queue, calling the
+   * callback function if appropriate.
+   */
   void KafkaProducerPlugin::poll_delivery_message_report_queue()
   {
     if (kafka_producer_ != NULL) {
@@ -147,7 +182,9 @@ namespace FrameProcessor {
   }
 
   /**
-   * Configure Kafka connection handler for the server/s specified
+   * Configure Kafka connection handler for the server/s specified.
+   *
+   * \param[in] servers - string representing Kafka brokers using format: IP:PORT[,IP2:PORT2,...]
    */
   void KafkaProducerPlugin::configure_kafka_servers(std::string servers)
   {
@@ -188,7 +225,7 @@ namespace FrameProcessor {
     kafka_producer = rd_kafka_new(RD_KAFKA_PRODUCER, kafka_config, errBuf,
                                   sizeof(errBuf));
     if (!kafka_producer) {
-      LOG4CXX_ERROR(logger_, "Kafka handle error: " << errBuf);
+      LOG4CXX_ERROR(logger_, "Kafka handler error: " << errBuf);
       return;
     }
 
@@ -201,6 +238,8 @@ namespace FrameProcessor {
 
   /**
    * Configure Kafka topic handler for the topic specified
+   *
+   * \param[in] topic_name - string representing the topic name.
    */
   void KafkaProducerPlugin::configure_kafka_topic(std::string topic_name)
   {
@@ -241,14 +280,22 @@ namespace FrameProcessor {
    *
    * If it is not configured, it defaults to automatic partitioning (using
    * the topic's partitioner function)
+   *
+   * \param[in] partition - partition number.
    */
   void KafkaProducerPlugin::configure_partition(int32_t partition)
   {
     this->partition_ = partition;
   }
 
-  /* Create a message with the following structure:
-   * [ json header length (2 bytes) ] + [ json header ] + [ frame data]  */
+  /**
+   * Create a message with the following structure:
+   *
+   * [ json header length (2 bytes) ] + [ json header ] + [ frame data ]
+   *
+   * \param[in] frame - Pointer to a Frame object.
+   * \param[out] nbytes - Reference to the message size in bytes.
+   */
   void *KafkaProducerPlugin::create_message(boost::shared_ptr<Frame> frame,
                                             size_t &nbytes)
   {
@@ -328,6 +375,8 @@ namespace FrameProcessor {
 
   /**
    * Create and enqueue a frame message to kafka server/s
+   *
+   * \param[in] frame - Pointer to a Frame object.
    */
   void KafkaProducerPlugin::enqueue_frame(boost::shared_ptr<Frame> frame)
   {
@@ -336,6 +385,7 @@ namespace FrameProcessor {
       LOG4CXX_WARN(logger_, "Topic not configured");
       return;
     }
+    // This lock avoids configuring/destroying/enqueuing at the same time
     boost::lock_guard<boost::recursive_mutex> lock(mutex_);
     char *buf;
     size_t len;

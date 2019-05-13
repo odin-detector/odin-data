@@ -35,13 +35,28 @@ using namespace log4cxx::helpers;
 #define MSG_HEADER_FRAME_OFFSET_KEY "frame_offset"
 #define MSG_HEADER_FRAME_PARAMETERS_KEY "parameters"
 
-/**
- * This plugin class creates and send messages containing
- * frames to one or more Kafka servers
- *
- */
 namespace FrameProcessor {
 
+  /**
+   * KafkaProducerPlugin integrates Odin with Kafka.
+   *
+   * It creates and send messages that contains frame data and metadata
+   * to one or more Kafka servers.
+   *
+   * Plugin parameters:
+   *  servers: Kafka broker list using format IP:PORT[,IP2:PORT2,...]
+   *           Once this is set, the plugin starts delivering to the specified server/s.
+   *  dataset: Dataset name of frame that will be delivered. Defaults to "data".
+   *  topic: Topic name of the queue to send the message to. Defaults to "data".
+   *  partition: Partition number. Defaults to RD_KAFKA_PARTITION_UA (automatic partitioning)
+   *  include_parameters: Boolean indicating if frame parameters should be included in the message.
+   *                      Defaults to true.
+   *
+   * Status variables:
+   *  sent: Number of sent frames.
+   *  lost: Number of lost frames.
+   *  ack:  Number of acknowledged frames.
+   */
   class KafkaProducerPlugin : public FrameProcessorPlugin {
   public:
 
@@ -93,18 +108,25 @@ namespace FrameProcessor {
     std::string get_version_long();
 
   private:
-    /* Pointer to logger */
+    /** Pointer to logger */
     LoggerPtr logger_;
+    /** Name of the dataset that will be delivered */
     std::string dataset_name_;
+    /** Topic name identifying the destination queue */
     std::string topic_name_;
+    /** Kafka brokers to connect to */
     std::string servers_;
+    /** Partition number */
     int32_t partition_;
-    /* Kafka related attributes */
+    /** Pointer to a Kafka producer handler */
     rd_kafka_t *kafka_producer_;
+    /** Pointer to a Kafka topic handler */
     rd_kafka_topic_t *kafka_topic_;
-    /* Frames statistics */
+    /** Number of sent frames */
     uint32_t frames_sent_;
+    /** Number of lost frames */
     uint32_t frames_lost_;
+    /** Number of acknowledged frames */
     uint32_t frames_ack_;
     /* Timer used for polling every KAFKA_POLLING_MS period
      * this is necessary to serve the delivery report queue */
@@ -113,15 +135,18 @@ namespace FrameProcessor {
      * want to poll or produce while the handlers are been destroyed */
     boost::recursive_mutex mutex_;
 
-    /* True if frame parameters need to be included in the message header */
+    /** True if frame parameters need to be included in the message header */
     bool include_parameters_;
 
-    /* plugin specific parameters */
+    /** Configuration constant for servers parameter */
     static const std::string CONFIG_SERVERS;
+    /** Configuration constant for topic parameter */
     static const std::string CONFIG_TOPIC;
+    /** Configuration constant for partition parameter */
     static const std::string CONFIG_PARTITION;
-    /* the datasets that will be published */
+    /** Configuration constant for dataset parameter */
     static const std::string CONFIG_DATASET;
+    /** Configuration constant for include_parameters */
     static const std::string CONFIG_INCLUDE_PARAMETERS;
 
   };
