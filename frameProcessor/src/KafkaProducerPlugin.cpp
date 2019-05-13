@@ -36,9 +36,6 @@ namespace FrameProcessor {
   const std::string KafkaProducerPlugin::CONFIG_PARTITION = "partition";
   const std::string KafkaProducerPlugin::CONFIG_DATASET = "dataset";
   const std::string KafkaProducerPlugin::CONFIG_INCLUDE_PARAMETERS = "include_parameters";
-  const std::string KafkaProducerPlugin::CONFIG_SENT = "sent";
-  const std::string KafkaProducerPlugin::CONFIG_LOST = "lost";
-  const std::string KafkaProducerPlugin::CONFIG_ACK = "ack";
 
   /**
    * The constructor sets up logging used within the class.
@@ -109,13 +106,12 @@ namespace FrameProcessor {
   {
     // Make sure statistics are updated
     poll_delivery_message_report_queue();
-
-    status.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_SENT,
-                     frames_sent_);
-    status.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_LOST,
-                     frames_lost_);
-    status.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_ACK,
-                     frames_ack_);
+    /* Number of sent frames */
+    status.set_param(get_name() + "/" + "sent", frames_sent_);
+    /* Number of lost frames */
+    status.set_param(get_name() + "/" + "lost", frames_lost_);
+    /* Number of acknowledged frames */
+    status.set_param(get_name() + "/" + "ack", frames_ack_);
   }
 
   bool KafkaProducerPlugin::reset_statistics()

@@ -123,9 +123,6 @@ namespace FrameProcessor {
     /* the datasets that will be published */
     static const std::string CONFIG_DATASET;
     static const std::string CONFIG_INCLUDE_PARAMETERS;
-    static const std::string CONFIG_SENT;
-    static const std::string CONFIG_LOST;
-    static const std::string CONFIG_ACK;
 
   };
 
