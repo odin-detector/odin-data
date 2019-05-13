@@ -145,7 +145,7 @@ boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> sr
                                   << " factor=" << factor);
 
 
-  dest_frame->set_data_size(compressed_size);
+  dest_frame->set_image_size(compressed_size);
 
   return dest_frame;
 }
