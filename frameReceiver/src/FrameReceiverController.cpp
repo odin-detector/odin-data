@@ -617,7 +617,7 @@ void FrameReceiverController::configure_buffer_manager(OdinData::IpcMessage& con
 
       // Create a new shared buffer manager
       buffer_manager_.reset(new SharedBufferManager(
-          shared_buffer_name, max_buffer_mem,frame_decoder_->get_frame_buffer_size(), false)
+          shared_buffer_name, max_buffer_mem,frame_decoder_->get_frame_buffer_size(), true)
       );
 
       LOG4CXX_DEBUG_LEVEL(1, logger_, "Configured frame buffer manager of total size " <<
