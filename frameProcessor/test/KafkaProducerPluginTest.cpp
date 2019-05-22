@@ -3,22 +3,23 @@
 #include <cstdlib>
 #include "rapidjson/document.h"
 #include "KafkaProducerPlugin.h"
+#include "DataBlockFrame.h"
 
 class KafkaProducerPluginTestFixture {
 public:
   KafkaProducerPluginTestFixture()
   {
-    frame = boost::shared_ptr<FrameProcessor::Frame>(new FrameProcessor::Frame("data"));
+
     for (int i = 0; i < 12; i++) {
       test_data[i] = i + 1;
     }
-    test_dims.clear();
-    test_dims.push_back(3);
-    test_dims.push_back(4);
-    frame->set_frame_number(7);
-    frame->set_dimensions(test_dims);
-    frame->set_data_type(FrameProcessor::raw_16bit);
-    frame->copy_data(static_cast<void *>(test_data), sizeof(test_data));
+    dimensions_t test_dims(2); test_dims[0] = 3; test_dims[1] = 4;
+
+    FrameProcessor::FrameMetaData frame_meta(
+            7, "data", FrameProcessor::raw_16bit, "test", test_dims, FrameProcessor::no_compression
+    );
+    frame = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
+            new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void *>(test_data), 24));
   }
 
   ~KafkaProducerPluginTestFixture() { }
