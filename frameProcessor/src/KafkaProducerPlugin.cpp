@@ -329,11 +329,13 @@ namespace FrameProcessor {
       for (std::map<std::string, boost::any>::const_iterator it = parameters.begin(); it != parameters.end(); it++) {
         writer.String(it->first.c_str());
         const std::type_info &ti = it->second.type();
-        if (it->second.type() == typeid(unsigned int)) {
-          writer.Uint(frame->get_meta_data().get_parameter<unsigned int>(it->first));
+        if (it->second.type() == typeid(unsigned long)) {
+          writer.Uint64(frame->get_meta_data().get_parameter<unsigned long>(it->first));
         }
         else if (it->second.type() == typeid(float)) {
           writer.Double(frame->get_meta_data().get_parameter<float>(it->first));
+        } else {
+          writer.Null();
         }
       }
       writer.EndObject();
