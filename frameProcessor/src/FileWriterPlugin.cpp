@@ -544,7 +544,7 @@ void FileWriterPlugin::configure_dataset(const std::string& dataset_name, OdinDa
 
   // If there is a type present then set it
   if (config.has_param(FileWriterPlugin::CONFIG_DATASET_TYPE)) {
-    dset.data_type = (DataType)config.get_param<int>(FileWriterPlugin::CONFIG_DATASET_TYPE);
+    dset.data_type = get_type_from_string(config.get_param<std::string>(FileWriterPlugin::CONFIG_DATASET_TYPE));
   }
 
   // If there are dimensions present for the dataset then set them
@@ -582,7 +582,7 @@ void FileWriterPlugin::configure_dataset(const std::string& dataset_name, OdinDa
 
   // Check if compression has been specified for the raw data
   if (config.has_param(FileWriterPlugin::CONFIG_DATASET_COMPRESSION)) {
-    dset.compression = (CompressionType)config.get_param<int>(FileWriterPlugin::CONFIG_DATASET_COMPRESSION);
+    dset.compression = get_compression_from_string(config.get_param<std::string>(FileWriterPlugin::CONFIG_DATASET_COMPRESSION));
     LOG4CXX_INFO(logger_, "Enabling compression: " << dset.compression);
   }
   // Blosc compression require a set of parameters to be defined
@@ -674,22 +674,25 @@ void FileWriterPlugin::status(OdinData::IpcMessage& status)
  * \param[in] frame - Pointer to the Frame object.
  */
 bool FileWriterPlugin::frame_in_acquisition(boost::shared_ptr<Frame> frame) {
-  if (!frame->get_acquisition_id().empty()) {
+
+  std::string frame_acquisition_ID = frame->get_meta_data().get_acquisition_ID();
+
+  if (!frame_acquisition_ID.empty()) {
     if (writing_) {
-      if (frame->get_acquisition_id() == current_acquisition_->acquisition_id_) {
+      if (frame_acquisition_ID == current_acquisition_->acquisition_id_) {
         // On same file, take no action
         return true;
       }
     }
 
-    if (frame->get_acquisition_id() == next_acquisition_->acquisition_id_) {
+    if (frame_acquisition_ID == next_acquisition_->acquisition_id_) {
       LOG4CXX_DEBUG_LEVEL(1, logger_, "Acquisition ID sent in frame matches next acquisition ID. "
                                       "Closing current file and starting next");
       stop_writing();
       start_writing();
     } else {
       std::stringstream ss;
-      ss << "Unexpected acquisition ID on frame (" << frame->get_acquisition_id() << ")";
+      ss << "Unexpected acquisition ID on frame (" << frame_acquisition_ID << ")";
       set_error(ss.str());
       ss << " for frame " << frame->get_frame_number();
       LOG4CXX_WARN(logger_, ss.str());

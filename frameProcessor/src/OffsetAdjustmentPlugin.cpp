@@ -48,7 +48,7 @@ void OffsetAdjustmentPlugin::process_frame(boost::shared_ptr<Frame> frame)
     current_offset_adjustment_ = configured_offset_adjustment_;
   }
 
-  frame->set_frame_offset(frame->get_frame_offset() + current_offset_adjustment_);
+  frame->meta_data().adjust_frame_offset(current_offset_adjustment_);
   this->push(frame);
 }
 

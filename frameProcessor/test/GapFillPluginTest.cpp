@@ -10,6 +10,7 @@
 #include "FrameProcessorDefinitions.h"
 #include "GapFillPlugin.h"
 #include "IpcMessage.h"
+#include "DataBlockFrame.h"
 
 class GapFillPluginTestFixture {
 public:
@@ -26,12 +27,10 @@ public:
         chunk_dims[1] = 3;
         chunk_dims[2] = 4;
 
-        frame = boost::shared_ptr<FrameProcessor::Frame>(new FrameProcessor::Frame("data"));
-        frame->set_frame_number(7);
-        frame->set_dimensions(img_dims);
-        frame->copy_data(static_cast<void *>(img), 24);
-        frame->set_data_type(1); // 0: UINT8, 1: UINT16, 2: UINT32
-        frame->set_acquisition_id("scan1");
+        FrameProcessor::FrameMetaData frame_meta(7, "data", FrameProcessor::raw_16bit, "scan1", img_dims, FrameProcessor::no_compression);
+
+        frame = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
+                new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void *>(img), 24));
 
         unsigned short img_2[16] = {1, 1, 2, 2,
                                     1, 1, 2, 2,
@@ -43,12 +42,13 @@ public:
         chunk_dims[1] = 4;
         chunk_dims[2] = 4;
 
-        frame_2 = boost::shared_ptr<FrameProcessor::Frame>(new FrameProcessor::Frame("data"));
-        frame_2->set_frame_number(7);
-        frame_2->set_dimensions(img_dims);
-        frame_2->copy_data(static_cast<void *>(img_2), 32);
-        frame_2->set_data_type(1); // 0: UINT8, 1: UINT16, 2: UINT32
-        frame_2->set_acquisition_id("scan1");
+        FrameProcessor::FrameMetaData frame_2_meta(
+                7, "data", FrameProcessor::raw_16bit, "scan1", img_dims, FrameProcessor::no_compression
+        );
+
+        frame_2 = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
+                new FrameProcessor::DataBlockFrame(frame_2_meta, static_cast<void *>(img_2), 32));
+
     }
 
     ~GapFillPluginTestFixture() {}
@@ -122,7 +122,8 @@ BOOST_AUTO_TEST_CASE( GapFillPlugin_process_frame )
     gap_fill_plugin.configure(cfg, reply);
 
     // Push the frame through the plugin to force the gap fill
-    boost::shared_ptr<FrameProcessor::Frame> gap_frame = gap_fill_plugin.insert_gaps(frame);
+    boost::shared_ptr<FrameProcessor::Frame
+> gap_frame = gap_fill_plugin.insert_gaps(frame);
 
     unsigned short gap_img[117] = {
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -138,12 +139,12 @@ BOOST_AUTO_TEST_CASE( GapFillPlugin_process_frame )
 
     // Verify the resultant frame has the correct dimensions and the gaps have been inserted correctly
     unsigned short *ptr;
-    BOOST_REQUIRE_NO_THROW(ptr = (unsigned short *)gap_frame->get_data());
-    BOOST_CHECK_EQUAL(gap_frame->get_dimensions()[0], 9);
-    BOOST_CHECK_EQUAL(gap_frame->get_dimensions()[1], 13);
+    BOOST_REQUIRE_NO_THROW(ptr = (unsigned short *)gap_frame->get_image_ptr());
+    BOOST_CHECK_EQUAL(gap_frame->get_meta_data().get_dimensions()[0], 9);
+    BOOST_CHECK_EQUAL(gap_frame->get_meta_data().get_dimensions()[1], 13);
     int index = 0;
-    for (int y = 0; y < gap_frame->get_dimensions()[0]; y++){
-        for (int x = 0; x < gap_frame->get_dimensions()[1]; x++) {
+    for (int y = 0; y < gap_frame->get_meta_data().get_dimensions()[0]; y++){
+        for (int x = 0; x < gap_frame->get_meta_data().get_dimensions()[1]; x++) {
             BOOST_CHECK_EQUAL(ptr[index], gap_img[index]);
             index++;
         }
@@ -180,12 +181,12 @@ BOOST_AUTO_TEST_CASE( GapFillPlugin_process_frame )
 
 
     // Verify the resultant frame has the correct dimensions and the gaps have been inserted correctly
-    BOOST_REQUIRE_NO_THROW(ptr = (unsigned short *)gap_frame_2->get_data());
-    BOOST_CHECK_EQUAL(gap_frame_2->get_dimensions()[0], 7);
-    BOOST_CHECK_EQUAL(gap_frame_2->get_dimensions()[1], 7);
+    BOOST_REQUIRE_NO_THROW(ptr = (unsigned short *)gap_frame_2->get_image_ptr());
+    BOOST_CHECK_EQUAL(gap_frame_2->get_meta_data().get_dimensions()[0], 7);
+    BOOST_CHECK_EQUAL(gap_frame_2->get_meta_data().get_dimensions()[1], 7);
     index = 0;
-    for (int y = 0; y < gap_frame_2->get_dimensions()[0]; y++){
-        for (int x = 0; x < gap_frame_2->get_dimensions()[1]; x++) {
+    for (int y = 0; y < gap_frame_2->get_meta_data().get_dimensions()[0]; y++){
+        for (int x = 0; x < gap_frame_2->get_meta_data().get_dimensions()[1]; x++) {
             BOOST_CHECK_EQUAL(ptr[index], gap_img_2[index]);
             index++;
         }

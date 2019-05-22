@@ -8,6 +8,7 @@
 #include <stdio.h>
 
 #include "FrameProcessorController.h"
+#include "DataBlockPool.h"
 #include "DebugLevelLogger.h"
 #include "version.h"
 
@@ -245,7 +246,7 @@ void FrameProcessorController::handleMetaRxChannel()
 void FrameProcessorController::callback(boost::shared_ptr<Frame> frame) {
 
   // If frame is a master frame, or all frames are included (no master frames), increment frame count
-  if (masterFrame == "" || frame->get_dataset_name() == masterFrame) {
+  if (masterFrame == "" || frame->get_meta_data().get_dataset_name() == masterFrame) {
     totalFrames++;
     LOG4CXX_DEBUG_LEVEL(2, logger_, "Frame " << totalFrames << " complete.");
   }

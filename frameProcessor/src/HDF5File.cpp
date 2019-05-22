@@ -200,10 +200,10 @@ void HDF5File::write_frame(const Frame& frame, hsize_t frame_offset, uint64_t ou
   hsize_t frame_no = frame.get_frame_number();
 
   LOG4CXX_TRACE(logger_, "Writing frame [" << frame.get_frame_number()
-      << "] size [" << frame.get_data_size()
-      << "] type [" << frame.get_data_type()
-      << "] name [" << frame.get_dataset_name() << "]");
-  HDF5Dataset_t& dset = this->get_hdf5_dataset(frame.get_dataset_name());
+      << "] size [" << get_size_from_enum(frame.get_meta_data().get_data_type())
+      << "] type [" << frame.get_meta_data().get_data_type()
+      << "] name [" << frame.get_meta_data().get_dataset_name() << "]");
+  HDF5Dataset_t& dset = this->get_hdf5_dataset(frame.get_meta_data().get_dataset_name());
 
 
   // We will need to extend the dataset in 1 dimension by the outer chunk dimension
@@ -214,7 +214,7 @@ void HDF5File::write_frame(const Frame& frame, hsize_t frame_offset, uint64_t ou
 
   LOG4CXX_TRACE(logger_, "Writing frame offset=" << frame_no  <<
       " (" << frame_offset << ")" <<
-      " dset=" << frame.get_dataset_name());
+      " dset=" <<frame.get_meta_data().get_dataset_name());
 
   // Set the offset
   std::vector<hsize_t>offset(dset.dataset_dimensions.size());
@@ -223,7 +223,7 @@ void HDF5File::write_frame(const Frame& frame, hsize_t frame_offset, uint64_t ou
   uint32_t filter_mask = 0x0;
   ensure_h5_result(H5DOwrite_chunk(dset.dataset_id, H5P_DEFAULT,
       filter_mask, &offset.front(),
-      frame.get_data_size(), frame.get_data()), "H5DOwrite_chunk failed");
+      frame.get_image_size(), frame.get_image_ptr()), "H5DOwrite_chunk failed");
 
 #if H5_VERSION_GE(1,9,178)
   if (!use_earliest_version_) {
@@ -254,32 +254,32 @@ void HDF5File::write_parameter(const Frame& frame, DatasetDefinition dataset_def
   // Get the correct value and size from the parameter given its type
   switch( dataset_definition.data_type ) {
   case raw_8bit:
-    u8value = frame.get_i8_parameter(dataset_definition.name);
+    u8value = frame.get_meta_data().get_parameter<uint8_t>(dataset_definition.name);
     data_ptr = &u8value;
     size = sizeof(uint8_t);
     break;
   case raw_16bit:
-    u16value = frame.get_i16_parameter(dataset_definition.name);
+    u16value = frame.get_meta_data().get_parameter<uint16_t>(dataset_definition.name);
     data_ptr = &u16value;
     size = sizeof(uint16_t);
     break;
   case raw_32bit:
-    u32value = frame.get_i32_parameter(dataset_definition.name);
+    u32value = frame.get_meta_data().get_parameter<uint32_t>(dataset_definition.name);
     data_ptr = &u32value;
     size = sizeof(uint32_t);
     break;
   case raw_64bit:
-    u64value = frame.get_i64_parameter(dataset_definition.name);
+    u64value = frame.get_meta_data().get_parameter<uint64_t>(dataset_definition.name);
     data_ptr = &u64value;
     size = sizeof(uint64_t);
     break;
   case raw_float:
-    f32value = frame.get_float_parameter(dataset_definition.name);
+    f32value = frame.get_meta_data().get_parameter<float>(dataset_definition.name);
     data_ptr = &f32value;
     size = sizeof(float);
     break;
   default:
-    u16value = frame.get_i16_parameter(dataset_definition.name);
+    u16value = frame.get_meta_data().get_parameter<uint16_t>(dataset_definition.name);
     data_ptr = &u16value;
     size = sizeof(uint16_t);
     break;

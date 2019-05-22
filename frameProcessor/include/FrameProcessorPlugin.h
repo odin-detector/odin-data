@@ -14,6 +14,7 @@
 #include "IpcMessage.h"
 #include "IpcChannel.h"
 #include "MetaMessagePublisher.h"
+#include "Frame.h"
 
 namespace FrameProcessor
 {

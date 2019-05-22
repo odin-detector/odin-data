@@ -306,44 +306,36 @@ namespace FrameProcessor {
     writer.String(MSG_HEADER_FRAME_SIZE_KEY);
     writer.Uint64(frame->get_data_size());
     writer.String(MSG_HEADER_DATA_TYPE_KEY);
-    writer.Int(frame->get_data_type());
+    writer.Int(frame->get_meta_data().get_data_type());
     writer.String(MSG_HEADER_FRAME_NUMBER_KEY);
     writer.Uint64(frame->get_frame_number());
     writer.String(MSG_HEADER_ACQUISITION_ID_KEY);
-    writer.String(frame->get_acquisition_id().c_str());
+    writer.String(frame->get_meta_data().get_acquisition_ID().c_str());
     writer.String(MSG_HEADER_COMPRESSION_KEY);
-    writer.Uint(frame->get_compression());
+    writer.Uint(frame->get_meta_data().get_compression_type());
     writer.String(MSG_HEADER_FRAME_OFFSET_KEY);
-    writer.Uint64(frame->get_frame_offset());
+    writer.Uint64(frame->get_meta_data().get_frame_offset());
     writer.String(MSG_HEADER_FRAME_DIMENSIONS_KEY);
     writer.StartArray();
-    dimensions_t dims = frame->get_dimensions();
+    dimensions_t dims = frame->get_meta_data().get_dimensions();
     for (dimensions_t::iterator it = dims.begin(); it != dims.end(); it++) {
       writer.Uint64(*it);
     }
     writer.EndArray();
     if (this->include_parameters_) {
-      std::map<std::string, Parameter> &parameters = frame->get_parameters();
+      const std::map<std::string, boost::any> &parameters = frame->get_meta_data().get_parameters();
       writer.String(MSG_HEADER_FRAME_PARAMETERS_KEY);
       writer.StartObject();
-      for (std::map<std::string, Parameter>::iterator it = parameters.begin(); it != parameters.end(); it++) {
+      for (std::map<std::string, boost::any>::const_iterator it = parameters.begin(); it != parameters.end(); it++) {
         writer.String(it->first.c_str());
-        switch (it->second.type) {
-          case raw_8bit:
-            writer.Uint(it->second.value.i8_val);
-            break;
-          case raw_16bit:
-            writer.Uint(it->second.value.i16_val);
-            break;
-          case raw_32bit:
-            writer.Uint(it->second.value.i32_val);
-            break;
-          case raw_64bit:
-            writer.Uint64(it->second.value.i64_val);
-            break;
-          case raw_float:
-            writer.Double(it->second.value.float_val);
-            break;
+        const std::type_info &ti = it->second.type();
+        if (it->second.type() == typeid(unsigned long)) {
+          writer.Uint64(frame->get_meta_data().get_parameter<unsigned long>(it->first));
+        }
+        else if (it->second.type() == typeid(float)) {
+          writer.Double(frame->get_meta_data().get_parameter<float>(it->first));
+        } else {
+          writer.Null();
         }
       }
       writer.EndObject();
@@ -367,7 +359,7 @@ namespace FrameProcessor {
     memcpy(msg + sizeof(uint16_t), string_buffer.GetString(),
            header_size);
     // copy frame data
-    memcpy(msg + sizeof(uint16_t) + header_size, frame->get_data(),
+    memcpy(msg + sizeof(uint16_t) + header_size, frame->get_data_ptr(),
            frame->get_data_size());
     nbytes = message_size;
     return msg;
@@ -443,7 +435,7 @@ namespace FrameProcessor {
   void KafkaProducerPlugin::process_frame(boost::shared_ptr<Frame> frame)
   {
     LOG4CXX_TRACE(logger_, "Received a new frame...");
-    if (frame->get_dataset_name() == this->dataset_name_) {
+    if (frame->get_meta_data().get_dataset_name() == this->dataset_name_) {
       this->enqueue_frame(frame);
     }
     this->push(frame);

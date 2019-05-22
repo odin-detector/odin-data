@@ -6,6 +6,7 @@
  */
 
 #include <boost/filesystem.hpp>
+#include <boost/any.hpp>
 
 #include "Frame.h"
 #include "Acquisition.h"
@@ -77,6 +78,7 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
     if (check_frame_valid(frame)) {
 
       hsize_t frame_no = frame->get_frame_number();
+      std::string frame_dataset_name = frame->get_meta_data().get_dataset_name();
 
       size_t frame_offset = this->adjust_frame_offset(frame);
 
@@ -103,14 +105,14 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
 
       uint64_t outer_chunk_dimension = 1;
       if (dataset_defs_.size() != 0) {
-        outer_chunk_dimension = dataset_defs_.at(frame->get_dataset_name()).chunks[0];
+        outer_chunk_dimension = dataset_defs_.at(frame_dataset_name).chunks[0];
       }
 
       file->write_frame(*frame, frame_offset_in_file, outer_chunk_dimension);
 
       // Loops over all parameters, checking if there is a matching dataset and write to it if so
-      std::map<std::string, Parameter> & frame_parameters = frame->get_parameters();
-      std::map<std::string, Parameter>::iterator param_iter;
+      const std::map<std::string, boost::any> &frame_parameters = frame->get_meta_data().get_parameters();
+      std::map<std::string, boost::any>::const_iterator param_iter;
       for (param_iter = frame_parameters.begin(); param_iter != frame_parameters.end(); ++param_iter) {
         std::map<std::string, DatasetDefinition>::iterator dset_iter;
         dset_iter = dataset_defs_.find(param_iter->first);
@@ -157,8 +159,8 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
       // Check if this is a master frame (for multi dataset acquisitions)
       // or if no master frame has been defined. If either of these conditions
       // are true then increment the number of frames written.
-      if (master_frame_ == "" || master_frame_ == frame->get_dataset_name()) {
-        size_t dataset_frames = current_file->get_dataset_frames(frame->get_dataset_name());
+      if (master_frame_ == "" || master_frame_ == frame_dataset_name) {
+        size_t dataset_frames = current_file->get_dataset_frames(frame_dataset_name);
         frames_processed_++;
         LOG4CXX_TRACE(logger_, "Master frame processed");
         size_t current_file_index = current_file->get_file_index() / concurrent_processes_;
@@ -382,39 +384,42 @@ void Acquisition::stop_acquisition() {
 bool Acquisition::check_frame_valid(boost::shared_ptr<Frame> frame)
 {
   bool invalid = false;
-  DatasetDefinition dataset = dataset_defs_.at(frame->get_dataset_name());
-  if (frame->get_compression() >= 0 && frame->get_compression() != dataset.compression) {
+  const FrameMetaData frame_meta_data = frame->get_meta_data();
+  DatasetDefinition dataset = dataset_defs_.at(frame_meta_data.get_dataset_name());
+  CompressionType frame_compression_type = frame_meta_data.get_compression_type();
+  if (frame_compression_type >= 0 && frame_compression_type != dataset.compression) {
     std::stringstream ss;
-    ss << "Invalid frame: Frame has compression " << frame->get_compression() <<
+    ss << "Invalid frame: Frame has compression " << frame_compression_type <<
           ", expected " << dataset.compression <<
           " for dataset " << dataset.name <<
-          " (0: None, 1: LZ4, 2: BSLZ4, 3: Blosc)";
+          " (0: Unknown, 1: None, 2: LZ4, 3: BSLZ4, 4: Blosc)";
     last_error_ = ss.str();
     LOG4CXX_ERROR(logger_, last_error_);
     invalid = true;
   }
-  if (frame->get_data_type() >= 0 && frame->get_data_type() != dataset.data_type) {
+  DataType frame_data_type = frame_meta_data.get_data_type();
+  if (frame_data_type >= 0 && frame_data_type != dataset.data_type) {
     std::stringstream ss;
-    ss << "Invalid frame: Frame has data type " << frame->get_data_type() <<
+    ss << "Invalid frame: Frame has data type " << frame_data_type <<
        ", expected " << dataset.data_type <<
        " for dataset " << dataset.name <<
-       " (0: UINT8, 1: UINT16, 2: UINT32, 3: UINT64, 4: FLOAT)";
+       " (0: UNKNOWN, 1: UINT8, 2: UINT16, 3: UINT32, 4: UINT64, 5: FLOAT)";
     last_error_ = ss.str();
     LOG4CXX_ERROR(logger_, last_error_);
     invalid = true;
   }
-  if (frame->get_dimensions() != dataset.frame_dimensions) {
-    std::vector<unsigned long long> dimensions = frame->get_dimensions();
-    if (dimensions.size() >= 2 && dataset.frame_dimensions.size() >= 2) {
+  dimensions_t frame_dimensions = frame_meta_data.get_dimensions();
+  if (frame_dimensions != dataset.frame_dimensions) {
+    if (frame_dimensions.size() >= 2 && dataset.frame_dimensions.size() >= 2) {
       std::stringstream ss;
-      ss << "Invalid frame: Frame has dimensions [" << dimensions[0] << ", " << dimensions[1] <<
+      ss << "Invalid frame: Frame has dimensions [" << frame_dimensions[0] << ", " << frame_dimensions[1] <<
          "], expected [" << dataset.frame_dimensions[0] << ", " << dataset.frame_dimensions[1] <<
          "] for dataset " << dataset.name;
       last_error_ = ss.str();
       LOG4CXX_ERROR(logger_, last_error_);
-    } else if (dimensions.size() >= 1 && dataset.frame_dimensions.size() >= 1) {
+    } else if (frame_dimensions.size() >= 1 && dataset.frame_dimensions.size() >= 1) {
       std::stringstream ss;
-      ss << "Invalid frame: Frame has dimensions [" << dimensions[0]  <<
+      ss << "Invalid frame: Frame has dimensions [" << frame_dimensions[0]  <<
          "], expected [" << dataset.frame_dimensions[0] << "] for dataset " << dataset.name;
       last_error_ = ss.str();
       LOG4CXX_ERROR(logger_, last_error_);
@@ -527,7 +532,7 @@ boost::shared_ptr<HDF5File> Acquisition::get_file(size_t frame_offset) {
  */
 size_t Acquisition::adjust_frame_offset(boost::shared_ptr<Frame> frame) const {
   size_t frame_no = frame->get_frame_number();
-  int64_t frame_offset_adjustment = frame->get_frame_offset();
+  int64_t frame_offset_adjustment = frame->get_meta_data().get_frame_offset();
   size_t frame_offset = 0;
 
   LOG4CXX_DEBUG_LEVEL(2, logger_, "Raw frame number: " << frame_no << ", Frame offset adjustment: " << frame_offset_adjustment);

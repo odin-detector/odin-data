@@ -3,22 +3,34 @@
 #include <cstdlib>
 #include "rapidjson/document.h"
 #include "KafkaProducerPlugin.h"
+#include "DataBlockFrame.h"
+#define TEST_PARAM1_NAME "PARAM1"
+#define TEST_PARAM1_VALUE (0xabcde12345678912)
+#define TEST_PARAM2_NAME "PARAM2"
+#define TEST_PARAM2_VALUE (3.14159265)
+#define TEST_PARAM3_NAME "PARAM3"
+#define TEST_PARAM3_VALUE ('c')
+#define TOLERANCE (0.0001)
 
 class KafkaProducerPluginTestFixture {
 public:
   KafkaProducerPluginTestFixture()
   {
-    frame = boost::shared_ptr<FrameProcessor::Frame>(new FrameProcessor::Frame("data"));
+
     for (int i = 0; i < 12; i++) {
       test_data[i] = i + 1;
     }
-    test_dims.clear();
-    test_dims.push_back(3);
-    test_dims.push_back(4);
-    frame->set_frame_number(7);
-    frame->set_dimensions(test_dims);
-    frame->set_data_type(FrameProcessor::raw_16bit);
-    frame->copy_data(static_cast<void *>(test_data), sizeof(test_data));
+    dimensions_t test_dims(2); test_dims[0] = 3; test_dims[1] = 4;
+
+    FrameProcessor::FrameMetaData frame_meta(
+            7, "data", FrameProcessor::raw_16bit, "test", test_dims, FrameProcessor::no_compression
+    );
+    frame = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
+            new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void *>(test_data), 24));
+    frame->meta_data().set_parameter<uint64_t>(TEST_PARAM1_NAME, TEST_PARAM1_VALUE);
+    frame->meta_data().set_parameter<float>(TEST_PARAM2_NAME, TEST_PARAM2_VALUE);
+    // test for an unsupported type
+    frame->meta_data().set_parameter<char>(TEST_PARAM3_NAME, TEST_PARAM3_VALUE);
   }
 
   ~KafkaProducerPluginTestFixture() { }
@@ -83,6 +95,11 @@ BOOST_AUTO_TEST_CASE(KafkaProducerPluginCheckMessageHeader)
   for (int i = 0; i < test_dims.size(); i++) {
     BOOST_CHECK(test_dims[i] == json_dims[i].GetUint());
   }
+  BOOST_CHECK_EQUAL(document[MSG_HEADER_FRAME_PARAMETERS_KEY][TEST_PARAM1_NAME].GetUint64(), TEST_PARAM1_VALUE);
+  BOOST_CHECK_CLOSE(document[MSG_HEADER_FRAME_PARAMETERS_KEY][TEST_PARAM2_NAME].GetDouble(), TEST_PARAM2_VALUE,
+                    TOLERANCE);
+  // an unsupported type has null as value
+  BOOST_CHECK(document[MSG_HEADER_FRAME_PARAMETERS_KEY][TEST_PARAM3_NAME].IsNull());
   free(data);
 }
 
