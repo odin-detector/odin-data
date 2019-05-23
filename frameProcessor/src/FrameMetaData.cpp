@@ -22,8 +22,8 @@ namespace FrameProcessor {
     FrameMetaData::FrameMetaData() :
             frame_number_(-1),
             dataset_name_(""),
-            data_type_(raw_8bit),
-            compression_type_(no_compression),
+            data_type_(raw_unknown),
+            compression_type_(unknown_compression),
             frame_offset_(0),
             logger(log4cxx::Logger::getLogger("FP.FrameMetaData")) {
       logger->setLevel(log4cxx::Level::getAll());
