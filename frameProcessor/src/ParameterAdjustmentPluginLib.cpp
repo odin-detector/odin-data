@@ -1,11 +1,11 @@
 /*
- * UIDAdjustmentPluginLib.cpp
+ * ParameterAdjustmentPluginLib.cpp
  *
  *  Created on: 10 Aug 2018
- *      Author: vtu42223
+ *      Author: Matt Taylor
  */
 
-#include "UIDAdjustmentPlugin.h"
+#include "ParameterAdjustmentPlugin.h"
 #include "ClassLoader.h"
 
 namespace FrameProcessor
@@ -14,9 +14,8 @@ namespace FrameProcessor
    * Registration of this plugin through the ClassLoader.  This macro
    * registers the class without needing to worry about name mangling
    */
-  REGISTER(FrameProcessorPlugin, UIDAdjustmentPlugin, "UIDAdjustmentPlugin");
+  REGISTER(FrameProcessorPlugin, ParameterAdjustmentPlugin, "ParameterAdjustmentPlugin");
 
 } // namespace FrameReceiver
-
 
 

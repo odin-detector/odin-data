@@ -29,7 +29,7 @@ target_link_libraries(frameProcessorTest
         ${HDF5_LIBRARIES}
         ${HDF5HL_LIBRARIES}
         Hdf5Plugin
-        UIDAdjustmentPlugin
+        ParameterAdjustmentPlugin
         OffsetAdjustmentPlugin
         LiveViewPlugin
         SumPlugin
