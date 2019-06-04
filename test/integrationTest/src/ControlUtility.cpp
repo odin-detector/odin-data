@@ -7,31 +7,47 @@
 
 namespace FrameSimulatorTest {
 
-     ControlUtility::ControlUtility(boost::property_tree::ptree &ptree,
-                                    const std::string &command,
-                                    const std::string &process_entry,
-                                    const std::string &process_args_entry,
-                                    pid_t &process_pid,
-                                    LoggerPtr &logger) : process_pid_(process_pid), logger_(logger) {
+    /** ControlUtility constructor
+     *
+     * @param ptree - boost property_tree; parsed from initial ini file
+     * @param positional_arg - (possible) positional argument
+     * @param process_entry - property tree entry accessor for process path
+     * @param process_args_entry - property tree entry accessor for process arguments
+     * @param process_pid - pid of process
+     * @param logger - pointer to logger
+     */
+    ControlUtility::ControlUtility(boost::property_tree::ptree &ptree,
+                                   const std::string &positional_arg,
+                                   const std::string &process_entry,
+                                   const std::string &process_args_entry,
+                                   pid_t &process_pid,
+                                   LoggerPtr &logger) : process_pid_(process_pid), logger_(logger) {
 
-       PropertyTreeUtility::ini_to_command_args(ptree, process_args_entry, process_args_);
+      // Read process arguments from property tree into std::vector<std::string> process_args_
+      PropertyTreeUtility::ini_to_command_args(ptree, process_args_entry, process_args_);
 
-       process_path_ = ptree.get<std::string>(process_entry);
+      // Get path to process to run
+      process_path_ = ptree.get<std::string>(process_entry);
 
-       boost::filesystem::path path(process_path_);
+      boost::filesystem::path path(process_path_);
 
-       process_args_.insert(process_args_.begin(), command);
-       process_args_.insert(process_args_.begin(), path.filename().c_str());
+      // Prepend list of process arguments with <process> (deduced from path) and (optionally) <positional_arg>
+      process_args_.insert(process_args_.begin(), positional_arg);
+      process_args_.insert(process_args_.begin(), path.filename().c_str());
 
-     }
+    }
 
-     void ControlUtility::run_process(const bool &wait_child) {
+    /** Run the process
+     *
+     * @param wait_child - parent to wait for child process to finish
+     */
+    void ControlUtility::run_process(const bool &wait_child) {
 
-       process_pid_ = fork();
-       
-        if (process_pid_ > 0) {
+      process_pid_ = fork();
+
+      if (process_pid_ > 0) {
         LOG4CXX_DEBUG(logger_, "Launching " + process_path_ + "(" +
-                              boost::lexical_cast<std::string>(process_pid_) + ")");
+                               boost::lexical_cast<std::string>(process_pid_) + ")");
         if (wait_child) {
           wait(NULL);
         }
@@ -39,15 +55,15 @@ namespace FrameSimulatorTest {
 
       if (process_pid_ == 0) {
 
-        std::vector<char*> args;
-        for (int s =0; s < process_args_.size(); s++) {
-          args.push_back((char*)process_args_.at(s).data());
+        std::vector<char *> args;
+        for (int s = 0; s < process_args_.size(); s++) {
+          args.push_back((char *) process_args_.at(s).data());
         }
         args.push_back(NULL);
-      execv(process_path_.c_str(), args.data());
 
+        execv(process_path_.c_str(), args.data());
 
-     }
+      }
 
     }
 

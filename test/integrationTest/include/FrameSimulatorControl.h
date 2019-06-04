@@ -10,10 +10,15 @@ using namespace log4cxx;
 
 namespace FrameSimulatorTest {
 
+    /**
+     * This is a class for running a frameSimulator instance
+     *
+     */
     class FrameSimulatorControl : public ControlUtility {
 
     public:
 
+        /** Construct a FrameProcessorControl to run a frameSimulator */
         FrameSimulatorControl(const std::string &detector, boost::property_tree::ptree &ptree, pid_t &process_pid, LoggerPtr &logger);
 
     };

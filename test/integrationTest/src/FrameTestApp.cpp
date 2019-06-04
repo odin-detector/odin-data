@@ -75,8 +75,7 @@ int parse_arguments(int argc,
 
     // If the command-line help option was given, print help and exit
 
-    if (vm.count("help"))
-    {
+    if (vm.count("help")) {
       std::cout << "usage: FrameTest [options]" << std::endl << std::endl;
       std::cout << cmdline_options << std::endl;
       exit(1);
@@ -96,14 +95,13 @@ int parse_arguments(int argc,
       BasicConfigurator::configure();
     }
 
-    // Read configuration file
+    // Read configuration file; store as boost::property_tree::ptree
 
     if (vm.count("ini")) {
       std::string config_file = vm["ini"].as<std::string>();
       LOG4CXX_DEBUG(logger, "Reading config file " << config_file);
       boost::property_tree::ini_parser::read_ini(config_file, ptree);
-    }
-    else {
+    } else {
       LOG4CXX_ERROR(logger, "No configuration file specified. Exiting.");
       exit(1);
     }
@@ -127,29 +125,35 @@ int main(int argc, char *argv[]) {
 
     int status;
 
+    // Process IDs for receiver, processor and simulator processes
     pid_t receiver_pid = -1;
     pid_t processor_pid = -1;
     pid_t simulator_pid = -1;
 
+    // Read command arguments into pt
     boost::property_tree::ptree pt;
-
     po::variables_map vm;
     parse_arguments(argc, argv, vm, logger, pt);
 
+    // Create a receiver, processor and simulator with properties in pt
     FrameReceiverControl receiver(pt, receiver_pid, logger);
     FrameProcessorControl processor(pt, processor_pid, logger);
     FrameSimulatorControl simulator(pt.get<std::string>("Main.detector"), pt, simulator_pid, logger);
 
+    // Run each process; main program to wait for simulator to complete
     receiver.run_process();
     processor.run_process();
     simulator.run_process(true);
 
+    // Allow receiver and processor time to finish frame collection
     sleep(5);
 
+    // If receiver hasn't exited with error; interrupt
     if (receiver_pid != -1) {
       kill(receiver_pid, SIGINT);
     }
 
+    // If processor hasn't exited with error; interrupt
     if (processor_pid != -1) {
       kill(processor_pid, SIGINT);
     }
