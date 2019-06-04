@@ -4,9 +4,6 @@
 #include <vector>
 #include <signal.h>
 
-#define BOOST_TEST_MODULE "FrameUnitTests"
-#define BOOST_TEST_MAIN
-
 #include <boost/program_options.hpp>
 
 #include <boost/shared_ptr.hpp>
@@ -139,21 +136,22 @@ int main(int argc, char *argv[]) {
     po::variables_map vm;
     parse_arguments(argc, argv, vm, logger, pt);
 
-    FrameReceiverControl::launch_receiver(pt, receiver_pid, logger);
-    FrameProcessorControl::launch_processor(pt, processor_pid, logger);
-    FrameSimulatorControl::launch_simulator(pt, simulator_pid, logger);
+    FrameReceiverControl receiver(pt, receiver_pid, logger);
+    FrameProcessorControl processor(pt, processor_pid, logger);
+    FrameSimulatorControl simulator(pt.get<std::string>("Main.detector"), pt, simulator_pid, logger);
 
-    // Allow time for receiver and processor to finish
+    receiver.run_process();
+    processor.run_process();
+    simulator.run_process(true);
 
-    //sleep(30);
+    sleep(5);
 
     if (receiver_pid != -1) {
-
-      //kill(receiver_pid, SIGINT);
+      kill(receiver_pid, SIGINT);
     }
 
     if (processor_pid != -1) {
-      //kill(processor_pid, SIGINT);
+      kill(processor_pid, SIGINT);
     }
 
   } catch (const std::exception &e) {

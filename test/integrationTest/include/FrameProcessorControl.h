@@ -4,15 +4,17 @@
 #include <boost/property_tree/ptree.hpp>
 #include <log4cxx/logger.h>
 
+#include "ControlUtility.h"
+
 using namespace log4cxx;
 
 namespace FrameSimulatorTest {
 
-    class FrameProcessorControl {
+    class FrameProcessorControl : public ControlUtility {
 
     public:
 
-        static void launch_processor(boost::property_tree::ptree &ptree, pid_t &pid, LoggerPtr &logger);
+        FrameProcessorControl(boost::property_tree::ptree &ptree, pid_t &process_pid, LoggerPtr &logger);
 
     };
 

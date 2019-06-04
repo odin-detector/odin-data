@@ -4,15 +4,17 @@
 #include <boost/property_tree/ptree.hpp>
 #include <log4cxx/logger.h>
 
+#include "ControlUtility.h"
+
 using namespace log4cxx;
 
 namespace FrameSimulatorTest {
 
-    class FrameSimulatorControl {
+    class FrameSimulatorControl : public ControlUtility {
 
     public:
 
-        static void launch_simulator(boost::property_tree::ptree &ptree, pid_t &pid, LoggerPtr &logger);
+        FrameSimulatorControl(const std::string &detector, boost::property_tree::ptree &ptree, pid_t &process_pid, LoggerPtr &logger);
 
     };
 
