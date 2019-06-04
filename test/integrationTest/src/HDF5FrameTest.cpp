@@ -9,7 +9,6 @@
 
 namespace FrameSimulatorTest {
 
-
     class HDF5FrameTest {
 
     public:
@@ -38,7 +37,7 @@ namespace FrameSimulatorTest {
 
     BOOST_FIXTURE_TEST_SUITE(HDF5FrameUnitTest, HDF5FrameTest);
 
-    BOOST_AUTO_TEST_CASE( HDF5Frame_size ) {
+        BOOST_AUTO_TEST_CASE(HDF5Frame_size) {
 
           hid_t filetype = H5Dget_type(dataset);
           hid_t space = H5Dget_space(dataset);
@@ -53,7 +52,7 @@ namespace FrameSimulatorTest {
           BOOST_CHECK_EQUAL(dims[1], ptree.get<int>("Test.width"));
           BOOST_CHECK_EQUAL(dims[2], ptree.get<int>("Test.height"));
 
-    };
+        };
 
     BOOST_AUTO_TEST_SUITE_END();
 
