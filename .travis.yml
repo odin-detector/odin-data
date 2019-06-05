@@ -23,6 +23,7 @@ matrix:
     - bash .travis-install-hdf5.sh
     - bash .travis-install-blosc.sh
     - bash .travis-install-librdkafka.sh
+    - bash .travis-install-log4cxx.sh
     cache:
       directories:
       - "$HOME/hdf5-1.10.1"
@@ -39,9 +40,14 @@ install:
 - make install
 - HDF5_DIR=$HDF5_ROOT pip install --user h5py
 - pip install --user -r $PYTHONPATH/requirements-travis.txt
+- cd ..
+- bash .travis-install-excalibur.sh
+- cd build
 script:
 - bin/frameReceiverTest --log_level=all
 - bin/frameProcessorTest --log_level=all
+- bin/odinData
+
 - ls -R $INSTALL_PREFIX
 notifications:
   slack:
