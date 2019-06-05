@@ -14,8 +14,7 @@ namespace FrameProcessor
 /**
  * The constructor sets up logging used within the class.
  */
-ParameterAdjustmentPlugin::ParameterAdjustmentPlugin() :
-    first_frame_number_(DEFAULT_FIRST_FRAME)
+ParameterAdjustmentPlugin::ParameterAdjustmentPlugin()
 {
   // Setup logging for the class
   logger_ = Logger::getLogger("FP.ParameterAdjustmentPlugin");
@@ -40,20 +39,42 @@ ParameterAdjustmentPlugin::~ParameterAdjustmentPlugin()
  */
 void ParameterAdjustmentPlugin::process_frame(boost::shared_ptr<Frame> frame)
 {
-  if (frame->get_frame_number() == first_frame_number_)
-  {
-    // If at first frame, set the current adjustments to the the configured ones to apply from now on
-    LOG4CXX_DEBUG(logger_, "Setting current parameter adjustments to configured values");
-    current_parameter_adjustments_ = configured_parameter_adjustments_;
-  }
-
   // Apply any parameter adjustments
-  if (current_parameter_adjustments_.size() != 0)
+  if (parameter_adjustments_.size() != 0)
   {
     std::map<std::string, int64_t>::iterator iter;
-    for (iter = current_parameter_adjustments_.begin(); iter != current_parameter_adjustments_.end(); ++iter) {
-      uint64_t param_value = frame->get_frame_number() + iter->second;
-      frame->meta_data().set_parameter<uint64_t>(iter->first, param_value);
+    for (iter = parameter_adjustments_.begin(); iter != parameter_adjustments_.end(); ++iter) {
+      try {
+        // If no input parameter specified, add to the frame id, otherwise add to the the input parameter
+        if (parameter_inputs_.find(iter->first) == parameter_inputs_.end() || parameter_inputs_[iter->first] == "")
+        {
+          uint64_t param_value = frame->get_frame_number() + iter->second;
+          frame->meta_data().set_parameter<uint64_t>(iter->first, param_value);
+        }
+        else
+        {
+          std::string input_parameter = parameter_inputs_[iter->first];
+          if (frame->meta_data().has_parameter(input_parameter))
+          {
+            uint64_t param_value = frame->meta_data().get_parameter<uint64_t>(input_parameter) + iter->second;
+            frame->meta_data().set_parameter<uint64_t>(iter->first, param_value);
+          }
+          else
+          {
+            std::stringstream ss;
+            ss << "Unable to get parameter " << input_parameter << " to use as input parameter for adjustment";
+            this->set_error(ss.str());
+            LOG4CXX_WARN(logger_, ss.str());
+          }
+        }
+      }
+      catch (std::exception &e) {
+        std::stringstream ss;
+        ss << "Error setting parameter adjustment for " << iter->first;
+        this->set_error(ss.str());
+        LOG4CXX_WARN(logger_, ss.str());
+      }
+
     }
   }
 
@@ -72,12 +93,6 @@ void ParameterAdjustmentPlugin::process_frame(boost::shared_ptr<Frame> frame)
 void ParameterAdjustmentPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
   try {
-    // Check if we are setting the first frame number
-    if (config.has_param(FIRST_FRAME_CONFIG)) {
-      first_frame_number_ = (uint64_t) config.get_param<uint64_t>(FIRST_FRAME_CONFIG);
-      LOG4CXX_INFO(logger_, "Setting first frame number to " << first_frame_number_);
-    }
-
     // Check if we are setting the parameter adjustment values
     if (config.has_param(PARAMETER_NAME_CONFIG)) {
       OdinData::IpcMessage parameter_config(
@@ -86,15 +101,28 @@ void ParameterAdjustmentPlugin::configure(OdinData::IpcMessage& config, OdinData
 
       if (parameter_names.size() != 0)
       {
-        for (std::vector<std::string>::iterator iter = parameter_names.begin(); iter != parameter_names.end(); ++iter) {
+        for (std::vector<std::string>::iterator iter = parameter_names.begin();
+             iter != parameter_names.end(); ++iter) {
           std::string parameter_name = *iter;
           OdinData::IpcMessage paramConfig(parameter_config.get_param<const rapidjson::Value &>(parameter_name));
+
           LOG4CXX_INFO(logger_, "Setting adjustment for parameter " << parameter_name << " to " << (int64_t) paramConfig.get_param<int64_t>(PARAMETER_ADJUSTMENT_CONFIG));
-          configured_parameter_adjustments_[parameter_name] = (int64_t) paramConfig.get_param<int64_t>(PARAMETER_ADJUSTMENT_CONFIG);
+          parameter_adjustments_[parameter_name] = (int64_t) paramConfig.get_param<int64_t>(PARAMETER_ADJUSTMENT_CONFIG);
+
+          if (paramConfig.has_param(PARAMETER_INPUT_CONFIG))
+          {
+            LOG4CXX_INFO(logger_, "Setting input for parameter " << parameter_name << " to " << paramConfig.get_param<std::string>(PARAMETER_INPUT_CONFIG));
+            parameter_inputs_[parameter_name] = paramConfig.get_param<std::string>(PARAMETER_INPUT_CONFIG);
+          }
+          else
+          {
+            parameter_inputs_[parameter_name] = "";
+          }
         }
       } else {
         LOG4CXX_INFO(logger_, "Clearing all parameter adjustments");
-        configured_parameter_adjustments_.clear();
+        parameter_adjustments_.clear();
+        parameter_inputs_.clear();
       }
     }
   }
@@ -114,11 +142,14 @@ void ParameterAdjustmentPlugin::configure(OdinData::IpcMessage& config, OdinData
  */
 void ParameterAdjustmentPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
-  reply.set_param(get_name() + "/" + FIRST_FRAME_CONFIG, first_frame_number_);
-
   std::map<std::string, int64_t>::iterator iter;
-  for (iter = configured_parameter_adjustments_.begin(); iter != configured_parameter_adjustments_.end(); ++iter) {
+  for (iter = parameter_adjustments_.begin(); iter != parameter_adjustments_.end(); ++iter) {
     reply.set_param(get_name() + "/" + PARAMETER_NAME_CONFIG + "/" + iter->first + "/" + PARAMETER_ADJUSTMENT_CONFIG, (int64_t)iter->second);
+  }
+
+  std::map<std::string, std::string>::iterator input_iter;
+  for (input_iter = parameter_inputs_.begin(); input_iter != parameter_inputs_.end(); ++input_iter) {
+    reply.set_param(get_name() + "/" + PARAMETER_NAME_CONFIG + "/" + input_iter->first + "/" + PARAMETER_INPUT_CONFIG, input_iter->second);
   }
 }
 

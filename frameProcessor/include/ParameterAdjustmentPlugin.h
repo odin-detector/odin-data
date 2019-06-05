@@ -2,7 +2,7 @@
  * ParameterAdjustmentPlugin.h
  *
  *  Created on: 6 Aug 2018
- *      Author: Matt Taylor
+ *      Author: vtu42223
  */
 
 #ifndef FRAMEPROCESSOR_PARAMETERADJUSTMENTPLUGIN_H_
@@ -22,8 +22,8 @@ namespace FrameProcessor
 {
 const int DEFAULT_FIRST_FRAME = 0;
 static const std::string PARAMETER_NAME_CONFIG = "parameter";
+static const std::string PARAMETER_INPUT_CONFIG = "input";
 static const std::string PARAMETER_ADJUSTMENT_CONFIG = "adjustment";
-static const std::string FIRST_FRAME_CONFIG = "first_frame_number";
 
 /**
  * This plugin class alters parameters named in a list by a configured amount added on
@@ -48,12 +48,10 @@ private:
 
   /** Pointer to logger */
   LoggerPtr logger_;
-  /** Parameter adjustments currently in use **/
-  std::map<std::string, int64_t> current_parameter_adjustments_;
-  /** Parameter adjustments configured to be used from next first frame onwards **/
-  std::map<std::string, int64_t> configured_parameter_adjustments_;
-  /** Frame number of the first frame in an acquisition from the detector **/
-  uint64_t first_frame_number_;
+  /** Map of parameter adjustments to use for each parameter **/
+  std::map<std::string, int64_t> parameter_adjustments_;
+  /** Map of input parameters to use for each parameter **/
+  std::map<std::string, std::string> parameter_inputs_;
 };
 
 } /* namespace FrameProcessor */

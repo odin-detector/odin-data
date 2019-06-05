@@ -670,12 +670,7 @@ BOOST_AUTO_TEST_CASE( AddParameter )
   cfg.set_param(FrameProcessor::PARAMETER_NAME_CONFIG + "/UID/" + FrameProcessor::PARAMETER_ADJUSTMENT_CONFIG, 4);
   plugin.configure(cfg, reply);
 
-  // Check the offset is not applied as not seen first frame since configuring
-  frame->set_frame_number(28);
-  plugin.process_frame(frame);
-  BOOST_CHECK_EQUAL(false, frame->get_meta_data().has_parameter("UID"));
-
-  // Check the offset is applied and the parameter exists when a new first frame is now sent
+  // Check the offset is applied and the parameter exists when a frame is sent
   frame->set_frame_number(0);
   plugin.process_frame(frame);
   BOOST_CHECK_EQUAL(4, frame->get_meta_data().get_parameter<uint64_t>("UID"));
@@ -685,22 +680,11 @@ BOOST_AUTO_TEST_CASE( AddParameter )
   plugin.process_frame(frame);
   BOOST_CHECK_EQUAL(14, frame->get_meta_data().get_parameter<uint64_t>("UID"));
 
-  // Configure a start frame of 1
-  cfg.set_param(FrameProcessor::FIRST_FRAME_CONFIG, 1);
+  // Configure a new offset
   cfg.set_param(FrameProcessor::PARAMETER_NAME_CONFIG + "/UID/" + FrameProcessor::PARAMETER_ADJUSTMENT_CONFIG, 33);
   plugin.configure(cfg, reply);
 
-  // Check the new offset is not applied when not on frame 0
-  frame->set_frame_number(12);
-  plugin.process_frame(frame);
-  BOOST_CHECK_EQUAL(16, frame->get_meta_data().get_parameter<uint64_t>("UID"));
-
-  // Check the new offset is not applied when on frame 0
-  frame->set_frame_number(0);
-  plugin.process_frame(frame);
-  BOOST_CHECK_EQUAL(4, frame->get_meta_data().get_parameter<uint64_t>("UID"));
-
-  // Check the new offset is applied when on frame 1
+  // Check the new offset is applied
   frame->set_frame_number(1);
   plugin.process_frame(frame);
   BOOST_CHECK_EQUAL(34, frame->get_meta_data().get_parameter<uint64_t>("UID"));
@@ -711,11 +695,10 @@ BOOST_AUTO_TEST_CASE( AddParameter )
   BOOST_CHECK_EQUAL(35, frame->get_meta_data().get_parameter<uint64_t>("UID"));
 
   // Configure a negative adjustment value
-  cfg.set_param(FrameProcessor::FIRST_FRAME_CONFIG, 3);
   cfg.set_param(FrameProcessor::PARAMETER_NAME_CONFIG + "/UID/" + FrameProcessor::PARAMETER_ADJUSTMENT_CONFIG, -2);
   plugin.configure(cfg, reply);
 
-  // Check the new offset is applied on frame 3
+  // Check the new offset is applied ok
   frame->set_frame_number(3);
   plugin.process_frame(frame);
   BOOST_CHECK_EQUAL(1, frame->get_meta_data().get_parameter<uint64_t>("UID"));
@@ -829,7 +812,7 @@ BOOST_AUTO_TEST_CASE( AdjustOffset )
 
   // Configure a start frame of 1
   cfg.set_param(FrameProcessor::OFFSET_ADJUSTMENT_CONFIG, 33);
-  cfg.set_param(FrameProcessor::FIRST_FRAME_CONFIG, 1);
+  cfg.set_param(FrameProcessor::FIRST_FRAME_OFFSET_CONFIG, 1);
   plugin.configure(cfg, reply);
 
   // Check the new offset is not applied when not on frame 0
