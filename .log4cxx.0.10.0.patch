@@ -1,0 +1,126 @@
+diff -ur apache-log4cxx-0.10.0/src/examples/cpp/console.cpp apache-log4cxx-0.10.0-patched/src/examples/cpp/console.cpp
+--- apache-log4cxx-0.10.0/src/examples/cpp/console.cpp	2008-03-31 23:34:52.000000000 +0100
++++ apache-log4cxx-0.10.0-patched/src/examples/cpp/console.cpp	2015-01-16 09:38:31.202020220 +0000
+@@ -15,6 +15,8 @@
+  * limitations under the License.
+  */
+ 
++#include <cstdio>
++#include <cstring>
+ #include <stdlib.h>
+ #include <log4cxx/logger.h>
+ #include <log4cxx/consoleappender.h>
+diff -ur apache-log4cxx-0.10.0/src/main/cpp/inputstreamreader.cpp apache-log4cxx-0.10.0-patched/src/main/cpp/inputstreamreader.cpp
+--- apache-log4cxx-0.10.0/src/main/cpp/inputstreamreader.cpp	2008-03-31 23:34:09.000000000 +0100
++++ apache-log4cxx-0.10.0-patched/src/main/cpp/inputstreamreader.cpp	2015-01-16 09:38:31.206020297 +0000
+@@ -15,6 +15,7 @@
+  * limitations under the License.
+  */
+ 
++#include <cstring>
+ #include <log4cxx/logstring.h>
+ #include <log4cxx/helpers/inputstreamreader.h>
+ #include <log4cxx/helpers/exception.h>
+diff -ur apache-log4cxx-0.10.0/src/main/cpp/socketoutputstream.cpp apache-log4cxx-0.10.0-patched/src/main/cpp/socketoutputstream.cpp
+--- apache-log4cxx-0.10.0/src/main/cpp/socketoutputstream.cpp	2008-03-31 23:34:09.000000000 +0100
++++ apache-log4cxx-0.10.0-patched/src/main/cpp/socketoutputstream.cpp	2015-01-16 09:38:31.211020392 +0000
+@@ -15,6 +15,7 @@
+  * limitations under the License.
+  */
+ 
++#include <cstring>
+ #include <log4cxx/logstring.h>
+ #include <log4cxx/helpers/socketoutputstream.h>
+ #include <log4cxx/helpers/socket.h>
+diff -ur apache-log4cxx-0.10.0/src/main/cpp/syslogappender.cpp apache-log4cxx-0.10.0-patched/src/main/cpp/syslogappender.cpp
+--- apache-log4cxx-0.10.0/src/main/cpp/syslogappender.cpp	2008-03-31 23:34:09.000000000 +0100
++++ apache-log4cxx-0.10.0-patched/src/main/cpp/syslogappender.cpp	2015-01-16 09:38:54.053453604 +0000
+@@ -323,6 +323,17 @@
+                 delete this->sw;
+                 this->sw = 0;
+         }
++        LogString slHost = syslogHost1;
++        int slHostPort = -1;
++
++        LogString::size_type colonPos = 0;
++        colonPos = slHost.rfind(':');
++        if (colonPos != LogString::npos)
++        {
++            slHostPort = StringHelper::toInt(slHost.substr(colonPos+1));
++            // Erase the :port part of the host name
++            slHost.erase( colonPos );
++        }
+ 
+ // On the local host, we can directly use the system function 'syslog'
+ // if it is available (cf. append)
+@@ -330,9 +341,11 @@
+         if (syslogHost1 != LOG4CXX_STR("localhost") && syslogHost1 != LOG4CXX_STR("127.0.0.1")
+         && !syslogHost1.empty())
+ #endif
+-                this->sw = new SyslogWriter(syslogHost1);
++                if (slHostPort >= 0) this->sw = new SyslogWriter(slHost, slHostPort);
++                else this->sw = new SyslogWriter(slHost);
+ 
+-        this->syslogHost = syslogHost1;
++        this->syslogHost = slHost;
++        this->syslogHostPort = slHostPort;
+ }
+ 
+ 
+diff -ur apache-log4cxx-0.10.0/src/main/cpp/syslogwriter.cpp apache-log4cxx-0.10.0-patched/src/main/cpp/syslogwriter.cpp
+--- apache-log4cxx-0.10.0/src/main/cpp/syslogwriter.cpp	2008-03-31 23:34:09.000000000 +0100
++++ apache-log4cxx-0.10.0-patched/src/main/cpp/syslogwriter.cpp	2015-01-16 09:38:54.059453718 +0000
+@@ -26,13 +26,11 @@
+ #include <log4cxx/helpers/datagrampacket.h>
+ #include <log4cxx/helpers/transcoder.h>
+ 
+-#define SYSLOG_PORT 514
+-
+ using namespace log4cxx;
+ using namespace log4cxx::helpers;
+ 
+-SyslogWriter::SyslogWriter(const LogString& syslogHost1)
+-: syslogHost(syslogHost1)
++SyslogWriter::SyslogWriter(const LogString& syslogHost1, int syslogHostPort1)
++: syslogHost(syslogHost1), syslogHostPort(syslogHostPort1)
+ {
+    try
+    {
+@@ -61,7 +59,7 @@
+ 
+       DatagramPacketPtr packet( 
+           new DatagramPacket((void*) data.data(), data.length(),
+-                             address, SYSLOG_PORT));
++                             address, syslogHostPort));
+ 
+       ds->send(packet);
+    }
+diff -ur apache-log4cxx-0.10.0/src/main/include/log4cxx/helpers/syslogwriter.h apache-log4cxx-0.10.0-patched/src/main/include/log4cxx/helpers/syslogwriter.h
+--- apache-log4cxx-0.10.0/src/main/include/log4cxx/helpers/syslogwriter.h	2008-03-31 23:34:26.000000000 +0100
++++ apache-log4cxx-0.10.0-patched/src/main/include/log4cxx/helpers/syslogwriter.h	2015-01-16 09:38:54.065453832 +0000
+@@ -34,11 +34,13 @@
+                 class LOG4CXX_EXPORT SyslogWriter
+                 {
+                 public:
+-                        SyslogWriter(const LogString& syslogHost);
++                        #define SYSLOG_PORT 514
++                        SyslogWriter(const LogString& syslogHost, int syslogHostPort = SYSLOG_PORT);
+                         void write(const LogString& string);
+ 
+                 private:
+                         LogString syslogHost;
++                        int syslogHostPort;
+                         InetAddressPtr address;
+                         DatagramSocketPtr ds;
+                 };
+diff -ur apache-log4cxx-0.10.0/src/main/include/log4cxx/net/syslogappender.h apache-log4cxx-0.10.0-patched/src/main/include/log4cxx/net/syslogappender.h
+--- apache-log4cxx-0.10.0/src/main/include/log4cxx/net/syslogappender.h	2008-03-31 23:34:40.000000000 +0100
++++ apache-log4cxx-0.10.0-patched/src/main/include/log4cxx/net/syslogappender.h	2015-01-16 09:38:54.070453927 +0000
+@@ -129,6 +129,7 @@
+                         bool facilityPrinting;
+                         helpers::SyslogWriter * sw;
+                         LogString syslogHost;
++                        int syslogHostPort;
+                 private:
+                         SyslogAppender(const SyslogAppender&);
+                         SyslogAppender& operator=(const SyslogAppender&);
