@@ -1,5 +1,5 @@
-#ifndef FRAMESIMULATOR_PCAPFRAMESIMULATORPLUGIN_H
-#define FRAMESIMULATOR_PCAPFRAMESIMULATORPLUGIN_H
+#ifndef FRAMESIMULATOR_FRAMESIMULATORPLUGINUDP_H
+#define FRAMESIMULATOR_FRAMESIMULATORPLUGINUDP_H
 
 #include <log4cxx/logger.h>
 #include <log4cxx/basicconfigurator.h>
@@ -19,19 +19,21 @@ using namespace log4cxx::helpers;
 
 namespace FrameSimulator {
 
-    /** pcapFrameSimulatorPlugin
+    /** FrameSimulatorPluginUDP
      *
-     *  Any frame simulator plugin which reads pcap files should inherit from this class
+     *  Any frame simulator plugin which reads pcap or creates dummy frames to send over a socket should inherit from this class
      *  not FrameSimulatorPlugin
-     *  'extract_frames' is called on setup: this takes the content of the pcap file and organises it in frames to store
-     *  'replay_frames' is called by simulate: this will replay the stored frames
+     *  'prepare_packets' (and then 'extract_frames') is called on setup if a pcap file is specified: this takes the
+     *  content of the pcap file and organises it in frames to store
+     *  'create_frames' is called on setup if no pcap file is specified
+     *  'replay_frames' is called by simulate: this will replay the created/stored frames
      */
-    class pcapFrameSimulatorPlugin : public FrameSimulatorPlugin {
+    class FrameSimulatorPluginUDP : public FrameSimulatorPlugin {
 
     public:
 
-        pcapFrameSimulatorPlugin();
-        ~pcapFrameSimulatorPlugin();
+        FrameSimulatorPluginUDP();
+        ~FrameSimulatorPluginUDP();
 
         virtual void populate_options(po::options_description& config);
 
@@ -41,11 +43,18 @@ namespace FrameSimulator {
     protected:
 
         static void pkt_callback(u_char *user, const pcap_pkthdr *hdr, const u_char *buffer);
-
-        void prepare_packets(const struct pcap_pkthdr *header, const u_char *buffer);
         int send_packet(const Packet& packet, const int& frame) const;
 
+        /** Extract frames from pcap read data **/
         virtual void extract_frames(const u_char* data, const int& size) = 0;
+
+        /** Prepare frames from pcap header and data buffer **/
+        void prepare_packets(const struct pcap_pkthdr *header, const u_char *buffer);
+
+        /** Create dummy frames **/
+        virtual void create_frames(const int &num_frames) = 0;
+
+        /** Replay the extracted or created frames **/
         virtual void replay_frames() = 0;
 
         //Packet gap: insert pause between packet_gap packets
@@ -70,8 +79,11 @@ namespace FrameSimulator {
         /** Pointer to logger **/
         LoggerPtr logger_;
 
+        /** Replay frames from pcap file **/
+        bool pcap_playback_;
+
     };
 
 }
 
-#endif //FRAMESIMULATOR_PCAPFRAMESIMULATORPLUGIN_H
+#endif //FRAMESIMULATOR_FRAMESIMULATORPLUGINUDP_H

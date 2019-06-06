@@ -14,6 +14,9 @@ namespace FrameSimulatorTest {
 
     public:
 
+        /** Replace environment variables ${EXAMPLE} in a string; not recursive */
+        static void expandEnvVars(std::string& original);
+
         /** Convert ini file derived ptree contents from section to std::vector<std::string> */
         static void ini_to_command_args(boost::property_tree::ptree &ptree, const std::string &section, std::vector<std::string>& args);
 
