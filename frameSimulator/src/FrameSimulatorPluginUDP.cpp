@@ -1,4 +1,4 @@
-#include "pcapFrameSimulatorPlugin.h"
+#include "FrameSimulatorPluginUDP.h"
 
 #include<string.h>
 #include<unistd.h>
@@ -8,15 +8,15 @@
 #include <netinet/udp.h>
 #include <netinet/ip.h>
 
-#include "pcapFrameSimulatorOptions.h"
+#include "FrameSimulatorOptionsUDP.h"
 
 namespace FrameSimulator {
 
-    /** Construct a pcapFrameSimulatorPlugin
+    /** Construct a FrameSimulatorPluginUDP
      * setup an instance of the logger
      * initialises curr_frame and curr_port_index for handling assignment of frames to appropriate ports
      */
-    pcapFrameSimulatorPlugin::pcapFrameSimulatorPlugin() : FrameSimulatorPlugin() {
+    FrameSimulatorPluginUDP::FrameSimulatorPluginUDP() : FrameSimulatorPlugin() {
 
         // Setup logging for the class
         logger_ = Logger::getLogger("FS.pcapFrameSimulatorPlugin");
@@ -35,7 +35,7 @@ namespace FrameSimulator {
      *
      * Derived plugins must additionally call this base method even if overridden
      */
-    bool pcapFrameSimulatorPlugin::setup(const po::variables_map &vm) {
+    bool FrameSimulatorPluginUDP::setup(const po::variables_map &vm) {
 
         // Call base class setup method: extract common options (ports, number of frames etc.)
         FrameSimulatorPlugin::setup(vm);
@@ -48,10 +48,13 @@ namespace FrameSimulator {
             return false;
         }
 
-        // PCAP file is a required argument
-        if (!opt_pcapfile.is_specified(vm)) {
-            LOG4CXX_ERROR(logger_, "pcap file is not specified");
-            return false;
+        pcap_playback_ = opt_pcapfile.is_specified(vm);
+
+        if (!pcap_playback_) {
+            LOG4CXX_DEBUG(logger_, "pcap file is not specified: simulating packets");
+        }
+        else {
+            LOG4CXX_DEBUG(logger_, "Replaying pcap file")
         }
 
         // Optional arguments
@@ -85,16 +88,20 @@ namespace FrameSimulator {
             m_addrs.push_back(addr);
         }
 
-        // Open a handle to the pcap file
-        m_handle = pcap_open_offline(opt_pcapfile.get_val(vm).c_str(), errbuf);
+        if (pcap_playback_) {
+            // Open a handle to the pcap file
+            m_handle = pcap_open_offline(opt_pcapfile.get_val(vm).c_str(), errbuf);
 
-        if (m_handle == NULL) {
-            LOG4CXX_ERROR(logger_, "pcap open failed: " << errbuf);
-            return false;
+            if (m_handle == NULL) {
+                LOG4CXX_ERROR(logger_, "pcap open failed: " << errbuf);
+                return false;
+            }
+
+            // Loop over the pcap file to read the frames for replay
+            pcap_loop(m_handle, -1, pkt_callback, reinterpret_cast<u_char *>(this));
+        } else {
+            create_frames(replay_numframes.get());
         }
-
-        // Loop over the pcap file to read the frames for replay
-        pcap_loop(m_handle, -1, pkt_callback, reinterpret_cast<u_char *>(this));
 
         return true;
 
@@ -106,7 +113,7 @@ namespace FrameSimulator {
      * calls extract_frames which should be implemented by each parent class to extract
      * frames of the appropriate type
      */
-    void pcapFrameSimulatorPlugin::prepare_packets(const struct pcap_pkthdr *header, const u_char *buffer) {
+    void FrameSimulatorPluginUDP::prepare_packets(const struct pcap_pkthdr *header, const u_char *buffer) {
 
         LOG4CXX_DEBUG(logger_, "Preparing packet(s)");
 
@@ -128,7 +135,7 @@ namespace FrameSimulator {
      * /param[in] frame to which packet belongs
      * this ensures each frame is sent to the appropriate destination port
      */
-    int pcapFrameSimulatorPlugin::send_packet(const Packet &packet, const int &frame) const {
+    int FrameSimulatorPluginUDP::send_packet(const Packet &packet, const int &frame) const {
         if (frame != curr_frame) {
             curr_port_index = (curr_port_index + 1 < m_addrs.size()) ? curr_port_index + 1 : 0;
             curr_frame = frame;
@@ -142,7 +149,7 @@ namespace FrameSimulator {
      * /param[out] config - boost::program_options::options_description to populate with
      * appropriate plugin command line options
      */
-    void pcapFrameSimulatorPlugin::populate_options(po::options_description &config) {
+    void FrameSimulatorPluginUDP::populate_options(po::options_description &config) {
 
         FrameSimulatorPlugin::populate_options(config);
 
@@ -157,7 +164,7 @@ namespace FrameSimulator {
     /** Class destructor
      * closes socket
      */
-    pcapFrameSimulatorPlugin::~pcapFrameSimulatorPlugin() {
+    FrameSimulatorPluginUDP::~FrameSimulatorPluginUDP() {
 
         close(m_socket);
 
@@ -169,15 +176,15 @@ namespace FrameSimulator {
      * /param[in] hdr - pcap header
      * /param[in] buffer pointer to first byte of chunk of data containing the entire packet
      */
-    void pcapFrameSimulatorPlugin::pkt_callback(u_char *user, const pcap_pkthdr *hdr, const u_char *buffer) {
-        pcapFrameSimulatorPlugin *replayer = reinterpret_cast<pcapFrameSimulatorPlugin *>(user);
+    void FrameSimulatorPluginUDP::pkt_callback(u_char *user, const pcap_pkthdr *hdr, const u_char *buffer) {
+        FrameSimulatorPluginUDP *replayer = reinterpret_cast<FrameSimulatorPluginUDP *>(user);
         replayer->prepare_packets(hdr, buffer);
     }
 
     /** Simulate detector by replaying frames
      *
      */
-    void pcapFrameSimulatorPlugin::simulate() {
+    void FrameSimulatorPluginUDP::simulate() {
 
         this->replay_frames();
 

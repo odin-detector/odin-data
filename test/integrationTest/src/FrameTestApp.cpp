@@ -2,6 +2,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <utility>
 #include <signal.h>
 
 #include <boost/program_options.hpp>
@@ -146,7 +147,7 @@ int main(int argc, char *argv[]) {
     simulator.run_process(true);
 
     // Allow receiver and processor time to finish frame collection
-    sleep(5);
+    sleep(20);
 
     // If receiver hasn't exited with error; interrupt
     if (receiver_pid != -1) {

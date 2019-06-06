@@ -28,6 +28,7 @@ namespace FrameSimulatorTest {
 
       // Get path to process to run
       process_path_ = ptree.get<std::string>(process_entry);
+      PropertyTreeUtility::expandEnvVars(process_path_);
 
       boost::filesystem::path path(process_path_);
 
