@@ -2,6 +2,7 @@
 
 #include <boost/regex.hpp>
 #include <utility>
+#include <ios>
 
 #include <boost/foreach.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -37,8 +38,22 @@ namespace FrameSimulatorTest {
               args.push_back("--" + vc.first);
               PropertyTreeUtility::expandEnvVars(vc.second.data());
               args.push_back(vc.second.data());
-            }
+              if (vc.first == "json_file") {
+                std::string json_file = vc.second.data();
+                std::ifstream file(json_file.c_str());
+                std::string json;
+                std::string new_json;
+                while(std::getline(file, json)) {
+                  PropertyTreeUtility::expandEnvVars(json);
+                  new_json += json;
+                }
+                std::ofstream updated_file;
+                updated_file.open(json_file.c_str(), std::ios::trunc);
+                updated_file << new_json;
+                updated_file.close();
+              }
 
+            }
     }
 
 
