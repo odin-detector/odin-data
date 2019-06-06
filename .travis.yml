@@ -47,7 +47,7 @@ install:
 script:
 - bin/frameReceiverTest --log_level=all
 - bin/frameProcessorTest --log_level=all
-- bin/odinData
+- bin/odinData --ini=${EXCALIBUR_PREFIX}/test_config/excalibur.ini
 
 - ls -R $INSTALL_PREFIX
 notifications:
