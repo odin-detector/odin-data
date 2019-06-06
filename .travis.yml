@@ -14,6 +14,7 @@ matrix:
         - libboost-system-dev
         - libboost-test-dev
         - libboost-thread-dev
+        - libboost-regex-dev
         - libzmq3-dev
         - libpcap-dev
     env: PYTHONPATH=./lib/python FR_TEST_CONFIG=test_config/fr_test.config FP_TEST_CONFIG=test_config/fp_test.config
