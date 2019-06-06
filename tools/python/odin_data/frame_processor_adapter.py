@@ -49,7 +49,7 @@ class FrameProcessorAdapter(OdinDataAdapter):
         self._command = 'config/hdf/write'
         self.setup_rank()
 
-    @request_types('application/json')
+    @request_types('application/json', 'application/vnd.odin-native')
     @response_types('application/json', default='application/json')
     def get(self, path, request):
 
@@ -79,7 +79,7 @@ class FrameProcessorAdapter(OdinDataAdapter):
 
         return ApiAdapterResponse(response, status_code=status_code)
 
-    @request_types('application/json')
+    @request_types('application/json', 'application/vnd.odin-native')
     @response_types('application/json', default='application/json')
     def put(self, path, request):  # pylint: disable=W0613
 
