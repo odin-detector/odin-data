@@ -87,7 +87,7 @@ class OdinDataAdapter(ApiAdapter):
         # Clear the error message out of the status dict
         self._status['status/error'] = ''
 
-    @request_types('application/json')
+    @request_types('application/json', 'application/vnd.odin-native')
     @response_types('application/json', default='application/json')
     def get(self, path, request):
 
@@ -163,7 +163,7 @@ class OdinDataAdapter(ApiAdapter):
 
         return ApiAdapterResponse(response, status_code=status_code)
 
-    @request_types('application/json')
+    @request_types('application/json', 'application/vnd.odin-native')
     @response_types('application/json', default='application/json')
     def put(self, path, request):  # pylint: disable=W0613
 
