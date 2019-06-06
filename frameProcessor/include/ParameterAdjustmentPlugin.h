@@ -20,7 +20,6 @@ using namespace log4cxx::helpers;
 
 namespace FrameProcessor
 {
-const int DEFAULT_FIRST_FRAME = 0;
 static const std::string PARAMETER_NAME_CONFIG = "parameter";
 static const std::string PARAMETER_INPUT_CONFIG = "input";
 static const std::string PARAMETER_ADJUSTMENT_CONFIG = "adjustment";

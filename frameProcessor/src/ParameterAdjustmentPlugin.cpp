@@ -20,7 +20,6 @@ ParameterAdjustmentPlugin::ParameterAdjustmentPlugin()
   logger_ = Logger::getLogger("FP.ParameterAdjustmentPlugin");
   logger_->setLevel(Level::getAll());
   LOG4CXX_INFO(logger_, "ParameterAdjustmentPlugin version " << this->get_version_long() << " loaded");
-
 }
 
 /**
@@ -106,12 +105,14 @@ void ParameterAdjustmentPlugin::configure(OdinData::IpcMessage& config, OdinData
           std::string parameter_name = *iter;
           OdinData::IpcMessage paramConfig(parameter_config.get_param<const rapidjson::Value &>(parameter_name));
 
-          LOG4CXX_INFO(logger_, "Setting adjustment for parameter " << parameter_name << " to " << (int64_t) paramConfig.get_param<int64_t>(PARAMETER_ADJUSTMENT_CONFIG));
+          LOG4CXX_INFO(logger_, "Setting adjustment for parameter " << parameter_name << " to "
+              << (int64_t) paramConfig.get_param<int64_t>(PARAMETER_ADJUSTMENT_CONFIG));
           parameter_adjustments_[parameter_name] = (int64_t) paramConfig.get_param<int64_t>(PARAMETER_ADJUSTMENT_CONFIG);
 
           if (paramConfig.has_param(PARAMETER_INPUT_CONFIG))
           {
-            LOG4CXX_INFO(logger_, "Setting input for parameter " << parameter_name << " to " << paramConfig.get_param<std::string>(PARAMETER_INPUT_CONFIG));
+            LOG4CXX_INFO(logger_, "Setting input for parameter " << parameter_name << " to "
+                << paramConfig.get_param<std::string>(PARAMETER_INPUT_CONFIG));
             parameter_inputs_[parameter_name] = paramConfig.get_param<std::string>(PARAMETER_INPUT_CONFIG);
           }
           else
@@ -144,12 +145,14 @@ void ParameterAdjustmentPlugin::requestConfiguration(OdinData::IpcMessage& reply
 {
   std::map<std::string, int64_t>::iterator iter;
   for (iter = parameter_adjustments_.begin(); iter != parameter_adjustments_.end(); ++iter) {
-    reply.set_param(get_name() + "/" + PARAMETER_NAME_CONFIG + "/" + iter->first + "/" + PARAMETER_ADJUSTMENT_CONFIG, (int64_t)iter->second);
+    reply.set_param(get_name() + "/" + PARAMETER_NAME_CONFIG + "/" + iter->first + "/"
+        + PARAMETER_ADJUSTMENT_CONFIG, (int64_t)iter->second);
   }
 
   std::map<std::string, std::string>::iterator input_iter;
   for (input_iter = parameter_inputs_.begin(); input_iter != parameter_inputs_.end(); ++input_iter) {
-    reply.set_param(get_name() + "/" + PARAMETER_NAME_CONFIG + "/" + input_iter->first + "/" + PARAMETER_INPUT_CONFIG, input_iter->second);
+    reply.set_param(get_name() + "/" + PARAMETER_NAME_CONFIG + "/" + input_iter->first
+        + "/" + PARAMETER_INPUT_CONFIG, input_iter->second);
   }
 }
 
