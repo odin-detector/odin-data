@@ -18,7 +18,8 @@ file(GLOB ODINDATA_SOURCES FrameTestApp.cpp
 				ControlUtility.cpp)
 
 file(GLOB FRAMETEST_SOURCES FrameSimulatorUnitTestMain.cpp
-						HDF5FrameTest.cpp)
+						HDF5FrameTest.cpp
+						PropertyTreeUtility.cpp)
 
 # Add executable to run odin-data system
 add_executable(odinData ${ODINDATA_SOURCES})
