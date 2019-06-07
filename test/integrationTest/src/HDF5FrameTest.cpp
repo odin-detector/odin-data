@@ -2,6 +2,8 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 
+#include "PropertyTreeUtility.h"
+
 #include <iostream>
 
 #include <hdf5.h>
@@ -23,7 +25,11 @@ namespace FrameSimulatorTest {
 
             boost::property_tree::ini_parser::read_ini(config_file, ptree);
 
-            file_id = H5Fopen(ptree.get<std::string>("Test.output_file").c_str(), H5F_ACC_SWMR_READ, H5P_DEFAULT);
+            // Get path to hdf5 file
+            std::string output_file = ptree.get<std::string>("Test.output_file");
+            PropertyTreeUtility::expandEnvVars(output_file);
+
+            file_id = H5Fopen(output_file.c_str(), H5F_ACC_SWMR_READ, H5P_DEFAULT);
             dataset = H5Dopen(file_id, "/data", H5P_DEFAULT);
           } else {
             throw std::runtime_error("HDF5FrameTest: ini file not specified!");
