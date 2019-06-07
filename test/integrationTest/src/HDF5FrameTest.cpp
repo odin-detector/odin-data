@@ -29,7 +29,7 @@ namespace FrameSimulatorTest {
             std::string output_file = ptree.get<std::string>("Test.output_file");
             PropertyTreeUtility::expandEnvVars(output_file);
 
-            file_id = H5Fopen(output_file.c_str(), H5F_ACC_SWMR_READ, H5P_DEFAULT);
+            file_id = H5Fopen(output_file.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
             dataset = H5Dopen(file_id, "/data", H5P_DEFAULT);
           } else {
             throw std::runtime_error("HDF5FrameTest: ini file not specified!");
