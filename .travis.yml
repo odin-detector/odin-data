@@ -49,7 +49,7 @@ script:
 - bin/frameProcessorTest --log_level=all
 - bin/odinData --ini=${EXCALIBUR_PREFIX}/test_config/excalibur.ini
 - pwd
-- ls
+- ls -ltr
 - bin/frameTests ${EXCALIBUR_PREFIX}/test_config/test.ini --log_level=all
 
 - ls -R $INSTALL_PREFIX
