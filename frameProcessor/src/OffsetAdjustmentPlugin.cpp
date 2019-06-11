@@ -2,7 +2,7 @@
  * OffsetAdjustmentPlugin.cpp
  *
  *  Created on: 16 Aug 2018
- *      Author: vtu42223
+ *      Author: Matt Taylor
  */
 
 #include "OffsetAdjustmentPlugin.h"
@@ -15,9 +15,7 @@ namespace FrameProcessor
  * The constructor sets up logging used within the class.
  */
 OffsetAdjustmentPlugin::OffsetAdjustmentPlugin() :
-    current_offset_adjustment_(DEFAULT_OFFSET_ADJUSTMENT),
-    configured_offset_adjustment_(DEFAULT_OFFSET_ADJUSTMENT),
-    first_frame_number_(DEFAULT_OFFSET_FIRST_FRAME)
+    offset_adjustment_(DEFAULT_OFFSET_ADJUSTMENT)
 {
   // Setup logging for the class
   logger_ = Logger::getLogger("FP.OffsetAdjustmentPlugin");
@@ -42,13 +40,7 @@ OffsetAdjustmentPlugin::~OffsetAdjustmentPlugin()
  */
 void OffsetAdjustmentPlugin::process_frame(boost::shared_ptr<Frame> frame)
 {
-  if (frame->get_frame_number() == first_frame_number_)
-  {
-    // If at first frame, set the offset value to the the configured value to apply it from now on
-    current_offset_adjustment_ = configured_offset_adjustment_;
-  }
-
-  frame->meta_data().adjust_frame_offset(current_offset_adjustment_);
+  frame->meta_data().adjust_frame_offset(offset_adjustment_);
   this->push(frame);
 }
 
@@ -64,16 +56,10 @@ void OffsetAdjustmentPlugin::process_frame(boost::shared_ptr<Frame> frame)
 void OffsetAdjustmentPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
   try {
-    // Check if we are setting the uid adjustment
+    // Check if we are setting the offset adjustment
     if (config.has_param(OFFSET_ADJUSTMENT_CONFIG)) {
-      configured_offset_adjustment_ = (int64_t) config.get_param<int64_t>(OFFSET_ADJUSTMENT_CONFIG);
-      LOG4CXX_INFO(logger_, "Setting offset adjustment to " << configured_offset_adjustment_);
-    }
-
-    // Check if we are setting the first frame number
-    if (config.has_param(FIRST_FRAME_OFFSET_CONFIG)) {
-      first_frame_number_ = (uint64_t) config.get_param<uint64_t>(FIRST_FRAME_OFFSET_CONFIG);
-      LOG4CXX_INFO(logger_, "Setting first frame number to " << first_frame_number_);
+      offset_adjustment_ = (int64_t) config.get_param<int64_t>(OFFSET_ADJUSTMENT_CONFIG);
+      LOG4CXX_INFO(logger_, "Setting offset adjustment to " << offset_adjustment_);
     }
   }
   catch (std::runtime_error& e)
@@ -92,8 +78,7 @@ void OffsetAdjustmentPlugin::configure(OdinData::IpcMessage& config, OdinData::I
  */
 void OffsetAdjustmentPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
-  reply.set_param(get_name() + "/" + FIRST_FRAME_OFFSET_CONFIG, first_frame_number_);
-  reply.set_param(get_name() + "/" + OFFSET_ADJUSTMENT_CONFIG, configured_offset_adjustment_);
+  reply.set_param(get_name() + "/" + OFFSET_ADJUSTMENT_CONFIG, offset_adjustment_);
 }
 
 int OffsetAdjustmentPlugin::get_version_major()

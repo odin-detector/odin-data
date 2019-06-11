@@ -782,14 +782,7 @@ BOOST_AUTO_TEST_CASE( AdjustOffset )
   cfg.set_param(FrameProcessor::OFFSET_ADJUSTMENT_CONFIG, 4);
   plugin.configure(cfg, reply);
 
-  // Check the offset is not applied as not seen first frame since configuring
-  offset = 28;
-  frame->set_frame_number(offset);
-  frame->meta_data().set_frame_offset(offset);
-  plugin.process_frame(frame);
-  BOOST_CHECK_EQUAL(28, frame->get_meta_data().get_frame_offset());
-
-  // Check the offset is applied when a new first frame is now sent
+  // Check the offset is applied when a new frame is now sent
   offset = 0;
   frame->set_frame_number(offset);
   frame->meta_data().set_frame_offset(offset);
@@ -803,45 +796,12 @@ BOOST_AUTO_TEST_CASE( AdjustOffset )
   plugin.process_frame(frame);
   BOOST_CHECK_EQUAL(14, frame->get_meta_data().get_frame_offset());
 
-  // Check the offset is still applied when uid is different to frame number
+  // Check the offset is still applied when offset is different to frame number
   offset = 100;
   frame->set_frame_number(27);
   frame->meta_data().set_frame_offset(offset);
   plugin.process_frame(frame);
   BOOST_CHECK_EQUAL(104, frame->get_meta_data().get_frame_offset());
-
-  // Configure a start frame of 1
-  cfg.set_param(FrameProcessor::OFFSET_ADJUSTMENT_CONFIG, 33);
-  cfg.set_param(FrameProcessor::FIRST_FRAME_OFFSET_CONFIG, 1);
-  plugin.configure(cfg, reply);
-
-  // Check the new offset is not applied when not on frame 0
-  offset = 12;
-  frame->set_frame_number(offset);
-  frame->meta_data().set_frame_offset(offset);
-  plugin.process_frame(frame);
-  BOOST_CHECK_EQUAL(16, frame->get_meta_data().get_frame_offset());
-
-  // Check the new offset is not applied when on frame 0
-  offset = 0;
-  frame->set_frame_number(offset);
-  frame->meta_data().set_frame_offset(offset);
-  plugin.process_frame(frame);
-  BOOST_CHECK_EQUAL(4, frame->get_meta_data().get_frame_offset());
-
-  // Check the new offset is applied when on frame 1
-  offset = 1;
-  frame->set_frame_number(offset);
-  frame->meta_data().set_frame_offset(offset);
-  plugin.process_frame(frame);
-  BOOST_CHECK_EQUAL(34, frame->get_meta_data().get_frame_offset());
-
-  // Check the new offset is applied when on frame 2
-  offset = 2;
-  frame->set_frame_number(offset);
-  frame->meta_data().set_frame_offset(offset);
-  plugin.process_frame(frame);
-  BOOST_CHECK_EQUAL(35, frame->get_meta_data().get_frame_offset());
 }
 
 BOOST_AUTO_TEST_SUITE_END(); //UIDAdjustmentPluginUnitTest
