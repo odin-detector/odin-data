@@ -2,7 +2,7 @@
  * OffsetAdjustmentPlugin.h
  *
  *  Created on: 16 Aug 2018
- *      Author: vtu42223
+ *      Author: Matt Taylor
  */
 
 #ifndef FRAMEPROCESSOR_OFFSETADJUSTMENTPLUGIN_H_
@@ -22,9 +22,7 @@ namespace FrameProcessor
 {
 
 const int DEFAULT_OFFSET_ADJUSTMENT = 0;
-const int DEFAULT_OFFSET_FIRST_FRAME = 0;
 static const std::string OFFSET_ADJUSTMENT_CONFIG = "offset_adjustment";
-static const std::string FIRST_FRAME_OFFSET_CONFIG = "first_frame_number";
 
 /**
  * This plugin class alters the frame offset by a configured amount
@@ -48,12 +46,8 @@ private:
 
   /** Pointer to logger */
   LoggerPtr logger_;
-  /** Offset adjustment currently in use **/
-  int64_t current_offset_adjustment_;
-  /** Offset adjustment configured to be used from next first frame onwards **/
-  int64_t configured_offset_adjustment_;
-  /** Frame number of the first frame in an acquisition from the detector **/
-  uint64_t first_frame_number_;
+  /** Offset adjustment to use **/
+  int64_t offset_adjustment_;
 };
 
 } /* namespace FrameProcessor */
