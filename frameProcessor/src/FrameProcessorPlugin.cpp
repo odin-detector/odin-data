@@ -293,7 +293,7 @@ void FrameProcessorPlugin::callback(boost::shared_ptr<Frame> frame)
   gettime(&start_time);
   this->process_frame(frame);
   gettime(&end_time);
-  uint64_t ts = elapsed_ms(start_time, end_time);
+  uint64_t ts = elapsed_us(start_time, end_time);
   // Store the raw process time
   last_process_time_ = ts;
   // Store the maximum process time since the last reset
@@ -328,22 +328,22 @@ void FrameProcessorPlugin::push(boost::shared_ptr<Frame> frame)
   }
 }
 
-/** Calculate and return an elapsed time in milliseconds.
+/** Calculate and return an elapsed time in microseconds.
  * 
- * This method calculates and returns an elapsed time in milliseconds based on the start and
+ * This method calculates and returns an elapsed time in microseconds based on the start and
  * end timespec structs passed as arguments.
  * 
  * \param[in] start - start time in timespec struct format
  * \param[in] end - end time in timespec struct format
- * \return elapsed time between start and end in milliseconds
+ * \return elapsed time between start and end in microseconds
  */
-unsigned int FrameProcessorPlugin::elapsed_ms(struct timespec& start, struct timespec& end)
+unsigned int FrameProcessorPlugin::elapsed_us(struct timespec& start, struct timespec& end)
 {
 
   double start_ns = ((double) start.tv_sec * 1000000000) + start.tv_nsec;
   double end_ns = ((double) end.tv_sec * 1000000000) + end.tv_nsec;
 
-  return (unsigned int)((end_ns - start_ns) / 1000000);
+  return (unsigned int)((end_ns - start_ns) / 1000);
 }
 
 } /* namespace FrameProcessor */

@@ -56,7 +56,7 @@ private:
 
   void callback(boost::shared_ptr<Frame> frame);
 
-  unsigned int elapsed_ms(struct timespec& start, struct timespec& end);
+  unsigned int elapsed_us(struct timespec& start, struct timespec& end);
 
   /**
    * This is called by the callback method when any new frames have
