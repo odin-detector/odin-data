@@ -284,7 +284,10 @@ void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply)
   std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
   for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
     reply.set_param("plugins/names[]", iter->first);
+    // Request status for the plugin
     iter->second->status(reply);
+    // Add performance statistics
+    iter->second->add_performance_stats(reply);
     // Read error level
     std::vector<std::string> plugin_errors = iter->second->get_errors();
     error_messages.insert(error_messages.end(), plugin_errors.begin(), plugin_errors.end());
@@ -502,6 +505,7 @@ void FrameProcessorController::resetStatistics(OdinData::IpcMessage& reply)
   // Loop over plugins and call reset statistics on each
   std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
   for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
+    iter->second->reset_performance_stats();
     reset_ok = iter->second->reset_statistics();
     // Check for failure
     if (!reset_ok){
