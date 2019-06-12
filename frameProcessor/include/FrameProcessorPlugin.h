@@ -40,6 +40,8 @@ public:
   virtual void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   virtual void requestConfiguration(OdinData::IpcMessage& reply);
   virtual void status(OdinData::IpcMessage& status);
+  void add_performance_stats(OdinData::IpcMessage& status);
+  void reset_performance_stats();
   void version(OdinData::IpcMessage& status);
   void register_callback(const std::string& name, boost::shared_ptr<IFrameCallback> cb, bool blocking=false);
   void remove_callback(const std::string& name);
@@ -53,6 +55,8 @@ private:
   LoggerPtr logger_;
 
   void callback(boost::shared_ptr<Frame> frame);
+
+  unsigned int elapsed_ms(struct timespec& start, struct timespec& end);
 
   /**
    * This is called by the callback method when any new frames have
@@ -70,6 +74,12 @@ private:
   std::map<std::string, boost::shared_ptr<IFrameCallback> > blocking_callbacks_;
   /** Error message array*/
   std::vector<std::string> error_messages_;
+  /** Last process time */
+  uint64_t last_process_time_;
+  /** Maximum process time since last reset */
+  uint64_t max_process_time_;
+  /** Exp average process time since last reset */
+  double average_process_time_; 
 };
 
 } /* namespace FrameProcessor */
