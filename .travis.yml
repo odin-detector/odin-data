@@ -24,7 +24,6 @@ matrix:
     - bash .travis-install-hdf5.sh
     - bash .travis-install-blosc.sh
     - bash .travis-install-librdkafka.sh
-    - bash .travis-install-log4cxx.sh
     cache:
       directories:
       - "$HOME/hdf5-1.10.1"
