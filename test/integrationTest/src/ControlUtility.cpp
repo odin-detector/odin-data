@@ -23,8 +23,8 @@ namespace FrameSimulatorTest {
                                    pid_t &process_pid,
                                    LoggerPtr &logger) : process_pid_(process_pid), logger_(logger) {
 
-      // Read process arguments from property tree into std::vector<std::string> process_args_
-      PropertyTreeUtility::ini_to_command_args(ptree, process_args_entry, process_args_);
+      // Read process arguments from property tree into std::vector<std::string> command_args_
+      PropertyTreeUtility::ini_to_command_args(ptree, process_args_entry, command_args_);
 
       // Get path to process to run
       process_path_ = ptree.get<std::string>(process_entry);
@@ -32,6 +32,7 @@ namespace FrameSimulatorTest {
 
       boost::filesystem::path path(process_path_);
 
+      process_args_ = command_args_;
       // Prepend list of process arguments with <process> (deduced from path) and (optionally) <positional_arg>
       process_args_.insert(process_args_.begin(), positional_arg);
       process_args_.insert(process_args_.begin(), path.filename().c_str());
@@ -65,6 +66,25 @@ namespace FrameSimulatorTest {
         execv(process_path_.c_str(), args.data());
 
       }
+
+    }
+
+    /** Run the command
+     *
+     */
+    void ControlUtility::run_command() {
+
+      std::string command = process_path_;
+
+      command += " ";
+      for (int s = 0; s < command_args_.size(); s++) {
+        if (command_args_[s].find("--") != std::string::npos)
+          command += command_args_[s] + "=";
+        else
+          command += command_args_[s] + " ";
+        }
+
+      std::system(command.c_str());
 
     }
 

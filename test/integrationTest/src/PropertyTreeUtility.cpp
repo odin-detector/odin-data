@@ -19,7 +19,10 @@ namespace FrameSimulatorTest {
       boost::regex regex("\\$\\{([^}]+)\\}");
 
       if(boost::regex_search(original, str_matches, regex)) {
-        std::string environment_var = getenv(str_matches[1].str().c_str());
+        std::string environment_var_str = str_matches[1].str();
+        if(!getenv(environment_var_str.c_str()))
+          throw std::runtime_error("environment variable not defined " + environment_var_str);
+        std::string environment_var = getenv(environment_var_str.c_str());
         boost::replace_all(original, str_matches[0].str(), environment_var);
       }
 
