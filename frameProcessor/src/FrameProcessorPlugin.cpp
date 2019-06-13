@@ -8,6 +8,7 @@
 #include "logging.h"
 #include "FrameProcessorPlugin.h"
 #include "DebugLevelLogger.h"
+#include "gettime.h"
 
 namespace FrameProcessor
 {
@@ -16,7 +17,10 @@ namespace FrameProcessor
  * Constructor, initialises name_ and meta data channel.
  */
 FrameProcessorPlugin::FrameProcessorPlugin() :
-    name_("")
+  name_(""),
+  last_process_time_(0),
+  max_process_time_(0),
+  average_process_time_(0.0)
 {
   OdinData::configure_logging_mdc(OdinData::app_path.c_str());
   logger_ = log4cxx::Logger::getLogger("FP.FrameProcessorPlugin");
@@ -141,6 +145,32 @@ void FrameProcessorPlugin::status(OdinData::IpcMessage& status)
 }
 
 /**
+ * Collate performance statistics for the plugin.
+ *
+ * The performance metrics are added to the status IpcMessage object.
+ *
+ * \param[out] status - Reference to an IpcMessage value to store the performance stats.
+ */
+void FrameProcessorPlugin::add_performance_stats(OdinData::IpcMessage& status)
+{
+  status.set_param(get_name() + "/timing/last_process", last_process_time_);
+  status.set_param(get_name() + "/timing/max_process", max_process_time_);
+  status.set_param(get_name() + "/timing/mean_process", average_process_time_);
+}
+
+/**
+ * Reset performance statistics for the plugin.
+ *
+ * The performance metrics are reset to zero.
+ */
+void FrameProcessorPlugin::reset_performance_stats()
+{
+  last_process_time_ = 0;
+  max_process_time_ = 0;
+  average_process_time_ = 0.0;
+}
+
+/**
  * Collate version information for the plugin.
  *
  * The version information is added to the status IpcMessage object.
@@ -257,8 +287,21 @@ void FrameProcessorPlugin::remove_all_callbacks()
  */
 void FrameProcessorPlugin::callback(boost::shared_ptr<Frame> frame)
 {
-  // Calls process frame
+  // Calls process frame and times how long the process takes
+  struct timespec start_time;
+  struct timespec end_time;
+  gettime(&start_time);
   this->process_frame(frame);
+  gettime(&end_time);
+  uint64_t ts = elapsed_us(start_time, end_time);
+  // Store the raw process time
+  last_process_time_ = ts;
+  // Store the maximum process time since the last reset
+  if (ts > max_process_time_){
+    max_process_time_ = ts;
+  }
+  // Store a simple exp average with alpha = 0.5
+  average_process_time_ = (average_process_time_ * 0.5) + (double(ts) * 0.5);
 }
 
 /** Push the supplied frame to any registered callbacks.
@@ -271,6 +314,8 @@ void FrameProcessorPlugin::callback(boost::shared_ptr<Frame> frame)
  */
 void FrameProcessorPlugin::push(boost::shared_ptr<Frame> frame)
 {
+  if (!frame->is_valid())
+      throw std::runtime_error("Invalid frame");
   // Loop over blocking callbacks, calling each function and waiting for return
   std::map<std::string, boost::shared_ptr<IFrameCallback> >::iterator bcbIter;
   for (bcbIter = blocking_callbacks_.begin(); bcbIter != blocking_callbacks_.end(); ++bcbIter) {
@@ -281,6 +326,24 @@ void FrameProcessorPlugin::push(boost::shared_ptr<Frame> frame)
   for (cbIter = callbacks_.begin(); cbIter != callbacks_.end(); ++cbIter) {
     cbIter->second->getWorkQueue()->add(frame);
   }
+}
+
+/** Calculate and return an elapsed time in microseconds.
+ * 
+ * This method calculates and returns an elapsed time in microseconds based on the start and
+ * end timespec structs passed as arguments.
+ * 
+ * \param[in] start - start time in timespec struct format
+ * \param[in] end - end time in timespec struct format
+ * \return elapsed time between start and end in microseconds
+ */
+unsigned int FrameProcessorPlugin::elapsed_us(struct timespec& start, struct timespec& end)
+{
+
+  double start_ns = ((double) start.tv_sec * 1000000000) + start.tv_nsec;
+  double end_ns = ((double) end.tv_sec * 1000000000) + end.tv_nsec;
+
+  return (unsigned int)((end_ns - start_ns) / 1000);
 }
 
 } /* namespace FrameProcessor */

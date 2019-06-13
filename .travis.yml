@@ -18,20 +18,23 @@ matrix:
         - libpcap-dev
     env: PYTHONPATH=./lib/python FR_TEST_CONFIG=test_config/fr_test.config FP_TEST_CONFIG=test_config/fp_test.config
       HDF5_ROOT=$HOME/hdf5-1.10.1 BLOSC_ROOT=$HOME/c-blosc-1.14.2 INSTALL_PREFIX=$HOME/install_prefix
+      KAFKA_ROOT=$HOME/librdkafka-1.0.0
     before_install:
     - bash .travis-install-hdf5.sh
     - bash .travis-install-blosc.sh
+    - bash .travis-install-librdkafka.sh
     cache:
       directories:
       - "$HOME/hdf5-1.10.1"
       - "$HOME/c-blosc-1.14.2"
+      - "$HOME/librdkafka-1.0.0"
       - "$HOME/.cache/pip"
       - "$HOME/.local/lib"
 install:
 - mkdir -p .build
 - mkdir -p $INSTALL_PREFIX
 - cd .build
-- cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX -DHDF5_ROOT=$HDF5_ROOT -DBLOSC_ROOT_DIR=$BLOSC_ROOT ..
+- cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX -DHDF5_ROOT=$HDF5_ROOT -DBLOSC_ROOT_DIR=$BLOSC_ROOT -DKAFKA_ROOT_DIR=$KAFKA_ROOT ..
 - make -j 4 VERBOSE=1
 - make install
 - HDF5_DIR=$HDF5_ROOT pip install --user h5py

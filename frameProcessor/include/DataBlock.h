@@ -28,32 +28,57 @@ namespace FrameProcessor
  * Data block memory should NOT be freed outside of the block, when a data block
  * is destroyed it frees its own memory.
  */
-class DataBlock
-{
-  friend class DataBlockPool;
+  class DataBlock {
 
-public:
-  DataBlock(size_t nbytes);
-  virtual ~DataBlock();
-  int getIndex();
-  size_t getSize();
-  void copyData(const void* data_src, size_t nbytes);
-  const void* get_data();
+    friend class DataBlockPool;
 
-private:
-  void resize(size_t nbytes);
+  public:
 
-  /** Pointer to logger */
-  log4cxx::LoggerPtr logger_;
-  /** Number of bytes allocated for this DataBlock */
-  size_t allocatedBytes_;
-  /** Unique index of this DataBlock */
-  int index_;
-  /** Void pointer to the allocated memory */
-  void *blockPtr_;
-  /** Static counter for the unique index */
-  static int indexCounter_;
-};
+    /** Construct a data block */
+    DataBlock(size_t block_size);
+
+    /** Destroy a data block */
+    virtual ~DataBlock();
+
+    /** Return the unique index */
+    int get_index();
+
+    /** Return the size in bytes */
+    size_t get_size();
+
+    /** Copy data from source into block allocated memory */
+    void copy_data(const void* data_src, size_t block_size);
+
+    /** Return a const void pointer to memory block owns */
+    const void* get_data();
+
+    /** Return a non-const pointer to memory block owns */
+    void* get_writeable_data();
+
+    /** Return the current unique index counter */
+    static int get_current_index_count();
+
+  private:
+
+    /** Resize the data block */
+    void resize(size_t block_size);
+
+    /** Pointer to logger */
+    log4cxx::LoggerPtr logger_;
+
+    /** Number of bytes allocated for this DataBlock */
+    size_t allocated_bytes_;
+
+    /** Unique index of this DataBlock */
+    int index_;
+
+    /** Void pointer to the allocated memory */
+    void* block_ptr_;
+
+    /** Static counter for the unique index */
+    static int index_counter_;
+
+  };
 
 } /* namespace FrameProcessor */
 

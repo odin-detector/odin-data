@@ -12,6 +12,11 @@ if (${BLOSC_FOUND})
   include_directories(${BLOSC_INCLUDE_DIR})
 endif()
 
+if (${KAFKA_FOUND})
+    list(APPEND TEST_SOURCES KafkaProducerPluginTest.cpp)
+    include_directories(${KAFKA_INCLUDE_DIR})
+endif()
+
 # Add test source files to executable
 add_executable(frameProcessorTest ${TEST_SOURCES})
 
@@ -24,7 +29,7 @@ target_link_libraries(frameProcessorTest
         ${HDF5_LIBRARIES}
         ${HDF5HL_LIBRARIES}
         Hdf5Plugin
-        UIDAdjustmentPlugin
+        ParameterAdjustmentPlugin
         OffsetAdjustmentPlugin
         LiveViewPlugin
         SumPlugin
@@ -36,6 +41,11 @@ if (${BLOSC_FOUND})
   target_link_libraries(frameProcessorTest ${BLOSC_LIBRARIES} BloscPlugin)
 endif()
 
+if (${KAFKA_FOUND})
+  target_link_libraries(frameProcessorTest ${KAFKA_LIBRARIES}
+      KafkaProducerPlugin)
+endif()
+
 if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
   # librt required for timing functions
   find_library(REALTIME_LIBRARY
@@ -45,3 +55,5 @@ if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
 	       NAMES pthread)
   target_link_libraries(frameProcessorTest ${PTHREAD_LIBRARY} )
 endif()
+
+install(TARGETS frameProcessorTest RUNTIME DESTINATION bin)

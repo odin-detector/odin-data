@@ -10,23 +10,23 @@
 
 namespace FrameProcessor
 {
-int DataBlock::indexCounter_ = 0;
+int DataBlock::index_counter_ = 0;
 
 
 /**
  * Construct a data block, allocating the required memory.
  *
- * \param[in] nbytes - number of bytes to allocate.
+ * \param[in] block_size - number of bytes to allocate.
  */
-DataBlock::DataBlock(size_t nbytes) :
+DataBlock::DataBlock(size_t block_size) :
     logger_(log4cxx::Logger::getLogger("FP.DataBlock")),
-    allocatedBytes_(nbytes)
+    allocated_bytes_(block_size)
 {
-  LOG4CXX_DEBUG_LEVEL(2, logger_, "Constructing DataBlock, allocating " << nbytes << " bytes");
+  LOG4CXX_DEBUG_LEVEL(2, logger_, "Constructing DataBlock, allocating " << block_size << " bytes");
   // Create this DataBlock's unique index
-  index_ = DataBlock::indexCounter_++;
+  index_ = DataBlock::index_counter_++;
   // Allocate the memory required for this data block
-  blockPtr_ = malloc(nbytes);
+  block_ptr_ = malloc(block_size);
 }
 
 /**
@@ -35,7 +35,7 @@ DataBlock::DataBlock(size_t nbytes) :
 DataBlock::~DataBlock()
 {
   // Free the memory
-  free(blockPtr_);
+  free(block_ptr_);
 }
 
 /**
@@ -43,9 +43,8 @@ DataBlock::~DataBlock()
  *
  * \return - unique index of this data block.
  */
-int DataBlock::getIndex()
+int DataBlock::get_index()
 {
-  // Return the index of this block
   return index_;
 }
 
@@ -54,10 +53,9 @@ int DataBlock::getIndex()
  *
  * \return - size in bytes of this data block.
  */
-size_t DataBlock::getSize()
+size_t DataBlock::get_size()
 {
-  // Just return the current size
-  return allocatedBytes_;
+  return allocated_bytes_;
 }
 
 /**
@@ -66,20 +64,20 @@ size_t DataBlock::getSize()
  * size. If resize is called but the same size is requested, then
  * no actual free or reallocation takes place.
  *
- * \param[in] nbytes - new size of this data block.
+ * \param[in] block_size - new size of this data block.
  */
-void DataBlock::resize(size_t nbytes)
+void DataBlock::resize(size_t block_size)
 {
-  LOG4CXX_DEBUG_LEVEL(2, logger_, "Resizing DataBlock " << index_ << " to " << nbytes << " bytes");
+  LOG4CXX_DEBUG_LEVEL(2, logger_, "Resizing DataBlock " << index_ << " to " << block_size << " bytes");
   // If the new size requested is the different
   // to our current size then re-allocate
-  if (nbytes != allocatedBytes_) {
+  if (block_size != allocated_bytes_) {
     // Free the current allocation first
-    free(blockPtr_);
+    free(block_ptr_);
     // Allocate the new number of bytes
-    blockPtr_ = malloc(nbytes);
+    block_ptr_ = malloc(block_size);
     // Record our new size
-    allocatedBytes_ = nbytes;
+    allocated_bytes_ = block_size;
   }
 }
 
@@ -89,17 +87,17 @@ void DataBlock::resize(size_t nbytes)
  * block then the copy is truncated to the size of this block.
  *
  * \param[in] data_src - void pointer to the data source.
- * \param[in] nbytes - size of data in bytes to copy.
+ * \param[in] block_size - size of data in bytes to copy.
  */
-void DataBlock::copyData(const void* data_src, size_t nbytes)
+void DataBlock::copy_data(const void* data_src, size_t block_size)
 {
-  if (nbytes > allocatedBytes_) {
-    LOG4CXX_WARN(logger_, "Trying to copy: " << nbytes <<
-                                             " but allocated buffer only: " << allocatedBytes_ <<
-                                             " bytes. Truncating copy.");
-    nbytes = allocatedBytes_;
+  if (block_size > allocated_bytes_) {
+    LOG4CXX_WARN(logger_, "Trying to copy: " << block_size <<
+                          " but allocated buffer only: " << allocated_bytes_ <<
+                          " bytes. Truncating copy.");
+    block_size = allocated_bytes_;
   }
-  memcpy(blockPtr_, data_src, nbytes);
+  memcpy(block_ptr_, data_src, block_size);
 }
 
 /**
@@ -109,8 +107,27 @@ void DataBlock::copyData(const void* data_src, size_t nbytes)
  */
 const void* DataBlock::get_data()
 {
-  // This returns the pointer to the data block
-  return blockPtr_;
+  return block_ptr_;
 }
+
+/**
+ * Returns a non-const void pointer to the memory that this data block owns.
+ *
+ * \return - non-const void pointer to memory owned by this data block
+ */
+void* DataBlock::get_writeable_data()
+{
+  return block_ptr_;
+}
+
+/**
+ * Returns the current index counter value
+ *
+ * \return - int current index count
+ */
+int DataBlock::get_current_index_count() {
+  return DataBlock::index_counter_;
+}
+
 
 } /* namespace FrameProcessor */

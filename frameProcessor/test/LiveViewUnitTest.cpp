@@ -8,6 +8,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "LiveViewPlugin.h"
+#include "DataBlockFrame.h"
 
 std::string global_socket_addr= "tcp://127.0.0.1:";
 uint32_t global_socket_port = 5020;
@@ -42,47 +43,44 @@ public:
       img_16[i] = i+1;
     }
 
-    DATA_TYPES[0]  = "uint8";
-    DATA_TYPES[1]  = "uint16";
-    DATA_TYPES[2]  = "uint32";
+    DATA_TYPES[0] = "unknown"
+    DATA_TYPES[1]  = "uint8";
+    DATA_TYPES[2]  = "uint16";
+    DATA_TYPES[3]  = "uint32";
 
-    COMPRESS_TYPES[0] = "none";
-    COMPRESS_TYPES[1] = "LZ4";
-    COMPRESS_TYPES[2] = "BSLZ4";
+    COMPRESS_TYPES[0] = "unknown";
+    COMPRESS_TYPES[1] = "none";
+    COMPRESS_TYPES[2] = "LZ4";
+    COMPRESS_TYPES[3] = "BSLZ4";
 
     dimensions_t img_dims(2); img_dims[0] = 3; img_dims[1] = 4;
 
+    FrameProcessor::FrameMetaData frame_meta(
+            "data", FrameProcessor::raw_8bit, "test", img_dims, FrameProcessor::no_compression
+    );
+
     //create test frame
-    frame = boost::shared_ptr<FrameProcessor::Frame>(new FrameProcessor::Frame("data"));
-    frame->set_frame_number(2);
-    frame->set_dimensions(img_dims);
-    frame->set_data_type(FrameProcessor::raw_8bit);
-    frame->set_compression(0);
-    frame->copy_data(static_cast<void*>(img_8), 12);
+    frame = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
+            new FrameProcessor::DataBlockFrame(2, frame_meta, static_cast<void*>(img_8), 12));
+
+    FrameProcessor::FrameMetaData frame_16_meta(
+            "data", FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
+    );
 
     //create test frame with uint16 data
-    frame_16 = boost::shared_ptr<FrameProcessor::Frame>(new FrameProcessor::Frame("data"));
-    frame_16->set_frame_number(2);
-    frame_16->set_dimensions(img_dims);
-    frame_16->set_data_type(FrameProcessor::raw_16bit);
-    frame_16->set_compression(0);
-    frame_16->copy_data(static_cast<void*>(img_16), 24);
-
+    frame_16 = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
+            new FrameProcessor::DataBlockFrame(2, frame_16_meta, static_cast<void*>(img_16), 24));
 
     //create multiple test frames
     for(int i = 0; i < 10; i++)
     {
-      boost::shared_ptr<FrameProcessor::Frame> tmp_frame(new FrameProcessor::Frame("data"));
-      tmp_frame->set_frame_number(i);
-      tmp_frame->set_dimensions(img_dims);
-      tmp_frame->set_data_type(FrameProcessor::raw_8bit);
-      tmp_frame->set_dataset_name(i % 4 ? "data" : "not_data");
-      if(i % 4)
-      {
-        tmp_frame->set_parameter("test_tag", (uint8_t)0);
-      }
-      tmp_frame->copy_data(static_cast<void*>(img_8), 12);
-
+      FrameProcessor::FrameMetaData tmp_frame_meta(
+              i % 4 ? "data" : "not_data", FrameProcessor::raw_8bit, "test", img_dims, FrameProcessor::no_compression
+      );
+      if (i % 4)
+        tmp_frame_meta.set_parameter><uint8_t>("test_tag", 0);
+      boost::shared_ptr<FrameProcessor::DataBlockFrame> tmp_frame(
+              new FrameProcessor::DataBlockFrame(i, tmp_frame_meta, static_cast<void*>(img_8), 12));
       frames.push_back(tmp_frame);
     }
 
