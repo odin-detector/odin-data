@@ -147,7 +147,12 @@ int main(int argc, char *argv[]) {
     simulator.run_process(true);
 
     // Allow receiver and processor time to finish frame collection
-    sleep(20);
+    sleep(10);
+
+    pid_t test_pid = -1;
+
+    ControlUtility tests(pt, "", "Main.test", "Test-args", test_pid, logger);
+    tests.run_command();
 
     // If receiver hasn't exited with error; interrupt
     if (receiver_pid != -1) {

@@ -2,12 +2,16 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 
+#include <boost/program_options.hpp>
+
 #include "PropertyTreeUtility.h"
 
 #include <iostream>
 
 #include <hdf5.h>
 #include <hdf5_hl.h>
+
+namespace po = boost::program_options;
 
 namespace FrameSimulatorTest {
 
@@ -19,22 +23,40 @@ namespace FrameSimulatorTest {
 
           const int master_argc = boost::unit_test::framework::master_test_suite().argc;
 
-          if (master_argc > 1) {
+            po::options_description generic("Generic options");
 
-            std::string config_file = boost::unit_test::framework::master_test_suite().argv[1];
+            generic.add_options()
+                    ("ini", po::value<std::string>(), "Configuration file");
 
-            boost::property_tree::ini_parser::read_ini(config_file, ptree);
+            po::options_description cmdline_options;
+            cmdline_options.add(generic);
 
-            // Get path to hdf5 file
-            std::string output_file = ptree.get<std::string>("Test.output_file");
-            PropertyTreeUtility::expandEnvVars(output_file);
+            po::parsed_options parsed = po::command_line_parser(master_argc, boost::unit_test::framework::master_test_suite().argv).
+                    options(generic).
+                    allow_unregistered().
+                    run();
 
-            file_id = H5Fopen(output_file.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
-            dataset = H5Dopen(file_id, "/data", H5P_DEFAULT);
-          } else {
-            throw std::runtime_error("HDF5FrameTest: ini file not specified!");
-          };
+            po::variables_map vm;
+            po::store(parsed, vm);
+
+            if (vm.count("ini")) {
+
+              std::string config_file = vm["ini"].as<std::string>();
+
+              boost::property_tree::ini_parser::read_ini(config_file, ptree);
+
+              // Get path to hdf5 file
+              std::string output_file = ptree.get<std::string>("Test.output_file");
+              PropertyTreeUtility::expandEnvVars(output_file);
+
+              file_id = H5Fopen(output_file.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+              dataset = H5Dopen(file_id, "/data", H5P_DEFAULT);
+            } else {
+              throw std::runtime_error("HDF5FrameTest: ini file not specified!");
+            }
+
         }
+        ~HDF5FrameTest() {}
 
         hid_t file_id, dataset;
         boost::property_tree::ptree ptree;
@@ -46,6 +68,7 @@ namespace FrameSimulatorTest {
         BOOST_AUTO_TEST_CASE(HDF5Frame_size) {
 
           hid_t filetype = H5Dget_type(dataset);
+
           hid_t space = H5Dget_space(dataset);
 
           const int ndims = H5Sget_simple_extent_ndims(space);
@@ -57,6 +80,8 @@ namespace FrameSimulatorTest {
           BOOST_CHECK_EQUAL(dims[0], ptree.get<int>("Test.frames"));
           BOOST_CHECK_EQUAL(dims[1], ptree.get<int>("Test.width"));
           BOOST_CHECK_EQUAL(dims[2], ptree.get<int>("Test.height"));
+
+          H5Fclose(file_id);
 
         };
 

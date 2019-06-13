@@ -28,6 +28,9 @@ namespace FrameSimulatorTest {
         /** Run the process */
         void run_process(const bool &wait_child = false);
 
+        /** Run command */
+        void run_command();
+
     protected:
 
         /** Path of process to run */
@@ -35,6 +38,9 @@ namespace FrameSimulatorTest {
 
         /** Process command arguments */
         std::vector<std::string> process_args_;
+
+        /** Command arguments */
+        std::vector<std::string> command_args_;
 
         /** pid of process */
         pid_t &process_pid_;
