@@ -46,11 +46,13 @@ static bool has_suffix(const std::string &str, const std::string &suffix) {
 /** Parse command line arguments
  * /param[in] argc - argument count; number of arguments to parse
  * /param[in] argv - one-dimensional string array of command line arguments
+ * /param[in] vm - boost program_options variables_map
  * /param[in] logger - pointer to logging instance
  * /param[in] ptree - property tree instance
  */
 int parse_arguments(int argc,
-                    char **argv, po::variables_map &vm,
+                    char **argv,
+                    po::variables_map &vm,
                     LoggerPtr &logger,
                     boost::property_tree::ptree &ptree) {
 

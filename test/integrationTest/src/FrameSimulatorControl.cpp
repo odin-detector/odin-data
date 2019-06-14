@@ -6,6 +6,7 @@ namespace FrameSimulatorTest {
 
     /** FrameSimulatorControl constructor
      *
+     * @param detector - detector to test (e.g. Excalibur, Eiger); to match case used in detector specific library names
      * @param ptree - boost property_tree; parsed from initial ini file
      * @param process_pid - pid of process
      * @param logger - pointer to logger
