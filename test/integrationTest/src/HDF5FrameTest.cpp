@@ -1,6 +1,6 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/ini_parser.hpp>
+#include <boost/property_tree/json_parser.hpp>
 
 #include <boost/program_options.hpp>
 
@@ -26,7 +26,7 @@ namespace FrameSimulatorTest {
             po::options_description generic("Generic options");
 
             generic.add_options()
-                    ("ini", po::value<std::string>(), "Configuration file");
+                    ("json", po::value<std::string>(), "Configuration file");
 
             po::options_description cmdline_options;
             cmdline_options.add(generic);
@@ -39,11 +39,11 @@ namespace FrameSimulatorTest {
             po::variables_map vm;
             po::store(parsed, vm);
 
-            if (vm.count("ini")) {
+            if (vm.count("json")) {
 
-              std::string config_file = vm["ini"].as<std::string>();
+              std::string config_file = vm["json"].as<std::string>();
 
-              boost::property_tree::ini_parser::read_ini(config_file, ptree);
+              boost::property_tree::json_parser::read_json(config_file, ptree);
 
               // Get path to hdf5 file
               std::string output_file = ptree.get<std::string>("Test.output_file");
@@ -52,7 +52,7 @@ namespace FrameSimulatorTest {
               file_id = H5Fopen(output_file.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
               dataset = H5Dopen(file_id, "/data", H5P_DEFAULT);
             } else {
-              throw std::runtime_error("HDF5FrameTest: ini file not specified!");
+              throw std::runtime_error("HDF5FrameTest: json file not specified!");
             }
 
         }
