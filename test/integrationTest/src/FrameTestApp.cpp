@@ -11,7 +11,7 @@
 #include <boost/filesystem.hpp>
 
 #include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/ini_parser.hpp>
+#include <boost/property_tree/json_parser.hpp>
 
 #include <log4cxx/logger.h>
 #include <log4cxx/basicconfigurator.h>
@@ -63,7 +63,7 @@ int parse_arguments(int argc,
     po::options_description generic("Generic options");
 
     generic.add_options()
-            ("ini", po::value<std::string>(), "Configuration file")
+            ("json", po::value<std::string>(), "Configuration file")
             ("help", "Print help message");
 
     po::options_description cmdline_options;
@@ -100,10 +100,10 @@ int parse_arguments(int argc,
 
     // Read configuration file; store as boost::property_tree::ptree
 
-    if (vm.count("ini")) {
-      std::string config_file = vm["ini"].as<std::string>();
+    if (vm.count("json")) {
+      std::string config_file = vm["json"].as<std::string>();
       LOG4CXX_DEBUG(logger, "Reading config file " << config_file);
-      boost::property_tree::ini_parser::read_ini(config_file, ptree);
+      boost::property_tree::json_parser::read_json(config_file, ptree);
     } else {
       LOG4CXX_ERROR(logger, "No configuration file specified. Exiting.");
       exit(1);
