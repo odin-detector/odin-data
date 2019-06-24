@@ -207,6 +207,30 @@ namespace FrameProcessor {
     }
 
     status = rd_kafka_conf_set(kafka_config,
+                               "queue.buffering.max.kbytes",
+                               "2097151",
+                               errBuf,
+                               sizeof(errBuf));
+
+    if (status != RD_KAFKA_CONF_OK) {
+      LOG4CXX_ERROR(logger_, "Kafka configuration error while setting max buffering size: "
+        << errBuf);
+      return;
+    }
+
+    status = rd_kafka_conf_set(kafka_config,
+                               "linger.ms",
+                               "5",
+                               errBuf,
+                               sizeof(errBuf));
+
+    if (status != RD_KAFKA_CONF_OK) {
+      LOG4CXX_ERROR(logger_, "Kafka configuration error while setting linger ms: "
+        << errBuf);
+      return;
+    }
+
+    status = rd_kafka_conf_set(kafka_config,
                                "bootstrap.servers",
                                servers.c_str(),
                                errBuf,
@@ -386,29 +410,55 @@ namespace FrameProcessor {
     if (!buf) {
       return;
     }
-    // enqueue message
-    int status = rd_kafka_produce(
-      this->kafka_topic_,
-      partition_,
-      /* free buffer when enqueued */
-      RD_KAFKA_MSG_F_FREE,
-      /* Data */
-      buf, len,
-      /* No key */
-      NULL, 0,
-      /* Opaque pointer */
-      this);
 
-    if (status) {
-      // Dropping frame, probably the queue is full
-      LOG4CXX_ERROR(logger_, "Error while producing: "
-        << rd_kafka_err2str(rd_kafka_last_error()));
-      free(buf);
-      frames_lost_++;
-    } else {
-      frames_sent_++;
-    }
-    rd_kafka_poll(this->kafka_producer_, 0);
+    retry:
+		// enqueue message
+		int status = rd_kafka_produce(
+		  this->kafka_topic_,
+		  partition_,
+		  /* free buffer when enqueued */
+		  RD_KAFKA_MSG_F_FREE,
+		  /* Data */
+		  buf, len,
+		  /* No key */
+		  NULL, 0,
+		  /* Opaque pointer */
+		  this);
+
+		if (status) {
+
+		    if (rd_kafka_last_error() ==
+		      RD_KAFKA_RESP_ERR__QUEUE_FULL) {
+		        /* If the internal queue is full, wait for
+		        * messages to be delivered and then retry.
+		        * The internal queue represents both
+		        * messages to be sent and messages that have
+		        * been sent or failed, awaiting their
+		        * delivery report callback to be called.
+		        *
+		        * The internal queue is limited by the
+		        * configuration property
+		        * queue.buffering.max.messages */
+		        LOG4CXX_DEBUG(logger_, "Blocking whilst producer queue full");
+		        rd_kafka_poll(this->kafka_producer_, 10/*block for max 10ms*/);
+		        goto retry;
+			} else {
+		        // Dropping frame because some error other than queue full. The other possible errors are:
+				//ERR_MSG_SIZE_TOO_LARGE - message is larger than configured max size: messages.max.bytes
+				//ERR__UNKNOWN_PARTITION - requested partition is unknown in the Kafka cluster.
+				//ERR__UNKNOWN_TOPIC
+		        LOG4CXX_ERROR(logger_, "Error while producing: "
+		        << rd_kafka_err2str(rd_kafka_last_error()));
+		        free(buf);
+		        frames_lost_++;
+			}
+		} else {
+		  frames_sent_++;
+		  LOG4CXX_DEBUG(logger_, "Frame joined producer queue: " << frame->get_frame_number());
+		  LOG4CXX_DEBUG(logger_, "Total frames sent to queue: " << frames_sent_);
+		}
+
+		rd_kafka_poll(this->kafka_producer_, 0);
   }
 
   /**
