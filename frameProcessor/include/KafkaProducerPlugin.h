@@ -26,6 +26,8 @@ using namespace log4cxx::helpers;
 #define KAFKA_DEFAULT_TOPIC   "data"
 #define KAFKA_POLLING_MS 5000
 #define KAFKA_MESSAGE_MAX_BYTES "134217728"
+#define KAFKA_MESSAGE_MAX_RETRIES "10000000"
+#define KAFKA_QUEUE_SIZE "2097151"
 #define MSG_HEADER_FRAME_SIZE_KEY "data_size"
 #define MSG_HEADER_DATA_TYPE_KEY "data_type"
 #define MSG_HEADER_FRAME_NUMBER_KEY "frame_number"

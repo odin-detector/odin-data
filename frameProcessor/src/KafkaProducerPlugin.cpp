@@ -194,6 +194,19 @@ namespace FrameProcessor {
     kafka_config = rd_kafka_conf_new();
     int status;
 
+
+    status = rd_kafka_conf_set(kafka_config,
+                               "message.send.max.retries",
+                               KAFKA_MESSAGE_MAX_RETRIES,
+                               errBuf,
+                               sizeof(errBuf));
+
+    if (status != RD_KAFKA_CONF_OK) {
+      LOG4CXX_ERROR(logger_, "Kafka configuration error while setting max retries: "
+        << errBuf);
+      return;
+    }
+
     status = rd_kafka_conf_set(kafka_config,
                                "message.max.bytes",
                                KAFKA_MESSAGE_MAX_BYTES,
@@ -208,7 +221,7 @@ namespace FrameProcessor {
 
     status = rd_kafka_conf_set(kafka_config,
                                "queue.buffering.max.kbytes",
-                               "2097151",
+                               KAFKA_QUEUE_SIZE,
                                errBuf,
                                sizeof(errBuf));
 
