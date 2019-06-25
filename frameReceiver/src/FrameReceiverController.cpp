@@ -615,6 +615,12 @@ void FrameReceiverController::configure_buffer_manager(OdinData::IpcMessage& con
       // receiving frames
       frame_decoder_->drop_all_buffers();
 
+      // If an there is already an existing shared buffer manager, delete it first to ensure
+      // cleanup of shared memory segment occurs before creation of new manager.
+      if (buffer_manager_) {
+        buffer_manager_.reset();
+      }
+
       // Create a new shared buffer manager
       buffer_manager_.reset(new SharedBufferManager(
           shared_buffer_name, max_buffer_mem,frame_decoder_->get_frame_buffer_size(), true)
