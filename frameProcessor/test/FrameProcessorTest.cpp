@@ -645,6 +645,39 @@ BOOST_AUTO_TEST_CASE( AcquisitionAdjustFrameOffset )
   BOOST_CHECK_THROW(acquisition.adjust_frame_offset(frame), std::range_error);
 }
 
+BOOST_AUTO_TEST_CASE( AcquisitionFrameVerification )
+{
+  FrameProcessor::Acquisition acquisition;
+
+  FrameProcessor::DatasetDefinition dset_def;
+  // Provide default values for the dataset
+  dset_def.name = "raw";
+  dset_def.data_type = FrameProcessor::raw_16bit;
+  dset_def.compression = FrameProcessor::no_compression;
+  dset_def.blosc_compressor = 0;
+  dset_def.blosc_level = 0;
+  dset_def.blosc_shuffle = 0;
+  dset_def.num_frames = 1;
+  std::vector<long long unsigned int> dims(2, 0);
+  dset_def.frame_dimensions = dims;
+  dset_def.chunks = dims;
+  dset_def.create_low_high_indexes = false;
+
+  acquisition.dataset_defs_["raw"] = dset_def;
+
+  boost::shared_ptr<FrameProcessor::DataBlockFrame> frame = get_dummy_frame();
+  frame->meta_data().set_compression_type(FrameProcessor::unknown_compression);
+
+  bool verified = acquisition.check_frame_valid(frame);
+  BOOST_CHECK_EQUAL(false, verified);
+
+  frame = get_dummy_frame();
+  frame->meta_data().set_data_type(FrameProcessor::raw_unknown);
+
+  verified = acquisition.check_frame_valid(frame);
+  BOOST_CHECK_EQUAL(false, verified);
+}
+
 BOOST_AUTO_TEST_SUITE_END(); //AcquisitionUnitTest
 
 BOOST_FIXTURE_TEST_SUITE(ParameterAdjustmentPluginUnitTest, FileWriterPluginTestFixture);
