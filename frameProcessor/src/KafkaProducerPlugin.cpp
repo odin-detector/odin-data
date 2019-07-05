@@ -39,11 +39,20 @@ namespace FrameProcessor {
     }
   }
 
+
+  const std::string KafkaProducerPlugin::CONFIG_DATASET = "dataset";
+  const std::string KafkaProducerPlugin::CONFIG_INCLUDE_PARAMETERS = "include_parameters";
+
   const std::string KafkaProducerPlugin::CONFIG_SERVERS = "servers";
   const std::string KafkaProducerPlugin::CONFIG_TOPIC = "topic";
   const std::string KafkaProducerPlugin::CONFIG_PARTITION = "partition";
-  const std::string KafkaProducerPlugin::CONFIG_DATASET = "dataset";
-  const std::string KafkaProducerPlugin::CONFIG_INCLUDE_PARAMETERS = "include_parameters";
+  const std::string KafkaProducerPlugin::CONFIG_KAFKA_RETRIES = "kafka_max_retries";
+  const std::string KafkaProducerPlugin::CONFIG_KAFKA_RETRY_BACKOFF = "kafka_time_between_retries";
+  const std::string KafkaProducerPlugin::CONFIG_KAFKA_MAX_RETRY_TIME = "kafka_max_retry_time";
+  const std::string KafkaProducerPlugin::CONFIG_KAFKA_MAX_Q_SIZE= "kafka_max_queue_size";
+  const std::string KafkaProducerPlugin::CONFIG_KAFKA_ACKS= "kafka_acks";
+  const std::string KafkaProducerPlugin::CONFIG_KAFKA_MAX_MSQ_BYTES= "kafka_max_msg_bytes";
+  const std::string KafkaProducerPlugin::CONFIG_KAFKA_MAX_Q_BUFFER_TIME= "kafka_max_q_buffer_time";
 
   /**
    * The constructor sets up logging used within the class.
@@ -52,7 +61,15 @@ namespace FrameProcessor {
     : dataset_name_(KAFKA_DEFAULT_DATASET), topic_name_(KAFKA_DEFAULT_TOPIC),
       kafka_producer_(NULL), kafka_topic_(NULL),
       partition_(RD_KAFKA_PARTITION_UA),
-      include_parameters_(true)
+      include_parameters_(true),
+      max_retries_(KAFKA_DEFAULT_RETRIES),
+      retry_backoff_(KAFKA_DEFAULT_BACKOFF),
+      retry_max_time_(KAFKA_DEFAULT_MAX_TIME),
+      max_q_size_(KAFKA_DEFAULT_MAX_Q),
+      acks_(KAFKA_DEFAULT_ACKS),
+      max_msg_bytes_(KAFKA_DEFAULT_MAX_BYTES),
+      max_q_buffer_time_(KAFKA_DEFAULT_MAX_Q_BUFFER_TIME)
+
   {
     // Setup logging for the class
     logger_ = Logger::getLogger("FP.KafkaProducer");
@@ -104,6 +121,37 @@ namespace FrameProcessor {
     if (config.has_param(CONFIG_INCLUDE_PARAMETERS)) {
       this->include_parameters_ = config.get_param<bool>(CONFIG_INCLUDE_PARAMETERS);
     }
+
+    if (config.has_param(CONFIG_KAFKA_RETRIES)) {
+      this->max_retries_ = config.get_param<std::string>(CONFIG_KAFKA_RETRIES);
+    }
+
+    if (config.has_param(CONFIG_KAFKA_RETRY_BACKOFF)) {
+      this->retry_backoff_ = config.get_param<std::string>(CONFIG_KAFKA_RETRY_BACKOFF);
+    }
+
+    if (config.has_param(CONFIG_KAFKA_MAX_RETRY_TIME)) {
+      this->retry_max_time_ = config.get_param<std::string>(CONFIG_KAFKA_MAX_RETRY_TIME);
+    }
+
+    if (config.has_param(CONFIG_KAFKA_MAX_Q_SIZE)) {
+      this->max_q_size_ = config.get_param<std::string>(CONFIG_KAFKA_MAX_Q_SIZE);
+    }
+
+    if (config.has_param(CONFIG_KAFKA_ACKS)) {
+      this->acks_ = config.get_param<std::string>(CONFIG_KAFKA_ACKS);
+    }
+
+    if (config.has_param(CONFIG_KAFKA_MAX_MSQ_BYTES)) {
+      this->max_msg_bytes_ = config.get_param<std::string>(CONFIG_KAFKA_MAX_MSQ_BYTES);
+    }
+
+    if (config.has_param(CONFIG_KAFKA_MAX_Q_BUFFER_TIME)) {
+      this->max_q_buffer_time_ = config.get_param<std::string>(CONFIG_KAFKA_MAX_Q_BUFFER_TIME);
+    }
+
+
+
   }
 
   /**
@@ -123,6 +171,20 @@ namespace FrameProcessor {
                     this->dataset_name_);
     reply.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_INCLUDE_PARAMETERS,
                     this->include_parameters_);
+    reply.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_KAFKA_RETRIES,
+                    this->max_retries_);
+    reply.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_KAFKA_RETRY_BACKOFF,
+                    this->retry_backoff_);
+    reply.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_KAFKA_MAX_RETRY_TIME,
+                    this->retry_max_time_);
+    reply.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_KAFKA_MAX_Q_SIZE,
+                    this->max_q_size_);
+    reply.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_KAFKA_ACKS,
+                    this->acks_);
+    reply.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_KAFKA_MAX_MSQ_BYTES,
+                    this->max_msg_bytes_);
+    reply.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_KAFKA_MAX_Q_BUFFER_TIME,
+                    this->max_q_buffer_time_);
   }
 
   /**
@@ -195,65 +257,37 @@ namespace FrameProcessor {
     int status;
 
 
-    status = rd_kafka_conf_set(kafka_config,
-                               "message.send.max.retries",
-                               KAFKA_MESSAGE_MAX_RETRIES,
-                               errBuf,
-                               sizeof(errBuf));
+	set_property(kafka_config, "message.send.max.retries", 
+                               this->max_retries_.c_str(),
+                               errBuf);
 
-    if (status != RD_KAFKA_CONF_OK) {
-      LOG4CXX_ERROR(logger_, "Kafka configuration error while setting max retries: "
-        << errBuf);
-      return;
-    }
+	set_property(kafka_config, "retry.backoff.ms", 
+                               this->retry_backoff_.c_str(),
+                               errBuf);
 
-    status = rd_kafka_conf_set(kafka_config,
-                               "message.max.bytes",
-                               KAFKA_MESSAGE_MAX_BYTES,
-                               errBuf,
-                               sizeof(errBuf));
+	set_property(kafka_config, "message.timeout.ms", 
+                               this->retry_max_time_.c_str(),
+                               errBuf);
 
-    if (status != RD_KAFKA_CONF_OK) {
-      LOG4CXX_ERROR(logger_, "Kafka configuration error while setting max message size: "
-        << errBuf);
-      return;
-    }
+	set_property(kafka_config, "request.required.acks", 
+                               this->acks_.c_str(),
+                               errBuf);
 
-    status = rd_kafka_conf_set(kafka_config,
-                               "queue.buffering.max.kbytes",
-                               KAFKA_QUEUE_SIZE,
-                               errBuf,
-                               sizeof(errBuf));
+	set_property(kafka_config, "message.max.bytes", 
+                               max_msg_bytes_.c_str(),
+                               errBuf);
 
-    if (status != RD_KAFKA_CONF_OK) {
-      LOG4CXX_ERROR(logger_, "Kafka configuration error while setting max buffering size: "
-        << errBuf);
-      return;
-    }
+	set_property(kafka_config, "queue.buffering.max.kbytes", 
+                               this->max_q_size_.c_str(),
+                               errBuf);
 
-    status = rd_kafka_conf_set(kafka_config,
-                               "linger.ms",
-                               "5",
-                               errBuf,
-                               sizeof(errBuf));
+	set_property(kafka_config, "queue.buffering.max.ms", 
+                               this->max_q_buffer_time_.c_str(),
+                               errBuf);
 
-    if (status != RD_KAFKA_CONF_OK) {
-      LOG4CXX_ERROR(logger_, "Kafka configuration error while setting linger ms: "
-        << errBuf);
-      return;
-    }
-
-    status = rd_kafka_conf_set(kafka_config,
-                               "bootstrap.servers",
+	set_property(kafka_config, "bootstrap.servers", 
                                servers.c_str(),
-                               errBuf,
-                               sizeof(errBuf));
-
-    if (status != RD_KAFKA_CONF_OK) {
-      LOG4CXX_ERROR(logger_, "Kafka configuration error while setting botstrap servers"
-        << errBuf);
-      return;
-    }
+                               errBuf);
 
     // Configure callback to count ACKed messages
     rd_kafka_conf_set_dr_msg_cb(kafka_config, kafka_message_callback);
@@ -323,6 +357,27 @@ namespace FrameProcessor {
   void KafkaProducerPlugin::configure_partition(int32_t partition)
   {
     this->partition_ = partition;
+  }
+
+  /**
+   * Set Kafka Producer configration property
+   *
+   *
+   */
+  void KafkaProducerPlugin::set_property(rd_kafka_conf_t * kafka_config, const char * property, const char * value, char errBuf[])
+  {
+    int status;
+    status = rd_kafka_conf_set(kafka_config,
+                               property,
+                               value,
+                               errBuf,
+                               sizeof(errBuf));
+
+    if (status != RD_KAFKA_CONF_OK) {
+      LOG4CXX_ERROR(logger_, "Kafka configuration error while setting " << property 
+        << errBuf);
+      return;
+    }
   }
 
   /**
