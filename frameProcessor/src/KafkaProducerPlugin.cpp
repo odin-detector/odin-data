@@ -99,15 +99,6 @@ namespace FrameProcessor {
                                       OdinData::IpcMessage &reply)
   {
     boost::lock_guard<boost::recursive_mutex> lock(mutex_);
-    if (config.has_param(CONFIG_SERVERS)) {
-      destroy_kafka();
-      configure_kafka_servers(config.get_param<std::string>(CONFIG_SERVERS));
-      configure_kafka_topic(this->topic_name_);
-    }
-
-    if (config.has_param(CONFIG_TOPIC)) {
-      configure_kafka_topic(config.get_param<std::string>(CONFIG_TOPIC));
-    }
 
     if (config.has_param(CONFIG_PARTITION)) {
       configure_partition(config.get_param<uint32_t>(CONFIG_PARTITION));
@@ -147,6 +138,17 @@ namespace FrameProcessor {
 
     if (config.has_param(CONFIG_KAFKA_MAX_Q_BUFFER_TIME)) {
       this->max_q_buffer_time_ = config.get_param<std::string>(CONFIG_KAFKA_MAX_Q_BUFFER_TIME);
+    }
+
+    bool need_configure_topic = false;
+    if (config.has_param(CONFIG_SERVERS)) {
+      destroy_kafka();
+      configure_kafka_servers(config.get_param<std::string>(CONFIG_SERVERS));
+      need_configure_topic = true;
+    }
+
+    if (config.has_param(CONFIG_TOPIC) || need_configure_topic) {
+      configure_kafka_topic(config.get_param<std::string>(CONFIG_TOPIC));
     }
 
   }
