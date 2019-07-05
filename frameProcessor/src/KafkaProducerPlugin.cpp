@@ -39,7 +39,6 @@ namespace FrameProcessor {
     }
   }
 
-
   const std::string KafkaProducerPlugin::CONFIG_DATASET = "dataset";
   const std::string KafkaProducerPlugin::CONFIG_INCLUDE_PARAMETERS = "include_parameters";
 
@@ -150,8 +149,6 @@ namespace FrameProcessor {
       this->max_q_buffer_time_ = config.get_param<std::string>(CONFIG_KAFKA_MAX_Q_BUFFER_TIME);
     }
 
-
-
   }
 
   /**
@@ -256,36 +253,35 @@ namespace FrameProcessor {
     kafka_config = rd_kafka_conf_new();
     int status;
 
-
-	set_property(kafka_config, "message.send.max.retries", 
+    set_property(kafka_config, "message.send.max.retries",
                                this->max_retries_.c_str(),
                                errBuf);
 
-	set_property(kafka_config, "retry.backoff.ms", 
+    set_property(kafka_config, "retry.backoff.ms",
                                this->retry_backoff_.c_str(),
                                errBuf);
 
-	set_property(kafka_config, "message.timeout.ms", 
+    set_property(kafka_config, "message.timeout.ms",
                                this->retry_max_time_.c_str(),
                                errBuf);
 
-	set_property(kafka_config, "request.required.acks", 
+    set_property(kafka_config, "request.required.acks",
                                this->acks_.c_str(),
                                errBuf);
 
-	set_property(kafka_config, "message.max.bytes", 
+    set_property(kafka_config, "message.max.bytes",
                                max_msg_bytes_.c_str(),
                                errBuf);
 
-	set_property(kafka_config, "queue.buffering.max.kbytes", 
+    set_property(kafka_config, "queue.buffering.max.kbytes",
                                this->max_q_size_.c_str(),
                                errBuf);
 
-	set_property(kafka_config, "queue.buffering.max.ms", 
+    set_property(kafka_config, "queue.buffering.max.ms",
                                this->max_q_buffer_time_.c_str(),
                                errBuf);
 
-	set_property(kafka_config, "bootstrap.servers", 
+    set_property(kafka_config, "bootstrap.servers",
                                servers.c_str(),
                                errBuf);
 
@@ -364,7 +360,8 @@ namespace FrameProcessor {
    *
    *
    */
-  void KafkaProducerPlugin::set_property(rd_kafka_conf_t * kafka_config, const char * property, const char * value, char errBuf[])
+  void KafkaProducerPlugin::set_property(rd_kafka_conf_t *kafka_config, const char *property, const char *value,
+                                         char errBuf[])
   {
     int status;
     status = rd_kafka_conf_set(kafka_config,
@@ -374,9 +371,8 @@ namespace FrameProcessor {
                                sizeof(errBuf));
 
     if (status != RD_KAFKA_CONF_OK) {
-      LOG4CXX_ERROR(logger_, "Kafka configuration error while setting " << property 
-        << errBuf);
-      return;
+      LOG4CXX_ERROR(logger_, "Kafka configuration error while setting " << property
+                                                                        << errBuf);
     }
   }
 
@@ -423,8 +419,7 @@ namespace FrameProcessor {
         const std::type_info &ti = it->second.type();
         if (it->second.type() == typeid(unsigned long)) {
           writer.Uint64(frame->get_meta_data().get_parameter<unsigned long>(it->first));
-        }
-        else if (it->second.type() == typeid(float)) {
+        } else if (it->second.type() == typeid(float)) {
           writer.Double(frame->get_meta_data().get_parameter<float>(it->first));
         } else {
           writer.Null();
@@ -436,7 +431,7 @@ namespace FrameProcessor {
 
     if (string_buffer.GetSize() > USHRT_MAX) {
       LOG4CXX_ERROR(logger_, "Header size is too big, it should be less than "
-        << USHRT_MAX);
+          << USHRT_MAX);
       nbytes = 0;
       return NULL;
     }
@@ -480,53 +475,53 @@ namespace FrameProcessor {
     }
 
     retry:
-		// enqueue message
-		int status = rd_kafka_produce(
-		  this->kafka_topic_,
-		  partition_,
-		  /* free buffer when enqueued */
-		  RD_KAFKA_MSG_F_FREE,
-		  /* Data */
-		  buf, len,
-		  /* No key */
-		  NULL, 0,
-		  /* Opaque pointer */
-		  this);
+    // enqueue message
+    int status = rd_kafka_produce(
+        this->kafka_topic_,
+        partition_,
+        /* free buffer when enqueued */
+        RD_KAFKA_MSG_F_FREE,
+        /* Data */
+        buf, len,
+        /* No key */
+        NULL, 0,
+        /* Opaque pointer */
+        this);
 
-		if (status) {
+    if (status) {
 
-		    if (rd_kafka_last_error() ==
-		      RD_KAFKA_RESP_ERR__QUEUE_FULL) {
-		        /* If the internal queue is full, wait for
-		        * messages to be delivered and then retry.
-		        * The internal queue represents both
-		        * messages to be sent and messages that have
-		        * been sent or failed, awaiting their
-		        * delivery report callback to be called.
-		        *
-		        * The internal queue is limited by the
-		        * configuration property
-		        * queue.buffering.max.messages */
-		        LOG4CXX_DEBUG(logger_, "Blocking whilst producer queue full");
-		        rd_kafka_poll(this->kafka_producer_, 10/*block for max 10ms*/);
-		        goto retry;
-			} else {
-		        // Dropping frame because some error other than queue full. The other possible errors are:
-				//ERR_MSG_SIZE_TOO_LARGE - message is larger than configured max size: messages.max.bytes
-				//ERR__UNKNOWN_PARTITION - requested partition is unknown in the Kafka cluster.
-				//ERR__UNKNOWN_TOPIC
-		        LOG4CXX_ERROR(logger_, "Error while producing: "
-		        << rd_kafka_err2str(rd_kafka_last_error()));
-		        free(buf);
-		        frames_lost_++;
-			}
-		} else {
-		  frames_sent_++;
-		  LOG4CXX_DEBUG(logger_, "Frame joined producer queue: " << frame->get_frame_number());
-		  LOG4CXX_DEBUG(logger_, "Total frames sent to queue: " << frames_sent_);
-		}
+      if (rd_kafka_last_error() ==
+          RD_KAFKA_RESP_ERR__QUEUE_FULL) {
+        /* If the internal queue is full, wait for
+        * messages to be delivered and then retry.
+        * The internal queue represents both
+        * messages to be sent and messages that have
+        * been sent or failed, awaiting their
+        * delivery report callback to be called.
+        *
+        * The internal queue is limited by the
+        * configuration property
+        * queue.buffering.max.messages */
+        LOG4CXX_DEBUG(logger_, "Blocking whilst producer queue full");
+        rd_kafka_poll(this->kafka_producer_, 10/*block for max 10ms*/);
+        goto retry;
+      } else {
+        // Dropping frame because some error other than queue full. The other possible errors are:
+        //ERR_MSG_SIZE_TOO_LARGE - message is larger than configured max size: messages.max.bytes
+        //ERR__UNKNOWN_PARTITION - requested partition is unknown in the Kafka cluster.
+        //ERR__UNKNOWN_TOPIC
+        LOG4CXX_ERROR(logger_, "Error while producing: "
+            << rd_kafka_err2str(rd_kafka_last_error()));
+        free(buf);
+        frames_lost_++;
+      }
+    } else {
+      frames_sent_++;
+      LOG4CXX_DEBUG(logger_, "Frame joined producer queue: " << frame->get_frame_number());
+      LOG4CXX_DEBUG(logger_, "Total frames sent to queue: " << frames_sent_);
+    }
 
-		rd_kafka_poll(this->kafka_producer_, 0);
+    rd_kafka_poll(this->kafka_producer_, 0);
   }
 
   /**
