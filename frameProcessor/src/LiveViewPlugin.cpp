@@ -162,7 +162,7 @@ void LiveViewPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessag
     {
       set_socket_addr_config(config.get_param<std::string>(CONFIG_SOCKET_ADDR));
     }
-    else
+    else if (is_bound_ == false) //do not default if the socket is already bound
     {
       set_socket_addr_config(DEFAULT_IMAGE_VIEW_SOCKET_ADDR);
     }
