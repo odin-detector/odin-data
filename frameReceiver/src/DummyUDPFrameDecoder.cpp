@@ -9,7 +9,7 @@
 
 #include <sstream>
 
-#include "../include/DummyUDPFrameDecoder.h"
+#include "DummyUDPFrameDecoder.h"
 #include "version.h"
 #include "gettime.h"
 
@@ -273,19 +273,20 @@ void DummyUDPFrameDecoder::process_packet_header(size_t bytes_received, int port
     
   }
 
-  if (!dropping_frame_data_) 
-  {
-    packets_received_++;
-  }
-  else
+  // Update packet state in frame header
+  current_frame_header_->packet_state[packet_number] = 1;
+
+  // Increment packet counters
+  if (dropping_frame_data_) 
   {
     packets_dropped_++;
   }
-  
-  // Update packet state in frame header
-  current_frame_header_->packet_state[packet_number] = 1;
-}
+  else
+  {
+    packets_received_++;
+  }
 
+}
 
 //! Initialise a frame header
 //!
@@ -444,6 +445,14 @@ void DummyUDPFrameDecoder::monitor_buffers(void)
 
 }
 
+//! Get the current status of the frame decoder.
+//!
+//! This method populates the IpcMessage passed by reference as an argument with decoder-specific
+//! status information, e.g. packet loss by source.
+//!
+//! \param[in] param_prefix - path to be prefixed to each status parameter name
+//! \param[in] status_msg - reference to IpcMesssage to be populated with parameters
+//!
 void DummyUDPFrameDecoder::get_status(const std::string param_prefix,
     OdinData::IpcMessage& status_msg)
 {
@@ -455,6 +464,10 @@ void DummyUDPFrameDecoder::get_status(const std::string param_prefix,
   status_msg.set_param(param_prefix + "packets_dropped", packets_dropped_);
 }
 
+//! Reset the decoder statistics.
+//!
+//! This method resets the frame decoder statistics, including packets received and lost 
+//!
 void DummyUDPFrameDecoder::reset_statistics()
 {
   FrameDecoderUDP::reset_statistics();
@@ -475,7 +488,6 @@ uint32_t DummyUDPFrameDecoder::get_frame_number(void) const
 {
   return reinterpret_cast<DummyUDP::PacketHeader*>(current_packet_header_.get())->frame_number;
 }
-
 
 //! Get the current packet number.
 //!
