@@ -1,8 +1,8 @@
 /*
  * DummyUDPFrameDecoderLib.cpp
  *
- *  Created on: Jun 20, 2017
- *      Author: tcn45
+ *  Created on: 22 Jul 2019
+ *      Author: Tim Nicholls, STFC Detector Systems Software Group
  */
 
 #include "DummyUDPFrameDecoder.h"

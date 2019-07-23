@@ -38,7 +38,9 @@ namespace DummyUDP {
     uint32_t frame_number;
     uint32_t frame_state;
     struct timespec frame_start_time;
+    uint32_t total_packets_expected;
     uint32_t total_packets_received;
+    std::size_t packet_size;
     uint8_t packet_state[max_packets];
   } FrameHeader;
   

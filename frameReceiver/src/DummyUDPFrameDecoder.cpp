@@ -300,7 +300,9 @@ void DummyUDPFrameDecoder::initialise_frame_header(DummyUDP::FrameHeader* header
 {
   header_ptr->frame_number = current_frame_seen_;
   header_ptr->frame_state = FrameDecoder::FrameReceiveStateIncomplete;
+  header_ptr->total_packets_expected = udp_packets_per_frame_;
   header_ptr->total_packets_received = 0;
+  header_ptr->packet_size = udp_packet_size_;
 
   memset(header_ptr->packet_state, 0, sizeof(uint8_t) * DummyUDP::max_packets);
 
