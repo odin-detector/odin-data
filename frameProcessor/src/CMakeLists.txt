@@ -42,9 +42,9 @@ endif()
 install(TARGETS frameProcessor RUNTIME DESTINATION bin)
 
 # Add library for dummy plugin
-add_library(DummyPlugin SHARED DummyPlugin.cpp)
-target_link_libraries(DummyPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${COMMON_LIBRARY})
-install(TARGETS DummyPlugin DESTINATION lib)
+add_library(DummyUDPProcessPlugin SHARED DummyUDPProcessPlugin.cpp DummyUDPProcessPluginLib.cpp)
+target_link_libraries(DummyUDPProcessPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${COMMON_LIBRARY})
+install(TARGETS DummyUDPProcessPlugin DESTINATION lib)
 
 # Add library for Blosc plugin
 if (${BLOSC_FOUND})
