@@ -23,6 +23,15 @@ add_executable(frameSimulator ${APP_SOURCES} FrameSimulatorApp.cpp)
 
 target_link_libraries(frameSimulator ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${PCAP_LIBRARY} ${COMMON_LIBRARY})
 
+file(GLOB DUMMY_LIB_SOURCES DummyUDPFrameSimulatorPlugin.cpp DummyUDPFrame.cpp)
+
+# Add library for DummyUDP plugin
+add_library(DummyUDPFrameSimulatorPlugin SHARED ${DUMMY_LIB_SOURCES})
+
+target_link_libraries(DummyUDPFrameSimulatorPlugin ${PCAP_LIBRARY})
+
+install(TARGETS DummyUDPFrameSimulatorPlugin LIBRARY DESTINATION lib)
+
 if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
     find_library(PTHREAD_LIBRARY
              NAMES pthread)

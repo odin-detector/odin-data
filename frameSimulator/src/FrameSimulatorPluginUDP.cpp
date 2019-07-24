@@ -19,7 +19,7 @@ namespace FrameSimulator {
     FrameSimulatorPluginUDP::FrameSimulatorPluginUDP() : FrameSimulatorPlugin() {
 
         // Setup logging for the class
-        logger_ = Logger::getLogger("FS.pcapFrameSimulatorPlugin");
+        logger_ = Logger::getLogger("FS.FrameSimulatorPluginUDP");
         logger_->setLevel(Level::getAll());
 
         curr_frame = 0;
