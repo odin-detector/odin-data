@@ -611,7 +611,7 @@ void FileWriterPlugin::configure_dataset(const std::string& dataset_name, OdinDa
 
   // Check if creating the high/low indexes has been specified
   if (config.has_param(FileWriterPlugin::CONFIG_DATASET_INDEXES)) {
-    dset.create_low_high_indexes = (CompressionType)config.get_param<bool>(FileWriterPlugin::CONFIG_DATASET_INDEXES);
+    dset.create_low_high_indexes = config.get_param<bool>(FileWriterPlugin::CONFIG_DATASET_INDEXES);
   }
 
   // Add the dataset definition to the store
@@ -693,9 +693,17 @@ bool FileWriterPlugin::frame_in_acquisition(boost::shared_ptr<Frame> frame) {
     } else {
       std::stringstream ss;
       ss << "Unexpected acquisition ID on frame (" << frame_acquisition_ID << ")";
-      set_error(ss.str());
-      ss << " for frame " << frame->get_frame_number();
-      LOG4CXX_WARN(logger_, ss.str());
+      if (writing_)
+      {
+        set_error(ss.str());
+        ss << " for frame " << frame->get_frame_number();
+        LOG4CXX_WARN(logger_, ss.str());
+      }
+      else
+      {
+        ss << " for frame " << frame->get_frame_number();
+        LOG4CXX_DEBUG(logger_, ss.str());
+      }
       return false;
     }
   }
