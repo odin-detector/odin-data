@@ -463,7 +463,7 @@ namespace FrameProcessor {
     }
 
     size_t message_size = sizeof(uint16_t) + string_buffer.GetSize() + 1
-      + frame->get_data_size();
+      + frame->get_image_size();
     char *msg = (char *) malloc(message_size);
     uint16_t header_size = static_cast<uint16_t>(string_buffer.GetSize() + 1);
 
@@ -472,8 +472,8 @@ namespace FrameProcessor {
     memcpy(msg + sizeof(uint16_t), string_buffer.GetString(),
            header_size);
     // copy frame data
-    memcpy(msg + sizeof(uint16_t) + header_size, frame->get_data_ptr(),
-           frame->get_data_size());
+    memcpy(msg + sizeof(uint16_t) + header_size, frame->get_image_ptr(),
+           frame->get_image_size());
     nbytes = message_size;
     return msg;
   }
