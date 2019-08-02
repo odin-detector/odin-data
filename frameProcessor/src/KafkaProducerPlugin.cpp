@@ -48,7 +48,9 @@ namespace FrameProcessor {
   const std::string KafkaProducerPlugin::CONFIG_KAFKA_RETRIES = "kafka_max_retries";
   const std::string KafkaProducerPlugin::CONFIG_KAFKA_RETRY_BACKOFF = "kafka_time_between_retries";
   const std::string KafkaProducerPlugin::CONFIG_KAFKA_MAX_RETRY_TIME = "kafka_max_retry_time";
+  const std::string KafkaProducerPlugin::CONFIG_KAFKA_MAX_Q_MSGS= "kafka_max_queue_messages";
   const std::string KafkaProducerPlugin::CONFIG_KAFKA_MAX_Q_SIZE= "kafka_max_queue_size";
+  const std::string KafkaProducerPlugin::CONFIG_KAFKA_BATCH_MSGS= "kafka_batch_messages";
   const std::string KafkaProducerPlugin::CONFIG_KAFKA_ACKS= "kafka_acks";
   const std::string KafkaProducerPlugin::CONFIG_KAFKA_MAX_MSQ_BYTES= "kafka_max_msg_bytes";
   const std::string KafkaProducerPlugin::CONFIG_KAFKA_MAX_Q_BUFFER_TIME= "kafka_max_q_buffer_time";
@@ -64,7 +66,9 @@ namespace FrameProcessor {
       max_retries_(KAFKA_DEFAULT_RETRIES),
       retry_backoff_(KAFKA_DEFAULT_BACKOFF),
       retry_max_time_(KAFKA_DEFAULT_MAX_TIME),
-      max_q_size_(KAFKA_DEFAULT_MAX_Q),
+      max_q_msgs_(KAFKA_DEFAULT_MAX_Q_MSGS),
+      max_q_size_(KAFKA_DEFAULT_MAX_Q_SIZE),
+      batch_msgs_(KAFKA_DEFAULT_BATCH_MSGS),
       acks_(KAFKA_DEFAULT_ACKS),
       max_msg_bytes_(KAFKA_DEFAULT_MAX_BYTES),
       max_q_buffer_time_(KAFKA_DEFAULT_MAX_Q_BUFFER_TIME)
@@ -124,8 +128,16 @@ namespace FrameProcessor {
       this->retry_max_time_ = config.get_param<std::string>(CONFIG_KAFKA_MAX_RETRY_TIME);
     }
 
+    if (config.has_param(CONFIG_KAFKA_MAX_Q_MSGS)) {
+      this->max_q_msgs_ = config.get_param<std::string>(CONFIG_KAFKA_MAX_Q_MSGS);
+    }
+
     if (config.has_param(CONFIG_KAFKA_MAX_Q_SIZE)) {
       this->max_q_size_ = config.get_param<std::string>(CONFIG_KAFKA_MAX_Q_SIZE);
+    }
+
+    if (config.has_param(CONFIG_KAFKA_BATCH_MSGS)) {
+      this->batch_msgs_ = config.get_param<std::string>(CONFIG_KAFKA_BATCH_MSGS);
     }
 
     if (config.has_param(CONFIG_KAFKA_ACKS)) {
@@ -178,6 +190,10 @@ namespace FrameProcessor {
                     this->retry_max_time_);
     reply.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_KAFKA_MAX_Q_SIZE,
                     this->max_q_size_);
+    reply.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_KAFKA_MAX_Q_MSGS,
+                    this->max_q_size_);
+    reply.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_KAFKA_BATCH_MSGS,
+                    this->batch_msgs_);
     reply.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_KAFKA_ACKS,
                     this->acks_);
     reply.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_KAFKA_MAX_MSQ_BYTES,
@@ -275,8 +291,16 @@ namespace FrameProcessor {
                                max_msg_bytes_.c_str(),
                                errBuf);
 
+    set_property(kafka_config, "queue.buffering.max.messages",
+                               this->max_q_msgs_.c_str(),
+                               errBuf);
+
     set_property(kafka_config, "queue.buffering.max.kbytes",
                                this->max_q_size_.c_str(),
+                               errBuf);
+
+    set_property(kafka_config, "batch.num.messages",
+                               this->batch_msgs_.c_str(),
                                errBuf);
 
     set_property(kafka_config, "queue.buffering.max.ms",
@@ -505,7 +529,7 @@ namespace FrameProcessor {
         * configuration property
         * queue.buffering.max.messages */
         LOG4CXX_DEBUG(logger_, "Blocking whilst producer queue full");
-        rd_kafka_poll(this->kafka_producer_, 10/*block for max 10ms*/);
+        rd_kafka_poll(this->kafka_producer_, 1/*block for max 1ms*/);
         goto retry;
       } else {
         // Dropping frame because some error other than queue full. The other possible errors are:

@@ -25,12 +25,14 @@ using namespace log4cxx::helpers;
 #define KAFKA_DEFAULT_DATASET "data"
 #define KAFKA_DEFAULT_TOPIC "data"
 #define KAFKA_DEFAULT_RETRIES "1000"
-#define KAFKA_DEFAULT_BACKOFF "100"
+#define KAFKA_DEFAULT_BACKOFF "500"
 #define KAFKA_DEFAULT_MAX_TIME "300000"
-#define KAFKA_DEFAULT_MAX_Q "2097151"
+#define KAFKA_DEFAULT_MAX_Q_MSGS "200"
+#define KAFKA_DEFAULT_MAX_Q_SIZE "2097151"
+#define KAFKA_DEFAULT_BATCH_MSGS "1"
 #define KAFKA_DEFAULT_ACKS "all"
 #define KAFKA_DEFAULT_MAX_BYTES "134217728"
-#define KAFKA_DEFAULT_MAX_Q_BUFFER_TIME "5"
+#define KAFKA_DEFAULT_MAX_Q_BUFFER_TIME "0"
 #define MSG_HEADER_FRAME_SIZE_KEY "data_size"
 #define MSG_HEADER_DATA_TYPE_KEY "data_type"
 #define MSG_HEADER_FRAME_NUMBER_KEY "frame_number"
@@ -55,19 +57,21 @@ namespace FrameProcessor {
    *  topic: Topic name of the queue to send the message to. Defaults to "data".
    *  partition: Partition number. Defaults to RD_KAFKA_PARTITION_UA (automatic partitioning)
    *  max_retries: How many times to retry sending a failing Message. Defaults to 1000.
-   *  retry_backoff: The backoff time in ms before retrying a protocol request. Defaults to 100 ms.
+   *  retry_backoff: The backoff time in ms before retrying a protocol request. Defaults to 500 ms.
    *  retry_max_time: Local message timeout. This value is only enforced locally and limits the time a produced message waits for successful delivery. 
    *                  A time of 0 is infinite. This is the maximum time librdkafka may use to deliver a message (including retries). 
    *                  Delivery error occurs when either the retry count or the message timeout are exceeded. Defaults to 300000 ms.
+   *  max_q_msgs: Maximum number of messages allowed on the producer queue. This queue is shared by all topics and partitions. Defaults to 200.
    *  max_q_size: Maximum total message size sum allowed on the producer queue. This queue is shared by all topics and partitions. 
    *              This property has higher priority than queue.buffering.max.messages. Defaults to 2097151 kB (maximum possible).
+   *  batch_msgs: Maximum number of messages batched in one MessageSet. Defaults to 1.
    *  acks: This field indicates the number of acknowledgements the leader broker must receive from ISR brokers before responding to the request: 
    *        *0*=Broker does not send any response/ack to client, *-1* or *all*=Broker will block until message is committed by all in sync replicas
    *        (ISRs). If there are less than `min.insync.replicas` (broker configuration) in the ISR set the produce request will fail. Defaults to
    *        *all*.
    *  max_msg_bytes: Maximum Kafka protocol request message size. Defaults to 134217728 B.
    *  max_q_buffer_time: Delay in ms to wait for messages in the producer queue to accumulate before constructing message batches to transmit to brokers.
-   *                     Defaults to 5 ms.
+   *                     Defaults to 0 ms.
    *  include_parameters: Boolean indicating if frame parameters should be included in the message.
    *                      Defaults to true.
    *
@@ -145,8 +149,12 @@ namespace FrameProcessor {
     std::string retry_backoff_;
     /** Max time to produce message (inc retries) */
     std::string retry_max_time_;
+    /** Max producer queue msgs */
+    std::string max_q_msgs_;
     /** Max producer queue size */
     std::string max_q_size_;
+    /** Max producer batch msgs */
+    std::string batch_msgs_;
     /** Kafka acknowledgments */
     std::string acks_;
     /** Kafka max message bytes */
@@ -189,8 +197,12 @@ namespace FrameProcessor {
     static const std::string CONFIG_KAFKA_RETRY_BACKOFF;
     /** Configuration constant for kafka max time for producing message (inc retries). 0 is infinite */
     static const std::string CONFIG_KAFKA_MAX_RETRY_TIME;
+    /** Configuration constant for kafka max producer queue number of messages */
+    static const std::string CONFIG_KAFKA_MAX_Q_MSGS;
     /** Configuration constant for kafka max producer queue size (max is 2097151 kB) */
     static const std::string CONFIG_KAFKA_MAX_Q_SIZE;
+    /** Configuration constant for kafka max producer batch number of messages*/
+    static const std::string CONFIG_KAFKA_BATCH_MSGS;
     /** Configuration constant for kafka acknowledgments */
     static const std::string CONFIG_KAFKA_ACKS;
     /** Configuration constant for kafka max msg size */
