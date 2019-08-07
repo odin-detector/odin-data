@@ -116,50 +116,60 @@ namespace FrameProcessor {
       this->include_parameters_ = config.get_param<bool>(CONFIG_INCLUDE_PARAMETERS);
     }
 
+    //servers must be reconfigured if any of the following kafka parameters are changed
+    bool need_configure_servers = false;
+
     if (config.has_param(CONFIG_KAFKA_RETRIES)) {
       this->max_retries_ = config.get_param<std::string>(CONFIG_KAFKA_RETRIES);
+      need_configure_servers = true;
     }
 
     if (config.has_param(CONFIG_KAFKA_RETRY_BACKOFF)) {
       this->retry_backoff_ = config.get_param<std::string>(CONFIG_KAFKA_RETRY_BACKOFF);
+      need_configure_servers = true;
     }
 
     if (config.has_param(CONFIG_KAFKA_MAX_RETRY_TIME)) {
       this->retry_max_time_ = config.get_param<std::string>(CONFIG_KAFKA_MAX_RETRY_TIME);
+      need_configure_servers = true;
     }
 
     if (config.has_param(CONFIG_KAFKA_MAX_Q_MSGS)) {
       this->max_q_msgs_ = config.get_param<std::string>(CONFIG_KAFKA_MAX_Q_MSGS);
+      need_configure_servers = true;
     }
 
     if (config.has_param(CONFIG_KAFKA_MAX_Q_SIZE)) {
       this->max_q_size_ = config.get_param<std::string>(CONFIG_KAFKA_MAX_Q_SIZE);
+      need_configure_servers = true;
     }
 
     if (config.has_param(CONFIG_KAFKA_BATCH_MSGS)) {
       this->batch_msgs_ = config.get_param<std::string>(CONFIG_KAFKA_BATCH_MSGS);
+      need_configure_servers = true;
     }
 
     if (config.has_param(CONFIG_KAFKA_ACKS)) {
       this->acks_ = config.get_param<std::string>(CONFIG_KAFKA_ACKS);
+      need_configure_servers = true;
     }
 
     if (config.has_param(CONFIG_KAFKA_MAX_MSQ_BYTES)) {
       this->max_msg_bytes_ = config.get_param<std::string>(CONFIG_KAFKA_MAX_MSQ_BYTES);
+      need_configure_servers = true;
     }
 
     if (config.has_param(CONFIG_KAFKA_MAX_Q_BUFFER_TIME)) {
       this->max_q_buffer_time_ = config.get_param<std::string>(CONFIG_KAFKA_MAX_Q_BUFFER_TIME);
+      need_configure_servers = true;
     }
 
-    bool need_configure_topic = false;
-    if (config.has_param(CONFIG_SERVERS)) {
+    if (config.has_param(CONFIG_SERVERS) || need_configure_servers) {
       destroy_kafka();
       configure_kafka_servers(config.get_param<std::string>(CONFIG_SERVERS));
-      need_configure_topic = true;
     }
 
-    if (config.has_param(CONFIG_TOPIC) || need_configure_topic) {
+    if (config.has_param(CONFIG_TOPIC) || need_configure_servers) {
       configure_kafka_topic(config.get_param<std::string>(CONFIG_TOPIC));
     }
 
