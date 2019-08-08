@@ -386,8 +386,17 @@ bool Acquisition::check_frame_valid(boost::shared_ptr<Frame> frame)
   bool invalid = false;
   const FrameMetaData frame_meta_data = frame->get_meta_data();
   DatasetDefinition dataset = dataset_defs_.at(frame_meta_data.get_dataset_name());
+
+  // Check if frame compression is set to unknown and raise an error.
+  // Otherwise verify the compression is consistent with the dataset definition.
   CompressionType frame_compression_type = frame_meta_data.get_compression_type();
-  if (frame_compression_type >= 0 && frame_compression_type != dataset.compression) {
+  if (frame_compression_type == unknown_compression) {
+    std::stringstream ss;
+    ss << "Invalid frame: Frame has unknown compression for dataset " << dataset.name;
+    last_error_ = ss.str();
+    LOG4CXX_ERROR(logger_, last_error_);
+    invalid = true;
+  } else if (frame_compression_type != dataset.compression) {
     std::stringstream ss;
     ss << "Invalid frame: Frame has compression " << frame_compression_type <<
           ", expected " << dataset.compression <<
@@ -397,8 +406,17 @@ bool Acquisition::check_frame_valid(boost::shared_ptr<Frame> frame)
     LOG4CXX_ERROR(logger_, last_error_);
     invalid = true;
   }
+
+  // Check if frame data type is set to unknown and raise an error.
+  // Otherwise verify the data type is consistent with the dataset definition.
   DataType frame_data_type = frame_meta_data.get_data_type();
-  if (frame_data_type >= 0 && frame_data_type != dataset.data_type) {
+  if (frame_data_type == raw_unknown) {
+    std::stringstream ss;
+    ss << "Invalid frame: Frame has unknown data type for dataset " << dataset.name;
+    last_error_ = ss.str();
+    LOG4CXX_ERROR(logger_, last_error_);
+    invalid = true;
+  } else if (frame_data_type != dataset.data_type) {
     std::stringstream ss;
     ss << "Invalid frame: Frame has data type " << frame_data_type <<
        ", expected " << dataset.data_type <<
