@@ -130,6 +130,111 @@ namespace FrameSimulator {
 
     }
 
+    /** Replay the stored frames
+     * called by simulate
+     */
+    void FrameSimulatorPluginUDP::replay_frames() {
+
+        LOG4CXX_DEBUG(logger_, "Replaying frame(s)");
+
+        int frames_to_replay = replay_numframes ? replay_numframes.get() : frames.size();
+
+        LOG4CXX_DEBUG(logger_, "Replaying frames");
+        LOG4CXX_DEBUG(logger_, frames_to_replay);
+
+        int total_frames_sent = 0;
+        int total_packets_sent = 0;
+        int total_packets_dropped = 0;
+        int total_bytes_sent = 0;
+
+        for (int f = 0; f < frames_to_replay; f++) {
+
+            int n = f % frames.size();
+
+            time_t start_time;
+            time_t end_time;
+
+            time(&start_time);
+
+            int num_packets = frames[n].packets.size();
+            int frame_packets_sent = 0;
+            int frame_packets_dropped = 0;
+            int frame_bytes_sent = 0;
+
+            LOG4CXX_DEBUG(logger_, "Frame " + boost::lexical_cast<std::string>(n) + " packets: " +
+                                   boost::lexical_cast<std::string>(num_packets));
+
+            for (int p = 0; p < num_packets; p++) {
+
+                Packet packet = frames[n].packets[p];
+
+                // If drop fraction specified, decide if packet should be dropped
+                if (drop_frac) {
+                    if (((double) rand() / RAND_MAX) < drop_frac.get()) {
+                        frame_packets_dropped += 1;
+                        continue;
+                    }
+                }
+
+                // If drop list was specified and this packet is in it, drop the packet
+
+                if (drop_packets) {
+                    std::vector<std::string> drop_packet_vec = drop_packets.get();
+                    if (std::find(drop_packet_vec.begin(), drop_packet_vec.end(), boost::lexical_cast<std::string>(p)) != drop_packet_vec.end()) {
+                        frame_packets_dropped += 1;
+                        continue;
+                    }
+                }
+
+                frame_bytes_sent += send_packet(packet, n);
+                frame_packets_sent += 1;
+
+                // Add brief pause between 'packet_gap' frames if packet gap specified
+                if (packet_gap && (frame_packets_sent % packet_gap.get() == 0)) {
+                    LOG4CXX_DEBUG(logger_,
+                                  "Pause - just sent packet - " + boost::lexical_cast<std::string>(frame_packets_sent));
+                    sleep(0.01);
+                }
+
+            }
+
+
+            time(&end_time);
+
+            float frame_time_s = difftime(end_time, start_time);
+
+            // Calculate wait time and sleep so that frames are sent at requested intervals
+            if (replay_interval) {
+                float wait_time_s = replay_interval.get() - frame_time_s;
+                if (wait_time_s > 0) {
+                    LOG4CXX_DEBUG(logger_,
+                                  "Pause after frame " + boost::lexical_cast<std::string>(n));
+                    struct timespec wait_spec;
+                    wait_spec.tv_sec = (int)wait_time_s;
+                    wait_spec.tv_nsec = (long)((wait_time_s - (float)wait_spec.tv_sec) * 1000000000L);
+                    nanosleep(&wait_spec, NULL);
+                }
+            }
+
+            LOG4CXX_DEBUG(logger_, "Sent " + boost::lexical_cast<std::string>(frame_bytes_sent) + " bytes in " +
+                                   boost::lexical_cast<std::string>(frame_packets_sent) + " packets for frame " + boost::lexical_cast<std::string>(n) +
+                                   ", dropping " + boost::lexical_cast<std::string>(frame_packets_dropped) + " packets (" +
+                                   boost::lexical_cast<std::string>(float(100.0*frame_packets_dropped)/(frame_packets_dropped + frame_packets_sent)) + "%)");
+
+            total_frames_sent += 1;
+            total_packets_sent += frame_packets_sent;
+            total_packets_dropped += frame_packets_dropped;
+            total_bytes_sent += frame_bytes_sent;
+
+        }
+
+        LOG4CXX_DEBUG(logger_, "Sent " + boost::lexical_cast<std::string>(total_frames_sent) + " frames with a total of " +
+                               boost::lexical_cast<std::string>(total_bytes_sent) + " bytes in " +
+                               boost::lexical_cast<std::string>(total_packets_sent) + " packets, dropping " +
+                               boost::lexical_cast<std::string>(total_packets_dropped) + " packets (" +
+                               boost::lexical_cast<std::string>(float(100.0*total_packets_dropped)/(total_packets_dropped + total_packets_sent)) + "%)");
+    }
+
     /** All Packets should be sent using send_packet
      * /param[in] packet to send
      * /param[in] frame to which packet belongs

@@ -5,6 +5,7 @@ SET(HEADERS FrameSimulatorPlugin.h
         FrameSimulatorPluginUDP.h
         FrameSimulatorOptionsUDP.h
         FrameSimulatorOption.h
-        Packet.h)
+        Packet.h
+        UDPFrame.h)
 
 INSTALL(FILES ${HEADERS} DESTINATION include/frameSimulator)

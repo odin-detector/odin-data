@@ -9,6 +9,7 @@ using namespace log4cxx;
 using namespace log4cxx::helpers;
 
 #include "FrameSimulatorPlugin.h"
+#include "UDPFrame.h"
 #include "Packet.h"
 
 #include <pcap.h>
@@ -18,6 +19,8 @@ using namespace log4cxx::helpers;
 #include <sstream>
 
 namespace FrameSimulator {
+
+    typedef std::vector<UDPFrame> UDPFrames;
 
     /** FrameSimulatorPluginUDP
      *
@@ -55,7 +58,7 @@ namespace FrameSimulator {
         virtual void create_frames(const int &num_frames) = 0;
 
         /** Replay the extracted or created frames **/
-        virtual void replay_frames() = 0;
+        void replay_frames();
 
         //Packet gap: insert pause between packet_gap packets
         boost::optional<int> packet_gap;
@@ -63,6 +66,15 @@ namespace FrameSimulator {
         boost::optional<float> drop_frac;
         //List of packets to drop
         boost::optional<std::vector<std::string> > drop_packets;
+
+        /** Frames **/
+        UDPFrames frames;
+
+        int total_packets;
+        int total_bytes;
+
+        int current_frame_num;
+        int current_subframe_num;
 
     private:
 

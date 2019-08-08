@@ -149,7 +149,7 @@ int main(int argc, char *argv[]) {
     simulator.run_process(true);
 
     // Allow receiver and processor time to finish frame collection
-    sleep(10);
+    sleep(60);
 
     pid_t test_pid = -1;
 

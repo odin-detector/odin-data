@@ -14,12 +14,9 @@ using namespace log4cxx::helpers;
 #include <stdexcept>
 
 #include "ClassLoader.h"
-#include "DummyUDPFrame.h"
 #include "FrameSimulatorPluginUDP.h"
 
 namespace FrameSimulator {
-
-    typedef std::vector<DummyUDPFrame> DummyUDPFrames;
 
     /** DummyUDPFrameSimulatorPlugin
      *
@@ -47,7 +44,6 @@ namespace FrameSimulator {
 
         virtual void extract_frames(const u_char* data, const int& size);
         virtual void create_frames(const int &num_frames);
-        virtual void replay_frames();
 
     private:
 
@@ -57,14 +53,6 @@ namespace FrameSimulator {
         int image_width_;
         int image_height_;
         int packet_len_;
-
-        int total_packets;
-        int total_bytes;
-
-        int current_frame_num;
-        int current_subframe_num;
-
-        DummyUDPFrames frames;
 
     };
 

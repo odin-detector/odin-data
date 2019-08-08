@@ -6,7 +6,7 @@ ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK)
 include_directories(${FRAMESIMULATOR_DIR}/include ${Boost_INCLUDE_DIRS} ${LOG4CXX_INCLUDE_DIRS}/.. ${PCAP_INCLUDE_DIR})
 add_definitions(${HDF5_DEFINITIONS})
 
-file(GLOB LIB_SOURCES FrameSimulatorPlugin.cpp FrameSimulatorPluginUDP.cpp FrameSimulatorOption.cpp)
+file(GLOB LIB_SOURCES FrameSimulatorPlugin.cpp FrameSimulatorPluginUDP.cpp FrameSimulatorOption.cpp UDPFrame.cpp)
 
 # Add library for common plugin code
 add_library(${LIB_SIMULATOR} SHARED ${LIB_SOURCES})
@@ -17,6 +17,7 @@ file(GLOB APP_SOURCES
         FrameSimulatorPlugin.cpp
         FrameSimulatorOption.cpp
         FrameSimulatorPluginUDP.cpp
+        UDPFrame.cpp
         Packet.cpp)
 
 add_executable(frameSimulator ${APP_SOURCES} FrameSimulatorApp.cpp)
