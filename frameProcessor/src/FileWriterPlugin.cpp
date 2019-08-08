@@ -692,7 +692,7 @@ bool FileWriterPlugin::frame_in_acquisition(boost::shared_ptr<Frame> frame) {
       start_writing();
     } else {
       std::stringstream ss;
-      ss << "Unexpected acquisition ID on frame (" << frame_acquisition_ID << ")";
+      ss << "Unexpected acquisition ID on acquisition (" << frame_acquisition_ID << ")";
       if (writing_)
       {
         set_error(ss.str());
