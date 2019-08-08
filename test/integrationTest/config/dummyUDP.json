@@ -1,0 +1,32 @@
+{
+    "Main":
+    {
+        "detector": "DummyUDP",
+        "simulator": "${ODIN_PREFIX}\/bin\/frameSimulator",
+        "receiver": "${ODIN_PREFIX}\/bin\/frameReceiver",
+        "processor": "${ODIN_PREFIX}\/bin\/frameProcessor",
+        "test": "${ODIN_PREFIX}\/bin\/frameTests"
+    },
+    "Simulator-args":
+    {
+        "lib-path": "${INSTALL_PREFIX}\/lib",
+        "frames": "10",
+        "dest-ip": "127.0.0.1",
+        "ports": "61649",
+        "interval": "1"
+    },
+    "Receiver-args":
+    {
+        "json_file": "${INSTALL_PREFIX}\/test_config\/dummyUDP-fr.json",
+        "m": "500000000"
+    },
+    "Processor-args":
+    {
+        "json_file": "${INSTALL_PREFIX}\/test_config\/dummyUDP-fp.json"
+    },
+    "Test-args":
+    {
+        "json": "${INSTALL_PREFIX}\/test_config\/testUDP.json",
+        "log_level": "ALL"
+    }
+}

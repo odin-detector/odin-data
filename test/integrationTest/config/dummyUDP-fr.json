@@ -1,0 +1,11 @@
+[
+  {
+    "decoder_type": "DummyUDP",
+    "decoder_path": "${INSTALL_PREFIX}/lib",
+    "rx_ports": "61649",
+    "decoder_config": {
+      "enable_packet_logging": false,
+      "frame_timeout_ms": 1000
+    }
+  }
+]
