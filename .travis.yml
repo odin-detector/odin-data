@@ -43,7 +43,7 @@ install:
 script:
 - bin/frameReceiverTest --log_level=all
 - bin/frameProcessorTest --log_level=all
-- bin/odinDataTest --json=test_config/dummyUDP.json
+- bin/odinDataTest --json=$INSTALL_PREFIX/test_config/dummyUDP.json
 
 - ls -R $INSTALL_PREFIX
 notifications:
