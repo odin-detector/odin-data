@@ -15,7 +15,7 @@
 	    {
 		"index":"hdf",
 		"name":"FileWriterPlugin",
-		"library":"${ODIN_PREFIX}/lib/libHdf5Plugin.so"
+		"library":"${INSTALL_PREFIX}/lib/libHdf5Plugin.so"
 	    }
 	}
     },

@@ -2,10 +2,10 @@
     "Main":
     {
         "detector": "DummyUDP",
-        "simulator": "${ODIN_PREFIX}\/bin\/frameSimulator",
-        "receiver": "${ODIN_PREFIX}\/bin\/frameReceiver",
-        "processor": "${ODIN_PREFIX}\/bin\/frameProcessor",
-        "test": "${ODIN_PREFIX}\/bin\/frameTests"
+        "simulator": "${INSTALL_PREFIX}\/bin\/frameSimulator",
+        "receiver": "${INSTALL_PREFIX}\/bin\/frameReceiver",
+        "processor": "${INSTALL_PREFIX}\/bin\/frameProcessor",
+        "test": "${INSTALL_PREFIX}\/bin\/frameTests"
     },
     "Simulator-args":
     {
