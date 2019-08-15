@@ -42,8 +42,8 @@ class FPCompressionAdapter(FrameProcessorAdapter):
     PARAM_LEVEL = 'level'
     PARAM_SHUFFLE = 'shuffle'
 
-    HDF_NO_COMPRESSION = 0
-    HDF_BLOSC_COMPRESSION = 3
+    HDF_NO_COMPRESSION = 'none'
+    HDF_BLOSC_COMPRESSION = 'blosc'
 
     DEFAULT_HDF_PLUGIN = 'hdf'
     DEFAULT_BLOSC_PLUGIN = 'blosc'
