@@ -3,9 +3,12 @@
     "decoder_type": "DummyUDP",
     "decoder_path": "${INSTALL_PREFIX}/lib",
     "rx_ports": "61649",
+    "max_buffer_mem": 840000000,
     "decoder_config": {
       "enable_packet_logging": false,
-      "frame_timeout_ms": 1000
+      "frame_timeout_ms": 1000,
+      "udp_packets_per_frame": 263,
+      "udp_packet_size": 8000
     }
   }
 ]

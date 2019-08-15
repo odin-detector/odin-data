@@ -12,13 +12,11 @@
         "lib-path": "${INSTALL_PREFIX}\/lib",
         "frames": "10",
         "dest-ip": "127.0.0.1",
-        "ports": "61649",
-        "interval": "1"
+        "ports": "61649"
     },
     "Receiver-args":
     {
-        "json_file": "${INSTALL_PREFIX}\/test_config\/dummyUDP-fr.json",
-        "m": "500000000"
+        "json_file": "${INSTALL_PREFIX}\/test_config\/dummyUDP-fr.json"
     },
     "Processor-args":
     {
