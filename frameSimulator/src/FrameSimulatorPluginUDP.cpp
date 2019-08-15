@@ -166,8 +166,6 @@ namespace FrameSimulator {
 
             for (int p = 0; p < num_packets; p++) {
 
-                Packet packet = frames[n].packets[p];
-
                 // If drop fraction specified, decide if packet should be dropped
                 if (drop_frac) {
                     if (((double) rand() / RAND_MAX) < drop_frac.get()) {
@@ -186,7 +184,7 @@ namespace FrameSimulator {
                     }
                 }
 
-                frame_bytes_sent += send_packet(packet, n);
+                frame_bytes_sent += send_packet(frames[n].packets[p], n);
                 frame_packets_sent += 1;
 
                 // Add brief pause between 'packet_gap' frames if packet gap specified
@@ -240,13 +238,13 @@ namespace FrameSimulator {
      * /param[in] frame to which packet belongs
      * this ensures each frame is sent to the appropriate destination port
      */
-    int FrameSimulatorPluginUDP::send_packet(const Packet &packet, const int &frame) const {
+    int FrameSimulatorPluginUDP::send_packet(const boost::shared_ptr<Packet> &packet, const int &frame) const {
         if (frame != curr_frame) {
             curr_port_index = (curr_port_index + 1 < m_addrs.size()) ? curr_port_index + 1 : 0;
             curr_frame = frame;
         }
         bind(m_socket, (struct sockaddr *) (&m_addrs[curr_port_index]), sizeof(m_addrs[curr_port_index]));
-        return sendto(m_socket, packet.data, packet.size, 0, (struct sockaddr *) (&m_addrs[curr_port_index]),
+        return sendto(m_socket, packet->data, packet->size, 0, (struct sockaddr *) (&m_addrs[curr_port_index]),
                       sizeof(m_addrs[curr_port_index]));
     }
 

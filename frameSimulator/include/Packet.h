@@ -5,7 +5,7 @@ namespace FrameSimulator {
 
     struct Packet {
 
-        unsigned char* data;
+        const unsigned char* data;
         int size;
 
     };

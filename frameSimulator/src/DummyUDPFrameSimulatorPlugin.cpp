@@ -195,11 +195,11 @@ namespace FrameSimulator {
         }
 
         // Allocate a new packet, copy packet data and push into frame
-        Packet pkt;
+        boost::shared_ptr<Packet> pkt(new Packet());
         unsigned char *datacp = new unsigned char[size];
         memcpy(datacp, data, size);
-        pkt.data = datacp;
-        pkt.size = size;
+        pkt->data = datacp;
+        pkt->size = size;
         frames[frames.size() - 1].packets.push_back(pkt);
 
         total_packets++;

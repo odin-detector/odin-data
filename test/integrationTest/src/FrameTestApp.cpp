@@ -146,6 +146,9 @@ int main(int argc, char *argv[]) {
     // Run each process; main program to wait for simulator to complete
     receiver.run_process();
     processor.run_process();
+
+    sleep(5);
+
     simulator.run_process(true);
 
     // Allow receiver and processor time to finish frame collection
