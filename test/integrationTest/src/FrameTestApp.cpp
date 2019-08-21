@@ -12,6 +12,7 @@
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/foreach.hpp>
 
 #include <log4cxx/logger.h>
 #include <log4cxx/basicconfigurator.h>
@@ -19,9 +20,7 @@
 #include <log4cxx/helpers/exception.h>
 #include <log4cxx/xml/domconfigurator.h>
 
-#include "FrameSimulatorControl.h"
-#include "FrameReceiverControl.h"
-#include "FrameProcessorControl.h"
+#include "ControlUtility.h"
 
 using namespace log4cxx;
 using namespace log4cxx::helpers;
@@ -126,48 +125,37 @@ int main(int argc, char *argv[]) {
 
   try {
 
-    int status;
-
-    // Process IDs for receiver, processor and simulator processes
-    pid_t receiver_pid = -1;
-    pid_t processor_pid = -1;
-    pid_t simulator_pid = -1;
+    // Process IDs
+    std::vector<pid_t> process_pids;
 
     // Read command arguments into pt
     boost::property_tree::ptree pt;
     po::variables_map vm;
     parse_arguments(argc, argv, vm, logger, pt);
 
-    // Create a receiver, processor and simulator with properties in pt
-    FrameReceiverControl receiver(pt, receiver_pid, logger);
-    FrameProcessorControl processor(pt, processor_pid, logger);
-    FrameSimulatorControl simulator(pt.get<std::string>("Main.detector"), pt, simulator_pid, logger);
-
-    // Run each process; main program to wait for simulator to complete
-    receiver.run_process();
-    processor.run_process();
-
-    sleep(5);
-
-    simulator.run_process(true);
-
-    // Allow receiver and processor time to finish frame collection
-    sleep(60);
-
-    pid_t test_pid = -1;
-
-    ControlUtility tests(pt, "", "Main.test", "Test-args", test_pid, logger);
-    tests.run_command();
-
-    // If receiver hasn't exited with error; interrupt
-    if (receiver_pid != -1) {
-      kill(receiver_pid, SIGINT);
+    // Setup ControlUtility instances
+    std::vector<ControlUtility*> utilities;
+    BOOST_FOREACH(boost::property_tree::ptree::value_type &vc, pt.get_child("Main")) {
+      pid_t pid;
+      std::string process = vc.first;
+      LOG4CXX_INFO(logger, "Process to launch: " + process);
+      std::string command_entry = "Main." + process + "." + "command";
+      std::string pos_args = pt.get<std::string>("Main." + process + "." + "pos-args");
+      int sleeptime = pt.get<int>("Main." + process + "." + "sleep");
+      ControlUtility* control = new ControlUtility(pt, pos_args, command_entry, process, pid, logger);
+      // Run
+      if (pt.get<bool>("Main." + process +"." + "process")) {
+        process_pids.push_back(pid);
+        control->run_process();
+      }
+      else
+        control->run_command();
+      sleep(sleeptime);
     }
 
-    // If processor hasn't exited with error; interrupt
-    if (processor_pid != -1) {
-      kill(processor_pid, SIGINT);
-    }
+    sleep(10);
+    for(int i=0; i<process_pids.size(); i++)
+      kill(process_pids[i], SIGINT);
 
   } catch (const std::exception &e) {
     LOG4CXX_ERROR(logger, "Caught unhandled exception in FrameTestApp, application will terminate: " << e.what());

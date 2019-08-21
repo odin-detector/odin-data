@@ -11,9 +11,6 @@ include_directories(${TEST_DIR}/integrationTest/include
 add_definitions(${HDF5_DEFINITIONS})
 
 file(GLOB ODINDATA_SOURCES FrameTestApp.cpp
-				FrameSimulatorControl.cpp
-				FrameReceiverControl.cpp
-				FrameProcessorControl.cpp
 				PropertyTreeUtility.cpp
 				ControlUtility.cpp)
 

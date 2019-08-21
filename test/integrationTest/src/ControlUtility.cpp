@@ -32,9 +32,10 @@ namespace FrameSimulatorTest {
 
       boost::filesystem::path path(process_path_);
 
+      // Prepend list of process (command) arguments with (<process> (deduced from path) and) (optionally) <positional_arg>
+
+      command_args_.insert(command_args_.begin(), positional_arg);
       process_args_ = command_args_;
-      // Prepend list of process arguments with <process> (deduced from path) and (optionally) <positional_arg>
-      process_args_.insert(process_args_.begin(), positional_arg);
       process_args_.insert(process_args_.begin(), path.filename().c_str());
 
     }
@@ -84,7 +85,7 @@ namespace FrameSimulatorTest {
           command += command_args_[s] + " ";
         }
 
-      std::system(command.c_str());
+      std::system((command + "&").c_str());
 
     }
 
