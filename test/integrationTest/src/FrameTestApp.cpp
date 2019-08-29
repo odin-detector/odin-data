@@ -157,10 +157,10 @@ int main(int argc, char *argv[]) {
 
     sleep(10);
     for(int i=0; i<process_pids.size(); i++)
-      kill(process_pids[i], SIGINT);
+      kill(process_pids[i], SIGTERM);
 
-    int s;
-    wait(&s);
+    //int s;
+    //wait(&s);
 
   } catch (const std::exception &e) {
     LOG4CXX_ERROR(logger, "Caught unhandled exception in FrameTestApp, application will terminate: " << e.what());
