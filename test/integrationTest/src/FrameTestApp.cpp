@@ -129,6 +129,7 @@ int main(int argc, char *argv[]) {
 
     // Process IDs
     std::vector<pid_t> process_pids;
+    std::vector<ControlUtility*> processes;
 
     // Read command arguments into pt
     boost::property_tree::ptree pt;
@@ -138,16 +139,16 @@ int main(int argc, char *argv[]) {
     // Setup ControlUtility instances
     std::vector<ControlUtility*> utilities;
     BOOST_FOREACH(boost::property_tree::ptree::value_type &vc, pt.get_child("Main")) {
-      pid_t pid;
       std::string process = vc.first;
       LOG4CXX_INFO(logger, "Process to launch: " + process);
       std::string command_entry = "Main." + process + "." + "command";
       std::string pos_args = pt.get<std::string>("Main." + process + "." + "pos-args");
+      std::string socket_entry = "Main." + process + "." + "socket";
+      std::string kill_entry = "Main." + process + "." + "kill";
       int sleeptime = pt.get<int>("Main." + process + "." + "sleep");
-      ControlUtility* control = new ControlUtility(pt, pos_args, command_entry, process, pid, logger);
-      // Run
+      ControlUtility* control = new ControlUtility(pt, pos_args, command_entry, process, socket_entry, kill_entry, logger);
       if (pt.get<bool>("Main." + process +"." + "process")) {
-        process_pids.push_back(pid);
+        processes.push_back(control);
         control->run_process();
       }
       else
@@ -155,12 +156,9 @@ int main(int argc, char *argv[]) {
       sleep(sleeptime);
     }
 
-    sleep(10);
-    for(int i=0; i<process_pids.size(); i++)
-      kill(process_pids[i], SIGTERM);
-
-    //int s;
-    //wait(&s);
+    for(int i=0; i<processes.size(); i++) {
+      processes[i]->end();
+    }
 
   } catch (const std::exception &e) {
     LOG4CXX_ERROR(logger, "Caught unhandled exception in FrameTestApp, application will terminate: " << e.what());

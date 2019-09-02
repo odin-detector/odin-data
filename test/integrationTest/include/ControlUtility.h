@@ -2,6 +2,7 @@
 #define ODINDATA_CONTROLUTILITY_H
 
 #include <boost/property_tree/ptree.hpp>
+#include <boost/optional/optional.hpp>
 #include <log4cxx/logger.h>
 #include <vector>
 
@@ -22,7 +23,8 @@ namespace FrameSimulatorTest {
                        const std::string &positional_arg,
                        const std::string &process_entry,
                        const std::string &process_args_entry,
-                       pid_t &process_pid,
+                       const std::string &socket_entry,
+                       const std::string &kill_entry,
                        LoggerPtr &logger);
 
         /** Run the process */
@@ -30,6 +32,9 @@ namespace FrameSimulatorTest {
 
         /** Run command */
         void run_command();
+
+        /** End process */
+        void end();
 
     protected:
 
@@ -42,8 +47,14 @@ namespace FrameSimulatorTest {
         /** Command arguments */
         std::vector<std::string> command_args_;
 
+        /** Socket for messages */
+        boost::optional<std::string> socket_;
+
+        /** Kill message */
+        boost::optional<std::string> kill_message_;
+
         /** pid of process */
-        pid_t &process_pid_;
+        pid_t process_pid_;
 
         /** Pointer to logger */
         LoggerPtr logger_;

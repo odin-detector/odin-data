@@ -4,6 +4,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 #include <sys/wait.h>
+#include "zmq/zmq.hpp"
 
 namespace FrameSimulatorTest {
 
@@ -20,8 +21,9 @@ namespace FrameSimulatorTest {
                                    const std::string &positional_arg,
                                    const std::string &process_entry,
                                    const std::string &process_args_entry,
-                                   pid_t &process_pid,
-                                   LoggerPtr &logger) : process_pid_(process_pid), logger_(logger) {
+                                   const std::string &socket_entry,
+                                   const std::string &kill_entry,
+                                   LoggerPtr &logger) : logger_(logger) {
 
       // Read process arguments from property tree into std::vector<std::string> command_args_
       PropertyTreeUtility::ini_to_command_args(ptree, process_args_entry, command_args_);
@@ -38,6 +40,9 @@ namespace FrameSimulatorTest {
       process_args_ = command_args_;
       process_args_.insert(process_args_.begin(), path.filename().c_str());
 
+      kill_message_ = ptree.get_optional<std::string>(kill_entry);
+      socket_ = ptree.get_optional<std::string>(socket_entry);
+
     }
 
     /** Run the process
@@ -51,6 +56,7 @@ namespace FrameSimulatorTest {
       if (process_pid_ > 0) {
         LOG4CXX_DEBUG(logger_, "Launching " + process_path_ + "(" +
                                boost::lexical_cast<std::string>(process_pid_) + ")");
+        int status;
         if (wait_child) {
           wait(NULL);
         }
@@ -89,4 +95,35 @@ namespace FrameSimulatorTest {
 
     }
 
+    /** End the process
+     *
+     */
+    void ControlUtility::end() {
+
+      if(!kill_message_) {
+        LOG4CXX_DEBUG(logger_, "Terminating " + process_path_ + "(" +
+                               boost::lexical_cast<std::string>(process_pid_) + ")");
+        kill(process_pid_, SIGTERM);
+        return;
+      }
+
+      zmq::context_t context (1);
+      zmq::socket_t socket (context, ZMQ_DEALER);
+
+      socket.connect (socket_.get().c_str());
+
+      LOG4CXX_DEBUG(logger_, "Requesting termination " + process_path_ + "(" +
+                               boost::lexical_cast<std::string>(process_pid_) + ")");
+
+      std::string command(kill_message_.get().c_str());
+      zmq::message_t request (command.size());
+      memcpy (request.data (), command.c_str(), command.size());
+      socket.send (request);
+
+      //  Get the reply.
+      zmq::message_t reply;
+      socket.recv (&reply);
+      std::string replyMessage(static_cast<char*>(reply.data()), reply.size());
+
+    }
 }
