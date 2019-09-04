@@ -159,7 +159,7 @@ The meaning of the configuration options are as follows:
 * `-m` or `--maxmem`
 
    Set the maximum amount of shared memory to allocate for frame buffers. This memory is where
-   received frames are stored and handed off for processing by e.g. the fileWriter.
+   received frames are stored and handed off for processing by e.g. the frameProcessor.
 
 * `-s` or `--sensortype`
 
@@ -179,7 +179,7 @@ The meaning of the configuration options are as follows:
 * `--sharedbuf`
 
    Set the name of the shared memory frame buffer to use. Needs to match the name used by the
-   downstream processing task, e.g. the fileWriter.
+   downstream processing task, e.g. the frameProcessor.
 
 * `--frametimeout`
 
@@ -225,25 +225,27 @@ receiving and releasing frames, but without writing data to disk.
 
 This application is intended to run as part of a large system with multiple servers concurrently
 acquiring data from the frontend electronics. Although the application does not communicate with
-other instances it can be made aware of the number of filewriter processes - and it's
+other instances it can be made aware of the number of frameProcessor applications and it's
 own rank (or index) in the overall system. This lets it calculate suitable dataset offsets for writing
 frames, received in the "temporal mode" (i.e. round robin between all DAQ servers).
 
 ### Commandline Interface
 
-The following options and arguments can be given in the usual fashion where defaults can be configured
-in a configuration file (`-c,--config`) - but overriden by a user on the commandline:
+The following options and arguments can be given on the commandline:
 
-	bin/filewriter --help
-	usage: filewriter [options]
+    $ frameProcessor --version
+    frameProcessor version 1-3-0dls3-1-g4c39452-dirty
 
-       odin-data version: 0-5-0dls1-155-g3ca9b51-dirty
 
-	Generic options:
-	  -h [ --help ]         Print this help message
-	  -c [ --config ] arg   Specify program configuration file
+    $ frameProcessor --help
+    Usage: frameProcessor [options]
 
-	Configuration options:
+    Generic options:
+      -h [ --help ]         Print this help message
+      -v [ --version ]      Print program version string
+      -c [ --config ] arg   Specify program configuration file
+
+    Configuration options:
       -d [ --debug-level ] arg (=0)         Set the debug level
       -l [ --logconfig ] arg                Set the log4cxx logging configuration
                                             file
@@ -253,54 +255,6 @@ in a configuration file (`-c,--config`) - but overriden by a user on the command
       --release arg (=tcp://127.0.0.1:5002) Release frame ZMQ endpoint from
                                             frameReceiver
       --meta arg (=tcp://*:5558)            ZMQ meta data channel publish stream
-      -I [ --init ]                         Initialise frame receiver and meta
-                                            interfaces.
-      -N [ --no-client ]                    Enable full initial configuration to
-                                            run without any client controller.You
-                                            must also be provide: detector, path,
-                                            datasets, dtype and dims.
-      -p [ --processes ] arg (=1)           Number of concurrent file writer
-                                            processes
-      -r [ --rank ] arg (=0)                The rank (index number) of the current
-                                            file writer process in relation to the
-                                            other concurrent ones
-      --detector arg                        Detector to configure for
-      --path arg                            Path to detector shared library with
-                                            format 'lib<detector>ProcessPlugin.so'
-      --datasets arg                        Name(s) of datasets to write (space
-                                            separated)
-      --dtype arg                           Data type of raw detector data (0:
-                                            8bit, 1: 16bit, 2: 32bit, 3:64bit)
-      --dims arg                            Dimensions of each frame (space
-                                            separated)
-      -C [ --chunk-dims ] arg               Chunk size of each sub-frame (space
-                                            separated)
-      --bit-depth arg                       Bit-depth mode of detector
-      --compression arg                     Compression type of input data (0:
-                                            None, 1: LZ4, 2: BSLZ4)
-      -o [ --output ] arg (=test.hdf5)      Name of HDF5 file to write frames to
-                                            (default: test.hdf5)
-      --output-dir arg (=/tmp/)             Directory to write HDF5 file to
-                                            (default: /tmp/)
-      --extension arg (=h5)                 Set the file extension of the data
-                                            files (default: h5)
-      -S [ --single-shot ]                  Shutdown after one dataset completed
-      -f [ --frames ] arg (=0)              Set the number of frames to write into
-                                            dataset
-      --acqid arg                           Set the Acquisition Id of the
-                                            acquisition
-      --timeout arg (=0)                    Set the timeout period for closing the
-                                            file (milliseconds)
-      --block-size arg (=1)                 Set the number of consecutive frames to
-                                            write per block
-      --blocks-per-file arg (=0)            Set the number of blocks to write to
-                                            file. Default is 0 (unlimited)
-      --earliest-hdf-ver                    Set to use earliest hdf5 file version.
-                                            Default is off (use latest)
-      --alignment-threshold arg (=1)        Set the hdf5 alignment threshold.
-                                            Default is 1 (no alignment)
-      --alignment-value arg (=1)            Set the hdf5 alignment value. Default
-                                            is 1 (no alignment)
       -j [ --json_file ] arg                Path to a JSON configuration file to
                                             submit to the application
 
@@ -309,7 +263,7 @@ in a configuration file (`-c,--config`) - but overriden by a user on the command
 Currently the application has a number of limitations (which will be addressed):
 
  * No internal buffering: the application currently depend on the buffering available in the frameReceiver.
-   If the filewriter cannot keep up the pace it will not release frames back to the frameReceiver in time,
+   If the frameProcessor cannot keep up the pace it will not release frames back to the frameReceiver in time,
    potentially causing the frameReceiver to run out of buffering and drop frames. Fortunately missing frames
    are obvious in the output files (as empty gaps)
  * Metadata like the "info" field and original frame ID number is not recorded in the file.
@@ -587,7 +541,7 @@ For example, to transmit three frames total to frame receivers on three separate
 
 **frame_processor**
 
-This tool emulates the frame processor / fileWriter application that handles received
+This tool emulates the frameProcessor application that handles received
 frames downstream of the frameReceiver. Its primary purpose is to allow the debugging
 of the inter-process communications and frame buffering in shared memory. All options
 are exposed as arguments and can also be parsed from a configuration file:
@@ -666,4 +620,4 @@ un-modified in the file.
 The script takes a single argument: the HDF5 file to operate on.
 
 __NOTE__: This script will run on every single dataset found in the root of the file. So only run it once
-and only on a raw datafile from the filewriter.
+and only on a raw datafile from the frameProcessor.
