@@ -25,7 +25,8 @@ public:
     int endpoint_id = random();
     std::stringstream ss;
     ss << "inproc://reactor_channel_" << endpoint_id;
-    const char* random_endpoint = ss.str().c_str();
+    const std::string& tmp_str = ss.str();
+    const char* random_endpoint = tmp_str.c_str();
 
     // Bind the send channel and connect the receive channel
     send_channel.bind(random_endpoint);
