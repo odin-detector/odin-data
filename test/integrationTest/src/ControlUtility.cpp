@@ -36,7 +36,8 @@ namespace FrameSimulatorTest {
 
       // Prepend list of process (command) arguments with (<process> (deduced from path) and) (optionally) <positional_arg>
 
-      command_args_.insert(command_args_.begin(), positional_arg);
+      if (!positional_arg.empty())
+        command_args_.insert(command_args_.begin(), positional_arg);
       process_args_ = command_args_;
       process_args_.insert(process_args_.begin(), path.filename().c_str());
 
