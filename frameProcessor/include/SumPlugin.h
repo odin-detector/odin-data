@@ -22,7 +22,7 @@ using namespace log4cxx::helpers;
  */
 namespace FrameProcessor {
 
-  static const std::string SUM_PARAM_NAME = "SUM";
+  static const std::string SUM_PARAM_NAME = "sum";
 
   class SumPlugin : public FrameProcessorPlugin {
   public:
