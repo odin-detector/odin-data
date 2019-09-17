@@ -33,6 +33,9 @@ namespace FrameSimulatorTest {
         /** Run command */
         void run_command();
 
+        /** Send configuration message */
+        void send_configuration(const std::string &message);
+
         /** End process */
         void end();
 

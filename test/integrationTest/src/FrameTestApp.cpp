@@ -9,6 +9,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/optional.hpp>
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -150,6 +151,9 @@ int main(int argc, char *argv[]) {
       if (pt.get<bool>("Main." + process +"." + "process")) {
         processes.push_back(control);
         control->run_process();
+        boost::optional<std::string> configuration = pt.get_optional<std::string>("Main." + process + "." + "configure");
+        if(configuration)
+          control->send_configuration(configuration.get());
       }
       else
         control->run_command();

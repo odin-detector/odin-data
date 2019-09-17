@@ -96,6 +96,26 @@ namespace FrameSimulatorTest {
 
     }
 
+    /** Send configuration message
+     *
+     */
+    void ControlUtility::send_configuration(const std::string &message) {
+
+      zmq::context_t context (1);
+      zmq::socket_t socket (context, ZMQ_DEALER);
+
+      socket.connect (socket_.get().c_str());
+
+      LOG4CXX_DEBUG(logger_, "Sending configuration " + process_path_ + " " + message + " (" +
+                             boost::lexical_cast<std::string>(process_pid_) + ")");
+
+      std::string command(message.c_str());
+      zmq::message_t request (command.size());
+      memcpy (request.data (), command.c_str(), command.size());
+      socket.send (request);
+
+    }
+
     /** End the process
      *
      */

@@ -70,11 +70,11 @@ namespace FrameSimulatorTest {
           hsize_t dims[ndims];
           int ndms = H5Sget_simple_extent_dims(space, dims, NULL);
 
-          int frames = dims[0];
-          int width = dims[1];
-          int height = dims[2];
+          int num_pts = dims[0];
 
-          const int num_pts = frames * width * height;
+          for(int n=1; n<ndms; n++)
+            num_pts *= dims[n];
+
           T *data_out = new T[num_pts];
 
           H5Dread(dataset, filetype, H5S_ALL, H5S_ALL, H5P_DEFAULT, data_out);
@@ -102,13 +102,21 @@ namespace FrameSimulatorTest {
           int ndms = H5Sget_simple_extent_dims(space, dims, NULL);
 
           int frames = dims[0];
-          int width = dims[1];
-          int height = dims[2];
 
-          BOOST_CHECK_EQUAL(ndims, ptree.get<int>("Test.dimensions"));
-          BOOST_CHECK_EQUAL(frames, ptree.get<int>("Test.frames"));
-          BOOST_CHECK_EQUAL(width, ptree.get<int>("Test.width"));
-          BOOST_CHECK_EQUAL(height, ptree.get<int>("Test.height"));
+          if (boost::optional<int> t_dims = ptree.get_optional<int>("Test.dimensions"))
+            BOOST_CHECK_EQUAL(ndims, t_dims.get());
+
+          if (boost::optional<int> t_frames = ptree.get_optional<int>("Test.frames"))
+            BOOST_CHECK_EQUAL(frames, t_frames.get());
+
+          if (boost::optional<int> t_width = ptree.get_optional<int>("Test.width")) {
+            int width = dims[1];
+            BOOST_CHECK_EQUAL(width, t_width.get());
+          }
+          if (boost::optional<int> t_height = ptree.get_optional<int>("Test.height")) {
+            int height = dims[2];
+            BOOST_CHECK_EQUAL(height, t_height.get());
+          }
 
         };
 
@@ -122,7 +130,7 @@ namespace FrameSimulatorTest {
             data_check<uint16_t>();
           else if (data_type == "uint32")
             data_check<uint32_t>();
-          else if (data_type == "utin64")
+          else if (data_type == "uint64")
             data_check<uint64_t>();
           else if (data_type == "float")
             data_check<float>();
