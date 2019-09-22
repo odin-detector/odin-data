@@ -121,8 +121,8 @@ class FrameProcessorAdapter(OdinDataAdapter):
                 if write:
                     # Before attempting to write files, make some simple error checks
                     # Check the file path is valid
-                    if not os.path.isdir(str(self._param['config/hdf/file/path'])):
-                        raise RuntimeError("Invalid path specified [{}]".format(str(self._param['config/hdf/file/path'])))
+                    if str(self._param['config/hdf/file/path']) == '':
+                        raise RuntimeError("path specified must be non-empty")
                     # Check the filename exists
                     if str(self._param['config/hdf/file/name']) == '':
                         raise RuntimeError("File name must not be empty")
