@@ -39,6 +39,9 @@ namespace FrameSimulatorTest {
         /** End process */
         void end();
 
+        /** Return exit status */
+        int exit_status();
+
     protected:
 
         /** Path of process to run */
@@ -61,6 +64,8 @@ namespace FrameSimulatorTest {
 
         /** Pointer to logger */
         LoggerPtr logger_;
+
+        int exit_code_;
 
     };
 

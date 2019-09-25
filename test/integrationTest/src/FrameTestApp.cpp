@@ -148,6 +148,7 @@ int main(int argc, char *argv[]) {
       std::string kill_entry = "Main." + process + "." + "kill";
       int sleeptime = pt.get<int>("Main." + process + "." + "sleep");
       ControlUtility* control = new ControlUtility(pt, pos_args, command_entry, process, socket_entry, kill_entry, logger);
+            utilities.push_back(control);
       if (pt.get<bool>("Main." + process +"." + "process")) {
         processes.push_back(control);
         control->run_process();
@@ -162,6 +163,12 @@ int main(int argc, char *argv[]) {
 
     for(int i=0; i<processes.size(); i++) {
       processes[i]->end();
+    }
+
+    for(int j=0; j<utilities.size(); j++) {
+      int status = utilities[j]->exit_status();
+      if (status != 0)
+        return status;
     }
 
   } catch (const std::exception &e) {

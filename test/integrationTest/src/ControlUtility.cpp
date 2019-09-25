@@ -52,6 +52,8 @@ namespace FrameSimulatorTest {
      */
     void ControlUtility::run_process(const bool &wait_child) {
 
+      exit_code_ = 0;
+
       process_pid_ = fork();
 
       if (process_pid_ > 0) {
@@ -92,7 +94,8 @@ namespace FrameSimulatorTest {
           command += command_args_[s] + " ";
         }
 
-      std::system((command + "&").c_str());
+      int status = std::system((command).c_str());
+      exit_code_ = WEXITSTATUS(status);
 
     }
 
@@ -147,4 +150,11 @@ namespace FrameSimulatorTest {
       std::string replyMessage(static_cast<char*>(reply.data()), reply.size());
 
     }
+    /** Return exit status
+     * @return int exit code
+     */
+    int ControlUtility::exit_status() {
+      return this->exit_code_;
+    }
+
 }
