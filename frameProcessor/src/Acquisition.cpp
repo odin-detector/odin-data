@@ -11,6 +11,8 @@
 #include "Acquisition.h"
 #include "DebugLevelLogger.h"
 
+#include <fstream>
+
 
 namespace FrameProcessor {
 
@@ -349,6 +351,26 @@ bool Acquisition::start_acquisition(
 
   if (filename_.empty()) {
     last_error_ = "Unable to start writing - no filename to write to";
+    LOG4CXX_ERROR(logger_, last_error_);
+    return false;
+  }
+
+  bool dirOk = false;
+  if(boost::filesystem::is_directory(file_path_))
+  {
+    std::string testfile = (file_path_ + "/testfile.test");
+    std::ofstream file(testfile.c_str());
+    if(file.is_open())
+    {
+      file.close();
+      boost::filesystem::remove(testfile);
+      dirOk = true; 
+    }
+  }
+  
+  if(dirOk == false)
+  {
+    last_error_ = "unable to start writing - I can not write to directory " + file_path_;
     LOG4CXX_ERROR(logger_, last_error_);
     return false;
   }
