@@ -43,6 +43,9 @@ public:
     std::vector<hsize_t> dataset_dimensions;
     /** Array of offsets of the dataset **/
     std::vector<hsize_t> dataset_offsets;
+    /** Extent of the (outermost dimension of the) dataset that has had frames written to, including any gaps
+     * i.e. the highest offset that has been written to + 1 */
+    size_t actual_dataset_size_;
   };
 
 
@@ -58,10 +61,11 @@ public:
   void create_dataset(const DatasetDefinition& definition, int low_index, int high_index);
   void write_frame(const Frame& frame, hsize_t frame_offset, uint64_t outer_chunk_dimension);
   void write_parameter(const Frame& frame, DatasetDefinition dataset_definition, hsize_t frame_offset);
-  size_t get_dataset_frames(const std::string dset_name);
+  size_t get_dataset_frames(const std::string& dset_name);
   void start_swmr();
   size_t get_file_index();
   std::string get_filename();
+  void set_unlimited();
 
 private:
 
@@ -75,7 +79,7 @@ private:
   /** Flush rate for parameter datasets in miliseconds */
   static const int PARAM_FLUSH_RATE = 1000;
 
-  HDF5Dataset_t& get_hdf5_dataset(const std::string dset_name);
+  HDF5Dataset_t& get_hdf5_dataset(const std::string& dset_name);
   void extend_dataset(HDF5File::HDF5Dataset_t& dset, size_t frame_no) const;
   hid_t datatype_to_hdf_type(DataType data_type) const;
 
@@ -94,6 +98,8 @@ private:
   std::string filename_;
   /** Whether to use the earliest version of the hdf5 library */
   bool use_earliest_version_;
+  /** Whether datasets use H5S_UNLIMITED as the outermost dimension extent */
+  bool unlimited_;
   /** Mutex used to make this class thread safe */
   boost::recursive_mutex mutex_;
   /* Parameters memspace */
