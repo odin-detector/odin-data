@@ -18,9 +18,9 @@ namespace FrameProcessor {
     ? static_cast<void> (0)                                                    \
         : handle_h5_error(message, __PRETTY_FUNCTION__, __FILE__, __LINE__))
 
-herr_t hdf5_error_cb(unsigned n, const H5E_error2_t *err_desc, void* client_data)
+herr_t hdf5_error_cb(unsigned n, const H5E_error2_t* err_desc, void* client_data)
 {
-  HDF5File *fwPtr = (HDF5File *)client_data;
+  HDF5File* fwPtr = (HDF5File*) client_data;
   fwPtr->hdf_error_handler(n, err_desc);
   return 0;
 }
@@ -67,53 +67,35 @@ void HDF5File::set_unlimited() {
  * \param[in] filename - The filename
  * \param[in] line - The line number of the call
  */
-void HDF5File::handle_h5_error(std::string message, std::string function, std::string filename, int line) const {
-  std::stringstream err;
-  err << "H5 function error: (" << message << ") in " << filename << ":" << line << ": " << function;
-  LOG4CXX_ERROR(logger_, err.str());
-  throw std::runtime_error(err.str().c_str());
+void HDF5File::handle_h5_error(const std::string& message, const std::string& function,
+                               const std::string& filename, int line)
+{
+  std::stringstream error;
+  error << "HDF5 Function Error: (" << message << ") in " << filename << ":" << line << ": " << function;
+
+  // Walk the HDF5 error stack and add each frame to hdf5_errors_
+  H5Ewalk2(H5E_DEFAULT, H5E_WALK_DOWNWARD, hdf5_error_cb, (void *) this);
+  // Iterate errors and add them to message to log
+  std::stringstream full_error;
+  full_error << error.str() << "\n HDF5 Stack Trace:";
+  unsigned int frame = 0;
+  std::vector<H5E_error2_t>::iterator it;
+  for (it=hdf5_errors_.begin(); it != hdf5_errors_.end(); ++it) {
+    full_error << "\n  [" << frame << "]: " << it->file_name << ":" << it->line << " in " << it->func_name << ": \"" << it->desc << "\"";
+    frame++;
+  }
+  LOG4CXX_ERROR(logger_, full_error.str());
+  this->clear_hdf_errors();
+
+  throw std::runtime_error(error.str());
 }
 
-void HDF5File::hdf_error_handler(unsigned n, const H5E_error2_t *err_desc)
+void HDF5File::hdf_error_handler(unsigned n, const H5E_error2_t* err_desc)
 {
-  const int MSG_SIZE = 64;
-  char maj[MSG_SIZE];
-  char min[MSG_SIZE];
-  char cls[MSG_SIZE];
-
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
-  // Set the error flag true
   hdf5_error_flag_ = true;
-
-  // Get descriptions for the major and minor error numbers
-  H5Eget_class_name(err_desc->cls_id, cls, MSG_SIZE);
-  H5Eget_msg(err_desc->maj_num, NULL, maj, MSG_SIZE);
-  H5Eget_msg(err_desc->min_num, NULL, min, MSG_SIZE);
-
-  // Record the error into the error stack
-  std::stringstream err;
-  err << "[" << cls << "] " << maj << " (" << min << ")";
-  LOG4CXX_ERROR(logger_, "H5 error: " << err.str());
-  hdf5_errors_.push_back(err.str());
-}
-
-bool HDF5File::check_for_hdf_errors()
-{
-  // Protect this method
-  boost::lock_guard<boost::recursive_mutex> lock(mutex_);
-
-  // Simply return the current error flag state
-  return hdf5_error_flag_;
-}
-
-std::vector<std::string> HDF5File::read_hdf_errors()
-{
-  // Protect this method
-  boost::lock_guard<boost::recursive_mutex> lock(mutex_);
-
-  // Simply return the current error array
-  return hdf5_errors_;
+  hdf5_errors_.push_back(*err_desc);
 }
 
 void HDF5File::clear_hdf_errors()
@@ -463,9 +445,8 @@ void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index
   /* Create dataset  */
   LOG4CXX_INFO(logger_, "Creating dataset: " << definition.name);
   HDF5Dataset_t dset;
-  dset.dataset_id = H5Dcreate2(this->hdf5_file_id_, definition.name.c_str(),
-      dtype, dataspace,
-      H5P_DEFAULT, prop, dapl);
+  dset.dataset_id = H5Dcreate2(this->hdf5_file_id_, definition.name.c_str(), dtype, dataspace, H5P_DEFAULT, prop, dapl);
+  ensure_h5_result(dset.dataset_id, "H5Dcreate2 failed");
   if (dset.dataset_id < 0) {
     // Unable to create the dataset, clean up resources
     ensure_h5_result(H5Pclose(prop), "H5Pclose failed to close the prop after failing to create the dataset");
@@ -535,7 +516,7 @@ HDF5File::HDF5Dataset_t& HDF5File::get_hdf5_dataset(const std::string& dset_name
  * \param[in] dset - Handle to the HDF5 dataset.
  * \param[in] frame_no - Number of the incoming frame to extend to.
  */
-void HDF5File::extend_dataset(HDF5Dataset_t& dset, size_t frame_no) const {
+void HDF5File::extend_dataset(HDF5Dataset_t& dset, size_t frame_no) {
   if (frame_no > dset.dataset_dimensions[0]) {
     // Extend the dataset
     LOG4CXX_DEBUG_LEVEL(2, logger_, "Extending dataset_dimensions[0] = " << frame_no);
