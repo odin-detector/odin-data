@@ -151,6 +151,7 @@ void HDF5File::create_file(std::string filename, size_t file_index, bool use_ear
   LOG4CXX_INFO(logger_, "Creating file: " << filename);
   unsigned int flags = H5F_ACC_TRUNC;
   this->hdf5_file_id_ = H5Fcreate(filename.c_str(), flags, fcpl, fapl);
+  ensure_h5_result(this->hdf5_file_id_, "Failed to create HDF5 file");
   if (this->hdf5_file_id_ < 0) {
     // Close file access property list
     ensure_h5_result(H5Pclose(fapl), "H5Pclose failed after create file failed");
@@ -162,9 +163,10 @@ void HDF5File::create_file(std::string filename, size_t file_index, bool use_ear
   // Close file access property list
   ensure_h5_result(H5Pclose(fapl), "H5Pclose failed to close the file access property list");
 
-  // Create the memspace for writing paramter datasets
+  // Create the memspace for writing parameter datasets
   hsize_t elementSize[1] = {1};
   param_memspace_ = H5Screate_simple(1, elementSize, NULL);
+  ensure_h5_result(param_memspace_, "Failed to create parameter dataspace");
 
   file_index_ = file_index;
 
@@ -298,6 +300,7 @@ void HDF5File::write_parameter(const Frame& frame, DatasetDefinition dataset_def
   hid_t dtype = datatype_to_hdf_type(dataset_definition.data_type);
   hsize_t elementSize[1] = {1};
   hid_t filespace_ = H5Dget_space(dset.dataset_id);
+  ensure_h5_result(filespace_, "Failed to get parameter dataset dataspace");
 
   // Select the hyperslab
   ensure_h5_result(H5Sselect_hyperslab(filespace_, H5S_SELECT_SET, &offset.front(), NULL, elementSize, NULL),
@@ -460,12 +463,14 @@ void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index
   if (definition.create_low_high_indexes)
   {
     hid_t space_inl = H5Screate(H5S_SCALAR);
+    ensure_h5_result(space_inl, "Failed to create dataspace");
     hid_t attr_inl = H5Acreate2(dset.dataset_id, "image_nr_low", H5T_STD_I32LE, space_inl, H5P_DEFAULT, H5P_DEFAULT);
     ensure_h5_result(H5Awrite(attr_inl, H5T_STD_I32LE, &low_index), "Failed to write to low index attribute");
     ensure_h5_result(H5Aclose(attr_inl), "H5Aclose failed to close the low index attribute");
     ensure_h5_result(H5Sclose(space_inl), "H5Sclose failed to close the low index dataspace");
 
     hid_t space_inh = H5Screate(H5S_SCALAR);
+    ensure_h5_result(space_inh, "Failed to create dataspace");
     hid_t attr_inh = H5Acreate2(dset.dataset_id, "image_nr_high", H5T_STD_I32LE, space_inh, H5P_DEFAULT, H5P_DEFAULT);
     ensure_h5_result(H5Awrite(attr_inh, H5T_STD_I32LE, &high_index), "Failed to write to high index attribute");
     ensure_h5_result(H5Aclose(attr_inh), "H5Aclose failed to close the high index attribute");
