@@ -168,11 +168,9 @@ public:
                                 9,10,11,12 };
     dimensions_t img_dims(2); img_dims[0] = 3; img_dims[1] = 4;
     dimensions_t chunk_dims(3); chunk_dims[0] = 1; chunk_dims[1] = 3; chunk_dims[2] = 4;
-    //PercivalEmulator::FrameHeader img_header;
-    //img_header.frame_number = 7;
 
     dset_def.name = "data";
-    dset_def.num_frames = 2; //unused?
+    dset_def.num_frames = 10;
     dset_def.data_type = FrameProcessor::raw_16bit;
     dset_def.frame_dimensions = dimensions_t(2);
     dset_def.frame_dimensions[0] = 3;
@@ -319,6 +317,8 @@ BOOST_AUTO_TEST_CASE( HDF5FileMultipleReverseTest )
 BOOST_AUTO_TEST_CASE( HDF5FileAdjustHugeOffset )
 {
   BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/test_huge_offset.h5", 0, false, 1, 1));
+  BOOST_REQUIRE_NO_THROW(hdf5f.set_unlimited());
+  BOOST_REQUIRE_NO_THROW(dset_def.num_frames = 0);
   BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def, -1, -1));
 
   hsize_t huge_offset = 100000;

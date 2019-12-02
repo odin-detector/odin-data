@@ -30,7 +30,8 @@ HDF5File::HDF5File() :
         param_memspace_(-1),
         hdf5_error_flag_(false),
         file_index_(0),
-        use_earliest_version_(false)
+        use_earliest_version_(false),
+        unlimited_(false)
 {
   static bool hdf_initialised = false;
   this->logger_ = Logger::getLogger("FP.HDF5File");
@@ -46,6 +47,16 @@ HDF5File::HDF5File() :
 HDF5File::~HDF5File() {
   // Call to close file in case it hasn't been closed
   close_file();
+}
+
+void HDF5File::set_unlimited() {
+  if (hdf5_datasets_.empty()) {
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting HDF5 datasets to use unlimited");
+    unlimited_ = true;
+  }
+  else {
+    throw std::runtime_error("Datasets have already been created. Cannot set unlimited.");
+  }
 }
 
 /**
@@ -197,7 +208,6 @@ void HDF5File::close_file() {
 void HDF5File::write_frame(const Frame& frame, hsize_t frame_offset, uint64_t outer_chunk_dimension) {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
-  hsize_t frame_no = frame.get_frame_number();
 
   LOG4CXX_TRACE(logger_, "Writing frame [" << frame.get_frame_number()
       << "] size [" << get_size_from_enum(frame.get_meta_data().get_data_type())
@@ -205,16 +215,16 @@ void HDF5File::write_frame(const Frame& frame, hsize_t frame_offset, uint64_t ou
       << "] name [" << frame.get_meta_data().get_dataset_name() << "]");
   HDF5Dataset_t& dset = this->get_hdf5_dataset(frame.get_meta_data().get_dataset_name());
 
-
   // We will need to extend the dataset in 1 dimension by the outer chunk dimension
   // For 3D datasets this would normally be 1 (a 2D image)
   // For 1D datasets this would normally be the quantity of data items present in a single chunk
 
-  this->extend_dataset(dset, (frame_offset + 1) * outer_chunk_dimension);
+  if (unlimited_) {
+    this->extend_dataset(dset, (frame_offset + 1) * outer_chunk_dimension);
+  }
 
-  LOG4CXX_TRACE(logger_, "Writing frame offset=" << frame_no  <<
-      " (" << frame_offset << ")" <<
-      " dset=" <<frame.get_meta_data().get_dataset_name());
+  LOG4CXX_TRACE(logger_, "Writing frame offset=" << frame.get_frame_number()  << " (" << frame_offset <<
+                         ") dset=" << frame.get_meta_data().get_dataset_name());
 
   // Set the offset
   std::vector<hsize_t>offset(dset.dataset_dimensions.size());
@@ -230,6 +240,11 @@ void HDF5File::write_frame(const Frame& frame, hsize_t frame_offset, uint64_t ou
     ensure_h5_result(H5Dflush(dset.dataset_id), "Failed to flush data to disk");
   }
 #endif
+
+  // Set actual_dataset_size_ to the offset we just wrote to + 1 (Note: frame_offset is zero-indexed)
+  if (frame_offset + 1 > dset.actual_dataset_size_) {
+    dset.actual_dataset_size_ = frame_offset + 1;
+  }
 }
 
 /**
@@ -287,8 +302,9 @@ void HDF5File::write_parameter(const Frame& frame, DatasetDefinition dataset_def
 
   HDF5Dataset_t& dset = this->get_hdf5_dataset(dataset_definition.name);
 
-  // Extend the dataset
-  this->extend_dataset(dset, frame_offset + 1);
+  if (unlimited_) {
+    this->extend_dataset(dset, frame_offset + 1);
+  }
 
   LOG4CXX_TRACE(logger_, "Writing parameter [" << dataset_definition.name << "] at offset = " << frame_offset);
 
@@ -371,11 +387,23 @@ void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index
   }
   std::vector<hsize_t> chunk_dims = definition.chunks;
 
-  std::vector<hsize_t> max_dims = dset_dims;
-  max_dims[0] = H5S_UNLIMITED;
-
-  /* Create the dataspace with the given dimensions - and max dimensions */
-  dataspace = H5Screate_simple(dset_dims.size(), &dset_dims.front(), &max_dims.front());
+  if (unlimited_) {
+    std::vector<hsize_t> max_dims = dset_dims;
+    max_dims[0] = H5S_UNLIMITED;
+    // Create an unlimited dataspace with the given initial dimensions
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Creating unlimited dataspace");
+    dataspace = H5Screate_simple(dset_dims.size(), &dset_dims.front(), &max_dims.front());
+  }
+  else {
+    // Create a fixed size dataspace with the given dimensions
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Creating fixed size dataspace");
+    dset_dims[0] = definition.num_frames;
+    dataspace = H5Screate_simple(dset_dims.size(), &dset_dims.front(), NULL);
+    // Limit outermost chunk dimension to maximum dataset size (H5Dchunk.c:891 [1.10.5])
+    if (chunk_dims[0] > dset_dims[0]) {
+      chunk_dims[0] = dset_dims[0];
+    }
+  }
   ensure_h5_result(dataspace, "H5Screate_simple failed to create the dataspace");
 
   /* Enable chunking  */
@@ -465,6 +493,7 @@ void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index
 
   dset.dataset_dimensions = dset_dims;
   dset.dataset_offsets = std::vector<hsize_t>(3);
+  dset.actual_dataset_size_ = 0;
   this->hdf5_datasets_[definition.name] = dset;
 
   LOG4CXX_DEBUG_LEVEL(1, logger_, "Closing intermediate open HDF objects");
@@ -483,7 +512,7 @@ void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index
  * \param[in] dset_name - name of the dataset to search for.
  * \return - the dataset definition if found.
  */
-HDF5File::HDF5Dataset_t& HDF5File::get_hdf5_dataset(const std::string dset_name) {
+HDF5File::HDF5Dataset_t& HDF5File::get_hdf5_dataset(const std::string& dset_name) {
   // Check if the frame destination dataset has been created
   if (this->hdf5_datasets_.find(dset_name) == this->hdf5_datasets_.end())
   {
@@ -500,6 +529,9 @@ HDF5File::HDF5Dataset_t& HDF5File::get_hdf5_dataset(const std::string dset_name)
  * Checks the frame_no is larger than the current dataset dimensions and then
  * sets the extent of the dataset to this new value.
  *
+ * This is used in the case that the final size of the dataset is unknown initially
+ * and set to H5S_UNLIMITED.
+ *
  * \param[in] dset - Handle to the HDF5 dataset.
  * \param[in] frame_no - Number of the incoming frame to extend to.
  */
@@ -513,20 +545,15 @@ void HDF5File::extend_dataset(HDF5Dataset_t& dset, size_t frame_no) const {
   }
 }
 
-/** Read the current number of frames in a HDF5 dataset
+/** Read the current number of frames in an HDF5 dataset (including gaps, up to the highest written offset)
  *
  * \param[in] dataset - HDF5 dataset
  */
-size_t HDF5File::get_dataset_frames(const std::string dset_name)
+size_t HDF5File::get_dataset_frames(const std::string& dset_name)
 {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
-  hid_t dspace = H5Dget_space(this->get_hdf5_dataset(dset_name).dataset_id);
-  const int ndims = H5Sget_simple_extent_ndims(dspace);
-  hsize_t dims[ndims];
-  H5Sget_simple_extent_dims(dspace, dims, NULL);
-
-  return (size_t)dims[0];
+  return this->get_hdf5_dataset(dset_name).actual_dataset_size_;
 }
 
 /**

@@ -159,7 +159,7 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
       // Check if this is a master frame (for multi dataset acquisitions)
       // or if no master frame has been defined. If either of these conditions
       // are true then increment the number of frames written.
-      if (master_frame_ == "" || master_frame_ == frame_dataset_name) {
+      if (master_frame_.empty() || master_frame_ == frame_dataset_name) {
         size_t dataset_frames = current_file->get_dataset_frames(frame_dataset_name);
         frames_processed_++;
         LOG4CXX_TRACE(logger_, "Master frame processed");
@@ -176,7 +176,7 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
         LOG4CXX_TRACE(logger_, "Non-master frame processed");
       }
 
-      // If this frame is the final one in the series we are expecting to process, set the return state
+      // If this frame is the final frame in the series we are expecting to process, set the return state
       if (frames_to_write_ > 0 && frames_written_ == frames_to_write_) {
         if (frames_processed_ >= frames_to_write_) {
           return_status = status_complete;
@@ -237,6 +237,12 @@ void Acquisition::create_file(size_t file_number) {
 
   // Send meta data message to notify of file creation
   publish_meta(META_NAME, META_CREATE_ITEM, full_path.string(), get_create_meta_header());
+
+  if (total_frames_ == 0) {
+    // Running in continuous mode, so we could receive any number of frames
+    // Make the HDF5 datasets unlimited
+    current_file->set_unlimited();
+  }
 
   // Create the datasets from the definitions
   std::map<std::string, DatasetDefinition>::iterator iter;
