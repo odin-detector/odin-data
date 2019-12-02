@@ -51,11 +51,9 @@ public:
 
   HDF5File();
   ~HDF5File();
-  void hdf_error_handler(unsigned n, const H5E_error2_t *err_desc);
-  bool check_for_hdf_errors();
-  std::vector<std::string> read_hdf_errors();
+  void hdf_error_handler(unsigned n, const H5E_error2_t* err_desc);
   void clear_hdf_errors();
-  void handle_h5_error(std::string message, std::string function, std::string filename, int line) const;
+  void handle_h5_error(const std::string& message, const std::string& function, const std::string& filename, int line);
   void create_file(std::string file_name, size_t file_index, bool use_earliest_version, size_t alignment_threshold, size_t alignment_value);
   void close_file();
   void create_dataset(const DatasetDefinition& definition, int low_index, int high_index);
@@ -80,7 +78,7 @@ private:
   static const int PARAM_FLUSH_RATE = 1000;
 
   HDF5Dataset_t& get_hdf5_dataset(const std::string& dset_name);
-  void extend_dataset(HDF5File::HDF5Dataset_t& dset, size_t frame_no) const;
+  void extend_dataset(HDF5File::HDF5Dataset_t& dset, size_t frame_no);
   hid_t datatype_to_hdf_type(DataType data_type) const;
 
   LoggerPtr logger_;
@@ -89,7 +87,7 @@ private:
   /** Internal HDF5 error flag */
   bool hdf5_error_flag_;
   /** Internal HDF5 error recording */
-  std::vector<std::string> hdf5_errors_;
+  std::vector<H5E_error2_t> hdf5_errors_;
   /** Map of datasets that are being written to */
   std::map<std::string, HDF5Dataset_t> hdf5_datasets_;
   /** The index of this file across all processors in the acquisition, 0 indexed */
