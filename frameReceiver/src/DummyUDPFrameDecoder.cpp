@@ -510,7 +510,7 @@ uint32_t DummyUDPFrameDecoder::get_packet_number(void) const
 //!
 //! \param[in] start - start time in timespec struct format
 //! \param[in] end - end time in timespec struct format
-//! \return eclapsed time between start and end in milliseconds
+//! \return elapsed time between start and end in milliseconds
 //!
 unsigned int DummyUDPFrameDecoder::elapsed_ms(struct timespec& start, struct timespec& end)
 {

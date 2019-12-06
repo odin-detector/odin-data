@@ -59,5 +59,4 @@ namespace FrameSimulatorTest {
             }
     }
 
-
 }

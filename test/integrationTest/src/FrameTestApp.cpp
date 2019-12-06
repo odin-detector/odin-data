@@ -37,7 +37,7 @@ namespace po = boost::program_options;
 
 /** Check that str contains suffix
  * /param[in] str - string to test
- * /param[in] str - test suffix
+ * /param[in] suffix - test suffix
  * /return true if suffix found; else false
  */
 static bool has_suffix(const std::string &str, const std::string &suffix) {
@@ -112,7 +112,6 @@ int parse_arguments(int argc,
     }
 
   }
-
   catch (...) {
     std::cout << "Exception parsing arguments.";
     rc = 1;
@@ -148,7 +147,7 @@ int main(int argc, char *argv[]) {
       std::string kill_entry = "Main." + process + "." + "kill";
       int sleeptime = pt.get<int>("Main." + process + "." + "sleep");
       ControlUtility* control = new ControlUtility(pt, pos_args, command_entry, process, socket_entry, kill_entry, logger);
-            utilities.push_back(control);
+      utilities.push_back(control);
       if (pt.get<bool>("Main." + process +"." + "process")) {
         processes.push_back(control);
         control->run_process();

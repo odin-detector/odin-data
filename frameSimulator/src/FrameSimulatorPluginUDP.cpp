@@ -108,7 +108,7 @@ namespace FrameSimulator {
     }
 
     /** Prepare frame(s) for replay by processing the pcap file
-     * /param[in] pcap header
+     * /param[in] header
      * /param[in] buffer
      * calls extract_frames which should be implemented by each parent class to extract
      * frames of the appropriate type

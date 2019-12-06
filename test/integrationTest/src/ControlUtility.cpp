@@ -14,7 +14,8 @@ namespace FrameSimulatorTest {
      * @param positional_arg - (possible) positional argument
      * @param process_entry - property tree entry accessor for process path
      * @param process_args_entry - property tree entry accessor for process arguments
-     * @param process_pid - pid of process
+     * @param socket_entry - socket for messages
+     * @param kill_entry - kill message
      * @param logger - pointer to logger
      */
     ControlUtility::ControlUtility(boost::property_tree::ptree &ptree,
@@ -101,6 +102,7 @@ namespace FrameSimulatorTest {
 
     /** Send configuration message
      *
+     * @param message - configuration as message
      */
     void ControlUtility::send_configuration(const std::string &message) {
 
