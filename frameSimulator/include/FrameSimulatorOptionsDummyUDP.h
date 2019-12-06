@@ -6,7 +6,7 @@
 
 namespace FrameSimulator {
 
-    static const int default_image_width = 1024;
+    static const int default_image_width = 1400;
     static const int default_image_height = 1024;
     static const int default_pkt_len = 8000;
 

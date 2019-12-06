@@ -20,7 +20,7 @@ namespace FrameProcessor
    * The constructor sets up default configuration parameters and logging used within the class.
    */
   DummyUDPProcessPlugin::DummyUDPProcessPlugin() :
-    image_width_(1024),
+    image_width_(1400),
     image_height_(1024),
     packets_lost_(0),
     copy_frame_(true)

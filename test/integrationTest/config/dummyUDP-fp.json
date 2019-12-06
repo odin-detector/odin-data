@@ -53,7 +53,7 @@
   {
     "dummy": {
       "width": 1024,
-      "height": 1024
+      "height": 1400
     }
   },
 
@@ -71,7 +71,7 @@
 		"dummy":
 		{
 		    "datatype":"uint16",
-		    "dims":[1024,1024],
+		    "dims":[1400,1024],
 		    "compression":"none"
 		}
 	    },
