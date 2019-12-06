@@ -18,9 +18,9 @@ namespace FrameProcessor {
     ? static_cast<void> (0)                                                    \
         : handle_h5_error(message, __PRETTY_FUNCTION__, __FILE__, __LINE__))
 
-herr_t hdf5_error_cb(unsigned n, const H5E_error2_t *err_desc, void* client_data)
+herr_t hdf5_error_cb(unsigned n, const H5E_error2_t* err_desc, void* client_data)
 {
-  HDF5File *fwPtr = (HDF5File *)client_data;
+  HDF5File* fwPtr = (HDF5File*) client_data;
   fwPtr->hdf_error_handler(n, err_desc);
   return 0;
 }
@@ -30,7 +30,8 @@ HDF5File::HDF5File() :
         param_memspace_(-1),
         hdf5_error_flag_(false),
         file_index_(0),
-        use_earliest_version_(false)
+        use_earliest_version_(false),
+        unlimited_(false)
 {
   static bool hdf_initialised = false;
   this->logger_ = Logger::getLogger("FP.HDF5File");
@@ -48,6 +49,16 @@ HDF5File::~HDF5File() {
   close_file();
 }
 
+void HDF5File::set_unlimited() {
+  if (hdf5_datasets_.empty()) {
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting HDF5 datasets to use unlimited");
+    unlimited_ = true;
+  }
+  else {
+    throw std::runtime_error("Datasets have already been created. Cannot set unlimited.");
+  }
+}
+
 /**
  * Handles an HDF5 error. Logs the error and throws a runtime exception
  *
@@ -56,53 +67,35 @@ HDF5File::~HDF5File() {
  * \param[in] filename - The filename
  * \param[in] line - The line number of the call
  */
-void HDF5File::handle_h5_error(std::string message, std::string function, std::string filename, int line) const {
-  std::stringstream err;
-  err << "H5 function error: (" << message << ") in " << filename << ":" << line << ": " << function;
-  LOG4CXX_ERROR(logger_, err.str());
-  throw std::runtime_error(err.str().c_str());
+void HDF5File::handle_h5_error(const std::string& message, const std::string& function,
+                               const std::string& filename, int line)
+{
+  std::stringstream error;
+  error << "HDF5 Function Error: (" << message << ") in " << filename << ":" << line << ": " << function;
+
+  // Walk the HDF5 error stack and add each frame to hdf5_errors_
+  H5Ewalk2(H5E_DEFAULT, H5E_WALK_DOWNWARD, hdf5_error_cb, (void *) this);
+  // Iterate errors and add them to message to log
+  std::stringstream full_error;
+  full_error << error.str() << "\n HDF5 Stack Trace:";
+  unsigned int frame = 0;
+  std::vector<H5E_error2_t>::iterator it;
+  for (it=hdf5_errors_.begin(); it != hdf5_errors_.end(); ++it) {
+    full_error << "\n  [" << frame << "]: " << it->file_name << ":" << it->line << " in " << it->func_name << ": \"" << it->desc << "\"";
+    frame++;
+  }
+  LOG4CXX_ERROR(logger_, full_error.str());
+  this->clear_hdf_errors();
+
+  throw std::runtime_error(error.str());
 }
 
-void HDF5File::hdf_error_handler(unsigned n, const H5E_error2_t *err_desc)
+void HDF5File::hdf_error_handler(unsigned n, const H5E_error2_t* err_desc)
 {
-  const int MSG_SIZE = 64;
-  char maj[MSG_SIZE];
-  char min[MSG_SIZE];
-  char cls[MSG_SIZE];
-
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
-  // Set the error flag true
   hdf5_error_flag_ = true;
-
-  // Get descriptions for the major and minor error numbers
-  H5Eget_class_name(err_desc->cls_id, cls, MSG_SIZE);
-  H5Eget_msg(err_desc->maj_num, NULL, maj, MSG_SIZE);
-  H5Eget_msg(err_desc->min_num, NULL, min, MSG_SIZE);
-
-  // Record the error into the error stack
-  std::stringstream err;
-  err << "[" << cls << "] " << maj << " (" << min << ")";
-  LOG4CXX_ERROR(logger_, "H5 error: " << err.str());
-  hdf5_errors_.push_back(err.str());
-}
-
-bool HDF5File::check_for_hdf_errors()
-{
-  // Protect this method
-  boost::lock_guard<boost::recursive_mutex> lock(mutex_);
-
-  // Simply return the current error flag state
-  return hdf5_error_flag_;
-}
-
-std::vector<std::string> HDF5File::read_hdf_errors()
-{
-  // Protect this method
-  boost::lock_guard<boost::recursive_mutex> lock(mutex_);
-
-  // Simply return the current error array
-  return hdf5_errors_;
+  hdf5_errors_.push_back(*err_desc);
 }
 
 void HDF5File::clear_hdf_errors()
@@ -158,6 +151,7 @@ void HDF5File::create_file(std::string filename, size_t file_index, bool use_ear
   LOG4CXX_INFO(logger_, "Creating file: " << filename);
   unsigned int flags = H5F_ACC_TRUNC;
   this->hdf5_file_id_ = H5Fcreate(filename.c_str(), flags, fcpl, fapl);
+  ensure_h5_result(this->hdf5_file_id_, "Failed to create HDF5 file");
   if (this->hdf5_file_id_ < 0) {
     // Close file access property list
     ensure_h5_result(H5Pclose(fapl), "H5Pclose failed after create file failed");
@@ -169,9 +163,10 @@ void HDF5File::create_file(std::string filename, size_t file_index, bool use_ear
   // Close file access property list
   ensure_h5_result(H5Pclose(fapl), "H5Pclose failed to close the file access property list");
 
-  // Create the memspace for writing paramter datasets
+  // Create the memspace for writing parameter datasets
   hsize_t elementSize[1] = {1};
   param_memspace_ = H5Screate_simple(1, elementSize, NULL);
+  ensure_h5_result(param_memspace_, "Failed to create parameter dataspace");
 
   file_index_ = file_index;
 
@@ -197,7 +192,6 @@ void HDF5File::close_file() {
 void HDF5File::write_frame(const Frame& frame, hsize_t frame_offset, uint64_t outer_chunk_dimension) {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
-  hsize_t frame_no = frame.get_frame_number();
 
   LOG4CXX_TRACE(logger_, "Writing frame [" << frame.get_frame_number()
       << "] size [" << get_size_from_enum(frame.get_meta_data().get_data_type())
@@ -205,16 +199,16 @@ void HDF5File::write_frame(const Frame& frame, hsize_t frame_offset, uint64_t ou
       << "] name [" << frame.get_meta_data().get_dataset_name() << "]");
   HDF5Dataset_t& dset = this->get_hdf5_dataset(frame.get_meta_data().get_dataset_name());
 
-
   // We will need to extend the dataset in 1 dimension by the outer chunk dimension
   // For 3D datasets this would normally be 1 (a 2D image)
   // For 1D datasets this would normally be the quantity of data items present in a single chunk
 
-  this->extend_dataset(dset, (frame_offset + 1) * outer_chunk_dimension);
+  if (unlimited_) {
+    this->extend_dataset(dset, (frame_offset + 1) * outer_chunk_dimension);
+  }
 
-  LOG4CXX_TRACE(logger_, "Writing frame offset=" << frame_no  <<
-      " (" << frame_offset << ")" <<
-      " dset=" <<frame.get_meta_data().get_dataset_name());
+  LOG4CXX_TRACE(logger_, "Writing frame offset=" << frame.get_frame_number()  << " (" << frame_offset <<
+                         ") dset=" << frame.get_meta_data().get_dataset_name());
 
   // Set the offset
   std::vector<hsize_t>offset(dset.dataset_dimensions.size());
@@ -230,6 +224,11 @@ void HDF5File::write_frame(const Frame& frame, hsize_t frame_offset, uint64_t ou
     ensure_h5_result(H5Dflush(dset.dataset_id), "Failed to flush data to disk");
   }
 #endif
+
+  // Set actual_dataset_size_ to the offset we just wrote to + 1 (Note: frame_offset is zero-indexed)
+  if (frame_offset + 1 > dset.actual_dataset_size_) {
+    dset.actual_dataset_size_ = frame_offset + 1;
+  }
 }
 
 /**
@@ -287,8 +286,9 @@ void HDF5File::write_parameter(const Frame& frame, DatasetDefinition dataset_def
 
   HDF5Dataset_t& dset = this->get_hdf5_dataset(dataset_definition.name);
 
-  // Extend the dataset
-  this->extend_dataset(dset, frame_offset + 1);
+  if (unlimited_) {
+    this->extend_dataset(dset, frame_offset + 1);
+  }
 
   LOG4CXX_TRACE(logger_, "Writing parameter [" << dataset_definition.name << "] at offset = " << frame_offset);
 
@@ -300,6 +300,7 @@ void HDF5File::write_parameter(const Frame& frame, DatasetDefinition dataset_def
   hid_t dtype = datatype_to_hdf_type(dataset_definition.data_type);
   hsize_t elementSize[1] = {1};
   hid_t filespace_ = H5Dget_space(dset.dataset_id);
+  ensure_h5_result(filespace_, "Failed to get parameter dataset dataspace");
 
   // Select the hyperslab
   ensure_h5_result(H5Sselect_hyperslab(filespace_, H5S_SELECT_SET, &offset.front(), NULL, elementSize, NULL),
@@ -371,11 +372,23 @@ void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index
   }
   std::vector<hsize_t> chunk_dims = definition.chunks;
 
-  std::vector<hsize_t> max_dims = dset_dims;
-  max_dims[0] = H5S_UNLIMITED;
-
-  /* Create the dataspace with the given dimensions - and max dimensions */
-  dataspace = H5Screate_simple(dset_dims.size(), &dset_dims.front(), &max_dims.front());
+  if (unlimited_) {
+    std::vector<hsize_t> max_dims = dset_dims;
+    max_dims[0] = H5S_UNLIMITED;
+    // Create an unlimited dataspace with the given initial dimensions
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Creating unlimited dataspace");
+    dataspace = H5Screate_simple(dset_dims.size(), &dset_dims.front(), &max_dims.front());
+  }
+  else {
+    // Create a fixed size dataspace with the given dimensions
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Creating fixed size dataspace");
+    dset_dims[0] = definition.num_frames;
+    dataspace = H5Screate_simple(dset_dims.size(), &dset_dims.front(), NULL);
+    // Limit outermost chunk dimension to maximum dataset size (H5Dchunk.c:891 [1.10.5])
+    if (chunk_dims[0] > dset_dims[0]) {
+      chunk_dims[0] = dset_dims[0];
+    }
+  }
   ensure_h5_result(dataspace, "H5Screate_simple failed to create the dataspace");
 
   /* Enable chunking  */
@@ -435,9 +448,8 @@ void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index
   /* Create dataset  */
   LOG4CXX_INFO(logger_, "Creating dataset: " << definition.name);
   HDF5Dataset_t dset;
-  dset.dataset_id = H5Dcreate2(this->hdf5_file_id_, definition.name.c_str(),
-      dtype, dataspace,
-      H5P_DEFAULT, prop, dapl);
+  dset.dataset_id = H5Dcreate2(this->hdf5_file_id_, definition.name.c_str(), dtype, dataspace, H5P_DEFAULT, prop, dapl);
+  ensure_h5_result(dset.dataset_id, "H5Dcreate2 failed");
   if (dset.dataset_id < 0) {
     // Unable to create the dataset, clean up resources
     ensure_h5_result(H5Pclose(prop), "H5Pclose failed to close the prop after failing to create the dataset");
@@ -451,12 +463,14 @@ void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index
   if (definition.create_low_high_indexes)
   {
     hid_t space_inl = H5Screate(H5S_SCALAR);
+    ensure_h5_result(space_inl, "Failed to create dataspace");
     hid_t attr_inl = H5Acreate2(dset.dataset_id, "image_nr_low", H5T_STD_I32LE, space_inl, H5P_DEFAULT, H5P_DEFAULT);
     ensure_h5_result(H5Awrite(attr_inl, H5T_STD_I32LE, &low_index), "Failed to write to low index attribute");
     ensure_h5_result(H5Aclose(attr_inl), "H5Aclose failed to close the low index attribute");
     ensure_h5_result(H5Sclose(space_inl), "H5Sclose failed to close the low index dataspace");
 
     hid_t space_inh = H5Screate(H5S_SCALAR);
+    ensure_h5_result(space_inh, "Failed to create dataspace");
     hid_t attr_inh = H5Acreate2(dset.dataset_id, "image_nr_high", H5T_STD_I32LE, space_inh, H5P_DEFAULT, H5P_DEFAULT);
     ensure_h5_result(H5Awrite(attr_inh, H5T_STD_I32LE, &high_index), "Failed to write to high index attribute");
     ensure_h5_result(H5Aclose(attr_inh), "H5Aclose failed to close the high index attribute");
@@ -465,6 +479,7 @@ void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index
 
   dset.dataset_dimensions = dset_dims;
   dset.dataset_offsets = std::vector<hsize_t>(3);
+  dset.actual_dataset_size_ = 0;
   this->hdf5_datasets_[definition.name] = dset;
 
   LOG4CXX_DEBUG_LEVEL(1, logger_, "Closing intermediate open HDF objects");
@@ -483,7 +498,7 @@ void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index
  * \param[in] dset_name - name of the dataset to search for.
  * \return - the dataset definition if found.
  */
-HDF5File::HDF5Dataset_t& HDF5File::get_hdf5_dataset(const std::string dset_name) {
+HDF5File::HDF5Dataset_t& HDF5File::get_hdf5_dataset(const std::string& dset_name) {
   // Check if the frame destination dataset has been created
   if (this->hdf5_datasets_.find(dset_name) == this->hdf5_datasets_.end())
   {
@@ -500,10 +515,13 @@ HDF5File::HDF5Dataset_t& HDF5File::get_hdf5_dataset(const std::string dset_name)
  * Checks the frame_no is larger than the current dataset dimensions and then
  * sets the extent of the dataset to this new value.
  *
+ * This is used in the case that the final size of the dataset is unknown initially
+ * and set to H5S_UNLIMITED.
+ *
  * \param[in] dset - Handle to the HDF5 dataset.
  * \param[in] frame_no - Number of the incoming frame to extend to.
  */
-void HDF5File::extend_dataset(HDF5Dataset_t& dset, size_t frame_no) const {
+void HDF5File::extend_dataset(HDF5Dataset_t& dset, size_t frame_no) {
   if (frame_no > dset.dataset_dimensions[0]) {
     // Extend the dataset
     LOG4CXX_DEBUG_LEVEL(2, logger_, "Extending dataset_dimensions[0] = " << frame_no);
@@ -513,20 +531,15 @@ void HDF5File::extend_dataset(HDF5Dataset_t& dset, size_t frame_no) const {
   }
 }
 
-/** Read the current number of frames in a HDF5 dataset
+/** Read the current number of frames in an HDF5 dataset (including gaps, up to the highest written offset)
  *
  * \param[in] dataset - HDF5 dataset
  */
-size_t HDF5File::get_dataset_frames(const std::string dset_name)
+size_t HDF5File::get_dataset_frames(const std::string& dset_name)
 {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
-  hid_t dspace = H5Dget_space(this->get_hdf5_dataset(dset_name).dataset_id);
-  const int ndims = H5Sget_simple_extent_ndims(dspace);
-  hsize_t dims[ndims];
-  H5Sget_simple_extent_dims(dspace, dims, NULL);
-
-  return (size_t)dims[0];
+  return this->get_hdf5_dataset(dset_name).actual_dataset_size_;
 }
 
 /**
