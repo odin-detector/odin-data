@@ -7,11 +7,13 @@
 
 #include <DataBlock.h>
 #include "DebugLevelLogger.h"
+#include <malloc.h>
 
 namespace FrameProcessor
 {
 int DataBlock::index_counter_ = 0;
 
+static const int alignment = 64;
 
 /**
  * Construct a data block, allocating the required memory.
@@ -26,7 +28,7 @@ DataBlock::DataBlock(size_t block_size) :
   // Create this DataBlock's unique index
   index_ = DataBlock::index_counter_++;
   // Allocate the memory required for this data block
-  block_ptr_ = malloc(block_size);
+  block_ptr_ = memalign(alignment, block_size);
 }
 
 /**
@@ -75,7 +77,7 @@ void DataBlock::resize(size_t block_size)
     // Free the current allocation first
     free(block_ptr_);
     // Allocate the new number of bytes
-    block_ptr_ = malloc(block_size);
+    block_ptr_ = memalign(alignment, block_size);
     // Record our new size
     allocated_bytes_ = block_size;
   }
