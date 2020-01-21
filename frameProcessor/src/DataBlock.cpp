@@ -28,7 +28,7 @@ DataBlock::DataBlock(size_t block_size) :
   // Create this DataBlock's unique index
   index_ = DataBlock::index_counter_++;
   // Allocate the memory required for this data block
-  block_ptr_ = memalign(alignment, block_size);
+  posix_memalign(&block_ptr_, alignment, block_size);
 }
 
 /**
@@ -77,7 +77,7 @@ void DataBlock::resize(size_t block_size)
     // Free the current allocation first
     free(block_ptr_);
     // Allocate the new number of bytes
-    block_ptr_ = memalign(alignment, block_size);
+    posix_memalign(&block_ptr_, alignment, block_size);
     // Record our new size
     allocated_bytes_ = block_size;
   }
