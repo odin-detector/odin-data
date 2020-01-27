@@ -7,11 +7,13 @@
 
 #include <DataBlock.h>
 #include "DebugLevelLogger.h"
+#include <malloc.h>
 
 namespace FrameProcessor
 {
 int DataBlock::index_counter_ = 0;
 
+static const int alignment = 64;
 
 /**
  * Construct a data block, allocating the required memory.
@@ -26,7 +28,11 @@ DataBlock::DataBlock(size_t block_size) :
   // Create this DataBlock's unique index
   index_ = DataBlock::index_counter_++;
   // Allocate the memory required for this data block
-  block_ptr_ = malloc(block_size);
+  int rc = posix_memalign(&block_ptr_, alignment, block_size);
+  if(rc)
+  {
+    LOG4CXX_ERROR(logger_, "Exhausted memory (" << rc << "): could not allocate " << block_size << " bytes");
+  }
 }
 
 /**
@@ -68,17 +74,21 @@ size_t DataBlock::get_size()
  */
 void DataBlock::resize(size_t block_size)
 {
-  LOG4CXX_DEBUG_LEVEL(2, logger_, "Resizing DataBlock " << index_ << " to " << block_size << " bytes");
+    LOG4CXX_DEBUG_LEVEL(2, logger_, "Resizing DataBlock " << index_ << " to " << block_size << " bytes");
   // If the new size requested is the different
   // to our current size then re-allocate
-  if (block_size != allocated_bytes_) {
+    if (block_size != allocated_bytes_) {
     // Free the current allocation first
     free(block_ptr_);
     // Allocate the new number of bytes
-    block_ptr_ = malloc(block_size);
+    int rc = posix_memalign(&block_ptr_, alignment, block_size);
+    if(rc)
+    {
+        LOG4CXX_ERROR(logger_, "Exhausted memory (" << rc << "): could not reallocate " << block_size << " bytes");
+    }
     // Record our new size
     allocated_bytes_ = block_size;
-  }
+    }
 }
 
 /**
