@@ -213,6 +213,20 @@ bool IpcMessage::has_param(const std::string& param_name) const
   return param_found;
 }
 
+
+//! Sets the message type to not acknowledged and sets an appropriate rejection message
+//!
+//! This method can be used to set this IpcMessage up as a rejection (nack) message.
+//! A reason is supplied and set as a parameter called 'rejetion'
+//!
+//! \return void
+
+void IpcMessage::set_nack(const std::string& reason)
+{
+  this->set_msg_type(MsgTypeNack);
+  this->set_param("rejection", reason);
+}
+
 //! Indicates if message has necessary attributes with legal values.
 //!
 //! This method indicates if the message is valid, i.e. that all required attributes
