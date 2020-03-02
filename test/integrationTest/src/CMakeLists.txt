@@ -6,6 +6,7 @@ include_directories(${TEST_DIR}/integrationTest/include
 		${TEST_INCLUDE_DIRS}
 		${HDF5_INCLUDE_DIRS}
 		${Boost_INCLUDE_DIRS}
+		${ZEROMQ_INCLUDE_DIRS}
 		${LOG4CXX_INCLUDE_DIRS}/..)
 
 add_definitions(${HDF5_DEFINITIONS})
