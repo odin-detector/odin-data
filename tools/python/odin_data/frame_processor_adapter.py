@@ -15,6 +15,8 @@ from tornado.ioloop import IOLoop
 
 FP_ADAPTER_KEY = 'fr_adapter_name'
 FP_DEFAULT_ADAPTER_KEY = 'fr'
+PCT_BUFFER_FREE_KEY = 'buffer_threshold'
+DEFAULT_PCT_BUFFER_FREE = 5.0
 
 def bool_from_string(value):
     bool_value = False
@@ -46,6 +48,10 @@ class FrameProcessorAdapter(OdinDataAdapter):
             self._fr_adapter_name = kwargs[FP_ADAPTER_KEY]
 
         self._fr_adapter = None
+
+        self._fr_pct_buffer_threshold = DEFAULT_PCT_BUFFER_FREE
+        if PCT_BUFFER_FREE_KEY in kwargs:
+            self._fr_pct_buffer_threshold = kwargs[PCT_BUFFER_FREE_KEY]
 
         self._param = {
             'config/hdf/acquisition_id': '',
@@ -210,7 +216,7 @@ class FrameProcessorAdapter(OdinDataAdapter):
                             valid_check = False
                             reason = "Frames dropped [{}] on at least one FR".format(frames_dropped)
                         pct_free = float(empty_buffers) / (float(empty_buffers+mapped_buffers)) * 100.0
-                        if pct_free < 5.0:
+                        if pct_free < self._fr_pct_buffer_threshold:
                             valid_check = False
                             reason = "There are only {}% free buffers left on at least one FR".format(pct_free)
                     except Exception as ex:
