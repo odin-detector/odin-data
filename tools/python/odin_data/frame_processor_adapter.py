@@ -51,7 +51,10 @@ class FrameProcessorAdapter(OdinDataAdapter):
 
         self._fr_pct_buffer_threshold = DEFAULT_PCT_BUFFER_FREE
         if PCT_BUFFER_FREE_KEY in kwargs:
-            self._fr_pct_buffer_threshold = kwargs[PCT_BUFFER_FREE_KEY]
+            try:
+                self._fr_pct_buffer_threshold = float(kwargs[PCT_BUFFER_FREE_KEY])
+            except:
+                logging.error("Could not set the buffer threshold to: {}".format(kwargs[PCT_BUFFER_FREE_KEY]))
 
         self._param = {
             'config/hdf/acquisition_id': '',
