@@ -16,7 +16,6 @@ from tornado.ioloop import IOLoop
 FP_ADAPTER_KEY = 'fr_adapter_name'
 FP_DEFAULT_ADAPTER_KEY = 'fr'
 PCT_BUFFER_FREE_KEY = 'buffer_threshold'
-DEFAULT_PCT_BUFFER_FREE = 5.0
 
 def bool_from_string(value):
     bool_value = False
@@ -49,12 +48,13 @@ class FrameProcessorAdapter(OdinDataAdapter):
 
         self._fr_adapter = None
 
-        self._fr_pct_buffer_threshold = DEFAULT_PCT_BUFFER_FREE
-        if PCT_BUFFER_FREE_KEY in kwargs:
-            try:
-                self._fr_pct_buffer_threshold = float(kwargs[PCT_BUFFER_FREE_KEY])
-            except:
-                logging.error("Could not set the buffer threshold to: {}".format(kwargs[PCT_BUFFER_FREE_KEY]))
+        # Set the bufer threshold check, default to 0.0 (no check) if the option
+        # does not exist or is badly formatted
+        self._fr_pct_buffer_threshold = 0.0
+        try:
+            self._fr_pct_buffer_threshold = float(self.options.get(PCT_BUFFER_FREE_KEY, 0.0))
+        except ValueError:
+            logging.error("Could not set the buffer threshold to: {}".format(kwargs[PCT_BUFFER_FREE_KEY]))
 
         self._param = {
             'config/hdf/acquisition_id': '',
