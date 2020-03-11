@@ -88,7 +88,6 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
           std::stringstream ss;
           ss << "Unexpected frame: " << frame_no << " in this process rank: " << this->concurrent_rank_;
           last_error_ = ss.str();
-          LOG4CXX_ERROR(logger_, last_error_);
           return status_invalid;
         }
       }
@@ -97,7 +96,6 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
 
       if (file == 0) {
         last_error_ = "Unable to get file for this frame";
-        LOG4CXX_ERROR(logger_,last_error_);
         return status_invalid;
       }
 
@@ -201,7 +199,6 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
     std::stringstream ss;
     ss << "Out of Range exception: " << e.what();
     last_error_ = ss.str();
-    LOG4CXX_ERROR(logger_, last_error_);
     return status_invalid;
   }
   catch (const std::range_error& e)
@@ -209,14 +206,12 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
     std::stringstream ss;
     ss << "Range exception: " << e.what();
     last_error_ = ss.str();
-    LOG4CXX_ERROR(logger_, last_error_);
     return status_invalid;
   }
   catch (const std::exception& e) {
     std::stringstream ss;
     ss << "Unexpected exception: " << e.what();
     last_error_ = ss.str();
-    LOG4CXX_ERROR(logger_, last_error_);
     return status_invalid;
   }
   return return_status;
