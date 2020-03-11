@@ -60,6 +60,7 @@ public:
   void write_frame(const Frame& frame, hsize_t frame_offset, uint64_t outer_chunk_dimension);
   void write_parameter(const Frame& frame, DatasetDefinition dataset_definition, hsize_t frame_offset);
   size_t get_dataset_frames(const std::string& dset_name);
+  size_t get_dataset_max_size(const std::string& dset_name);
   void start_swmr();
   size_t get_file_index();
   std::string get_filename();

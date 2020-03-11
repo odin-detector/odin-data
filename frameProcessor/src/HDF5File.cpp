@@ -49,6 +49,9 @@ HDF5File::~HDF5File() {
   close_file();
 }
 
+/**
+ * Configure datasets to allow extension during write to an unlimited extent
+ */
 void HDF5File::set_unlimited() {
   if (hdf5_datasets_.empty()) {
     LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting HDF5 datasets to use unlimited");
@@ -540,6 +543,22 @@ size_t HDF5File::get_dataset_frames(const std::string& dset_name)
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
   return this->get_hdf5_dataset(dset_name).actual_dataset_size_;
+}
+
+/** Get the maximum size of the given dataset
+ *
+ * \param[in] dataset - HDF5 dataset
+ * \return - 0 if unlimited_, else the extent of the outermost dimension of the dataset
+ */
+size_t HDF5File::get_dataset_max_size(const std::string& dset_name)
+{
+  // Protect this method
+  boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+  if (unlimited_) {
+    return 0;
+  } else {
+    return this->get_hdf5_dataset(dset_name).dataset_dimensions[0];
+  }
 }
 
 /**

@@ -103,6 +103,12 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
 
       size_t frame_offset_in_file = this->get_frame_offset_in_file(frame_offset);
 
+      int dataset_max_offset = file->get_dataset_max_size(frame_dataset_name) - 1;
+      if (dataset_max_offset && frame_offset_in_file > dataset_max_offset) {
+        last_error_ = "Frame offset exceeds dimensions of static dataset";
+        return status_invalid;
+      }
+
       uint64_t outer_chunk_dimension = 1;
       if (dataset_defs_.size() != 0) {
         outer_chunk_dimension = dataset_defs_.at(frame_dataset_name).chunks[0];
