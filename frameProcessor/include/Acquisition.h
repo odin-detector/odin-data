@@ -100,6 +100,10 @@ public:
   const HDF5ErrorDefinition_t& hdf5_error_definition_;
 
 private:
+  void add_uint64_to_document(const std::string& key, size_t value, rapidjson::Document* document) const;
+  void add_string_to_document(const std::string& key, const std::string& value, rapidjson::Document* document) const;
+  std::string document_to_string(rapidjson::Document& document) const;
+
   /** The current file that frames are being written to */
   boost::shared_ptr<HDF5File> current_file_;
   /** The previous file that frames were written to, held in case of late frames  */

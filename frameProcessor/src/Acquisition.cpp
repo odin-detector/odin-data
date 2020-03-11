@@ -129,36 +129,12 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame, HD
       // Send the meta message containing the frame written and the offset written to
       rapidjson::Document document;
       document.SetObject();
+      add_uint64_to_document(META_FRAME_KEY, (size_t) frame_no, &document);
+      add_uint64_to_document(META_OFFSET_KEY, frame_offset, &document);
+      add_uint64_to_document(META_RANK_KEY, concurrent_rank_, &document);
+      add_uint64_to_document(META_NUM_PROCESSES_KEY, concurrent_processes_, &document);
 
-      // Add Frame number
-      rapidjson::Value key_frame(META_FRAME_KEY.c_str(), document.GetAllocator());
-      rapidjson::Value value_frame;
-      value_frame.SetUint64(frame_no);
-      document.AddMember(key_frame, value_frame, document.GetAllocator());
-
-      // Add offset
-      rapidjson::Value key_offset(META_OFFSET_KEY.c_str(), document.GetAllocator());
-      rapidjson::Value value_offset;
-      value_offset.SetUint64(frame_offset);
-      document.AddMember(key_offset, value_offset, document.GetAllocator());
-
-      // Add rank
-      rapidjson::Value key_rank(META_RANK_KEY.c_str(), document.GetAllocator());
-      rapidjson::Value value_rank;
-      value_rank.SetUint64(concurrent_rank_);
-      document.AddMember(key_rank, value_rank, document.GetAllocator());
-
-      // Add num consumers
-      rapidjson::Value key_num_processes(META_NUM_PROCESSES_KEY.c_str(), document.GetAllocator());
-      rapidjson::Value value_num_processes;
-      value_num_processes.SetUint64(concurrent_processes_);
-      document.AddMember(key_num_processes, value_num_processes, document.GetAllocator());
-
-      rapidjson::StringBuffer buffer;
-      rapidjson::Writer<rapidjson::StringBuffer> docWriter(buffer);
-      document.Accept(docWriter);
-
-      publish_meta(META_NAME, META_WRITE_ITEM, buffer.GetString(), get_meta_header());
+      publish_meta(META_NAME, META_WRITE_ITEM, document_to_string(document), get_meta_header());
 
       // Check if this is a master frame (for multi dataset acquisitions)
       // or if no master frame has been defined. If either of these conditions
@@ -607,33 +583,46 @@ size_t Acquisition::adjust_frame_offset(boost::shared_ptr<Frame> frame) const {
   return frame_offset;
 }
 
-/** Creates and returns the Meta Header json string to be sent out over the meta data channel when a file is created
+/** Add a key value (uint64) pair to the given rapidjson::Document
  *
- * This will typically include details about the current acquisition (e.g. the ID)
- *
- * \return - a string containing the json meta data header
+ * \param[in] key - The key of the item to add
+ * \param[in] value - The value of the item to add
+ * \param[in] document - The document to add to
  */
-std::string Acquisition::get_create_meta_header() {
-  rapidjson::Document meta_document;
-  meta_document.SetObject();
+void Acquisition::add_uint64_to_document(const std::string& key, size_t value, rapidjson::Document* document) const {
+  rapidjson::Value json_key(key.c_str(), document->GetAllocator());
+  rapidjson::Value json_value;
+  json_value.SetUint64(value);
+  document->AddMember(json_key, json_value, document->GetAllocator());
+}
 
-  // Add Acquisition ID
-  rapidjson::Value key_acq_id(META_ACQID_KEY.c_str(), meta_document.GetAllocator());
-  rapidjson::Value value_acq_id;
-  value_acq_id.SetString(acquisition_id_.c_str(), acquisition_id_.length(), meta_document.GetAllocator());
-  meta_document.AddMember(key_acq_id, value_acq_id, meta_document.GetAllocator());
+/** Add a key value (string) pair to the given rapidjson::Document
+ *
+ * \param[in] key - The key of the item to add
+ * \param[in] value - The value of the item to add
+ * \param[in] document - The document to add to
+ */
+void Acquisition::add_string_to_document(const std::string& key, const std::string& value, rapidjson::Document* document) const {
+  rapidjson::Value json_key(key.c_str(), document->GetAllocator());
+  rapidjson::Value json_value;
+  json_value.SetString(value.c_str(), value.length(), document->GetAllocator());
+  document->AddMember(json_key, json_value, document->GetAllocator());
+}
 
-  // Add Number of Frames
-  rapidjson::Value key_num_frames(META_NUM_FRAMES_KEY.c_str(), meta_document.GetAllocator());
-  rapidjson::Value value_num_frames;
-  value_num_frames.SetUint64(total_frames_);
-  meta_document.AddMember(key_num_frames, value_num_frames, meta_document.GetAllocator());
-
+/** Generate a string from a rapidjson::Document
+ *
+ * \param[in] document - The document to generate the string from
+ * \return - The string
+ */
+std::string Acquisition::document_to_string(rapidjson::Document& document) const {
   rapidjson::StringBuffer buffer;
-  rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-  meta_document.Accept(writer);
+  rapidjson::Writer<rapidjson::StringBuffer> docWriter(buffer);
+  document.Accept(docWriter);
 
-  return buffer.GetString();
+  // Return our own copy, as the original could be lost when it goes out of scope
+  std::string message(buffer.GetString());
+
+  return message;
 }
 
 /** Creates and returns the Meta Header json string to be sent out over the meta data channel
@@ -642,21 +631,28 @@ std::string Acquisition::get_create_meta_header() {
  *
  * \return - a string containing the json meta data header
  */
+
+std::string Acquisition::get_create_meta_header() {
+  rapidjson::Document document;
+  document.SetObject();
+  add_string_to_document(META_ACQID_KEY, acquisition_id_, &document);
+  add_uint64_to_document(META_NUM_FRAMES_KEY, total_frames_, &document);
+
+  return document_to_string(document);
+}
+
+/** Creates and returns the Meta Header with the acquisition ID
+ *
+ * To be sent with per-frame meta data
+ *
+ * \return - a string containing the json meta data header
+ */
 std::string Acquisition::get_meta_header() {
-  rapidjson::Document meta_document;
-  meta_document.SetObject();
+  rapidjson::Document document;
+  document.SetObject();
+  add_string_to_document(META_ACQID_KEY, acquisition_id_, &document);
 
-  // Add Acquisition ID
-  rapidjson::Value key_acq_id(META_ACQID_KEY.c_str(), meta_document.GetAllocator());
-  rapidjson::Value value_acq_id;
-  value_acq_id.SetString(acquisition_id_.c_str(), acquisition_id_.length(), meta_document.GetAllocator());
-  meta_document.AddMember(key_acq_id, value_acq_id, meta_document.GetAllocator());
-
-  rapidjson::StringBuffer buffer;
-  rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-  meta_document.Accept(writer);
-
-  return buffer.GetString();
+  return document_to_string(document);
 }
 
 /**
