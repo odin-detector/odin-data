@@ -29,29 +29,31 @@ class Frame;
 class Acquisition : public MetaMessagePublisher
 {
 public:
-  Acquisition();
+  Acquisition(const HDF5ErrorDefinition_t& hdf5_error_definition);
   ~Acquisition();
   std::string get_last_error();
-  ProcessFrameStatus process_frame(boost::shared_ptr<Frame> frame);
-  void create_file(size_t file_number=0);
-  void close_file(boost::shared_ptr<HDF5File> file);
+  ProcessFrameStatus process_frame(boost::shared_ptr<Frame> frame, HDF5CallDurations_t& call_durations);
+  void create_file(size_t file_number, HDF5CallDurations_t& call_durations);
+  void close_file(boost::shared_ptr<HDF5File> file, HDF5CallDurations_t& call_durations);
   void validate_dataset_definition(DatasetDefinition definition);
   bool start_acquisition(
-      size_t concurrent_rank,
-      size_t concurrent_processes,
-      size_t frames_per_block,
-      size_t blocks_per_file,
-      std::string file_extension,
-      bool use_earliest_hdf5,
-      size_t alignment_threshold,
-      size_t alignment_value,
-      std::string master_frame);
-  void stop_acquisition();
+    size_t concurrent_rank,
+    size_t concurrent_processes,
+    size_t frames_per_block,
+    size_t blocks_per_file,
+    std::string file_extension,
+    bool use_earliest_hdf5,
+    size_t alignment_threshold,
+    size_t alignment_value,
+    std::string master_frame,
+    HDF5CallDurations_t& call_durations
+  );
+  void stop_acquisition(HDF5CallDurations_t& call_durations);
   bool check_frame_valid(boost::shared_ptr<Frame> frame);
   size_t get_frame_offset_in_file(size_t frame_offset) const;
   size_t get_file_index(size_t frame_offset) const;
   size_t adjust_frame_offset(boost::shared_ptr<Frame> frame) const;
-  boost::shared_ptr<HDF5File> get_file(size_t frame_offset);
+  boost::shared_ptr<HDF5File> get_file(size_t frame_offset, HDF5CallDurations_t& call_durations);
   std::string get_create_meta_header();
   std::string get_meta_header();
   std::string generate_filename(size_t file_number=0);
@@ -94,6 +96,9 @@ public:
   size_t frames_per_block_;
   /** Number of blocks to write in a file  */
   size_t blocks_per_file_;
+  /** HDF5 call error definitions */
+  const HDF5ErrorDefinition_t& hdf5_error_definition_;
+
 private:
   /** The current file that frames are being written to */
   boost::shared_ptr<HDF5File> current_file;

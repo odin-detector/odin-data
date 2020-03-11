@@ -50,6 +50,8 @@ public:
   void configure_dataset(const std::string& dataset_name, OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   void create_new_dataset(const std::string& dset_name);
   void status(OdinData::IpcMessage& status);
+  void add_file_writing_stats(OdinData::IpcMessage& status);
+  bool reset_statistics();
   void stop_acquisition();
   void start_close_file_timeout();
   void run_close_file_timeout();
@@ -116,6 +118,11 @@ private:
   static const std::string CLOSE_TIMEOUT_PERIOD;
   /** Configuration constant for starting the close file timeout */
   static const std::string START_CLOSE_TIMEOUT;
+  /** Configuration constant for HDF5 call timeout durations before loggin an error */
+  static const std::string CREATE_ERROR_DURATION;
+  static const std::string WRITE_ERROR_DURATION;
+  static const std::string FLUSH_ERROR_DURATION;
+  static const std::string CLOSE_ERROR_DURATION;
 
   /**
    * Prevent a copy of the FileWriterPlugin plugin.
@@ -173,6 +180,10 @@ private:
   std::string file_extension_;
   /** Name of master frame. When a master frame is received frame numbers increment */
   std::string master_frame_;
+  /** HDF5 call warning and error durations */
+  HDF5ErrorDefinition_t hdf5_error_definition_;
+  /** HDF5 File IO performance stats */
+  HDF5CallDurations_t hdf5_call_durations_;
 };
 
 } /* namespace FrameProcessor */

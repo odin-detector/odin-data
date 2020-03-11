@@ -30,7 +30,7 @@ const std::string META_CLOSE_ITEM        = "closefile";
 const std::string META_START_ITEM        = "startacquisition";
 const std::string META_STOP_ITEM         = "stopacquisition";
 
-Acquisition::Acquisition() :
+Acquisition::Acquisition(const HDF5ErrorDefinition_t& hdf5_error_definition) :
         concurrent_rank_(0),
         concurrent_processes_(1),
         frames_per_block_(1),
@@ -42,7 +42,8 @@ Acquisition::Acquisition() :
         use_earliest_hdf5_(false),
         alignment_threshold_(1),
         alignment_value_(1),
-        last_error_("")
+        last_error_(""),
+        hdf5_error_definition_(hdf5_error_definition)
 {
   this->logger_ = Logger::getLogger("FP.Acquisition");
   this->logger_->setLevel(Level::getTrace());
@@ -71,7 +72,7 @@ std::string Acquisition::get_last_error()
  * \param[in] frame - The frame to process
  * \return - The Status of the processing.
  */
-ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
+ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame, HDF5CallDurations_t& call_durations) {
   ProcessFrameStatus return_status = status_ok;
 
   try {
@@ -92,7 +93,7 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
         }
       }
 
-      boost::shared_ptr<HDF5File> file = this->get_file(frame_offset);
+      boost::shared_ptr<HDF5File> file = this->get_file(frame_offset, call_durations);
 
       if (file == 0) {
         last_error_ = "Unable to get file for this frame";
@@ -112,7 +113,7 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
         outer_chunk_dimension = dataset_defs_.at(frame_dataset_name).chunks[0];
       }
 
-      file->write_frame(*frame, frame_offset_in_file, outer_chunk_dimension);
+      file->write_frame(*frame, frame_offset_in_file, outer_chunk_dimension, call_durations);
 
       // Loops over all parameters, checking if there is a matching dataset and write to it if so
       const std::map<std::string, boost::any> &frame_parameters = frame->get_meta_data().get_parameters();
@@ -225,16 +226,19 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame) {
  *
  * \param[in] file_number - The file_number to create a file for
  */
-void Acquisition::create_file(size_t file_number) {
+void Acquisition::create_file(size_t file_number, HDF5CallDurations_t& call_durations) {
   // Set previous file to current file, closing off the file for the previous file first
-  close_file(previous_file);
+  close_file(previous_file, call_durations);
   previous_file = current_file;
 
-  current_file = boost::shared_ptr<HDF5File>(new HDF5File());
+  current_file = boost::shared_ptr<HDF5File>(new HDF5File(hdf5_error_definition_));
 
   // Create the file
   boost::filesystem::path full_path = boost::filesystem::path(file_path_) / boost::filesystem::path(filename_);
-  current_file->create_file(full_path.string(), file_number, use_earliest_hdf5_, alignment_threshold_, alignment_value_);
+  size_t duration = current_file->create_file(
+    full_path.string(), file_number, use_earliest_hdf5_, alignment_threshold_, alignment_value_
+  );
+  call_durations.create.update(duration);
 
   // Send meta data message to notify of file creation
   publish_meta(META_NAME, META_CREATE_ITEM, full_path.string(), get_create_meta_header());
@@ -280,10 +284,11 @@ void Acquisition::create_file(size_t file_number) {
  *
  * \param[in] file - The HDF5File to call to close its file
  */
-void Acquisition::close_file(boost::shared_ptr<HDF5File> file) {
+void Acquisition::close_file(boost::shared_ptr<HDF5File> file, HDF5CallDurations_t& call_durations) {
   if (file != 0) {
     LOG4CXX_INFO(logger_, "Closing file " << file->get_filename());
-    file->close_file();
+    size_t duration = file->close_file();
+    call_durations.close.update(duration);
     // Send meta data message to notify of file close
     publish_meta(META_NAME, META_CLOSE_ITEM, file->get_filename(), get_meta_header());
   }
@@ -335,7 +340,9 @@ bool Acquisition::start_acquisition(
     bool use_earliest_hdf5,
     size_t alignment_threshold,
     size_t alignment_value,
-    std::string master_frame) {
+    std::string master_frame,
+    HDF5CallDurations_t& call_durations
+  ) {
 
   concurrent_rank_ = concurrent_rank;
   concurrent_processes_ = concurrent_processes;
@@ -367,7 +374,7 @@ bool Acquisition::start_acquisition(
 
   publish_meta(META_NAME, META_START_ITEM, "", get_create_meta_header());
 
-  create_file(concurrent_rank_);
+  create_file(concurrent_rank_, call_durations);
 
   return true;
 }
@@ -375,9 +382,9 @@ bool Acquisition::start_acquisition(
 /**
  * Stops this acquisition, closing off any open files
  */
-void Acquisition::stop_acquisition() {
-  close_file(previous_file);
-  close_file(current_file);
+void Acquisition::stop_acquisition(HDF5CallDurations_t& call_durations) {
+  close_file(previous_file, call_durations);
+  close_file(current_file, call_durations);
   publish_meta(META_NAME, META_STOP_ITEM, "", get_meta_header());
 }
 
@@ -506,7 +513,7 @@ size_t Acquisition::get_file_index(size_t frame_offset) const {
  * \param[in] frame_offset - The frame offset to get the file for
  * \return - The file that should be used to write this frame
  */
-boost::shared_ptr<HDF5File> Acquisition::get_file(size_t frame_offset) {
+boost::shared_ptr<HDF5File> Acquisition::get_file(size_t frame_offset, HDF5CallDurations_t& call_durations) {
   if (blocks_per_file_ == 0) {
     return this->current_file;
   }
@@ -528,13 +535,13 @@ boost::shared_ptr<HDF5File> Acquisition::get_file(size_t frame_offset) {
     while (next_expected_file_index < file_index) {
       LOG4CXX_DEBUG_LEVEL(1, logger_,"Creating missing file " << next_expected_file_index);
       filename_ = generate_filename(next_expected_file_index);
-      create_file(next_expected_file_index);
+      create_file(next_expected_file_index, call_durations);
       next_expected_file_index = current_file->get_file_index() + concurrent_processes_;
     }
 
     filename_ = generate_filename(file_index);
 
-    create_file(file_index);
+    create_file(file_index, call_durations);
 
     return this->current_file;
   } else {

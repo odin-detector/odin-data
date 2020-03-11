@@ -25,13 +25,15 @@ herr_t hdf5_error_cb(unsigned n, const H5E_error2_t* err_desc, void* client_data
   return 0;
 }
 
-HDF5File::HDF5File() :
+HDF5File::HDF5File(const HDF5ErrorDefinition_t& hdf5_error_definition) :
         hdf5_file_id_(-1),
         param_memspace_(-1),
         hdf5_error_flag_(false),
         file_index_(0),
         use_earliest_version_(false),
-        unlimited_(false)
+        unlimited_(false),
+        watchdog_timer_(hdf5_error_definition.callback),
+        hdf5_error_definition_(hdf5_error_definition)
 {
   static bool hdf_initialised = false;
   this->logger_ = Logger::getLogger("FP.HDF5File");
@@ -120,8 +122,10 @@ void HDF5File::clear_hdf_errors()
  * \param[in] use_earliest_version - Whether to use the earliest version of HDF5 library
  * \param[in] alignment_threshold - Chunk threshold
  * \param[in] alignment_value - Chunk alignment value
+ *
+ * \return - The duration of the H5Fcreate call
  */
-void HDF5File::create_file(std::string filename, size_t file_index, bool use_earliest_version, size_t alignment_threshold, size_t alignment_value)
+size_t HDF5File::create_file(std::string filename, size_t file_index, bool use_earliest_version, size_t alignment_threshold, size_t alignment_value)
 {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
@@ -153,7 +157,11 @@ void HDF5File::create_file(std::string filename, size_t file_index, bool use_ear
   // Creating the file with SWMR write access
   LOG4CXX_INFO(logger_, "Creating file: " << filename);
   unsigned int flags = H5F_ACC_TRUNC;
+
+  watchdog_timer_.start_timer("H5Fcreate", hdf5_error_definition_.create_duration);
   this->hdf5_file_id_ = H5Fcreate(filename.c_str(), flags, fcpl, fapl);
+  size_t create_duration = watchdog_timer_.finish_timer();
+
   ensure_h5_result(this->hdf5_file_id_, "Failed to create HDF5 file");
   if (this->hdf5_file_id_ < 0) {
     // Close file access property list
@@ -173,26 +181,45 @@ void HDF5File::create_file(std::string filename, size_t file_index, bool use_ear
 
   file_index_ = file_index;
 
+  return create_duration;
 }
 
 /**
  * Close the currently open HDF5 file.
+ *
+ * \return - The hdf5 write metric with the durations of the write and flush calls
  */
-void HDF5File::close_file() {
+size_t HDF5File::close_file() {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+
+  size_t close_duration = 0;
   if (this->hdf5_file_id_ >= 0) {
-    ensure_h5_result(H5Fclose(this->hdf5_file_id_), "H5Fclose failed to close the file");
+    watchdog_timer_.start_timer("H5Fclose", hdf5_error_definition_.close_duration);
+    hid_t status = H5Fclose(this->hdf5_file_id_);
+    close_duration = watchdog_timer_.finish_timer();
+    ensure_h5_result(status, "H5Fclose failed to close the file");
     this->hdf5_file_id_ = -1;
   }
+
+  return close_duration;
 }
 
 /**
  * Write a frame to the file.
  *
- * \param[in] frame - Reference to the frame.
+ * \param[in] frame - Reference to the frame
+ * \param[in] frame_offset - The offset in the file to write the frame into
+ * \param[in] outer_chunk_dimension - The size of the outermost dimension of a chunk
+ * \param[in] call_durations - Struct containing hdf5 call durations - write and flush will be updated
+ *                             with the durations of the H5DOwrite_chunk and H5Dflush calls
  */
-void HDF5File::write_frame(const Frame& frame, hsize_t frame_offset, uint64_t outer_chunk_dimension) {
+void HDF5File::write_frame(
+    const Frame& frame,
+    hsize_t frame_offset,
+    uint64_t outer_chunk_dimension,
+    HDF5CallDurations_t& call_durations
+  ) {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
 
@@ -218,13 +245,22 @@ void HDF5File::write_frame(const Frame& frame, hsize_t frame_offset, uint64_t ou
   offset[0] = frame_offset * outer_chunk_dimension;
 
   uint32_t filter_mask = 0x0;
-  ensure_h5_result(H5DOwrite_chunk(dset.dataset_id, H5P_DEFAULT,
-      filter_mask, &offset.front(),
-      frame.get_image_size(), frame.get_image_ptr()), "H5DOwrite_chunk failed");
+
+  watchdog_timer_.start_timer("H5DOwrite_chunk", hdf5_error_definition_.write_duration);
+  hid_t status = H5DOwrite_chunk(
+    dset.dataset_id, H5P_DEFAULT, filter_mask, &offset.front(), frame.get_image_size(), frame.get_image_ptr()
+  );
+  unsigned int write_duration = watchdog_timer_.finish_timer();
+  call_durations.write.update(write_duration);
+  ensure_h5_result(status, "H5DOwrite_chunk failed");
 
 #if H5_VERSION_GE(1,9,178)
   if (!use_earliest_version_) {
-    ensure_h5_result(H5Dflush(dset.dataset_id), "Failed to flush data to disk");
+    watchdog_timer_.start_timer("H5Dflush", hdf5_error_definition_.flush_duration);
+    hid_t status = H5Dflush(dset.dataset_id);
+    unsigned int flush_duration = watchdog_timer_.finish_timer();
+    call_durations.flush.update(flush_duration);
+    ensure_h5_result(status, "Failed to flush data to disk");
   }
 #endif
 
@@ -310,8 +346,10 @@ void HDF5File::write_parameter(const Frame& frame, DatasetDefinition dataset_def
       "H5Sselect_hyperslab failed");
 
   // Write the value to the dataset
-  ensure_h5_result(H5Dwrite(dset.dataset_id, dtype, param_memspace_, filespace_, H5P_DEFAULT, data_ptr),
-      "H5Dwrite failed");
+  watchdog_timer_.start_timer("H5Dwrite", hdf5_error_definition_.write_duration);
+  hid_t status = H5Dwrite(dset.dataset_id, dtype, param_memspace_, filespace_, H5P_DEFAULT, data_ptr);
+  watchdog_timer_.finish_timer();
+  ensure_h5_result(status, "H5Dwrite failed");
 
   // Flush if necessary and update the time it was last flushed
 #if H5_VERSION_GE(1,9,178)
@@ -335,7 +373,10 @@ void HDF5File::write_parameter(const Frame& frame, DatasetDefinition dataset_def
 
   if (flush && !use_earliest_version_) {
     LOG4CXX_TRACE(logger_, "Flushing parameter [" << dataset_definition.name << "]");
-    ensure_h5_result(H5Dflush(dset.dataset_id), "Failed to flush data to disk");
+    watchdog_timer_.start_timer("H5Dflush", hdf5_error_definition_.flush_duration);
+    hid_t status = H5Dflush(dset.dataset_id);
+    watchdog_timer_.finish_timer();
+    ensure_h5_result(status, "Failed to flush data to disk");
   }
 #endif
 }
