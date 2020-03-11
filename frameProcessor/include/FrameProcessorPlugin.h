@@ -56,8 +56,6 @@ private:
 
   void callback(boost::shared_ptr<Frame> frame);
 
-  unsigned int elapsed_us(struct timespec& start, struct timespec& end);
-
   /**
    * This is called by the callback method when any new frames have
    * arrived and must be overridden by child classes.
@@ -79,7 +77,7 @@ private:
   /** Maximum process time since last reset */
   uint64_t max_process_time_;
   /** Exp average process time since last reset */
-  double average_process_time_; 
+  double average_process_time_;
 };
 
 } /* namespace FrameProcessor */
