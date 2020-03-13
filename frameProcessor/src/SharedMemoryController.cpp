@@ -183,7 +183,7 @@ void SharedMemoryController::handleRxChannel()
           FrameProcessor::FrameMetaData frame_meta(frame_number,
                                                     "raw",
                                                     FrameProcessor::raw_64bit,
-                                                    "0",
+                                                    "",
                                                     std::vector<unsigned long long>());
 
           boost::shared_ptr<SharedBufferFrame> frame;
