@@ -224,7 +224,7 @@ bool IpcMessage::has_param(const std::string& param_name) const
 void IpcMessage::set_nack(const std::string& reason)
 {
   this->set_msg_type(MsgTypeNack);
-  this->set_param("rejection", reason);
+  this->set_param("error", reason);
 }
 
 //! Indicates if message has necessary attributes with legal values.
