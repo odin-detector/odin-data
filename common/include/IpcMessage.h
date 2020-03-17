@@ -278,6 +278,9 @@ public:
     }
   }
 
+  //! Sets the nack message type with a reason parameter
+  void set_nack(const std::string& reason);
+
   //! Indicates if message has necessary attributes with legal values
   bool is_valid(void);
 
