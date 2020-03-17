@@ -458,7 +458,9 @@ void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData:
   std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
   for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
     if (config.has_param(iter->first)) {
-      OdinData::IpcMessage subConfig(config.get_param<const rapidjson::Value&>(iter->first));
+      OdinData::IpcMessage subConfig(config.get_param<const rapidjson::Value&>(iter->first),
+                                     config.get_msg_type(),
+                                     config.get_msg_val());
       iter->second->configure(subConfig, reply);
     }
   }
