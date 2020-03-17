@@ -531,23 +531,26 @@ void FileWriterPlugin::configure_file(OdinData::IpcMessage& config, OdinData::Ip
         // Check directory has write permission
         if (eaccess(file_path.c_str(), W_OK)){
           // Return code other then zero is a failure
-          LOG4CXX_ERROR(logger_, "HDF5 - Path is not writable by the user: " << file_path);
-          reply.set_nack("HDF5 - Path is not writable by the user: " + file_path);
-          reply.set_msg_type(OdinData::IpcMessage::MsgTypeNack);
+          std::stringstream ss;
+          ss << "Path is not writable by the user: " << file_path;
+          LOG4CXX_ERROR(logger_, ss.str());
+          reply.set_nack(ss.str());
         } else {
           // All checks passed, we can write to this location
           this->next_acquisition_->file_path_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_PATH);
           LOG4CXX_DEBUG_LEVEL(1, logger_, "Next file path changed to " << this->next_acquisition_->file_path_);
         }
       } else {
-        LOG4CXX_ERROR(logger_, "HDF5 - Path is not a directory: " << file_path);
-        reply.set_nack("HDF5 - Path is not a directory: " + file_path);
-        reply.set_msg_type(OdinData::IpcMessage::MsgTypeNack);
+        std::stringstream ss;
+        ss << "Path is not a directory: " << file_path;
+        LOG4CXX_ERROR(logger_, ss.str());
+        reply.set_nack(ss.str());
       }
     } else {
-      LOG4CXX_ERROR(logger_, "HDF5 - Invalid path requested: " << file_path);
-      reply.set_nack("HDF5 - Invalid path requested: " + file_path);
-      reply.set_msg_type(OdinData::IpcMessage::MsgTypeNack);
+      std::stringstream ss;
+      ss << "Invalid path requested: " << file_path;
+      LOG4CXX_ERROR(logger_, ss.str());
+      reply.set_nack(ss.str());
     }
   }
   if (config.has_param(FileWriterPlugin::CONFIG_FILE_NAME)) {
