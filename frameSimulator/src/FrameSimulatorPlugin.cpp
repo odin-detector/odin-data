@@ -43,8 +43,8 @@ namespace FrameSimulator {
             return false;
         }
 
-        opt_frames.get_val(vm, replay_numframes);
-        opt_interval.get_val(vm, replay_interval);
+        opt_frames.get_val(vm, m_replay_numframes);
+        opt_interval.get_val(vm, m_frame_gap_secs);
 
         return true;
 

@@ -182,8 +182,8 @@ namespace FrameSimulator {
             }
 
             UDPFrame frame(frame_number);
-            frames.push_back(frame);
-            frames[frames.size() - 1].SOF_markers.push_back(frame_number);
+            m_frames.push_back(frame);
+            m_frames[m_frames.size() - 1].SOF_markers.push_back(frame_number);
 
         }
 
@@ -191,7 +191,7 @@ namespace FrameSimulator {
         {
             LOG4CXX_DEBUG(logger_, "EOF marker for frame " << frame_number 
                 << " at packet " << packet_number << " total " << total_packets);
-                frames[frames.size() - 1].EOF_markers.push_back(frame_number);
+                m_frames[m_frames.size() - 1].EOF_markers.push_back(frame_number);
         }
 
         // Allocate a new packet, copy packet data and push into frame
@@ -200,7 +200,7 @@ namespace FrameSimulator {
         memcpy(datacp, data, size);
         pkt->data = datacp;
         pkt->size = size;
-        frames[frames.size() - 1].packets.push_back(pkt);
+        m_frames[m_frames.size() - 1].packets.push_back(pkt);
 
         total_packets++;
 

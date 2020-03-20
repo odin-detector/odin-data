@@ -63,15 +63,15 @@ namespace FrameSimulator {
         /** Replay the extracted or created frames **/
         void replay_frames();
 
-        //Packet gap: insert pause between packet_gap packets
-        boost::optional<int> packet_gap;
-        //Fraction of packets to drop
-        boost::optional<float> drop_frac;
-        //List of packets to drop
-        boost::optional<std::vector<std::string> > drop_packets;
+        //Packet gap: insert pause between m_packet_gap packets; must be >0
+        boost::optional<int> m_packet_gap;
+        // proportion in [0.0,1.0] of packets to randomly drop
+        boost::optional<float> m_drop_frac;
+        //List of packets to drop, these are simple ints held as strings. 0=first packet etc.
+        boost::optional<std::vector<std::string> > m_drop_packets;
 
         /** Frames **/
-        UDPFrames frames;
+        UDPFrames m_frames;
 
         int total_packets;
         int total_bytes;
