@@ -45,9 +45,9 @@ namespace FrameSimulator {
     protected:
 
         //Number of frames to replay; if simulator plugin has insufficient frames defined, available frames are cycled
-        boost::optional<int> m_replay_numframes;
+        boost::optional<int> replay_numframes_;
         // Time (in s) between frames during replay
-        boost::optional<float> m_frame_gap_secs;
+        boost::optional<float> frame_gap_secs_;
 
     private:
 

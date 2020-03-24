@@ -8,6 +8,8 @@ add_definitions(${HDF5_DEFINITIONS})
 
 file(GLOB LIB_SOURCES FrameSimulatorPlugin.cpp FrameSimulatorPluginUDP.cpp FrameSimulatorOption.cpp UDPFrame.cpp)
 
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+
 # Add library for common plugin code
 add_library(${LIB_SIMULATOR} SHARED ${LIB_SOURCES})
 target_link_libraries(${LIB_SIMULATOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${PCAP_LIBRARY} ${COMMON_LIBRARY})

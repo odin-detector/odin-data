@@ -40,7 +40,7 @@ namespace FrameSimulator {
         // Call base class setup method: extract common options (ports, number of frames etc.)
         FrameSimulatorPlugin::setup(vm);
 
-        LOG4CXX_DEBUG(logger_, "Setting up pcap_loop to read packet(s) from packet capture file");
+        LOG4CXX_DEBUG(logger_, "Creating packets to send");
 
         // Destination IP is a required argument
         if (!opt_destip.is_specified(vm)) {
@@ -58,11 +58,11 @@ namespace FrameSimulator {
         }
 
         // Optional arguments
-        opt_packetgap.get_val(vm, m_packet_gap);
-        opt_dropfrac.get_val(vm, m_drop_frac);
+        opt_packetgap.get_val(vm, packet_gap_);
+        opt_dropfrac.get_val(vm, drop_frac_);
 
         if (opt_droppackets.is_specified(vm)) {
-            set_optionallist_option(opt_droppackets.get_val(vm), m_drop_packets);
+            set_optionallist_option(opt_droppackets.get_val(vm), drop_packets_);
         }
 
         std::string dest_ip = opt_destip.get_val(vm);
@@ -100,7 +100,7 @@ namespace FrameSimulator {
             // Loop over the pcap file to read the packets and send them to pkt_callback
             pcap_loop(m_handle, -1, pkt_callback, reinterpret_cast<u_char *>(this));
         } else {
-            create_frames(m_replay_numframes.get());
+            create_frames(replay_numframes_.get());
         }
 
         return true;
@@ -136,8 +136,9 @@ namespace FrameSimulator {
     void FrameSimulatorPluginUDP::replay_frames() {
 
         LOG4CXX_DEBUG(logger_, "Replaying frame(s)");
+        LOG4CXX_ASSERT(logger_, 0<frames_.size(), "I have no frames to replay");
 
-        int frames_to_replay = m_replay_numframes ? m_replay_numframes.get() : m_frames.size();
+        int frames_to_replay = replay_numframes_ ? replay_numframes_.get() : frames_.size();
 
         LOG4CXX_DEBUG(logger_, "Replaying frames");
         LOG4CXX_DEBUG(logger_, frames_to_replay);
@@ -147,16 +148,16 @@ namespace FrameSimulator {
         int total_packets_dropped = 0;
         int total_bytes_sent = 0;
 
-        for (int f = 0; f < frames_to_replay; f++) {
+        for (int f = 0; f < frames_to_replay && 0<frames_.size(); f++) {
 
-            int n = f % m_frames.size();
+            int n = f % frames_.size();
 
             time_t start_time;
             time_t end_time;
 
             time(&start_time);
 
-            int num_packets = m_frames[n].packets.size();
+            int num_packets = frames_[n].packets.size();
             int frame_packets_sent = 0;
             int frame_packets_dropped = 0;
             int frame_bytes_sent = 0;
@@ -167,8 +168,8 @@ namespace FrameSimulator {
             for (int p = 0; p < num_packets; p++) {
 
                 // If drop fraction specified, decide if packet should be dropped
-                if (m_drop_frac) {
-                    if (((double) rand() / RAND_MAX) < m_drop_frac.get()) {
+                if (drop_frac_) {
+                    if (((double) rand() / RAND_MAX) < drop_frac_.get()) {
                         frame_packets_dropped += 1;
                         continue;
                     }
@@ -176,22 +177,23 @@ namespace FrameSimulator {
 
                 // If drop list was specified and this packet is in it, drop the packet
 
-                if (m_drop_packets) {
-                    std::vector<std::string> drop_packet_vec = m_drop_packets.get();
+                if (drop_packets_) {
+                    std::vector<std::string> drop_packet_vec = drop_packets_.get();
                     if (std::find(drop_packet_vec.begin(), drop_packet_vec.end(), boost::lexical_cast<std::string>(p)) != drop_packet_vec.end()) {
                         frame_packets_dropped += 1;
                         continue;
                     }
                 }
 
-                frame_bytes_sent += send_packet(m_frames[n].packets[p], n);
+                frame_bytes_sent += send_packet(frames_[n].packets[p], n);
                 frame_packets_sent += 1;
 
-                // Add brief pause between 'm_packet_gap' frames if packet gap specified
-                if (m_packet_gap && (frame_packets_sent % m_packet_gap.get() == 0)) {
+                // Add brief pause between 'packet_gap' frames if packet gap specified
+                if (packet_gap_ && (frame_packets_sent % packet_gap_.get() == 0)) {
                     LOG4CXX_DEBUG(logger_,
                                   "Pause - just sent packet - " + boost::lexical_cast<std::string>(frame_packets_sent));
-                    sleep(0.01);
+
+                    usleep(10000);
                 }
 
             }
@@ -202,8 +204,8 @@ namespace FrameSimulator {
             float frame_time_s = difftime(end_time, start_time);
 
             // Calculate wait time and sleep so that frames are sent at requested intervals
-            if (m_frame_gap_secs) {
-                float wait_time_s = m_frame_gap_secs.get() - frame_time_s;
+            if (frame_gap_secs_) {
+                float wait_time_s = frame_gap_secs_.get() - frame_time_s;
                 if (wait_time_s > 0) {
                     LOG4CXX_DEBUG(logger_,
                                   "Pause after frame " + boost::lexical_cast<std::string>(n));
