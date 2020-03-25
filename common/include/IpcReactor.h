@@ -26,6 +26,7 @@
 #include <boost/function.hpp>
 #include <boost/ref.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
 #include "zmq/zmq.hpp"
 
 #include "IpcChannel.h"
@@ -146,6 +147,7 @@ private:
   ReactorCallback* callbacks_;     //!< Ptr to matched array of callbacks
   std::size_t      pollsize_;      //!< Number if active items to poll
   bool             needs_rebuild_; //!< Indicates that the poll item list needs rebuilding
+  boost::mutex mutex_;             //!< Mutex used to make some calls in this class thread safe
 };
 
 } // namespace OdinData
