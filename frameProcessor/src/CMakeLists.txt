@@ -15,7 +15,8 @@ file(GLOB LIB_SOURCES DataBlock.cpp
                       MetaMessage.cpp
                       MetaMessagePublisher.cpp
                       IFrameCallback.cpp
-                      CallDuration.cpp )
+                      CallDuration.cpp
+                      WatchdogTimer.cpp )
 
 # Add library for common plugin code
 add_library(${LIB_PROCESSOR} SHARED ${LIB_SOURCES})

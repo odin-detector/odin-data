@@ -13,6 +13,7 @@ SET(HEADERS DataBlock.h
             MetaMessagePublisher.h
             WorkQueue.h
             CallDuration.h
+            WatchdogTimer.h
             HDF5File.h
             Acquisition.h
             FrameProcessorDefinitions.h
