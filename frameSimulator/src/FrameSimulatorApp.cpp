@@ -157,7 +157,7 @@ int parse_arguments(int argc, char **argv, po::variables_map &vm, LoggerPtr &log
 
             std::vector <std::string> opts = po::collect_unrecognized(parsed.options, po::include_positional);
 
-            opts.erase(opts.begin());
+   //         opts.erase(opts.begin());
 
             po::store(po::command_line_parser(opts).options(config).run(), vm);
 
@@ -215,7 +215,7 @@ int main(int argc, char *argv[]) {
 
     LoggerPtr logger(Logger::getLogger("FS.App"));
 
-    try {
+    {
 
         boost::shared_ptr <FrameSimulator::FrameSimulatorPlugin> plugin;
 
@@ -227,14 +227,12 @@ int main(int argc, char *argv[]) {
             return 0;
         }
 
+        LOG4CXX_DEBUG(logger, "finished parsing command line options");
         // Setup plugin from command line arguments
         if (plugin->setup(vm)) {
             plugin->simulate(); // and if successful, run simulation
         }
 
-    } catch (const std::exception &e) {
-        //LOG4CXX_ERROR(logger, "Caught unhandled exception in FrameSimulator, application will terminate: " << e.what());
-        throw;
     }
 
     return 0;
