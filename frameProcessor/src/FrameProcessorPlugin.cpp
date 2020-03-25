@@ -17,10 +17,7 @@ namespace FrameProcessor
  * Constructor, initialises name_ and meta data channel.
  */
 FrameProcessorPlugin::FrameProcessorPlugin() :
-  name_(""),
-  last_process_time_(0),
-  max_process_time_(0),
-  average_process_time_(0.0)
+  name_("")
 {
   OdinData::configure_logging_mdc(OdinData::app_path.c_str());
   logger_ = log4cxx::Logger::getLogger("FP.FrameProcessorPlugin");
@@ -153,9 +150,9 @@ void FrameProcessorPlugin::status(OdinData::IpcMessage& status)
  */
 void FrameProcessorPlugin::add_performance_stats(OdinData::IpcMessage& status)
 {
-  status.set_param(get_name() + "/timing/last_process", last_process_time_);
-  status.set_param(get_name() + "/timing/max_process", max_process_time_);
-  status.set_param(get_name() + "/timing/mean_process", average_process_time_);
+  status.set_param(get_name() + "/timing/last_process", process_duration_.last_);
+  status.set_param(get_name() + "/timing/max_process", process_duration_.max_);
+  status.set_param(get_name() + "/timing/mean_process", process_duration_.mean_);
 }
 
 /**
@@ -165,9 +162,7 @@ void FrameProcessorPlugin::add_performance_stats(OdinData::IpcMessage& status)
  */
 void FrameProcessorPlugin::reset_performance_stats()
 {
-  last_process_time_ = 0;
-  max_process_time_ = 0;
-  average_process_time_ = 0.0;
+  process_duration_.reset();
 }
 
 /**
@@ -294,14 +289,8 @@ void FrameProcessorPlugin::callback(boost::shared_ptr<Frame> frame)
   this->process_frame(frame);
   gettime(&end_time);
   uint64_t ts = elapsed_us(start_time, end_time);
-  // Store the raw process time
-  last_process_time_ = ts;
-  // Store the maximum process time since the last reset
-  if (ts > max_process_time_){
-    max_process_time_ = ts;
-  }
-  // Store a simple exp average with alpha = 0.5
-  average_process_time_ = (average_process_time_ * 0.5) + (double(ts) * 0.5);
+  // Update process_frame performance stats
+  process_duration_.update(ts);
 }
 
 /** Push the supplied frame to any registered callbacks.

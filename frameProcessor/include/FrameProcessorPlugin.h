@@ -15,6 +15,7 @@
 #include "IpcChannel.h"
 #include "MetaMessagePublisher.h"
 #include "Frame.h"
+#include "CallDuration.h"
 
 namespace FrameProcessor
 {
@@ -72,12 +73,8 @@ private:
   std::map<std::string, boost::shared_ptr<IFrameCallback> > blocking_callbacks_;
   /** Error message array*/
   std::vector<std::string> error_messages_;
-  /** Last process time */
-  uint64_t last_process_time_;
-  /** Maximum process time since last reset */
-  uint64_t max_process_time_;
-  /** Exp average process time since last reset */
-  double average_process_time_;
+  /** process_frame performance stats */
+  CallDuration process_duration_;
 };
 
 } /* namespace FrameProcessor */
