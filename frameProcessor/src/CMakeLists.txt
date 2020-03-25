@@ -14,7 +14,8 @@ file(GLOB LIB_SOURCES DataBlock.cpp
                       DataBlockFrame.cpp
                       MetaMessage.cpp
                       MetaMessagePublisher.cpp
-                      IFrameCallback.cpp )
+                      IFrameCallback.cpp
+                      CallDuration.cpp )
 
 # Add library for common plugin code
 add_library(${LIB_PROCESSOR} SHARED ${LIB_SOURCES})
