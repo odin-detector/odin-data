@@ -23,6 +23,12 @@ const std::string META_RANK_KEY          = "rank";
 const std::string META_NUM_PROCESSES_KEY = "proc";
 const std::string META_ACQID_KEY         = "acqID";
 const std::string META_NUM_FRAMES_KEY    = "totalFrames";
+const std::string META_FILE_PATH_KEY     = "filePath";
+
+const std::string META_CREATE_DURATION_KEY = "create_duration";
+const std::string META_WRITE_DURATION_KEY = "write_duration";
+const std::string META_FLUSH_DURATION_KEY = "flush_duration";
+const std::string META_CLOSE_DURATION_KEY = "close_duration";
 
 const std::string META_WRITE_ITEM        = "writeframe";
 const std::string META_CREATE_ITEM       = "createfile";
@@ -126,13 +132,15 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame, HD
         }
       }
 
-      // Send the meta message containing the frame written and the offset written to
+      // Send the meta message containing information about this frame
       rapidjson::Document document;
       document.SetObject();
       add_uint64_to_document(META_FRAME_KEY, (size_t) frame_no, &document);
       add_uint64_to_document(META_OFFSET_KEY, frame_offset, &document);
       add_uint64_to_document(META_RANK_KEY, concurrent_rank_, &document);
       add_uint64_to_document(META_NUM_PROCESSES_KEY, concurrent_processes_, &document);
+      add_uint64_to_document(META_WRITE_DURATION_KEY, call_durations.write.last_, &document);
+      add_uint64_to_document(META_FLUSH_DURATION_KEY, call_durations.flush.last_, &document);
 
       publish_meta(META_NAME, META_WRITE_ITEM, document_to_string(document), get_meta_header());
 
@@ -210,13 +218,17 @@ void Acquisition::create_file(size_t file_number, HDF5CallDurations_t& call_dura
 
   // Create the file
   boost::filesystem::path full_path = boost::filesystem::path(file_path_) / boost::filesystem::path(filename_);
-  size_t duration = current_file_->create_file(
+  size_t create_duration = current_file_->create_file(
     full_path.string(), file_number, use_earliest_hdf5_, alignment_threshold_, alignment_value_
   );
-  call_durations.create.update(duration);
+  call_durations.create.update(create_duration);
 
   // Send meta data message to notify of file creation
-  publish_meta(META_NAME, META_CREATE_ITEM, full_path.string(), get_create_meta_header());
+  rapidjson::Document document;
+  document.SetObject();
+  add_string_to_document(META_FILE_PATH_KEY, full_path.string(), &document);
+  add_uint64_to_document(META_CREATE_DURATION_KEY, create_duration, &document);
+  publish_meta(META_NAME, META_CREATE_ITEM, document_to_string(document), get_create_meta_header());
 
   if (total_frames_ == 0) {
     // Running in continuous mode, so we could receive any number of frames
@@ -277,10 +289,15 @@ void Acquisition::create_file(size_t file_number, HDF5CallDurations_t& call_dura
 void Acquisition::close_file(boost::shared_ptr<HDF5File> file, HDF5CallDurations_t& call_durations) {
   if (file != 0) {
     LOG4CXX_INFO(logger_, "Closing file " << file->get_filename());
-    size_t duration = file->close_file();
-    call_durations.close.update(duration);
+    size_t close_duration = file->close_file();
+    call_durations.close.update(close_duration);
+
     // Send meta data message to notify of file close
-    publish_meta(META_NAME, META_CLOSE_ITEM, file->get_filename(), get_meta_header());
+    rapidjson::Document document;
+    document.SetObject();
+    add_string_to_document(META_FILE_PATH_KEY, file->get_filename(), &document);
+    add_uint64_to_document(META_CLOSE_DURATION_KEY, close_duration, &document);
+    publish_meta(META_NAME, META_CLOSE_ITEM, document_to_string(document), get_meta_header());
   }
 }
 
@@ -625,9 +642,9 @@ std::string Acquisition::document_to_string(rapidjson::Document& document) const
   return message;
 }
 
-/** Creates and returns the Meta Header json string to be sent out over the meta data channel
+/** Create the header for the create_file meta message
  *
- * This will typically include details about the current acquisition (e.g. the ID)
+ * This includes total frames in order to configure the meta writer
  *
  * \return - a string containing the json meta data header
  */
@@ -641,9 +658,7 @@ std::string Acquisition::get_create_meta_header() {
   return document_to_string(document);
 }
 
-/** Creates and returns the Meta Header with the acquisition ID
- *
- * To be sent with per-frame meta data
+/** Create the standard header for a meta message containing the acquisition ID
  *
  * \return - a string containing the json meta data header
  */
