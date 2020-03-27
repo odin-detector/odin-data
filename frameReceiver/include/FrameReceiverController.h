@@ -117,6 +117,7 @@ namespace FrameReceiver
 
     IpcReactor reactor_;                  //!< Reactor for multiplexing all communications
 
+    unsigned int total_buffers_;          //!< Record the total number of buffers in the system
     unsigned int frames_received_;        //!< Counter for frames received
     unsigned int frames_released_;        //!< Counter for frames released
 

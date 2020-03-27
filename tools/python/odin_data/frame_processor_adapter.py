@@ -214,11 +214,13 @@ class FrameProcessorAdapter(OdinDataAdapter):
                     try:
                         frames_dropped = fr['frames']['dropped']
                         empty_buffers = fr['buffers']['empty']
-                        mapped_buffers = fr['buffers']['mapped']
+                        total_buffers = fr['buffers']['total']
                         if frames_dropped > 0:
                             valid_check = False
                             reason = "Frames dropped [{}] on at least one FR".format(frames_dropped)
-                        pct_free = float(empty_buffers) / (float(empty_buffers+mapped_buffers)) * 100.0
+                        pct_free = 0.0
+                        if total_buffers > 0:
+                            pct_free = float(empty_buffers) / float(total_buffers) * 100.0
                         if pct_free < self._fr_pct_buffer_threshold:
                             valid_check = False
                             reason = "There are only {}% free buffers left on at least one FR".format(pct_free)
