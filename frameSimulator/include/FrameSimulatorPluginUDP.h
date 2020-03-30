@@ -20,6 +20,7 @@ using namespace log4cxx::helpers;
 
 #include <iostream>
 #include <sstream>
+#include <list>
 
 namespace FrameSimulator {
 
@@ -81,7 +82,17 @@ namespace FrameSimulator {
 
     private:
 
-        std::vector<struct sockaddr_in> m_addrs;
+        struct Target
+        {
+            sockaddr_in m_addr;
+            std::list<Packet> m_packetsToSend;
+            void queuePacket(Packet pkt)
+            {
+                m_packetsToSend.push_back(pkt);
+            }
+            void SendPackets(FrameSimulatorPluginUDP* pFrameSim);
+        };
+        std::vector<Target> m_targets;
         int m_socket;
 
         //Used by send_packet to send each frame to the correct port

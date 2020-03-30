@@ -84,8 +84,10 @@ namespace FrameSimulator {
             addr.sin_family = AF_INET;
             addr.sin_port = htons(atoi(dest_ports[p].c_str()));
             addr.sin_addr.s_addr = inet_addr(dest_ip.c_str());
-            LOG4CXX_DEBUG(logger_, "Opening socket on port " + dest_ports[p]);
-            m_addrs.push_back(addr);
+            LOG4CXX_DEBUG(logger_, "Targeting port " + dest_ports[p]);
+            Target tgt;
+            tgt.m_addr = addr;
+            m_targets.push_back(tgt);
         }
 
         if (pcap_playback_) {
@@ -242,12 +244,12 @@ namespace FrameSimulator {
      */
     int FrameSimulatorPluginUDP::send_packet(const boost::shared_ptr<Packet> &packet, const int &frame) const {
         if (frame != curr_frame) {
-            curr_port_index = (curr_port_index + 1 < m_addrs.size()) ? curr_port_index + 1 : 0;
+            curr_port_index = (curr_port_index + 1 < m_targets.size()) ? curr_port_index + 1 : 0;
             curr_frame = frame;
         }
-        bind(m_socket, (struct sockaddr *) (&m_addrs[curr_port_index]), sizeof(m_addrs[curr_port_index]));
-        return sendto(m_socket, packet->data, packet->size, 0, (struct sockaddr *) (&m_addrs[curr_port_index]),
-                      sizeof(m_addrs[curr_port_index]));
+        bind(m_socket, (const sockaddr*)(&m_targets[curr_port_index].m_addr), sizeof(sockaddr));
+        return sendto(m_socket, packet->data, packet->size, 0, (const sockaddr*)(&m_targets[curr_port_index].m_addr),
+                      sizeof(sockaddr) );
     }
 
     /** Populate boost program options with appropriate command line options for plugin
@@ -295,4 +297,17 @@ namespace FrameSimulator {
 
     }
 
+    void FrameSimulatorPluginUDP::Target::SendPackets(FrameSimulatorPluginUDP* pFrameSim)
+    {
+        // why use the m_socket? each Target can have a different socket.
+        bind(pFrameSim->m_socket, (const sockaddr*)(&m_addr), sizeof(sockaddr));
+        while(0<m_packetsToSend.size())
+        {
+            std::list<Packet>::iterator packet = m_packetsToSend.begin();
+            int numBytes = sendto(pFrameSim->m_socket, packet->data, packet->size, 0, (const sockaddr*)(&m_addr), sizeof(sockaddr) );
+            m_packetsToSend.erase(packet);
+        }
+    }
 }
+
+
