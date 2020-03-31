@@ -50,7 +50,6 @@ namespace FrameSimulator {
     protected:
 
         static void pkt_callback(u_char *user, const pcap_pkthdr *hdr, const u_char *buffer);
-        int send_packet(const boost::shared_ptr<Packet>& packet, const int& frame) const;
 
         /** Extract frames from pcap read data **/
         virtual void extract_frames(const u_char* data, const int& size) = 0;
@@ -90,7 +89,7 @@ namespace FrameSimulator {
             {
                 m_packetsToSend.push_back(pkt);
             }
-            void SendPackets(FrameSimulatorPluginUDP* pFrameSim);
+            void sendPackets(FrameSimulatorPluginUDP* pFrameSim);
         };
         std::vector<Target> m_targets;
         int m_socket;

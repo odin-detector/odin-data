@@ -187,19 +187,13 @@ namespace FrameSimulator {
                     }
                 }
 
-                frame_bytes_sent += send_packet(frames_[n].packets[p], n);
+                m_targets.at(n).queuePacket(*frames_[n].packets[p]);
+                frame_bytes_sent += frames_[n].packets[p]->size;
                 frame_packets_sent += 1;
-
-                // Add brief pause between 'packet_gap' frames if packet gap specified
-                if (packet_gap_ && (frame_packets_sent % packet_gap_.get() == 0)) {
-                    LOG4CXX_DEBUG(logger_,
-                                  "Pause - just sent packet - " + boost::lexical_cast<std::string>(frame_packets_sent));
-
-                    usleep(10000);
-                }
 
             }
 
+            m_targets.at(n).sendPackets(this);
 
             time(&end_time);
 
@@ -235,21 +229,6 @@ namespace FrameSimulator {
                                boost::lexical_cast<std::string>(total_packets_sent) + " packets, dropping " +
                                boost::lexical_cast<std::string>(total_packets_dropped) + " packets (" +
                                boost::lexical_cast<std::string>(float(100.0*total_packets_dropped)/(total_packets_dropped + total_packets_sent)) + "%)");
-    }
-
-    /** All Packets should be sent using send_packet
-     * /param[in] packet to send
-     * /param[in] frame to which packet belongs
-     * this ensures each frame is sent to the appropriate destination port
-     */
-    int FrameSimulatorPluginUDP::send_packet(const boost::shared_ptr<Packet> &packet, const int &frame) const {
-        if (frame != curr_frame) {
-            curr_port_index = (curr_port_index + 1 < m_targets.size()) ? curr_port_index + 1 : 0;
-            curr_frame = frame;
-        }
-        bind(m_socket, (const sockaddr*)(&m_targets[curr_port_index].m_addr), sizeof(sockaddr));
-        return sendto(m_socket, packet->data, packet->size, 0, (const sockaddr*)(&m_targets[curr_port_index].m_addr),
-                      sizeof(sockaddr) );
     }
 
     /** Populate boost program options with appropriate command line options for plugin
@@ -297,15 +276,26 @@ namespace FrameSimulator {
 
     }
 
-    void FrameSimulatorPluginUDP::Target::SendPackets(FrameSimulatorPluginUDP* pFrameSim)
+    void FrameSimulatorPluginUDP::Target::sendPackets(FrameSimulatorPluginUDP* pFrameSim)
     {
         // why use the m_socket? each Target can have a different socket.
         bind(pFrameSim->m_socket, (const sockaddr*)(&m_addr), sizeof(sockaddr));
+        int count = 0;
         while(0<m_packetsToSend.size())
         {
             std::list<Packet>::iterator packet = m_packetsToSend.begin();
             int numBytes = sendto(pFrameSim->m_socket, packet->data, packet->size, 0, (const sockaddr*)(&m_addr), sizeof(sockaddr) );
             m_packetsToSend.erase(packet);
+
+                // Add brief pause between 'packet_gap' frames if packet gap specified
+            if (pFrameSim->packet_gap_ && (count % pFrameSim->packet_gap_.get() == 0)) 
+            {
+                    LOG4CXX_DEBUG(pFrameSim->logger_,
+                                  "Pause - just sent packet - " + boost::lexical_cast<std::string>(count));
+
+                    usleep(10000);
+            }
+            ++count;
         }
     }
 }
