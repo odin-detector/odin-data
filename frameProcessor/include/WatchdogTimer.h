@@ -42,7 +42,7 @@ private:
   /* Timer watchdog thread */
   boost::thread worker_thread_;
   /** Flag to control start up timings of main thread and worker thread */
-  bool worker_thread_running_;
+  volatile bool worker_thread_running_;
   /** IpcReactor to use as a simple timer controller */
   OdinData::IpcReactor reactor_;
   /** Timeout of current timer in milliseconds */
