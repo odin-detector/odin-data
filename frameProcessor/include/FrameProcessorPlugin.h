@@ -8,6 +8,8 @@
 #ifndef TOOLS_FILEWRITER_FrameProcessorPlugin_H_
 #define TOOLS_FILEWRITER_FrameProcessorPlugin_H_
 
+#include <boost/thread.hpp>
+
 #include "IFrameCallback.h"
 #include "IVersionedObject.h"
 #include "MetaMessage.h"
@@ -71,8 +73,10 @@ private:
   std::map<std::string, boost::shared_ptr<IFrameCallback> > callbacks_;
   /** Map of registered plugins for blocking callbacks, indexed by name */
   std::map<std::string, boost::shared_ptr<IFrameCallback> > blocking_callbacks_;
-  /** Error message array*/
+  /** Error message array */
   std::vector<std::string> error_messages_;
+  /** Mutex to make accessing error_messages_ threadsafe */
+  boost::mutex mutex_;
   /** process_frame performance stats */
   CallDuration process_duration_;
 };

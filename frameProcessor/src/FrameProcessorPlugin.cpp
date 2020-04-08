@@ -61,6 +61,9 @@ std::string FrameProcessorPlugin::get_name()
  */
 void FrameProcessorPlugin::set_error(const std::string& msg)
 {
+  // Take lock to access error_messages_
+  boost::lock_guard<boost::mutex> lock(mutex_);
+
   // Loop over error messages, if this is a new message then add it
   std::vector<std::string>::iterator iter;
   bool found_error = false;
@@ -81,6 +84,8 @@ void FrameProcessorPlugin::set_error(const std::string& msg)
  */
 void FrameProcessorPlugin::clear_errors()
 {
+  // Take lock to access error_messages_
+  boost::lock_guard<boost::mutex> lock(mutex_);
   error_messages_.clear();
 }
 
@@ -99,6 +104,8 @@ bool FrameProcessorPlugin::reset_statistics()
  */
 std::vector<std::string> FrameProcessorPlugin::get_errors()
 {
+  // Take lock to access error_messages_
+  boost::lock_guard<boost::mutex> lock(mutex_);
   return error_messages_;
 }
 
