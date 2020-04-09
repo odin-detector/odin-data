@@ -15,20 +15,21 @@ class MetaListenerAdapter(OdinDataAdapter):
         logging.debug("MetaListenerAdapter init called")
 
         # These are internal adapter parameters
-        self.acquisitionID = ""
+        self.acquisition_id = None
         self.acquisition_active = False
         self.acquisitions = []
         # These parameters are stored under an acquisition tree, so we need to
         # parse out the parameters for the acquisition we have stored
-        self._readback_parameters = {}
+        self._status_parameters = {}
         self._set_defaults()
         # These config parameters are buffered so they can be included whenever a new acquisition
         # is created. This helps to abstract the idea of acquisitions being created and removed and
         # means the client does not need to send things in a certain order.
         self._config_parameters = {
-            "config/output_dir": "",
-            "config/flush": 100,
-            "config/file_prefix": ""
+            "config/directory": "",
+            "config/file_prefix": "",
+            "config/flush_frame_frequency": 100,
+            "config/flush_timeout": 1,
         }
 
         # Parameters must be created before base init called
@@ -36,9 +37,8 @@ class MetaListenerAdapter(OdinDataAdapter):
         self._client = self._clients[0]  # We only have one client
 
     def _set_defaults(self):
-        self.acquisitionID = ""
-        self._readback_parameters = {
-            "status/filename": "",
+        self._status_parameters = {
+            "status/full_file_path": "",
             "status/num_processors": 0,
             "status/writing": False,
             "status/written": 0
@@ -46,10 +46,10 @@ class MetaListenerAdapter(OdinDataAdapter):
 
     def _map_acquisition_parameter(self, path):
         """Map acquisition parameter path string to full uri item list"""
-        # Replace the first slash with acquisitions/<acquisitionID>/
-        # E.g. status/filename -> status/acquisitions/<acquisitionID>/filename
+        # Replace the first slash with acquisitions/<acquisition_id>/
+        # E.g. status/filename -> status/acquisitions/<acquisition_id>/filename
         full_path = path.replace(
-            "/", "/acquisitions/{}/".format(self.acquisitionID),
+            "/", "/acquisitions/{}/".format(self.acquisition_id),
             1  # First slash only
         )
         return full_path.split("/")  # Return list of uri items
@@ -71,7 +71,7 @@ class MetaListenerAdapter(OdinDataAdapter):
         logging.debug("GET request: %s", request)
 
         if path == "config/acquisition_id":
-            response["value"] = self.acquisitionID
+            response["value"] = self.acquisition_id
         elif path == "status/acquisition_active":
             response["value"] = self.acquisition_active
         elif path == "config/acquisitions":
@@ -83,8 +83,8 @@ class MetaListenerAdapter(OdinDataAdapter):
                 response["value"] = "," .join(acquisition_tree.keys())
             else:
                 response["value"] = None
-        elif path in self._readback_parameters:
-            response["value"] = self._readback_parameters[path]
+        elif path in self._status_parameters:
+            response["value"] = self._status_parameters[path]
         elif path in self._config_parameters:
             response["value"] = self._config_parameters[path]
         else:
@@ -112,16 +112,14 @@ class MetaListenerAdapter(OdinDataAdapter):
         value = str(escape.url_unescape(request.body)).replace('"', '')
 
         if path == "config/acquisition_id":
-            self.acquisitionID = value
+            self.acquisition_id = value
             # Set inactive so process_updates doesn't clear acquisition ID
             self.acquisition_active = False
             # Send entire config with new acquisition ID
-            config = dict(
-                acquisition_id=self.acquisitionID,
-                output_dir=self._config_parameters["config/output_dir"],
-                flush=self._config_parameters["config/flush"],
-                file_prefix=self._config_parameters["config/file_prefix"]
-            )
+            config = dict(acquisition_id=self.acquisition_id)
+            for key, value in self._config_parameters.items():
+                # Add config parameters without config/ prefix
+                config[key.split("config/")[-1]] = value
             status_code, response = self._send_config(config)
         elif path == "config/stop":
             self.acquisition_active = False
@@ -131,23 +129,23 @@ class MetaListenerAdapter(OdinDataAdapter):
                 "acquisition_id": None,
                 "stop": True
             }
-            if self.acquisitionID:
+            if self.acquisition_id is not None:
                 # If we have an Acquisition ID then stop that one only
-                config["acquisition_id"] = self.acquisitionID
+                config["acquisition_id"] = self.acquisition_id
             status_code, response = self._send_config(config)
 
-            self.acquisitionID = ""
+            self.acquisition_id = None
         elif path in self._config_parameters:
             # Store config to re-send with acquisition ID when it is changed
             self._config_parameters[path] = value
             parameter = path.split("/", 1)[-1]  # Remove 'config/'
             config = {
-                "acquisition_id": self.acquisitionID,
+                "acquisition_id": self.acquisition_id,
                 parameter: value
             }
             status_code, response = self._send_config(config)
         else:
-            return super(OdinDataAdapter, self).put(path, request)
+            return super(MetaListenerAdapter, self).put(path, request)
 
         return ApiAdapterResponse(response, status_code=status_code)
 
@@ -170,19 +168,23 @@ class MetaListenerAdapter(OdinDataAdapter):
         Store a copy of all parameters so they don't disappear
 
         """
-        if self.acquisitionID:
-            acquisition_active = self.acquisitionID in self.traverse_parameters(
+        if self.acquisition_id is not None:
+            acquisitions = self.traverse_parameters(
                 self._client.parameters, ["status", "acquisitions"]
+            )
+            acquisition_active = (
+                acquisitions is not None and self.acquisition_id in acquisitions
             )
             if acquisition_active:
                 self.acquisition_active = True
-                for parameter in self._readback_parameters.keys():
+                for parameter in self._status_parameters:
                     value = self.traverse_parameters(
                         self._client.parameters,
                         self._map_acquisition_parameter(parameter)
                     )
-                    self._readback_parameters[parameter] = value
+                    self._status_parameters[parameter] = value
             else:
                 self.acquisition_active = False
+                self._set_defaults()
         else:
             self._set_defaults()
