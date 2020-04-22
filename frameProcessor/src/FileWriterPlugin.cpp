@@ -792,7 +792,7 @@ void FileWriterPlugin::run_close_file_timeout()
           LOG4CXX_DEBUG_LEVEL(1, logger_, "Close file Timeout timed out");
           boost::lock_guard<boost::recursive_mutex> lock(mutex_);
           if (writing_ && timeout_active_) {
-            LOG4CXX_INFO(logger_, "Timed out waiting for frames, stopping writing");
+            set_error("Timed out waiting for frames, stopping writing");
             stop_acquisition();
           }
           timeout_active_ = false;
