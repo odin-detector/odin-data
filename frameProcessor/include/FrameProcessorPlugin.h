@@ -8,6 +8,8 @@
 #ifndef TOOLS_FILEWRITER_FrameProcessorPlugin_H_
 #define TOOLS_FILEWRITER_FrameProcessorPlugin_H_
 
+#include <boost/thread.hpp>
+
 #include "IFrameCallback.h"
 #include "IVersionedObject.h"
 #include "MetaMessage.h"
@@ -15,6 +17,7 @@
 #include "IpcChannel.h"
 #include "MetaMessagePublisher.h"
 #include "Frame.h"
+#include "CallDuration.h"
 
 namespace FrameProcessor
 {
@@ -56,8 +59,6 @@ private:
 
   void callback(boost::shared_ptr<Frame> frame);
 
-  unsigned int elapsed_us(struct timespec& start, struct timespec& end);
-
   /**
    * This is called by the callback method when any new frames have
    * arrived and must be overridden by child classes.
@@ -72,14 +73,12 @@ private:
   std::map<std::string, boost::shared_ptr<IFrameCallback> > callbacks_;
   /** Map of registered plugins for blocking callbacks, indexed by name */
   std::map<std::string, boost::shared_ptr<IFrameCallback> > blocking_callbacks_;
-  /** Error message array*/
+  /** Error message array */
   std::vector<std::string> error_messages_;
-  /** Last process time */
-  uint64_t last_process_time_;
-  /** Maximum process time since last reset */
-  uint64_t max_process_time_;
-  /** Exp average process time since last reset */
-  double average_process_time_; 
+  /** Mutex to make accessing error_messages_ threadsafe */
+  boost::mutex mutex_;
+  /** process_frame performance stats */
+  CallDuration process_duration_;
 };
 
 } /* namespace FrameProcessor */

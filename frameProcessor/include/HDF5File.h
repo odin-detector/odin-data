@@ -25,8 +25,35 @@ using namespace log4cxx;
 #include "Frame.h"
 #include "FrameProcessorDefinitions.h"
 #include "MetaMessagePublisher.h"
+#include "WatchdogTimer.h"
+#include "CallDuration.h"
 
 namespace FrameProcessor {
+
+/**
+ * A collection of CallDurations to pass around and update with HDF5 call metrics
+ */
+struct HDF5CallDurations_t
+{
+  CallDuration create;
+  CallDuration write;
+  CallDuration flush;
+  CallDuration close;
+};
+
+/**
+ * Definitions of what constitutes an error from the HDF5 library
+ *
+ * - Durations (milliseconds) of HDF5 calls over which an error message will be logged
+ */
+struct HDF5ErrorDefinition_t
+{
+  unsigned int create_duration;
+  unsigned int write_duration;
+  unsigned int flush_duration;
+  unsigned int close_duration;
+  boost::function<void(const std::string&)> callback;
+};
 
 class HDF5File
 {
@@ -48,18 +75,23 @@ public:
     size_t actual_dataset_size_;
   };
 
-
-  HDF5File();
+  HDF5File(const HDF5ErrorDefinition_t& hdf5_error_definition);
   ~HDF5File();
   void hdf_error_handler(unsigned n, const H5E_error2_t* err_desc);
   void clear_hdf_errors();
   void handle_h5_error(const std::string& message, const std::string& function, const std::string& filename, int line);
-  void create_file(std::string file_name, size_t file_index, bool use_earliest_version, size_t alignment_threshold, size_t alignment_value);
-  void close_file();
+  size_t create_file(std::string file_name, size_t file_index, bool use_earliest_version, size_t alignment_threshold, size_t alignment_value);
+  size_t close_file();
   void create_dataset(const DatasetDefinition& definition, int low_index, int high_index);
-  void write_frame(const Frame& frame, hsize_t frame_offset, uint64_t outer_chunk_dimension);
+  void write_frame(
+    const Frame& frame,
+    hsize_t frame_offset,
+    uint64_t outer_chunk_dimension,
+    HDF5CallDurations_t& call_durations
+  );
   void write_parameter(const Frame& frame, DatasetDefinition dataset_definition, hsize_t frame_offset);
   size_t get_dataset_frames(const std::string& dset_name);
+  size_t get_dataset_max_size(const std::string& dset_name);
   void start_swmr();
   size_t get_file_index();
   std::string get_filename();
@@ -104,6 +136,10 @@ private:
   hid_t param_memspace_;
   /* Map containing time each dataset was last flushed*/
   std::map<std::string, boost::posix_time::ptime> last_flushed;
+  /* Watchdog timer for monitoring function call durations */
+  WatchdogTimer watchdog_timer_;
+  /** HDF5 call error definitions */
+  const HDF5ErrorDefinition_t& hdf5_error_definition_;
 };
 
 } /* namespace FrameProcessor */
