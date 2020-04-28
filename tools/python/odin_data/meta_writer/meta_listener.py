@@ -97,6 +97,10 @@ class MetaListener(object):
                 if sockets.get(ctrl_socket) == zmq.POLLIN:
                     self.handle_control_message(ctrl_socket)
 
+                # Delay handling data until we have a writer configured
+                if not self._writers:
+                    continue
+
                 for socket in data_sockets:
                     if sockets.get(socket) == zmq.POLLIN:
                         self.handle_data_message(socket)
