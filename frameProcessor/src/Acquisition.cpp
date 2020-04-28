@@ -137,7 +137,6 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame, HD
       document.SetObject();
       add_uint64_to_document(META_FRAME_KEY, (size_t) frame_no, &document);
       add_uint64_to_document(META_OFFSET_KEY, frame_offset, &document);
-      add_uint64_to_document(META_RANK_KEY, concurrent_rank_, &document);
       add_uint64_to_document(META_NUM_PROCESSES_KEY, concurrent_processes_, &document);
       add_uint64_to_document(META_WRITE_DURATION_KEY, call_durations.write.last_, &document);
       add_uint64_to_document(META_FLUSH_DURATION_KEY, call_durations.flush.last_, &document);
@@ -653,12 +652,13 @@ std::string Acquisition::get_create_meta_header() {
   rapidjson::Document document;
   document.SetObject();
   add_string_to_document(META_ACQID_KEY, acquisition_id_, &document);
+  add_uint64_to_document(META_RANK_KEY, concurrent_rank_, &document);
   add_uint64_to_document(META_NUM_FRAMES_KEY, total_frames_, &document);
 
   return document_to_string(document);
 }
 
-/** Create the standard header for a meta message containing the acquisition ID
+/** Create the standard header for a meta message
  *
  * \return - a string containing the json meta data header
  */
@@ -666,6 +666,7 @@ std::string Acquisition::get_meta_header() {
   rapidjson::Document document;
   document.SetObject();
   add_string_to_document(META_ACQID_KEY, acquisition_id_, &document);
+  add_uint64_to_document(META_RANK_KEY, concurrent_rank_, &document);
 
   return document_to_string(document);
 }
