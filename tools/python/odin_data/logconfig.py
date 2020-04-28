@@ -152,6 +152,10 @@ def add_logger(logger_name, logger_description):
     default_config["loggers"][logger_name] = logger_description
 
 
+def set_log_level(level, logger="root"):
+    default_config[logger]["level"] = level
+
+
 def setup_logging(default_log_config=None,
                   default_level=logging.INFO,
                   env_key='LOG_CFG'):
