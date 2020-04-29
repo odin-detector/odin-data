@@ -532,7 +532,7 @@ void FileWriterPlugin::configure_file(OdinData::IpcMessage& config, OdinData::Ip
         if (eaccess(file_path.c_str(), W_OK)){
           // Return code other then zero is a failure
           std::stringstream ss;
-          ss << "Path is not writable by the user: " << file_path;
+          ss << "User does not have write permissions for directory: " << file_path;
           LOG4CXX_ERROR(logger_, ss.str());
           reply.set_nack(ss.str());
         } else {
