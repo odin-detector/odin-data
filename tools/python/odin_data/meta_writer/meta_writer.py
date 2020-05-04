@@ -246,6 +246,15 @@ class MetaWriter(object):
         self.finished = True
         self._logger.info("%s | Finished", self._name)
 
+    def status(self):
+        """Return current status parameters"""
+        return dict(
+            full_file_path=self.full_file_path,
+            num_processors=self.active_process_count,
+            written=self.write_count,
+            writing=self.file_created and not self.finished,
+        )
+
     def configure(self, configuration):
         """Configure the writer with a set of one or more parameters
 

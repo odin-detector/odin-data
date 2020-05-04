@@ -240,12 +240,7 @@ class MetaListener(object):
         status_dict = {}
         for writer_name in self._writers:
             writer = self._writers[writer_name]
-            status_dict[writer_name] = {
-                "filename": writer.full_file_path,
-                "num_processors": writer.number_processes_running,
-                "written": writer.write_count,
-                "writing": writer.file_created and not writer.finished,
-            }
+            status_dict[writer_name] = writer.status()
             writer.write_timeout_count = writer.write_timeout_count + 1
 
         reply = self._construct_reply(request.get_msg_val(), request.get_msg_id())
