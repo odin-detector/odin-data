@@ -44,6 +44,7 @@ class MetaListener(object):
         """
         self._ctrl_port = ctrl_port
         self._data_endpoints = data_endpoints
+        self._process_count = len(data_endpoints)
         self._writer_module = writer_module
         self._writers = {}
         self._shutdown_requested = False
@@ -257,7 +258,7 @@ class MetaListener(object):
             else:
                 # TODO: This is bit of a hack...
                 stagnant = (
-                    writer.number_processes_running == 0
+                    writer.active_process_count == 0
                     and writer.write_timeout_count > 10
                     and writer.file_created
                 )
@@ -328,7 +329,9 @@ class MetaListener(object):
         self._logger.info("Creating new writer %s", writer_name)
         writer_class = self._load_writer_class()
         self._logger.debug("Loaded writer class: %s", writer_class)
-        self._writers[writer_name] = writer_class(writer_name, DEFAULT_DIRECTORY)
+        self._writers[writer_name] = writer_class(
+            writer_name, DEFAULT_DIRECTORY, self._process_count
+        )
 
         # Check if we have too many writers and delete any that are finished
         if len(self._writers) > 3:

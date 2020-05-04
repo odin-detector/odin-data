@@ -23,6 +23,7 @@ PATCH_VER_REGEX = r"^[0-9]+[\\.-][0-9]+[\\.-]([0-9]+).|$"
 # Data message parameters
 FRAME = "frame"
 OFFSET = "offset"
+RANK = "rank"
 CREATE_DURATION = "create_duration"
 WRITE_DURATION = "write_duration"
 FLUSH_DURATION = "flush_duration"
@@ -59,12 +60,13 @@ class MetaWriter(object):
     # Detector-specific parameters received on per-frame meta message
     DETECTOR_WRITE_FRAME_PARAMETERS = []
 
-    def __init__(self, name, directory):
+    def __init__(self, name, directory, process_count):
         """
         Args:
             name(str): Unique name to construct file path and to include in
                        log messages
             directory(str): Directory to create the meta file in
+            process_count(int): Total number of processes we will receive data from
 
         """
         self._logger = logging.getLogger(self.__class__.__name__)
@@ -78,14 +80,13 @@ class MetaWriter(object):
         # Status
         self.full_file_path = None
         self.file_created = False
-        self.number_processes_running = 0
         self.write_count = 0
         self.finished = False
         self.write_timeout_count = 0
 
         # Internal parameters
         self._name = name
-        self._num_frames_to_write = -1
+        self._processes_running = [False] * process_count
         self._last_flushed = time()  # Seconds since epoch
         self._hdf5_file = None
         self._datasets = dict(
@@ -94,6 +95,10 @@ class MetaWriter(object):
         )
         # Child class parameters
         self._frame_data_map = dict()  # Map of frame number to detector data
+
+    @property
+    def active_process_count(self):
+        return self._processes_running.count(True)
 
     def _generate_full_file_path(self):
         prefix = self.file_prefix if self.file_prefix is not None else self._name
@@ -320,13 +325,25 @@ class MetaWriter(object):
         """Prepare the data file with the number of frames to write"""
         self._logger.debug("%s | Handling start acquisition message", self._name)
 
-        self.number_processes_running = self.number_processes_running + 1
-
-        if self._num_frames_to_write == -1:
-            self._num_frames_to_write = header["totalFrames"]
-            self._create_file(
-                self._generate_full_file_path(), self._num_frames_to_write
+        if self._processes_running[header[RANK]]:
+            self._logger.error(
+                "%s | Received additional startacquisition from process rank %d - ignoring",
+                self._name,
+                header[RANK],
             )
+            return
+
+        self._processes_running[header[RANK]] = True
+
+        self._logger.debug(
+            "%s | Received startacquisition message from rank %d - %d processes running",
+            self._name,
+            header[RANK],
+            self.active_process_count,
+        )
+
+        if not self.file_created:
+            self._create_file(self._generate_full_file_path(), header["totalFrames"])
             self.file_created = True
 
     def handle_create_file(self, _header, data):
@@ -395,14 +412,20 @@ class MetaWriter(object):
 
     def handle_stop_acquisition(self, header, _data):
         """Register that a process has finished and stop if it is the last one"""
-        self._logger.debug("%s | Handling stop acquisition message", self._name)
+        if not self._processes_running[header[RANK]]:
+            self._logger.error(
+                "%s | Received stopacquisition from process rank %d before start - ignoring",
+                self._name,
+                header[RANK],
+            )
+            return
 
-        if self.number_processes_running > 0:
-            self.number_processes_running = self.number_processes_running - 1
+        self._logger.debug(
+            "%s | Received stopacquisition from rank %d", self._name, header[RANK]
+        )
+        self._processes_running[header[RANK]] = False
 
-        self._logger.debug("%s | Process rank %d stopped", self._name, header["rank"])
-
-        if self.number_processes_running == 0:
+        if not any(self._processes_running):
             self._logger.info("%s | Last processor stopped", self._name)
             self.stop()
 
