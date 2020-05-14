@@ -264,6 +264,18 @@ void Acquisition::create_file(size_t file_number) {
       }
     }
 
+    // Calculate the number of frames required for this dataset in the case that
+    // the acquisition is using block mode.
+    int frames_per_file = blocks_per_file_ * frames_per_block_;
+    if (frames_per_file > 2){
+      if (file_number * frames_per_file > frames_to_write_){
+        // This is the final file creation which may contain less than a full block of frames
+        dset_def.num_frames = frames_to_write_ % frames_per_file;
+      } else {
+        // This is not the final file, it will contain a full block of frames
+        dset_def.num_frames = frames_per_file;
+      }
+    }
     validate_dataset_definition(dset_def);
     current_file->create_dataset(dset_def, low_index, high_index);
   }
