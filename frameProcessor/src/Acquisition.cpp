@@ -253,7 +253,6 @@ void Acquisition::create_file(size_t file_number, HDF5CallDurations_t& call_dura
   std::map<std::string, DatasetDefinition>::iterator iter;
   for (iter = dataset_defs_.begin(); iter != dataset_defs_.end(); ++iter) {
     DatasetDefinition dset_def = iter->second;
-    dset_def.num_frames = frames_to_write_;
 
     // Calculate low and high index for this dataset - needed to be able to open datasets in Albula
     int low_index = -1;
@@ -269,6 +268,21 @@ void Acquisition::create_file(size_t file_number, HDF5CallDurations_t& call_dura
       }
     }
 
+    // Calculate the number of frames required for this dataset in the case that
+    // the acquisition is using block mode.
+    int frames_per_file = blocks_per_file_ * frames_per_block_;
+    if (frames_per_file > 1){
+      if (file_number * frames_per_file > frames_to_write_){
+        // This is the final file creation which may contain less than a full block of frames
+        dset_def.num_frames = frames_to_write_ % frames_per_file;
+      } else {
+        // This is not the final file, it will contain a full block of frames
+        dset_def.num_frames = frames_per_file;
+      }
+    } else {
+      // Non block mode so set the number of frames to write equal to the total frames for this FP
+      dset_def.num_frames = frames_to_write_;
+    }
     validate_dataset_definition(dset_def);
     current_file->create_dataset(dset_def, low_index, high_index);
   }
