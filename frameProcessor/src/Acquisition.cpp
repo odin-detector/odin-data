@@ -270,9 +270,10 @@ void Acquisition::create_file(size_t file_number, HDF5CallDurations_t& call_dura
 
     // Calculate the number of frames required for this dataset in the case that
     // the acquisition is using block mode.
+    int wrap = (file_number/concurrent_processes_)+1;
     int frames_per_file = blocks_per_file_ * frames_per_block_;
     if (frames_per_file > 1){
-      if (file_number * frames_per_file > frames_to_write_){
+      if (wrap * frames_per_file > frames_to_write_){
         // This is the final file creation which may contain less than a full block of frames
         dset_def.num_frames = frames_to_write_ % frames_per_file;
       } else {
