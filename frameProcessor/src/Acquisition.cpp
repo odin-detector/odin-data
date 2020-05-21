@@ -414,66 +414,78 @@ bool Acquisition::check_frame_valid(boost::shared_ptr<Frame> frame)
 {
   bool invalid = false;
   const FrameMetaData frame_meta_data = frame->get_meta_data();
-  DatasetDefinition dataset = dataset_defs_.at(frame_meta_data.get_dataset_name());
+  DatasetDefinition dataset;
+  try
+  {
+    dataset = dataset_defs_.at(frame_meta_data.get_dataset_name());
 
-  // Check if frame compression is set to unknown and raise an error.
-  // Otherwise verify the compression is consistent with the dataset definition.
-  CompressionType frame_compression_type = frame_meta_data.get_compression_type();
-  if (frame_compression_type == unknown_compression) {
-    std::stringstream ss;
-    ss << "Invalid frame: Frame has unknown compression for dataset " << dataset.name;
-    last_error_ = ss.str();
-    LOG4CXX_ERROR(logger_, last_error_);
-    invalid = true;
-  } else if (frame_compression_type != dataset.compression) {
-    std::stringstream ss;
-    ss << "Invalid frame: Frame has compression " << frame_compression_type <<
-          ", expected " << dataset.compression <<
-          " for dataset " << dataset.name <<
-          " (0: Unknown, 1: None, 2: LZ4, 3: BSLZ4, 4: Blosc)";
-    last_error_ = ss.str();
-    LOG4CXX_ERROR(logger_, last_error_);
-    invalid = true;
-  }
-
-  // Check if frame data type is set to unknown and raise an error.
-  // Otherwise verify the data type is consistent with the dataset definition.
-  DataType frame_data_type = frame_meta_data.get_data_type();
-  if (frame_data_type == raw_unknown) {
-    std::stringstream ss;
-    ss << "Invalid frame: Frame has unknown data type for dataset " << dataset.name;
-    last_error_ = ss.str();
-    LOG4CXX_ERROR(logger_, last_error_);
-    invalid = true;
-  } else if (frame_data_type != dataset.data_type) {
-    std::stringstream ss;
-    ss << "Invalid frame: Frame has data type " << frame_data_type <<
-       ", expected " << dataset.data_type <<
-       " for dataset " << dataset.name <<
-       " (0: UNKNOWN, 1: UINT8, 2: UINT16, 3: UINT32, 4: UINT64, 5: FLOAT)";
-    last_error_ = ss.str();
-    LOG4CXX_ERROR(logger_, last_error_);
-    invalid = true;
-  }
-  dimensions_t frame_dimensions = frame_meta_data.get_dimensions();
-  if (frame_dimensions != dataset.frame_dimensions) {
-    if (frame_dimensions.size() >= 2 && dataset.frame_dimensions.size() >= 2) {
+    // Check if frame compression is set to unknown and raise an error.
+    // Otherwise verify the compression is consistent with the dataset definition.
+    CompressionType frame_compression_type = frame_meta_data.get_compression_type();
+    if (frame_compression_type == unknown_compression) {
       std::stringstream ss;
-      ss << "Invalid frame: Frame has dimensions [" << frame_dimensions[0] << ", " << frame_dimensions[1] <<
-         "], expected [" << dataset.frame_dimensions[0] << ", " << dataset.frame_dimensions[1] <<
-         "] for dataset " << dataset.name;
+      ss << "Invalid frame: Frame has unknown compression for dataset " << dataset.name;
       last_error_ = ss.str();
       LOG4CXX_ERROR(logger_, last_error_);
-    } else if (frame_dimensions.size() >= 1 && dataset.frame_dimensions.size() >= 1) {
+      invalid = true;
+    } else if (frame_compression_type != dataset.compression) {
       std::stringstream ss;
-      ss << "Invalid frame: Frame has dimensions [" << frame_dimensions[0]  <<
-         "], expected [" << dataset.frame_dimensions[0] << "] for dataset " << dataset.name;
+      ss << "Invalid frame: Frame has compression " << frame_compression_type <<
+            ", expected " << dataset.compression <<
+            " for dataset " << dataset.name <<
+            " (0: Unknown, 1: None, 2: LZ4, 3: BSLZ4, 4: Blosc)";
       last_error_ = ss.str();
       LOG4CXX_ERROR(logger_, last_error_);
-    } else {
-      last_error_ = "Invalid frame: Frame dimensions do not match";
-      LOG4CXX_ERROR(logger_, last_error_);
+      invalid = true;
     }
+
+    // Check if frame data type is set to unknown and raise an error.
+    // Otherwise verify the data type is consistent with the dataset definition.
+    DataType frame_data_type = frame_meta_data.get_data_type();
+    if (frame_data_type == raw_unknown) {
+      std::stringstream ss;
+      ss << "Invalid frame: Frame has unknown data type for dataset " << dataset.name;
+      last_error_ = ss.str();
+      LOG4CXX_ERROR(logger_, last_error_);
+      invalid = true;
+    } else if (frame_data_type != dataset.data_type) {
+      std::stringstream ss;
+      ss << "Invalid frame: Frame has data type " << frame_data_type <<
+        ", expected " << dataset.data_type <<
+        " for dataset " << dataset.name <<
+        " (0: UNKNOWN, 1: UINT8, 2: UINT16, 3: UINT32, 4: UINT64, 5: FLOAT)";
+      last_error_ = ss.str();
+      LOG4CXX_ERROR(logger_, last_error_);
+      invalid = true;
+    }
+    dimensions_t frame_dimensions = frame_meta_data.get_dimensions();
+    if (frame_dimensions != dataset.frame_dimensions) {
+      if (frame_dimensions.size() >= 2 && dataset.frame_dimensions.size() >= 2) {
+        std::stringstream ss;
+        ss << "Invalid frame: Frame has dimensions [" << frame_dimensions[0] << ", " << frame_dimensions[1] <<
+          "], expected [" << dataset.frame_dimensions[0] << ", " << dataset.frame_dimensions[1] <<
+          "] for dataset " << dataset.name;
+        last_error_ = ss.str();
+        LOG4CXX_ERROR(logger_, last_error_);
+      } else if (frame_dimensions.size() >= 1 && dataset.frame_dimensions.size() >= 1) {
+        std::stringstream ss;
+        ss << "Invalid frame: Frame has dimensions [" << frame_dimensions[0]  <<
+          "], expected [" << dataset.frame_dimensions[0] << "] for dataset " << dataset.name;
+        last_error_ = ss.str();
+        LOG4CXX_ERROR(logger_, last_error_);
+      } else {
+        last_error_ = "Invalid frame: Frame dimensions do not match";
+        LOG4CXX_ERROR(logger_, last_error_);
+      }
+      invalid = true;
+    }
+  }
+  catch (const std::out_of_range& e) {
+    std::stringstream ss;
+    ss << "Frame destined for [" << frame_meta_data.get_dataset_name()
+    << "] but dataset has not been defined in the HDF plugin";
+    last_error_ = ss.str();
+    LOG4CXX_ERROR(logger_, last_error_);
     invalid = true;
   }
   return !invalid;
