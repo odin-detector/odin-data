@@ -521,8 +521,37 @@ void FileWriterPlugin::configure_file(OdinData::IpcMessage& config, OdinData::Ip
   LOG4CXX_DEBUG_LEVEL(1, logger_, "Configure file name and path");
   // Check for file path and file name
   if (config.has_param(FileWriterPlugin::CONFIG_FILE_PATH)) {
-    this->next_acquisition_->file_path_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_PATH);
-    LOG4CXX_DEBUG_LEVEL(1, logger_, "Next file path changed to " << this->next_acquisition_->file_path_);
+    std::string file_path = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_PATH);
+    boost::filesystem::path p(file_path);
+    // Check path exists
+    boost::system::error_code ec;
+    if (boost::filesystem::exists(p, ec)){
+      // Check path is a directory
+      if (boost::filesystem::is_directory(p, ec)){
+        // Check directory has write permission
+        if (eaccess(file_path.c_str(), W_OK)){
+          // Return code other then zero is a failure
+          std::stringstream ss;
+          ss << "User does not have write permissions for directory: " << file_path;
+          LOG4CXX_ERROR(logger_, ss.str());
+          reply.set_nack(ss.str());
+        } else {
+          // All checks passed, we can write to this location
+          this->next_acquisition_->file_path_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_PATH);
+          LOG4CXX_DEBUG_LEVEL(1, logger_, "Next file path changed to " << this->next_acquisition_->file_path_);
+        }
+      } else {
+        std::stringstream ss;
+        ss << "Path is not a directory: " << file_path;
+        LOG4CXX_ERROR(logger_, ss.str());
+        reply.set_nack(ss.str());
+      }
+    } else {
+      std::stringstream ss;
+      ss << "Invalid path requested: " << file_path;
+      LOG4CXX_ERROR(logger_, ss.str());
+      reply.set_nack(ss.str());
+    }
   }
   if (config.has_param(FileWriterPlugin::CONFIG_FILE_NAME)) {
     this->next_acquisition_->configured_filename_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_NAME);
