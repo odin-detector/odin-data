@@ -13,7 +13,7 @@ import logging
 import numpy as np
 import h5py
 
-from .. import _version as versioneer
+from odin_data import _version as versioneer
 from .hdf5dataset import HDF5Dataset, Int64HDF5Dataset, StringHDF5Dataset
 
 MAJOR_VER_REGEX = r"^([0-9]+)[\\.-].*|$"
