@@ -14,11 +14,8 @@ import numpy as np
 import h5py
 
 from odin_data import _version as versioneer
+from odin_data.util import construct_version_dict
 from .hdf5dataset import HDF5Dataset, Int64HDF5Dataset, StringHDF5Dataset
-
-MAJOR_VER_REGEX = r"^([0-9]+)[\\.-].*|$"
-MINOR_VER_REGEX = r"^[0-9]+[\\.-]([0-9]+).*|$"
-PATCH_VER_REGEX = r"^[0-9]+[\\.-][0-9]+[\\.-]([0-9]+).|$"
 
 # Data message parameters
 FRAME = "frame"
@@ -88,6 +85,7 @@ class MetaWriter(object):
         self._name = name
         self._processes_running = [False] * process_count
         self._last_flushed = time()  # Seconds since epoch
+        self._frames_since_flush = 0
         self._hdf5_file = None
         self._datasets = dict(
             (dataset.name, dataset)
@@ -259,8 +257,7 @@ class MetaWriter(object):
         """Configure the writer with a set of one or more parameters
 
         Args:
-            writer_name(str): Name of writer to configure
-            configuration(dict): Paramters to configure with
+            configuration(dict): Configuration parameters
 
         Returns:
             error(None/str): None if successful else an error message
@@ -375,21 +372,20 @@ class MetaWriter(object):
         self.write_timeout_count = 0
 
         self.write_count += 1
+        self._frames_since_flush += 1
 
         # Write detector meta data for this frame, now that we know the offset
         self.write_detector_frame_data(data[FRAME], data[OFFSET])
 
-        write_data = False
-        if self.flush_timeout is not None:
-            if (time() - self._last_flushed) >= self.flush_timeout:
-                write_data = True
-        # TODO: This isn't technically doing the right thing:
-        if self.write_count % self.flush_frame_frequency == 0:
-            write_data = True
+        write_required = (
+            time() - self._last_flushed >= self.flush_timeout
+            or self._frames_since_flush >= self.flush_frame_frequency
+        )
 
-        if write_data:
+        if write_required:
             self._write_datasets()
             self._last_flushed = time()
+            self._frames_since_flush = 0
 
     def write_detector_frame_data(self, frame, offset):
         """Write the frame data to at the given offset
@@ -438,20 +434,6 @@ class MetaWriter(object):
             self._logger.info("%s | Last processor stopped", self._name)
             self.stop()
 
-    # TODO: Do this properly
     @staticmethod
     def get_version():
-        full_version = versioneer.get_versions()["version"]
-        major_version = re.findall(MAJOR_VER_REGEX, full_version)[0]
-        minor_version = re.findall(MINOR_VER_REGEX, full_version)[0]
-        patch_version = re.findall(PATCH_VER_REGEX, full_version)[0]
-        short_version = major_version + "." + minor_version + "." + patch_version
-
-        version_dict = {}
-        version_dict["full"] = full_version
-        version_dict["major"] = major_version
-        version_dict["minor"] = minor_version
-        version_dict["patch"] = patch_version
-        version_dict["short"] = short_version
-
-        return version_dict
+        return construct_version_dict(versioneer.get_versions()["version"])
