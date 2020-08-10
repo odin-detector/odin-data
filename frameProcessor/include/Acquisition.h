@@ -94,16 +94,16 @@ public:
   size_t concurrent_rank_;
   /** Number of frames to write consecutively in a file */
   size_t frames_per_block_;
-  /** Number of blocks to write in a file  */
+  /** Number of blocks to write in a file; 0=put all blocks in same file  */
   size_t blocks_per_file_;
   /** HDF5 call error definitions */
   const HDF5ErrorDefinition_t& hdf5_error_definition_;
 
 private:
   /** The current file that frames are being written to */
-  boost::shared_ptr<HDF5File> current_file;
+  boost::shared_ptr<HDF5File> current_file_;
   /** The previous file that frames were written to, held in case of late frames  */
-  boost::shared_ptr<HDF5File> previous_file;
+  boost::shared_ptr<HDF5File> previous_file_;
   /** Most recently generated error message */
   std::string last_error_;
 };

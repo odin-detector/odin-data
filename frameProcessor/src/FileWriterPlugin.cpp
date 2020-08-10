@@ -129,8 +129,8 @@ void FileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame)
   boost::mutex::scoped_lock cflock(close_file_mutex_);
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
 
-  // Check the frame against the current acquisition and start a new one if
-  // the frame object contains a different acquisition ID from the current one
+  // check it matches the current (or next) acquisition.
+  // frames that don't match are dropped / ignored.
   if (frame_in_acquisition(frame)) {
 
     if (writing_) {
@@ -762,12 +762,13 @@ bool FileWriterPlugin::reset_statistics()
   return true;
 }
 
-/** Check if the frame contains an acquisition ID and start a new file if it does and it's different from the current one
+/** This function checks the acquisition id of the frame matches that of the current acquisition,
+ * subject to two caveats:
+ *  i) if the frame-aid is "", it matches anything
+ *  ii) this function has the side-effect of moving from the current-acq to
+ *        the next-acq if that helps us match the frame.
  *
- * If the frame object contains an acquisition ID, then we need to check if the current acquisition we are writing has
- * the same ID. If it is different, then we close the current file and create a new one and start writing.
- * If we are not currently writing then we just create a new file and start writing.
- *
+ *  The function will set an error if the frame does not match a writing acquisition. 
  * \param[in] frame - Pointer to the Frame object.
  */
 bool FileWriterPlugin::frame_in_acquisition(boost::shared_ptr<Frame> frame) {
