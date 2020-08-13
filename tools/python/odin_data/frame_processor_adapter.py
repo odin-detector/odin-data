@@ -10,6 +10,7 @@ from odin_data.ipc_tornado_client import IpcTornadoClient
 from odin_data.util import remove_prefix, remove_suffix
 from odin_data.odin_data_adapter import OdinDataAdapter
 from odin.adapters.adapter import ApiAdapter, ApiAdapterResponse, request_types, response_types
+from odin.adapters.parameter_tree import ParameterTree, ParameterTreeError
 from tornado import escape
 from tornado.ioloop import IOLoop
 
@@ -39,6 +40,19 @@ class FrameProcessorAdapter(OdinDataAdapter):
         logging.debug("FPA init called")
         super(FrameProcessorAdapter, self).__init__(**kwargs)
 
+        self.param_tree_dict["config"] = {
+            "hdf": {
+                "acquisition_id": ('', None),
+                "frames": (0, None),
+                "file": {
+                    "path": ('', None),
+                    "extension": ('h5', None)
+                },
+                "write": (None, None) # write to the adapter
+            }
+        }
+        self.param_tree = ParameterTree(self.param_tree_dict)
+
         self._param = {
             'config/hdf/acquisition_id': '',
             'config/hdf/file/path': '',
@@ -51,38 +65,8 @@ class FrameProcessorAdapter(OdinDataAdapter):
 
     @request_types('application/json', 'application/vnd.odin-native')
     @response_types('application/json', default='application/json')
-    def get(self, path, request):
-
-        """
-        Implementation of the HTTP GET verb for OdinDataAdapter
-
-        :param path: URI path of the GET request
-        :param request: Tornado HTTP request object
-        :return: ApiAdapterResponse object to be returned to the client
-        """
-        status_code = 200
-        response = {}
-
-        # First check if we are interested in the config items
-        #
-        # Store these parameters locally:
-        # config/hdf/file/path
-        # config/hdf/file/name
-        # config/hdf/file/extension
-        #
-        # When this arrives write all params into a single IPC message
-        # config/hdf/write
-        if path in self._param:
-            response['value'] = self._param[path]
-        else:
-            return super(FrameProcessorAdapter, self).get(path, request)
-
-        return ApiAdapterResponse(response, status_code=status_code)
-
-    @request_types('application/json', 'application/vnd.odin-native')
-    @response_types('application/json', default='application/json')
     def put(self, path, request):  # pylint: disable=W0613
-
+        
         """
         Implementation of the HTTP PUT verb for OdinDataAdapter
 
@@ -90,6 +74,8 @@ class FrameProcessorAdapter(OdinDataAdapter):
         :param request: Tornado HTTP request object
         :return: ApiAdapterResponse object to be returned to the client
         """
+        return super(FrameProcessorAdapter, self).put(path, request)
+        # TODO: REMOVE REST OF THIS
         status_code = 200
         response = {}
         logging.debug("PUT path: %s", path)

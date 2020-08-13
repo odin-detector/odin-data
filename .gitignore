@@ -23,3 +23,4 @@ tools/imagej/plugins/Odin-Data/build/**
 *.jar
 tools/imagej/odin-imagej
 tools/imagej/build/
+tools/python/build

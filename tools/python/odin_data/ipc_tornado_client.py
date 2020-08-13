@@ -5,6 +5,7 @@ from threading import RLock
 from odin_data.ipc_tornado_channel import IpcTornadoChannel
 from odin_data.ipc_message import IpcMessage, IpcMessageException
 from datetime import datetime
+from copy import deepcopy
 
 
 class IpcTornadoClient(object):
@@ -32,7 +33,31 @@ class IpcTornadoClient(object):
 
     @property
     def parameters(self):
+        """DEPRECIATED, use get_parameters() instead"""
         return self._parameters
+
+    def get_parameters(self):
+        return self._parameters
+
+    def set_parameters(self, data):
+        logging.debug("SET PARAMETERS CALLED WITH DATA: %s", data)
+        self._parameters = self.__recursive_merge_tree(data, self._parameters)
+        logging.debug("PARAMTERS NOW EQUAL: %s", self._parameters)
+        # TODO: some of those parameters undoubtably mean sending stuff to client, right?
+
+    def __recursive_merge_tree(self, new_tree, current_tree):
+        output = deepcopy(current_tree)  # deep copy to ensure no references to dicts live after they go out of scope
+        for key, value in new_tree.items():
+            if key in current_tree and isinstance(current_tree[key], dict):
+                # if the value at this point is a dict, recurse down into it
+                output[key] = self.__recursive_merge_tree(value, current_tree.pop(key))
+            else:
+                # if key not found, or current_tree has a value that's not a dict, replace with new_tree[key]
+                output[key] = value
+        return output
+
+    def get_address(self):
+        return "{}:{}".format(self._ip_address, self._port)
 
     def _monitor_callback(self, msg):
         # Handle the multi-part message
@@ -75,7 +100,7 @@ class IpcTornadoClient(object):
     def _send_message(self, msg):
         msg.set_msg_id(self.message_id)
         self.message_id = (self.message_id + 1) % self.MESSAGE_ID_MAX
-        self.logger.debug("Sending control message [%s]:\n%s", self.ctrl_endpoint, msg.encode())
+        # self.logger.debug("Sending control message [%s]:\n%s", self.ctrl_endpoint, msg.encode())
         with self._lock:
             self.ctrl_channel.send(msg.encode())
 

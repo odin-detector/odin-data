@@ -8,8 +8,10 @@ import logging
 from odin_data.ipc_tornado_client import IpcTornadoClient
 from odin_data.util import remove_prefix, remove_suffix
 from odin.adapters.adapter import ApiAdapter, ApiAdapterResponse, request_types, response_types
+from odin.adapters.parameter_tree import ParameterTree, ParameterTreeError
 from tornado import escape
 from tornado.ioloop import IOLoop
+from odin.util import decode_request_body, convert_unicode_to_string
 
 
 class OdinDataAdapter(ApiAdapter):
@@ -65,7 +67,7 @@ class OdinDataAdapter(ApiAdapter):
         self._kwargs['endpoints'] = self._endpoints
 
         for ep in self._endpoints:
-            logging.debug("Creating client {}:{}".format(ep['ip_address'], ep['port']))
+            logging.debug("Creating client %s:%s", ep['ip_address'], ep['port'])
             self._clients.append(IpcTornadoClient(ep['ip_address'], ep['port']))
             self._client_connections.append(False)
             self._config_file.append('')
@@ -77,14 +79,25 @@ class OdinDataAdapter(ApiAdapter):
         # Setup the time between client update requests
         self._update_interval = float(self.options.get('update_interval', 0.5))
         self._kwargs['update_interval'] = self._update_interval
+
+        self.param_tree_dict = {
+            'api': (0.1, None),
+            'module': (lambda: self.name, None),
+            'update_interval': (lambda: self._update_interval, None),
+            'endpoints': self._endpoints
+        }
+        for index, client in enumerate(self._clients):
+            self.param_tree_dict[str(index)] = (client.get_parameters, client.set_parameters)
+
+        self.param_tree = ParameterTree(self.param_tree_dict)
         self.update_loop()
 
     def set_error(self, err):
-        # Record the error message into the status
+        """Record the error message into the status"""
         self._status['status/error'] = err
 
     def clear_error(self):
-        # Clear the error message out of the status dict
+        """Clear the error message out of the status dict"""
         self._status['status/error'] = ''
 
     @request_types('application/json', 'application/vnd.odin-native')
@@ -98,68 +111,41 @@ class OdinDataAdapter(ApiAdapter):
         :param request: Tornado HTTP request object
         :return: ApiAdapterResponse object to be returned to the client
         """
+        logging.debug("ODIN DATA GET CALLED: %s", path)
         status_code = 200
         response = {}
+        try:
+            path = path.replace('client_error', 'error')
+            path = path.strip('/')
+            response = self.param_tree.get(path)
 
-        # Check if the adapter type is being requested
-        request_command = path.strip('/')
-        if not request_command:
-            key_list = self._kwargs.keys()
-            for client in self._clients:
-                for key in client.parameters:
-                    if key not in key_list:
-                        key_list.append(key)
-            response['value'] = key_list
-        elif request_command in self._kwargs:
-            logging.debug("Adapter request for ini argument: %s", request_command)
-            response['value'] = self._kwargs[request_command]
-        elif request_command in self._status:
-            logging.debug("Adapter request for status value: %s", request_command)
-            response['value'] = self._status[request_command]
-        else:
+        except ParameterTreeError as err:
+            # parameter tree get didn't work? Try the IPC Clients
+            # if the end of the path is a number, we want a specific client. Else
+            # return a list of the path given for all clients
             try:
-                if 'client_error' in request_command:
-                    request_command = request_command.replace('client_error', 'error')
-                uri_items = request_command.split('/')
-                logging.debug(uri_items)
-                # Now we need to traverse the parameters looking for the request
+                split_path = path.rsplit('/', 1)
+                client_index = int(split_path[1])
+                path = split_path[0]
+
+            except (ValueError, IndexError):
+                # end of path was not an int, so set client_index to -1 for later
                 client_index = -1
-                # Check to see if the URI finishes with an index
-                # If it does then we are only interested in reading that single client
-                try:
-                    index = int(uri_items[-1])
-                    if index >= 0:
-                        # This is a valid index so remove the value from the URI
-                        uri_items = uri_items[:-1]
-                        # Set the client index for submitting config to
-                        client_index = index
-                        logging.debug("URI without index: %s", request_command)
-                except ValueError:
-                    # This is OK, there is simply no index provided
-                    pass
+            
+            logging.debug("PATH: %s", path)
+            logging.debug("CLIENT INDEX: %d", client_index)
+            last_path = path.rsplit('/', 1)[-1]
+            response_array = []
+            if client_index == -1:
+                # GET FROM EACH CLIENT
+                for index, _ in enumerate(self._clients):
+                    client_response = self.param_tree.get("{}/{}".format(index, path))
+                    response_array.append(client_response[last_path])
 
-                response_items = []
-                if client_index == -1:
-                    if request_command.startswith('config/config_file'):
-                        # Special case for a config file.  Read back the current filename
-                        response_items = self._config_file
-                    else:
-                        for client in self._clients:
-                            response_items.append(OdinDataAdapter.traverse_parameters(client.parameters, uri_items))
-                else:
-                    if request_command.startswith('config/config_file'):
-                        # Special case for a config file.  Read back the current filename
-                        response_items = self._config_file[client_index]
-                    else:
-                        response_items = OdinDataAdapter.traverse_parameters(self._clients[client_index].parameters,
-                                                                             uri_items)
-
-                logging.debug(response_items)
-                response['value'] = response_items
-            except:
-                logging.debug(OdinDataAdapter.ERROR_FAILED_GET)
-                status_code = 503
-                response['error'] = OdinDataAdapter.ERROR_FAILED_GET
+            else:
+                client_response = self.param_tree.get("{}/{}".format(client_index, path))
+                response_array = [client_response[last_path]]
+            response = {last_path: response_array}
 
         return ApiAdapterResponse(response, status_code=status_code)
 
@@ -178,65 +164,108 @@ class OdinDataAdapter(ApiAdapter):
         response = {}
         logging.debug("PUT path: %s", path)
         logging.debug("PUT request: %s", request)
-        logging.debug("PUT request.body: %s", str(escape.url_unescape(request.body)))
+
 
         # Clear any errors
         self.clear_error()
-
-        request_command = path.strip('/')
-
+        old_path = path
+        path = path.strip('/')
+        request_body = decode_request_body(request)
         try:
-            # Request should start with either config/ or command/
-            if request_command.startswith("config/"):
-                request_command = remove_prefix(request_command, "config/")  # Take the rest of the URI
 
-                # Parse the parameters
-                parameters = None
-                try:
-                    parameters = json.loads(str(escape.url_unescape(request.body)))
-                except ValueError:
-                    # If the body could not be parsed into an object it may be a simple string
-                    parameters = str(escape.url_unescape(request.body))
+            self.param_tree.set(path, request_body)
+            response = self.param_tree.get(path, request_body)
+        
+        except ParameterTreeError:
+            # if the put didnt work on the actual parameter tree, try it with the clients
 
-                # Do not store this configuration if it is the config file
-                if not request_command.startswith('config_file'):
-                    # Check if the parameter is a dict, and if so then merge.  Otherwise replace the value
-                    if request_command in self._config_params:
-                        if isinstance(self._config_params[request_command], dict):
-                            self._config_params[request_command].update(parameters)
-                        else:
-                            self._config_params[request_command] = parameters
-                    else:
-                        self._config_params[request_command] = parameters
-                    logging.debug("Stored config items: %s", self._config_params)
-                response, status_code = self.process_configuration(request_command, parameters)
+            # if the end of the path is a number, we want a specific client. Else
+            # return a list of the path given for all clients
+            try:
+                split_path = path.rsplit('/', 1)
+                client_index = int(split_path[1])
+                path = split_path[0]
 
-                if self.require_version_check(request_command):
-                    self.request_version()
+            except (ValueError, IndexError):
+                # end of path was not an int, so set client_index to -1 for later
+                client_index = -1
 
-            elif request_command.startswith("command/"):
-                request_command = remove_prefix(request_command, "command/")  # Take the rest of the URI
+            logging.debug("PATH: %s", path)
+            logging.debug("CLIENT INDEX: %d", client_index)
+            split_path = convert_unicode_to_string(path.split('/'))
+            logging.debug("SPLIT PATH: %s", split_path)
+            last_path = split_path[-1]
+            for path_part in reversed(split_path):  # for each part of the path
+                # change the data so that the path is in the data instead
+                request_body = {path_part: request_body}
+            request_body = convert_unicode_to_string(request_body)
+            logging.debug("REQUEST BODY: %s", request_body)
+            put_path = ''
+            response_array = []
+            if client_index == -1:
+                request_targets = range(len(self._clients))
+            else:
+                request_targets = [client_index]
 
-                client_index, uri_items = self.parse_uri(request_command)
-                # Check that the command is supported
-                # For a command the uri_items object should always be length 1, the command
-                if len(uri_items) > 1:
-                    logging.debug(OdinDataAdapter.ERROR_FAILED_PUT)
-                    status_code = 503
-                    response['error'] = 'Invalid URI for command: {}'.format(request_command)
-                else:
-                    command = uri_items[0]
-                    if command in self.SUPPORTED_COMMANDS:
-                        # Create the IPC message and send to all clients
-                        response, status_code = self.send_command_to_clients(command, client_index)
-                    else:
-                        logging.debug(OdinDataAdapter.ERROR_FAILED_PUT)
-                        status_code = 503
-                        response['error'] = 'Invalid command requested: {}'.format(command)
 
-        except Exception as ex:
-            self.set_error(str(ex))
-            raise
+            for index in request_targets:
+                client_response = self.param_tree.set("{}/{}".format(index, put_path), request_body)  # put doesn't return anything
+                client_response = self.param_tree.get("{}/{}".format(index, path))  # this is broken, think the path is wrong?
+                response_array.append(client_response[last_path])
+            response = {last_path: response_array}
+
+        # try:
+        #     # Request should start with either config/ or command/
+        #     if request_command.startswith("config/"):
+        #         request_command = remove_prefix(request_command, "config/")  # Take the rest of the URI
+
+        #         # Parse the parameters
+        #         parameters = None
+        #         try:
+        #             parameters = json.loads(str(escape.url_unescape(request.body)))
+        #         except ValueError:
+        #             # If the body could not be parsed into an object it may be a simple string
+        #             parameters = str(escape.url_unescape(request.body))
+
+        #         # Do not store this configuration if it is the config file
+        #         if not request_command.startswith('config_file'):
+        #             # Check if the parameter is a dict, and if so then merge.  Otherwise replace the value
+        #             if request_command in self._config_params:
+        #                 if isinstance(self._config_params[request_command], dict):
+        #                     self._config_params[request_command].update(parameters)
+        #                 else:
+        #                     self._config_params[request_command] = parameters
+        #             else:
+        #                 self._config_params[request_command] = parameters
+        #             logging.debug("Stored config items: %s", self._config_params)
+        #         response, status_code = self.process_configuration(request_command, parameters)
+
+        #         if self.require_version_check(request_command):
+        #             self.request_version()
+
+        #     elif request_command.startswith("command/"):
+        #         request_command = remove_prefix(request_command, "command/")  # Take the rest of the URI
+
+        #         client_index, uri_items = self.parse_uri(request_command)
+        #         # Check that the command is supported
+        #         # For a command the uri_items object should always be length 1, the command
+        #         if len(uri_items) > 1:
+        #             logging.debug(OdinDataAdapter.ERROR_FAILED_PUT)
+        #             status_code = 503
+        #             response['error'] = 'Invalid URI for command: {}'.format(request_command)
+        #         else:
+        #             command = uri_items[0]
+        #             if command in self.SUPPORTED_COMMANDS:
+        #                 # Create the IPC message and send to all clients
+        #                 response, status_code = self.send_command_to_clients(command, client_index)
+        #             else:
+        #                 logging.debug(OdinDataAdapter.ERROR_FAILED_PUT)
+        #                 status_code = 503
+        #                 response['error'] = 'Invalid command requested: {}'.format(command)
+
+        # except Exception as ex:
+        #     self.set_error(str(ex))
+        #     raise
 
         return ApiAdapterResponse(response, status_code=status_code)
 
@@ -463,7 +492,7 @@ class OdinDataAdapter(ApiAdapter):
             item_dict = param_set
             for item in uri_items:
                 item_dict = item_dict[item]
-        except KeyError, ex:
+        except KeyError:
             item_dict = None
         return item_dict
 
@@ -500,7 +529,7 @@ class OdinDataAdapter(ApiAdapter):
         IOLoop instance. This includes requesting the status from the underlying application
         and preparing the JSON encoded reply in a format that can be easily parsed.
         """
-        logging.debug("Updating status from client...")
+        # logging.debug("Updating status from client...")
 
         # Handle background tasks
         # Loop over all connected clients and obtain the status
