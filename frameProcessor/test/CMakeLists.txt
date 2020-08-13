@@ -27,7 +27,7 @@ target_link_libraries(frameProcessorTest
         ${LOG4CXX_LIBRARIES}
         ${ZEROMQ_LIBRARIES}
         ${HDF5_LIBRARIES}
-        ${HDF5HL_LIBRARIES}
+        ${HDF5_HL_LIBRARIES}
         Hdf5Plugin
         ParameterAdjustmentPlugin
         OffsetAdjustmentPlugin

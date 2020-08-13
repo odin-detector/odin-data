@@ -31,10 +31,10 @@ file(GLOB APP_SOURCES FrameProcessorController.cpp
 add_executable(frameProcessor ${APP_SOURCES} FrameProcessorApp.cpp)
 
 message(STATUS "HDF5 include files:  " ${HDF5_INCLUDE_DIRS})
-message(STATUS "HDF5 libs:           " ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES})
+message(STATUS "HDF5 libs:           " ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
 message(STATUS "HDF5 defs:           " ${HDF5_DEFINITIONS})
 
-target_link_libraries(frameProcessor ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${COMMON_LIBRARY})
+target_link_libraries(frameProcessor ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES} ${COMMON_LIBRARY})
 if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
     find_library(PTHREAD_LIBRARY
              NAMES pthread)
@@ -45,7 +45,7 @@ install(TARGETS frameProcessor RUNTIME DESTINATION bin)
 
 # Add library for dummy plugin
 add_library(DummyUDPProcessPlugin SHARED DummyUDPProcessPlugin.cpp DummyUDPProcessPluginLib.cpp)
-target_link_libraries(DummyUDPProcessPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${COMMON_LIBRARY})
+target_link_libraries(DummyUDPProcessPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES} ${COMMON_LIBRARY})
 install(TARGETS DummyUDPProcessPlugin DESTINATION lib)
 
 # Add library for Blosc plugin
@@ -58,17 +58,17 @@ endif()
 
 # Add library for HDF5 writer plugin
 add_library(Hdf5Plugin SHARED FileWriterPlugin.cpp FileWriterPluginLib.cpp HDF5File.cpp Acquisition.cpp)
-target_link_libraries(Hdf5Plugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${COMMON_LIBRARY})
+target_link_libraries(Hdf5Plugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES} ${COMMON_LIBRARY})
 install(TARGETS Hdf5Plugin DESTINATION lib)
 
 # Add library for ParameterAdjustment plugin
 add_library(ParameterAdjustmentPlugin SHARED ParameterAdjustmentPlugin.cpp ParameterAdjustmentPluginLib.cpp)
-target_link_libraries(ParameterAdjustmentPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${COMMON_LIBRARY})
+target_link_libraries(ParameterAdjustmentPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES} ${COMMON_LIBRARY})
 install(TARGETS ParameterAdjustmentPlugin DESTINATION lib)
 
 # Add library for OffsetAdjustment plugin
 add_library( OffsetAdjustmentPlugin SHARED  OffsetAdjustmentPlugin.cpp  OffsetAdjustmentPluginLib.cpp)
-target_link_libraries(OffsetAdjustmentPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5HL_LIBRARIES} ${COMMON_LIBRARY})
+target_link_libraries(OffsetAdjustmentPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES} ${COMMON_LIBRARY})
 install(TARGETS OffsetAdjustmentPlugin DESTINATION lib)
 
 # Add library for LiveView plugin
