@@ -19,6 +19,7 @@ from odin_data.ipc_tornado_channel import IpcTornadoChannel
 from odin_data.ipc_channel import IpcChannelException
 from odin.adapters.adapter import ApiAdapter, ApiAdapterResponse, response_types
 from odin.adapters.parameter_tree import ParameterTree, ParameterTreeError
+from odin.util import convert_unicode_to_string
 
 ENDPOINTS_CONFIG_NAME = 'live_view_endpoints'
 COLORMAP_CONFIG_NAME = 'default_colormap'
@@ -231,12 +232,18 @@ class LiveViewer(object):
         # First part will be the json header from the live view, second part is the raw image data
         header = json_decode(msg[0])
 
-        # json_decode returns dictionary encoded in unicode. Convert to normal strings
-        header = self.convert_to_string(header)
+        # json_decode returns dictionary encoded in unicode. Convert to normal strings if necessary.
+        header = convert_unicode_to_string(header)
         logging.debug("Got image with header: %s", header)
 
+        # Extract the type of the image data from the header. If the type is float, coerce to
+        # float32 since the native float in HDF5 is 32-bit vs 64-bit in python and numpy.
+        dtype = header['dtype']
+        if dtype == 'float':
+            dtype = 'float32'
+
         # create a np array of the image data, of type specified in the frame header
-        img_data = np.fromstring(msg[1], dtype=np.dtype(header['dtype']))
+        img_data = np.fromstring(msg[1], dtype=np.dtype(dtype))
 
         self.img_data = img_data.reshape([int(header["shape"][0]), int(header["shape"][1])])
         self.header = header
@@ -301,24 +308,6 @@ class LiveViewer(object):
         rescaled = (downscaled * (tmax - tmin) + tmin).astype(src.dtype)
 
         return rescaled
-
-    def convert_to_string(self, obj):
-        """
-        Convert all unicode parts of a dictionary or list to standard strings.
-
-        This method may not handle special characters well!
-        :param obj: the dictionary, list, or unicode string
-        :return: the same data type as obj, but with unicode strings converted to python strings.
-        """
-        if isinstance(obj, dict):
-            return {self.convert_to_string(key): self.convert_to_string(value)
-                    for key, value in obj.items()}
-        elif isinstance(obj, list):
-            return [self.convert_to_string(element) for element in obj]
-        elif isinstance(obj, unicode):
-            return obj.encode('utf-8')
-
-        return obj
 
     def cleanup(self):
         """Close the IPC channels ready for shutdown."""
