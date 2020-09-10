@@ -236,6 +236,12 @@ class MetaListener(object):
         reply = self._construct_reply(request.get_msg_val(), request.get_msg_id())
         reply.set_param("acquisitions", status_dict)
 
+        if len(self._writers) > 1:
+            self.clear_writers()
+
+        return reply
+
+    def clear_writers(self):
         for writer_name, writer in self._writers.items():
             if writer.finished:
                 del self._writers[writer_name]
@@ -249,8 +255,6 @@ class MetaListener(object):
                 if stagnant:
                     self._logger.info("Stopping stagnant writer %s", writer_name)
                     writer.stop()
-
-        return reply
 
     def configure(self, request):
         """Handle a configuration message
@@ -335,9 +339,9 @@ class MetaListener(object):
 
         """
         self._logger.debug("Loading writer class: %s", writer)
-        module_name = writer[: writer.rfind(".")]  # Everything up to last '.'
-        class_name = writer[writer.rfind(".") + 1 :]  # Everything after last '.'
-        module = importlib.import_module(module_name)
+
+        module, class_name = writer.split(".", 1)
+        module = importlib.import_module(module)
         writer_class = getattr(module, class_name)
 
         return writer_class
