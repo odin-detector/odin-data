@@ -78,7 +78,7 @@ find_package( Boost 1.41.0
 find_package(Log4CXX 0.10.0 REQUIRED)
 find_package(ZeroMQ 3.2.4 REQUIRED)
 find_package(PCAP 1.4.0 REQUIRED)
-find_package(Blosc REQUIRED)
+find_package(Blosc)
 find_package(Kafka)
 
 # find package HDF5

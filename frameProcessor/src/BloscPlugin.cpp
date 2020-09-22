@@ -11,14 +11,18 @@
 #include <DebugLevelLogger.h>
 #include "DataBlockFrame.h"
 
+#include <boost/static_assert.hpp>
+
 namespace FrameProcessor
 {
+
+BOOST_STATIC_ASSERT_MSG(BLOSC_VERSION_FORMAT==BLOSC_FORMAT_ODIN_USES, "Error: Wrong version of blosc library");
+
 
 const std::string BloscPlugin::CONFIG_BLOSC_COMPRESSOR = "compressor";
 const std::string BloscPlugin::CONFIG_BLOSC_THREADS    = "threads";
 const std::string BloscPlugin::CONFIG_BLOSC_LEVEL      = "level";
 const std::string BloscPlugin::CONFIG_BLOSC_SHUFFLE    = "shuffle";
-
 
   /**
  * cd_values[7] meaning (see blosc.h):
