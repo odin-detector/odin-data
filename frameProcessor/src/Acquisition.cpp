@@ -418,7 +418,17 @@ bool Acquisition::check_frame_valid(boost::shared_ptr<Frame> frame)
   try
   {
     dataset = dataset_defs_.at(frame_meta_data.get_dataset_name());
+  }
+  catch (const std::out_of_range& e) {
+    std::stringstream ss;
+    ss << "Frame destined for [" << frame_meta_data.get_dataset_name()
+    << "] but dataset has not been defined in the HDF plugin";
+    last_error_ = ss.str();
+    LOG4CXX_ERROR(logger_, last_error_);
+    invalid = true;
+  }
 
+  if (!invalid){
     // Check if frame compression is set to unknown and raise an error.
     // Otherwise verify the compression is consistent with the dataset definition.
     CompressionType frame_compression_type = frame_meta_data.get_compression_type();
@@ -479,14 +489,6 @@ bool Acquisition::check_frame_valid(boost::shared_ptr<Frame> frame)
       }
       invalid = true;
     }
-  }
-  catch (const std::out_of_range& e) {
-    std::stringstream ss;
-    ss << "Frame destined for [" << frame_meta_data.get_dataset_name()
-    << "] but dataset has not been defined in the HDF plugin";
-    last_error_ = ss.str();
-    LOG4CXX_ERROR(logger_, last_error_);
-    invalid = true;
   }
   return !invalid;
 }
