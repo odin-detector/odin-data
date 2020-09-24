@@ -8,7 +8,6 @@
 #include "HDF5File.h"
 
 #include <hdf5_hl.h>
-#include <blosc.h>
 #include "logging.h"
 #include "DebugLevelLogger.h"
 
@@ -471,7 +470,7 @@ void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index
     unsigned int cd_values[7] = {0, 0, 0, 0, 0, 0, 0};
     size_t cd_values_length = 7;
     cd_values[0] = 2;                                          // Blosc filter version: 2 (multiple compressors since Blosc 1.3)
-    cd_values[1] = BLOSC_VERSION_FORMAT;                       // Blosc buffer format version
+    cd_values[1] = BLOSC_FORMAT_ODIN_USES;                     // Blosc buffer format version
     cd_values[2] = static_cast<unsigned int>(pixel_type_size); // type size
     cd_values[3] = frame_num_pixels * pixel_type_size;         // uncompressed size
     cd_values[4] = definition.blosc_level;                     // compression level
