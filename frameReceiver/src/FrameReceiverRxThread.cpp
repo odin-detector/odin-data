@@ -39,8 +39,8 @@ FrameReceiverRxThread::~FrameReceiverRxThread()
 
 //! Start the FrameReceiverRxThread.
 //!
-//! This method starts the RX thread proper, blocking until the thread is started or has
-//! signalled an initialisation error, in which event an exception is thrown.
+//! This method starts the RX thread proper, waiting until the thread is started or has
+//! timed out or signalled an initialisation error, in which event an error is returned.
 //!
 //! \return - bool indicating if thread initialisation and startup succeeded
 //!
@@ -52,15 +52,25 @@ bool FrameReceiverRxThread::start()
   rx_thread_ = boost::shared_ptr<boost::thread>(
     new boost::thread(boost::bind(&FrameReceiverRxThread::run_service, this)));
 
-  // Wait for the thread service to initialise and be running properly, so that
-  // this constructor only returns once the object is fully initialised (RAII).
-  // Monitor the thread error flag, log an error and exit false if failed.
+  // Wait for the thread service to initialise and be running properly, logging an error
+  // an returning false if the thread fails to start within a reasonable time. Also
+  // monitor the thread error flag, logging an error and returning false if failed.
 
+  useconds_t retry_us = 1000;
+  unsigned int thread_retry_max = 1000; // 1000*1000us = 1 second timeout
+  unsigned int thread_retry_count = 0;
   while (!thread_running_)
   {
     if (thread_init_error_) {
       run_thread_ = false;
       LOG4CXX_ERROR(logger_, "RX thread initialisation failed: " << thread_init_msg_);
+      init_ok = false;
+      break;
+    }
+    usleep(retry_us);
+    if (++thread_retry_count >> thread_retry_max)
+    {
+      LOG4CXX_ERROR(logger_, "RX thread initalisation timed out");
       init_ok = false;
       break;
     }
