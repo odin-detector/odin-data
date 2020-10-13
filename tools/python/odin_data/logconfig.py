@@ -98,9 +98,6 @@ def add_graylog_handler(host, port, level="INFO", static_fields=None):
 
     Returns: None
     """
-    app_name = sys.argv[0]
-    if '/' in app_name:
-        app_name = app_name.split('/')[-1]
     graylog_config = {
         "class": "pygelf.GelfUdpHandler",
         "level": level,
@@ -113,7 +110,7 @@ def add_graylog_handler(host, port, level="INFO", static_fields=None):
         "include_extra_fields": True,
         "username": getpass.getuser(),
         "process_id": os.getpid(),
-        "application_name": app_name
+        "application_name": os.path.split(sys.argv[0])[1]
     }
     if static_fields is not None:
         graylog_config.update(static_fields)
