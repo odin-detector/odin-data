@@ -6,6 +6,7 @@ extending the default configuration simple.
 """
 
 import os
+import sys
 import json
 import logging.config
 import getpass
@@ -97,6 +98,9 @@ def add_graylog_handler(host, port, level="INFO", static_fields=None):
 
     Returns: None
     """
+    app_name = sys.argv[0]
+    if '/' in app_name:
+        app_name = app_name.split('/')[-1]
     graylog_config = {
         "class": "pygelf.GelfUdpHandler",
         "level": level,
@@ -108,7 +112,8 @@ def add_graylog_handler(host, port, level="INFO", static_fields=None):
         #  The following custom fields will be disabled if setting this False
         "include_extra_fields": True,
         "username": getpass.getuser(),
-        "pid": os.getpid()
+        "process_id": os.getpid(),
+        "application_name": app_name
     }
     if static_fields is not None:
         graylog_config.update(static_fields)
