@@ -292,6 +292,31 @@ class MetaWriter(object):
 
     # Methods for handling various message types
 
+    @property
+    def message_handlers(self):
+        """Dictionary of message type to handler method
+
+        This should be overridden by child classes to add additional handlers
+
+        Returns:
+            dict: message type handler methods
+
+        """
+        message_handlers = {
+            "startacquisition": self.handle_start_acquisition,
+            "createfile": self.handle_create_file,
+            "writeframe": self.handle_write_frame,
+            "closefile": self.handle_close_file,
+            "stopacquisition": self.handle_stop_acquisition,
+        }
+
+        message_handlers.update(self.detector_message_handlers)
+        return message_handlers
+
+    @property
+    def detector_message_handlers(self):
+        return {}
+
     def process_message(self, header, data):
         """Process a message from a data socket
 
@@ -311,15 +336,7 @@ class MetaWriter(object):
             data(str): The data message part (a json string or a data blob)
 
         """
-        message_handlers = {
-            "startacquisition": self.handle_start_acquisition,
-            "createfile": self.handle_create_file,
-            "writeframe": self.handle_write_frame,
-            "closefile": self.handle_close_file,
-            "stopacquisition": self.handle_stop_acquisition,
-        }
-
-        handler = message_handlers.get(header[MESSAGE_TYPE_ID], None)
+        handler = self.message_handlers.get(header[MESSAGE_TYPE_ID], None)
         if handler is not None:
             handler(header["header"], data)
         else:
