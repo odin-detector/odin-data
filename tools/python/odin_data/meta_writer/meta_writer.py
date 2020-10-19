@@ -93,6 +93,8 @@ class MetaWriter(object):
         )
         # Child class parameters
         self._frame_data_map = dict()  # Map of frame number to detector data
+        self._writers_finished = False
+        self._detector_finished = True  # See stop_when_detector_finished
 
     @property
     def active_process_count(self):
@@ -238,6 +240,34 @@ class MetaWriter(object):
 
         for dataset in self._datasets.values():
             dataset.flush()
+
+    def stop_when_detector_finished(self):
+        """Register that it is OK to stop when all detector-specific logic is complete
+
+        By default_detector_finished is set to True initially so that this check always
+        passes. Child classes that need to do their own checks can set this to False in
+        __ init__ and call stop_when_writers_finished when ready to stop.
+
+        """
+        self._writers_finished = True
+        if self._detector_finished:
+            self._logger.debug("%s | Detector already finished", self._name)
+            self.stop()
+        else:
+            self._logger.debug("%s | Detector not finished", self._name)
+
+    def stop_when_writers_finished(self):
+        """Register that it is OK to stop when all monitored writers have finished
+
+        Child classes can call this when all detector specific logic is complete.
+
+        """
+        self._detector_finished = True
+        if self._writers_finished:
+            self._logger.debug("%s | Writers already finished", self._name)
+            self.stop()
+        else:
+            self._logger.debug("%s | Writers not finished", self._name)
 
     def stop(self):
         self._close_file()
@@ -449,7 +479,7 @@ class MetaWriter(object):
 
         if not any(self._processes_running):
             self._logger.info("%s | Last processor stopped", self._name)
-            self.stop()
+            self.stop_when_detector_finished()
 
     @staticmethod
     def get_version():
