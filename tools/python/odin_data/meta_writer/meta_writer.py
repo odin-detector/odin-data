@@ -7,15 +7,13 @@ Matt Taylor, Diamond Light Source
 """
 import os
 from time import time
-import re
 import logging
 
-import numpy as np
 import h5py
 
 from odin_data import _version as versioneer
 from odin_data.util import construct_version_dict
-from .hdf5dataset import HDF5Dataset, Int64HDF5Dataset, StringHDF5Dataset
+from .hdf5dataset import HDF5Dataset, Int64HDF5Dataset
 
 # Data message parameters
 FRAME = "frame"
@@ -44,16 +42,6 @@ class MetaWriter(object):
         FLUSH_FRAME_FREQUENCY,
         FLUSH_TIMEOUT,
     ]
-    DATASETS = [
-        Int64HDF5Dataset(FRAME),
-        Int64HDF5Dataset(OFFSET),
-        Int64HDF5Dataset(CREATE_DURATION, cache=False),
-        Int64HDF5Dataset(WRITE_DURATION),
-        Int64HDF5Dataset(FLUSH_DURATION),
-        Int64HDF5Dataset(CLOSE_DURATION, cache=False),
-    ]
-    # Detector-specific meta datasets
-    DETECTOR_DATASETS = []
     # Detector-specific parameters received on per-frame meta message
     DETECTOR_WRITE_FRAME_PARAMETERS = []
 
@@ -89,12 +77,27 @@ class MetaWriter(object):
         self._hdf5_file = None
         self._datasets = dict(
             (dataset.name, dataset)
-            for dataset in self.DATASETS + self.DETECTOR_DATASETS
+            for dataset in self._define_datasets() + self._define_detector_datasets()
         )
         # Child class parameters
         self._frame_data_map = dict()  # Map of frame number to detector data
         self._writers_finished = False
         self._detector_finished = True  # See stop_when_detector_finished
+
+    @staticmethod
+    def _define_datasets():
+        return [
+            Int64HDF5Dataset(FRAME),
+            Int64HDF5Dataset(OFFSET),
+            Int64HDF5Dataset(CREATE_DURATION, cache=False),
+            Int64HDF5Dataset(WRITE_DURATION),
+            Int64HDF5Dataset(FLUSH_DURATION),
+            Int64HDF5Dataset(CLOSE_DURATION, cache=False),
+        ]
+
+    @staticmethod
+    def _define_detector_datasets():
+        return []
 
     @property
     def active_process_count(self):
@@ -116,6 +119,7 @@ class MetaWriter(object):
         )
         self._hdf5_file = h5py.File(file_path, "w", libver="latest")
         self._create_datasets(dataset_size)
+        # Datasets created after this point will not be SWMR-readable
         self._hdf5_file.swmr_mode = True
 
     def hdf5_file_open(self):
@@ -136,7 +140,7 @@ class MetaWriter(object):
         if not self.hdf5_file_open():
             return
 
-        self._write_datasets()
+        self._flush_datasets()
         self._hdf5_file.close()
         self._hdf5_file = None
 
@@ -203,7 +207,7 @@ class MetaWriter(object):
             return
 
         if dataset_name not in self._datasets:
-            self._logger.error("%s | No such dataset %s")
+            self._logger.error("%s | No such dataset %s", self._name, dataset_name)
             return
 
         self._datasets[dataset_name].add_value(value, offset)
@@ -233,8 +237,50 @@ class MetaWriter(object):
 
             self._add_value(parameter, data[parameter], offset)
 
-    def _write_datasets(self):
+    def _write_dataset(self, dataset_name, data):
+        """Write an entire dataset with the given data
+
+        Args:
+            dataset_name(str): Name of dataset
+            data(np.ndarray): Data to set HDF5 dataset with
+
+        """
+        self._logger.debug("%s | Writing entire dataset %s", self._name, dataset_name)
+        if not self.hdf5_file_open():
+            return
+
+        if dataset_name not in self._datasets:
+            self._logger.error("%s | No such dataset %s", self._name, dataset_name)
+            return
+
+        self._datasets[dataset_name].write(data)
+
+    def _write_datasets(self, expected_parameters, data):
+        """Take values of parameters from data and write datasets
+
+        Args:
+            expected_parameters(list(str)): Parameters to write
+            data(dict): Set of parameter values
+
+        """
         self._logger.debug("%s | Writing datasets", self._name)
+        if not self.hdf5_file_open():
+            return
+
+        for parameter in expected_parameters:
+            if parameter not in data:
+                self._logger.error(
+                    "%s | Expected parameter %s not found in %s",
+                    self._name,
+                    parameter,
+                    data,
+                )
+                continue
+
+            self._write_dataset(parameter, data[parameter])
+
+    def _flush_datasets(self):
+        self._logger.debug("%s | Flushing datasets", self._name)
         if not self.hdf5_file_open():
             return
 
@@ -424,13 +470,13 @@ class MetaWriter(object):
         # Write detector meta data for this frame, now that we know the offset
         self.write_detector_frame_data(data[FRAME], data[OFFSET])
 
-        write_required = (
+        flush_required = (
             time() - self._last_flushed >= self.flush_timeout
             or self._frames_since_flush >= self.flush_frame_frequency
         )
 
-        if write_required:
-            self._write_datasets()
+        if flush_required:
+            self._flush_datasets()
             self._last_flushed = time()
             self._frames_since_flush = 0
 

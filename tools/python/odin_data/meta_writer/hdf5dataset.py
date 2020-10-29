@@ -29,6 +29,7 @@ class HDF5Dataset(object):
             self._cache = None
 
         self._h5py_dataset = None  # h5py.Dataset
+        self._is_written = False
 
         self._logger = logging.getLogger("HDF5Dataset")
 
@@ -72,6 +73,47 @@ class HDF5Dataset(object):
         else:
             self._cache[offset] = value
 
+    def write(self, data):
+        """Write the entire dataset with the given data
+
+        Args:
+            data(np.ndarray): Data to set HDF5 dataset with
+
+        """
+        if self._cache is not None:
+            self._logger.error(
+                "%s | Cannot write entire dataset when cache is enabled", self.name
+            )
+            return
+
+        if self._is_written:
+            self._logger.debug("%s | Already written", self.name)
+            return
+
+        data = self.prepare_data(data)
+
+        self._h5py_dataset.resize(data.shape)
+        self._h5py_dataset[...] = data
+        self._is_written = True
+
+    def prepare_data(self, data):
+        """Prepare data ready to write to hdf5 dataset
+
+        Ensure data is a 1D (or more) numpy array
+
+        Args:
+            data(): Input data
+
+        Returns:
+            data(np.ndarray): Output data
+
+        """
+        data = np.asarray(data)
+        if data.shape == ():
+            data = data.reshape((1,))
+
+        return data
+
     def flush(self):
         """Write cached values to file (if cache enabled) and call flush"""
         if self._cache is not None:
@@ -88,24 +130,49 @@ class HDF5Dataset(object):
 class Int64HDF5Dataset(HDF5Dataset):
     """Int64 HDF5Dataset"""
 
-    def __init__(self, name, shape=None, cache=True):
+    def __init__(self, name, shape=None, cache=True, **kwargs):
         super(Int64HDF5Dataset, self).__init__(
-            name, dtype="int64", fillvalue=-1, shape=shape, cache=cache
+            name, dtype="int64", fillvalue=-1, shape=shape, cache=cache, **kwargs
+        )
+
+
+class Float64HDF5Dataset(HDF5Dataset):
+    """Int64 HDF5Dataset"""
+
+    def __init__(self, name, shape=None, cache=True, **kwargs):
+        super(Float64HDF5Dataset, self).__init__(
+            name, dtype="float64", fillvalue=-1, shape=shape, cache=cache, **kwargs
         )
 
 
 class StringHDF5Dataset(HDF5Dataset):
     """String HDF5Dataset"""
 
-    def __init__(self, name, shape=None, length=None, cache=True):
+    def __init__(self, name, length, shape=None, cache=True):
         """
         Args:
             length(int): Maximum length of the string elements
 
         """
-        # If a specific string length is given, specify it, else use str
-        dtype = "str" if length is None else "S{}".format(length)
-
         super(StringHDF5Dataset, self).__init__(
-            name, dtype=dtype, fillvalue="", shape=shape, cache=cache
+            name, dtype="S{}".format(length), fillvalue="", shape=shape, cache=cache
         )
+
+    def prepare_data(self, data):
+        """Prepare data ready to write to hdf5 dataset
+
+        Convert data to raw strings to write to hdf5 dataset
+
+        Args:
+            data(np.ndarray): Data to format
+
+        Returns:
+            data(np.ndarray): Formatted data
+
+        """
+        data = super(StringHDF5Dataset, self).prepare_data(data)
+
+        # Make sure data array contains str
+        data = np.array(data, dtype=str)
+
+        return data
