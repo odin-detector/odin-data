@@ -16,27 +16,29 @@ using namespace FrameReceiver;
 //! for base configuration parameters and variables.
 //!
 FrameDecoder::FrameDecoder() :
-     logger_(0),
+     logger_(Logger::getLogger("FR.FrameDecoder")),
      enable_packet_logging_(FrameReceiver::Defaults::default_enable_packet_logging),
      frame_timeout_ms_(FrameReceiver::Defaults::default_frame_timeout_ms),
      frames_timedout_(0),
      frames_dropped_(0)
- {
- };
+{
+};
+
+//! This overload is scheduled for deletion; logger is unused.
+void FrameDecoder::init(LoggerPtr& logger, OdinData::IpcMessage& config_msg)
+{
+    init(config_msg);
+}
 
 //! Initialise the FrameDecoder class
 //!
 //! This method initialises the base FrameDecoder class, extracting and storing the appropriate
-//! parameters from the configuration message passed as an argumment and setting up the
-//! logging instances needed by the decoder
+//! parameters from the configuration message.
 //!
-//! \param[in] logger - points to the default logger instance
 //! \param[in] config_msg - IpcMessage containing decoder configuration parameters
 //!
-void FrameDecoder::init(LoggerPtr& logger, OdinData::IpcMessage& config_msg)
+void FrameDecoder::init(OdinData::IpcMessage& config_msg)
 {
-   logger_ = logger;
-
    enable_packet_logging_ = config_msg.get_param<bool>(
        CONFIG_DECODER_ENABLE_PACKET_LOGGING, enable_packet_logging_);
    frame_timeout_ms_ = config_msg.get_param<unsigned int>(

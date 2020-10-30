@@ -62,6 +62,7 @@ public:
   virtual ~FrameDecoder() = 0;
 
   virtual void init(LoggerPtr& logger, OdinData::IpcMessage& config_msg);
+  virtual void init(OdinData::IpcMessage& config_msg);
   virtual void request_configuration(const std::string param_prefix,
       OdinData::IpcMessage& config_reply);
   virtual const size_t get_frame_buffer_size(void) const = 0;
