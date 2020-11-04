@@ -99,15 +99,15 @@ IF (HDF5_ROOT)
                 NAMES hdf5
                 PATHS ${HDF5_ROOT}/lib
                 NO_DEFAULT_PATH )
-  find_library( HDF5HL_LIBRARIES
+  find_library( HDF5_HL_LIBRARIES
                 NAMES hdf5_hl
                 PATHS ${HDF5_ROOT}/lib
                 NO_DEFAULT_PATH )
-  if (HDF5HL_LIBRARIES)
+  if (HDF5_HL_LIBRARIES)
     set(HDF5_FOUND true)
-  else (HDF5HL_LIBRARIES)
+  else (HDF5_HL_LIBRARIES)
     set(HDF5_FOUND false)
-  endif (HDF5HL_LIBRARIES)
+  endif (HDF5_HL_LIBRARIES)
 ELSE(HDF5_ROOT)
     # If no HDF5_ROOT variable has been set then we just
     # use the built-in FindHDF5.cmake...
