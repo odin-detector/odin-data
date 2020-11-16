@@ -330,6 +330,7 @@ class MetaListener(object):
         self._logger.info("Stopping all writers")
         for writer in self._writers.values():
             writer.stop()
+        self.clear_writers()
 
     def _load_writer(self, writer):
         """Import the writer class from the configured module
