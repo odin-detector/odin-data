@@ -43,6 +43,8 @@ const std::string FileWriterPlugin::CONFIG_DATASET_BLOSC_COMPRESSOR    = "blosc_
 const std::string FileWriterPlugin::CONFIG_DATASET_BLOSC_LEVEL         = "blosc_level";
 const std::string FileWriterPlugin::CONFIG_DATASET_BLOSC_SHUFFLE       = "blosc_shuffle";
 
+const std::string FileWriterPlugin::CONFIG_DELETE_DATASETS             = "delete_datasets";
+
 const std::string FileWriterPlugin::CONFIG_FRAMES                      = "frames";
 const std::string FileWriterPlugin::CONFIG_MASTER_DATASET              = "master";
 const std::string FileWriterPlugin::CONFIG_WRITE                       = "write";
@@ -268,6 +270,11 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
           this->configure_dataset(dataset_name, dsetConfig, reply);
         }
       }
+    }
+
+    // Check to see if we are deleting all datasets
+    if (config.has_param(FileWriterPlugin::CONFIG_DELETE_DATASETS)) {
+      this->delete_datasets();
     }
 
     // Check to see if we are being told how many frames to write
@@ -704,6 +711,15 @@ void FileWriterPlugin::create_new_dataset(const std::string& dset_name)
     // Record the dataset in the definitions
     dataset_defs_[dset_def.name] = dset_def;
   }
+}
+
+/**
+ * Deletes all dataset definitions from the plugin.
+ */
+void FileWriterPlugin::delete_datasets()
+{
+  LOG4CXX_INFO(logger_, "Deleting all datasets from FileWriter plugin");
+  dataset_defs_.clear();
 }
 
 /**
