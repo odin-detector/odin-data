@@ -32,6 +32,38 @@ FLUSH_FRAME_FREQUENCY = "flush_frame_frequency"
 FLUSH_TIMEOUT = "flush_timeout"
 
 
+def require_open_hdf5_file(func):
+    """A decorator to verify the HDF5 file is open before calling the wrapped method
+
+    If the HDF5 file is currently open for writing, call the method, else log the reason
+    the file is not open
+
+    NOTE: This should only be used on MetaWriter methods (that take self as the first
+    argument)
+
+    """
+    def wrapper(*args, **kwargs):
+        writer = args[0]  # Extract class instance (self) from args
+
+        if writer.file_open:
+            # It is safe to call the wrapped method
+            return func(*args, **kwargs)
+
+        # It is not safe to call the wrapped method - log the reason why
+        if writer.finished:
+            reason = "Already finished writing"
+        else:
+            reason = "Have not received startacquisition yet"
+        writer._logger.error(
+            "%s | Cannot call %s - File not open - %s",
+            writer._name,
+            func.__name__,
+            reason,
+        )
+
+    return wrapper
+
+
 class MetaWriter(object):
     """This class handles meta data messages and writes parameters to disk"""
 
@@ -64,7 +96,6 @@ class MetaWriter(object):
 
         # Status
         self.full_file_path = None
-        self.file_created = False
         self.write_count = 0
         self.finished = False
         self.write_timeout_count = 0
@@ -100,6 +131,10 @@ class MetaWriter(object):
         return []
 
     @property
+    def file_open(self):
+        return self._hdf5_file is not None
+
+    @property
     def active_process_count(self):
         return self._processes_running.count(True)
 
@@ -117,33 +152,31 @@ class MetaWriter(object):
             file_path,
             dataset_size,
         )
-        self._hdf5_file = h5py.File(file_path, "w", libver="latest")
+
+        try:
+            self._hdf5_file = h5py.File(file_path, "w", libver="latest")
+        except IOError as error:
+            self._logger.error(
+                "%s | Failed to create file:\n%s: %s",
+                self._name,
+                error.__class__.__name__,
+                error.message,
+            )
+            return
+
         self._create_datasets(dataset_size)
         # Datasets created after this point will not be SWMR-readable
         self._hdf5_file.swmr_mode = True
 
-    def hdf5_file_open(self):
-        """Verify HDF5 file is open - Log the reason why if not"""
-        if self._hdf5_file is None:
-            if self.finished:
-                reason = "Already finished writing"
-            else:
-                reason = "Have not received startacquisition yet"
-
-            self._logger.info("%s | File not open - %s", self._name, reason)
-            return False
-
-        return True
-
+    @require_open_hdf5_file
     def _close_file(self):
         self._logger.info("%s | Closing file", self._name)
-        if not self.hdf5_file_open():
-            return
 
         self._flush_datasets()
         self._hdf5_file.close()
         self._hdf5_file = None
 
+    @require_open_hdf5_file
     def _create_datasets(self, dataset_size):
         """Add predefined datasets to HDF5 file and store handles
 
@@ -152,8 +185,6 @@ class MetaWriter(object):
 
         """
         self._logger.debug("%s | Creating datasets", self._name)
-        if not self.hdf5_file_open():
-            return
 
         for dataset in self._datasets.values():
             dataset_handle = self._hdf5_file.create_dataset(
@@ -165,6 +196,7 @@ class MetaWriter(object):
             )
             dataset.initialise(dataset_handle, dataset_size)
 
+    @require_open_hdf5_file
     def _add_dataset(self, dataset_name, data, dataset_size=None):
         """Add a new dataset with the given data
 
@@ -175,8 +207,6 @@ class MetaWriter(object):
 
         """
         self._logger.debug("%s | Adding dataset %s", self._name, dataset_name)
-        if not self.hdf5_file_open():
-            return
 
         if dataset_name in self._datasets:
             self._logger.debug(
@@ -193,6 +223,7 @@ class MetaWriter(object):
 
         self._datasets[dataset_name] = dataset
 
+    @require_open_hdf5_file
     def _add_value(self, dataset_name, value, offset=0):
         """Append a value to the named dataset
 
@@ -203,8 +234,6 @@ class MetaWriter(object):
 
         """
         self._logger.debug("%s | Adding value to %s", self._name, dataset_name)
-        if not self.hdf5_file_open():
-            return
 
         if dataset_name not in self._datasets:
             self._logger.error("%s | No such dataset %s", self._name, dataset_name)
@@ -212,6 +241,7 @@ class MetaWriter(object):
 
         self._datasets[dataset_name].add_value(value, offset)
 
+    @require_open_hdf5_file
     def _add_values(self, expected_parameters, data, offset):
         """Take values of parameters from data and write to datasets at offset
 
@@ -222,8 +252,6 @@ class MetaWriter(object):
 
         """
         self._logger.debug("%s | Adding values to datasets", self._name)
-        if not self.hdf5_file_open():
-            return
 
         for parameter in expected_parameters:
             if parameter not in data:
@@ -237,6 +265,7 @@ class MetaWriter(object):
 
             self._add_value(parameter, data[parameter], offset)
 
+    @require_open_hdf5_file
     def _write_dataset(self, dataset_name, data):
         """Write an entire dataset with the given data
 
@@ -246,8 +275,6 @@ class MetaWriter(object):
 
         """
         self._logger.debug("%s | Writing entire dataset %s", self._name, dataset_name)
-        if not self.hdf5_file_open():
-            return
 
         if dataset_name not in self._datasets:
             self._logger.error("%s | No such dataset %s", self._name, dataset_name)
@@ -255,6 +282,7 @@ class MetaWriter(object):
 
         self._datasets[dataset_name].write(data)
 
+    @require_open_hdf5_file
     def _write_datasets(self, expected_parameters, data):
         """Take values of parameters from data and write datasets
 
@@ -264,8 +292,6 @@ class MetaWriter(object):
 
         """
         self._logger.debug("%s | Writing datasets", self._name)
-        if not self.hdf5_file_open():
-            return
 
         for parameter in expected_parameters:
             if parameter not in data:
@@ -279,10 +305,9 @@ class MetaWriter(object):
 
             self._write_dataset(parameter, data[parameter])
 
+    @require_open_hdf5_file
     def _flush_datasets(self):
         self._logger.debug("%s | Flushing datasets", self._name)
-        if not self.hdf5_file_open():
-            return
 
         for dataset in self._datasets.values():
             dataset.flush()
@@ -326,7 +351,7 @@ class MetaWriter(object):
             full_file_path=self.full_file_path,
             num_processors=self.active_process_count,
             written=self.write_count,
-            writing=self.file_created and not self.finished,
+            writing=self.file_open and not self.finished,
         )
 
     def configure(self, configuration):
@@ -441,9 +466,8 @@ class MetaWriter(object):
             self.active_process_count,
         )
 
-        if not self.file_created:
+        if not self.file_open:
             self._create_file(self._generate_full_file_path(), header["totalFrames"])
-            self.file_created = True
 
     def handle_create_file(self, _header, data):
         self._logger.debug("%s | Handling create file message", self._name)

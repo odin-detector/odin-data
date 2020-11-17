@@ -250,7 +250,7 @@ class MetaListener(object):
                 stagnant = (
                     writer.active_process_count == 0
                     and writer.write_timeout_count > 10
-                    and writer.file_created
+                    and writer.file_open
                 )
                 if stagnant:
                     self._logger.info("Stopping stagnant writer %s", writer_name)
@@ -309,7 +309,7 @@ class MetaListener(object):
         """
         # First finish any writer that is queued up already but has not started
         for _writer_name, writer in self._writers.items():
-            if not writer.file_created:
+            if not writer.file_open:
                 self._logger.info("Stopping idle writer: %s", _writer_name)
                 writer.stop()
 
