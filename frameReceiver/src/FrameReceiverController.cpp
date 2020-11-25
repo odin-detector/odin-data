@@ -626,8 +626,11 @@ void FrameReceiverController::configure_buffer_manager(OdinData::IpcMessage& con
           shared_buffer_name, max_buffer_mem,frame_decoder_->get_frame_buffer_size(), true)
       );
 
+      // Record the total number of buffers in the system here
+      total_buffers_ = buffer_manager_->get_num_buffers();
+
       LOG4CXX_DEBUG_LEVEL(1, logger_, "Configured frame buffer manager of total size " <<
-          max_buffer_mem << " with " << buffer_manager_->get_num_buffers() << " buffers");
+          max_buffer_mem << " with " << total_buffers_ << " buffers");
 
       // Register buffer manager with the frame decoder
       frame_decoder_->register_buffer_manager(buffer_manager_);
@@ -1102,6 +1105,7 @@ void FrameReceiverController::get_status(OdinData::IpcMessage& status_reply)
     }
   }
 
+  status_reply.set_param("buffers/total", total_buffers_);
   status_reply.set_param("buffers/empty", empty_buffers);
   status_reply.set_param("buffers/mapped", mapped_buffers);
 

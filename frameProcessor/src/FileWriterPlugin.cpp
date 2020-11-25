@@ -43,6 +43,8 @@ const std::string FileWriterPlugin::CONFIG_DATASET_BLOSC_COMPRESSOR    = "blosc_
 const std::string FileWriterPlugin::CONFIG_DATASET_BLOSC_LEVEL         = "blosc_level";
 const std::string FileWriterPlugin::CONFIG_DATASET_BLOSC_SHUFFLE       = "blosc_shuffle";
 
+const std::string FileWriterPlugin::CONFIG_DELETE_DATASETS             = "delete_datasets";
+
 const std::string FileWriterPlugin::CONFIG_FRAMES                      = "frames";
 const std::string FileWriterPlugin::CONFIG_MASTER_DATASET              = "master";
 const std::string FileWriterPlugin::CONFIG_WRITE                       = "write";
@@ -50,6 +52,10 @@ const std::string FileWriterPlugin::ACQUISITION_ID                     = "acquis
 const std::string FileWriterPlugin::CLOSE_TIMEOUT_PERIOD               = "timeout_timer_period";
 const std::string FileWriterPlugin::START_CLOSE_TIMEOUT                = "start_timeout_timer";
 
+const std::string FileWriterPlugin::CREATE_ERROR_DURATION = "create_error_duration";
+const std::string FileWriterPlugin::WRITE_ERROR_DURATION = "write_error_duration";
+const std::string FileWriterPlugin::FLUSH_ERROR_DURATION = "flush_error_duration";
+const std::string FileWriterPlugin::CLOSE_ERROR_DURATION = "close_error_duration";
 
 
 /**
@@ -77,8 +83,13 @@ FileWriterPlugin::FileWriterPlugin() :
   this->logger_ = Logger::getLogger("FP.FileWriterPlugin");
   this->logger_->setLevel(Level::getTrace());
   LOG4CXX_INFO(logger_, "FileWriterPlugin version " << this->get_version_long() << " loaded");
-  this->current_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition());
-  this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition());
+  this->current_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
+  this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
+  hdf5_error_definition_.create_duration = 0;
+  hdf5_error_definition_.write_duration = 0;
+  hdf5_error_definition_.flush_duration = 0;
+  hdf5_error_definition_.close_duration = 0;
+  hdf5_error_definition_.callback = boost::bind(&FileWriterPlugin::set_error, this, _1);
 }
 
 /**
@@ -120,13 +131,13 @@ void FileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame)
   boost::mutex::scoped_lock cflock(close_file_mutex_);
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
 
-  // Check the frame against the current acquisition and start a new one if
-  // the frame object contains a different acquisition ID from the current one
+  // check it matches the current (or next) acquisition.
+  // frames that don't match are dropped / ignored.
   if (frame_in_acquisition(frame)) {
 
     if (writing_) {
 
-      ProcessFrameStatus status = current_acquisition_->process_frame(frame);
+      ProcessFrameStatus status = current_acquisition_->process_frame(frame, hdf5_call_durations_);
 
       // Check if this acquisition is complete and stop
       if (status == status_complete) {
@@ -164,7 +175,7 @@ void FileWriterPlugin::start_writing()
     // rank has been changed since the frame count was set
     next_acquisition_->frames_to_write_ = calc_num_frames(this->next_acquisition_->total_frames_);
     this->current_acquisition_ = next_acquisition_;
-    this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition());
+    this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
 
     // Set up datasets within the current acquisition
     std::map<std::string, DatasetDefinition>::iterator iter;
@@ -182,7 +193,8 @@ void FileWriterPlugin::start_writing()
         use_earliest_hdf5_,
         alignment_threshold_,
         alignment_value_,
-        master_frame_);
+        master_frame_,
+        hdf5_call_durations_);
   }
 }
 
@@ -195,7 +207,7 @@ void FileWriterPlugin::stop_writing()
 {
   if (writing_) {
     writing_ = false;
-    this->current_acquisition_->stop_acquisition();
+    this->current_acquisition_->stop_acquisition(hdf5_call_durations_);
   }
 }
 
@@ -260,6 +272,11 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
       }
     }
 
+    // Check to see if we are deleting all datasets
+    if (config.has_param(FileWriterPlugin::CONFIG_DELETE_DATASETS)) {
+      this->delete_datasets();
+    }
+
     // Check to see if we are being told how many frames to write
     if (config.has_param(FileWriterPlugin::CONFIG_FRAMES) &&
         config.get_param<size_t>(FileWriterPlugin::CONFIG_FRAMES) > 0) {
@@ -307,9 +324,9 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
         // Only start writing if we have frames to write, or if the total number of frames is 0 (free running mode)
         if (next_acquisition_->total_frames_ > 0 && next_acquisition_->frames_to_write_ == 0) {
           // We're not expecting any frames, so just clear out the nextAcquisition for the next one and don't start writing
-          this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition());
+          this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
           if (!writing_) {
-            this->current_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition());
+            this->current_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
           }
           LOG4CXX_INFO(logger_,
                        "FrameProcessor will not receive any frames from this acquisition and so no output file will be created");
@@ -344,6 +361,11 @@ void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
   reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_PATH, next_acquisition_->file_path_);
   reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_NAME, next_acquisition_->configured_filename_);
   reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_EXTENSION, file_extension_);
+  // Configure HDF5 call error durations
+  reply.set_param(file_str + FileWriterPlugin::CREATE_ERROR_DURATION, hdf5_error_definition_.create_duration);
+  reply.set_param(file_str + FileWriterPlugin::WRITE_ERROR_DURATION, hdf5_error_definition_.write_duration);
+  reply.set_param(file_str + FileWriterPlugin::FLUSH_ERROR_DURATION, hdf5_error_definition_.flush_duration);
+  reply.set_param(file_str + FileWriterPlugin::CLOSE_ERROR_DURATION, hdf5_error_definition_.close_duration);
 
   reply.set_param(get_name() + "/" + FileWriterPlugin::CONFIG_FRAMES, next_acquisition_->total_frames_);
   reply.set_param(get_name() + "/" + FileWriterPlugin::CONFIG_MASTER_DATASET, master_frame_);
@@ -506,8 +528,37 @@ void FileWriterPlugin::configure_file(OdinData::IpcMessage& config, OdinData::Ip
   LOG4CXX_DEBUG_LEVEL(1, logger_, "Configure file name and path");
   // Check for file path and file name
   if (config.has_param(FileWriterPlugin::CONFIG_FILE_PATH)) {
-    this->next_acquisition_->file_path_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_PATH);
-    LOG4CXX_DEBUG_LEVEL(1, logger_, "Next file path changed to " << this->next_acquisition_->file_path_);
+    std::string file_path = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_PATH);
+    boost::filesystem::path p(file_path);
+    // Check path exists
+    boost::system::error_code ec;
+    if (boost::filesystem::exists(p, ec)){
+      // Check path is a directory
+      if (boost::filesystem::is_directory(p, ec)){
+        // Check directory has write permission
+        if (eaccess(file_path.c_str(), W_OK)){
+          // Return code other then zero is a failure
+          std::stringstream ss;
+          ss << "User does not have write permissions for directory: " << file_path;
+          LOG4CXX_ERROR(logger_, ss.str());
+          reply.set_nack(ss.str());
+        } else {
+          // All checks passed, we can write to this location
+          this->next_acquisition_->file_path_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_PATH);
+          LOG4CXX_DEBUG_LEVEL(1, logger_, "Next file path changed to " << this->next_acquisition_->file_path_);
+        }
+      } else {
+        std::stringstream ss;
+        ss << "Path is not a directory: " << file_path;
+        LOG4CXX_ERROR(logger_, ss.str());
+        reply.set_nack(ss.str());
+      }
+    } else {
+      std::stringstream ss;
+      ss << "Invalid path requested: " << file_path;
+      LOG4CXX_ERROR(logger_, ss.str());
+      reply.set_nack(ss.str());
+    }
   }
   if (config.has_param(FileWriterPlugin::CONFIG_FILE_NAME)) {
     this->next_acquisition_->configured_filename_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_NAME);
@@ -516,6 +567,23 @@ void FileWriterPlugin::configure_file(OdinData::IpcMessage& config, OdinData::Ip
   if (config.has_param(FileWriterPlugin::CONFIG_FILE_EXTENSION)) {
     this->file_extension_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_EXTENSION);
     LOG4CXX_DEBUG_LEVEL(1, logger_, "File extension changed to " << this->file_extension_);
+  }
+  // Check for HDF5 call error durations
+  if (config.has_param(FileWriterPlugin::CREATE_ERROR_DURATION)) {
+    this->hdf5_error_definition_.create_duration = config.get_param<unsigned int>(FileWriterPlugin::CREATE_ERROR_DURATION);
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Open error duration changed to " << this->hdf5_error_definition_.create_duration);
+  }
+  if (config.has_param(FileWriterPlugin::WRITE_ERROR_DURATION)) {
+    this->hdf5_error_definition_.write_duration = config.get_param<unsigned int>(FileWriterPlugin::WRITE_ERROR_DURATION);
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Write error duration changed to " << this->hdf5_error_definition_.write_duration);
+  }
+  if (config.has_param(FileWriterPlugin::FLUSH_ERROR_DURATION)) {
+    this->hdf5_error_definition_.flush_duration = config.get_param<unsigned int>(FileWriterPlugin::FLUSH_ERROR_DURATION);
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Flush error duration changed to " << this->hdf5_error_definition_.flush_duration);
+  }
+  if (config.has_param(FileWriterPlugin::CLOSE_ERROR_DURATION)) {
+    this->hdf5_error_definition_.close_duration = config.get_param<unsigned int>(FileWriterPlugin::CLOSE_ERROR_DURATION);
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Close error duration changed to " << this->hdf5_error_definition_.close_duration);
   }
 }
 
@@ -646,6 +714,15 @@ void FileWriterPlugin::create_new_dataset(const std::string& dset_name)
 }
 
 /**
+ * Deletes all dataset definitions from the plugin.
+ */
+void FileWriterPlugin::delete_datasets()
+{
+  LOG4CXX_INFO(logger_, "Deleting all datasets from FileWriter plugin");
+  dataset_defs_.clear();
+}
+
+/**
  * Collate status information for the plugin. The status is added to the status IpcMessage object.
  *
  * \param[out] status - Reference to an IpcMessage value to store the status.
@@ -663,14 +740,51 @@ void FileWriterPlugin::status(OdinData::IpcMessage& status)
   status.set_param(get_name() + "/processes", (int)this->concurrent_processes_);
   status.set_param(get_name() + "/rank", (int)this->concurrent_rank_);
   status.set_param(get_name() + "/timeout_active", this->timeout_active_);
+  add_file_writing_stats(status);
 }
 
-/** Check if the frame contains an acquisition ID and start a new file if it does and it's different from the current one
+/**
+ * Collate file writing statistics for the plugin.
  *
- * If the frame object contains an acquisition ID, then we need to check if the current acquisition we are writing has
- * the same ID. If it is different, then we close the current file and create a new one and start writing.
- * If we are not currently writing then we just create a new file and start writing.
+ * The metrics are added to the status IpcMessage object.
  *
+ * \param[out] status - Reference to an IpcMessage value to store the file writing stats.
+ */
+void FileWriterPlugin::add_file_writing_stats(OdinData::IpcMessage& status)
+{
+  status.set_param(get_name() + "/timing/last_create", (int) hdf5_call_durations_.create.last_);
+  status.set_param(get_name() + "/timing/max_create", (int) hdf5_call_durations_.create.max_);
+  status.set_param(get_name() + "/timing/mean_create", (int) hdf5_call_durations_.create.mean_);
+  status.set_param(get_name() + "/timing/last_write", (int) hdf5_call_durations_.write.last_);
+  status.set_param(get_name() + "/timing/max_write", (int) hdf5_call_durations_.write.max_);
+  status.set_param(get_name() + "/timing/mean_write", (int) hdf5_call_durations_.write.mean_);
+  status.set_param(get_name() + "/timing/last_flush", (int) hdf5_call_durations_.flush.last_);
+  status.set_param(get_name() + "/timing/max_flush", (int) hdf5_call_durations_.flush.max_);
+  status.set_param(get_name() + "/timing/mean_flush", (int) hdf5_call_durations_.flush.mean_);
+  status.set_param(get_name() + "/timing/last_close", (int) hdf5_call_durations_.close.last_);
+  status.set_param(get_name() + "/timing/max_close", (int) hdf5_call_durations_.close.max_);
+  status.set_param(get_name() + "/timing/mean_close", (int) hdf5_call_durations_.close.mean_);
+}
+
+/**
+ * Reset file writing statistics
+ */
+bool FileWriterPlugin::reset_statistics()
+{
+  hdf5_call_durations_.create.reset();
+  hdf5_call_durations_.write.reset();
+  hdf5_call_durations_.flush.reset();
+  hdf5_call_durations_.close.reset();
+  return true;
+}
+
+/** This function checks the acquisition id of the frame matches that of the current acquisition,
+ * subject to two caveats:
+ *  i) if the frame-aid is "", it matches anything
+ *  ii) this function has the side-effect of moving from the current-acq to
+ *        the next-acq if that helps us match the frame.
+ *
+ *  The function will set an error if the frame does not match a writing acquisition. 
  * \param[in] frame - Pointer to the Frame object.
  */
 bool FileWriterPlugin::frame_in_acquisition(boost::shared_ptr<Frame> frame) {
@@ -744,7 +858,7 @@ void FileWriterPlugin::stop_acquisition() {
     if (!next_acquisition_->configured_filename_.empty() || !next_acquisition_->acquisition_id_.empty()) {
       if (next_acquisition_->total_frames_ > 0 && next_acquisition_->frames_to_write_ == 0) {
         // We're not expecting any frames, so just clear out the nextAcquisition for the next one and don't start writing
-        this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition());
+        this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
         LOG4CXX_INFO(logger_, "FrameProcessor will not receive any frames from this acquisition and so no output file will be created");
       } else {
         this->start_writing();
@@ -792,7 +906,7 @@ void FileWriterPlugin::run_close_file_timeout()
           LOG4CXX_DEBUG_LEVEL(1, logger_, "Close file Timeout timed out");
           boost::lock_guard<boost::recursive_mutex> lock(mutex_);
           if (writing_ && timeout_active_) {
-            LOG4CXX_INFO(logger_, "Timed out waiting for frames, stopping writing");
+            set_error("Timed out waiting for frames, stopping writing");
             stop_acquisition();
           }
           timeout_active_ = false;

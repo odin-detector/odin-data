@@ -156,6 +156,12 @@ namespace FrameProcessor
     bool create_low_high_indexes;
   };
 
+  /**
+   * BLOSC_VERSION_FORMAT in blosc.h tells you the blosc-format
+   * in the blosc library. We fix on 2 because we've always used that.
+   */
+  static const int BLOSC_FORMAT_ODIN_USES = 2;
+
 } /* namespace FrameProcessor */
 
 #endif /* FRAMEPROCESSOR_FrameProcessorDefinitions_H_ */

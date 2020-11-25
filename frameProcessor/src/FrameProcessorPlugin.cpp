@@ -17,10 +17,7 @@ namespace FrameProcessor
  * Constructor, initialises name_ and meta data channel.
  */
 FrameProcessorPlugin::FrameProcessorPlugin() :
-  name_(""),
-  last_process_time_(0),
-  max_process_time_(0),
-  average_process_time_(0.0)
+  name_("")
 {
   OdinData::configure_logging_mdc(OdinData::app_path.c_str());
   logger_ = log4cxx::Logger::getLogger("FP.FrameProcessorPlugin");
@@ -64,6 +61,9 @@ std::string FrameProcessorPlugin::get_name()
  */
 void FrameProcessorPlugin::set_error(const std::string& msg)
 {
+  // Take lock to access error_messages_
+  boost::lock_guard<boost::mutex> lock(mutex_);
+
   // Loop over error messages, if this is a new message then add it
   std::vector<std::string>::iterator iter;
   bool found_error = false;
@@ -84,6 +84,8 @@ void FrameProcessorPlugin::set_error(const std::string& msg)
  */
 void FrameProcessorPlugin::clear_errors()
 {
+  // Take lock to access error_messages_
+  boost::lock_guard<boost::mutex> lock(mutex_);
   error_messages_.clear();
 }
 
@@ -102,6 +104,8 @@ bool FrameProcessorPlugin::reset_statistics()
  */
 std::vector<std::string> FrameProcessorPlugin::get_errors()
 {
+  // Take lock to access error_messages_
+  boost::lock_guard<boost::mutex> lock(mutex_);
   return error_messages_;
 }
 
@@ -153,9 +157,9 @@ void FrameProcessorPlugin::status(OdinData::IpcMessage& status)
  */
 void FrameProcessorPlugin::add_performance_stats(OdinData::IpcMessage& status)
 {
-  status.set_param(get_name() + "/timing/last_process", last_process_time_);
-  status.set_param(get_name() + "/timing/max_process", max_process_time_);
-  status.set_param(get_name() + "/timing/mean_process", average_process_time_);
+  status.set_param(get_name() + "/timing/last_process", process_duration_.last_);
+  status.set_param(get_name() + "/timing/max_process", process_duration_.max_);
+  status.set_param(get_name() + "/timing/mean_process", process_duration_.mean_);
 }
 
 /**
@@ -165,9 +169,7 @@ void FrameProcessorPlugin::add_performance_stats(OdinData::IpcMessage& status)
  */
 void FrameProcessorPlugin::reset_performance_stats()
 {
-  last_process_time_ = 0;
-  max_process_time_ = 0;
-  average_process_time_ = 0.0;
+  process_duration_.reset();
 }
 
 /**
@@ -294,14 +296,8 @@ void FrameProcessorPlugin::callback(boost::shared_ptr<Frame> frame)
   this->process_frame(frame);
   gettime(&end_time);
   uint64_t ts = elapsed_us(start_time, end_time);
-  // Store the raw process time
-  last_process_time_ = ts;
-  // Store the maximum process time since the last reset
-  if (ts > max_process_time_){
-    max_process_time_ = ts;
-  }
-  // Store a simple exp average with alpha = 0.5
-  average_process_time_ = (average_process_time_ * 0.5) + (double(ts) * 0.5);
+  // Update process_frame performance stats
+  process_duration_.update(ts);
 }
 
 /** Push the supplied frame to any registered callbacks.
@@ -326,24 +322,6 @@ void FrameProcessorPlugin::push(boost::shared_ptr<Frame> frame)
   for (cbIter = callbacks_.begin(); cbIter != callbacks_.end(); ++cbIter) {
     cbIter->second->getWorkQueue()->add(frame);
   }
-}
-
-/** Calculate and return an elapsed time in microseconds.
- * 
- * This method calculates and returns an elapsed time in microseconds based on the start and
- * end timespec structs passed as arguments.
- * 
- * \param[in] start - start time in timespec struct format
- * \param[in] end - end time in timespec struct format
- * \return elapsed time between start and end in microseconds
- */
-unsigned int FrameProcessorPlugin::elapsed_us(struct timespec& start, struct timespec& end)
-{
-
-  double start_ns = ((double) start.tv_sec * 1000000000) + start.tv_nsec;
-  double end_ns = ((double) end.tv_sec * 1000000000) + end.tv_nsec;
-
-  return (unsigned int)((end_ns - start_ns) / 1000);
 }
 
 } /* namespace FrameProcessor */

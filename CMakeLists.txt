@@ -21,6 +21,9 @@ set(FRAMEPROCESSOR_DIR ${OdinData_SOURCE_DIR}/frameProcessor)
 # Set the frameSimulator directory
 set(FRAMESIMULATOR_DIR ${OdinData_SOURCE_DIR}/frameSimulator)
 
+# set the test directory
+set(TEST_DIR ${OdinData_SOURCE_DIR}/test)
+
 # Set the name of the common library
 set(COMMON_LIBRARY ${PROJECT_NAME})
 
@@ -71,11 +74,11 @@ ENDIF("${isSystemDir}" STREQUAL "-1")
 # Find and add external packages required for application and test
 find_package( Boost 1.41.0
 	      REQUIRED
-	      COMPONENTS program_options system filesystem unit_test_framework date_time thread)
+	      COMPONENTS program_options system filesystem unit_test_framework date_time thread regex)
 find_package(Log4CXX 0.10.0 REQUIRED)
 find_package(ZeroMQ 3.2.4 REQUIRED)
 find_package(PCAP 1.4.0 REQUIRED)
-find_package(Blosc REQUIRED)
+find_package(Blosc)
 find_package(Kafka)
 
 # find package HDF5
@@ -96,15 +99,15 @@ IF (HDF5_ROOT)
                 NAMES hdf5
                 PATHS ${HDF5_ROOT}/lib
                 NO_DEFAULT_PATH )
-  find_library( HDF5HL_LIBRARIES
+  find_library( HDF5_HL_LIBRARIES
                 NAMES hdf5_hl
                 PATHS ${HDF5_ROOT}/lib
                 NO_DEFAULT_PATH )
-  if (HDF5HL_LIBRARIES)
+  if (HDF5_HL_LIBRARIES)
     set(HDF5_FOUND true)
-  else (HDF5HL_LIBRARIES)
+  else (HDF5_HL_LIBRARIES)
     set(HDF5_FOUND false)
-  endif (HDF5HL_LIBRARIES)
+  endif (HDF5_HL_LIBRARIES)
 ELSE(HDF5_ROOT)
     # If no HDF5_ROOT variable has been set then we just
     # use the built-in FindHDF5.cmake...
@@ -147,6 +150,9 @@ ENDIF (NOT HDF5_FOUND)
 
 # Add the frameSimulator subdirectory
 add_subdirectory(${FRAMESIMULATOR_DIR})
+
+# Add the test subdirectory
+add_subdirectory(${TEST_DIR})
 
 # Add the tools subdirectory
 add_subdirectory(tools)

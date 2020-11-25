@@ -1,12 +1,12 @@
-#ifndef FRAMESIMULATOR_PCAPFRAMESIMULATOROPTIONS_H
-#define FRAMESIMULATOR_PCAPFRAMESIMULATOROPTIONS_H
+#ifndef FRAMESIMULATOR_FRAMESIMULATOROPTIONSUDP_H
+#define FRAMESIMULATOR_FRAMESIMULATOROPTIONSUDP_H
 
 #include "FrameSimulatorOption.h"
 #include <string>
 
 namespace FrameSimulator {
 
-    /** pcapFrameSimulatorPlugin simulator options
+    /** FrameSimulatorPluginUDP simulator options
      * specific options for a pcap frame simulator
      */
     static const FrameSimulatorOption<std::string> opt_destip("dest-ip", "Destination IP address");
@@ -17,4 +17,4 @@ namespace FrameSimulator {
 
 }
 
-#endif //FRAMESIMULATOR_PCAPFRAMESIMULATOROPTIONS_H
+#endif //FRAMESIMULATOR_FRAMESIMULATOROPTIONSUDP_H

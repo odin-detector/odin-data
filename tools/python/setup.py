@@ -18,8 +18,6 @@ setup(name='odin_data',
       install_requires=required,
       entry_points={
         'console_scripts': [
-            'emulator_client = emulator_client.emulator_client:main',
-            'frame_producer = frame_producer.frame_producer:main',
             'frame_receiver_client = odin_data.frame_receiver.client:main',
             'meta_writer = odin_data.meta_writer.meta_writer_app:main',
          ]

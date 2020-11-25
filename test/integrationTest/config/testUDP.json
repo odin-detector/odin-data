@@ -1,0 +1,17 @@
+{
+    "Test":
+    {
+        "output_file": "test_1_000001.h5",
+        "frames": "10",
+        "dimensions": "3",
+        "width": "1400",
+        "height": "1024",
+    	"dataset": "dummy",
+        "type": "uint16",
+        "data": {
+            "0" : 0,
+            "4" : 4,
+            "966": 966
+        }
+    }
+}

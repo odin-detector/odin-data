@@ -78,13 +78,12 @@ private:
   unsigned int           tick_period_ms_;      //!< Receiver thread tick timer period
 
   boost::shared_ptr<boost::thread> rx_thread_; //!< Pointer to RX thread
-  
   IpcChannel             rx_channel_;          //!< Channel for communication with the main thread
   std::vector<int>       recv_sockets_;        //!< List of receive socket file descriptors
 
   bool                   run_thread_;          //!< Flag signalling thread should run
-  bool                   thread_running_;      //!< Flag singalling if thread is running
-  bool                   thread_init_error_;   //!< Flag singalling thread initialisation error
+  volatile bool          thread_running_;      //!< Flag singalling if thread is running
+  volatile bool          thread_init_error_;   //!< Flag singalling thread initialisation error
   std::string            thread_init_msg_;     //!< Thread initialisation message
 
 };
