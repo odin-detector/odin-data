@@ -341,7 +341,7 @@ class MetaListener(object):
         """
         self._logger.debug("Loading writer class: %s", writer)
 
-        module, class_name = writer.split(".", 1)
+        module, class_name = writer.rsplit(".", 1)
         module = importlib.import_module(module)
         writer_class = getattr(module, class_name)
 
