@@ -7,6 +7,7 @@ SET(HEADERS ClassLoader.h
         IpcMessage.h
         IpcReactor.h
         IVersionedObject.h
+        Json.h
         logging.h
         OdinDataException.h
         SegFaultHandler.h
@@ -18,4 +19,3 @@ SET(ZMQ_INCLUDE_DIR zmq)
 INSTALL(FILES ${HEADERS} DESTINATION include)
 INSTALL(DIRECTORY ${RAPIDJSON_INCLUDE_DIR} DESTINATION include)
 INSTALL(DIRECTORY ${ZMQ_INCLUDE_DIR} DESTINATION include)
-
