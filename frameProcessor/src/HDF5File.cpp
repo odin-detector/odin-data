@@ -36,7 +36,6 @@ HDF5File::HDF5File(const HDF5ErrorDefinition_t& hdf5_error_definition) :
 {
   static bool hdf_initialised = false;
   this->logger_ = Logger::getLogger("FP.HDF5File");
-  this->logger_->setLevel(Level::getTrace());
   LOG4CXX_TRACE(logger_, "HDF5File constructor.");
   if (!hdf_initialised) {
     ensure_h5_result(H5Eset_auto2(H5E_DEFAULT, NULL, NULL), "H5Eset_auto2 failed");

@@ -25,7 +25,6 @@ namespace FrameProcessor
     GapFillPlugin::GapFillPlugin()
     {
         logger_ = Logger::getLogger("FP.GapFillPlugin");
-        logger_->setLevel(Level::getAll());
         LOG4CXX_INFO(logger_, "GapFillPlugin version " << this->get_version_long() << " loaded");
     }
 

@@ -14,7 +14,6 @@ namespace FrameProcessor {
             image_offset_(image_offset),
             image_size_(data_size-image_offset),
             logger_(log4cxx::Logger::getLogger("FP.Frame")) {
-      logger_->setLevel(log4cxx::Level::getAll());
     }
 
 /** Copy constructor;

@@ -56,7 +56,6 @@ namespace FrameProcessor {
   {
     // Setup logging for the class
     logger_ = Logger::getLogger("FP.KafkaProducer");
-    logger_->setLevel(Level::getAll());
     LOG4CXX_TRACE(logger_, "KafkaProducer constructor.");
     this->reset_statistics();
   }

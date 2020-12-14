@@ -65,7 +65,6 @@ current_acquisition_(""), data_buffer_ptr_(NULL), data_buffer_size_(0)
 
   // Setup logging for the class
   logger_ = Logger::getLogger("FP.BloscPlugin");
-  logger_->setLevel(Level::getAll());
   LOG4CXX_TRACE(logger_, "BloscPlugin constructor. Version: " << this->get_version_long());
 
   int ret = 0;
