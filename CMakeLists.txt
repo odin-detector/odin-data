@@ -59,17 +59,6 @@ SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
 # When building, don't use the install RPATH already (but later on when installing)
 SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
 
-SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-
-# Add the automatically determined parts of the RPATH which point to directories outside the 
-# build tree to the install RPATH
-SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
-# The RPATH to be used when installing, but only if it's not a system directory
-LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
-IF("${isSystemDir}" STREQUAL "-1")
-   SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-ENDIF("${isSystemDir}" STREQUAL "-1")
 
 # Find and add external packages required for application and test
 find_package( Boost 1.41.0
@@ -162,3 +151,38 @@ add_subdirectory(doc)
 
 # Add the config subdirectory (config files used for integration testing)
 add_subdirectory(config)
+
+IF (RPM_BUILD_DIR)
+
+  # Build RPM package
+  if(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
+    INCLUDE(InstallRequiredSystemLibraries)
+    set(CPACK_COMPONENTS_ALL_IN_ONE_PACKAGE 1)
+    set(CPACK_PACKAGE_NAME "odin-data")
+    set(CPACK_PACKAGE_VENDOR "STFC/DLS")
+    set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Odin Data rpm")
+    set(CPACK_PACKAGE_VERSION "${VERSION_SHORT}")
+    set(CPACK_PACKAGE_VERSION_MAJOR "${VERSION_MAJOR}")
+    set(CPACK_PACKAGE_VERSION_MINOR "${VERSION_MINOR}")
+    set(CPACK_PACKAGE_VERSION_PATCH "${VERSION_PATCH}")
+    set(CPACK_GENERATOR "RPM")
+    set(CPACK_PACKAGING_INSTALL_PREFIX "${RPM_BUILD_DIR}")
+    set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}.${CMAKE_SYSTEM_PROCESSOR}")
+    include(CPack)
+  endif()
+
+ELSE(RPM_BUILD_DIR)
+
+  SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+
+  # Add the automatically determined parts of the RPATH which point to directories outside the
+  # build tree to the install RPATH
+  SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+  # The RPATH to be used when installing, but only if it's not a system directory
+  LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+  IF("${isSystemDir}" STREQUAL "-1")
+     SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+  ENDIF("${isSystemDir}" STREQUAL "-1")
+
+ENDIF(RPM_BUILD_DIR)
