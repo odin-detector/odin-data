@@ -46,8 +46,9 @@ static bool has_suffix(const std::string &str, const std::string &suffix)
       str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
 }
 
-void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& logger)
+int parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& logger)
 {
+  int rc = 0;
   try
   {
     std::string config_file;
@@ -149,13 +150,13 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
     {
       std::cout << "usage: fileWriter [options]" << std::endl << std::endl;
       std::cout << cmdline_options << std::endl;
-      exit(1);
+      return 1;
     }
 
     // If the command line version option was given, print version and exit
     if (vm.count("version")) {
       std::cout << "frameProcessor version " << ODIN_DATA_VERSION_STR << std::endl;
-      exit(1);
+      return 1;
     }
 
     // If the command line config option was given, parse the specified configuration
@@ -174,7 +175,7 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
       else
       {
         LOG4CXX_ERROR(logger, "Unable to open configuration file " << config_file << " for parsing");
-        exit(1);
+        return 1;
       }
     }
 
@@ -187,8 +188,6 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
         PropertyConfigurator::configure(logconf_fname);
       }
       LOG4CXX_DEBUG(logger, "log4cxx config file is set to " << vm["logconfig"].as<string>());
-    } else {
-      BasicConfigurator::configure();
     }
 
     if (vm.count("debug-level"))
@@ -342,23 +341,26 @@ void parse_arguments(int argc, char** argv, po::variables_map& vm, LoggerPtr& lo
   }
   catch (po::unknown_option &e)
   {
-    LOG4CXX_WARN(logger, "CLI parsing error: " << e.what() << ". Will carry on...");
+    LOG4CXX_ERROR(logger, "Error parsing command line arguments: " << e.what());
+    rc = 1;
   }
   catch (Exception &e)
   {
     LOG4CXX_FATAL(logger, "Got Log4CXX exception: " << e.what());
-    throw;
+    rc = 1;
   }
   catch (exception &e)
   {
-    LOG4CXX_ERROR(logger, "Got exception:" << e.what());
-    throw;
+    LOG4CXX_ERROR(logger, "Got exception during command line argument parsing: " << e.what());
+    rc = 1;
   }
   catch (...)
   {
     LOG4CXX_FATAL(logger, "Exception of unknown type!");
     throw;
   }
+
+  return rc;
 }
 
 bool isBloscRequired(po::variables_map vm)
@@ -552,12 +554,17 @@ int main(int argc, char** argv)
   setlocale(LC_CTYPE, "UTF-8");
   OdinData::app_path = argv[0];
   OdinData::configure_logging_mdc(OdinData::app_path.c_str());
+  BasicConfigurator::configure();
   LoggerPtr logger(Logger::getLogger("FP.App"));
 
   try {
 
     po::variables_map vm;
-    parse_arguments(argc, argv, vm, logger);
+    int rc = parse_arguments(argc, argv, vm, logger);
+    if (rc != 0)
+    {
+      return rc;
+    }
 
     LOG4CXX_INFO(logger, "frameProcessor version " << ODIN_DATA_VERSION_STR << " starting up");
 
