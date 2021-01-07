@@ -131,6 +131,15 @@ class HDF5Dataset(object):
         self._h5py_dataset.flush()
 
 
+class Int32HDF5Dataset(HDF5Dataset):
+    """Int32 HDF5Dataset"""
+
+    def __init__(self, name, shape=None, cache=True):
+        super(Int32HDF5Dataset, self).__init__(
+            name, dtype="int32", fillvalue=-1, shape=shape, cache=cache
+        )
+
+
 class Int64HDF5Dataset(HDF5Dataset):
     """Int64 HDF5Dataset"""
 
