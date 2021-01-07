@@ -43,6 +43,10 @@ class HDF5Dataset(object):
         """
         self._h5py_dataset = dataset_handle
 
+        # Turn off the cache if the dataset_size is set to 0 (unlimited)
+        if dataset_size == 0:
+            self._cache = None
+
         if self._cache is not None and dataset_size is not None:
             self._cache = np.full(dataset_size, self.fillvalue, dtype=self.dtype)
             self._h5py_dataset.resize(dataset_size, axis=0)
