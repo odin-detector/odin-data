@@ -33,7 +33,7 @@ class HDF5Dataset(object):
 
         self._logger = logging.getLogger("HDF5Dataset")
 
-    def initialise(self, dataset_handle, dataset_size=None):
+    def initialise(self, dataset_handle, dataset_size):
         """Initialise _h5py_dataset handle and cache
 
         Args:
@@ -47,7 +47,7 @@ class HDF5Dataset(object):
         if dataset_size == 0:
             self._cache = None
 
-        if self._cache is not None and dataset_size is not None:
+        if self._cache is not None:
             self._cache = np.full(dataset_size, self.fillvalue, dtype=self.dtype)
             self._h5py_dataset.resize(dataset_size, axis=0)
 
