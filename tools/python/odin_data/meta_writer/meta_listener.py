@@ -314,7 +314,7 @@ class MetaListener(object):
         # Now create new acquisition
         self._logger.info("Creating new writer %s", writer_name)
         self._writers[writer_name] = self._writer_class(
-            writer_name, DEFAULT_DIRECTORY, self._process_count
+            writer_name, DEFAULT_DIRECTORY, self._process_count, self._data_endpoints
         )
 
         # Check if we have too many writers and delete any that are finished
