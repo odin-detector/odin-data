@@ -64,8 +64,13 @@ class HDF5Dataset(object):
 
         """
         if self._cache is None:
-            self._h5py_dataset.resize(self._h5py_dataset.shape[0] + 1, axis=0)
-            self._h5py_dataset[-1] = value
+            if offset is None:
+                self._h5py_dataset.resize(self._h5py_dataset.shape[0] + 1, axis=0)
+                self._h5py_dataset[-1] = value
+            else:
+                if offset + 1 > self._h5py_dataset.shape[0]:
+                    self._h5py_dataset.resize(offset + 1, axis=0)
+                self._h5py_dataset[offset] = value
             return
 
         if offset is not None and offset >= self._cache.size:
