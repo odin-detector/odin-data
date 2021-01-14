@@ -135,18 +135,18 @@ class HDF5Dataset(object):
 class Int32HDF5Dataset(HDF5Dataset):
     """Int32 HDF5Dataset"""
 
-    def __init__(self, name, shape=None, cache=True):
+    def __init__(self, name, fillvalue=-1, shape=None, cache=True):
         super(Int32HDF5Dataset, self).__init__(
-            name, dtype="int32", fillvalue=-1, shape=shape, cache=cache
+            name, dtype="int32", fillvalue=fillvalue, shape=shape, cache=cache
         )
 
 
 class Int64HDF5Dataset(HDF5Dataset):
     """Int64 HDF5Dataset"""
 
-    def __init__(self, name, shape=None, cache=True, **kwargs):
+    def __init__(self, name, fillvalue=-1, shape=None, cache=True, **kwargs):
         super(Int64HDF5Dataset, self).__init__(
-            name, dtype="int64", fillvalue=-1, shape=shape, cache=cache, **kwargs
+            name, dtype="int64", fillvalue=fillvalue, shape=shape, cache=cache, **kwargs
         )
 
 
