@@ -15,6 +15,7 @@ namespace FrameProcessor {
             dimensions_(dimensions),
             compression_type_(compression_type),
             frame_offset_(0),
+            eoa_(false),
             logger(log4cxx::Logger::getLogger("FP.FrameMetaData")) {
     }
 
@@ -24,6 +25,7 @@ namespace FrameProcessor {
             data_type_(raw_unknown),
             compression_type_(unknown_compression),
             frame_offset_(0),
+            eoa_(false),
             logger(log4cxx::Logger::getLogger("FP.FrameMetaData")) {
     }
 
@@ -36,6 +38,7 @@ namespace FrameProcessor {
       compression_type_ = frame.compression_type_;
       parameters_ = frame.parameters_;
       frame_offset_ = frame.frame_offset_;
+      eoa_ = frame.eoa_;
       logger = frame.logger;
     }
 
@@ -149,6 +152,16 @@ namespace FrameProcessor {
       */
     void FrameMetaData::adjust_frame_offset(const int64_t &increment) {
       this->frame_offset_ += increment;
+    }
+
+    /** Set end of acquisition flag */
+    void FrameMetaData::set_end_of_acquisition(const bool &eoa) {
+      this->eoa_ = eoa;
+    }
+
+    /** Return end of acquisition flag */
+    const bool FrameMetaData::get_end_of_acquisition() const {
+      return this->eoa_;
     }
 
 }
