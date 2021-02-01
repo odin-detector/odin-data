@@ -6,12 +6,13 @@ import numpy as np
 class HDF5Dataset(object):
     """A wrapper of h5py.Dataset with a cache to reduce I/O"""
 
-    def __init__(self, name, dtype, fillvalue, shape=None, cache=True):
+    def __init__(self, name, dtype, fillvalue, rank=1, shape=None, cache=True):
         """
         Args:
             name(str): Name to pass to h5py.Dataset (and for log messages)
             dtype(str) Datatype to pass to h5py.Dataset
             fillvalue(value matching dtype): Fill value for h5py.Dataset
+            rank(int): The rank (number of dimensions) of the dataset
             shape(tuple(int)): Shape to pass to h5py.Dataset
             cache(bool): Whether to store a local cache of values
                          or write directly to file
@@ -20,8 +21,8 @@ class HDF5Dataset(object):
         self.name = name
         self.dtype = dtype
         self.fillvalue = fillvalue
-        self.shape = shape if shape is not None else (0,)
-        self.maxshape = shape if shape is not None else (None,)
+        self.shape = shape if shape is not None else (0,)*rank
+        self.maxshape = shape if shape is not None else (None,)*rank
 
         if cache:
             self._cache = np.full(shape, self.fillvalue, dtype=self.dtype)
