@@ -43,6 +43,8 @@ class MetaListener(object):
         self._data_endpoints = data_endpoints
         self._process_count = len(data_endpoints)
         self._writers = {}
+        self._status_dict = {}
+        self._writer_names = []
         self._shutdown_requested = False
 
         self._logger = logging.getLogger(self.__class__.__name__)
@@ -227,22 +229,39 @@ class MetaListener(object):
         """
         self._logger.debug("Handling status request")
 
+        # Clear status from old writers
         status_dict = {}
+        for writer_name in self._writer_names:
+            if writer_name in self._status_dict:
+                status_dict[writer_name] = self._status_dict[writer_name]
+        self._status_dict = status_dict
+
         for writer_name in self._writers:
             writer = self._writers[writer_name]
-            status_dict[writer_name] = writer.status()
+            self._status_dict[writer_name] = writer.status()
             writer.write_timeout_count = writer.write_timeout_count + 1
 
         reply = self._construct_reply(request.get_msg_val(), request.get_msg_id())
-        reply.set_param("acquisitions", status_dict)
+        reply.set_param("acquisitions", self._status_dict)
+        self._logger.debug("Status dict: {}".format(self._status_dict))
 
         if len(self._writers) > 1:
             self.clear_writers()
 
         return reply
 
+    def clear_writer(self, name):
+        """Clear the specified writer"""
+        if name in self._writers:
+            self._logger.info("Removing writer: {}".format(name))
+            writer = self._writers[name]
+            self._status_dict[name] = writer.status()
+            if writer.finished:
+                del self._writers[name]
+
     def clear_writers(self):
         for writer_name, writer in self._writers.items():
+            self._status_dict[writer_name] = writer.status()
             if writer.finished:
                 del self._writers[writer_name]
             else:
@@ -316,6 +335,12 @@ class MetaListener(object):
         self._writers[writer_name] = self._writer_class(
             writer_name, DEFAULT_DIRECTORY, self._process_count, self._data_endpoints
         )
+        self._writers[writer_name].register_owner(self)
+        # Register the writer name but only keep a record of the last three
+        while len(self._writer_names) > 2:
+            self._writer_names.pop(0)
+        self._writer_names.append(writer_name)
+        self._logger.debug("Registered writer name list: {}".format(self._writer_names))
 
         # Check if we have too many writers and delete any that are finished
         if len(self._writers) > 3:
