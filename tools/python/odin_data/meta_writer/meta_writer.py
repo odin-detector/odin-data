@@ -124,10 +124,10 @@ class MetaWriter(object):
         return [
             Int64HDF5Dataset(FRAME),
             Int64HDF5Dataset(OFFSET),
-            Int64HDF5Dataset(CREATE_DURATION, cache=False),
+            Int64HDF5Dataset(CREATE_DURATION, cache=None),
             Int64HDF5Dataset(WRITE_DURATION),
             Int64HDF5Dataset(FLUSH_DURATION),
-            Int64HDF5Dataset(CLOSE_DURATION, cache=False),
+            Int64HDF5Dataset(CLOSE_DURATION, cache=None),
         ]
 
     @staticmethod
