@@ -58,7 +58,7 @@ class LiveViewAdapter(ApiAdapter):
 
         self.live_viewer = LiveViewer(endpoints, default_colormap)
 
-    @response_types('application/json', 'image/*', default='application/json')
+    @response_types('application/json', 'image/*', 'image/webp', default='application/json')
     def get(self, path, request):
         """
         Handle a HTTP GET request from a client, passing this to the Live Viewer object.
