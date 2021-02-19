@@ -104,7 +104,7 @@ class OdinDataAdapter(ApiAdapter):
         # Check if the adapter type is being requested
         request_command = path.strip('/')
         if not request_command:
-            key_list = self._kwargs.keys()
+            key_list = list(self._kwargs.keys())
             for client in self._clients:
                 for key in client.parameters:
                     if key not in key_list:
@@ -463,7 +463,7 @@ class OdinDataAdapter(ApiAdapter):
             item_dict = param_set
             for item in uri_items:
                 item_dict = item_dict[item]
-        except KeyError, ex:
+        except KeyError as ex:
             item_dict = None
         return item_dict
 
