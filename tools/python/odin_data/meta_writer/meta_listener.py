@@ -277,6 +277,7 @@ class MetaListener(object):
             # Check for stop before anything else
             if "stop" in params:
                 if writer_name is not None and writer_name in self._writers:
+                    self._logger.info("Received stop for writer %s", writer_name)
                     self._writers[writer_name].stop()
                 else:
                     # Stop without an acquisition ID stops all acquisitions
