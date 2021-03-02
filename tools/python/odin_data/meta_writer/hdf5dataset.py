@@ -40,14 +40,14 @@ class HDF5UnlimitedCache(object):
             upper_index = index + self._block_size
             current_block_size = self._block_size
             if upper_index > self._highest_index:
-                upper_index = self._highest_index
-                current_block_size = upper_index - index + 1
+                upper_index = self._highest_index + 1
+                current_block_size = upper_index - index
             self._logger.debug("[{}] Flushing block {} to index {}:{}".format(self._name, block, index, upper_index))
             self._logger.debug("[{}] Current block size:{}".format(self._name, current_block_size))
             current_block = self._blocks[block]
             self._logger.debug("[{}] Block slice to write:{}".format(self._name, current_block[0:current_block_size]))
-            h5py_dataset.resize(upper_index+1, axis=0)
-            h5py_dataset[index:upper_index+1] = current_block[0:current_block_size]
+            h5py_dataset.resize(upper_index, axis=0)
+            h5py_dataset[index:upper_index] = current_block[0:current_block_size]
 
 
 class HDF5Dataset(object):
