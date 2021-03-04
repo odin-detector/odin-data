@@ -164,7 +164,7 @@ int FrameProcessorApp::parse_arguments(int argc, char** argv)
     // If the command-line help option was given, print help and exit
     if (vm_.count("help"))
     {
-      std::cout << "usage: fileWriter [options]" << std::endl << std::endl;
+      std::cout << "usage: frameProcessor [options]" << std::endl << std::endl;
       std::cout << cmdline_options << std::endl;
       return 1;
     }
