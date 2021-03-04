@@ -70,6 +70,7 @@ namespace OdinData {
             case SIGBUS:  name = "SIGBUS";   break;
             case SIGILL:  name = "SIGILL";   break;
             case SIGFPE:  name = "SIGFPE";   break;
+            case SIGPIPE: name = "SIGPIPE";  break;
         }
 
         // Notify which signal was caught. Use fprintf as it is the
