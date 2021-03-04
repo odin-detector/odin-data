@@ -46,7 +46,6 @@ Acquisition::Acquisition(const HDF5ErrorDefinition_t& hdf5_error_definition) :
         hdf5_error_definition_(hdf5_error_definition)
 {
   this->logger_ = Logger::getLogger("FP.Acquisition");
-  this->logger_->setLevel(Level::getTrace());
   LOG4CXX_TRACE(logger_, "Acquisition constructor.");
   connect_meta_channel();
 }

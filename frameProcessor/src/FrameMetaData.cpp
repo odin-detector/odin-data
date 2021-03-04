@@ -16,7 +16,6 @@ namespace FrameProcessor {
             compression_type_(compression_type),
             frame_offset_(0),
             logger(log4cxx::Logger::getLogger("FP.FrameMetaData")) {
-      logger->setLevel(log4cxx::Level::getAll());
     }
 
     FrameMetaData::FrameMetaData() :
@@ -26,7 +25,6 @@ namespace FrameProcessor {
             compression_type_(unknown_compression),
             frame_offset_(0),
             logger(log4cxx::Logger::getLogger("FP.FrameMetaData")) {
-      logger->setLevel(log4cxx::Level::getAll());
     }
 
     FrameMetaData::FrameMetaData(const FrameMetaData &frame) {

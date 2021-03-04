@@ -27,7 +27,6 @@ namespace FrameProcessor
   {
     // Setup logging for the class
     logger_ = Logger::getLogger("FP.DummyUDPProcessPlugin");
-    logger_->setLevel(Level::getAll());
     LOG4CXX_INFO(logger_, "DummyUDPProcessPlugin version " << this->get_version_long() << " loaded");
   }
 

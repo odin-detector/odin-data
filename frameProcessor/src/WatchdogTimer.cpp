@@ -20,7 +20,6 @@ WatchdogTimer::WatchdogTimer(const boost::function<void(const std::string&)>& ti
         timeout_callback_(timeout_callback)
 {
   this->logger_ = Logger::getLogger("FP.WatchdogTimer");
-  this->logger_->setLevel(Level::getTrace());
 
   // Wait until worker thread is ready before returning
   while (!worker_thread_running_) {}

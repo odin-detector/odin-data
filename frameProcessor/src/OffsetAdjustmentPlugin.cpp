@@ -19,7 +19,6 @@ OffsetAdjustmentPlugin::OffsetAdjustmentPlugin() :
 {
   // Setup logging for the class
   logger_ = Logger::getLogger("FP.OffsetAdjustmentPlugin");
-  logger_->setLevel(Level::getAll());
   LOG4CXX_INFO(logger_, "OffsetAdjustmentPlugin version " << this->get_version_long() << " loaded");
 
 }

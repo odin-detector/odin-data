@@ -81,7 +81,6 @@ FileWriterPlugin::FileWriterPlugin() :
         timeout_thread_(boost::bind(&FileWriterPlugin::run_close_file_timeout, this))
 {
   this->logger_ = Logger::getLogger("FP.FileWriterPlugin");
-  this->logger_->setLevel(Level::getTrace());
   LOG4CXX_INFO(logger_, "FileWriterPlugin version " << this->get_version_long() << " loaded");
   this->current_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
   this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));

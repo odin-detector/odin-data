@@ -33,7 +33,6 @@ LiveViewPlugin::LiveViewPlugin() :
     is_bound_(false)
 {
   logger_ = Logger::getLogger("FP.LiveViewPlugin");
-  logger_->setLevel(Level::getAll());
   LOG4CXX_INFO(logger_, "LiveViewPlugin version " << this->get_version_long() << " loaded");
 
   set_frame_freq_config(DEFAULT_FRAME_FREQ);
