@@ -1,5 +1,5 @@
 /*
- * FrameReceiverApp.h
+ * FrameProcessorApp.h
  *
  *  Created on: Dec 18. 2020
  *      Author: Tim Nicholls, STFC Detector Systems Software Group
