@@ -270,10 +270,7 @@ class MetaListener(object):
         self._logger.debug("Handling configure:\n%s", params)
 
         error = None
-        if WRITER in params:
-            self._logger.info("Setting writer module to %s", params[WRITER])
-            self._writer_module = params[WRITER]
-        elif "acquisition_id" in params:
+        if "acquisition_id" in params:
             # Read and remove acquisition ID from params - writer does not need it
             writer_name = params.pop("acquisition_id")
 
