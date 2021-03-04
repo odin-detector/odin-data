@@ -314,7 +314,7 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
   }
   catch (...)
   {
-    LOG4CXX_FATAL(logger_, "Got unkonwn exception during command line argument parsing");
+    LOG4CXX_FATAL(logger_, "Got unknown exception during command line argument parsing");
     throw;
   }
 
