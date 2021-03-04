@@ -553,4 +553,4 @@ class MetaWriter(object):
 
     @staticmethod
     def get_version():
-        return construct_version_dict(versioneer.get_versions()["version"])
+        return "odin-data", construct_version_dict(versioneer.get_versions()["version"])

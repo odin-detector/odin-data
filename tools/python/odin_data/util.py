@@ -42,7 +42,7 @@ def construct_version_dict(full_version):
     return dict(
         full=full_version,
         major=major_version,
-        minor_version=minor_version,
-        patch_version=patch_version,
-        short_version=short_version,
+        minor=minor_version,
+        patch=patch_version,
+        short=short_version,
     )

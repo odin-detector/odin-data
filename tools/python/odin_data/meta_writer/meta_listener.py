@@ -344,9 +344,6 @@ class MetaListener(object):
 
         return writer_class
 
-    def _get_writer_version(self):
-        return self._writer_class.get_version()
-
     def request_configuration(self, request):
         """Handle a configuration request message
 
@@ -384,9 +381,10 @@ class MetaListener(object):
 
         version = versioneer.get_versions()["version"]
 
+        writer_repo, writer_version_dict = self._writer_class.get_version()
         version_dict = {
             "odin-data": construct_version_dict(version),
-            WRITER: self._get_writer_version()
+            writer_repo: writer_version_dict
         }
 
         reply = self._construct_reply(request.get_msg_val(), request.get_msg_id())
