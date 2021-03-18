@@ -77,6 +77,9 @@ class IpcMessage(object):
 
         return param_value
 
+    def get_params(self):
+        return self.attrs['params']
+
     def set_msg_type(self, msg_type):
         self.attrs['msg_type'] = msg_type
 

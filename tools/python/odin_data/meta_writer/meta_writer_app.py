@@ -4,46 +4,67 @@ Configures and starts up an instance of the MetaListener for receiving and writi
 
 Matt Taylor, Diamond Light Source
 """
-import argparse
-import sys
-import os
+from argparse import ArgumentParser
 
-from odin_data.meta_writer.meta_writer import MetaWriter
 from odin_data.meta_writer.meta_listener import MetaListener
-from odin_data.logconfig import setup_logging, add_graylog_handler, add_logger
+from odin_data.logconfig import setup_logging, add_graylog_handler, set_log_level
 
-def options():
-    """Parse program arguments."""
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-i", "--inputs", default="tcp://127.0.0.1:5558", help="Input enpoints - comma separated list")
-    parser.add_argument("-d", "--directory", default="/tmp/", help="Default directory to write meta data files to")
-    parser.add_argument("-c", "--ctrl", default="5659", help="Control channel port to listen on")
-    parser.add_argument("-w", "--writer", default=None, help="Module path to detector specific meta writer class")
-    parser.add_argument("-l", "--loglevel", default="INFO", help="Logging level")
-    parser.add_argument("--logserver", default=None, help="Graylog server address and :port")
-    parser.add_argument("--staticlogfields", default=None, help="Comma separated list of key=value fields to be attached to every log message")
-    args = parser.parse_args()
-    return args
+
+def parse_args():
+    """Parse program arguments"""
+    parser = ArgumentParser()
+
+    parser.add_argument(
+        "-c", "--ctrl", default=5659, help="Control channel port to listen on"
+    )
+    parser.add_argument(
+        "-d", "--data-endpoints", default="tcp://127.0.0.1:5558,tcp://127.0.0.1:5559",
+        help="Data endpoints - comma separated list"
+    )
+    parser.add_argument(
+        "-w", "--writer", default="odin_data.meta_writer.meta_writer.MetaWriter",
+        help="Module path to detector specific meta writer class"
+    )
+
+    parser.add_argument(
+        "-l", "--log-level", default="INFO", help="Logging level"
+    )
+    parser.add_argument(
+        "--log-server", default=None,
+        help="Graylog server address and port - e.g. 127.0.0.1:8000"
+    )
+    parser.add_argument(
+        "--static-log-fields", default=None,
+        help="Comma separated list of key=value fields to be attached to every log message"
+    )
+
+    return parser.parse_args()
+
 
 def main():
-    """Main program loop."""
-    args = options()
+    args = parse_args()
 
     static_fields = None
-    if args.staticlogfields is not None:
-        static_fields = dict([f.split('=') for f in args.staticlogfields.replace(' ','').split(',')])
+    if args.static_log_fields is not None:
+        static_fields = dict(
+            f.split('=') for f in args.static_log_fields.split(',')
+        )
 
-    if args.logserver is not None:
-        logserver, logserverport = args.logserver.split(':')
-        logserverport = int(logserverport)
-        add_graylog_handler(logserver, logserverport, static_fields=static_fields)
-        
-    add_logger("meta_listener", {"level": args.loglevel, "propagate": True})
+    if args.log_server is not None:
+        log_server_address, log_server_port = args.log_server.split(':')
+        log_server_port = int(log_server_port)
+        add_graylog_handler(
+            log_server_address, log_server_port, static_fields=static_fields
+        )
+
+    set_log_level(args.log_level)
     setup_logging()
-    
-    ml = MetaListener(args.directory, args.inputs, args.ctrl, args.writer)
 
-    ml.run()
+    data_endpoints = args.data_endpoints.split(",")
+    meta_listener = MetaListener(args.ctrl, data_endpoints, args.writer)
+
+    meta_listener.run()
+
 
 if __name__ == "__main__":
     main()

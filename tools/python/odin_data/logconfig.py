@@ -13,6 +13,25 @@ import getpass
 import threading
 
 
+class ColourFormatter(logging.Formatter):
+
+    BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = range(8)
+    RESET_SEQ = "\033[0m"
+    COLOUR_SEQ = "\033[9{colour_code}m"
+    FORMATS = {
+        logging.DEBUG: COLOUR_SEQ.format(colour_code=GREEN),
+        logging.INFO: COLOUR_SEQ.format(colour_code=BLUE),
+        logging.WARNING: COLOUR_SEQ.format(colour_code=YELLOW),
+        logging.ERROR: COLOUR_SEQ.format(colour_code=RED),
+        logging.CRITICAL: COLOUR_SEQ.format(colour_code=MAGENTA)
+    }
+
+    def format(self, record):
+        record.colour = self.FORMATS.get(record.levelno)  # Replaces %(colour)
+        record.reset = self.RESET_SEQ  # Replaces %(reset)
+        return super(ColourFormatter, self).format(record)
+
+
 default_config = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -21,7 +40,9 @@ default_config = {
             "format": "%(message)s"
         },
         "extended": {
-            "format": "%(asctime)s - %(name)20s - %(levelname)7s - %(message)s"
+            "format": "%(colour)s[%(levelname)1.1s %(asctime)s %(module)s:%(lineno)d]%(reset)s %(message)s",
+            "datefmt": "%y%m%d %H:%M:%S",
+            "()": ColourFormatter  # '()' is a special key to define the formatter class
         },
         "json": {
             "format": "name: %(name)s, level: %(levelname)s, time: %(asctime)s, message: %(message)s"
@@ -129,6 +150,10 @@ def add_logger(logger_name, logger_description):
     Returns: None
     """
     default_config["loggers"][logger_name] = logger_description
+
+
+def set_log_level(level, logger="root"):
+    default_config[logger]["level"] = level
 
 
 def setup_logging(default_log_config=None,

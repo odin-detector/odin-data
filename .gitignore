@@ -1,6 +1,6 @@
 /external
-/build*
-/prefix
+/*build*
+/*prefix/
 *.pyc
 /tools/python/venv/
 /.settings
@@ -23,3 +23,6 @@ tools/imagej/plugins/Odin-Data/build/**
 *.jar
 tools/imagej/odin-imagej
 tools/imagej/build/
+
+tools/python/build/
+tools/python/dist/
