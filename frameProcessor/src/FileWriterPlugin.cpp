@@ -655,19 +655,19 @@ void FileWriterPlugin::configure_dataset(const std::string& dataset_name, OdinDa
   // Blosc compression require a set of parameters to be defined
   if (config.has_param(FileWriterPlugin::CONFIG_DATASET_BLOSC_COMPRESSOR)) {
     dset.blosc_compressor = config.get_param<unsigned int>(FileWriterPlugin::CONFIG_DATASET_BLOSC_COMPRESSOR);
-    if (dset.blosc_compressor<0 || dset.blosc_compressor>5) {
+    if (dset.blosc_compressor>5) {
       LOG4CXX_ERROR(logger_, "Invalid blosc compression setting " << dset.blosc_compressor);
     }
   }
   if (config.has_param(FileWriterPlugin::CONFIG_DATASET_BLOSC_LEVEL)) {
     dset.blosc_level = config.get_param<unsigned int>(FileWriterPlugin::CONFIG_DATASET_BLOSC_LEVEL);
-    if (dset.blosc_level<0 || dset.blosc_level>9) {
+    if (dset.blosc_level>9) {
       LOG4CXX_ERROR(logger_, "Invalid blosc level setting " << dset.blosc_level);
     }
   }
   if (config.has_param(FileWriterPlugin::CONFIG_DATASET_BLOSC_SHUFFLE)) {
     dset.blosc_shuffle = config.get_param<unsigned int>(FileWriterPlugin::CONFIG_DATASET_BLOSC_SHUFFLE);
-    if (dset.blosc_shuffle<-1 || dset.blosc_shuffle>2) {
+    if (dset.blosc_shuffle>2) {
       LOG4CXX_ERROR(logger_, "Invalid blosc shuffle setting " << dset.blosc_shuffle);
     }
   }
