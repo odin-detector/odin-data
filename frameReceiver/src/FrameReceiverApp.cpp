@@ -41,6 +41,7 @@ FrameReceiverApp::FrameReceiverApp(void) : json_config_file_("")
 
   // Retrieve a logger instance
   OdinData::configure_logging_mdc(OdinData::app_path.c_str());
+  BasicConfigurator::configure();
   logger_ = Logger::getLogger("FR.App");
 
 }
@@ -175,7 +176,7 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
       else
       {
         LOG4CXX_ERROR(logger_, "Unable to open configuration file " << config_file << " for parsing");
-        exit(1);
+        return 1;
       }
     }
 
@@ -188,8 +189,6 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
         PropertyConfigurator::configure(logconf_fname);
       }
       LOG4CXX_DEBUG_LEVEL(1, logger_, "log4cxx config file is set to " << logconf_fname);
-    } else {
-      BasicConfigurator::configure();
     }
 
     if (vm.count("maxmem"))
@@ -298,6 +297,11 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
     }
 
   }
+  catch (po::unknown_option &e)
+  {
+    LOG4CXX_ERROR(logger_, "Error parsing command line arguments: " << e.what());
+    rc = 1;
+  }
   catch (Exception &e)
   {
     LOG4CXX_ERROR(logger_, "Got Log4CXX exception: " << e.what());
@@ -305,13 +309,13 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
   }
   catch (exception &e)
   {
-    LOG4CXX_ERROR(logger_, "Got exception:" << e.what());
+    LOG4CXX_ERROR(logger_, "Got exception during command line argument parsing: " << e.what());
     rc = 1;
   }
   catch (...)
   {
-    LOG4CXX_ERROR(logger_, "Exception of unknown type!");
-    rc = 1;
+    LOG4CXX_FATAL(logger_, "Got unknown exception during command line argument parsing");
+    throw;
   }
 
   return rc;
