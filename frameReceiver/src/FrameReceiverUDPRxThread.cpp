@@ -49,7 +49,7 @@ void FrameReceiverUDPRxThread::run_specific_service(void)
     }
 
     // Set the socket receive buffer size
-    if (setsockopt(recv_socket, SOL_SOCKET, SO_REUSEADDR, &config_.rx_recv_buffer_size_, sizeof(config_.rx_recv_buffer_size_)) < 0)
+    if (setsockopt(recv_socket, SOL_SOCKET, SO_RCVBUF, &config_.rx_recv_buffer_size_, sizeof(config_.rx_recv_buffer_size_)) < 0)
     {
       std::stringstream ss;
       ss << "RX channel failed to set receive socket buffer size for port " << rx_port << " : " << strerror(errno);
@@ -60,8 +60,8 @@ void FrameReceiverUDPRxThread::run_specific_service(void)
     // Read it back and display
     int buffer_size;
     socklen_t len = sizeof(buffer_size);
-    getsockopt(recv_socket, SOL_SOCKET, SO_REUSEADDR, &buffer_size, &len);
-    LOG4CXX_DEBUG_LEVEL(1, logger_, "RX thread receive buffer size for port " << rx_port << " is " << buffer_size);
+    getsockopt(recv_socket, SOL_SOCKET, SO_RCVBUF, &buffer_size, &len);
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "RX thread receive buffer size for port " << rx_port << " is " << buffer_size / 2);
 
     // Bind the socket to the specified port
     struct sockaddr_in recv_addr;
