@@ -1,0 +1,59 @@
+name: Test odin-data
+
+on: [push, pull_request]
+
+env:
+  INSTALL_PREFIX: ${{ github.workspace }}/../install
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install dependencies
+        run: |
+          sudo apt -y update
+          sudo apt install cmake
+          sudo apt install libboost-program-options-dev libboost-filesystem-dev libboost-date-time-dev libboost-dev  libboost-system-dev libboost-test-dev libboost-thread-dev libboost-regex-dev
+          sudo apt install libzmq3-dev libpcap-dev liblog4cxx-dev libblosc-dev libhdf5-dev
+      - name: Build odin-data
+        env:
+          INSTALL_PREFIX: ${{ env.INSTALL_PREFIX }}
+        run: |
+          echo "INSTALL_PREFIX is ${INSTALL_PREFIX}"
+          mkdir -p $INSTALL_PREFIX
+          mkdir build && cd build
+          cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX ..
+          make install VERBOSE=1
+          ls -la $INSTALL_PREFIX
+      - name: Run frame receiver unit tests
+        env:
+          INSTALL_PREFIX: ${{ env.INSTALL_PREFIX }}
+        run: |
+          cd build
+          bin/frameReceiverTest --log_level=all
+      - name: Run frame processor unit tests
+        env:
+          INSTALL_PREFIX: ${{ env.INSTALL_PREFIX }}
+        run: |
+          cd build
+          bin/frameReceiverTest --log_level=all
+      - name: Run odin-data frame integration test
+        env:
+          INSTALL_PREFIX: ${{ env.INSTALL_PREFIX }}
+        run: |
+          cd build
+          bin/odinDataTest --json=$INSTALL_PREFIX/test_config/dummyUDP.json
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: odin-data-notify
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_ICON: https://avatars.githubusercontent.com/odin-detector?size=48
+          SLACK_TITLE: Test odin-data CI action completed
+          SLACK_USERNAME: odin-detector
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
