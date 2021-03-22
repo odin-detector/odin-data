@@ -114,8 +114,13 @@ ELSE(HDF5_ROOT)
     find_package(HDF5 1.8.14
                  COMPONENTS C HL)
 ENDIF(HDF5_ROOT)
+if (HDF5_FOUND)
+  message(STATUS "HDF5 include files:  " ${HDF5_INCLUDE_DIRS})
+  message(STATUS "HDF5 libs:           " ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+  message(STATUS "HDF5 defs:           " ${HDF5_DEFINITIONS})
+ENDIF(HDF5_FOUND)
 
-message("Determining odin-data version")
+message("\nDetermining odin-data version")
 include(GetGitRevisionDescription)
 git_describe(GIT_DESC_STR)
 

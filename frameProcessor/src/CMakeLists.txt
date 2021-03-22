@@ -30,15 +30,17 @@ file(GLOB APP_SOURCES FrameProcessorController.cpp
 
 add_executable(frameProcessor ${APP_SOURCES} FrameProcessorApp.cpp)
 
-message(STATUS "HDF5 include files:  " ${HDF5_INCLUDE_DIRS})
-message(STATUS "HDF5 libs:           " ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
-message(STATUS "HDF5 defs:           " ${HDF5_DEFINITIONS})
+# message(STATUS "HDF5 include files:  " ${HDF5_INCLUDE_DIRS})
+# message(STATUS "HDF5 libs:           " ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+# message(STATUS "HDF5 defs:           " ${HDF5_DEFINITIONS})
 
 target_link_libraries(frameProcessor ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES} ${COMMON_LIBRARY})
 if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
+    find_library(REALTIME_LIBRARY
+             NAMES rt)
     find_library(PTHREAD_LIBRARY
              NAMES pthread)
-    target_link_libraries(frameProcessor ${PTHREAD_LIBRARY} )
+    target_link_libraries(frameProcessor ${PTHREAD_LIBRARY} ${REALTIME_LIBRARY})
 endif()
 
 install(TARGETS frameProcessor RUNTIME DESTINATION bin)

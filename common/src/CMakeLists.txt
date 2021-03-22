@@ -9,7 +9,10 @@ if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
     # libdl required for dlopen etc functions
     find_library(DYNAMIC_LOADER_LIBRARY
                  NAMES dl)
-    target_link_libraries(${COMMON_LIBRARY} ${DYNAMIC_LOADER_LIBRARY} )
+    # librt required for timing functions
+    find_library(REALTIME_LIBRARY
+                 NAMES rt)
+    target_link_libraries(${COMMON_LIBRARY} ${DYNAMIC_LOADER_LIBRARY} ${REALTIME_LIBRARY})
 endif()
 
 target_link_libraries(${COMMON_LIBRARY} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES})
