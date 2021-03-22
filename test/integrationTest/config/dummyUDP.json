@@ -21,7 +21,7 @@
         },
         "test": {
             "process" : false,
-            "command": "${INSTALL_PREFIX}\/bin\/frameTests",
+            "command": "${INSTALL_PREFIX}\/bin\/frameTests --log_level=all -- ",
             "pos-args": "",
             "sleep": "1"
         }
@@ -43,7 +43,6 @@
     },
     "test":
     {
-        "json": "${INSTALL_PREFIX}\/test_config\/testUDP.json",
-        "log_level": "ALL"
+        "json": "${INSTALL_PREFIX}\/test_config\/testUDP.json"
     }
 }
