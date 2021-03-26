@@ -341,7 +341,8 @@ class MetaWriter(object):
             self._logger.debug("%s | Writers not finished", self._name)
 
     def stop(self):
-        self._close_file()
+        if self.file_open:
+            self._close_file()
         self.finished = True
         self._logger.info("%s | Finished", self._name)
 
