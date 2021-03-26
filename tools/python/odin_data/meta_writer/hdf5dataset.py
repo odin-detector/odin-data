@@ -18,7 +18,11 @@ class HDF5UnlimitedCache(object):
 
     def new_array(self):
         self._logger.debug("[{}] Appending new numpy array of {} to cache in unlimited mode".format(self._name, self._block_size))
-        return np.full(self._block_size, self._fillvalue, self._dtype)
+        data = {
+            'active': True,
+            'data': np.full(self._block_size, self._fillvalue, self._dtype)
+        }
+        return data
 
     def add_value(self, value, offset):
         if offset > self._highest_index:
@@ -27,27 +31,34 @@ class HDF5UnlimitedCache(object):
         if block_index not in self._blocks:
             self._logger.debug("New cache block required")
             self._blocks[block_index] = self.new_array()
-        self._blocks[block_index][value_index] = value
+        self._blocks[block_index]['active'] = True
+        self._blocks[block_index]['data'][value_index] = value
 
     def flush(self, h5py_dataset):
         # Loop over the blocks and write each one to the dataset
         self._logger.debug("[{}] Highest recorded index: {}".format(self._name, self._highest_index))
         index = 0
         dataset_size = len(self._blocks) * self._block_size
+        self._logger.info("[{}] Flushing: total number of blocks to check: {}".format(self._name, len(self._blocks)))
         h5py_dataset.resize(dataset_size, axis=0)
+        active_blocks = 0
         for block in self._blocks:
-            index = block * self._block_size
-            upper_index = index + self._block_size
-            current_block_size = self._block_size
-            if upper_index > self._highest_index:
-                upper_index = self._highest_index + 1
-                current_block_size = upper_index - index
-            self._logger.debug("[{}] Flushing block {} to index {}:{}".format(self._name, block, index, upper_index))
-            self._logger.debug("[{}] Current block size:{}".format(self._name, current_block_size))
-            current_block = self._blocks[block]
-            self._logger.debug("[{}] Block slice to write:{}".format(self._name, current_block[0:current_block_size]))
-            h5py_dataset.resize(upper_index, axis=0)
-            h5py_dataset[index:upper_index] = current_block[0:current_block_size]
+            if self._blocks[block]['active']:
+                active_blocks += 1
+                index = block * self._block_size
+                upper_index = index + self._block_size
+                current_block_size = self._block_size
+                if upper_index > self._highest_index:
+                    upper_index = self._highest_index + 1
+                    current_block_size = upper_index - index
+                self._logger.debug("[{}] Flushing block {} to index {}:{}".format(self._name, block, index, upper_index))
+                self._logger.debug("[{}] Current block size:{}".format(self._name, current_block_size))
+                current_block = self._blocks[block]['data']
+                self._logger.debug("[{}] Block slice to write:{}".format(self._name, current_block[0:current_block_size]))
+                h5py_dataset.resize(upper_index, axis=0)
+                h5py_dataset[index:upper_index] = current_block[0:current_block_size]
+                self._blocks[block]['active'] = False
+        self._logger.info("[{}] Flushing complete - flushed {} active blocks".format(self._name, active_blocks))
 
 
 class HDF5Dataset(object):
