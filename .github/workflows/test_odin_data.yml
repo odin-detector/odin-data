@@ -54,6 +54,6 @@ jobs:
           SLACK_CHANNEL: odin-data-notify
           SLACK_COLOR: ${{ job.status }}
           SLACK_ICON: https://avatars.githubusercontent.com/odin-detector?size=48
-          SLACK_TITLE: Test odin-data CI action completed
+          SLACK_TITLE: odin-data CI tests completed: ${{ job.status }}
           SLACK_USERNAME: odin-detector
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
