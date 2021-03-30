@@ -15,20 +15,20 @@ list(REMOVE_ITEM APP_SOURCES ${APP_MAIN_SOURCE})
 # Add test and project source files to executable
 add_executable(frameReceiverTest ${TEST_SOURCES} ${APP_SOURCES})
 
-if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
-    # librt required for timing functions
-    find_library(REALTIME_LIBRARY
-                 NAMES rt)
-    target_link_libraries( frameReceiverTest ${REALTIME_LIBRARY} )
-    find_library(PTHREAD_LIBRARY
-             NAMES pthread)
-    target_link_libraries(frameReceiverTest ${PTHREAD_LIBRARY} )
-endif()
-
 # Define libraries to link against
-target_link_libraries(frameReceiverTest 
+target_link_libraries(frameReceiverTest
         ${LIB_RECEIVER}
         ${COMMON_LIBRARY}
         ${Boost_LIBRARIES}
         ${LOG4CXX_LIBRARIES}
         ${ZEROMQ_LIBRARIES})
+
+if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
+    # librt required for timing functions
+    find_library(REALTIME_LIBRARY
+                 NAMES rt)
+    find_library(PTHREAD_LIBRARY
+             NAMES pthread)
+    target_link_libraries(frameReceiverTest ${PTHREAD_LIBRARY} ${REALTIME_LIBRARY})
+endif()
+

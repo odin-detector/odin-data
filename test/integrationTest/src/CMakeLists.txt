@@ -25,10 +25,6 @@ add_executable(odinDataTest ${ODINDATA_SOURCES})
 # Add executable to run output tests
 add_executable(frameTests ${FRAMETEST_SOURCES})
 
-message(STATUS "HDF5 include files:  " ${HDF5_INCLUDE_DIRS})
-message(STATUS "HDF5 libs:           " ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
-message(STATUS "HDF5 defs:           " ${HDF5_DEFINITIONS})
-
 target_link_libraries(odinDataTest ${Boost_LIBRARIES} ${HDF5_LIBRARIES} ${LOG4CXX_LIBRARIES} ${COMMON_LIBRARY})
 target_link_libraries(frameTests ${Boost_LIBRARIES} ${HDF5_LIBRARIES} ${LOG4CXX_LIBRARIES} ${COMMON_LIBRARY})
 

@@ -218,6 +218,14 @@ BOOST_FIXTURE_TEST_SUITE(HDF5FileUnitTest, FileWriterPluginTestFixture);
 
 BOOST_AUTO_TEST_CASE( HDF5FileTest )
 {
+
+  std::cout << "**********************************************************************" << std::endl;
+  std::cout << "*                                                                    *" << std::endl;
+  std::cout << "* *** Starting HDF5File unit tests - ERROR messages are expected *** *" << std::endl;
+  std::cout << "*                                                                    *" << std::endl;
+  std::cout << "**********************************************************************" << std::endl;
+  std::cout << std::endl;
+
   FrameProcessor::HDF5File hdf5f(hdf5_error_definition);
 
   BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/blah.h5", 0, false, 1, 1));

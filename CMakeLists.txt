@@ -75,7 +75,7 @@ ENDIF("${isSystemDir}" STREQUAL "-1")
 find_package( Boost 1.41.0
 	      REQUIRED
 	      COMPONENTS program_options system filesystem unit_test_framework date_time thread regex)
-find_package(Log4CXX 0.10.0 REQUIRED)
+find_package(LOG4CXX 0.10.0 REQUIRED)
 find_package(ZEROMQ 4.1.4 REQUIRED)
 find_package(PCAP 1.4.0 REQUIRED)
 find_package(Blosc)
@@ -114,8 +114,13 @@ ELSE(HDF5_ROOT)
     find_package(HDF5 1.8.14
                  COMPONENTS C HL)
 ENDIF(HDF5_ROOT)
+if (HDF5_FOUND)
+  message(STATUS "HDF5 include files:  " ${HDF5_INCLUDE_DIRS})
+  message(STATUS "HDF5 libs:           " ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+  message(STATUS "HDF5 defs:           " ${HDF5_DEFINITIONS})
+ENDIF(HDF5_FOUND)
 
-message("Determining odin-data version")
+message("\nDetermining odin-data version")
 include(GetGitRevisionDescription)
 git_describe(GIT_DESC_STR)
 
