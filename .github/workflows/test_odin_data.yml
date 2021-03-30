@@ -41,7 +41,7 @@ jobs:
           INSTALL_PREFIX: ${{ env.INSTALL_PREFIX }}
         run: |
           cd build
-          bin/frameReceiverTest --log_level=all
+          bin/frameProcessorTest --log_level=all
       - name: Run odin-data frame integration test
         env:
           INSTALL_PREFIX: ${{ env.INSTALL_PREFIX }}
