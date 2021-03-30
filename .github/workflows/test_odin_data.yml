@@ -19,7 +19,7 @@ jobs:
           sudo apt -y update
           sudo apt install cmake
           sudo apt install libboost-program-options-dev libboost-filesystem-dev libboost-date-time-dev libboost-dev  libboost-system-dev libboost-test-dev libboost-thread-dev libboost-regex-dev
-          sudo apt install libzmq3-dev libpcap-dev liblog4cxx-dev libblosc-dev libhdf5-dev
+          sudo apt install libzmq3-dev libpcap-dev liblog4cxx-dev libblosc-dev libhdf5-dev librdkafka-dev
       - name: Build odin-data
         env:
           INSTALL_PREFIX: ${{ env.INSTALL_PREFIX }}
