@@ -42,9 +42,7 @@ class HDF5UnlimitedCache(object):
         # Loop over the blocks and write each one to the dataset
         self._logger.debug("[{}] Highest recorded index: {}".format(self._name, self._highest_index))
         index = 0
-        dataset_size = len(self._blocks) * self._block_size
         self._logger.debug("[{}] Flushing: total number of blocks to check: {}".format(self._name, len(self._blocks)))
-        h5py_dataset.resize(dataset_size, axis=0)
         # Store to mark blocks for deletion
         delete_blocks = []
         # Record the number of active blocks
@@ -62,7 +60,9 @@ class HDF5UnlimitedCache(object):
                 self._logger.debug("[{}] Current block size:{}".format(self._name, current_block_size))
                 current_block = self._blocks[block]['data']
                 self._logger.debug("[{}] Block slice to write:{}".format(self._name, current_block[0:current_block_size]))
-                h5py_dataset.resize(upper_index, axis=0)
+                if upper_index > h5py_dataset.len():
+                    self._logger.debug("[{}] Increasing dataset size from {} to {}".format(self._name, h5py_dataset.len(), upper_index))
+                    h5py_dataset.resize(upper_index, axis=0)
                 h5py_dataset[index:upper_index] = current_block[0:current_block_size]
                 self._blocks[block]['active'] = False
                 self._blocks[block]['flush_time'] = time() # Seconds since epoch
