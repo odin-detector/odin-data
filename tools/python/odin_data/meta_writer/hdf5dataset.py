@@ -6,13 +6,17 @@ import numpy as np
 
 class HDF5UnlimitedCache(object):
     """ An object to represent a cache used by an HDF5Dataset """
-    def __init__(self, name, dtype, fillvalue, block_size, stale_time):
+    def __init__(self, name, dtype, fillvalue, block_size, stale_time, shape=None):
         self._name = name
         self._dtype = dtype
         self._fillvalue = fillvalue
         self._block_size = block_size
         self._blocks = {}
         self._highest_index = 0
+        if shape is None:
+            self._shape = block_size
+        else:
+            self._shape = (block_size,) + shape
         self._logger = logging.getLogger("HDF5UnlimitedCache")
         self._logger.debug("Creating unlimited HDF5UnlimitedCache for {}".format(self._name))
         self._blocks[0] = self.new_array()
@@ -24,7 +28,7 @@ class HDF5UnlimitedCache(object):
         data = {
             'active': True,
             'flush_time': time(),
-            'data': np.full(self._block_size, self._fillvalue, self._dtype)
+            'data': np.full(self._shape, self._fillvalue, self._dtype)
         }
         return data
 
@@ -96,19 +100,14 @@ class HDF5Dataset(object):
         self.name = name
         self.dtype = dtype
         self.fillvalue = fillvalue
-        self.unlimited = False
         self.shape = shape if shape is not None else (0,)*rank
         self.maxshape = shape if shape is not None else (None,)*rank
         self.block_size = block_size
         self.block_timeout = block_timeout
+        self._cache = None
 
         if cache:
-            if shape is not None:
-                self._cache = np.full(shape, self.fillvalue, dtype=self.dtype)
-            else:
-                self._cache = HDF5UnlimitedCache(self.name, self.dtype, self.fillvalue, self.block_size, self.block_timeout)
-        else:
-            self._cache = None
+            self._cache = HDF5UnlimitedCache(self.name, self.dtype, self.fillvalue, self.block_size, self.block_timeout, shape=shape)
 
         self._h5py_dataset = None  # h5py.Dataset
         self._is_written = False
@@ -124,14 +123,6 @@ class HDF5Dataset(object):
 
         """
         self._h5py_dataset = dataset_handle
-
-        if self._cache is not None:
-            if dataset_size == 0:
-                self.unlimited = True
-                self._cache = HDF5UnlimitedCache(self.name, self.dtype, self.fillvalue, self.block_size, self.block_timeout)
-            else:
-                self._cache = np.full(dataset_size, self.fillvalue, dtype=self.dtype)
-                self._h5py_dataset.resize(dataset_size, axis=0)
 
     def add_value(self, value, offset=None):
         """Add a value at the given offset
@@ -154,18 +145,8 @@ class HDF5Dataset(object):
                 self._h5py_dataset[offset] = value
             return
 
-        if self.unlimited:
-            self._cache.add_value(value, offset)
         else:
-            if offset is not None and offset >= self._cache.size:
-                self._logger.error(
-                    "%s | Cannot add value at offset %d, cache length = %d",
-                    self.name,
-                    offset,
-                    len(self._cache),
-                )
-            else:
-                self._cache[offset] = value
+            self._cache.add_value(value, offset)
 
     def write(self, data):
         """Write the entire dataset with the given data
@@ -215,10 +196,7 @@ class HDF5Dataset(object):
                 self._logger.debug(
                     "%s | Writing cache to dataset",
                     self.name)
-                if self.unlimited:
-                    self._cache.flush(self._h5py_dataset)
-                else:
-                    self._h5py_dataset[...] = self._cache
+                self._cache.flush(self._h5py_dataset)
             self._h5py_dataset.flush()
 
 
