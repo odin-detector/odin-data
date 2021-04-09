@@ -410,7 +410,7 @@ class MetaListener(object):
         writer_repo, writer_version_dict = self._writer_class.get_version()
         version_dict = {
             "odin-data": construct_version_dict(version),
-            writer_repo: writer_version_dict
+            writer_repo: writer_version_dict,
         }
 
         reply = self._construct_reply(request.get_msg_val(), request.get_msg_id())

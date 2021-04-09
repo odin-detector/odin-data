@@ -6,6 +6,7 @@ import numpy as np
 
 class HDF5UnlimitedCache(object):
     """ An object to represent a cache used by an HDF5Dataset """
+
     def __init__(self, name, dtype, fillvalue, block_size, stale_time, shape=None):
         self._name = name
         self._dtype = dtype
@@ -18,17 +19,22 @@ class HDF5UnlimitedCache(object):
         else:
             self._shape = (block_size,) + shape
         self._logger = logging.getLogger("HDF5UnlimitedCache")
-        self._logger.debug("Creating unlimited HDF5UnlimitedCache for {}".format(self._name))
+        self._logger.debug(
+            "Creating unlimited HDF5UnlimitedCache for {}".format(self._name)
+        )
         self._blocks[0] = self.new_array()
         self._stale_time = stale_time
 
-
     def new_array(self):
-        self._logger.debug("[{}] Appending new numpy array of {} to cache in unlimited mode".format(self._name, self._block_size))
+        self._logger.debug(
+            "[{}] Appending new numpy array of {} to cache in unlimited mode".format(
+                self._name, self._block_size
+            )
+        )
         data = {
-            'active': True,
-            'flush_time': time(),
-            'data': np.full(self._shape, self._fillvalue, self._dtype)
+            "active": True,
+            "flush_time": time(),
+            "data": np.full(self._shape, self._fillvalue, self._dtype),
         }
         return data
 
@@ -39,20 +45,26 @@ class HDF5UnlimitedCache(object):
         if block_index not in self._blocks:
             self._logger.debug("New cache block required")
             self._blocks[block_index] = self.new_array()
-        self._blocks[block_index]['active'] = True
-        self._blocks[block_index]['data'][value_index] = value
+        self._blocks[block_index]["active"] = True
+        self._blocks[block_index]["data"][value_index] = value
 
     def flush(self, h5py_dataset):
         # Loop over the blocks and write each one to the dataset
-        self._logger.debug("[{}] Highest recorded index: {}".format(self._name, self._highest_index))
+        self._logger.debug(
+            "[{}] Highest recorded index: {}".format(self._name, self._highest_index)
+        )
         index = 0
-        self._logger.debug("[{}] Flushing: total number of blocks to check: {}".format(self._name, len(self._blocks)))
+        self._logger.debug(
+            "[{}] Flushing: total number of blocks to check: {}".format(
+                self._name, len(self._blocks)
+            )
+        )
         # Store to mark blocks for deletion
         delete_blocks = []
         # Record the number of active blocks
         active_blocks = []
         for block in self._blocks:
-            if self._blocks[block]['active']:
+            if self._blocks[block]["active"]:
                 active_blocks.append(block)
                 index = block * self._block_size
                 upper_index = index + self._block_size
@@ -60,32 +72,64 @@ class HDF5UnlimitedCache(object):
                 if upper_index > self._highest_index:
                     upper_index = self._highest_index + 1
                     current_block_size = upper_index - index
-                self._logger.debug("[{}] Flushing block {} to index {}:{}".format(self._name, block, index, upper_index))
-                self._logger.debug("[{}] Current block size:{}".format(self._name, current_block_size))
-                current_block = self._blocks[block]['data']
-                self._logger.debug("[{}] Block slice to write:{}".format(self._name, current_block[0:current_block_size]))
+                self._logger.debug(
+                    "[{}] Flushing block {} to index {}:{}".format(
+                        self._name, block, index, upper_index
+                    )
+                )
+                self._logger.debug(
+                    "[{}] Current block size:{}".format(self._name, current_block_size)
+                )
+                current_block = self._blocks[block]["data"]
+                self._logger.debug(
+                    "[{}] Block slice to write:{}".format(
+                        self._name, current_block[0:current_block_size]
+                    )
+                )
                 if upper_index > h5py_dataset.len():
-                    self._logger.debug("[{}] Increasing dataset size from {} to {}".format(self._name, h5py_dataset.len(), upper_index))
+                    self._logger.debug(
+                        "[{}] Increasing dataset size from {} to {}".format(
+                            self._name, h5py_dataset.len(), upper_index
+                        )
+                    )
                     h5py_dataset.resize(upper_index, axis=0)
                 h5py_dataset[index:upper_index] = current_block[0:current_block_size]
-                self._blocks[block]['active'] = False
-                self._blocks[block]['flush_time'] = time() # Seconds since epoch
+                self._blocks[block]["active"] = False
+                self._blocks[block]["flush_time"] = time()  # Seconds since epoch
             else:
                 # If the block is inactive check if it has become stale and mark for deletion
-                stale_time = time() - self._blocks[block]['flush_time']
+                stale_time = time() - self._blocks[block]["flush_time"]
                 if stale_time > self._stale_time:
                     delete_blocks.append(block)
         for block in delete_blocks:
-            stale_time = time() - self._blocks[block]['flush_time']
-            self._logger.debug("[{}] Block {} marked as stale after {} seconds, deleting...".format(self._name, block, stale_time))
+            stale_time = time() - self._blocks[block]["flush_time"]
+            self._logger.debug(
+                "[{}] Block {} marked as stale after {} seconds, deleting...".format(
+                    self._name, block, stale_time
+                )
+            )
             del self._blocks[block]
-        self._logger.debug("[{}] Flushing complete - flushed {} active blocks: {}".format(self._name, len(active_blocks), active_blocks))
+        self._logger.debug(
+            "[{}] Flushing complete - flushed {} active blocks: {}".format(
+                self._name, len(active_blocks), active_blocks
+            )
+        )
 
 
 class HDF5Dataset(object):
     """A wrapper of h5py.Dataset with a cache to reduce I/O"""
 
-    def __init__(self, name, dtype, fillvalue, rank=1, shape=None, cache=True, block_size=1000000, block_timeout=600):
+    def __init__(
+        self,
+        name,
+        dtype,
+        fillvalue,
+        rank=1,
+        shape=None,
+        cache=True,
+        block_size=1000000,
+        block_timeout=600,
+    ):
         """
         Args:
             name(str): Name to pass to h5py.Dataset (and for log messages)
@@ -100,14 +144,21 @@ class HDF5Dataset(object):
         self.name = name
         self.dtype = dtype
         self.fillvalue = fillvalue
-        self.shape = shape if shape is not None else (0,)*rank
-        self.maxshape = shape if shape is not None else (None,)*rank
+        self.shape = shape if shape is not None else (0,) * rank
+        self.maxshape = shape if shape is not None else (None,) * rank
         self.block_size = block_size
         self.block_timeout = block_timeout
         self._cache = None
 
         if cache:
-            self._cache = HDF5UnlimitedCache(self.name, self.dtype, self.fillvalue, self.block_size, self.block_timeout, shape=shape)
+            self._cache = HDF5UnlimitedCache(
+                self.name,
+                self.dtype,
+                self.fillvalue,
+                self.block_size,
+                self.block_timeout,
+                shape=shape,
+            )
 
         self._h5py_dataset = None  # h5py.Dataset
         self._is_written = False
@@ -193,9 +244,7 @@ class HDF5Dataset(object):
         """Write cached values to file (if cache enabled) and call flush"""
         if self._h5py_dataset is not None:
             if self._cache is not None:
-                self._logger.debug(
-                    "%s | Writing cache to dataset",
-                    self.name)
+                self._logger.debug("%s | Writing cache to dataset", self.name)
                 self._cache.flush(self._h5py_dataset)
             self._h5py_dataset.flush()
 
@@ -203,41 +252,100 @@ class HDF5Dataset(object):
 class Int32HDF5Dataset(HDF5Dataset):
     """Int32 HDF5Dataset"""
 
-    def __init__(self, name, fillvalue=-1, shape=None, cache=True, block_size=1000000, block_timeout=600):
+    def __init__(
+        self,
+        name,
+        fillvalue=-1,
+        shape=None,
+        cache=True,
+        block_size=1000000,
+        block_timeout=600,
+    ):
         super(Int32HDF5Dataset, self).__init__(
-            name, dtype="int32", fillvalue=fillvalue, shape=shape, cache=cache, block_size=block_size, block_timeout=block_timeout
+            name,
+            dtype="int32",
+            fillvalue=fillvalue,
+            shape=shape,
+            cache=cache,
+            block_size=block_size,
+            block_timeout=block_timeout,
         )
 
 
 class Int64HDF5Dataset(HDF5Dataset):
     """Int64 HDF5Dataset"""
 
-    def __init__(self, name, fillvalue=-1, shape=None, cache=True, block_size=1000000, block_timeout=600, **kwargs):
+    def __init__(
+        self,
+        name,
+        fillvalue=-1,
+        shape=None,
+        cache=True,
+        block_size=1000000,
+        block_timeout=600,
+        **kwargs
+    ):
         super(Int64HDF5Dataset, self).__init__(
-            name, dtype="int64", fillvalue=fillvalue, shape=shape, cache=cache, block_size=block_size, block_timeout=block_timeout, **kwargs
+            name,
+            dtype="int64",
+            fillvalue=fillvalue,
+            shape=shape,
+            cache=cache,
+            block_size=block_size,
+            block_timeout=block_timeout,
+            **kwargs
         )
 
 
 class Float64HDF5Dataset(HDF5Dataset):
     """Int64 HDF5Dataset"""
 
-    def __init__(self, name, shape=None, cache=True, block_size=1000000, block_timeout=600, **kwargs):
+    def __init__(
+        self,
+        name,
+        shape=None,
+        cache=True,
+        block_size=1000000,
+        block_timeout=600,
+        **kwargs
+    ):
         super(Float64HDF5Dataset, self).__init__(
-            name, dtype="float64", fillvalue=-1, shape=shape, cache=cache, block_size=block_size, block_timeout=block_timeout, **kwargs
+            name,
+            dtype="float64",
+            fillvalue=-1,
+            shape=shape,
+            cache=cache,
+            block_size=block_size,
+            block_timeout=block_timeout,
+            **kwargs
         )
 
 
 class StringHDF5Dataset(HDF5Dataset):
     """String HDF5Dataset"""
 
-    def __init__(self, name, length, shape=None, cache=True, block_size=1000000, block_timeout=600):
+    def __init__(
+        self,
+        name,
+        length,
+        shape=None,
+        cache=True,
+        block_size=1000000,
+        block_timeout=600,
+    ):
         """
         Args:
             length(int): Maximum length of the string elements
 
         """
         super(StringHDF5Dataset, self).__init__(
-            name, dtype="S{}".format(length), fillvalue="", shape=shape, cache=cache, block_size=block_size, block_timeout=block_timeout
+            name,
+            dtype="S{}".format(length),
+            fillvalue="",
+            shape=shape,
+            cache=cache,
+            block_size=block_size,
+            block_timeout=block_timeout,
         )
 
     def prepare_data(self, data):

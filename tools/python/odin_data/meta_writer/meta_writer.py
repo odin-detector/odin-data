@@ -42,6 +42,7 @@ def require_open_hdf5_file(func):
     argument)
 
     """
+
     def wrapper(*args, **kwargs):
         writer = args[0]  # Extract class instance (self) from args
 

@@ -18,24 +18,28 @@ def parse_args():
         "-c", "--ctrl", default=5659, help="Control channel port to listen on"
     )
     parser.add_argument(
-        "-d", "--data-endpoints", default="tcp://127.0.0.1:5558,tcp://127.0.0.1:5559",
-        help="Data endpoints - comma separated list"
+        "-d",
+        "--data-endpoints",
+        default="tcp://127.0.0.1:5558,tcp://127.0.0.1:5559",
+        help="Data endpoints - comma separated list",
     )
     parser.add_argument(
-        "-w", "--writer", default="odin_data.meta_writer.meta_writer.MetaWriter",
-        help="Module path to detector specific meta writer class"
+        "-w",
+        "--writer",
+        default="odin_data.meta_writer.meta_writer.MetaWriter",
+        help="Module path to detector specific meta writer class",
     )
 
+    parser.add_argument("-l", "--log-level", default="INFO", help="Logging level")
     parser.add_argument(
-        "-l", "--log-level", default="INFO", help="Logging level"
+        "--log-server",
+        default=None,
+        help="Graylog server address and port - e.g. 127.0.0.1:8000",
     )
     parser.add_argument(
-        "--log-server", default=None,
-        help="Graylog server address and port - e.g. 127.0.0.1:8000"
-    )
-    parser.add_argument(
-        "--static-log-fields", default=None,
-        help="Comma separated list of key=value fields to be attached to every log message"
+        "--static-log-fields",
+        default=None,
+        help="Comma separated list of key=value fields to be attached to every log message",
     )
 
     return parser.parse_args()
@@ -46,12 +50,10 @@ def main():
 
     static_fields = None
     if args.static_log_fields is not None:
-        static_fields = dict(
-            f.split('=') for f in args.static_log_fields.split(',')
-        )
+        static_fields = dict(f.split("=") for f in args.static_log_fields.split(","))
 
     if args.log_server is not None:
-        log_server_address, log_server_port = args.log_server.split(':')
+        log_server_address, log_server_port = args.log_server.split(":")
         log_server_port = int(log_server_port)
         add_graylog_handler(
             log_server_address, log_server_port, static_fields=static_fields
