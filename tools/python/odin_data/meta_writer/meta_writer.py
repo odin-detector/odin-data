@@ -102,7 +102,6 @@ class MetaWriter(object):
         self.write_timeout_count = 0
 
         # Internal parameters
-        self._owner = None
         self._name = name
         self._processes_running = [False] * process_count
         self._last_flushed = time()  # Seconds since epoch
@@ -116,9 +115,6 @@ class MetaWriter(object):
         self._frame_data_map = dict()  # Map of frame number to detector data
         self._writers_finished = False
         self._detector_finished = True  # See stop_when_detector_finished
-
-    def register_owner(self, owner):
-        self._owner = owner
 
     @staticmethod
     def _define_datasets():
@@ -350,8 +346,6 @@ class MetaWriter(object):
             self._close_file()
         self.finished = True
         self._logger.info("%s | Finished", self._name)
-        if self._owner is not None:
-            self._owner.clear_writer(self._name)
 
     def status(self):
         """Return current status parameters"""

@@ -250,15 +250,6 @@ class MetaListener(object):
 
         return reply
 
-    def clear_writer(self, name):
-        """Clear the specified writer"""
-        if name in self._writers:
-            self._logger.info("Removing writer: {}".format(name))
-            writer = self._writers[name]
-            self._status_dict[name] = writer.status()
-            if writer.finished:
-                del self._writers[name]
-
     def clear_writers(self):
         for writer_name, writer in self._writers.items():
             self._status_dict[writer_name] = writer.status()
@@ -335,7 +326,6 @@ class MetaListener(object):
         self._writers[writer_name] = self._writer_class(
             writer_name, DEFAULT_DIRECTORY, self._process_count, self._data_endpoints
         )
-        self._writers[writer_name].register_owner(self)
         # Register the writer name but only keep a record of the last three
         while len(self._writer_names) > 2:
             self._writer_names.pop(0)
@@ -344,9 +334,7 @@ class MetaListener(object):
 
         # Check if we have too many writers and delete any that are finished
         if len(self._writers) > 3:
-            for writer_name, writer in self._writers.items():
-                if writer.finished:
-                    del self._writers[writer_name]
+            self.clear_writers()
 
     def stop_all_writers(self):
         """Iterate all writers and call stop"""
