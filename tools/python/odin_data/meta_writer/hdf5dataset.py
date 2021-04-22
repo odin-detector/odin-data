@@ -127,6 +127,11 @@ class HDF5Dataset(object):
             shape(tuple(int)): Shape to pass to h5py.Dataset
             cache(bool): Whether to store a local cache of values
                          or write directly to file
+            block_size(int): Maximum size of each storage block within a cache.
+                             Blocks will be deleted once they become stale.
+            block_timeout(int): Timeout in seconds for a block.  If no new values
+                                are added within the timeout the block will be
+                                marked for deletion.
 
         """
         self.name = name
@@ -176,10 +181,10 @@ class HDF5Dataset(object):
         """
         if self._cache is None:
             if offset is None:
-                self._h5py_dataset.resize(self._h5py_dataset.shape[0] + 1, axis=0)
+                self._h5py_dataset.resize(self._h5py_dataset.len() + 1, axis=0)
                 self._h5py_dataset[-1] = value
             else:
-                if offset + 1 > self._h5py_dataset.shape[0]:
+                if offset + 1 > self._h5py_dataset.len():
                     self._h5py_dataset.resize(offset + 1, axis=0)
                 self._h5py_dataset[offset] = value
             return
