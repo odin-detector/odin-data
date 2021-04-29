@@ -149,14 +149,6 @@ void FileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame)
       } else if (status == status_invalid) {
         this->set_error("Frame invalid");
         this->set_error(current_acquisition_->get_last_error());
-      } else {
-        // Check to see if this frame is tagged as the last frame in an acquisition
-        if (frame->get_meta_data().get_end_of_acquisition()){
-          LOG4CXX_INFO(logger_, "End of acquisition attached to frame, stopping writer");
-          stop_acquisition();
-          // Prevent the timeout from closing the file as it's just been closed. This will also stop the timer if it's running
-          timeout_active_ = false;
-        }
       }
 
       // Push frame to any registered callbacks
@@ -165,6 +157,22 @@ void FileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame)
       // Notify the close timeout thread that a frame has been processed
       timeout_condition_.notify_all();
     }
+  }
+}
+
+/** Process an EndOfAcquisitionFrame.
+ *
+ * Checks we are writing. If we are in writing mode then the acquisition is
+ * stopped and the timeout_active_ flag is set to false.
+ */
+void FileWriterPlugin::end_of_acquisition()
+{
+  if (writing_) {
+    LOG4CXX_INFO(logger_, "End of acquisition frame received, stopping writer");
+    stop_acquisition();
+    // Prevent the timeout from closing the file as it's just been closed.
+    // This will also stop the timer if it's running.
+    timeout_active_ = false;
   }
 }
 
