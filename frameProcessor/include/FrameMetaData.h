@@ -127,12 +127,6 @@ public:
   /** Adjust frame offset by increment */
   void adjust_frame_offset(const int64_t &increment);
 
-  /** Set end of acquisition flag */
-  void set_end_of_acquisition(const bool &eoa);
-
-  /** Return end of acquisition flag */
-  const bool get_end_of_acquisition() const;
-
 private:
 
   /** Frame number */
@@ -161,9 +155,6 @@ private:
 
   /** Frame offset */
   int64_t frame_offset_;
-
-  /** End of acquisition flag */
-  bool eoa_;
 
 };
 
