@@ -7,6 +7,7 @@ add_definitions(${HDF5_DEFINITIONS})
 
 file(GLOB LIB_SOURCES DataBlock.cpp
                       DataBlockPool.cpp
+                      EndOfAcquisitionFrame.cpp
                       FrameProcessorPlugin.cpp
                       FrameMetaData.cpp
                       Frame.cpp

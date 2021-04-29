@@ -56,6 +56,16 @@ namespace FrameProcessor {
       return (void*)((char*)this->get_data_ptr() + image_offset_);
     }
 
+/** Return false to signify that this frame
+ * is not an "end of acquisition" frame.  Should be
+ * overridden by a child class that suppports EOA.
+ * @ return end of acquisition
+ */
+    bool Frame::get_end_of_acquisition() const {
+      return false;
+    }
+
+
 /** Return the data size
  * @ return data size
  * */

@@ -33,6 +33,9 @@ class Frame {
   /** Return a void pointer to the image data */
   virtual void *get_image_ptr() const;
 
+  /** Return if this frame object is an "end of acquisition" frame*/
+  virtual bool get_end_of_acquisition() const;
+
   /** Return the data size */
   size_t get_data_size() const;
 
