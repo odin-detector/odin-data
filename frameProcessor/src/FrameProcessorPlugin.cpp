@@ -292,12 +292,28 @@ void FrameProcessorPlugin::callback(boost::shared_ptr<Frame> frame)
   // Calls process frame and times how long the process takes
   struct timespec start_time;
   struct timespec end_time;
-  gettime(&start_time);
-  this->process_frame(frame);
-  gettime(&end_time);
-  uint64_t ts = elapsed_us(start_time, end_time);
-  // Update process_frame performance stats
-  process_duration_.update(ts);
+  // Check if the frame is tagged as an end of acquisition
+  if (frame->get_end_of_acquisition()){
+    // This frame is tagged as EOA.  Call the cleanup method
+    // and then automatically push the frame object
+    this->end_of_acquisition();
+    this->push(frame);
+  } else {
+    // This is a standard frame so process and record the time taken
+    gettime(&start_time);
+    this->process_frame(frame);
+    gettime(&end_time);
+    uint64_t ts = elapsed_us(start_time, end_time);
+    // Update process_frame performance stats
+    process_duration_.update(ts);
+  }
+}
+
+void FrameProcessorPlugin::notify_end_of_acquisition()
+{
+  // Create an EndOfAcquisitionFrame object and push it through the processing chain
+  boost::shared_ptr<EndOfAcquisitionFrame> eoa = boost::shared_ptr<EndOfAcquisitionFrame>(new EndOfAcquisitionFrame());
+  this->push(eoa);
 }
 
 /** Push the supplied frame to any registered callbacks.
@@ -322,6 +338,17 @@ void FrameProcessorPlugin::push(boost::shared_ptr<Frame> frame)
   for (cbIter = callbacks_.begin(); cbIter != callbacks_.end(); ++cbIter) {
     cbIter->second->getWorkQueue()->add(frame);
   }
+}
+
+/** Perform any end of acquisition cleanup.
+ *
+ * This default implementation does nothing.  Any plugins that want to perform
+ * cleanup actions when an end of acquisition notification takes place can
+ * override this method.
+ */
+void FrameProcessorPlugin::end_of_acquisition()
+{
+
 }
 
 } /* namespace FrameProcessor */
