@@ -294,7 +294,7 @@ class MetaListener(object):
                     # Stop without an acquisition ID stops all acquisitions
                     self.stop_all_writers()
             else:
-                if writer_name in self._writers:
+                if writer_name in self._writers and not self._writers[writer_name].finished:
                     self._logger.debug("Configuring existing writer: %s", writer_name)
                 else:
                     self.create_new_writer(writer_name)
