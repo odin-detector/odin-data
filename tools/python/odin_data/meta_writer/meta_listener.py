@@ -254,6 +254,7 @@ class MetaListener(object):
         for writer_name, writer in self._writers.items():
             self._status_dict[writer_name] = writer.status()
             if writer.finished:
+                self._logger.debug("Deleting writer: {}".format(writer_name))
                 del self._writers[writer_name]
             else:
                 # TODO: This is bit of a hack...
