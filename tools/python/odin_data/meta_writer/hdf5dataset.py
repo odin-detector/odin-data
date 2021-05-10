@@ -6,7 +6,7 @@ import numpy as np
 
 class HDF5CacheBlock(object):
     def __init__(self, shape, fillvalue, dtype):
-        self.active = True
+        self.has_new_data = True
         self.flush_time = time()
         self.data = np.full(shape, fillvalue, dtype)
 
@@ -41,15 +41,16 @@ class HDF5UnlimitedCache(object):
             self._blocks[block_index] = HDF5CacheBlock(
                 self._shape, self._fillvalue, self._dtype
             )
-        self._blocks[block_index].active = True
+        self._blocks[block_index].has_new_data = True
         self._blocks[block_index].data[value_index] = value
 
     def purge_blocks(self):
         # Store to mark blocks for deletion
         purged_blocks = []
+        # Iterate over a list copy as we may delete blocks
         for block_index, block in list(self._blocks.items()):
-            if not block.active:
-                # If the block is inactive check if it has become stale and mark for deletion
+            if not block.has_new_data:
+                # If the block has no new data check if it has become stale and delete
                 time_since_flush = time() - block.flush_time
                 if time_since_flush > self._stale_time:
                     purged_blocks.append(block_index)
@@ -65,43 +66,45 @@ class HDF5UnlimitedCache(object):
         self._logger.debug(
             "[{}] Highest recorded index: {}".format(self._name, self._highest_index)
         )
-        index = 0
         self._logger.debug(
             "[{}] Flushing: total number of blocks to check: {}".format(
                 self._name, len(self._blocks)
             )
         )
-        # Record the number of active blocks
+        # Record the number of blocks that have new data
         active_blocks = []
-        for block in self._blocks:
-            if self._blocks[block].active:
-                active_blocks.append(block)
-                index = block * self._block_size
-                upper_index = index + self._block_size
-                current_block_size = self._block_size
-                if upper_index > self._highest_index:
-                    upper_index = self._highest_index + 1
-                    current_block_size = upper_index - index
-                self._logger.debug(
-                    "[{}] Flush block {} [{}:{}] = {}".format(
-                        self._name,
-                        block,
-                        index,
-                        upper_index,
-                        np.array2string(self._blocks[block].data, threshold=10),
-                    )
-                )
-                current_block = self._blocks[block].data
-                if upper_index > h5py_dataset.len():
-                    h5py_dataset.resize(upper_index, axis=0)
-                h5py_dataset[index:upper_index] = current_block[0:current_block_size]
-                self._blocks[block].active = False
-                self._blocks[block].flush_time = time()  # Seconds since epoch
+        for block_index, block in self._blocks.items():
+            if block.has_new_data:
+                # This block has changed since it was last written out
+                active_blocks.append(block_index)
+                self.write_block_to_dataset(block_index, block, h5py_dataset)
+                block.has_new_data = False
+                block.flush_time = time()  # Seconds since epoch
         self._logger.debug(
-            "[{}] Flushing complete - flushed {} active blocks: {}".format(
+            "[{}] Flushing complete - flushed {} blocks: {}".format(
                 self._name, len(active_blocks), active_blocks
             )
         )
+
+    def write_block_to_dataset(self, block_index, block, h5py_dataset):
+        block_start = block_index * self._block_size
+        block_stop = block_start + self._block_size
+        current_block_size = self._block_size
+        if block_stop > self._highest_index:
+            block_stop = self._highest_index + 1
+            current_block_size = block_stop - block_start
+        self._logger.debug(
+            "[{}] Writing block {} [{}:{}] = {}".format(
+                self._name,
+                block_index,
+                block_start,
+                block_stop,
+                np.array2string(block.data, threshold=10),
+            )
+        )
+        if block_stop > h5py_dataset.len():
+            h5py_dataset.resize(block_stop, axis=0)
+        h5py_dataset[block_start:block_stop] = block.data[0:current_block_size]
 
 
 class HDF5Dataset(object):
