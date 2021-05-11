@@ -42,6 +42,7 @@ def require_open_hdf5_file(func):
     argument)
 
     """
+
     def wrapper(*args, **kwargs):
         writer = args[0]  # Extract class instance (self) from args
 
@@ -77,7 +78,7 @@ class MetaWriter(object):
     # Detector-specific parameters received on per-frame meta message
     DETECTOR_WRITE_FRAME_PARAMETERS = []
 
-    def __init__(self, name, directory, process_count):
+    def __init__(self, name, directory, process_count, endpoints):
         """
         Args:
             name(str): Unique name to construct file path and to include in

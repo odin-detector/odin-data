@@ -43,6 +43,8 @@ class MetaListener(object):
         self._data_endpoints = data_endpoints
         self._process_count = len(data_endpoints)
         self._writers = {}
+        self._status_dict = {}
+        self._writer_names = []
         self._shutdown_requested = False
 
         self._logger = logging.getLogger(self.__class__.__name__)
@@ -227,14 +229,21 @@ class MetaListener(object):
         """
         self._logger.debug("Handling status request")
 
+        # Clear status from old writers
         status_dict = {}
+        for writer_name in self._writer_names:
+            if writer_name in self._status_dict:
+                status_dict[writer_name] = self._status_dict[writer_name]
+        self._status_dict = status_dict
+
         for writer_name in self._writers:
             writer = self._writers[writer_name]
-            status_dict[writer_name] = writer.status()
+            self._status_dict[writer_name] = writer.status()
             writer.write_timeout_count = writer.write_timeout_count + 1
 
         reply = self._construct_reply(request.get_msg_val(), request.get_msg_id())
-        reply.set_param("acquisitions", status_dict)
+        reply.set_param("acquisitions", self._status_dict)
+        self._logger.debug("Status dict: {}".format(self._status_dict))
 
         if len(self._writers) > 1:
             self.clear_writers()
@@ -243,7 +252,9 @@ class MetaListener(object):
 
     def clear_writers(self):
         for writer_name, writer in self._writers.items():
+            self._status_dict[writer_name] = writer.status()
             if writer.finished:
+                self._logger.debug("Deleting writer: {}".format(writer_name))
                 del self._writers[writer_name]
             else:
                 # TODO: This is bit of a hack...
@@ -283,7 +294,10 @@ class MetaListener(object):
                     # Stop without an acquisition ID stops all acquisitions
                     self.stop_all_writers()
             else:
-                if writer_name in self._writers:
+                if (
+                    writer_name in self._writers
+                    and not self._writers[writer_name].finished
+                ):
                     self._logger.debug("Configuring existing writer: %s", writer_name)
                 else:
                     self.create_new_writer(writer_name)
@@ -314,14 +328,17 @@ class MetaListener(object):
         # Now create new acquisition
         self._logger.info("Creating new writer %s", writer_name)
         self._writers[writer_name] = self._writer_class(
-            writer_name, DEFAULT_DIRECTORY, self._process_count
+            writer_name, DEFAULT_DIRECTORY, self._process_count, self._data_endpoints
         )
+        # Register the writer name but only keep a record of the last three
+        while len(self._writer_names) > 2:
+            self._writer_names.pop(0)
+        self._writer_names.append(writer_name)
+        self._logger.debug("Registered writer name list: {}".format(self._writer_names))
 
         # Check if we have too many writers and delete any that are finished
         if len(self._writers) > 3:
-            for writer_name, writer in self._writers.items():
-                if writer.finished:
-                    del self._writers[writer_name]
+            self.clear_writers()
 
     def stop_all_writers(self):
         """Iterate all writers and call stop"""
@@ -385,7 +402,7 @@ class MetaListener(object):
         writer_repo, writer_version_dict = self._writer_class.get_version()
         version_dict = {
             "odin-data": construct_version_dict(version),
-            writer_repo: writer_version_dict
+            writer_repo: writer_version_dict,
         }
 
         reply = self._construct_reply(request.get_msg_val(), request.get_msg_id())
