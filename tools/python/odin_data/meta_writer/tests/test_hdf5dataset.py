@@ -37,8 +37,8 @@ class TestHDF5Dataset(TestCase):
         # Verify 1 block has been created, with a size of 10
         self.assertEqual(len(cache._blocks), 1)
         self.assertEqual(0 in cache._blocks, True)
-        self.assertEqual(cache._blocks[0]["active"], True)
-        self.assertEqual(cache._blocks[0]["data"].size, 10)
+        self.assertEqual(cache._blocks[0].has_new_data, True)
+        self.assertEqual(cache._blocks[0].data.size, 10)
 
         # Add 11 items at increasing indexes and verify another
         # block is created
@@ -48,11 +48,11 @@ class TestHDF5Dataset(TestCase):
         self.assertEqual(len(cache._blocks), 2)
         self.assertEqual(0 in cache._blocks, True)
         self.assertEqual(1 in cache._blocks, True)
-        self.assertEqual(cache._blocks[0]["active"], True)
-        self.assertEqual(cache._blocks[0]["data"].size, 10)
-        self.assertEqual(sum(cache._blocks[0]["data"]), 20)
-        self.assertEqual(cache._blocks[1]["active"], True)
-        self.assertEqual(cache._blocks[1]["data"].size, 10)
+        self.assertEqual(cache._blocks[0].has_new_data, True)
+        self.assertEqual(cache._blocks[0].data.size, 10)
+        self.assertEqual(sum(cache._blocks[0].data), 20)
+        self.assertEqual(cache._blocks[1].has_new_data, True)
+        self.assertEqual(cache._blocks[1].data.size, 10)
 
         # Add 1 item at index to create another block
         cache.add_value(3, 25)
@@ -61,15 +61,15 @@ class TestHDF5Dataset(TestCase):
         self.assertEqual(0 in cache._blocks, True)
         self.assertEqual(1 in cache._blocks, True)
         self.assertEqual(2 in cache._blocks, True)
-        self.assertEqual(cache._blocks[0]["active"], True)
-        self.assertEqual(cache._blocks[0]["data"].size, 10)
-        self.assertEqual(sum(cache._blocks[0]["data"]), 20)
-        self.assertEqual(cache._blocks[1]["active"], True)
-        self.assertEqual(cache._blocks[1]["data"].size, 10)
-        self.assertEqual(sum(cache._blocks[1]["data"]), -16)  # 2 + (9 * -2) fillvalue
-        self.assertEqual(cache._blocks[2]["active"], True)
-        self.assertEqual(cache._blocks[2]["data"].size, 10)
-        self.assertEqual(sum(cache._blocks[2]["data"]), -15)  # 3 + (9 * -2) fillvalue
+        self.assertEqual(cache._blocks[0].has_new_data, True)
+        self.assertEqual(cache._blocks[0].data.size, 10)
+        self.assertEqual(sum(cache._blocks[0].data), 20)
+        self.assertEqual(cache._blocks[1].has_new_data, True)
+        self.assertEqual(cache._blocks[1].data.size, 10)
+        self.assertEqual(sum(cache._blocks[1].data), -16)  # 2 + (9 * -2) fillvalue
+        self.assertEqual(cache._blocks[2].has_new_data, True)
+        self.assertEqual(cache._blocks[2].data.size, 10)
+        self.assertEqual(sum(cache._blocks[2].data), -15)  # 3 + (9 * -2) fillvalue
 
         # Now flush the blocks
         ds = _TestMockDataset()
@@ -106,17 +106,18 @@ class TestHDF5Dataset(TestCase):
         # Now write another value into block[2] and then flush once again
         cache.add_value(3, 26)
 
-        # Now flush again, block [0] and [1] should be deleted
+        # Now flush again and then purge, block [0] and [1] should be deleted
         ds = _TestMockDataset()
         cache.flush(ds)
+        cache.purge_blocks()
 
         self.assertEqual(len(cache._blocks), 1)
         self.assertEqual(0 in cache._blocks, False)
         self.assertEqual(1 in cache._blocks, False)
         self.assertEqual(2 in cache._blocks, True)
-        self.assertEqual(cache._blocks[2]["active"], False)
-        self.assertEqual(cache._blocks[2]["data"].size, 10)
-        self.assertEqual(sum(cache._blocks[2]["data"]), -10)  # 6 + (8 * -2) fillvalue
+        self.assertEqual(cache._blocks[2].has_new_data, False)
+        self.assertEqual(cache._blocks[2].data.size, 10)
+        self.assertEqual(sum(cache._blocks[2].data), -10)  # 6 + (8 * -2) fillvalue
 
         self.assertEqual(ds.keys, [slice(20, 27, None)])
         self.assertEqual(ds.values[0][0], -2)
@@ -136,8 +137,8 @@ class TestHDF5Dataset(TestCase):
         # Verify 1 block has been created, with a size of 10x2x3
         self.assertEqual(len(cache._blocks), 1)
         self.assertEqual(0 in cache._blocks, True)
-        self.assertEqual(cache._blocks[0]["active"], True)
-        self.assertEqual(cache._blocks[0]["data"].size, 60)
+        self.assertEqual(cache._blocks[0].has_new_data, True)
+        self.assertEqual(cache._blocks[0].data.size, 60)
 
         # Add 11 items at increasing indexes and verify another
         # block is created
@@ -148,11 +149,11 @@ class TestHDF5Dataset(TestCase):
         self.assertEqual(len(cache._blocks), 2)
         self.assertEqual(0 in cache._blocks, True)
         self.assertEqual(1 in cache._blocks, True)
-        self.assertEqual(cache._blocks[0]["active"], True)
-        self.assertEqual(cache._blocks[0]["data"].size, 60)
-        self.assertEqual(numpy.sum(cache._blocks[0]["data"]), 210)
-        self.assertEqual(cache._blocks[1]["active"], True)
-        self.assertEqual(cache._blocks[1]["data"].size, 60)
+        self.assertEqual(cache._blocks[0].has_new_data, True)
+        self.assertEqual(cache._blocks[0].data.size, 60)
+        self.assertEqual(numpy.sum(cache._blocks[0].data), 210)
+        self.assertEqual(cache._blocks[1].has_new_data, True)
+        self.assertEqual(cache._blocks[1].data.size, 60)
 
         # Add 1 item at index to create another block
         cache.add_value(value, 25)
@@ -161,18 +162,18 @@ class TestHDF5Dataset(TestCase):
         self.assertEqual(0 in cache._blocks, True)
         self.assertEqual(1 in cache._blocks, True)
         self.assertEqual(2 in cache._blocks, True)
-        self.assertEqual(cache._blocks[0]["active"], True)
-        self.assertEqual(cache._blocks[0]["data"].size, 60)
-        self.assertEqual(numpy.sum(cache._blocks[0]["data"]), 210)
-        self.assertEqual(cache._blocks[1]["active"], True)
-        self.assertEqual(cache._blocks[1]["data"].size, 60)
+        self.assertEqual(cache._blocks[0].has_new_data, True)
+        self.assertEqual(cache._blocks[0].data.size, 60)
+        self.assertEqual(numpy.sum(cache._blocks[0].data), 210)
+        self.assertEqual(cache._blocks[1].has_new_data, True)
+        self.assertEqual(cache._blocks[1].data.size, 60)
         self.assertEqual(
-            numpy.sum(cache._blocks[1]["data"]), -87
+            numpy.sum(cache._blocks[1].data), -87
         )  # 21 + (9 * -12) fillvalue
-        self.assertEqual(cache._blocks[2]["active"], True)
-        self.assertEqual(cache._blocks[2]["data"].size, 60)
+        self.assertEqual(cache._blocks[2].has_new_data, True)
+        self.assertEqual(cache._blocks[2].data.size, 60)
         self.assertEqual(
-            numpy.sum(cache._blocks[2]["data"]), -87
+            numpy.sum(cache._blocks[2].data), -87
         )  # 21 + (9 * -12) fillvalue
 
         # Now flush the blocks
@@ -208,18 +209,19 @@ class TestHDF5Dataset(TestCase):
         # Now write another value into block[2] and then flush once again
         cache.add_value(value, 26)
 
-        # Now flush again, block [0] and [1] should be deleted
+        # Now flush again and purge, block [0] and [1] should be deleted
         ds = _TestMockDataset()
         cache.flush(ds)
+        cache.purge_blocks()
 
         self.assertEqual(len(cache._blocks), 1)
         self.assertEqual(0 in cache._blocks, False)
         self.assertEqual(1 in cache._blocks, False)
         self.assertEqual(2 in cache._blocks, True)
-        self.assertEqual(cache._blocks[2]["active"], False)
-        self.assertEqual(cache._blocks[2]["data"].size, 60)
+        self.assertEqual(cache._blocks[2].has_new_data, False)
+        self.assertEqual(cache._blocks[2].data.size, 60)
         self.assertEqual(
-            numpy.sum(cache._blocks[2]["data"]), -54
+            numpy.sum(cache._blocks[2].data), -54
         )  # 42 + (8 * -12) fillvalue
 
         self.assertEqual(ds.keys, [slice(20, 27, None)])
