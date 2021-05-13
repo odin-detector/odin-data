@@ -326,8 +326,9 @@ void FrameProcessorPlugin::notify_end_of_acquisition()
  */
 void FrameProcessorPlugin::push(boost::shared_ptr<Frame> frame)
 {
-  if (!frame->is_valid())
-      throw std::runtime_error("Invalid frame");
+  if (!frame->get_end_of_acquisition() && !frame->is_valid()){
+    throw std::runtime_error("FrameProcessorPlugin::push Invalid frame pushed onto plugin chain");
+  }
   // Loop over blocking callbacks, calling each function and waiting for return
   std::map<std::string, boost::shared_ptr<IFrameCallback> >::iterator bcbIter;
   for (bcbIter = blocking_callbacks_.begin(); bcbIter != blocking_callbacks_.end(); ++bcbIter) {
