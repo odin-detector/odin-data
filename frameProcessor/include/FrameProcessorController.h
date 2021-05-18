@@ -60,6 +60,9 @@ private:
   /** Configuration constant to shutdown the frame processor **/
   static const std::string CONFIG_SHUTDOWN;
 
+  /** Configuration constant to inject an End Of Acquisition frame into the plugin chain **/
+  static const std::string CONFIG_EOA;
+
   /** Configuration constant to set the debug level of the frame processor **/
   static const std::string CONFIG_DEBUG;
 
