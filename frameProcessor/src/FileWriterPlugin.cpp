@@ -165,7 +165,7 @@ void FileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame)
  * Checks we are writing. If we are in writing mode then the acquisition is
  * stopped and the timeout_active_ flag is set to false.
  */
-void FileWriterPlugin::end_of_acquisition()
+void FileWriterPlugin::process_end_of_acquisition()
 {
   if (writing_) {
     LOG4CXX_INFO(logger_, "End of acquisition frame received, stopping writer");

@@ -68,7 +68,7 @@ private:
    * \param[in] frame - Pointer to the frame.
    */
   virtual void process_frame(boost::shared_ptr<Frame> frame) = 0;
-  virtual void end_of_acquisition();
+  virtual void process_end_of_acquisition();
 
   /** Name of this plugin */
   std::string name_;

@@ -296,7 +296,7 @@ void FrameProcessorPlugin::callback(boost::shared_ptr<Frame> frame)
   if (frame->get_end_of_acquisition()){
     // This frame is tagged as EOA.  Call the cleanup method
     // and then automatically push the frame object
-    this->end_of_acquisition();
+    this->process_end_of_acquisition();
     this->push(frame);
   } else {
     // This is a standard frame so process and record the time taken
@@ -347,7 +347,7 @@ void FrameProcessorPlugin::push(boost::shared_ptr<Frame> frame)
  * cleanup actions when an end of acquisition notification takes place can
  * override this method.
  */
-void FrameProcessorPlugin::end_of_acquisition()
+void FrameProcessorPlugin::process_end_of_acquisition()
 {
 
 }
