@@ -107,7 +107,10 @@ class MetaListener(object):
         else:
             self._logger.info("Shutdown requested")
         finally:
-            self.stop_all_writers()
+            try:
+                self.stop_all_writers()
+            except:
+                self._logger.error("Exception when stopping writers to shutdown")
 
             self._logger.info("Closing sockets")
             for socket in data_sockets:
