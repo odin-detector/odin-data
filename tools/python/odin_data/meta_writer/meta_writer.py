@@ -141,8 +141,7 @@ class MetaWriter(object):
             Int64HDF5Dataset(CLOSE_DURATION, cache=False),
         ]
 
-    @staticmethod
-    def _define_detector_datasets():
+    def _define_detector_datasets(self):
         return []
 
     @property
