@@ -113,6 +113,7 @@ class MetaWriter(object):
         )
         # Child class parameters
         self._frame_data_map = dict()  # Map of frame number to detector data
+        self._frame_offset_map = dict()  # Map of frame number to offset in dataset
         self._writers_finished = False
         self._detector_finished = True  # See stop_when_detector_finished
 
@@ -521,12 +522,13 @@ class MetaWriter(object):
         self._logger.debug("%s | Writing detector data for frame %d", self._name, frame)
 
         if frame not in self._frame_data_map:
-            self._logger.error(
+            self._logger.warning(
                 "%s | No detector meta data stored for frame %d", self._name, frame
             )
+            self._frame_offset_map[frame] = offset
             return
 
-        data = self._frame_data_map[frame]
+        data = self._frame_data_map.pop(frame)
         self._add_values(self.DETECTOR_WRITE_FRAME_PARAMETERS, data, offset)
 
     def handle_close_file(self, _header, data):
