@@ -308,7 +308,7 @@ class Int64HDF5Dataset(HDF5Dataset):
 
 
 class Float64HDF5Dataset(HDF5Dataset):
-    """Int64 HDF5Dataset"""
+    """Float64 HDF5Dataset"""
 
     def __init__(
         self,

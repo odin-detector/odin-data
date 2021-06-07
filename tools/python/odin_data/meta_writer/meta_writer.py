@@ -317,9 +317,9 @@ class MetaWriter(object):
     def stop_when_detector_finished(self):
         """Register that it is OK to stop when all detector-specific logic is complete
 
-        By default_detector_finished is set to True initially so that this check always
+        By default, detector_finished is set to True initially so that this check always
         passes. Child classes that need to do their own checks can set this to False in
-        __ init__ and call stop_when_writers_finished when ready to stop.
+        __init__ and call stop_when_writers_finished when ready to stop.
 
         """
         self._writers_finished = True
@@ -332,7 +332,7 @@ class MetaWriter(object):
     def stop_when_writers_finished(self):
         """Register that it is OK to stop when all monitored writers have finished
 
-        Child classes can call this when all detector specific logic is complete.
+        Child classes can call this when all detector-specific logic is complete.
 
         """
         self._detector_finished = True
