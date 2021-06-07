@@ -7,6 +7,7 @@ Matt Taylor, Diamond Light Source
 from argparse import ArgumentParser
 
 from odin_data.meta_writer.meta_listener import MetaListener
+from odin_data.meta_writer.meta_writer import MetaWriterConfig
 from odin_data.logconfig import setup_logging, add_graylog_handler, set_log_level
 
 
@@ -28,6 +29,13 @@ def parse_args():
         "--writer",
         default="odin_data.meta_writer.meta_writer.MetaWriter",
         help="Module path to detector specific meta writer class",
+    )
+    parser.add_argument(
+        "--sensor-shape",
+        default=None,
+        type=int,
+        nargs=2,
+        help="Shape of detector sensor (y, x) e.g '--sensor-shape 4362 4148'"
     )
 
     parser.add_argument("-l", "--log-level", default="INFO", help="Logging level")
@@ -62,8 +70,11 @@ def main():
     set_log_level(args.log_level)
     setup_logging()
 
+    writer_config = MetaWriterConfig(
+        sensor_shape=None if args.sensor_shape is None else tuple(args.sensor_shape)
+    )
     data_endpoints = args.data_endpoints.split(",")
-    meta_listener = MetaListener(args.ctrl, data_endpoints, args.writer)
+    meta_listener = MetaListener(args.ctrl, data_endpoints, args.writer, writer_config)
 
     meta_listener.run()
 

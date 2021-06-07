@@ -32,6 +32,17 @@ FLUSH_FRAME_FREQUENCY = "flush_frame_frequency"
 FLUSH_TIMEOUT = "flush_timeout"
 
 
+class MetaWriterConfig(object):
+
+    def __init__(self, sensor_shape):
+        """
+        Args:
+            sensor_shape(tuple): Detector sensor size (y, x)
+
+        """
+        self.sensor_shape = sensor_shape
+
+
 def require_open_hdf5_file(func):
     """A decorator to verify the HDF5 file is open before calling the wrapped method
 
@@ -78,13 +89,14 @@ class MetaWriter(object):
     # Detector-specific parameters received on per-frame meta message
     DETECTOR_WRITE_FRAME_PARAMETERS = []
 
-    def __init__(self, name, directory, endpoints):
+    def __init__(self, name, directory, endpoints, config):
         """
         Args:
             name(str): Unique name to construct file path and to include in
                        log messages
             directory(str): Directory to create the meta file in
             endpoints(list): Endpoints parent MetaListener will receive data on
+            config(MetaWriterConfig): Configuration options
 
         """
         self._logger = logging.getLogger(self.__class__.__name__)
@@ -104,6 +116,7 @@ class MetaWriter(object):
         # Internal parameters
         self._name = name
         self._processes_running = [False] * len(endpoints)
+        self._config = config
         self._last_flushed = time()  # Seconds since epoch
         self._frames_since_flush = 0
         self._hdf5_file = None
