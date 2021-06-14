@@ -41,7 +41,6 @@ class MetaListener(object):
         """
         self._ctrl_port = ctrl_port
         self._data_endpoints = data_endpoints
-        self._process_count = len(data_endpoints)
         self._writers = {}
         self._status_dict = {}
         self._writer_names = []
@@ -331,7 +330,7 @@ class MetaListener(object):
         # Now create new acquisition
         self._logger.info("Creating new writer %s", writer_name)
         self._writers[writer_name] = self._writer_class(
-            writer_name, DEFAULT_DIRECTORY, self._process_count, self._data_endpoints
+            writer_name, DEFAULT_DIRECTORY, self._data_endpoints
         )
         # Register the writer name but only keep a record of the last three
         while len(self._writer_names) > 2:

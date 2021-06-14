@@ -78,13 +78,13 @@ class MetaWriter(object):
     # Detector-specific parameters received on per-frame meta message
     DETECTOR_WRITE_FRAME_PARAMETERS = []
 
-    def __init__(self, name, directory, process_count, endpoints):
+    def __init__(self, name, directory, endpoints):
         """
         Args:
             name(str): Unique name to construct file path and to include in
                        log messages
             directory(str): Directory to create the meta file in
-            process_count(int): Total number of processes we will receive data from
+            endpoints(list): Endpoints parent MetaListener will receive data on
 
         """
         self._logger = logging.getLogger(self.__class__.__name__)
@@ -103,7 +103,7 @@ class MetaWriter(object):
 
         # Internal parameters
         self._name = name
-        self._processes_running = [False] * process_count
+        self._processes_running = [False] * len(endpoints)
         self._last_flushed = time()  # Seconds since epoch
         self._frames_since_flush = 0
         self._hdf5_file = None
