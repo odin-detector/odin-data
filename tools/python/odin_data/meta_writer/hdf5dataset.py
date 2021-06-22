@@ -307,6 +307,30 @@ class Int64HDF5Dataset(HDF5Dataset):
         )
 
 
+class Float32HDF5Dataset(HDF5Dataset):
+    """Float32 HDF5Dataset"""
+
+    def __init__(
+        self,
+        name,
+        shape=None,
+        cache=True,
+        block_size=1000000,
+        block_timeout=600,
+        **kwargs
+    ):
+        super(Float32HDF5Dataset, self).__init__(
+            name,
+            dtype="float32",
+            fillvalue=-1,
+            shape=shape,
+            cache=cache,
+            block_size=block_size,
+            block_timeout=block_timeout,
+            **kwargs
+        )
+
+
 class Float64HDF5Dataset(HDF5Dataset):
     """Float64 HDF5Dataset"""
 
