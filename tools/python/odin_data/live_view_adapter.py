@@ -5,7 +5,7 @@ view images to users.
 
 Created on 8th October 2018
 
-:author: Adam Neaves, STFC Application Engineering Gruop
+:author: Ashley Neaves, STFC Application Engineering Gruop
 """
 
 import logging

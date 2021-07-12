@@ -2,7 +2,7 @@
  * LiveViewPluginLib.cpp
  *
  *  Created on: 11 Sept 2018
- *      Author: Adam Neaves - wbd45595
+ *      Author: Ashley Neaves
  */
 
 #include "LiveViewPlugin.h"
