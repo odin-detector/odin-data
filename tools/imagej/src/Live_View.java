@@ -19,7 +19,7 @@ import org.zeromq.ZMQException;
 
 /**
  * This is an ImageJ Plugin that allows ImageJ to receive and display images from the Odin Data Live View Plugin.
- * @author Adam Neaves
+ * @author Ashley Neaves
  * @version 0.1.0
  */
 public class Live_View extends PlugInFrame implements ActionListener, Observer

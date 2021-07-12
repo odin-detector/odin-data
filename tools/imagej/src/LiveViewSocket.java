@@ -14,7 +14,7 @@ import org.json.*;
 
 /**
  * Class that contains the ZMQ subscriber socket and logic for what to do with an image when it arrives.
- * @author Adam Neaves
+ * @author Ashley Neaves
  * @version 0.1.0
  */
 public class LiveViewSocket 

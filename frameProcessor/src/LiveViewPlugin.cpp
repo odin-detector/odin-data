@@ -2,7 +2,7 @@
  * LiveImageViewPlugin.cpp
  *
  *  Created on: 6 Sept 2018
- *      Author: Adam Neaves - wbd45595
+ *      Author: Ashley Neaves
  */
 
 #include "LiveViewPlugin.h"
@@ -204,7 +204,7 @@ void LiveViewPlugin::requestConfiguration(OdinData::IpcMessage& reply)
  */
 void LiveViewPlugin::pass_live_frame(boost::shared_ptr<Frame> frame)
 {
-  void* frame_data_copy = (void*)frame->get_data_ptr();
+  void* frame_data_copy = (void*)frame->get_image_ptr();
 
   const FrameMetaData meta_data = frame->get_meta_data();
 
@@ -212,7 +212,7 @@ void LiveViewPlugin::pass_live_frame(boost::shared_ptr<Frame> frame)
   std::string aqqID = meta_data.get_acquisition_ID();
   dimensions_t dim = meta_data.get_dimensions();
   std::string type = get_type_from_enum((DataType)meta_data.get_data_type());
-  std::size_t size = frame->get_data_size();
+  std::size_t size = frame->get_image_size();
   std::string compress = get_compress_from_enum((CompressionType)meta_data.get_compression_type());
   std::string dataset = meta_data.get_dataset_name();
 

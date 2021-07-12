@@ -6,7 +6,7 @@ into a single ZMQ stream.
 
 Created on 28th January 2019
 
-:author: Adam Neaves, STFC Application Engineering Group
+:author: Ashley Neaves, STFC Application Engineering Group
 """
 import logging
 from queue import PriorityQueue
