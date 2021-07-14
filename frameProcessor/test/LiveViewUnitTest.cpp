@@ -2,7 +2,7 @@
  * LiveViewUnitTest.cpp
  *
  *  Created on: 28 Sep 2018
- *      Author: Adam Neaves - wbd45595
+ *      Author: Ashley Neaves
  */
 
 #include <boost/test/unit_test.hpp>
