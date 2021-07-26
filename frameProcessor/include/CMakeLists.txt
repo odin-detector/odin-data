@@ -2,6 +2,7 @@
 
 SET(HEADERS DataBlock.h
             DataBlockPool.h
+            EndOfAcquisitionFrame.h
             FrameMetaData.h
             Frame.h
             SharedBufferFrame.h

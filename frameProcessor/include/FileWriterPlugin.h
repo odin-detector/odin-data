@@ -136,6 +136,7 @@ private:
   FileWriterPlugin(const FileWriterPlugin& src); // prevent copying one of these
 
   void process_frame(boost::shared_ptr<Frame> frame);
+  void process_end_of_acquisition();
   bool frame_in_acquisition(boost::shared_ptr<Frame> frame);
 
   /** Pointer to logger */

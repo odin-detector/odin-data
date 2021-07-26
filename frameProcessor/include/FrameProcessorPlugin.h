@@ -17,6 +17,7 @@
 #include "IpcChannel.h"
 #include "MetaMessagePublisher.h"
 #include "Frame.h"
+#include "EndOfAcquisitionFrame.h"
 #include "CallDuration.h"
 
 namespace FrameProcessor
@@ -49,6 +50,7 @@ public:
   void register_callback(const std::string& name, boost::shared_ptr<IFrameCallback> cb, bool blocking=false);
   void remove_callback(const std::string& name);
   void remove_all_callbacks();
+  void notify_end_of_acquisition();
 
 protected:
   void push(boost::shared_ptr<Frame> frame);
@@ -66,6 +68,7 @@ private:
    * \param[in] frame - Pointer to the frame.
    */
   virtual void process_frame(boost::shared_ptr<Frame> frame) = 0;
+  virtual void process_end_of_acquisition();
 
   /** Name of this plugin */
   std::string name_;

@@ -47,6 +47,7 @@ public:
   void removeCallback(const std::string& name);
   void handleRxChannel();
   void status(OdinData::IpcMessage& status);
+  void injectEOA();
 
 private:
   /** Pointer to logger */

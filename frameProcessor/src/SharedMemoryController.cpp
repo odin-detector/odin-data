@@ -8,6 +8,7 @@
 #include <SharedMemoryController.h>
 #include "DebugLevelLogger.h"
 #include "SharedBufferFrame.h"
+#include "EndOfAcquisitionFrame.h"
 
 namespace FrameProcessor
 {
@@ -287,6 +288,21 @@ void SharedMemoryController::status(OdinData::IpcMessage& status)
       SharedMemoryController::SHARED_MEMORY_CONTROLLER_NAME + "/configured",
       sharedBufferConfigured_);
 
+}
+
+/**
+ * Create an EndOfAcquisitionFrame object and inject it into the plugin chain
+ */
+void SharedMemoryController::injectEOA()
+{
+  // Create the EOA frame object
+  boost::shared_ptr<FrameProcessor::EndOfAcquisitionFrame> eoa = boost::shared_ptr<FrameProcessor::EndOfAcquisitionFrame>(new FrameProcessor::EndOfAcquisitionFrame());
+
+  // Loop over registered callbacks, placing the frame onto each queue
+  std::map<std::string, boost::shared_ptr<IFrameCallback> >::iterator cbIter;
+  for (cbIter = callbacks_.begin(); cbIter != callbacks_.end(); ++cbIter) {
+    cbIter->second->getWorkQueue()->add(eoa, true);
+  }
 }
 
 } /* namespace FrameProcessor */

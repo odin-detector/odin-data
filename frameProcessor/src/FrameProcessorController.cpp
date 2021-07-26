@@ -17,6 +17,7 @@ namespace FrameProcessor
 
 const std::string FrameProcessorController::META_RX_INTERFACE            = "inproc://meta_rx";
 
+const std::string FrameProcessorController::CONFIG_EOA                   = "inject_eoa";
 const std::string FrameProcessorController::CONFIG_DEBUG                 = "debug_level";
 
 const std::string FrameProcessorController::CONFIG_FR_RELEASE            = "fr_release_cnxn";
@@ -367,6 +368,14 @@ void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData:
       config.has_param("frames") && config.get_param<unsigned int>("frames") != 0) {
     datasetSize = config.get_param<unsigned int>("frames");
     LOG4CXX_DEBUG_LEVEL(1, logger_, "Dataset size: " << datasetSize);
+  }
+
+  // Check for a request to inject an End Of Acquisition object
+  if (config.has_param(FrameProcessorController::CONFIG_EOA)) {
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Injecting End Of Acquisition object into plugin chain");
+    if (sharedMemController_) {
+      sharedMemController_->injectEOA();
+    }
   }
 
   // Check for a debug level change
