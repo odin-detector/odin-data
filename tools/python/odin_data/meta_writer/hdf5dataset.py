@@ -127,7 +127,8 @@ class HDF5Dataset(object):
             dtype(str) Datatype to pass to h5py.Dataset
             fillvalue(value matching dtype): Fill value for h5py.Dataset
             rank(int): The rank (number of dimensions) of the dataset
-            shape(tuple(int)): Shape to pass to h5py.Dataset
+            shape(tuple(int)): Shape to pass to h5py.Dataset. Provide this to create a
+                static dataset without chunking. It then cannot be resized.
             cache(bool): Whether to store a local cache of values
                          or write directly to file
             block_size(int): Maximum size of each storage block within a cache.
@@ -141,7 +142,7 @@ class HDF5Dataset(object):
         self.dtype = dtype
         self.fillvalue = fillvalue
         self.shape = shape if shape is not None else (0,) * rank
-        self.maxshape = shape if shape is not None else (None,) * rank
+        self.maxshape = None if shape is not None else (None,) * rank
         self.block_size = block_size
         self.block_timeout = block_timeout
         self._cache = None
@@ -214,7 +215,19 @@ class HDF5Dataset(object):
 
         data = self.prepare_data(data)
 
-        self._h5py_dataset.resize(data.shape)
+        if self.maxshape is not None:
+            # If a maxshape is set then the dataset can be resized
+            self._h5py_dataset.resize(data.shape)
+        elif self.shape != data.shape:
+            # If the dataset cannot be resized, then the data shape must match
+            self._logger.error(
+                "%s | Dataset shape %s does not match data shape %s",
+                self.name,
+                self.shape,
+                data.shape,
+            )
+            return
+
         self._h5py_dataset[...] = data
         self._is_written = True
 
@@ -257,6 +270,7 @@ class Int32HDF5Dataset(HDF5Dataset):
         cache=True,
         block_size=1000000,
         block_timeout=600,
+        **kwargs
     ):
         super(Int32HDF5Dataset, self).__init__(
             name,
@@ -266,6 +280,7 @@ class Int32HDF5Dataset(HDF5Dataset):
             cache=cache,
             block_size=block_size,
             block_timeout=block_timeout,
+            **kwargs
         )
 
 
@@ -294,8 +309,32 @@ class Int64HDF5Dataset(HDF5Dataset):
         )
 
 
+class Float32HDF5Dataset(HDF5Dataset):
+    """Float32 HDF5Dataset"""
+
+    def __init__(
+        self,
+        name,
+        shape=None,
+        cache=True,
+        block_size=1000000,
+        block_timeout=600,
+        **kwargs
+    ):
+        super(Float32HDF5Dataset, self).__init__(
+            name,
+            dtype="float32",
+            fillvalue=-1,
+            shape=shape,
+            cache=cache,
+            block_size=block_size,
+            block_timeout=block_timeout,
+            **kwargs
+        )
+
+
 class Float64HDF5Dataset(HDF5Dataset):
-    """Int64 HDF5Dataset"""
+    """Float64 HDF5Dataset"""
 
     def __init__(
         self,
@@ -329,6 +368,7 @@ class StringHDF5Dataset(HDF5Dataset):
         cache=True,
         block_size=1000000,
         block_timeout=600,
+        **kwargs
     ):
         """
         Args:
@@ -343,6 +383,7 @@ class StringHDF5Dataset(HDF5Dataset):
             cache=cache,
             block_size=block_size,
             block_timeout=block_timeout,
+            **kwargs
         )
 
     def prepare_data(self, data):

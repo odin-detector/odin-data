@@ -30,18 +30,18 @@ class MetaListener(object):
 
     """
 
-    def __init__(self, ctrl_port, data_endpoints, writer):
+    def __init__(self, ctrl_port, data_endpoints, writer, writer_config):
         """
         Args:
             ctrl_port(int): The port to bind the control channel to
             data_endpoints(list(str)): List of endpoints to receive data on
                 e.g. ["tcp://127.0.0.1:5008", "tcp://127.0.0.1:5018"]
             writer(str): Full import path for writer class to load
+            writer_config(MetaWriterConfig): Configuration to pass to writers
 
         """
         self._ctrl_port = ctrl_port
         self._data_endpoints = data_endpoints
-        self._process_count = len(data_endpoints)
         self._writers = {}
         self._status_dict = {}
         self._writer_names = []
@@ -50,6 +50,7 @@ class MetaListener(object):
         self._logger = logging.getLogger(self.__class__.__name__)
 
         self._writer_class = self._load_writer(writer)
+        self._writer_config = writer_config
 
     @staticmethod
     def _construct_reply(msg_val, msg_id, error=None):
@@ -107,7 +108,10 @@ class MetaListener(object):
         else:
             self._logger.info("Shutdown requested")
         finally:
-            self.stop_all_writers()
+            try:
+                self.stop_all_writers()
+            except:
+                self._logger.error("Exception when stopping writers to shutdown")
 
             self._logger.info("Closing sockets")
             for socket in data_sockets:
@@ -328,7 +332,7 @@ class MetaListener(object):
         # Now create new acquisition
         self._logger.info("Creating new writer %s", writer_name)
         self._writers[writer_name] = self._writer_class(
-            writer_name, DEFAULT_DIRECTORY, self._process_count, self._data_endpoints
+            writer_name, DEFAULT_DIRECTORY, self._data_endpoints, self._writer_config
         )
         # Register the writer name but only keep a record of the last three
         while len(self._writer_names) > 2:

@@ -32,6 +32,17 @@ FLUSH_FRAME_FREQUENCY = "flush_frame_frequency"
 FLUSH_TIMEOUT = "flush_timeout"
 
 
+class MetaWriterConfig(object):
+
+    def __init__(self, sensor_shape):
+        """
+        Args:
+            sensor_shape(tuple): Detector sensor size (y, x)
+
+        """
+        self.sensor_shape = sensor_shape
+
+
 def require_open_hdf5_file(func):
     """A decorator to verify the HDF5 file is open before calling the wrapped method
 
@@ -78,13 +89,14 @@ class MetaWriter(object):
     # Detector-specific parameters received on per-frame meta message
     DETECTOR_WRITE_FRAME_PARAMETERS = []
 
-    def __init__(self, name, directory, process_count, endpoints):
+    def __init__(self, name, directory, endpoints, config):
         """
         Args:
             name(str): Unique name to construct file path and to include in
                        log messages
             directory(str): Directory to create the meta file in
-            process_count(int): Total number of processes we will receive data from
+            endpoints(list): Endpoints parent MetaListener will receive data on
+            config(MetaWriterConfig): Configuration options
 
         """
         self._logger = logging.getLogger(self.__class__.__name__)
@@ -103,7 +115,8 @@ class MetaWriter(object):
 
         # Internal parameters
         self._name = name
-        self._processes_running = [False] * process_count
+        self._processes_running = [False] * len(endpoints)
+        self._config = config
         self._last_flushed = time()  # Seconds since epoch
         self._frames_since_flush = 0
         self._hdf5_file = None
@@ -113,6 +126,7 @@ class MetaWriter(object):
         )
         # Child class parameters
         self._frame_data_map = dict()  # Map of frame number to detector data
+        self._frame_offset_map = dict()  # Map of frame number to offset in dataset
         self._writers_finished = False
         self._detector_finished = True  # See stop_when_detector_finished
 
@@ -127,8 +141,7 @@ class MetaWriter(object):
             Int64HDF5Dataset(CLOSE_DURATION, cache=False),
         ]
 
-    @staticmethod
-    def _define_detector_datasets():
+    def _define_detector_datasets(self):
         return []
 
     @property
@@ -316,9 +329,9 @@ class MetaWriter(object):
     def stop_when_detector_finished(self):
         """Register that it is OK to stop when all detector-specific logic is complete
 
-        By default_detector_finished is set to True initially so that this check always
+        By default, detector_finished is set to True initially so that this check always
         passes. Child classes that need to do their own checks can set this to False in
-        __ init__ and call stop_when_writers_finished when ready to stop.
+        __init__ and call stop_when_writers_finished when ready to stop.
 
         """
         self._writers_finished = True
@@ -331,7 +344,7 @@ class MetaWriter(object):
     def stop_when_writers_finished(self):
         """Register that it is OK to stop when all monitored writers have finished
 
-        Child classes can call this when all detector specific logic is complete.
+        Child classes can call this when all detector-specific logic is complete.
 
         """
         self._detector_finished = True
@@ -521,12 +534,13 @@ class MetaWriter(object):
         self._logger.debug("%s | Writing detector data for frame %d", self._name, frame)
 
         if frame not in self._frame_data_map:
-            self._logger.error(
+            self._logger.warning(
                 "%s | No detector meta data stored for frame %d", self._name, frame
             )
+            self._frame_offset_map[frame] = offset
             return
 
-        data = self._frame_data_map[frame]
+        data = self._frame_data_map.pop(frame)
         self._add_values(self.DETECTOR_WRITE_FRAME_PARAMETERS, data, offset)
 
     def handle_close_file(self, _header, data):
