@@ -85,6 +85,11 @@ add_library(GapFillPlugin SHARED GapFillPlugin.cpp GapFillPluginLib.cpp)
 target_link_libraries(GapFillPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${COMMON_LIBRARY})
 install(TARGETS GapFillPlugin DESTINATION lib)
 
+# Add library for Parameter Publish plugin
+add_library(ParameterPublishPlugin SHARED ParameterPublishPlugin.cpp ParameterPublishPluginLib.cpp)
+target_link_libraries(ParameterPublishPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${COMMON_LIBRARY})
+install(TARGETS ParameterPublishPlugin DESTINATION lib)
+
 if (${KAFKA_FOUND})
     include_directories(${KAFKA_INCLUDE_DIR})
     # Add library for Kafka Producer plugin

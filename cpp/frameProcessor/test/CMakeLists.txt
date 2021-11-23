@@ -34,6 +34,7 @@ target_link_libraries(frameProcessorTest
         LiveViewPlugin
         SumPlugin
         GapFillPlugin
+        ParameterPublishPlugin
         ${COMMON_LIBRARY})
 
 # Link for BloscPlugin if Blosc is present
@@ -57,3 +58,7 @@ if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
 endif()
 
 install(TARGETS frameProcessorTest RUNTIME DESTINATION bin)
+
+add_executable(TestZMQSubscriber zmqSubscriber.c)
+target_link_libraries(TestZMQSubscriber ${ZEROMQ_LIBRARIES})
+install(TARGETS TestZMQSubscriber RUNTIME DESTINATION bin)
