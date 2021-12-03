@@ -29,6 +29,11 @@ void JsonDict::add(const std::string& key, rapidjson::Value& json_value)
   document_.AddMember(json_key, json_value, document_.GetAllocator());
 }
 
+void JsonDict::add(const std::string& key, JsonDict& json_dict) {
+  rapidjson::Value json_key(key.c_str(), document_.GetAllocator());
+  document_.AddMember(json_key, json_dict.document_, this->document_.GetAllocator());
+}
+
 void JsonDict::add(const std::string& key, const std::string& value) {
   rapidjson::Value json_value;
   json_value.SetString(value.c_str(), value.length(), document_.GetAllocator());

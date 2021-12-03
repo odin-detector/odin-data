@@ -34,6 +34,8 @@ public:
 
   void add(const std::string& key, const std::string&  json_value);
 
+  void add(const std::string& key, JsonDict& json_dict);
+
   /** Add a vector value to the underlying rapidjson::Document
    *
    * \param[in] key - The key of the item to add
