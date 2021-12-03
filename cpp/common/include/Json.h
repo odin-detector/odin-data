@@ -32,6 +32,8 @@ public:
     add(key, json_value);
   }
 
+  void add(const std::string& key, const long long json_value);
+
   void add(const std::string& key, const std::string&  json_value);
 
   void add(const std::string& key, JsonDict& json_dict);

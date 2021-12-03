@@ -40,6 +40,11 @@ void JsonDict::add(const std::string& key, const std::string& value) {
   add(key, json_value);
 }
 
+void JsonDict::add(const std::string& key, const long long json_value) {
+  // Cast to avoid ambiguous rapidjson::Value constructor call
+  add(key, (int64_t) json_value);
+}
+
 /** Generate a string from the rapidjson::Document
  *
  * \return - The string
