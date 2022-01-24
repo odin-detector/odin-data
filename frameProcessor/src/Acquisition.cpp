@@ -50,6 +50,7 @@ Acquisition::Acquisition(const HDF5ErrorDefinition_t& hdf5_error_definition) :
         alignment_threshold_(1),
         alignment_value_(1),
         last_error_(""),
+        file_postfix_(""),
         hdf5_error_definition_(hdf5_error_definition)
 {
   this->logger_ = Logger::getLogger("FP.Acquisition");
@@ -339,6 +340,7 @@ bool Acquisition::start_acquisition(
     size_t concurrent_processes,
     size_t frames_per_block,
     size_t blocks_per_file,
+    std::string file_postfix,
     std::string file_extension,
     bool use_earliest_hdf5,
     size_t alignment_threshold,
@@ -354,6 +356,7 @@ bool Acquisition::start_acquisition(
   use_earliest_hdf5_ = use_earliest_hdf5;
   alignment_threshold_ = alignment_threshold;
   alignment_value_ = alignment_value;
+  file_postfix_ = file_postfix;
   file_extension_ = file_extension;
   master_frame_ = master_frame;
 
@@ -644,11 +647,11 @@ std::string Acquisition::generate_filename(size_t file_number) {
   snprintf(number_string, 7, "%06d", file_number + 1);
   if (!configured_filename_.empty())
   {
-    generated_filename << configured_filename_ << "_" << number_string << file_extension_;
+    generated_filename << configured_filename_ << file_postfix_ << "_" << number_string << file_extension_;
   }
   else if (!acquisition_id_.empty())
   {
-    generated_filename << acquisition_id_ << "_" << number_string << file_extension_;
+    generated_filename << acquisition_id_ << file_postfix_ << "_" << number_string << file_extension_;
   }
 
   return generated_filename.str();

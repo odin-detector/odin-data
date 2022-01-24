@@ -85,6 +85,8 @@ private:
   static const std::string CONFIG_FILE;
   /** Configuration constant for file name */
   static const std::string CONFIG_FILE_NAME;
+  /** Configuration constant for file name postfix (optional) */
+  static const std::string CONFIG_FILE_POSTFIX;
   /** Configuration constant for file path */
   static const std::string CONFIG_FILE_PATH;
   /** Configuration constant for file extension */
@@ -181,6 +183,8 @@ private:
   bool timeout_thread_running_;
   /** The close file timeout thread */
   boost::thread timeout_thread_;
+  /** The optional file postfix to add */
+  std::string file_postfix_;
   /** The file extension to use */
   std::string file_extension_;
   /** Name of master frame. When a master frame is received frame numbers increment */

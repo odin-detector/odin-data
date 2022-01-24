@@ -41,6 +41,7 @@ public:
     size_t concurrent_processes,
     size_t frames_per_block,
     size_t blocks_per_file,
+    std::string file_postfix,
     std::string file_extension,
     bool use_earliest_hdf5,
     size_t alignment_threshold,
@@ -71,6 +72,8 @@ public:
   std::string filename_;
   /** Configured value to be used as the prefix to generate the filename. */
   std::string configured_filename_;
+  /** Configured value to be used as extra filename control if required. */
+  std::string file_postfix_;
   /** File extension to use */
   std::string file_extension_;
   /** Use the earliest version of hdf5 */
