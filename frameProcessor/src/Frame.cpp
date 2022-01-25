@@ -13,6 +13,7 @@ namespace FrameProcessor {
             data_size_(data_size),
             image_offset_(image_offset),
             image_size_(data_size-image_offset),
+            outer_chunk_size_(1),
             logger_(log4cxx::Logger::getLogger("FP.Frame")) {
     }
 
@@ -23,6 +24,7 @@ namespace FrameProcessor {
     Frame::Frame(const Frame &frame) {
       meta_data_ = frame.meta_data_;
       image_offset_ = frame.image_offset_;
+      outer_chunk_size_ = frame.outer_chunk_size_;
       logger_ = frame.logger_;
     }
 
@@ -34,6 +36,7 @@ namespace FrameProcessor {
     Frame &Frame::operator=(const Frame &frame) {
       meta_data_ = frame.meta_data_;
       image_offset_ = frame.image_offset_;
+      outer_chunk_size_ = frame.outer_chunk_size_;
       logger_ = frame.logger_;
       return *this;
     }
@@ -147,6 +150,22 @@ namespace FrameProcessor {
     void Frame::set_image_offset(const int &offset) {
       this->image_offset_ = offset;
       this->image_size_ = this->data_size_ - this->image_offset_;
+    }
+
+/** Set the outer chunk size of the frame (number of trigger acqs in chunk)
+ * @param size - outer_chunk_size
+ */
+    void Frame::set_outer_chunk_size(const int &size)
+    {
+      this->outer_chunk_size_ = size;
+    }
+
+/** Get the outer chunk size of the frame (number of trigger acqs in chunk)
+ * @return outer_chunk_size
+ */
+    int Frame::get_outer_chunk_size() const
+    {
+      return this->outer_chunk_size_;
     }
 
 }

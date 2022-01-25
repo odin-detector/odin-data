@@ -69,6 +69,12 @@ class Frame {
   /** Set the image offset */
   void set_image_offset(const int &offset);
 
+  /** Set the outer chunk size */
+  void set_outer_chunk_size(const int &size);
+
+  /** Set the outer chunk size */
+  int get_outer_chunk_size() const;
+
  protected:
 
   /** Pointer to logger */
@@ -85,6 +91,9 @@ class Frame {
 
   /** Offset from frame memory start to image data */
   int image_offset_;
+
+  /** Outer chunk size of this frame (number of images in this chunk) */
+  int outer_chunk_size_;
 
 };
 

@@ -150,7 +150,7 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame, HD
       // are true then increment the number of frames written.
       if (master_frame_.empty() || master_frame_ == frame_dataset_name) {
         size_t dataset_frames = current_file_->get_dataset_frames(frame_dataset_name);
-        frames_processed_++;
+        frames_processed_ += frame->get_outer_chunk_size();
         LOG4CXX_TRACE(logger_, "Master frame processed");
         size_t current_file_index = current_file_->get_file_index() / concurrent_processes_;
         size_t frames_written_to_previous_files = current_file_index * frames_per_block_ * blocks_per_file_;
