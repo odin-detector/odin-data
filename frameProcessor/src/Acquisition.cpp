@@ -661,14 +661,12 @@ std::string Acquisition::generate_filename(size_t file_number) {
   if (!configured_filename_.empty())
   {
     generated_filename << configured_filename_ << file_postfix_;
-    if (use_file_numbers_){
-      generated_filename << "_" << number_string;
-    }
-    generated_filename << file_extension_;
   }
   else if (!acquisition_id_.empty())
   {
     generated_filename << acquisition_id_ << file_postfix_;
+  }
+  if (!generated_filename.str().empty()){
     if (use_file_numbers_){
       generated_filename << "_" << number_string;
     }
