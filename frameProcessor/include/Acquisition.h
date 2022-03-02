@@ -41,6 +41,8 @@ public:
     size_t concurrent_processes,
     size_t frames_per_block,
     size_t blocks_per_file,
+    uint32_t starting_file_index,
+    bool use_file_numbers,
     std::string file_postfix,
     std::string file_extension,
     bool use_earliest_hdf5,
@@ -66,6 +68,10 @@ public:
   size_t frames_to_write_;
   /** Total number of frames in acquisition */
   size_t total_frames_;
+  /** Starting file index (default to 0 index based numbering) */
+  uint32_t starting_file_index_;
+  /** Do we use file numbers in the file name construction.  Defaults to true */
+  bool use_file_numbers_;
   /** Path of the file to write to */
   std::string file_path_;
   /** Name of the file to write to */

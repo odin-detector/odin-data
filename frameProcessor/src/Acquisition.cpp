@@ -46,6 +46,8 @@ Acquisition::Acquisition(const HDF5ErrorDefinition_t& hdf5_error_definition) :
         frames_processed_(0),
         total_frames_(0),
         frames_to_write_(0),
+        starting_file_index_(0),
+        use_file_numbers_(true),
         use_earliest_hdf5_(false),
         alignment_threshold_(1),
         alignment_value_(1),
@@ -328,6 +330,9 @@ void Acquisition::validate_dataset_definition(DatasetDefinition definition) {
  * \param[in] concurrent_processes - The number of processors
  * \param[in] frames_per_block - The number of frames per block
  * \param[in] blocks_per_file - The number of blocks per file
+ * \param[in] starting_file_index - The first number in the indexing of filenames
+ * \param[in] use_file_numbers - Use file numbers in the file name (or not)
+ * \param[in] file_postfix - An additional string placed before any numbering
  * \param[in] file_extension - The file extension to use
  * \param[in] use_earliest_hdf5 - Whether to use an early version of hdf5 library
  * \param[in] alignment_threshold - Alignment threshold for hdf5 chunking
@@ -340,6 +345,8 @@ bool Acquisition::start_acquisition(
     size_t concurrent_processes,
     size_t frames_per_block,
     size_t blocks_per_file,
+    uint32_t starting_file_index,
+    bool use_file_numbers,
     std::string file_postfix,
     std::string file_extension,
     bool use_earliest_hdf5,
@@ -353,6 +360,8 @@ bool Acquisition::start_acquisition(
   concurrent_processes_ = concurrent_processes;
   frames_per_block_ = frames_per_block;
   blocks_per_file_ = blocks_per_file;
+  starting_file_index_ = starting_file_index;
+  use_file_numbers_ = use_file_numbers;
   use_earliest_hdf5_ = use_earliest_hdf5;
   alignment_threshold_ = alignment_threshold;
   alignment_value_ = alignment_value;
@@ -630,8 +639,11 @@ std::string Acquisition::get_meta_header() {
 /**
  * Generates the filename for the given file number
  *
- * Appends a 6 digit file number to the configured file name.
- * File numbers are 0 indexed, but filenames are 1 indexed
+ * Appends a postfix string to the filename followed by a 6 digit file
+ * number to the configured file name.  The string postfix defaults to
+ * an empty string if it was not set.
+ * File names are 0 indexed by default, but the starting index can be configured.
+ * File numbers are not used if the feature is turned off (use_file_numbers_).
  *
  * If no file name is configured, it uses the acquisition ID and if this
  * is not configured, then the generated filename returned is empty.
@@ -642,16 +654,25 @@ std::string Acquisition::get_meta_header() {
 std::string Acquisition::generate_filename(size_t file_number) {
 
   std::stringstream generated_filename;
+  size_t file_index = file_number + starting_file_index_;
 
   char number_string[7];
-  snprintf(number_string, 7, "%06d", file_number + 1);
+  snprintf(number_string, 7, "%06u", file_index);
   if (!configured_filename_.empty())
   {
-    generated_filename << configured_filename_ << file_postfix_ << "_" << number_string << file_extension_;
+    generated_filename << configured_filename_ << file_postfix_;
+    if (use_file_numbers_){
+      generated_filename << "_" << number_string;
+    }
+    generated_filename << file_extension_;
   }
   else if (!acquisition_id_.empty())
   {
-    generated_filename << acquisition_id_ << file_postfix_ << "_" << number_string << file_extension_;
+    generated_filename << acquisition_id_ << file_postfix_;
+    if (use_file_numbers_){
+      generated_filename << "_" << number_string;
+    }
+    generated_filename << file_extension_;
   }
 
   return generated_filename.str();

@@ -30,6 +30,8 @@ const std::string FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_VALUE     = "alignm
 
 const std::string FileWriterPlugin::CONFIG_FILE                        = "file";
 const std::string FileWriterPlugin::CONFIG_FILE_NAME                   = "name";
+const std::string FileWriterPlugin::CONFIG_FILE_USE_NUMBERS            = "use_numbers";
+const std::string FileWriterPlugin::CONFIG_FILE_NUMBER_START           = "first_number";
 const std::string FileWriterPlugin::CONFIG_FILE_POSTFIX                = "postfix";
 const std::string FileWriterPlugin::CONFIG_FILE_PATH                   = "path";
 const std::string FileWriterPlugin::CONFIG_FILE_EXTENSION              = "extension";
@@ -73,6 +75,8 @@ FileWriterPlugin::FileWriterPlugin() :
         concurrent_rank_(0),
         frames_per_block_(1),
         blocks_per_file_(0),
+        first_file_index_(0),
+        use_file_numbering_(true),
         file_postfix_(""),
         file_extension_("h5"),
         use_earliest_hdf5_(false),
@@ -201,6 +205,8 @@ void FileWriterPlugin::start_writing()
         concurrent_processes_,
         frames_per_block_,
         blocks_per_file_,
+        first_file_index_,
+        use_file_numbering_,
         file_postfix_,
         file_extension_,
         use_earliest_hdf5_,
@@ -373,6 +379,8 @@ void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
   std::string file_str = get_name() + "/" + FileWriterPlugin::CONFIG_FILE + "/";
   reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_PATH, next_acquisition_->file_path_);
   reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_NAME, next_acquisition_->configured_filename_);
+  reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_USE_NUMBERS, use_file_numbering_);
+  reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_NUMBER_START, first_file_index_);
   reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_POSTFIX, file_postfix_);
   reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_EXTENSION, file_extension_);
   // Configure HDF5 call error durations
@@ -577,6 +585,14 @@ void FileWriterPlugin::configure_file(OdinData::IpcMessage& config, OdinData::Ip
   if (config.has_param(FileWriterPlugin::CONFIG_FILE_NAME)) {
     this->next_acquisition_->configured_filename_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_NAME);
     LOG4CXX_DEBUG_LEVEL(1, logger_, "Next file name changed to " << this->next_acquisition_->configured_filename_);
+  }
+  if (config.has_param(FileWriterPlugin::CONFIG_FILE_USE_NUMBERS)) {
+    this->use_file_numbering_ = config.get_param<bool>(FileWriterPlugin::CONFIG_FILE_USE_NUMBERS);
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "File name 'use file numbers' changed to " << this->use_file_numbering_);
+  }
+  if (config.has_param(FileWriterPlugin::CONFIG_FILE_NUMBER_START)) {
+    this->first_file_index_ = config.get_param<int>(FileWriterPlugin::CONFIG_FILE_NUMBER_START);
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "File name first index number changed to " << this->first_file_index_);
   }
   if (config.has_param(FileWriterPlugin::CONFIG_FILE_POSTFIX)) {
     this->file_postfix_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_POSTFIX);
