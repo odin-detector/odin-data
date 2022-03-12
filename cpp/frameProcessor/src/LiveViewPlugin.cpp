@@ -389,7 +389,7 @@ void LiveViewPlugin::set_socket_addr_config(std::string value)
     LOG4CXX_INFO(logger_, "Setting Live View Socket Address to " << image_view_socket_addr_);
     publish_socket_.bind(image_view_socket_addr_);
     is_bound_ = true;
-    LOG4CXX_INFO(logger_, "Live View Socket bound successfully")
+    LOG4CXX_INFO(logger_, "Live View Socket bound successfully");
   }
   catch(zmq::error_t& e)
   {

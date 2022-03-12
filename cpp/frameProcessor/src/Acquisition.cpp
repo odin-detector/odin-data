@@ -657,7 +657,7 @@ std::string Acquisition::generate_filename(size_t file_number) {
   size_t file_index = file_number + starting_file_index_;
 
   char number_string[7];
-  snprintf(number_string, 7, "%06u", file_index);
+  snprintf(number_string, 7, "%06zu", file_index);
   if (!configured_filename_.empty())
   {
     generated_filename << configured_filename_ << file_postfix_;
