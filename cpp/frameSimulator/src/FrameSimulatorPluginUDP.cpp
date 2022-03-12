@@ -54,7 +54,7 @@ namespace FrameSimulator {
             LOG4CXX_DEBUG(logger_, "pcap file is not specified: simulating packets");
         }
         else {
-            LOG4CXX_DEBUG(logger_, "Replaying pcap file")
+            LOG4CXX_DEBUG(logger_, "Replaying pcap file");
         }
 
         // Optional arguments
