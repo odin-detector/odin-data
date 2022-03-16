@@ -19,6 +19,7 @@ from .hdf5dataset import HDF5Dataset, Int64HDF5Dataset
 FRAME = "frame"
 OFFSET = "offset"
 RANK = "rank"
+ENDPOINT = "_endpoint"
 CREATE_DURATION = "create_duration"
 WRITE_DURATION = "write_duration"
 FLUSH_DURATION = "flush_duration"
@@ -116,6 +117,7 @@ class MetaWriter(object):
         # Internal parameters
         self._name = name
         self._processes_running = [False] * len(endpoints)
+        self._endpoints = endpoints
         self._config = config
         self._last_flushed = time()  # Seconds since epoch
         self._frames_since_flush = 0
@@ -465,20 +467,20 @@ class MetaWriter(object):
         """Prepare the data file with the number of frames to write"""
         self._logger.debug("%s | Handling start acquisition message", self._name)
 
-        if self._processes_running[header[RANK]]:
+        if self._processes_running[self._endpoints.index(header[ENDPOINT])]:
             self._logger.error(
-                "%s | Received additional startacquisition from process rank %d - ignoring",
+                "%s | Received additional startacquisition from process endpoint %s - ignoring",
                 self._name,
-                header[RANK],
+                header[ENDPOINT],
             )
             return
 
-        self._processes_running[header[RANK]] = True
+        self._processes_running[self._endpoints.index(header[ENDPOINT])] = True
 
         self._logger.debug(
-            "%s | Received startacquisition message from rank %d - %d processes running",
+            "%s | Received startacquisition message from endpoint %s - %d processes running",
             self._name,
-            header[RANK],
+            header[ENDPOINT],
             self.active_process_count,
         )
 
@@ -551,18 +553,18 @@ class MetaWriter(object):
 
     def handle_stop_acquisition(self, header, _data):
         """Register that a process has finished and stop if it is the last one"""
-        if not self._processes_running[header[RANK]]:
+        if not self._processes_running[self._endpoints.index(header[ENDPOINT])]:
             self._logger.error(
-                "%s | Received stopacquisition from process rank %d before start - ignoring",
+                "%s | Received stopacquisition from process endpoint %s before start - ignoring",
                 self._name,
-                header[RANK],
+                header[ENDPOINT],
             )
             return
 
         self._logger.debug(
-            "%s | Received stopacquisition from rank %d", self._name, header[RANK]
+            "%s | Received stopacquisition from endpoint %s", self._name, header[ENDPOINT]
         )
-        self._processes_running[header[RANK]] = False
+        self._processes_running[self._endpoints.index(header[ENDPOINT])] = False
 
         if not any(self._processes_running):
             self._logger.info("%s | Last processor stopped", self._name)

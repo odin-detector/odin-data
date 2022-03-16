@@ -20,6 +20,7 @@ DEFAULT_ACQUISITION_ID = ""
 DEFAULT_DIRECTORY = "/tmp"
 
 WRITER = "writer"
+ENDPOINT = "_endpoint"
 
 
 class MetaListener(object):
@@ -70,17 +71,18 @@ class MetaListener(object):
         ctrl_socket = context.socket(zmq.ROUTER)
         ctrl_socket.bind(ctrl_endpoint)
 
-        data_sockets = []
+        data_sockets = {}
         for endpoint in self._data_endpoints:
             socket = context.socket(zmq.SUB)
             socket.set_hwm(10000)
             socket.connect(endpoint)
             socket.setsockopt(zmq.SUBSCRIBE, "")
-            data_sockets.append(socket)
+            data_sockets[endpoint] = socket
+
 
         poller = zmq.Poller()
         poller.register(ctrl_socket, zmq.POLLIN)
-        for socket in data_sockets:
+        for socket in data_sockets.values():
             poller.register(socket, zmq.POLLIN)
 
         self._logger.info(
@@ -97,9 +99,9 @@ class MetaListener(object):
                 if not self._writers:
                     continue
 
-                for socket in data_sockets:
+                for endpoint, socket in data_sockets.items():
                     if sockets.get(socket) == zmq.POLLIN:
-                        self.handle_data_message(socket)
+                        self.handle_data_message(socket, endpoint)
         except KeyboardInterrupt:
             self._logger.info("Received KeyboardInterrupt")
         except:
@@ -114,7 +116,7 @@ class MetaListener(object):
                 self._logger.error("Exception when stopping writers to shutdown")
 
             self._logger.info("Closing sockets")
-            for socket in data_sockets:
+            for socket in data_sockets.values():
                 socket.close(linger=0)
             if ctrl_socket is not None:
                 ctrl_socket.close(linger=100)
@@ -122,14 +124,14 @@ class MetaListener(object):
 
         self._logger.info("Finished")
 
-    def handle_data_message(self, socket):
+    def handle_data_message(self, socket, endpoint):
         """Handle a data message on the given socket
 
         Args:
             socket(zmq.Socket): The socket to receive a message on
 
         """
-        self._logger.debug("Handling data message")
+        self._logger.debug("Handling data message from {}".format(endpoint))
 
         # Receive the first part of the two part message
         # This is a json string with the following:
@@ -141,6 +143,11 @@ class MetaListener(object):
 
         header = socket.recv_json()
         self._logger.debug("Header message:\n%s", header)
+
+        # Messages are filed according to their starting location.  The endpoint
+        # is unique to each FP application and so this source endpoint of the 
+        # message is stored in the header so that it can be used within the writer.
+        header["header"][ENDPOINT] = endpoint
 
         acquisition_id = header["header"].get("acqID", DEFAULT_ACQUISITION_ID)
         if acquisition_id == DEFAULT_ACQUISITION_ID:
