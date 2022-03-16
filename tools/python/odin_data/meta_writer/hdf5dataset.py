@@ -117,6 +117,7 @@ class HDF5Dataset(object):
         fillvalue,
         rank=1,
         shape=None,
+        maxshape=None,
         cache=True,
         block_size=1000000,
         block_timeout=600,
@@ -128,6 +129,8 @@ class HDF5Dataset(object):
             fillvalue(value matching dtype): Fill value for h5py.Dataset
             rank(int): The rank (number of dimensions) of the dataset
             shape(tuple(int)): Initial shape to pass to h5py.Dataset
+            maxshape(tuple(int)): Maximum shape to pass to h5py.Dataset. Provide this to set
+                the maximum dataset size.
             cache(bool): Whether to store a local cache of values
                          or write directly to file
             block_size(int): Maximum size of each storage block within a cache.
@@ -141,7 +144,7 @@ class HDF5Dataset(object):
         self.dtype = dtype
         self.fillvalue = fillvalue
         self.shape = shape if shape is not None else (0,) * rank
-        self.maxshape = shape if shape is not None else (None,) * rank
+        self.maxshape = maxshape if maxshape is not None else shape if shape is not None else (None,) * rank
         self.block_size = block_size
         self.block_timeout = block_timeout
         self._cache = None
@@ -267,6 +270,7 @@ class Int32HDF5Dataset(HDF5Dataset):
         name,
         fillvalue=-1,
         shape=None,
+        maxshape=None,
         cache=True,
         block_size=1000000,
         block_timeout=600,
@@ -277,6 +281,7 @@ class Int32HDF5Dataset(HDF5Dataset):
             dtype="int32",
             fillvalue=fillvalue,
             shape=shape,
+            maxshape=maxshape,
             cache=cache,
             block_size=block_size,
             block_timeout=block_timeout,
@@ -292,6 +297,7 @@ class Int64HDF5Dataset(HDF5Dataset):
         name,
         fillvalue=-1,
         shape=None,
+        maxshape=None,
         cache=True,
         block_size=1000000,
         block_timeout=600,
@@ -302,6 +308,7 @@ class Int64HDF5Dataset(HDF5Dataset):
             dtype="int64",
             fillvalue=fillvalue,
             shape=shape,
+            maxshape=maxshape,
             cache=cache,
             block_size=block_size,
             block_timeout=block_timeout,
@@ -316,6 +323,7 @@ class Float32HDF5Dataset(HDF5Dataset):
         self,
         name,
         shape=None,
+        maxshape=None,
         cache=True,
         block_size=1000000,
         block_timeout=600,
@@ -326,6 +334,7 @@ class Float32HDF5Dataset(HDF5Dataset):
             dtype="float32",
             fillvalue=-1,
             shape=shape,
+            maxshape=maxshape,
             cache=cache,
             block_size=block_size,
             block_timeout=block_timeout,
@@ -340,6 +349,7 @@ class Float64HDF5Dataset(HDF5Dataset):
         self,
         name,
         shape=None,
+        maxshape=None,
         cache=True,
         block_size=1000000,
         block_timeout=600,
@@ -350,6 +360,7 @@ class Float64HDF5Dataset(HDF5Dataset):
             dtype="float64",
             fillvalue=-1,
             shape=shape,
+            maxshape=maxshape,
             cache=cache,
             block_size=block_size,
             block_timeout=block_timeout,
@@ -365,6 +376,7 @@ class StringHDF5Dataset(HDF5Dataset):
         name,
         length,
         shape=None,
+        maxshape=None,
         cache=True,
         block_size=1000000,
         block_timeout=600,
@@ -380,6 +392,7 @@ class StringHDF5Dataset(HDF5Dataset):
             dtype="S{}".format(length),
             fillvalue="",
             shape=shape,
+            maxshape=maxshape,
             cache=cache,
             block_size=block_size,
             block_timeout=block_timeout,
