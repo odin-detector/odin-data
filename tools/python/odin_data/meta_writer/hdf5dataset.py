@@ -127,8 +127,7 @@ class HDF5Dataset(object):
             dtype(str) Datatype to pass to h5py.Dataset
             fillvalue(value matching dtype): Fill value for h5py.Dataset
             rank(int): The rank (number of dimensions) of the dataset
-            shape(tuple(int)): Shape to pass to h5py.Dataset. Provide this to create a
-                static dataset without chunking. It then cannot be resized.
+            shape(tuple(int)): Initial shape to pass to h5py.Dataset
             cache(bool): Whether to store a local cache of values
                          or write directly to file
             block_size(int): Maximum size of each storage block within a cache.
@@ -142,7 +141,7 @@ class HDF5Dataset(object):
         self.dtype = dtype
         self.fillvalue = fillvalue
         self.shape = shape if shape is not None else (0,) * rank
-        self.maxshape = None if shape is not None else (None,) * rank
+        self.maxshape = shape if shape is not None else (None,) * rank
         self.block_size = block_size
         self.block_timeout = block_timeout
         self._cache = None
@@ -215,18 +214,19 @@ class HDF5Dataset(object):
 
         data = self.prepare_data(data)
 
-        if self.maxshape is not None:
-            # If a maxshape is set then the dataset can be resized
-            self._h5py_dataset.resize(data.shape)
-        elif self.shape != data.shape:
-            # If the dataset cannot be resized, then the data shape must match
-            self._logger.error(
-                "%s | Dataset shape %s does not match data shape %s",
-                self.name,
-                self.shape,
-                data.shape,
-            )
-            return
+        if self.shape != data.shape:
+            try:
+                self._h5py_dataset.resize(data.shape)
+            except Exception as exception:
+                self._logger.error(
+                    "%s | Data shape %s does not match dataset shape %s"
+                    " and resize failed:\n%s",
+                    self.name,
+                    self.shape,
+                    data.shape,
+                    exception
+                )
+                return
 
         self._h5py_dataset[...] = data
         self._is_written = True

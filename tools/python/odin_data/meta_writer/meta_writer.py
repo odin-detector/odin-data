@@ -205,6 +205,7 @@ class MetaWriter(object):
                 name=dataset.name,
                 shape=dataset.shape,
                 maxshape=dataset.maxshape,
+                chunks=dataset.maxshape if None not in dataset.maxshape else None,
                 dtype=dataset.dtype,
                 fillvalue=dataset.fillvalue,
             )
