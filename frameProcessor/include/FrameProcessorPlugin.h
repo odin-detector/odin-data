@@ -54,6 +54,7 @@ public:
 
 protected:
   void push(boost::shared_ptr<Frame> frame);
+  void push(const std::string& plugin_name, boost::shared_ptr<Frame> frame);
 
 private:
   /** Pointer to logger */

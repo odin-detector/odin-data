@@ -341,6 +341,27 @@ void FrameProcessorPlugin::push(boost::shared_ptr<Frame> frame)
   }
 }
 
+/** Push the supplied frame to a specifically named registered callback.
+ *
+ * This method calls the named blocking callback directly or places the frame
+ * pointer on the named worker queue (see IFrameCallback).
+ *
+ * \param[in] plugin_name - Name of the plugin to send the frame to.
+ * \param[in] frame - Pointer to the frame.
+ */
+void FrameProcessorPlugin::push(const std::string& plugin_name, boost::shared_ptr<Frame> frame)
+{
+  if (!frame->get_end_of_acquisition() && !frame->is_valid()){
+    throw std::runtime_error("FrameProcessorPlugin::push Invalid frame pushed onto plugin chain");
+  }
+  if (blocking_callbacks_.find(plugin_name) != blocking_callbacks_.end()){
+    blocking_callbacks_[plugin_name]->callback(frame);
+  }
+  if (callbacks_.find(plugin_name) != callbacks_.end()){
+    callbacks_[plugin_name]->getWorkQueue()->add(frame);
+  }
+}
+
 /** Perform any end of acquisition cleanup.
  *
  * This default implementation does nothing.  Any plugins that want to perform
