@@ -39,6 +39,7 @@ LiveViewPlugin::LiveViewPlugin() :
   set_per_second_config(DEFAULT_PER_SECOND);
   set_dataset_name_config(DEFAULT_DATASET_NAME);
   set_tagged_filter_config(DEFAULT_TAGGED_FILTER);
+  time_last_frame_ = boost::posix_time::microsec_clock::local_time();
 }
 
 /**
