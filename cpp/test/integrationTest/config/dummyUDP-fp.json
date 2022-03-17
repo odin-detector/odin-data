@@ -1,88 +1,77 @@
 [
-    {
-	"fr_setup":
 	{
-	    "fr_ready_cnxn":"tcp://127.0.0.1:5001",
-	    "fr_release_cnxn":"tcp://127.0.0.1:5002"
+		"fr_setup": {
+			"fr_ready_cnxn": "tcp://127.0.0.1:5001",
+			"fr_release_cnxn": "tcp://127.0.0.1:5002"
+		},
+		"meta_endpoint": "tcp://*:5008",
+		"frames": 10
 	},
-	"meta_endpoint":"tcp://*:5008"
-    },
-    
-    {
-	"plugin":
 	{
-	    "load":
-	    {
-		"index":"hdf",
-		"name":"FileWriterPlugin",
-		"library":"${INSTALL_PREFIX}/lib/libHdf5Plugin.so"
-	    }
-	}
-    },
-    {
-	"plugin":
-	{
-	    "load":
-	    {
-		"index":"dummy",
-		"name":"DummyUDPProcessPlugin",
-		"library":"${INSTALL_PREFIX}/lib/libDummyUDPProcessPlugin.so"
-	    }
-	}
-    },
-    {
-	"plugin":
-	{
-	    "connect":
-	    {
-		"index":"dummy",
-		"connection":"frame_receiver"
-	    }
-	}
-    },
-    {
-	"plugin":
-	{
-	    "connect":
-	    {
-		"index":"hdf",
-		"connection":"dummy"
-	    }
-	}
-    },
-  {
-    "dummy": {
-      "width": 1024,
-      "height": 1400
-    }
-  },
-
-    {
-	"hdf":
-	{
-	    "dataset":"dummy"
-	}
-    },
-    {
-	"hdf":
-	{
-	    "dataset":
-	    {
-		"dummy":
-		{
-		    "datatype":"uint16",
-		    "dims":[1400,1024],
-		    "compression":"none"
+		"plugin": {
+			"load": {
+				"index": "hdf",
+				"name": "FileWriterPlugin",
+				"library": "${CMAKE_INSTALL_PREFIX}/lib/libHdf5Plugin.so"
+			}
 		}
-	    },
-	    "file":
-	    {
-		"path":"",
-		"first_number":1
-	    },
-	    "frames":10,
-	    "acquisition_id":"test_1",
-	    "write":true
+	},
+	{
+		"plugin": {
+			"load": {
+				"index": "dummy",
+				"name": "DummyUDPProcessPlugin",
+				"library": "${CMAKE_INSTALL_PREFIX}/lib/libDummyUDPProcessPlugin.so"
+			}
+		}
+	},
+	{
+		"plugin": {
+			"connect": {
+				"index": "dummy",
+				"connection": "frame_receiver"
+			}
+		}
+	},
+	{
+		"plugin": {
+			"connect": {
+				"index": "hdf",
+				"connection": "dummy"
+			}
+		}
+	},
+	{
+		"dummy": {
+			"width": 1024,
+			"height": 1400
+		}
+	},
+	{
+		"hdf": {
+			"dataset": "dummy"
+		}
+	},
+	{
+		"hdf": {
+			"dataset": {
+				"dummy": {
+					"datatype": "uint16",
+					"dims": [
+						1400,
+						1024
+					],
+					"compression": "none"
+				}
+			},
+			"file": {
+				"path": "/tmp",
+				"first_number": 1
+			},
+			"frames": 10,
+			"acquisition_id": "test_1",
+			"timeout_timer_period": 3000,
+			"write": true
+		}
 	}
-    }
 ]

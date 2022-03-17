@@ -3,7 +3,7 @@ name: Test odin-data
 on: [push, pull_request]
 
 env:
-  INSTALL_PREFIX: ${{ github.workspace }}/../install
+  INSTALL_PREFIX: ${{ github.workspace }}/prefix
 
 jobs:
   test:
@@ -33,20 +33,17 @@ jobs:
         env:
           INSTALL_PREFIX: ${{ env.INSTALL_PREFIX }}
         run: |
-          cd build
-          bin/frameReceiverTest --log_level=test_suite
+          $INSTALL_PREFIX/bin/frameReceiverTest --log_level=test_suite
       - name: Run frame processor unit tests
         env:
           INSTALL_PREFIX: ${{ env.INSTALL_PREFIX }}
         run: |
-          cd build
-          bin/frameProcessorTest --log_level=test_suite
+          $INSTALL_PREFIX/bin/frameProcessorTest --log_level=test_suite
       - name: Run odin-data frame integration test
         env:
           INSTALL_PREFIX: ${{ env.INSTALL_PREFIX }}
         run: |
-          cd build
-          bin/odinDataTest --json=$INSTALL_PREFIX/test_config/dummyUDP.json
+          $INSTALL_PREFIX/bin/odinDataTest --json=$INSTALL_PREFIX/test_config/dummyUDP.json
       - name: Slack Notification
         uses: rtCamp/action-slack-notify@v2
         env:
