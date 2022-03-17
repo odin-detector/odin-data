@@ -1,48 +1,45 @@
 {
-    "Main":
-    {
+    "Main": {
         "receiver": {
-            "process" : true,
-            "command": "${INSTALL_PREFIX}\/bin\/frameReceiver",
+            "process": true,
+            "command": "${CMAKE_INSTALL_PREFIX}/bin/frameReceiver",
             "pos-args": "",
             "sleep": "1"
         },
         "processor": {
             "process": true,
-            "command": "${INSTALL_PREFIX}\/bin\/frameProcessor",
+            "command": "${CMAKE_INSTALL_PREFIX}/bin/frameProcessor",
             "pos-args": "",
             "sleep": "1"
         },
         "simulator": {
-            "process" : false,
-            "command": "${INSTALL_PREFIX}\/bin\/frameSimulator",
+            "process": false,
+            "command": "${CMAKE_INSTALL_PREFIX}/bin/frameSimulator",
             "pos-args": "DummyUDP",
             "sleep": "10"
         },
         "test": {
-            "process" : false,
-            "command": "${INSTALL_PREFIX}\/bin\/frameTests --log_level=all -- ",
+            "process": false,
+            "command": "${CMAKE_INSTALL_PREFIX}/bin/frameTests --log_level=all -- ",
             "pos-args": "",
             "sleep": "1"
         }
     },
-    "simulator":
-    {
-        "lib-path": "${INSTALL_PREFIX}\/lib",
+    "simulator": {
+        "lib-path": "${CMAKE_INSTALL_PREFIX}/lib",
         "frames": "10",
         "dest-ip": "127.0.0.1",
-        "ports": "61649"
+        "ports": "61649",
+        "packet-gap": 10
     },
-    "receiver":
-    {
-        "json_file": "${INSTALL_PREFIX}\/test_config\/dummyUDP-fr.json"
+    "receiver": {
+        "json_file": "${CMAKE_INSTALL_PREFIX}/test_config/dummyUDP-fr.json",
+        "frames": 10
     },
-    "processor":
-    {
-        "json_file": "${INSTALL_PREFIX}\/test_config\/dummyUDP-fp.json"
+    "processor": {
+        "json_file": "${CMAKE_INSTALL_PREFIX}/test_config/dummyUDP-fp.json"
     },
-    "test":
-    {
-        "json": "${INSTALL_PREFIX}\/test_config\/testUDP.json"
+    "test": {
+        "json": "${CMAKE_INSTALL_PREFIX}/test_config/testUDP.json"
     }
 }
