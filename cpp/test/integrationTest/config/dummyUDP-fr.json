@@ -7,7 +7,7 @@
     "decoder_config": {
       "enable_packet_logging": false,
       "frame_timeout_ms": 1000,
-      "udp_packets_per_frame": 263,
+      "udp_packets_per_frame": 359,
       "udp_packet_size": 8000
     }
   }

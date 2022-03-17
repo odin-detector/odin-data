@@ -31,11 +31,13 @@
         "lib-path": "${INSTALL_PREFIX}\/lib",
         "frames": "10",
         "dest-ip": "127.0.0.1",
-        "ports": "61649"
+        "ports": "61649",
+        "packet-gap": 10
     },
     "receiver":
     {
-        "json_file": "${INSTALL_PREFIX}\/test_config\/dummyUDP-fr.json"
+        "json_file": "${INSTALL_PREFIX}\/test_config\/dummyUDP-fr.json",
+        "frames": 10
     },
     "processor":
     {

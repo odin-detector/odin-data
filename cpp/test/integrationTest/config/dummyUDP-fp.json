@@ -5,9 +5,10 @@
 	    "fr_ready_cnxn":"tcp://127.0.0.1:5001",
 	    "fr_release_cnxn":"tcp://127.0.0.1:5002"
 	},
-	"meta_endpoint":"tcp://*:5008"
+	"meta_endpoint":"tcp://*:5008",
+	"frames": 10
     },
-    
+
     {
 	"plugin":
 	{
@@ -77,11 +78,12 @@
 	    },
 	    "file":
 	    {
-		"path":"",
+		"path":"/tmp",
 		"first_number":1
 	    },
 	    "frames":10,
 	    "acquisition_id":"test_1",
+		"timeout_timer_period": 3000,
 	    "write":true
 	}
     }
