@@ -20,10 +20,10 @@ dest-ip=127.0.0.1
 ports=61649
 interval=1
 [Receiver-args]
-json_file=/scratch/odin-data/configs/excalibur-fr.json
+config=/scratch/odin-data/configs/excalibur-fr.json
 m=500000000
 [Processor-args]
-json_file=/scratch/odin-data/configs/excalibur-fp.json
+config=/scratch/odin-data/configs/excalibur-fp.json
 ```
 
 Launches:

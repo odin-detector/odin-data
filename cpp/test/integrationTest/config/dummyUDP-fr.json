@@ -9,6 +9,7 @@
       "frame_timeout_ms": 1000,
       "udp_packets_per_frame": 359,
       "udp_packet_size": 8000
-    }
+    },
+    "frames": 10
   }
 ]

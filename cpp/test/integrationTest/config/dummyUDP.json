@@ -20,7 +20,7 @@
         },
         "test": {
             "process": false,
-            "command": "${CMAKE_INSTALL_PREFIX}/bin/frameTests --log_level=all -- ",
+            "command": "${CMAKE_INSTALL_PREFIX}/bin/frameTests -- ",
             "pos-args": "",
             "sleep": "1"
         }
@@ -33,11 +33,10 @@
         "packet-gap": 10
     },
     "receiver": {
-        "json_file": "${CMAKE_INSTALL_PREFIX}/test_config/dummyUDP-fr.json",
-        "frames": 10
+        "config": "${CMAKE_INSTALL_PREFIX}/test_config/dummyUDP-fr.json"
     },
     "processor": {
-        "json_file": "${CMAKE_INSTALL_PREFIX}/test_config/dummyUDP-fp.json"
+        "config": "${CMAKE_INSTALL_PREFIX}/test_config/dummyUDP-fp.json"
     },
     "test": {
         "json": "${CMAKE_INSTALL_PREFIX}/test_config/testUDP.json"
