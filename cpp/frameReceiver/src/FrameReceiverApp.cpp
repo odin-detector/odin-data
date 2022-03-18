@@ -63,12 +63,14 @@ FrameReceiverApp::~FrameReceiverApp()
 //!
 //! \param argc - standard command-line argument count
 //! \param argv - array of char command-line options
-//! \return return code, 0 if OK, 1 if option parsing failed
+//! \return return code:
+//!   * -1 if option parsing succeeded and we should continue running the application
+//!   *  0 if specific command completed (e.g. --help) and we should exit with success
+//!   *  1 if option parsing failed and we should exit with failure
 
 int FrameReceiverApp::parse_arguments(int argc, char** argv)
 {
-
-  int rc = 0;
+  int rc = -1;
   try
   {
     std::string config_file;
@@ -145,14 +147,14 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
     {
       std::cout << "usage: frameReceiver [options]" << std::endl << std::endl;
       std::cout << cmdline_options << std::endl;
-      return 1;
+      return 0;
     }
 
     // If the command line version option was given, print version and exit
     if (vm.count("version"))
     {
       std::cout << "frameReceiver version " ODIN_DATA_VERSION_STR << std::endl;
-      return 1;
+      return 0;
     }
 
     if (vm.count("debug-level"))
@@ -431,7 +433,7 @@ void intHandler (int sig)
 
 int main (int argc, char** argv)
 {
-  int rc = 0;
+  int rc = -1;
 
   // Initialise unexpected fault handling
   OdinData::init_seg_fault_handler();
@@ -448,14 +450,13 @@ int main (int argc, char** argv)
   FrameReceiver::FrameReceiverApp fr_instance;
 
   // Parse command line arguments and set up node configuration
-  rc = fr_instance.parse_arguments (argc, argv);
+  rc = fr_instance.parse_arguments(argc, argv);
 
-  if (rc == 0)
-  {
+  if (rc == -1) {
     // Run the instance
-    fr_instance.run ();
+    fr_instance.run();
+    rc = 0;
   }
 
   return rc;
-
 }
