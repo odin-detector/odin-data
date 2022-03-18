@@ -269,8 +269,8 @@ void DataBlockPool::tearDownClass()
   std::map<size_t , DataBlockPool*>::iterator it;
   for (it = instance_map_.begin(); it != instance_map_.end(); it++) {
     delete it->second;
-    instance_map_.erase(it);
   }
+  instance_map_.clear();
 }
 
 } /* namespace FrameProcessor */

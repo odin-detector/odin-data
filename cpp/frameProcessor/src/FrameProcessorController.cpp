@@ -110,7 +110,7 @@ void FrameProcessorController::handleCtrlChannel()
   std::string clientIdentity;
   std::string ctrlMsgEncoded = ctrlChannel_.recv(&clientIdentity);
   unsigned int msg_id = 0;
-  
+
   LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread called with message: " << ctrlMsgEncoded);
 
   // Parse and handle the message
@@ -252,8 +252,8 @@ void FrameProcessorController::callback(boost::shared_ptr<Frame> frame) {
     LOG4CXX_DEBUG_LEVEL(2, logger_, "Frame " << totalFrames << " complete.");
   }
 
-  if (totalFrames == datasetSize) {
-    LOG4CXX_DEBUG_LEVEL(2, logger_, "Dataset complete. Shutting down.");
+  if (totalFrames == shutdownFrameCount) {
+    LOG4CXX_DEBUG_LEVEL(2, logger_, "Shutdown frame count reached");
     // Set exit condition so main thread can continue and shutdown
     exitCondition_.notify_all();
     // Wait until the main thread has sent stop commands to the plugins
@@ -317,7 +317,7 @@ void FrameProcessorController::provideVersion(OdinData::IpcMessage& reply)
   reply.set_param("version/odin-data/patch", ODIN_DATA_VERSION_PATCH);
   reply.set_param("version/odin-data/short", std::string(ODIN_DATA_VERSION_STR_SHORT));
   reply.set_param("version/odin-data/full", std::string(ODIN_DATA_VERSION_STR));
- 
+
   // Loop over plugins, list version information from each
   std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
   for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
@@ -329,7 +329,7 @@ void FrameProcessorController::provideVersion(OdinData::IpcMessage& reply)
 /**
  * Set configuration options for the FrameProcessorController.
  *
- * Sets up the overall FileWriter application according to the
+ * Sets up the overall frameProcessor application according to the
  * configuration IpcMessage objects that are received. The objects
  * are searched for:
  * CONFIG_SHUTDOWN - Shuts down the application
@@ -363,11 +363,10 @@ void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData:
     }
   }
 
-  // If single-shot and frames given then we are running for defined number and then shutting down
-  if (config.has_param("single-shot") && config.get_param<bool>("single-shot") &&
-      config.has_param("frames") && config.get_param<unsigned int>("frames") != 0) {
-    datasetSize = config.get_param<unsigned int>("frames");
-    LOG4CXX_DEBUG_LEVEL(1, logger_, "Dataset size: " << datasetSize);
+  // If frames given then we are running for defined number and then shutting down
+  if (config.has_param("frames") && config.get_param<unsigned int>("frames") != 0) {
+    shutdownFrameCount = config.get_param<unsigned int>("frames");
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Shutdown frame count set to: " << shutdownFrameCount);
   }
 
   // Check for a request to inject an End Of Acquisition object
@@ -621,10 +620,11 @@ void FrameProcessorController::loadPlugin(const std::string& index, const std::s
       plugin->connect_meta_channel();
       plugins_[index] = plugin;
 
-      // Register callback to FWC with FileWriter plugin
-      if (name == "FileWriter") {
+      // Register callback with self for FileWriterPlugin
+      if (name == "FileWriterPlugin") {
         plugin->register_callback("controller", this->shared_from_this(), true);
       }
+      LOG4CXX_INFO(logger_, "Class " << name << " loaded as index = " << index);
 
       // Start the plugin worker thread
       plugin->start();
@@ -741,8 +741,8 @@ void FrameProcessorController::shutdown() {
     for (it = plugins_.begin(); it != plugins_.end(); it++) {
       LOG4CXX_DEBUG_LEVEL(1, logger_, "Removing " << it->first);
       while(it->second->isWorking());
-      plugins_.erase(it);
     }
+    plugins_.clear();
 
     // Stop worker thread (for IFrameCallback) and reactor
     LOG4CXX_DEBUG_LEVEL(1, logger_, "Stopping FrameProcessorController worker thread and IPCReactor");
