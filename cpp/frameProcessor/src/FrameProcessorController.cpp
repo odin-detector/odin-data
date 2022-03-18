@@ -252,8 +252,8 @@ void FrameProcessorController::callback(boost::shared_ptr<Frame> frame) {
     LOG4CXX_DEBUG_LEVEL(2, logger_, "Frame " << totalFrames << " complete.");
   }
 
-  if (totalFrames == datasetSize) {
-    LOG4CXX_DEBUG_LEVEL(2, logger_, "Dataset complete. Shutting down.");
+  if (totalFrames == shutdownFrameCount) {
+    LOG4CXX_DEBUG_LEVEL(2, logger_, "Shutdown frame count reached");
     // Set exit condition so main thread can continue and shutdown
     exitCondition_.notify_all();
     // Wait until the main thread has sent stop commands to the plugins
@@ -363,11 +363,10 @@ void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData:
     }
   }
 
-  // If single-shot and frames given then we are running for defined number and then shutting down
-  if (config.has_param("single-shot") && config.get_param<bool>("single-shot") &&
-      config.has_param("frames") && config.get_param<unsigned int>("frames") != 0) {
-    datasetSize = config.get_param<unsigned int>("frames");
-    LOG4CXX_DEBUG_LEVEL(1, logger_, "Dataset size: " << datasetSize);
+  // If frames given then we are running for defined number and then shutting down
+  if (config.has_param("frames") && config.get_param<unsigned int>("frames") != 0) {
+    shutdownFrameCount = config.get_param<unsigned int>("frames");
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Shutdown frame count set to: " << shutdownFrameCount);
   }
 
   // Check for a request to inject an End Of Acquisition object

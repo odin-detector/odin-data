@@ -134,8 +134,8 @@ private:
   std::map<std::string, std::string>                              stored_configs_;
   /** Condition for exiting this file writing process */
   boost::condition_variable                                       exitCondition_;
-  /** Frames per dataset */
-  int                                                             datasetSize;
+  /** Frames to write before shutting down - 0 to disable shutdown */
+  int                                                             shutdownFrameCount;
   /** Total frames processed */
   int                                                             totalFrames;
   /** Master frame specifier - Frame to include in count of total frames processed */
