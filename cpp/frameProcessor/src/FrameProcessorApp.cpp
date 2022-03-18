@@ -62,9 +62,16 @@ FrameProcessorApp::~FrameProcessorApp()
   controller_.reset();
 }
 
+/** Parse command line arguments
+ *
+ * @return return code:
+ *   * -1 if option parsing succeeded and we should continue running the application
+ *   *  0 if specific command completed (e.g. --help) and we should exit with success
+ *   *  1 if option parsing failed and we should exit with failure
+ */
 int FrameProcessorApp::parse_arguments(int argc, char** argv)
 {
-  int rc = 0;
+  int rc = -1;
   try
   {
     std::string config_file;
@@ -109,13 +116,13 @@ int FrameProcessorApp::parse_arguments(int argc, char** argv)
     {
       std::cout << "Usage: frameProcessor [options]" << std::endl << std::endl;
       std::cout << cmdline_options << std::endl;
-      return 1;
+      return 0;
     }
 
     // If the command line version option was given, print version and exit
     if (vm_.count("version")) {
       std::cout << "frameProcessor version " << ODIN_DATA_VERSION_STR << std::endl;
-      return 1;
+      return 0;
     }
 
     if (vm_.count("logconfig"))
@@ -243,7 +250,7 @@ void FrameProcessorApp::run(void)
 
 int main (int argc, char** argv)
 {
-  int rc = 0;
+  int rc = -1;
 
   // Initialise unexpected fault handling
   OdinData::init_seg_fault_handler();
@@ -256,12 +263,12 @@ int main (int argc, char** argv)
   FrameProcessor::FrameProcessorApp fp_instance;
 
   // Parse commnd line arguments
-  rc = fp_instance.parse_arguments (argc, argv);
+  rc = fp_instance.parse_arguments(argc, argv);
 
-  // Run the frame processor
-  if (rc == 0)
-  {
-    fp_instance.run ();
+  if (rc == -1) {
+    // Run the instance
+    fp_instance.run();
+    rc = 0;
   }
 
   return rc;
