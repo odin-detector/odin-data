@@ -1,0 +1,52 @@
+root: index
+subtrees:
+  - caption: User Guide
+    entries:
+      - file: user/index
+        entries:
+          - file: user/tutorials/index
+            entries:
+              - file: user/tutorials/build
+              - file: user/tutorials/deploy
+              - file: user/tutorials/run
+              - file: user/tutorials/tools
+          - file: user/how-to/index
+          #   entries:
+          #     - Add when needed
+          - file: user/explanations/index
+            entries:
+              - file: user/explanations/frame-receiver
+              - file: user/explanations/frame-processor
+              - file: user/explanations/frame-simulator
+          - file: user/reference/index
+          #   entries:
+          #     - Add when needed
+  - caption: Developer Guide
+    entries:
+      - file: developer/index
+        entries:
+          - file: developer/tutorials/index
+            entries:
+              - file: developer/tutorials/write-detector-support
+          - file: developer/how-to/index
+            entries:
+              - file: developer/how-to/common
+              - file: developer/how-to/frame-decoder
+              - file: developer/how-to/frame-processor-plugin
+              - file: developer/how-to/frame-simulator-plugin
+              - file: developer/how-to/docs
+                entries:
+                  - file: developer/how-to/excalidraw
+          - file: developer/explanations/index
+            entries:
+              - file: developer/explanations/overview
+              - file: developer/explanations/design-decisions
+          - file: developer/reference/index
+            entries:
+              - file: developer/reference/api/common
+              - file: developer/reference/api/frame-receiver
+              - file: developer/reference/api/frame-processor
+              - file: developer/reference/api/frame-simulator
+              - file: developer/reference/design-docs/index
+                entries:
+                  - file: developer/reference/design-docs/live-view-spec

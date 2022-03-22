@@ -1,0 +1,36 @@
+name: Docs CI
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          submodules: "true"
+
+      - name: Install Doxygen
+        run: sudo apt install -y doxygen graphviz
+        shell: bash
+
+      - name: Generate Doxygen Documentation
+        run: docs/doxygen.sh
+        shell: bash
+
+      - name: Build Docs
+        run: pip install ./python[dev] && sphinx-build -ET docs/ docs/build/html/
+
+      - name: Publish Docs
+        if: github.event_name == 'push'
+        # We pin to the SHA, not the tag, for security reasons.
+        # https://docs.github.com/en/actions/learn-github-actions/security-hardening-for-github-actions#using-third-party-actions
+        uses: peaceiris/actions-gh-pages@068dc23d9710f1ba62e86896f84735d869951305 # v3.8.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs/build/html/
+          keep_files: true

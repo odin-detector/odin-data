@@ -26,3 +26,5 @@ tools/imagej/build/
 
 tools/python/build/
 tools/python/dist/
+
+docs/build/
