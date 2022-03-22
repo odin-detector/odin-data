@@ -26,3 +26,6 @@ tools/imagej/build/
 
 tools/python/build/
 tools/python/dist/
+
+doc/_build
+doc/doxygen/_build

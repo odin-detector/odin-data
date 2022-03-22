@@ -1,0 +1,22 @@
+
+INPUT = \
+    ../../common/include \
+    ../../common/src \
+    ../../frameReceiver/include \
+    ../../frameReceiver/src \
+    ../../frameProcessor/include \
+    ../../frameProcessor/src \
+    ../../frameSimulator/include \
+    ../../frameSimulator/src
+RECURSIVE = YES
+EXTRACT_PRIVATE = YES
+EXTRACT_ALL = YES
+EXCLUDE = \
+    ../../common/include/zmq \
+    ../../common/include/rapidjson
+EXCLUDE_PATTERNS = *md
+
+OUTPUT_DIRECTORY = _build/
+GENERATE_XML = YES
+GENERATE_HTML = NO
+GENERATE_LATEX = NO

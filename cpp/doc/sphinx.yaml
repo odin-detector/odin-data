@@ -1,0 +1,49 @@
+root: index
+subtrees:
+  - caption: Explanations
+    entries:
+      - file: explanations/overview
+        entries:
+          - file: explanations/frame_receiver
+          - file: explanations/frame_processor
+          - file: explanations/frame_simulator
+          - file: explanations/design_decisions
+  - caption: Tutorials
+    entries:
+      - file: tutorials/getting_started
+        entries:
+          - file: tutorials/getting_started/build
+          - file: tutorials/getting_started/control
+          - file: tutorials/getting_started/deploy
+          - file: tutorials/getting_started/run
+          - file: tutorials/tools
+  - caption: Developer Guide
+    entries:
+      - file: how-to/development
+        entries:
+          - file: how-to/development/common
+          - file: how-to/development/frame_decoder
+          - file: how-to/development/frame_processor_plugin
+          - file: how-to/development/frame_simulator_plugin
+          - file: how-to/docs
+            entries:
+              - file: how-to/excalidraw
+  - caption: Reference
+    entries:
+      - file: reference/reference
+        entries:
+          - file: reference/api
+            entries:
+              - file: reference/api/common
+                entries:
+                  - glob: reference/api/common/*
+              - file: reference/api/frame_receiver
+                entries:
+                  - glob: reference/api/frame_receiver/*
+              - file: reference/api/frame_processor
+                entries:
+                  - glob: reference/api/frame_processor/*
+              - file: reference/api/frame_simulator
+                entries:
+                  - glob: reference/api/frame_simulator/*
+          - file: reference/technical_documentation/live_view_spec

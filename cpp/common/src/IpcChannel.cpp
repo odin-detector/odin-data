@@ -59,7 +59,7 @@ IpcContext::IpcContext(unsigned int io_threads) :
 IpcChannel::IpcChannel(int type) :
     context_(IpcContext::Instance()),
     socket_(context_.get(), type),
-    socket_type_(type)    
+    socket_type_(type)
 {
   // Set the socket identity for DEALER sockets
   if (type == ZMQ_DEALER)
@@ -249,7 +249,7 @@ void IpcChannel::send(std::string& message_str, int flags, const std::string& id
 //! identity_str argument is used to identify the destination identity when using
 //! DEALER-ROUTER channels.
 //!
-//! \param[in] message_str - pointer to null-terminated message string to send
+//! \param[in] message - pointer to null-terminated message string to send
 //! \param[in] flags - ZeroMQ message send flags (default value 0)
 //! \param[in] identity_str - identity of the destination endpoint to use for ROUTER sockets
 //!
