@@ -37,8 +37,7 @@ static const std::string librarySuffix = "FrameSimulatorPlugin";
 static const FrameSimulatorOption<std::string> opt_detector("detector", "Set the detector (Excalibur, Eiger etc.)");
 static const FrameSimulatorOption<std::string> opt_libpath("lib-path", "Path to detector plugin library");
 static const FrameSimulatorOption<unsigned int> opt_debuglevel("debug-level", "Set the debug level");
-static const FrameSimulatorOption<std::string> opt_logconfig("logconfig",
-                                                              "Set the log4cxx logging configuration file");
+static const FrameSimulatorOption<std::string> opt_log_config("log-config", "Set the log4cxx logging configuration file");
 
 /** Load requested plugin
  * /param[in] map of command line specified variables
@@ -53,7 +52,7 @@ boost::shared_ptr <FrameSimulator::FrameSimulatorPlugin> get_requested_plugin(co
                                                  boost::filesystem::path("lib" + pluginClass + ".so");
 
     boost::shared_ptr <FrameSimulator::FrameSimulatorPlugin> plugin;
-    
+
     try {
         plugin = OdinData::ClassLoader<FrameSimulator::FrameSimulatorPlugin>::load_class(pluginClass, libraryPathAndName.string());
     }
@@ -98,7 +97,7 @@ int parse_arguments(int argc, char **argv, po::variables_map &vm, LoggerPtr &log
         opt_detector.add_option_to(generic);
         opt_libpath.add_option_to(generic);
         opt_debuglevel.add_option_to(generic);
-        opt_logconfig.add_option_to(generic);
+        opt_log_config.add_option_to(generic);
 
         po::positional_options_description pos;
         pos.add(opt_detector.get_arg(), 1).add("subargs", -1);
@@ -118,8 +117,8 @@ int parse_arguments(int argc, char **argv, po::variables_map &vm, LoggerPtr &log
 
         // Setup logging
 
-        if (opt_logconfig.is_specified(vm)) {
-            std::string logconf_fname = opt_logconfig.get_val(vm);
+        if (opt_log_config.is_specified(vm)) {
+            std::string logconf_fname = opt_log_config.get_val(vm);
             if (has_suffix(logconf_fname, ".xml")) {
                 log4cxx::xml::DOMConfigurator::configure(logconf_fname);
             } else {
@@ -168,7 +167,7 @@ int parse_arguments(int argc, char **argv, po::variables_map &vm, LoggerPtr &log
                           << std::endl << std::endl;
                 std::cout << "  --version            Print version information" << std::endl;
                 std::cout << "  --" + opt_debuglevel.get_argstring() + "        " + opt_debuglevel.get_description() << std::endl;
-                std::cout << "  --" + opt_logconfig.get_argstring() + "          " + opt_logconfig.get_description() << std::endl << std::endl;
+                std::cout << "  --" + opt_log_config.get_argstring() + "          " + opt_log_config.get_description() << std::endl << std::endl;
                 std::cout << config << std::endl;
                 exit(1);
             }
@@ -181,7 +180,7 @@ int parse_arguments(int argc, char **argv, po::variables_map &vm, LoggerPtr &log
                       << std::endl;
             std::cout << "  --version            Print version information" << std::endl;
             std::cout << "  --" + opt_debuglevel.get_argstring() + "        " + opt_debuglevel.get_description() << std::endl;
-            std::cout << "  --" + opt_logconfig.get_argstring() + "          " + opt_logconfig.get_description() << std::endl;
+            std::cout << "  --" + opt_log_config.get_argstring() + "          " + opt_log_config.get_description() << std::endl;
             exit(1);
         }
 

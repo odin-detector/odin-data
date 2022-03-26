@@ -18,6 +18,7 @@
 #include "SharedBufferManager.h"
 #include "ClassLoader.h"
 #include "FrameProcessorPlugin.h"
+#include "OdinDataDefaults.h"
 
 namespace FrameProcessor
 {
@@ -36,7 +37,7 @@ class FrameProcessorController : public IFrameCallback,
                                  public boost::enable_shared_from_this<FrameProcessorController>
 {
 public:
-  FrameProcessorController(unsigned int num_io_threads=1);
+  FrameProcessorController(unsigned int num_io_threads=OdinData::Defaults::default_io_threads);
   virtual ~FrameProcessorController();
   void handleCtrlChannel();
   void handleMetaRxChannel();
@@ -134,8 +135,8 @@ private:
   std::map<std::string, std::string>                              stored_configs_;
   /** Condition for exiting this file writing process */
   boost::condition_variable                                       exitCondition_;
-  /** Frames per dataset */
-  int                                                             datasetSize;
+  /** Frames to write before shutting down - 0 to disable shutdown */
+  int                                                             shutdownFrameCount;
   /** Total frames processed */
   int                                                             totalFrames;
   /** Master frame specifier - Frame to include in count of total frames processed */
