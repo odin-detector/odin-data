@@ -94,6 +94,13 @@ void FrameReceiverController::configure(OdinData::IpcMessage& config_msg,
       set_debug_level(debug_level);
     }
 
+    // If frames given then we are running for defined number and then shutting down
+    if (config_msg.has_param(CONFIG_FRAMES) && config_msg.get_param<unsigned int>(CONFIG_FRAMES) != 0) {
+      unsigned int frame_count = config_msg.get_param<unsigned int>(CONFIG_FRAMES);
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Shutdown frame count set to: " << frame_count);
+      config_.frame_count_ = frame_count;
+    }
+
     // Configure IPC channels
     this->configure_ipc_channels(config_msg);
 
@@ -180,7 +187,7 @@ void FrameReceiverController::stop(const bool deferred)
       boost::bind(&FrameReceiverController::stop, this, false)
     );
   }
-  else 
+  else
   {
     LOG4CXX_TRACE(logger_, "FrameReceiverController::stop()");
     terminate_controller_ = true;
@@ -484,7 +491,7 @@ void FrameReceiverController::configure_frame_decoder(OdinData::IpcMessage& conf
 
     // Clear the decoder configuration status until succesful completion
     decoder_configured_ = false;
-    
+
     if (decoder_type != Defaults::default_decoder_type)
     {
       std::string lib_name = "lib" + decoder_type + "FrameDecoder" + SHARED_LIBRARY_SUFFIX;
@@ -602,7 +609,7 @@ void FrameReceiverController::configure_buffer_manager(OdinData::IpcMessage& con
 
     // Clear the buffer manager configuration status until succesful completion
     buffer_manager_configured_ = false;
-            
+
     if (frame_decoder_)
     {
 
@@ -704,7 +711,7 @@ void FrameReceiverController::configure_rx_thread(OdinData::IpcMessage& config_m
 
     // Clear the RX thread configuration status until succesful completion
     rx_thread_configured_ = false;
-        
+
     if (frame_decoder_ && buffer_manager_)
     {
 
@@ -814,7 +821,7 @@ void FrameReceiverController::handle_ctrl_channel(void)
                 "Got control channel version request from client " << client_identity);
             this->get_version(ctrl_reply);
             break;
-            
+
           case IpcMessage::MsgValCmdResetStatistics:
               LOG4CXX_DEBUG_LEVEL(3, logger_,
                 "Got reset statistics request from client " << client_identity);
@@ -827,7 +834,7 @@ void FrameReceiverController::handle_ctrl_channel(void)
               this->stop(true);
               ctrl_reply.set_msg_type(IpcMessage::MsgTypeAck);
               break;
-              
+
           default:
             request_ok = false;
             error_ss << "Illegal command request value: " << req_val;
@@ -884,15 +891,15 @@ void FrameReceiverController::handle_rx_channel(void)
     switch (msg_type)
     {
       case IpcMessage::MsgTypeCmd:
-        switch (msg_val) 
+        switch (msg_val)
         {
           case IpcMessage::MsgValCmdBufferPrechargeRequest:
             LOG4CXX_DEBUG_LEVEL(2, logger_, "Got buffer precharge request from RX thread");
-            this->precharge_buffers();    
+            this->precharge_buffers();
             break;
 
           default:
-            LOG4CXX_ERROR(logger_, 
+            LOG4CXX_ERROR(logger_,
               "Got unexpected value on command message from RX thread: " << rx_msg_encoded);
             break;
         }
@@ -915,7 +922,7 @@ void FrameReceiverController::handle_rx_channel(void)
               rx_thread_identity_ = msg_indentity;
               {
                 IpcMessage rx_reply(IpcMessage::MsgTypeAck, IpcMessage::MsgValNotifyIdentity);
-                rx_channel_.send(rx_reply.encode(), 0, rx_thread_identity_);  
+                rx_channel_.send(rx_reply.encode(), 0, rx_thread_identity_);
               }
             break;
 
@@ -925,14 +932,14 @@ void FrameReceiverController::handle_rx_channel(void)
             break;
 
           default:
-            LOG4CXX_ERROR(logger_, 
+            LOG4CXX_ERROR(logger_,
               "Got unexpected value on notification message from RX thread: " << rx_msg_encoded);
             break;
         }
         break;
 
       default:
-        LOG4CXX_ERROR(logger_, 
+        LOG4CXX_ERROR(logger_,
           "Got unexpected type on message from RX thread: " << rx_msg_encoded);
         break;
     }
@@ -1056,7 +1063,7 @@ void FrameReceiverController::notify_buffer_config(const bool deferred)
 
 //! Store the RX thread status.
 //!
-//! This method stores all the parameters present in the RX thread status message passed as an 
+//! This method stores all the parameters present in the RX thread status message passed as an
 //! argument, allowing them to be returned in subsequent get_status calls
 //!
 //! \param[in] rx_status_msg - IpcMessage containing RX thread status parameters
@@ -1090,7 +1097,7 @@ void FrameReceiverController::get_status(OdinData::IpcMessage& status_reply)
   unsigned int frames_timedout = 0;
   unsigned int frames_dropped = 0;
 
-  if (rx_thread_status_) 
+  if (rx_thread_status_)
   {
     empty_buffers = rx_thread_status_->get_param<unsigned int>("rx_thread/empty_buffers");
     mapped_buffers = rx_thread_status_->get_param<unsigned int>("rx_thread/mapped_buffers");

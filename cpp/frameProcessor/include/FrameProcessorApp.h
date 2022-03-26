@@ -22,28 +22,19 @@ public:
   ~FrameProcessorApp();
 
   int parse_arguments(int argc, char** argv);
-
-  bool isBloscRequired();
-
-  void configureController();
-  void configureDetector();
-  void configureDetectorDecoder();
-  void configureBlosc();
-  void configureHDF5();
-  void configureDataset(string name, bool master=false);
-  void configurePlugins();
-  void configureFileWriter();
-
-  void checkNoClientArgs();
-
+  void configure_controller(OdinData::IpcMessage& config_msg);
   void run();
 
 private:
 
   LoggerPtr logger_;                    //!< Log4CXX logger instance pointer
-  std::string json_config_file_;        //!< Full path to JSON configuration file
   static boost::shared_ptr<FrameProcessorController> controller_; //!< FrameProcessor controller object
-  boost::program_options::variables_map vm_; //!< Boost program options variable map
+
+  // Command line options
+  unsigned int io_threads_;  //!< Number of IO threads for IPC channels
+  std::string ctrl_channel_endpoint_;  //!< IPC channel endpoint for control communication with other processes
+  std::string config_file_; //!< Full path to JSON configuration file
+
 };
 
 } // namespace FrameProcessor
