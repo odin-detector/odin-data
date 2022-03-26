@@ -52,10 +52,12 @@ public:
 
 private:
 
-  LoggerPtr logger_;                    //!< Log4CXX logger instance pointer
-  FrameReceiverConfig config_;          //!< Configuration storage object
-  std::string json_config_file_;        //!< Full path to JSON configuration file
-  static boost::shared_ptr<FrameReceiverController> controller_; //!< FrameReceiver controller object
+  LoggerPtr logger_;  //!< Log4CXX logger instance pointer
+  static boost::shared_ptr<FrameReceiverController> controller_;  //!< FrameReceiver controller object
+
+  // Command line options
+  FrameReceiverConfig config_;  //!< Configuration storage object
+  std::string config_file_;  //!< Full path to JSON configuration file
 
 };
 
