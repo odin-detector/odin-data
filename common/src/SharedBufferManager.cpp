@@ -12,6 +12,22 @@
 using namespace OdinData;
 using namespace boost::interprocess;
 
+// results:
+// zero all: 13.5ms
+// read every byte: 15.0ms
+// read every 128x8 = 1024bytes: 15.5ms
+static void forceCreatePages(void* ptr, size_t size)
+{
+  uint64_t * ptr64 = static_cast<uint64_t*>(ptr);
+
+  volatile uint64_t total = ptr64[0];
+  for(size_t idx=10;idx < size/8;idx += 1)
+  {
+    total += ptr64[idx];
+  //  ptr64[idx] = 0;
+  }
+}
+
 SharedBufferManager::SharedBufferManager(const std::string& shared_mem_name, const size_t shared_mem_size,
                                          const size_t buffer_size, bool remove_when_deleted) try :
     shared_mem_name_(shared_mem_name),
@@ -32,6 +48,8 @@ SharedBufferManager::SharedBufferManager(const std::string& shared_mem_name, con
 
   // Map the whole shared memory region into this process
   shared_mem_region_ = mapped_region(shared_mem_, read_write);
+
+  forceCreatePages(shared_mem_region_.get_address(), shared_mem_size_);
 
   // Determine how many buffers of the requested size fit into the shared memory region
   size_t num_buffers = shared_mem_size_ / buffer_size;
@@ -66,6 +84,8 @@ SharedBufferManager::SharedBufferManager(const std::string& shared_mem_name) try
 
   // Determine how big the region is
   shared_mem_size_ = shared_mem_region_.get_size();
+
+  forceCreatePages(shared_mem_region_.get_address(), shared_mem_size_);
 
   // Map the buffer manager header
   manager_hdr_ = reinterpret_cast<Header*>(shared_mem_region_.get_address());
