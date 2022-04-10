@@ -15,15 +15,13 @@ using namespace log4cxx::helpers;
 
 #include "FrameProcessorPlugin.h"
 
-/**
- * This plugin class calculates the sum of each pixel and
- * adds it as a parameter
- *
- */
 namespace FrameProcessor {
 
   static const std::string SUM_PARAM_NAME = "sum";
 
+  /**
+   * This plugin class calculates the sum of each pixel and adds it as a parameter
+   */
   class SumPlugin : public FrameProcessorPlugin {
   public:
     SumPlugin();
