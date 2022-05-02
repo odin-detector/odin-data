@@ -5,7 +5,12 @@ ADD_DEFINITIONS(-DBUILD_DIR="${CMAKE_BINARY_DIR}")
 include_directories(${FRAMEPROCESSOR_DIR}/include ${HDF5_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${LOG4CXX_INCLUDE_DIRS}/.. ${ZEROMQ_INCLUDE_DIRS})
 add_definitions(${HDF5_DEFINITIONS})
 
-file(GLOB TEST_SOURCES FrameProcessorUnitTestMain.cpp FrameProcessorTest.cpp GapFillPluginTest.cpp)
+file(GLOB TEST_SOURCES
+    FrameProcessorUnitTestMain.cpp
+    FrameProcessorTest.cpp
+    GapFillPluginTest.cpp
+    MetaMessageTest.cpp
+)
 # Add tests for BloscPlugin if Blosc is present
 if (${BLOSC_FOUND})
   list(APPEND TEST_SOURCES BloscPluginTest.cpp)
