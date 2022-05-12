@@ -11,6 +11,7 @@ from json import loads
 import importlib
 
 import zmq
+from zmq.utils.strtypes import cast_bytes
 
 from odin_data.ipc_message import IpcMessage
 import odin_data._version as versioneer
@@ -76,7 +77,7 @@ class MetaListener(object):
             socket = context.socket(zmq.SUB)
             socket.set_hwm(10000)
             socket.connect(endpoint)
-            socket.setsockopt(zmq.SUBSCRIBE, "")
+            socket.setsockopt(zmq.SUBSCRIBE, cast_bytes(""))
             data_sockets[endpoint] = socket
 
 
@@ -226,7 +227,7 @@ class MetaListener(object):
             )
 
         socket.send(channel_id, zmq.SNDMORE)
-        socket.send(reply.encode())
+        socket.send(cast_bytes(reply.encode()))
 
     def status(self, request):
         """Handle a status request message
@@ -262,11 +263,11 @@ class MetaListener(object):
         return reply
 
     def clear_writers(self):
+        unfinished_writers = {}
         for writer_name, writer in self._writers.items():
             self._status_dict[writer_name] = writer.status()
             if writer.finished:
                 self._logger.debug("Deleting writer: {}".format(writer_name))
-                del self._writers[writer_name]
             else:
                 # TODO: This is bit of a hack...
                 stagnant = (
@@ -277,6 +278,8 @@ class MetaListener(object):
                 if stagnant:
                     self._logger.info("Stopping stagnant writer %s", writer_name)
                     writer.stop()
+                unfinished_writers[writer_name] = writer
+        self._writers = unfinished_writers
 
     def configure(self, request):
         """Handle a configuration message
