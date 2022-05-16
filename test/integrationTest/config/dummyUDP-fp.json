@@ -77,7 +77,8 @@
 	    },
 	    "file":
 	    {
-		"path":""
+		"path":"",
+		"first_number":1
 	    },
 	    "frames":10,
 	    "acquisition_id":"test_1",

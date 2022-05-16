@@ -85,6 +85,12 @@ private:
   static const std::string CONFIG_FILE;
   /** Configuration constant for file name */
   static const std::string CONFIG_FILE_NAME;
+  /** Configuration constant for using automatic file name numbering */
+  static const std::string CONFIG_FILE_USE_NUMBERS;
+  /** Configuration constant for starting file number if using numbering */
+  static const std::string CONFIG_FILE_NUMBER_START;
+  /** Configuration constant for file name postfix (optional) */
+  static const std::string CONFIG_FILE_POSTFIX;
   /** Configuration constant for file path */
   static const std::string CONFIG_FILE_PATH;
   /** Configuration constant for file extension */
@@ -181,6 +187,12 @@ private:
   bool timeout_thread_running_;
   /** The close file timeout thread */
   boost::thread timeout_thread_;
+  /** Starting file index (default to 0 index based numbering) */
+  uint32_t first_file_index_;
+  /** Do we use file numbers in the file name construction.  Defaults to true */
+  bool use_file_numbering_;
+  /** The optional file postfix to add */
+  std::string file_postfix_;
   /** The file extension to use */
   std::string file_extension_;
   /** Name of master frame. When a master frame is received frame numbers increment */
