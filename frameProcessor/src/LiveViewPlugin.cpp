@@ -30,7 +30,8 @@ const std::string LiveViewPlugin::CONFIG_TAGGED_FILTER_NAME = "filter_tagged";
  */
 LiveViewPlugin::LiveViewPlugin() :
     publish_socket_(ZMQ_PUB),
-    is_bound_(false)
+    is_bound_(false),
+    time_last_frame_(boost::posix_time::min_date_time)
 {
   logger_ = Logger::getLogger("FP.LiveViewPlugin");
   LOG4CXX_INFO(logger_, "LiveViewPlugin version " << this->get_version_long() << " loaded");
@@ -39,7 +40,6 @@ LiveViewPlugin::LiveViewPlugin() :
   set_per_second_config(DEFAULT_PER_SECOND);
   set_dataset_name_config(DEFAULT_DATASET_NAME);
   set_tagged_filter_config(DEFAULT_TAGGED_FILTER);
-  time_last_frame_ = boost::posix_time::microsec_clock::local_time();
 }
 
 /**
