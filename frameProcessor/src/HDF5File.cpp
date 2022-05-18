@@ -262,9 +262,10 @@ void HDF5File::write_frame(
   }
 #endif
 
-  // Set actual_dataset_size_ to the offset we just wrote to + 1 (Note: frame_offset is zero-indexed)
-  if (frame_offset + 1 > dset.actual_dataset_size_) {
-    dset.actual_dataset_size_ = frame_offset + 1;
+  // Check if the latest written frame has extended the dataset, and if it has then
+  // adjust the actual_dataset_size_ member of the dset structure to match the real size
+  if (offset[0] + frame.get_outer_chunk_size() > dset.actual_dataset_size_) {
+    dset.actual_dataset_size_ = offset[0] + frame.get_outer_chunk_size();
   }
 }
 
