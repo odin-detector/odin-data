@@ -20,7 +20,7 @@ class HDF5UnlimitedCache(object):
         self._fillvalue = fillvalue
         self._block_size = block_size
         self._blocks = {}
-        self._highest_index = 0
+        self._highest_index = -1
         if shape is None:
             self._shape = block_size
         else:
@@ -32,7 +32,9 @@ class HDF5UnlimitedCache(object):
             "Created unlimited HDF5UnlimitedCache for {}".format(self._name)
         )
 
-    def add_value(self, value, offset):
+    def add_value(self, value, offset=None):
+        if offset is None:
+            offset = self._highest_index + 1
         if offset > self._highest_index:
             self._highest_index = offset
         block_index, value_index = divmod(offset, self._block_size)
