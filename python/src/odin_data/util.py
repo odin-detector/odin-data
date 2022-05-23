@@ -1,4 +1,12 @@
 import re
+import sys
+
+if sys.version_info[0] >= 3:
+    unicode = str
+    bytes = bytes
+else:
+    unicode = unicode
+    bytes = str
 
 
 def remove_prefix(string, prefix):
@@ -9,23 +17,43 @@ def remove_suffix(string, suffix):
     return re.sub("{}$".format(suffix), "", string)
 
 
-def convert_unicode_to_string(self, obj):
-    """
-    Convert all unicode parts of a dictionary or list to standard strings.
+def cast_bytes(s, encoding="utf8", errors="strict"):
+    """Cast unicode or bytes to bytes
 
-    This method may not handle special characters well!
     :param obj: the dictionary, list, or unicode string
-    :return: the same data type as obj, but with unicode strings converted to python strings.
-    """
-    if isinstance(obj, dict):
-        return {self.convert_unicode_to_string(key): self.convert_unicode_to_string(value)
-                for key, value in obj.items()}
-    elif isinstance(obj, list):
-        return [self.convert_unicode_to_string(element) for element in obj]
-    elif isinstance(obj, unicode):
-        return obj.encode('utf-8')
+    :param encoding: encoding to use
+    :param errors: error handling scheme
 
-    return obj
+    :return: the same data type as obj, but with unicode strings converted to python
+        strings.
+
+    :raises: TypeError if `s` is not `unicode` or `bytes`
+    """
+    if isinstance(s, bytes):
+        return s
+    elif isinstance(s, unicode):
+        return s.encode(encoding, errors)
+    else:
+        raise TypeError("Expected unicode or bytes, got '%r'" % s)
+
+
+def cast_unicode(s, encoding="utf8", errors="strict"):
+    """Cast bytes or unicode to unicode
+
+    :param s: string to cast
+    :param encoding: encoding to use
+    :param errors: error handling scheme
+
+    :return: unicode string
+
+    :raises: TypeError if `s` is not `unicode` or `bytes`
+    """
+    if isinstance(s, unicode):
+        return s
+    elif isinstance(s, bytes):
+        return s.decode(encoding, errors)
+    else:
+        raise TypeError("Expected unicode or bytes, got '%r'" % s)
 
 
 MAJOR_VER_REGEX = r"^([0-9]+)[\\.-].*|$"
