@@ -14,32 +14,45 @@ class HDF5CacheBlock(object):
 class HDF5UnlimitedCache(object):
     """ An object to represent a cache used by an HDF5Dataset """
 
-    def __init__(self, name, dtype, fillvalue, block_size, stale_time, shape=None):
+    def __init__(self, name, dtype, fillvalue, block_size, data_shape, block_timeout):
+        """
+        Args:
+            name(str): Name of underlying dataset
+            dtype(str) Datatype of cache blocks
+            fillvalue(value matching dtype): Fill value of cache blocks
+            block_size(int): Number of data elements within a cache block
+            data_shape(tuple(int)): Shape of individual data elements in a cache block
+            block_timeout(int): Timeout in seconds for a block
+                If no new values are added within the timeout the block will be marked
+                for deletion.
+
+        """
         self._name = name
         self._dtype = dtype
         self._fillvalue = fillvalue
         self._block_size = block_size
         self._blocks = {}
-        self._highest_index = 0
-        if shape is None:
-            self._shape = block_size
-        else:
-            self._shape = (block_size,) + shape
-        self._blocks[0] = HDF5CacheBlock(self._shape, self._fillvalue, self._dtype)
-        self._stale_time = stale_time
-        self._logger = logging.getLogger("HDF5UnlimitedCache")
-        self._logger.debug(
-            "Created unlimited HDF5UnlimitedCache for {}".format(self._name)
+        self._highest_index = -1
+        self._block_shape = (block_size,) + data_shape
+        self._block_timeout = block_timeout
+
+        self._blocks[0] = HDF5CacheBlock(
+            self._block_shape, self._fillvalue, self._dtype
         )
 
-    def add_value(self, value, offset):
+        self._logger = logging.getLogger("HDF5UnlimitedCache")
+        self._logger.debug("Created cache for {}".format(self._name))
+
+    def add_value(self, value, offset=None):
+        if offset is None:
+            offset = self._highest_index + 1
         if offset > self._highest_index:
             self._highest_index = offset
         block_index, value_index = divmod(offset, self._block_size)
         if block_index not in self._blocks:
             self._logger.debug("New cache block required")
             self._blocks[block_index] = HDF5CacheBlock(
-                self._shape, self._fillvalue, self._dtype
+                self._block_shape, self._fillvalue, self._dtype
             )
         self._blocks[block_index].has_new_data = True
         self._blocks[block_index].data[value_index] = value
@@ -52,7 +65,7 @@ class HDF5UnlimitedCache(object):
             if not block.has_new_data:
                 # If the block has no new data check if it has become stale and delete
                 time_since_flush = time() - block.flush_time
-                if time_since_flush > self._stale_time:
+                if time_since_flush > self._block_timeout:
                     purged_blocks.append(block_index)
                     del self._blocks[block_index]
         self._logger.debug(
@@ -117,6 +130,7 @@ class HDF5Dataset(object):
         fillvalue,
         rank=1,
         shape=None,
+        maxshape=None,
         cache=True,
         block_size=1000000,
         block_timeout=600,
@@ -128,32 +142,35 @@ class HDF5Dataset(object):
             fillvalue(value matching dtype): Fill value for h5py.Dataset
             rank(int): The rank (number of dimensions) of the dataset
             shape(tuple(int)): Initial shape to pass to h5py.Dataset
+            maxshape(tuple(int)): Maximum shape to pass to h5py.Dataset. Provide this to set
+                the maximum dataset size.
             cache(bool): Whether to store a local cache of values
                          or write directly to file
-            block_size(int): Maximum size of each storage block within a cache.
-                             Blocks will be deleted once they become stale.
-            block_timeout(int): Timeout in seconds for a block.  If no new values
-                                are added within the timeout the block will be
-                                marked for deletion.
+            block_size(int): See HDF5UnlimitedCache
+            block_timeout(int): See HDF5UnlimitedCache
 
         """
         self.name = name
         self.dtype = dtype
         self.fillvalue = fillvalue
         self.shape = shape if shape is not None else (0,) * rank
-        self.maxshape = shape if shape is not None else (None,) * rank
-        self.block_size = block_size
-        self.block_timeout = block_timeout
+        self.maxshape = maxshape if maxshape is not None else shape if shape is not None else (None,) * rank
         self._cache = None
+
+        data_shape = self.shape[1:]  # The shape of each data element in dataset
+        assert not (cache and 0 in data_shape), (
+            "Must define full initial shape to use cache - only first axis can be 0. "
+            "e.g (0, 256) for a dataset that will be (N, 256) when complete"
+        )
 
         if cache:
             self._cache = HDF5UnlimitedCache(
-                self.name,
-                self.dtype,
-                self.fillvalue,
-                self.block_size,
-                self.block_timeout,
-                shape=shape,
+                name=self.name,
+                dtype=self.dtype,
+                fillvalue=self.fillvalue,
+                block_size=block_size,
+                data_shape=data_shape,
+                block_timeout=block_timeout,
             )
 
         self._h5py_dataset = None  # h5py.Dataset
@@ -267,6 +284,7 @@ class Int32HDF5Dataset(HDF5Dataset):
         name,
         fillvalue=-1,
         shape=None,
+        maxshape=None,
         cache=True,
         block_size=1000000,
         block_timeout=600,
@@ -277,6 +295,7 @@ class Int32HDF5Dataset(HDF5Dataset):
             dtype="int32",
             fillvalue=fillvalue,
             shape=shape,
+            maxshape=maxshape,
             cache=cache,
             block_size=block_size,
             block_timeout=block_timeout,
@@ -292,6 +311,7 @@ class Int64HDF5Dataset(HDF5Dataset):
         name,
         fillvalue=-1,
         shape=None,
+        maxshape=None,
         cache=True,
         block_size=1000000,
         block_timeout=600,
@@ -302,6 +322,7 @@ class Int64HDF5Dataset(HDF5Dataset):
             dtype="int64",
             fillvalue=fillvalue,
             shape=shape,
+            maxshape=maxshape,
             cache=cache,
             block_size=block_size,
             block_timeout=block_timeout,
@@ -316,6 +337,7 @@ class Float32HDF5Dataset(HDF5Dataset):
         self,
         name,
         shape=None,
+        maxshape=None,
         cache=True,
         block_size=1000000,
         block_timeout=600,
@@ -326,6 +348,7 @@ class Float32HDF5Dataset(HDF5Dataset):
             dtype="float32",
             fillvalue=-1,
             shape=shape,
+            maxshape=maxshape,
             cache=cache,
             block_size=block_size,
             block_timeout=block_timeout,
@@ -340,6 +363,7 @@ class Float64HDF5Dataset(HDF5Dataset):
         self,
         name,
         shape=None,
+        maxshape=None,
         cache=True,
         block_size=1000000,
         block_timeout=600,
@@ -350,6 +374,7 @@ class Float64HDF5Dataset(HDF5Dataset):
             dtype="float64",
             fillvalue=-1,
             shape=shape,
+            maxshape=maxshape,
             cache=cache,
             block_size=block_size,
             block_timeout=block_timeout,
@@ -365,6 +390,7 @@ class StringHDF5Dataset(HDF5Dataset):
         name,
         length,
         shape=None,
+        maxshape=None,
         cache=True,
         block_size=1000000,
         block_timeout=600,
@@ -380,6 +406,7 @@ class StringHDF5Dataset(HDF5Dataset):
             dtype="S{}".format(length),
             fillvalue="",
             shape=shape,
+            maxshape=maxshape,
             cache=cache,
             block_size=block_size,
             block_timeout=block_timeout,
