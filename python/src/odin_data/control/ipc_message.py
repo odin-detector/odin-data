@@ -95,6 +95,12 @@ class IpcMessage(object):
 
         self.attrs['params'][param_name] = param_value
 
+    def set_params(self, params):
+        if "params" not in self.attrs:
+            self.attrs['params'] = {}
+
+        self.attrs['params'].update(params)
+
     def encode(self):
         return json.dumps(self.attrs)
 
