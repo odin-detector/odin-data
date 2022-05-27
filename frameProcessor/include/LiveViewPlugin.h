@@ -80,7 +80,9 @@ private:
 
 
   /**time between frames in milliseconds, calculated from the per_second config*/
-  int32_t time_between_frames_;
+  //int32_t time_between_frames_;
+  boost::posix_time::time_duration time_between_frames_;
+
   /**time the last frame was shown*/
   boost::posix_time::ptime time_last_frame_;
 

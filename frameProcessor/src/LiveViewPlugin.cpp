@@ -82,21 +82,36 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
           }
         }
       }
+
+      // If the frame is tagged or the tag filter is inactive, test if the rate and frequency
+      // conditions are set to pass the frame to clients
       if (!tag_filter_active || is_tagged)
       {
-        boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
-        int32_t elapsed_time = (now - time_last_frame_).total_milliseconds();
+        bool pass_frame = false;
 
-        if (per_second_ != 0 && elapsed_time > time_between_frames_) //time between frames too large, showing frame no matter what the frame number is
+        // If the per-second rate setting is active, check time since last live view frame sent
+        if (per_second_ != 0)
         {
-          LOG4CXX_TRACE(logger_, "Elapsed time " << elapsed_time << " > " << time_between_frames_);
+          boost::posix_time::time_duration elapsed = (boost::posix_time::microsec_clock::local_time() - time_last_frame_);
+          if (elapsed > time_between_frames_)
+          {
+            LOG4CXX_TRACE(logger_, "Frame " << frame->get_frame_number() << " elapsed time " << elapsed << " > " << time_between_frames_);
+            pass_frame = true;
+          }
+        }
+
+        // If the frame frequency setting is active, check if this frame should be sent
+        if (frame_freq_ != 0 && frame_count_ % frame_freq_ == 0)
+        {
+          LOG4CXX_TRACE(logger_, "Frame " << frame->get_frame_number() << " count matches frequency " << frame_freq_);
+          pass_frame = true;
+        }
+
+        // Pass the frame to live view clients if one of the conditions above has been met
+        if (pass_frame) {
           pass_live_frame(frame);
         }
-        else if (frame_freq_ != 0 && frame_count_ % frame_freq_ == 0)
-        {
-          LOG4CXX_TRACE(logger_, "LiveViewPlugin Frame " << frame->get_frame_number() << " to be displayed.");
-          pass_live_frame(frame);
-        }
+
         //Count all frames that match the dataset(s) and tag(s)
         frame_count_ ++;
       }
@@ -115,7 +130,7 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
   {
     LOG4CXX_WARN(logger_, "Socket is unbound. Check if address " << image_view_socket_addr_ << " is in use.");
   }
-  
+
   LOG4CXX_TRACE(logger_, "Pushing Data Frame" );
   this->push(frame);
 }
@@ -329,7 +344,7 @@ void LiveViewPlugin::set_per_second_config(int32_t value)
   else
   {
     LOG4CXX_INFO(logger_, "Displaying " << per_second_ << " frames per second");
-    time_between_frames_ = 1000 / per_second_;
+    time_between_frames_ = boost::posix_time::milliseconds(1000 / per_second_);
   }
 }
 /**
