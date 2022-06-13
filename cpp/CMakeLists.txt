@@ -159,9 +159,6 @@ add_subdirectory(${FRAMESIMULATOR_DIR})
 # Add the test subdirectory
 add_subdirectory(${TEST_DIR})
 
-# Add the tools subdirectory
-add_subdirectory(tools)
-
 # Add the doc subdirectory
 add_subdirectory(doc)
 

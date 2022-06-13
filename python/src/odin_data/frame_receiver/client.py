@@ -1,6 +1,3 @@
-from odin_data.ipc_channel import IpcChannel, IpcChannelException
-from odin_data.ipc_message import IpcMessage, IpcMessageException
-
 import argparse
 import time
 import datetime
@@ -11,6 +8,10 @@ import os
 import json
 import zmq
 from struct import Struct
+
+from odin_data.control.ipc_channel import IpcChannel
+from odin_data.control.ipc_message import IpcMessage
+
 
 try:
     from json.decoder import JSONDecodeError
