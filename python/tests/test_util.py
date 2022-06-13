@@ -1,6 +1,6 @@
 import unittest
 
-from odin_data.util import *
+from odin_data.util import remove_prefix, remove_suffix
 
 
 class UtilTest(unittest.TestCase):

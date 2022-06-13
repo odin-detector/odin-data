@@ -3,15 +3,18 @@ Created on 6th September 2017
 
 :author: Alan Greer
 """
-import json
 import logging
 import os
-from odin_data.ipc_tornado_client import IpcTornadoClient
-from odin_data.util import remove_prefix, remove_suffix
-from odin_data.odin_data_adapter import OdinDataAdapter
-from odin.adapters.adapter import ApiAdapter, ApiAdapterRequest, ApiAdapterResponse, request_types, response_types
+
+from odin.adapters.adapter import (
+    ApiAdapterRequest,
+    ApiAdapterResponse,
+    request_types,
+    response_types,
+)
 from tornado import escape
-from tornado.ioloop import IOLoop
+
+from odin_data.control.odin_data_adapter import OdinDataAdapter
 
 FP_ADAPTER_KEY = 'fr_adapter_name'
 FP_DEFAULT_ADAPTER_KEY = 'fr'
@@ -233,7 +236,7 @@ class FrameProcessorAdapter(OdinDataAdapter):
         else:
             valid_check = False
             reason = "No FR adapter has been registered with the FP adapter"
-                    
+
         return valid_check, reason
 
     def require_version_check(self, param):

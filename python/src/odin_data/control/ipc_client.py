@@ -3,14 +3,14 @@ from threading import RLock
 
 import zmq
 
-from odin_data.ipc_channel import IpcChannel
-from odin_data.ipc_message import IpcMessage, IpcMessageException
+from odin_data.control.ipc_channel import IpcChannel
+from odin_data.control.ipc_message import IpcMessage, IpcMessageException
 
 
 class IpcClient(object):
 
     ENDPOINT_TEMPLATE = "tcp://{IP}:{PORT}"
-    
+
     MESSAGE_ID_MAX = 2**32
 
     def __init__(self, ip_address, port):
@@ -24,7 +24,7 @@ class IpcClient(object):
         self.logger.debug("Connecting to client at %s", self.ctrl_endpoint)
         self.ctrl_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_DEALER)
         self.ctrl_channel.connect(self.ctrl_endpoint)
-        
+
         self.message_id = 0
 
         self._lock = RLock()
@@ -39,7 +39,7 @@ class IpcClient(object):
             id = None
             while not id == expected_id:
                 pollevts = self.ctrl_channel.poll(timeout)
-    
+
                 if pollevts == zmq.POLLIN:
                     reply = IpcMessage(from_str=self.ctrl_channel.recv())
                     id = reply.get_msg_id()

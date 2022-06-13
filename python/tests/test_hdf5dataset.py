@@ -5,7 +5,7 @@ import numpy
 import os
 import time
 
-from hdf5dataset import HDF5UnlimitedCache
+from odin_data.meta_writer.hdf5dataset import HDF5UnlimitedCache
 
 
 class _TestMockDataset:

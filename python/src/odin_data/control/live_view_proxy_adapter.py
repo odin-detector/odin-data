@@ -9,19 +9,17 @@ Created on 28th January 2019
 :author: Ashley Neaves, STFC Application Engineering Group
 """
 import logging
-from queue import PriorityQueue
-from queue import Full as QueueFullException
 from queue import Empty as QueueEmptyException
+from queue import Full as QueueFullException
+from queue import PriorityQueue
 
-from tornado.escape import json_decode, json_encode
-from tornado.ioloop import IOLoop
-
-from zmq.error import ZMQError
-
-from odin_data.ipc_tornado_channel import IpcTornadoChannel
 from odin.adapters.adapter import ApiAdapter, ApiAdapterResponse, response_types
 from odin.adapters.parameter_tree import ParameterTree, ParameterTreeError
+from tornado.escape import json_decode, json_encode
+from tornado.ioloop import IOLoop
+from zmq.error import ZMQError
 
+from odin_data.control.ipc_tornado_channel import IpcTornadoChannel
 
 SOURCE_ENDPOINTS_CONFIG_NAME = 'source_endpoints'
 DEST_ENDPOINT_CONFIG_NAME = 'destination_endpoint'

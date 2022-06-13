@@ -1,10 +1,9 @@
 import logging
 
+from odin.adapters.adapter import ApiAdapterResponse, request_types, response_types
 from tornado import escape
 
-from odin.adapters.adapter import ApiAdapterResponse, \
-    request_types, response_types
-from odin_data.odin_data_adapter import OdinDataAdapter
+from odin_data.control.odin_data_adapter import OdinDataAdapter
 
 
 class MetaListenerAdapter(OdinDataAdapter):

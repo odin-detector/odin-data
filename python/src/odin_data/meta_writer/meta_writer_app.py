@@ -8,7 +8,9 @@ from argparse import ArgumentParser
 
 from odin_data.meta_writer.meta_listener import MetaListener
 from odin_data.meta_writer.meta_writer import MetaWriterConfig
-from odin_data.logconfig import setup_logging, add_graylog_handler, set_log_level
+from odin_data.meta_writer.logconfig import (
+    setup_logging, add_graylog_handler, set_log_level
+)
 
 
 def parse_args():

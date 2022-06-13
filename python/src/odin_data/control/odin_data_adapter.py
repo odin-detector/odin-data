@@ -5,11 +5,18 @@ Created on 6th September 2017
 """
 import json
 import logging
-from odin_data.ipc_tornado_client import IpcTornadoClient
-from odin_data.util import remove_prefix, remove_suffix
-from odin.adapters.adapter import ApiAdapter, ApiAdapterResponse, request_types, response_types
+
+from odin.adapters.adapter import (
+    ApiAdapter,
+    ApiAdapterResponse,
+    request_types,
+    response_types,
+)
 from tornado import escape
 from tornado.ioloop import IOLoop
+
+from odin_data.control.ipc_tornado_client import IpcTornadoClient
+from odin_data.util import remove_prefix, remove_suffix
 
 
 class OdinDataAdapter(ApiAdapter):
@@ -26,7 +33,7 @@ class OdinDataAdapter(ApiAdapter):
     ERROR_PUT_MISMATCH = "The size of parameter array does not match the number of clients"
 
     SUPPORTED_COMMANDS = ['reset_statistics', 'request_version', 'shutdown']
-    
+
     def __init__(self, **kwargs):
         """
         Initialise the OdinDataAdapter object

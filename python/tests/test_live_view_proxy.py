@@ -5,7 +5,7 @@ from nose.tools import assert_equals, assert_true, assert_false,\
 
 from tornado.escape import json_encode
 
-from odin_data.live_view_proxy_adapter import LiveViewProxyAdapter, LiveViewProxyNode, Frame, \
+from odin_data.control.live_view_proxy_adapter import LiveViewProxyAdapter, LiveViewProxyNode, Frame, \
     DEFAULT_DEST_ENDPOINT, DEFAULT_DROP_WARN_PERCENT, DEFAULT_QUEUE_LENGTH, DEFAULT_SOURCE_ENDPOINT
 
 from odin.testing.utils import OdinTestServer

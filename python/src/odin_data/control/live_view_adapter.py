@@ -11,15 +11,16 @@ Created on 8th October 2018
 import logging
 import re
 from collections import OrderedDict
-import numpy as np
-import cv2
-from tornado.escape import json_decode
 
-from odin_data.ipc_tornado_channel import IpcTornadoChannel
-from odin_data.ipc_channel import IpcChannelException
+import cv2
+import numpy as np
 from odin.adapters.adapter import ApiAdapter, ApiAdapterResponse, response_types
 from odin.adapters.parameter_tree import ParameterTree, ParameterTreeError
 from odin.util import convert_unicode_to_string
+from tornado.escape import json_decode
+
+from odin_data.control.ipc_channel import IpcChannelException
+from odin_data.control.ipc_tornado_channel import IpcTornadoChannel
 
 ENDPOINTS_CONFIG_NAME = 'live_view_endpoints'
 COLORMAP_CONFIG_NAME = 'default_colormap'

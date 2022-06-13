@@ -1,10 +1,8 @@
 import logging
-import struct
 from threading import RLock
 
-from odin_data.ipc_tornado_channel import IpcTornadoChannel
-from odin_data.ipc_message import IpcMessage, IpcMessageException
-from datetime import datetime
+from odin_data.control.ipc_message import IpcMessage, IpcMessageException
+from odin_data.control.ipc_tornado_channel import IpcTornadoChannel
 
 
 class IpcTornadoClient(object):

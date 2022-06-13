@@ -1,6 +1,6 @@
-from odin_data.ipc_message import IpcMessage, IpcMessageException
 from nose.tools import assert_equals, assert_raises, assert_true, assert_false,\
     assert_equal, assert_not_equal, assert_regexp_matches
+from odin_data.control.ipc_message import IpcMessage, IpcMessageException
 
 def test_valid_ipc_msg_from_string():
 

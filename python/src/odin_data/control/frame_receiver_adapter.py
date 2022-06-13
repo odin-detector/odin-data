@@ -5,8 +5,8 @@ Created on 2nd August 2018
 """
 import copy
 import logging
-from odin_data.odin_data_adapter import OdinDataAdapter
-from odin_data.util import remove_prefix, remove_suffix
+
+from odin_data.control.odin_data_adapter import OdinDataAdapter
 
 
 class FrameReceiverAdapter(OdinDataAdapter):

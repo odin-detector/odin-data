@@ -1,5 +1,5 @@
-from odin_data.ipc_channel import IpcChannel, IpcChannelException
 from nose.tools import assert_equal
+from odin_data.control.ipc_channel import IpcChannel
 
 class TestIpcChannel:
 

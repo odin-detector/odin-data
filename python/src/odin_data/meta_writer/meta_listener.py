@@ -13,7 +13,7 @@ import importlib
 import zmq
 from zmq.utils.strtypes import cast_bytes
 
-from odin_data.ipc_message import IpcMessage
+from odin_data.control.ipc_message import IpcMessage
 import odin_data._version as versioneer
 from odin_data.util import construct_version_dict
 

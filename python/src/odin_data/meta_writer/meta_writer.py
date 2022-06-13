@@ -11,9 +11,9 @@ import logging
 
 import h5py
 
-from odin_data import _version as versioneer
+from odin_data import __version__
+from odin_data.meta_writer.hdf5dataset import HDF5Dataset, Int64HDF5Dataset
 from odin_data.util import construct_version_dict
-from .hdf5dataset import HDF5Dataset, Int64HDF5Dataset
 
 # Data message parameters
 FRAME = "frame"
@@ -577,4 +577,4 @@ class MetaWriter(object):
 
     @staticmethod
     def get_version():
-        return "odin-data", construct_version_dict(versioneer.get_versions()["version"])
+        return "odin-data", construct_version_dict(__version__)
