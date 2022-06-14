@@ -87,6 +87,8 @@ class MetaWriter(object):
         FLUSH_FRAME_FREQUENCY,
         FLUSH_TIMEOUT,
     ]
+    # Meta datasets to write for each data dataset
+    WRITE_FRAME_PARAMETERS = [FRAME, OFFSET, WRITE_DURATION, FLUSH_DURATION]
     # Detector-specific parameters received on per-frame meta message
     DETECTOR_WRITE_FRAME_PARAMETERS = []
 
@@ -122,26 +124,34 @@ class MetaWriter(object):
         self._last_flushed = time()  # Seconds since epoch
         self._frames_since_flush = 0
         self._hdf5_file = None
-        self._datasets = dict(
-            (dataset.name, dataset)
-            for dataset in self._define_datasets() + self._define_detector_datasets()
-        )
+
         # Child class parameters
         self._frame_data_map = dict()  # Map of frame number to detector data
         self._frame_offset_map = dict()  # Map of frame number to offset in dataset
         self._writers_finished = False
         self._detector_finished = True  # See stop_when_detector_finished
 
-    @staticmethod
-    def _define_datasets():
-        return [
-            Int64HDF5Dataset(FRAME),
-            Int64HDF5Dataset(OFFSET),
+        self._datasets = dict(
+            (dataset.name, dataset)
+            for dataset in self._define_datasets() + self._define_detector_datasets()
+        )
+
+    def _define_datasets(cls):
+        meta_datasets = [
             Int64HDF5Dataset(CREATE_DURATION, cache=False),
-            Int64HDF5Dataset(WRITE_DURATION),
-            Int64HDF5Dataset(FLUSH_DURATION),
             Int64HDF5Dataset(CLOSE_DURATION, cache=False),
         ]
+        meta_datasets += [
+            Int64HDF5Dataset(f"{data_dataset}/{dataset_suffix}", cache=False)
+            for data_dataset in cls._data_datasets
+            for dataset_suffix in cls.WRITE_FRAME_PARAMETERS
+        ]
+
+        return meta_datasets
+
+    @property
+    def _data_datasets(self):
+        return ["data"]
 
     def _define_detector_datasets(self):
         return []
@@ -505,31 +515,41 @@ class MetaWriter(object):
         self._logger.debug("%s | Handling write frame message", self._name)
 
         # TODO: Handle getting more frames than expected because of rewinding?
-        write_frame_parameters = [FRAME, OFFSET, WRITE_DURATION, FLUSH_DURATION]
-        self._add_values(write_frame_parameters, data, data[OFFSET])
 
-        # Here we keep track of whether we need to write to disk based on:
-        #   - Time since last write
-        #   - Number of write frame messages since last write
+        def add_dataset_prefix(dataset):
+            return f'{header["dataset"]}/{dataset}'
 
-        # Reset timeout count to 0
-        self.write_timeout_count = 0
-
-        self.write_count += 1
-        self._frames_since_flush += 1
-
-        # Write detector meta data for this frame, now that we know the offset
-        self.write_detector_frame_data(data[FRAME], data[OFFSET])
-
-        flush_required = (
-            time() - self._last_flushed >= self.flush_timeout
-            or self._frames_since_flush >= self.flush_frame_frequency
+        self._add_values(
+            # Add data dataset prefix to dataset names and keys of data dictionary
+            [add_dataset_prefix(suffix) for suffix in self.WRITE_FRAME_PARAMETERS],
+            dict((add_dataset_prefix(key), value) for key, value in data.items()),
+            data[OFFSET],
         )
 
-        if flush_required:
-            self._flush_datasets()
-            self._last_flushed = time()
-            self._frames_since_flush = 0
+        # Only run once per frame for multi-dataset frames
+        if header["dataset"] == self._data_datasets[0]:
+            # Here we keep track of whether we need to write to disk based on:
+            # - Time since last write
+            # - Number of write frame messages since last write
+
+            # Reset timeout count to 0
+            self.write_timeout_count = 0
+
+            self.write_count += 1
+            self._frames_since_flush += 1
+
+            # Write detector meta data for this frame, now that we know the offset
+            self.write_detector_frame_data(data[FRAME], data[OFFSET])
+
+            flush_required = (
+                time() - self._last_flushed >= self.flush_timeout
+                or self._frames_since_flush >= self.flush_frame_frequency
+            )
+
+            if flush_required:
+                self._flush_datasets()
+                self._last_flushed = time()
+                self._frames_since_flush = 0
 
     def write_detector_frame_data(self, frame, offset):
         """Write the frame data to at the given offset
