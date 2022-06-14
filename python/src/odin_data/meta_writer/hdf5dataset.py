@@ -329,6 +329,33 @@ class Int32HDF5Dataset(HDF5Dataset):
         )
 
 
+class UInt32HDF5Dataset(HDF5Dataset):
+    """Int32 HDF5Dataset"""
+
+    def __init__(
+        self,
+        name,
+        fillvalue=0,
+        shape=None,
+        maxshape=None,
+        cache=True,
+        block_size=1000000,
+        block_timeout=600,
+        **kwargs
+    ):
+        super(UInt32HDF5Dataset, self).__init__(
+            name,
+            dtype="uint32",
+            fillvalue=fillvalue,
+            shape=shape,
+            maxshape=maxshape,
+            cache=cache,
+            block_size=block_size,
+            block_timeout=block_timeout,
+            **kwargs
+        )
+
+
 class Int64HDF5Dataset(HDF5Dataset):
     """Int64 HDF5Dataset"""
 
@@ -346,6 +373,33 @@ class Int64HDF5Dataset(HDF5Dataset):
         super(Int64HDF5Dataset, self).__init__(
             name,
             dtype="int64",
+            fillvalue=fillvalue,
+            shape=shape,
+            maxshape=maxshape,
+            cache=cache,
+            block_size=block_size,
+            block_timeout=block_timeout,
+            **kwargs
+        )
+
+
+class UInt64HDF5Dataset(HDF5Dataset):
+    """UInt64 HDF5Dataset"""
+
+    def __init__(
+        self,
+        name,
+        fillvalue=0,
+        shape=None,
+        maxshape=None,
+        cache=True,
+        block_size=1000000,
+        block_timeout=600,
+        **kwargs
+    ):
+        super(UInt64HDF5Dataset, self).__init__(
+            name,
+            dtype="uint64",
             fillvalue=fillvalue,
             shape=shape,
             maxshape=maxshape,
