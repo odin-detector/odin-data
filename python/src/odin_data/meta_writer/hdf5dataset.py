@@ -131,6 +131,7 @@ class HDF5Dataset(object):
         rank=1,
         shape=None,
         maxshape=None,
+        chunks=None,
         cache=True,
         block_size=1000000,
         block_timeout=600,
@@ -154,6 +155,7 @@ class HDF5Dataset(object):
         self.dtype = dtype
         self.fillvalue = fillvalue
         self.shape = shape if shape is not None else (0,) * rank
+        self.chunks = chunks
         self.maxshape = maxshape if maxshape is not None else shape if shape is not None else (None,) * rank
         self._cache = None
 
@@ -285,6 +287,7 @@ class Int32HDF5Dataset(HDF5Dataset):
         fillvalue=-1,
         shape=None,
         maxshape=None,
+        chunks=None,
         cache=True,
         block_size=1000000,
         block_timeout=600,
@@ -296,6 +299,7 @@ class Int32HDF5Dataset(HDF5Dataset):
             fillvalue=fillvalue,
             shape=shape,
             maxshape=maxshape,
+            chunks=chunks,
             cache=cache,
             block_size=block_size,
             block_timeout=block_timeout,

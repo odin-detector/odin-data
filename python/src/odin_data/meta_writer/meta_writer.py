@@ -203,11 +203,15 @@ class MetaWriter(object):
         self._logger.debug("%s | Creating datasets", self._name)
 
         for dataset in self._datasets.values():
-            chunks = dataset.maxshape
+            chunks = dataset.chunks
+            if chunks is None:
+                chunks = dataset.maxshape
             if isinstance(chunks, int):
                 chunks = (chunks,)
             if None in chunks:
                 chunks = None
+            self._logger.debug("Dataset {} chunking: {}".format(dataset.name, chunks))
+
             dataset_handle = self._hdf5_file.create_dataset(
                 name=dataset.name,
                 shape=dataset.shape,
