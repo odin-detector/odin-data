@@ -56,8 +56,6 @@ namespace FrameSimulator {
 
     };
 
-    REGISTER(FrameSimulatorPlugin, DummyUDPFrameSimulatorPlugin, "DummyUDPFrameSimulatorPlugin");
-
 }
 
 #endif //FRAMESIMULATOR_DUMMYUDPSIMULATORPLUGIN_H
