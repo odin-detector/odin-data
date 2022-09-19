@@ -10,7 +10,7 @@ INPUT = \
     ../../frameSimulator/src
 RECURSIVE = YES
 EXTRACT_PRIVATE = YES
-EXTRACT_ALL = YES
+# EXTRACT_ALL = YES  This can be uncommented to generate entries for undocumented members, but it also disables warnings
 EXCLUDE = \
     ../../common/include/zmq \
     ../../common/include/rapidjson
