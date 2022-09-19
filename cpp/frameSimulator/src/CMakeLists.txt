@@ -26,7 +26,7 @@ add_executable(frameSimulator ${APP_SOURCES} FrameSimulatorApp.cpp)
 
 target_link_libraries(frameSimulator ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${PCAP_LIBRARY} ${COMMON_LIBRARY})
 
-file(GLOB DUMMY_LIB_SOURCES DummyUDPFrameSimulatorPlugin.cpp DummyUDPFrame.cpp)
+file(GLOB DUMMY_LIB_SOURCES DummyUDPFrameSimulatorPlugin.cpp DummyUDPFrame.cpp DummyUDPFrameSimulatorPluginLib.cpp)
 
 # Add library for DummyUDP plugin
 add_library(DummyUDPFrameSimulatorPlugin SHARED ${DUMMY_LIB_SOURCES})
