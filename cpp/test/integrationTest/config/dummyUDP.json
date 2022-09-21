@@ -3,32 +3,32 @@
     {
         "receiver": {
             "process" : true,
-            "command": "${INSTALL_PREFIX}\/bin\/frameReceiver",
+            "command": "${OdinData_SOURCE_DIR}/prefix/bin/frameReceiver",
             "pos-args": "",
             "sleep": "1"
         },
         "processor": {
             "process": true,
-            "command": "${INSTALL_PREFIX}\/bin\/frameProcessor",
+            "command": "${OdinData_SOURCE_DIR}/prefix/bin/frameProcessor",
             "pos-args": "",
             "sleep": "1"
         },
         "simulator": {
             "process" : false,
-            "command": "${INSTALL_PREFIX}\/bin\/frameSimulator",
+            "command": "${OdinData_SOURCE_DIR}/prefix/bin/frameSimulator",
             "pos-args": "DummyUDP",
             "sleep": "10"
         },
         "test": {
             "process" : false,
-            "command": "${INSTALL_PREFIX}\/bin\/frameTests --log_level=all -- ",
+            "command": "${OdinData_SOURCE_DIR}/prefix/bin/frameTests --log_level=all -- ",
             "pos-args": "",
             "sleep": "1"
         }
     },
     "simulator":
     {
-        "lib-path": "${INSTALL_PREFIX}\/lib",
+        "lib-path": "${OdinData_SOURCE_DIR}/prefix/lib",
         "frames": "10",
         "dest-ip": "127.0.0.1",
         "ports": "61649",
@@ -36,15 +36,15 @@
     },
     "receiver":
     {
-        "json_file": "${INSTALL_PREFIX}\/test_config\/dummyUDP-fr.json",
+        "json_file": "${OdinData_SOURCE_DIR}/prefix/test_config/dummyUDP-fr.json",
         "frames": 10
     },
     "processor":
     {
-        "json_file": "${INSTALL_PREFIX}\/test_config\/dummyUDP-fp.json"
+        "json_file": "${OdinData_SOURCE_DIR}/prefix/test_config/dummyUDP-fp.json"
     },
     "test":
     {
-        "json": "${INSTALL_PREFIX}\/test_config\/testUDP.json"
+        "json": "${OdinData_SOURCE_DIR}/prefix/test_config/testUDP.json"
     }
 }

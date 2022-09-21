@@ -16,7 +16,7 @@
 	    {
 		"index":"hdf",
 		"name":"FileWriterPlugin",
-		"library":"${INSTALL_PREFIX}/lib/libHdf5Plugin.so"
+		"library":"${OdinData_SOURCE_DIR}/prefix/lib/libHdf5Plugin.so"
 	    }
 	}
     },
@@ -27,7 +27,7 @@
 	    {
 		"index":"dummy",
 		"name":"DummyUDPProcessPlugin",
-		"library":"${INSTALL_PREFIX}/lib/libDummyUDPProcessPlugin.so"
+		"library":"${OdinData_SOURCE_DIR}/prefix/lib/libDummyUDPProcessPlugin.so"
 	    }
 	}
     },

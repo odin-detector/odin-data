@@ -1,7 +1,7 @@
 [
   {
     "decoder_type": "DummyUDP",
-    "decoder_path": "${INSTALL_PREFIX}/lib",
+    "decoder_path": "${OdinData_SOURCE_DIR}/prefix/lib",
     "rx_ports": "61649",
     "max_buffer_mem": 840000000,
     "decoder_config": {
