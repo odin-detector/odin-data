@@ -1,5 +1,4 @@
-name: Deploy Docs to GitHub Pages
-
+name: Docs CI
 on:
   push:
     branches:
