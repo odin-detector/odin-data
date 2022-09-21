@@ -1,9 +1,9 @@
 #!/bin/bash
 
-${OdinData_SOURCE_DIR}/prefix/bin/frameSimulator \
+${CMAKE_INSTALL_PREFIX}/bin/frameSimulator \
     DummyUDP \
     --lib-path prefix/lib \
-    --logconfig ${OdinData_SOURCE_DIR}/config/fs_log4cxx.xml \
+    --logconfig ${CMAKE_INSTALL_PREFIX}/config/fs_log4cxx.xml \
     --dest-ip 127.0.0.1 \
     --frames 10 \
     --packet-gap 10 \
