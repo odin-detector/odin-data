@@ -1,5 +1,4 @@
-name: Test odin-data
-
+name: Code CI
 on: [push, pull_request]
 
 env:
