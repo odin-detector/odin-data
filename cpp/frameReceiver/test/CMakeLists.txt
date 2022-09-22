@@ -32,3 +32,4 @@ if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
     target_link_libraries(frameReceiverTest ${PTHREAD_LIBRARY} ${REALTIME_LIBRARY})
 endif()
 
+install(TARGETS frameReceiverTest RUNTIME DESTINATION bin)
