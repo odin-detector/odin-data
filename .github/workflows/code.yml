@@ -26,7 +26,7 @@ jobs:
           mkdir -p $INSTALL_PREFIX
           mkdir build && cd build
           cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX ../cpp
-          make install VERBOSE=1
+          make -j8 VERBOSE=1 && make install VERBOSE=1
           ls -la $INSTALL_PREFIX
       - name: Run frame receiver unit tests
         env:
