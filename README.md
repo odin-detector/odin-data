@@ -1,7 +1,7 @@
 # odin-data
 
-[![Code CI](https://github.com/odin-detector/odin-data/actions/workflows/code.yml/badge.svg?branch=master)](https://github.com/odin-detector/odin-data/actions/workflows/code.yml)
-[![Docs CI](https://github.com/odin-detector/odin-data/actions/workflows/docs.yml/badge.svg?branch=master)](https://github.com/odin-detector/odin-data/actions/workflows/docs.yml)
+[![Code CI](https://github.com/odin-detector/odin-data/actions/workflows/code.yml/badge.svg?branch=docs-etc)](https://github.com/odin-detector/odin-data/actions/workflows/code.yml)
+[![Docs CI](https://github.com/odin-detector/odin-data/actions/workflows/docs.yml/badge.svg?branch=docs-etc)](https://github.com/odin-detector/odin-data/actions/workflows/docs.yml)
 [![Code Climate](https://codeclimate.com/github/odin-detector/odin-data/badges/gpa.svg)](https://codeclimate.com/github/odin-detector/odin-data)
 [![Test Coverage](https://codeclimate.com/github/odin-detector/odin-data/badges/coverage.svg)](https://codeclimate.com/github/odin-detector/odin-data/coverage)
 [![Apache License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
