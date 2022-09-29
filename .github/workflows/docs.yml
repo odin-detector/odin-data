@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - master
+      - docs-etc
   pull_request:
 
 jobs:
