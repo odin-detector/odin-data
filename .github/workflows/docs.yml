@@ -20,11 +20,11 @@ jobs:
         shell: bash
 
       - name: Generate Doxygen Documentation
-        run: cd doc/doxygen && doxygen
+        run: cd cpp/doc/doxygen && doxygen
         shell: bash
 
       - name: Build Docs
-        run: pip install -U git+https://github.com/odin-detector/odin-control@1.2.0 && pip install .[dev] && sphinx-build -ET doc build/html/
+        run: pip install -U git+https://github.com/odin-detector/odin-control@1.2.0 && pip install ./python[dev] && sphinx-build -ET cpp/doc build/html/
 
       - name: Publish Docs
         if: github.event_name == 'push'
