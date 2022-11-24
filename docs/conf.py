@@ -57,7 +57,7 @@ myst_enable_extensions = [
 myst_heading_anchors = 3
 
 # Breathe Config
-breathe_projects = {"odin-data": "doxygen/_build/xml/"}
+breathe_projects = {"odin-data": "cpp/doxygen/_build/xml/"}
 breathe_default_project = "odin-data"
 
 # If true, Sphinx will warn about all references where the target cannot
