@@ -1,50 +1,45 @@
 {
-    "Main":
-    {
+    "Main": {
         "receiver": {
-            "process" : true,
-            "command": "${OdinData_SOURCE_DIR}/prefix/bin/frameReceiver",
+            "process": true,
+            "command": "${OdinData_SOURCE_DIR}/../prefix/bin/frameReceiver",
             "pos-args": "",
             "sleep": "1"
         },
         "processor": {
             "process": true,
-            "command": "${OdinData_SOURCE_DIR}/prefix/bin/frameProcessor",
+            "command": "${OdinData_SOURCE_DIR}/../prefix/bin/frameProcessor",
             "pos-args": "",
             "sleep": "1"
         },
         "simulator": {
-            "process" : false,
-            "command": "${OdinData_SOURCE_DIR}/prefix/bin/frameSimulator",
+            "process": false,
+            "command": "${OdinData_SOURCE_DIR}/../prefix/bin/frameSimulator",
             "pos-args": "DummyUDP",
             "sleep": "10"
         },
         "test": {
-            "process" : false,
-            "command": "${OdinData_SOURCE_DIR}/prefix/bin/frameTests --log_level=all -- ",
+            "process": false,
+            "command": "${OdinData_SOURCE_DIR}/../prefix/bin/frameTests --log_level=all -- ",
             "pos-args": "",
             "sleep": "1"
         }
     },
-    "simulator":
-    {
-        "lib-path": "${OdinData_SOURCE_DIR}/prefix/lib",
+    "simulator": {
+        "lib-path": "${OdinData_SOURCE_DIR}/../prefix/lib",
         "frames": "10",
         "dest-ip": "127.0.0.1",
         "ports": "61649",
         "packet-gap": 10
     },
-    "receiver":
-    {
-        "json_file": "${OdinData_SOURCE_DIR}/prefix/test_config/dummyUDP-fr.json",
+    "receiver": {
+        "json_file": "${OdinData_SOURCE_DIR}/../prefix/test_config/dummyUDP-fr.json",
         "frames": 10
     },
-    "processor":
-    {
-        "json_file": "${OdinData_SOURCE_DIR}/prefix/test_config/dummyUDP-fp.json"
+    "processor": {
+        "json_file": "${OdinData_SOURCE_DIR}/../prefix/test_config/dummyUDP-fp.json"
     },
-    "test":
-    {
-        "json": "${OdinData_SOURCE_DIR}/prefix/test_config/testUDP.json"
+    "test": {
+        "json": "${OdinData_SOURCE_DIR}/../prefix/test_config/testUDP.json"
     }
 }
