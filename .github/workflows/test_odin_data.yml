@@ -6,7 +6,6 @@ env:
   INSTALL_PREFIX: ${{ github.workspace }}/../install
 
 jobs:
-
   test:
     runs-on: ubuntu-latest
     steps:
@@ -27,7 +26,7 @@ jobs:
           echo "INSTALL_PREFIX is ${INSTALL_PREFIX}"
           mkdir -p $INSTALL_PREFIX
           mkdir build && cd build
-          cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX ..
+          cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX ../cpp
           make install VERBOSE=1
           ls -la $INSTALL_PREFIX
       - name: Run frame receiver unit tests

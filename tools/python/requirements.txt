@@ -1,6 +1,0 @@
-posix_ipc>=1.0.0
-pysnmp>=4.3.0
-numpy>=1.14.0
-h5py>=2.9.0
-pyzmq>=16.0.2
-pygelf>=0.3.1
