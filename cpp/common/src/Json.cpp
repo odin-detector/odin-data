@@ -35,6 +35,22 @@ void JsonDict::add(const std::string& key, const std::string& value) {
   add(key, json_value);
 }
 
+void JsonDict::add(const std::string& key, const long long unsigned json_value) {
+  // Cast to avoid ambiguous rapidjson::Value constructor call
+  add(key, (uint64_t) json_value);
+}
+
+void JsonDict::add(const std::string& key, const std::vector<long long unsigned>& value)
+{
+  rapidjson::Value json_value;
+  json_value.SetArray();
+  typename std::vector<long long unsigned>::const_iterator it;
+  for (it = value.begin(); it != value.end(); it++) {
+    json_value.PushBack((uint64_t) *it, document_.GetAllocator());
+  }
+  add(key, json_value);
+}
+
 /** Generate a string from the rapidjson::Document
  *
  * \return - The string
