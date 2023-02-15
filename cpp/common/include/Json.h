@@ -26,19 +26,20 @@ public:
    * \param[in] key - The key of the item to add
    * \param[in] value - The value of the item to add
    */
+  void add(const std::string& key, const std::string& json_value);
+  void add(const std::string& key, const long long unsigned json_value);
   template <typename T> void add(const std::string& key, T value)
   {
     rapidjson::Value json_value(value);
     add(key, json_value);
   }
 
-  void add(const std::string& key, const std::string&  json_value);
-
   /** Add a vector value to the underlying rapidjson::Document
    *
    * \param[in] key - The key of the item to add
    * \param[in] value - The value of the item to add
    */
+  void add(const std::string& key, const std::vector<long long unsigned>& value);
   template <typename T> void add(const std::string& key, std::vector<T> value)
   {
     rapidjson::Value json_value;
