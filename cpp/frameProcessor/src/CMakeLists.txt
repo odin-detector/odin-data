@@ -14,6 +14,7 @@ file(GLOB LIB_SOURCES
   Frame.cpp
   WrapperFrame.cpp
   SharedBufferFrame.cpp
+  TmpfsFrame.cpp
   DataBlockFrame.cpp
   MetaMessage.cpp
   MetaMessagePublisher.cpp
