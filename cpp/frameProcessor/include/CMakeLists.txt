@@ -8,6 +8,7 @@ SET(HEADERS
     Frame.h
     WrapperFrame.h
     SharedBufferFrame.h
+    TmpfsFrame.h
     DataBlockFrame.h
     FrameProcessorPlugin.h
     FileWriterPlugin.h
