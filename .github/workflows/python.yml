@@ -1,0 +1,18 @@
+name: Python CI
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Install odin-data
+        run: |
+          python3 -m venv venv && source venv/bin/activate && pip install --upgrade pip
+          cd python
+          pip install .
+          python -c "from odin_data import __version__; print(__version__)"
