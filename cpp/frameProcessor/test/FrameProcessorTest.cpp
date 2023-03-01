@@ -1024,20 +1024,23 @@ BOOST_AUTO_TEST_CASE( SumFrame )
   cfg.set_param("histogram/high2", 10);
   plugin.configure(cfg, reply);
 
-  uint16_t img[12] =  {
-    1, 2, 3, 4,
-    5, 6, 7, 8,
-    9, 10, 11, 12
-  };
-  dimensions_t img_dims(2); img_dims[0] = 3; img_dims[1] = 4;
+  dimensions_t img_dims(2); img_dims[0] = 515; img_dims[1] = 2069;
+  int64_t img[img_dims[0] * img_dims[1]];
+
+  hid_t file = H5Fopen("/home/mef65357/i07.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
+  hid_t dset = H5Dopen2(file, "data", H5P_DEFAULT);
+  H5Dread(dset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, img);
 
   FrameProcessor::FrameMetaData frame_meta(
     1, "raw", FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
   );
 
   boost::shared_ptr<FrameProcessor::DataBlockFrame> frame(
-    new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(img), 24)
+    new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(img), img_dims[0] * img_dims[1])
   );
+
+  H5Dclose(dset);
+  H5Fclose(file);
 
   plugin.process_frame(frame);
 
