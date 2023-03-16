@@ -66,7 +66,7 @@ class OdinDataClient(object):
         parser.add_argument('--config', type=argparse.FileType('r'), dest='config_file', nargs='?',
                             default=None, const=sys.stdin,
                             help='Specify JSON configuration file to send as configure command')
-        parser.add_argument('--request_config', action='store_true',
+        parser.add_argument('--request-config', action='store_true',
                             help='Request configuration from odin-data application')
         parser.add_argument('--status', action='store_true',
                             help='Request a status report from the odin-data application')
