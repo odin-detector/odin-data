@@ -5,11 +5,9 @@ communication via ZeroMQ sockets.
 
 Tim Nicholls, STFC Application Engineering Group
 """
-import sys
 import random
 import zmq
-from zmq.utils.strtypes import unicode, cast_bytes
-
+from odin_data.util import cast_bytes, cast_unicode
 
 class IpcChannelException(Exception):
     """Exception class for IpcChannel.
@@ -113,10 +111,8 @@ class IpcChannel(object):
 
         :param: data to send on channel
         """
-        # If the data is unicode (like all Python3 native strings), convert to a
-        # byte stream to be sent on the socket
-        if isinstance(data, unicode):
-            data = cast_bytes(data)
+        # Ensure a byte stream is ready to be sent on the socket
+        data = cast_bytes(data)
 
         # Send the data
         self.socket.send(data)
@@ -138,7 +134,7 @@ class IpcChannel(object):
         # Use multipart receive to cope with data coming from DEALER sockets,
         # where the message is prefixed by the socket identity. Convert incoming
         # data back to native strings if required
-        data = list(map(_cast_str, self.socket.recv_multipart()))
+        data = list(map(cast_unicode, self.socket.recv_multipart()))
 
         # If our local channel is a router, the remote endpoint should (must) be a
         # dealer, in which case pop the identity off the front of the data and
@@ -168,20 +164,3 @@ class IpcChannel(object):
         else:
             raise IpcChannelException("Attmped to set topic subscription on non-SUB channel socket")
 
-
-def _cast_str(the_str, encoding='utf8', errors='strict'):
-    """Cast bytes or unicode to unicode for Python 3 strings.
-
-    :param the_str: string to convert
-    :param encoding: unicode string encoding to use, default is utf8
-    :param errors: decoder error handling scheme
-    :return: returns string cast to appropriate type
-    """
-    if sys.version_info[0] < 3:
-        return the_str
-    elif isinstance(the_str, bytes):
-        return the_str.decode(encoding, errors)
-    elif isinstance(the_str, unicode):
-        return the_str
-    else:
-        raise IpcChannelException("Expected unicode or bytes, got %r" % the_str)

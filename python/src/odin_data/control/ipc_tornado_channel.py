@@ -8,7 +8,7 @@ Tim Nicholls, STFC Application Engineering Group
 """
 from zmq.eventloop.zmqstream import ZMQStream
 from zmq.utils.monitor import parse_monitor_message
-from zmq.utils.strtypes import unicode, cast_bytes
+from odin_data.util import cast_bytes
 
 from odin_data.control.ipc_channel import IpcChannel
 
@@ -51,10 +51,8 @@ class IpcTornadoChannel(IpcChannel):
         :param: data to send on channel
         """
 
-        # If the data are unicode (like all Python3 native strings), convert to a
-        # byte stream to be sent on the socket
-        if isinstance(data, unicode):
-            data = cast_bytes(data)
+        # Ensure a byte stream is ready to be sent on the socket
+        data = cast_bytes(data)
 
         # If a Stream is registered send the data out on the tornado IO Loop
         if self._stream:
@@ -69,8 +67,7 @@ class IpcTornadoChannel(IpcChannel):
         """
 
         for idx, part in enumerate(data):
-            if isinstance(part, unicode):
-                data[idx] = cast_bytes(part)
+            data[idx] = cast_bytes(part)
 
         if self._stream:
             self._stream.send_multipart(data)
