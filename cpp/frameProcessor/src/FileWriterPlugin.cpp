@@ -98,7 +98,7 @@ FileWriterPlugin::FileWriterPlugin() :
   hdf5_error_definition_.write_duration = 0;
   hdf5_error_definition_.flush_duration = 0;
   hdf5_error_definition_.close_duration = 0;
-  hdf5_error_definition_.callback = boost::bind(&FileWriterPlugin::set_error, this, _1);
+  hdf5_error_definition_.callback = boost::bind(&FileWriterPlugin::set_warning, this, _1);
 }
 
 /**
