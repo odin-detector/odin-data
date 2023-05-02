@@ -78,15 +78,39 @@ void FrameProcessorPlugin::set_error(const std::string& msg)
   }
 }
 
-/** Clear any error state.
+/** Set the warning state.
  *
- * Clears any messages that have previously been set
+ * Sets an warning for this plugin
+ *
+ * \param[in] msg - std::string warning message.
+ */
+void FrameProcessorPlugin::set_warning(const std::string& msg)
+{
+  // Take lock to access warning_messages_
+  boost::lock_guard<boost::mutex> lock(mutex_);
+
+  // Loop over warning messages, if this is a new message then add it
+  std::vector<std::string>::iterator iter;
+  bool found_warning = false;
+  for (iter = warning_messages_.begin(); iter != warning_messages_.end(); ++iter){
+    if (msg == *iter){
+      found_warning = true;
+    }
+  }
+  if (!found_warning){
+    warning_messages_.push_back(msg);
+    LOG4CXX_WARN(logger_, msg);
+  }
+}
+
+/** Clear error and warning messages.
  */
 void FrameProcessorPlugin::clear_errors()
 {
   // Take lock to access error_messages_
   boost::lock_guard<boost::mutex> lock(mutex_);
   error_messages_.clear();
+  warning_messages_.clear();
 }
 
 /** Reset any statistics.
@@ -107,6 +131,16 @@ std::vector<std::string> FrameProcessorPlugin::get_errors()
   // Take lock to access error_messages_
   boost::lock_guard<boost::mutex> lock(mutex_);
   return error_messages_;
+}
+
+/** Return the current warning message.
+ *
+ */
+std::vector<std::string> FrameProcessorPlugin::get_warnings()
+{
+  // Take lock to access warning_messages_
+  boost::lock_guard<boost::mutex> lock(mutex_);
+  return warning_messages_;
 }
 
     /** Configure the plugin.
