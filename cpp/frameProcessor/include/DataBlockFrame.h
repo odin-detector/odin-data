@@ -1,4 +1,4 @@
-#ifndef FRAMEPROCSESOR_DATABLOCKFRAME_H
+#ifndef FRAMEPROCESSOR_DATABLOCKFRAME_H
 #define FRAMEPROCESSOR_DATABLOCKFRAME_H
 
 #include "Frame.h"
@@ -44,4 +44,4 @@ class DataBlockFrame : public Frame {
 
 }
 
-#endif
+#endif // FRAMEPROCESSOR_DATABLOCKFRAME_H
