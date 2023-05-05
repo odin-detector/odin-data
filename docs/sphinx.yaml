@@ -7,6 +7,7 @@ subtrees:
           - file: user/tutorials/index
             entries:
               - file: user/tutorials/build
+              - file: user/tutorials/control
               - file: user/tutorials/deploy
               - file: user/tutorials/run
               - file: user/tutorials/tools

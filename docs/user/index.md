@@ -10,6 +10,7 @@
 - [Build odin-data](./tutorials/build)
 - [Run the example](./tutorials/run)
 - [Create an odin-data deployment](./tutorials/deploy)
+- [Control an odin-data instance](./tutorials/control)
 
 +++
 
