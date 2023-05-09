@@ -242,8 +242,8 @@ class HDF5Dataset(object):
                     "%s | Data shape %s does not match dataset shape %s"
                     " and resize failed:\n%s",
                     self.name,
-                    self.shape,
                     data.shape,
+                    self.shape,
                     exception
                 )
                 return
