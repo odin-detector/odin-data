@@ -81,6 +81,18 @@ find_package(PCAP 1.4.0 REQUIRED)
 find_package(Blosc)
 find_package(Kafka)
 
+# Check if Boost version has placeholders and set definition accordingly
+message("\nChecking Boost version placeholder support")
+if (NOT DEFINED Boost_VERSION_STRING)
+  set(Boost_VERSION_STRING "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
+endif ()
+if ((Boost_VERSION_STRING EQUAL 1.60.0) OR (Boost_VERSION_STRING GREATER 1.60.0))
+  message(STATUS "Boost version ${Boost_VERSION_STRING} has placeholders")
+  ADD_DEFINITIONS(-DBOOST_HAS_PLACEHOLDERS)
+else ()
+  message(STATUS "Boost version ${Boost_VERSION_STRING} does not have placeholders")
+endif ()
+
 # find package HDF5
 # FindHDF5.cmake is essentially broken and does not allow
 # to properly override the search path by setting HDF5_ROOT.

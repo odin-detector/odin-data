@@ -22,7 +22,7 @@
 #include <map>
 #include <time.h>
 
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/function.hpp>
 #include <boost/ref.hpp>
 #include <boost/shared_ptr.hpp>
