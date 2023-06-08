@@ -16,6 +16,10 @@
 #include "DebugLevelLogger.h"
 #include "version.h"
 
+#ifdef BOOST_HAS_PLACEHOLDERS
+using namespace boost::placeholders;
+#endif
+
 namespace FrameProcessor
 {
 

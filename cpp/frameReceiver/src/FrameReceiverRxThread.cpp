@@ -7,6 +7,10 @@
 
 #include "FrameReceiverRxThread.h"
 
+#ifdef BOOST_HAS_PLACEHOLDERS
+using namespace boost::placeholders;
+#endif
+
 using namespace FrameReceiver;
 
 //! Constructor for the FrameReceiverRxThread class.

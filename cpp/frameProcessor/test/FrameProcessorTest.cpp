@@ -5,6 +5,11 @@
 #include "DebugLevelLogger.h"
 
 #include <boost/test/unit_test.hpp>
+#include <boost/bind/bind.hpp>
+#ifdef BOOST_HAS_PLACEHOLDERS
+using namespace boost::placeholders;
+#endif
+
 #include <log4cxx/logger.h>
 #include <log4cxx/xml/domconfigurator.h>
 #include <log4cxx/simplelayout.h>
