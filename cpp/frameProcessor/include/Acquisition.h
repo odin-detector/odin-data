@@ -57,8 +57,9 @@ public:
   size_t get_file_index(size_t frame_offset) const;
   size_t adjust_frame_offset(boost::shared_ptr<Frame> frame) const;
   boost::shared_ptr<HDF5File> get_file(size_t frame_offset, HDF5CallDurations_t& call_durations);
-  std::string get_create_meta_header();
   std::string get_meta_header();
+  std::string get_create_meta_header();
+  std::string get_process_meta_header(std::string frame_dataset_name);
   std::string generate_filename(size_t file_number=0);
 
   LoggerPtr logger_;

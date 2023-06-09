@@ -143,7 +143,7 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame, HD
       json.add(META_WRITE_DURATION_KEY, call_durations.write.last_);
       json.add(META_FLUSH_DURATION_KEY, call_durations.flush.last_);
 
-      publish_meta(META_NAME, META_WRITE_ITEM, json.str(), get_meta_header());
+      publish_meta(META_NAME, META_WRITE_ITEM, json.str(), get_process_meta_header(frame_dataset_name));
 
       // Check if this is a master frame (for multi dataset acquisitions)
       // or if no master frame has been defined. If either of these conditions
@@ -631,6 +631,19 @@ std::string Acquisition::get_create_meta_header() {
  */
 std::string Acquisition::get_meta_header() {
   OdinData::JsonDict json;
+  json.add(META_ACQID_KEY, acquisition_id_);
+  json.add(META_RANK_KEY, concurrent_rank_);
+
+  return json.str();
+}
+
+/** Create the header for a process frame meta message
+ *
+ * \return - a string containing the json meta data header and the dataset name on the frame
+ */
+std::string Acquisition::get_process_meta_header(std::string frame_dataset_name) {
+  OdinData::JsonDict json;
+  json.add("dataset", frame_dataset_name);
   json.add(META_ACQID_KEY, acquisition_id_);
   json.add(META_RANK_KEY, concurrent_rank_);
 
