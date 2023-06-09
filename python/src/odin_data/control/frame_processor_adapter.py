@@ -19,6 +19,7 @@ from odin_data.control.odin_data_adapter import OdinDataAdapter
 FP_ADAPTER_KEY = 'fr_adapter_name'
 FP_DEFAULT_ADAPTER_KEY = 'fr'
 PCT_BUFFER_FREE_KEY = 'buffer_threshold'
+DATA_DATASETS_KEY = 'data_datasets'
 
 def bool_from_string(value):
     bool_value = False
@@ -58,6 +59,11 @@ class FrameProcessorAdapter(OdinDataAdapter):
             self._fr_pct_buffer_threshold = float(self.options.get(PCT_BUFFER_FREE_KEY, 0.0))
         except ValueError:
             logging.error("Could not set the buffer threshold to: {}".format(kwargs[PCT_BUFFER_FREE_KEY]))
+
+        # Store datasets to fan out `data` datasets configuration to
+        self.data_datasets = []
+        if kwargs.get(DATA_DATASETS_KEY) is not None:
+            self.data_datasets = kwargs.get(DATA_DATASETS_KEY).split(",")
 
         self._param = {
             'config/hdf/acquisition_id': '',
@@ -124,6 +130,10 @@ class FrameProcessorAdapter(OdinDataAdapter):
         response = {}
         logging.debug("PUT path: %s", path)
         logging.debug("PUT request: %s", request)
+
+        if path.startswith("config/hdf/dataset/data") and self.data_datasets:
+            # Fan out dataset config to all data datasets
+            self.configure_data_datasets(path, request)
 
         # First check if we are interested in the config items
         #
@@ -202,6 +212,11 @@ class FrameProcessorAdapter(OdinDataAdapter):
             response = {'error': str(ex)}
 
         return ApiAdapterResponse(response, status_code=status_code)
+
+    def configure_data_datasets(self, path, request):
+        for dataset in self.data_datasets:
+            dataset_path = path.replace("/data/", "/{}/".format(dataset))
+            super(FrameProcessorAdapter, self).put(dataset_path, request)
 
     def check_fr_status(self):
         valid_check = True
