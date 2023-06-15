@@ -47,6 +47,9 @@ HDF5File::HDF5File(const HDF5ErrorDefinition_t& hdf5_error_definition) :
 HDF5File::~HDF5File() {
   // Call to close file in case it hasn't been closed
   close_file();
+  if (this->param_memspace_ >= 0) {
+    ensure_h5_result(H5Sclose(this->param_memspace_), "H5Sclose failed");
+  }
 }
 
 /**
@@ -171,6 +174,7 @@ size_t HDF5File::create_file(std::string filename, size_t file_index, bool use_e
   }
   // Close file access property list
   ensure_h5_result(H5Pclose(fapl), "H5Pclose failed to close the file access property list");
+  ensure_h5_result(H5Pclose(fcpl), "H5Pclose failed to close the file creation property list");
 
   // Create the memspace for writing parameter datasets
   hsize_t elementSize[1] = {1};
@@ -193,6 +197,14 @@ size_t HDF5File::close_file() {
 
   size_t close_duration = 0;
   if (this->hdf5_file_id_ >= 0) {
+    // Close dataset handles
+    std::map<std::string, HDF5Dataset_t>::iterator it;
+    for(it = this->hdf5_datasets_.begin(); it != this->hdf5_datasets_.end(); ++it) {
+      ensure_h5_result(H5Dclose(it->second.dataset_id), "H5Dclose failed");
+    }
+    this->hdf5_datasets_.clear();
+
+    // Close file
     watchdog_timer_.start_timer("H5Fclose", hdf5_error_definition_.close_duration);
     hid_t status = H5Fclose(this->hdf5_file_id_);
     close_duration = watchdog_timer_.finish_timer();
@@ -337,18 +349,20 @@ void HDF5File::write_parameter(const Frame& frame, DatasetDefinition dataset_def
   // Create the hdf5 variables for writing
   hid_t dtype = datatype_to_hdf_type(dataset_definition.data_type);
   hsize_t elementSize[1] = {1};
-  hid_t filespace_ = H5Dget_space(dset.dataset_id);
-  ensure_h5_result(filespace_, "Failed to get parameter dataset dataspace");
+  hid_t fspace = H5Dget_space(dset.dataset_id);
+  ensure_h5_result(fspace, "Failed to get parameter dataset dataspace");
 
   // Select the hyperslab
-  ensure_h5_result(H5Sselect_hyperslab(filespace_, H5S_SELECT_SET, &offset.front(), NULL, elementSize, NULL),
+  ensure_h5_result(H5Sselect_hyperslab(fspace, H5S_SELECT_SET, &offset.front(), NULL, elementSize, NULL),
       "H5Sselect_hyperslab failed");
 
   // Write the value to the dataset
   watchdog_timer_.start_timer("H5Dwrite", hdf5_error_definition_.write_duration);
-  hid_t status = H5Dwrite(dset.dataset_id, dtype, param_memspace_, filespace_, H5P_DEFAULT, data_ptr);
+  hid_t status = H5Dwrite(dset.dataset_id, dtype, param_memspace_, fspace, H5P_DEFAULT, data_ptr);
   watchdog_timer_.finish_timer();
   ensure_h5_result(status, "H5Dwrite failed");
+
+  ensure_h5_result(H5Sclose(fspace), "H5Sclose failed");
 
   // Flush if necessary and update the time it was last flushed
 #if H5_VERSION_GE(1,9,178)
