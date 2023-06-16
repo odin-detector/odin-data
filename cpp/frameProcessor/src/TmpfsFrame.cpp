@@ -10,11 +10,14 @@ TmpfsFrame::TmpfsFrame(
   const FrameMetaData &meta_data,
   const void* data_src,
   size_t data_size,
-  const int& image_offset
+  const int& image_offset,
+  bool remove_file
 ) :
   Frame(meta_data, data_size, image_offset)
 {
   this->full_file_path_ = boost::filesystem::path(file_name);
+  this->remove_file_ = remove_file;
+
   try {
     boost::filesystem::create_directories(this->full_file_path_.parent_path());
   } catch (boost::filesystem::filesystem_error& e) {
@@ -43,7 +46,9 @@ TmpfsFrame::TmpfsFrame(
 
 TmpfsFrame::~TmpfsFrame () {
   munmap(this->data_ptr_, this->get_data_size());
-  boost::filesystem::remove(this->full_file_path_);
+  if (this->remove_file_) {
+    boost::filesystem::remove(this->full_file_path_);
+  }
 }
 
 /** Return a void pointer to the raw data.
