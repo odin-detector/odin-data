@@ -14,6 +14,7 @@ namespace FrameProcessor {
  * \param[in] data_src - Pointer to the data to copy into the file
  * \param[in] data_size - Size of the data to copy
  * \param[in] image_offset - Offset from `data_src` to the image data (passed to parent class)
+ * \param[in] remove_file - Flag to define whether the underlying file should be removed when this object is destroyed
  *
  * \throws std::runtime_error if the underlying file could not be opened
 */
@@ -27,7 +28,8 @@ class TmpfsFrame : public Frame {
     const FrameMetaData &meta_data,
     const void* data_src,
     size_t data_size,
-    const int& image_offset=0
+    const int& image_offset=0,
+    bool remove_file=true
   );
 
   /** Destructor */
@@ -39,7 +41,10 @@ class TmpfsFrame : public Frame {
 private:
   /** Pointer to memory mapped file **/
   void* data_ptr_;
+  /** The full file path of the underlying file */
   boost::filesystem::path full_file_path_;
+  /** Flag to define whether the underlying file should be removed when this object is destroyed */
+  bool remove_file_;
 
 };
 
