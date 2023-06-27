@@ -117,7 +117,7 @@ class MetaWriter(object):
         self.write_timeout_count = 0
 
         # Internal parameters
-        self._name = name
+        self._name = name if name else "Writer"
         self._processes_running = [False] * len(endpoints)
         self._endpoints = endpoints
         self._config = config
