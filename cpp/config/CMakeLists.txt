@@ -1,16 +1,6 @@
 set(TEST_CONFIGS
   fp_log4cxx.xml
   fr_log4cxx.xml
-  fr_test.config
-  fp_test.config
-  fr_test_osx.config
-  fp_py_test.config
-  fp_py_test_osx.config
-  fp_py_test_excalibur.config
-  fr_excalibur1.config
-  fr_excalibur2.config
-  fp_excalibur1.config
-  fp_excalibur2.config
 )
 
 foreach(test_config ${TEST_CONFIGS})
