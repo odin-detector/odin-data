@@ -741,8 +741,8 @@ void FrameProcessorController::shutdown() {
     for (it = plugins_.begin(); it != plugins_.end(); it++) {
       LOG4CXX_DEBUG_LEVEL(1, logger_, "Removing " << it->first);
       while(it->second->isWorking());
-      plugins_.erase(it);
     }
+    plugins_.clear();
 
     // Stop worker thread (for IFrameCallback) and reactor
     LOG4CXX_DEBUG_LEVEL(1, logger_, "Stopping FrameProcessorController worker thread and IPCReactor");
