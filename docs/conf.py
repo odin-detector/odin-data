@@ -6,8 +6,10 @@
 
 from pathlib import Path
 from subprocess import check_output
+import sys
 
 import odin_data
+import requests
 
 # -- General configuration ------------------------------------------------
 
@@ -127,10 +129,21 @@ linkcheck_ignore = [r"http://localhost:\d+/"]
 # a list of builtin themes.
 #
 html_theme = "pydata_sphinx_theme"
-
-# Options for theme
 github_repo = project
 github_user = "odin-detector"
+
+switcher_json = f"https://{github_user}.github.io/{github_repo}/switcher.json"
+switcher_exists = requests.get(switcher_json).ok
+if not switcher_exists:
+    print(
+        "*** Can't read version switcher, is GitHub pages enabled? \n"
+        "    Once Docs CI job has successfully run once, set the "
+        "Github pages source branch to be 'gh-pages' at:\n"
+        f"    https://github.com/{github_user}/{github_repo}/settings/pages",
+        file=sys.stderr,
+    )
+
+# Options for theme
 html_theme_options = dict(
     logo=dict(
         text=project,
@@ -138,7 +151,12 @@ html_theme_options = dict(
     github_url=f"https://github.com/{github_user}/{github_repo}",
     secondary_sidebar_items=["page-toc", "edit-this-page", "sourcelink"],
     use_edit_page_button=True,
-    navbar_end=["theme-switcher", "icon-links"],
+    switcher=dict(
+        json_url=switcher_json,
+        version_match=version,
+    ),
+    check_switcher=False,
+    navbar_end=["theme-switcher", "icon-links", "version-switcher"],
     external_links=[
         dict(
             name="Release Notes",

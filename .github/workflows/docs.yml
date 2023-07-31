@@ -1,12 +1,10 @@
 name: Docs CI
 on:
   push:
-    branches:
-      - master
   pull_request:
 
 jobs:
-  deploy:
+  docs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -25,12 +23,21 @@ jobs:
       - name: Build Docs
         run: pip install ./python[dev] && sphinx-build -ET docs/ docs/build/html/
 
-      - name: Publish Docs
-        if: github.event_name == 'push'
+      - name: Sanitize ref name for docs version
+        run: echo "DOCS_VERSION=${GITHUB_REF_NAME//[^A-Za-z0-9._-]/_}" >> $GITHUB_ENV
+
+      - name: Move to versioned directory
+        run: mv docs/build/html .github/pages/$DOCS_VERSION
+
+      - name: Write switcher.json
+        run: python .github/pages/make_switcher.py --add $DOCS_VERSION ${{ github.repository }} .github/pages/switcher.json
+
+      - name: Publish Docs to gh-pages
+        if: github.event_name == 'push' && github.actor != 'dependabot[bot]'
         # We pin to the SHA, not the tag, for security reasons.
         # https://docs.github.com/en/actions/learn-github-actions/security-hardening-for-github-actions#using-third-party-actions
-        uses: peaceiris/actions-gh-pages@068dc23d9710f1ba62e86896f84735d869951305 # v3.8.0
+        uses: peaceiris/actions-gh-pages@373f7f263a76c20808c831209c920827a82a2847 # v3.9.3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: docs/build/html/
+          publish_dir: .github/pages
           keep_files: true
