@@ -12,15 +12,14 @@ unique to each pair:
 Parameters with dashes are command line flags - those without are defined in the config files
 ```
 
-- Common (Note these must match between frameReceiver and frameProcessor)
-    - Ready endpoint: `--ready`
-    - Release endpoint: `--release`
+- Common (These must match between frameReceiver and frameProcessor)
+    - Ready endpoint: `frame_ready_endpoint` and `fr_setup/fr_ready_cnxn`
+    - Release endpoint: `frame_release_endpoint` and `fr_setup/fr_release_cnxn`
 - FrameReceiver
-    - Shared memory buffer name: `--sharedbuf`
     - Control endpoint: `--ctrl`
+    - Shared memory buffer name: `shared_buffer_name`
     - RX ports (depending on use case): `rx_ports`
 - FrameProcessor
     - Control endpoint: `--ctrl`
-    - Meta TX publish channel: `--meta`
-    - Meta internal RX channel: `meta_endpoint`
+    - Meta TX publish channel: `meta_endpoint`
     - Process rank: `hdf/process/rank`

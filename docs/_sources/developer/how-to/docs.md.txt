@@ -13,10 +13,6 @@ To generate the API reference docs using doxygen (requires `dot` for UML diagram
 
     $ docs/doxygen.sh
 
-```{note}
-This is also done by running the CMake build.
-```
-
 To build and view the documentation:
 
 ```bash

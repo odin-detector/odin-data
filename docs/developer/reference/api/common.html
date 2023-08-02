@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Common API Reference &#8212; odin-data 0+untagged.1.g7c2c187 documentation</title>
+    <title>Common API Reference &#8212; odin-data 0+untagged.1.gef6c54b documentation</title>
   
   
   
@@ -359,15 +359,18 @@ document.write(`
 <li class="toctree-l2"><a class="reference internal" href="../../how-to/frame-decoder.html">FrameDecoder</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../how-to/frame-processor-plugin.html">FrameProcessorPlugin</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../how-to/frame-simulator-plugin.html">FrameSimulatorPlugin</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../how-to/docs.html">Docs</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../how-to/docs.html">Docs</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../how-to/excalidraw.html">How to embed Excalidraw diagrams</a></li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../explanations/index.html"><strong>Explanations</strong></a><input checked class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../explanations/index.html"><strong>Explanations</strong></a><input checked class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../explanations/overview.html">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../explanations/design-decisions.html">Design Decisions</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html"><strong>Reference</strong></a><input checked class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html"><strong>Reference</strong></a><input checked class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">Common API Reference</a></li>
 
 
@@ -385,7 +388,10 @@ document.write(`
 
 <li class="toctree-l2"><a class="reference internal" href="frame-simulator.html">FrameSimulator API Reference</a></li>
 
-<li class="toctree-l2"><a class="reference internal" href="../design-docs/index.html">Design Docs</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../design-docs/index.html">Design Docs</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../design-docs/live-view-spec.html">Specification For Odin Data Live View Plugin</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -755,6 +761,37 @@ document.write(`
 </dd></dl>
 
 </div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-members">Private Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N8OdinData10IpcChannel8context_E">
+<span id="_CPPv3N8OdinData10IpcChannel8context_E"></span><span id="_CPPv2N8OdinData10IpcChannel8context_E"></span><span id="OdinData::IpcChannel::context___IpcContextR"></span><span class="target" id="classOdinData_1_1IpcChannel_1a1382daab8d09fcc62f9f5fdce2ff11db"></span><a class="reference internal" href="#_CPPv4N8OdinData10IpcContextE" title="OdinData::IpcContext"><span class="n"><span class="pre">IpcContext</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-name descname"><span class="n"><span class="pre">context_</span></span></span><a class="headerlink" href="#_CPPv4N8OdinData10IpcChannel8context_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N8OdinData10IpcChannel7socket_E">
+<span id="_CPPv3N8OdinData10IpcChannel7socket_E"></span><span id="_CPPv2N8OdinData10IpcChannel7socket_E"></span><span id="OdinData::IpcChannel::socket___zmq::socket_t"></span><span class="target" id="classOdinData_1_1IpcChannel_1a50c720e4aaad945bb29577fdd1effd2b"></span><span class="n"><span class="pre">zmq</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">socket_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">socket_</span></span></span><a class="headerlink" href="#_CPPv4N8OdinData10IpcChannel7socket_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N8OdinData10IpcChannel12socket_type_E">
+<span id="_CPPv3N8OdinData10IpcChannel12socket_type_E"></span><span id="_CPPv2N8OdinData10IpcChannel12socket_type_E"></span><span id="OdinData::IpcChannel::socket_type___i"></span><span class="target" id="classOdinData_1_1IpcChannel_1a6494aed7b152706ee5a63a7357f9fd25"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">socket_type_</span></span></span><a class="headerlink" href="#_CPPv4N8OdinData10IpcChannel12socket_type_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N8OdinData10IpcChannel16bound_endpoints_E">
+<span id="_CPPv3N8OdinData10IpcChannel16bound_endpoints_E"></span><span id="_CPPv2N8OdinData10IpcChannel16bound_endpoints_E"></span><span id="OdinData::IpcChannel::bound_endpoints___std::map:ss.ss:"></span><span class="target" id="classOdinData_1_1IpcChannel_1aa1f6108d72636592cb04615eb1deb18c"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">map</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">bound_endpoints_</span></span></span><a class="headerlink" href="#_CPPv4N8OdinData10IpcChannel16bound_endpoints_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-friends">Friends</p>
+<dl>
+<dt class="sig sig-object cpp">
+<em class="property"><span class="pre">friend</span> <span class="pre">class</span></em> <span class="pre">IpcReactor</span></dt>
+</dl>
+
+</div>
 </dd></dl>
 
 </section>
@@ -796,6 +833,24 @@ document.write(`
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8OdinData10IpcContext10IpcContextERK10IpcContext">
+<span id="_CPPv3N8OdinData10IpcContext10IpcContextERK10IpcContext"></span><span id="_CPPv2N8OdinData10IpcContext10IpcContextERK10IpcContext"></span><span id="OdinData::IpcContext::IpcContext__IpcContextCR"></span><span class="target" id="classOdinData_1_1IpcContext_1afcd7490c996df36ab67cb1ce4614e4d4"></span><span class="sig-name descname"><span class="n"><span class="pre">IpcContext</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N8OdinData10IpcContext10IpcContextERK10IpcContext" title="OdinData::IpcContext::IpcContext"><span class="n"><span class="pre">IpcContext</span></span></a><span class="p"><span class="pre">&amp;</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8OdinData10IpcContext10IpcContextERK10IpcContext" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8OdinData10IpcContextaSERK10IpcContext">
+<span id="_CPPv3N8OdinData10IpcContextaSERK10IpcContext"></span><span id="_CPPv2N8OdinData10IpcContextaSERK10IpcContext"></span><span id="OdinData::IpcContext::assign-operator__IpcContextCR"></span><span class="target" id="classOdinData_1_1IpcContext_1aab5fa8fbb51ae2f13cd1e40cb5971133"></span><a class="reference internal" href="#_CPPv4N8OdinData10IpcContextE" title="OdinData::IpcContext"><span class="n"><span class="pre">IpcContext</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-name descname"><span class="k"><span class="pre">operator</span></span><span class="o"><span class="pre">=</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N8OdinData10IpcContextE" title="OdinData::IpcContext"><span class="n"><span class="pre">IpcContext</span></span></a><span class="p"><span class="pre">&amp;</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8OdinData10IpcContextaSERK10IpcContext" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-members">Private Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N8OdinData10IpcContext12zmq_context_E">
+<span id="_CPPv3N8OdinData10IpcContext12zmq_context_E"></span><span id="_CPPv2N8OdinData10IpcContext12zmq_context_E"></span><span id="OdinData::IpcContext::zmq_context___zmq::context_t"></span><span class="target" id="classOdinData_1_1IpcContext_1a6a873961abda2af6d4dd1c612c75bc8c"></span><span class="n"><span class="pre">zmq</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">context_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">zmq_context_</span></span></span><a class="headerlink" href="#_CPPv4N8OdinData10IpcContext12zmq_context_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
 
 </div>
 </dd></dl>
@@ -1468,6 +1523,11 @@ document.write(`
 </dd></dl>
 
 <dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4IENK8OdinData10IpcMessage9get_valueEiRN9rapidjson5Value19ConstMemberIteratorE">
+<span id="_CPPv3IENK8OdinData10IpcMessage9get_valueERN9rapidjson5Value19ConstMemberIteratorE"></span><span id="_CPPv2IENK8OdinData10IpcMessage9get_valueERN9rapidjson5Value19ConstMemberIteratorE"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="classOdinData_1_1IpcMessage_1a43ac311d8ec6325a4afba17c86517c93"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_value</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">rapidjson</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Value</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">ConstMemberIterator</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">itr</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4IENK8OdinData10IpcMessage9get_valueEiRN9rapidjson5Value19ConstMemberIteratorE" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4IEN8OdinData10IpcMessage9set_valueEvRN9rapidjson5ValueERKi">
 <span id="_CPPv3IEN8OdinData10IpcMessage9set_valueERN9rapidjson5ValueERKi"></span><span id="_CPPv2IEN8OdinData10IpcMessage9set_valueERN9rapidjson5ValueERKi"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="classOdinData_1_1IpcMessage_1a2af7d199f0b8182d3c51535936832147"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">set_value</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">rapidjson</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Value</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">value_obj</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">value</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4IEN8OdinData10IpcMessage9set_valueEvRN9rapidjson5ValueERKi" title="Permalink to this definition">#</a><br /></dt>
 <dd><p>Sets the value of a message attribute.</p>
@@ -1759,6 +1819,16 @@ document.write(`
 </dd></dl>
 
 <dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8OdinData10IpcReactor15register_socketEi15ReactorCallback">
+<span id="_CPPv3N8OdinData10IpcReactor15register_socketEi15ReactorCallback"></span><span id="_CPPv2N8OdinData10IpcReactor15register_socketEi15ReactorCallback"></span><span id="OdinData::IpcReactor::register_socket__i.ReactorCallback"></span><span class="target" id="classOdinData_1_1IpcReactor_1ac76da452f618b95f75bb2d49b6e18ad0"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">register_socket</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">socket_fd</span></span>, <span class="n"><span class="pre">ReactorCallback</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">callback</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8OdinData10IpcReactor15register_socketEi15ReactorCallback" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8OdinData10IpcReactor13remove_socketEi">
+<span id="_CPPv3N8OdinData10IpcReactor13remove_socketEi"></span><span id="_CPPv2N8OdinData10IpcReactor13remove_socketEi"></span><span id="OdinData::IpcReactor::remove_socket__i"></span><span class="target" id="classOdinData_1_1IpcReactor_1a3fc3f9fb0cfee986c9175e830aa9127e"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">remove_socket</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">socket_fd</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8OdinData10IpcReactor13remove_socketEi" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N8OdinData10IpcReactor14register_timerE6size_t6size_t15ReactorCallback">
 <span id="_CPPv3N8OdinData10IpcReactor14register_timerE6size_t6size_t15ReactorCallback"></span><span id="_CPPv2N8OdinData10IpcReactor14register_timerE6size_t6size_t15ReactorCallback"></span><span id="OdinData::IpcReactor::register_timer__s.s.ReactorCallback"></span><span class="target" id="classOdinData_1_1IpcReactor_1a95f3c58abc443a2cf0bb42746b7feaab"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">register_timer</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">delay_ms</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">times</span></span>, <span class="n"><span class="pre">ReactorCallback</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">callback</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8OdinData10IpcReactor14register_timerE6size_t6size_t15ReactorCallback" title="Permalink to this definition">#</a><br /></dt>
 <dd><p>Adds a timer to the reactor. </p>
@@ -1850,6 +1920,11 @@ document.write(`
 <span id="_CPPv3N8OdinData10IpcReactor9channels_E"></span><span id="_CPPv2N8OdinData10IpcReactor9channels_E"></span><span id="OdinData::IpcReactor::channels___ChannelMap"></span><span class="target" id="classOdinData_1_1IpcReactor_1a5b5f45df9affd891e11032fc8e945a42"></span><span class="n"><span class="pre">ChannelMap</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">channels_</span></span></span><a class="headerlink" href="#_CPPv4N8OdinData10IpcReactor9channels_E" title="Permalink to this definition">#</a><br /></dt>
 <dd><p>Map of channels associated with the reactor. </p>
 </dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N8OdinData10IpcReactor8sockets_E">
+<span id="_CPPv3N8OdinData10IpcReactor8sockets_E"></span><span id="_CPPv2N8OdinData10IpcReactor8sockets_E"></span><span id="OdinData::IpcReactor::sockets___SocketMap"></span><span class="target" id="classOdinData_1_1IpcReactor_1aca9a68ed3e21f972e7bdb8e29ca56217"></span><span class="n"><span class="pre">SocketMap</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">sockets_</span></span></span><a class="headerlink" href="#_CPPv4N8OdinData10IpcReactor8sockets_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N8OdinData10IpcReactor7timers_E">
@@ -2057,6 +2132,44 @@ document.write(`
 <dd><p>Interface to provide version information for any odin-data object.</p>
 <p>All FrameReceiver and FrameProcessor plugins will subclass this interface which enforces the retrieval of version information regarding the plugin to be implemented. This information will be available through the odin-control interface. </p>
 <p>Subclassed by <a class="reference internal" href="frame-processor.html#classFrameProcessor_1_1FrameProcessorPlugin"><span class="std std-ref">FrameProcessor::FrameProcessorPlugin</span></a>, <a class="reference internal" href="frame-receiver.html#classFrameReceiver_1_1FrameDecoder"><span class="std std-ref">FrameReceiver::FrameDecoder</span></a>, <a class="reference internal" href="frame-simulator.html#classFrameSimulator_1_1FrameSimulatorPlugin"><span class="std std-ref">FrameSimulator::FrameSimulatorPlugin</span></a></p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8OdinData16IVersionedObject16IVersionedObjectEv">
+<span id="_CPPv3N8OdinData16IVersionedObject16IVersionedObjectEv"></span><span id="_CPPv2N8OdinData16IVersionedObject16IVersionedObjectEv"></span><span id="OdinData::IVersionedObject::IVersionedObject"></span><span class="target" id="classOdinData_1_1IVersionedObject_1aeba305a8a38b5f0683f022b8eb58d818"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">IVersionedObject</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8OdinData16IVersionedObject16IVersionedObjectEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8OdinData16IVersionedObjectD0Ev">
+<span id="_CPPv3N8OdinData16IVersionedObjectD0Ev"></span><span id="_CPPv2N8OdinData16IVersionedObjectD0Ev"></span><span id="OdinData::IVersionedObject::~IVersionedObject"></span><span class="target" id="classOdinData_1_1IVersionedObject_1a208113bf0996cbb5b2acdc298e348209"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">~IVersionedObject</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8OdinData16IVersionedObjectD0Ev" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8OdinData16IVersionedObject17get_version_majorEv">
+<span id="_CPPv3N8OdinData16IVersionedObject17get_version_majorEv"></span><span id="_CPPv2N8OdinData16IVersionedObject17get_version_majorEv"></span><span id="OdinData::IVersionedObject::get_version_major"></span><span class="target" id="classOdinData_1_1IVersionedObject_1aaa90c53267cf3a7646ef28682798340d"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_major</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N8OdinData16IVersionedObject17get_version_majorEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8OdinData16IVersionedObject17get_version_minorEv">
+<span id="_CPPv3N8OdinData16IVersionedObject17get_version_minorEv"></span><span id="_CPPv2N8OdinData16IVersionedObject17get_version_minorEv"></span><span id="OdinData::IVersionedObject::get_version_minor"></span><span class="target" id="classOdinData_1_1IVersionedObject_1a34368dd97ea0b27fefb36826279913b4"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_minor</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N8OdinData16IVersionedObject17get_version_minorEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8OdinData16IVersionedObject17get_version_patchEv">
+<span id="_CPPv3N8OdinData16IVersionedObject17get_version_patchEv"></span><span id="_CPPv2N8OdinData16IVersionedObject17get_version_patchEv"></span><span id="OdinData::IVersionedObject::get_version_patch"></span><span class="target" id="classOdinData_1_1IVersionedObject_1abcbd13f034d2f9ff33c62dd29c16571d"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_patch</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N8OdinData16IVersionedObject17get_version_patchEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8OdinData16IVersionedObject17get_version_shortEv">
+<span id="_CPPv3N8OdinData16IVersionedObject17get_version_shortEv"></span><span id="_CPPv2N8OdinData16IVersionedObject17get_version_shortEv"></span><span id="OdinData::IVersionedObject::get_version_short"></span><span class="target" id="classOdinData_1_1IVersionedObject_1a7319b85b5ce5157ba57bd42a838217fa"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_short</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N8OdinData16IVersionedObject17get_version_shortEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8OdinData16IVersionedObject16get_version_longEv">
+<span id="_CPPv3N8OdinData16IVersionedObject16get_version_longEv"></span><span id="_CPPv2N8OdinData16IVersionedObject16get_version_longEv"></span><span id="OdinData::IVersionedObject::get_version_long"></span><span class="target" id="classOdinData_1_1IVersionedObject_1a231c88c9dc11f00fce2c726a88f507c6"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_long</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N8OdinData16IVersionedObject16get_version_longEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+</div>
 </dd></dl>
 
 </section>
@@ -2067,6 +2180,11 @@ document.write(`
 <span id="_CPPv3N8OdinData8JsonDictE"></span><span id="_CPPv2N8OdinData8JsonDictE"></span><span id="OdinData::JsonDict"></span><span class="target" id="classOdinData_1_1JsonDict"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">JsonDict</span></span></span><a class="headerlink" href="#_CPPv4N8OdinData8JsonDictE" title="Permalink to this definition">#</a><br /></dt>
 <dd><div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8OdinData8JsonDict8JsonDictEv">
+<span id="_CPPv3N8OdinData8JsonDict8JsonDictEv"></span><span id="_CPPv2N8OdinData8JsonDict8JsonDictEv"></span><span id="OdinData::JsonDict::JsonDict"></span><span class="target" id="classOdinData_1_1JsonDict_1af9b816720e3a9a751ee01acd1c36adae"></span><span class="sig-name descname"><span class="n"><span class="pre">JsonDict</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8OdinData8JsonDict8JsonDictEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4I0EN8OdinData8JsonDict3addEvRKNSt6stringE1T">
 <span id="_CPPv3I0EN8OdinData8JsonDict3addERKNSt6stringE1T"></span><span id="_CPPv2I0EN8OdinData8JsonDict3addERKNSt6stringE1T"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="classOdinData_1_1JsonDict_1aa02e129e046fa0a3675a4a1ae8ca31cb"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">add</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">key</span></span>, <a class="reference internal" href="#_CPPv4I0EN8OdinData8JsonDict3addEvRKNSt6stringE1T" title="OdinData::JsonDict::add::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">value</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN8OdinData8JsonDict3addEvRKNSt6stringE1T" title="Permalink to this definition">#</a><br /></dt>
@@ -2080,6 +2198,11 @@ document.write(`
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8OdinData8JsonDict3addERKNSt6stringERKNSt6stringE">
+<span id="_CPPv3N8OdinData8JsonDict3addERKNSt6stringERKNSt6stringE"></span><span id="_CPPv2N8OdinData8JsonDict3addERKNSt6stringERKNSt6stringE"></span><span id="OdinData::JsonDict::add__ssCR.ssCR"></span><span class="target" id="classOdinData_1_1JsonDict_1a6a999b86cb2c0745926d0a57ec850bf2"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">add</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">key</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">json_value</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8OdinData8JsonDict3addERKNSt6stringERKNSt6stringE" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4I0EN8OdinData8JsonDict3addEvRKNSt6stringENSt6vectorI1TEE">
@@ -2123,6 +2246,14 @@ document.write(`
 </dd>
 </dl>
 </dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-members">Private Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N8OdinData8JsonDict9document_E">
+<span id="_CPPv3N8OdinData8JsonDict9document_E"></span><span id="_CPPv2N8OdinData8JsonDict9document_E"></span><span id="OdinData::JsonDict::document___rapidjson::Document"></span><span class="target" id="classOdinData_1_1JsonDict_1a820151b003ca0c9f354d667ad7dfd037"></span><span class="n"><span class="pre">rapidjson</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Document</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">document_</span></span></span><a class="headerlink" href="#_CPPv4N8OdinData8JsonDict9document_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
 
 </div>
 </dd></dl>

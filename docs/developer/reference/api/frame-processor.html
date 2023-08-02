@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>FrameProcessor API Reference &#8212; odin-data 0+untagged.1.g7c2c187 documentation</title>
+    <title>FrameProcessor API Reference &#8212; odin-data 0+untagged.1.gef6c54b documentation</title>
   
   
   
@@ -359,15 +359,18 @@ document.write(`
 <li class="toctree-l2"><a class="reference internal" href="../../how-to/frame-decoder.html">FrameDecoder</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../how-to/frame-processor-plugin.html">FrameProcessorPlugin</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../how-to/frame-simulator-plugin.html">FrameSimulatorPlugin</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../how-to/docs.html">Docs</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../how-to/docs.html">Docs</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../how-to/excalidraw.html">How to embed Excalidraw diagrams</a></li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../explanations/index.html"><strong>Explanations</strong></a><input checked class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../explanations/index.html"><strong>Explanations</strong></a><input checked class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../explanations/overview.html">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../explanations/design-decisions.html">Design Decisions</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html"><strong>Reference</strong></a><input checked class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html"><strong>Reference</strong></a><input checked class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="common.html">Common API Reference</a></li>
 
 
@@ -385,7 +388,10 @@ document.write(`
 
 <li class="toctree-l2"><a class="reference internal" href="frame-simulator.html">FrameSimulator API Reference</a></li>
 
-<li class="toctree-l2"><a class="reference internal" href="../design-docs/index.html">Design Docs</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../design-docs/index.html">Design Docs</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../design-docs/live-view-spec.html">Specification For Odin Data Live View Plugin</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -481,6 +487,11 @@ document.write(`
 <dd><p>Handle an incoming configuration message.</p>
 <p>This method is called by the IpcReactor when a configuration IpcMessage has been received. The raw message is read and parsed into an IpcMessage for further processing. The configure method is called, and once configuration has completed a response IpcMessage is sent back on the control channel. </p>
 </dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor24FrameProcessorController19handleMetaRxChannelEv">
+<span id="_CPPv3N14FrameProcessor24FrameProcessorController19handleMetaRxChannelEv"></span><span id="_CPPv2N14FrameProcessor24FrameProcessorController19handleMetaRxChannelEv"></span><span id="FrameProcessor::FrameProcessorController::handleMetaRxChannel"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorController_1a36d939bfc22d849504d45bda8e3a62aa"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">handleMetaRxChannel</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor24FrameProcessorController19handleMetaRxChannelEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor24FrameProcessorController13provideStatusERN8OdinData10IpcMessageE">
@@ -613,10 +624,20 @@ document.write(`
 </dd></dl>
 
 <dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor24FrameProcessorController3runEv">
+<span id="_CPPv3N14FrameProcessor24FrameProcessorController3runEv"></span><span id="_CPPv2N14FrameProcessor24FrameProcessorController3runEv"></span><span id="FrameProcessor::FrameProcessorController::run"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorController_1adf296b5d0fa88572cacaa3ec8e96fea4"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">run</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor24FrameProcessorController3runEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor24FrameProcessorController15waitForShutdownEv">
 <span id="_CPPv3N14FrameProcessor24FrameProcessorController15waitForShutdownEv"></span><span id="_CPPv2N14FrameProcessor24FrameProcessorController15waitForShutdownEv"></span><span id="FrameProcessor::FrameProcessorController::waitForShutdown"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorController_1a87acf8fb95bf1fc843154a6c323858f0"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">waitForShutdown</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor24FrameProcessorController15waitForShutdownEv" title="Permalink to this definition">#</a><br /></dt>
 <dd><p>Wait for the exit condition before returning. </p>
 </dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor24FrameProcessorController8shutdownEv">
+<span id="_CPPv3N14FrameProcessor24FrameProcessorController8shutdownEv"></span><span id="_CPPv2N14FrameProcessor24FrameProcessorController8shutdownEv"></span><span id="FrameProcessor::FrameProcessorController::shutdown"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorController_1aa74f13ef6f9c17da153663560e2e121b"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">shutdown</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor24FrameProcessorController8shutdownEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
 
 </div>
 <div class="breathe-sectiondef docutils container">
@@ -660,6 +681,26 @@ document.write(`
 <span id="_CPPv3N14FrameProcessor24FrameProcessorController21closeControlInterfaceEv"></span><span id="_CPPv2N14FrameProcessor24FrameProcessorController21closeControlInterfaceEv"></span><span id="FrameProcessor::FrameProcessorController::closeControlInterface"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorController_1a570184f52a5eddcb3ed1ddb871c41309"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">closeControlInterface</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor24FrameProcessorController21closeControlInterfaceEv" title="Permalink to this definition">#</a><br /></dt>
 <dd><p>Close the control interface. </p>
 </dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor24FrameProcessorController20setupMetaRxInterfaceEv">
+<span id="_CPPv3N14FrameProcessor24FrameProcessorController20setupMetaRxInterfaceEv"></span><span id="_CPPv2N14FrameProcessor24FrameProcessorController20setupMetaRxInterfaceEv"></span><span id="FrameProcessor::FrameProcessorController::setupMetaRxInterface"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorController_1a78d70b5b02e820e15d486741b4cf35bc"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">setupMetaRxInterface</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor24FrameProcessorController20setupMetaRxInterfaceEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor24FrameProcessorController20closeMetaRxInterfaceEv">
+<span id="_CPPv3N14FrameProcessor24FrameProcessorController20closeMetaRxInterfaceEv"></span><span id="_CPPv2N14FrameProcessor24FrameProcessorController20closeMetaRxInterfaceEv"></span><span id="FrameProcessor::FrameProcessorController::closeMetaRxInterface"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorController_1a8654111ddce1f7949815434e788491da"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">closeMetaRxInterface</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor24FrameProcessorController20closeMetaRxInterfaceEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor24FrameProcessorController20setupMetaTxInterfaceERKNSt6stringE">
+<span id="_CPPv3N14FrameProcessor24FrameProcessorController20setupMetaTxInterfaceERKNSt6stringE"></span><span id="_CPPv2N14FrameProcessor24FrameProcessorController20setupMetaTxInterfaceERKNSt6stringE"></span><span id="FrameProcessor::FrameProcessorController::setupMetaTxInterface__ssCR"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorController_1afd12b56defc4bbd44b123d46147e934b"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">setupMetaTxInterface</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">metaEndpointString</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor24FrameProcessorController20setupMetaTxInterfaceERKNSt6stringE" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor24FrameProcessorController20closeMetaTxInterfaceEv">
+<span id="_CPPv3N14FrameProcessor24FrameProcessorController20closeMetaTxInterfaceEv"></span><span id="_CPPv2N14FrameProcessor24FrameProcessorController20closeMetaTxInterfaceEv"></span><span id="FrameProcessor::FrameProcessorController::closeMetaTxInterface"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorController_1a55ea405e69c15bedb525d7dd32f78564"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">closeMetaTxInterface</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor24FrameProcessorController20closeMetaTxInterfaceEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor24FrameProcessorController13runIpcServiceEv">
@@ -1341,6 +1382,11 @@ document.write(`
 <dd><p>Remove all registered callbacks for this plugin. </p>
 </dd></dl>
 
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor20FrameProcessorPlugin25notify_end_of_acquisitionEv">
+<span id="_CPPv3N14FrameProcessor20FrameProcessorPlugin25notify_end_of_acquisitionEv"></span><span id="_CPPv2N14FrameProcessor20FrameProcessorPlugin25notify_end_of_acquisitionEv"></span><span id="FrameProcessor::FrameProcessorPlugin::notify_end_of_acquisition"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorPlugin_1a1f031179aec98c2e922f87b906b75de9"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">notify_end_of_acquisition</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin25notify_end_of_acquisitionEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
 </div>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-protected-functions">Protected Functions</p>
@@ -1538,6 +1584,31 @@ document.write(`
 </dd></dl>
 
 <dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin17get_version_majorEv">
+<span id="_CPPv3N14FrameProcessor11BloscPlugin17get_version_majorEv"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin17get_version_majorEv"></span><span id="FrameProcessor::BloscPlugin::get_version_major"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1ad3172cca59cbbe5d7b811fbec311df21"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_major</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin17get_version_majorEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin17get_version_minorEv">
+<span id="_CPPv3N14FrameProcessor11BloscPlugin17get_version_minorEv"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin17get_version_minorEv"></span><span id="FrameProcessor::BloscPlugin::get_version_minor"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1af13931b57126577fc3d57e39acd23cdc"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_minor</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin17get_version_minorEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin17get_version_patchEv">
+<span id="_CPPv3N14FrameProcessor11BloscPlugin17get_version_patchEv"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin17get_version_patchEv"></span><span id="FrameProcessor::BloscPlugin::get_version_patch"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a49c151cab6f7c187bb965155bd9974be"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_patch</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin17get_version_patchEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin17get_version_shortEv">
+<span id="_CPPv3N14FrameProcessor11BloscPlugin17get_version_shortEv"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin17get_version_shortEv"></span><span id="FrameProcessor::BloscPlugin::get_version_short"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a6a81b4329d0ab2d5aa305fa74e44f6bb"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_short</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin17get_version_shortEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin16get_version_longEv">
+<span id="_CPPv3N14FrameProcessor11BloscPlugin16get_version_longEv"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin16get_version_longEv"></span><span id="FrameProcessor::BloscPlugin::get_version_long"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a711f47a22d9eaf9b94d753ee410643c5"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_long</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin16get_version_longEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin27update_compression_settingsEv">
 <span id="_CPPv3N14FrameProcessor11BloscPlugin27update_compression_settingsEv"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin27update_compression_settingsEv"></span><span id="FrameProcessor::BloscPlugin::update_compression_settings"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1ace70c9387172e20dc6f245c4cd819e29"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">update_compression_settings</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin27update_compression_settingsEv" title="Permalink to this definition">#</a><br /></dt>
 <dd><p>Update the compression settings </p>
@@ -1596,6 +1667,11 @@ document.write(`
 <dd><p>Temporary buffer for compressed data </p>
 </dd></dl>
 
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin17data_buffer_size_E">
+<span id="_CPPv3N14FrameProcessor11BloscPlugin17data_buffer_size_E"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin17data_buffer_size_E"></span><span id="FrameProcessor::BloscPlugin::data_buffer_size___s"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1ab188c36c8588bdf47257f9c3351d314f"></span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">data_buffer_size_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin17data_buffer_size_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
 </div>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-static-attributes">Private Static Attributes</p>
@@ -1604,6 +1680,21 @@ document.write(`
 <span id="_CPPv3N14FrameProcessor11BloscPlugin23CONFIG_BLOSC_COMPRESSORE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin23CONFIG_BLOSC_COMPRESSORE"></span><span id="FrameProcessor::BloscPlugin::CONFIG_BLOSC_COMPRESSOR__ssC"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a9e1259048445e161d01edd20df8b5e37"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CONFIG_BLOSC_COMPRESSOR</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;compressor&quot;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin23CONFIG_BLOSC_COMPRESSORE" title="Permalink to this definition">#</a><br /></dt>
 <dd><p>Configuration constants </p>
 </dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin20CONFIG_BLOSC_THREADSE">
+<span id="_CPPv3N14FrameProcessor11BloscPlugin20CONFIG_BLOSC_THREADSE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin20CONFIG_BLOSC_THREADSE"></span><span id="FrameProcessor::BloscPlugin::CONFIG_BLOSC_THREADS__ssC"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a004233e11f5b3d344b2490e21cebb70e"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CONFIG_BLOSC_THREADS</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;threads&quot;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin20CONFIG_BLOSC_THREADSE" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin18CONFIG_BLOSC_LEVELE">
+<span id="_CPPv3N14FrameProcessor11BloscPlugin18CONFIG_BLOSC_LEVELE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin18CONFIG_BLOSC_LEVELE"></span><span id="FrameProcessor::BloscPlugin::CONFIG_BLOSC_LEVEL__ssC"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a335793b608c0e179cd824f6495763227"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CONFIG_BLOSC_LEVEL</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;level&quot;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin18CONFIG_BLOSC_LEVELE" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin20CONFIG_BLOSC_SHUFFLEE">
+<span id="_CPPv3N14FrameProcessor11BloscPlugin20CONFIG_BLOSC_SHUFFLEE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin20CONFIG_BLOSC_SHUFFLEE"></span><span id="FrameProcessor::BloscPlugin::CONFIG_BLOSC_SHUFFLE__ssC"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a4eca9a6b76ebbcc6183b717bde0d364a"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CONFIG_BLOSC_SHUFFLE</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;shuffle&quot;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin20CONFIG_BLOSC_SHUFFLEE" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
 
 </div>
 </dd></dl>
@@ -1621,6 +1712,11 @@ document.write(`
 <span id="_CPPv3N14FrameProcessor13GapFillPlugin13GapFillPluginEv"></span><span id="_CPPv2N14FrameProcessor13GapFillPlugin13GapFillPluginEv"></span><span id="FrameProcessor::GapFillPlugin::GapFillPlugin"></span><span class="target" id="classFrameProcessor_1_1GapFillPlugin_1a6297664068635377397f58cd4318138a"></span><span class="sig-name descname"><span class="n"><span class="pre">GapFillPlugin</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor13GapFillPlugin13GapFillPluginEv" title="Permalink to this definition">#</a><br /></dt>
 <dd><p>Constructor for this class. </p>
 </dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor13GapFillPluginD0Ev">
+<span id="_CPPv3N14FrameProcessor13GapFillPluginD0Ev"></span><span id="_CPPv2N14FrameProcessor13GapFillPluginD0Ev"></span><span id="FrameProcessor::GapFillPlugin::~GapFillPlugin"></span><span class="target" id="classFrameProcessor_1_1GapFillPlugin_1abd5a35369eec52a99ee6094138460d1e"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">~GapFillPlugin</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor13GapFillPluginD0Ev" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor13GapFillPlugin13process_frameEN5boost10shared_ptrI5FrameEE">
@@ -1678,6 +1774,31 @@ document.write(`
 </dl>
 </dd></dl>
 
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor13GapFillPlugin17get_version_majorEv">
+<span id="_CPPv3N14FrameProcessor13GapFillPlugin17get_version_majorEv"></span><span id="_CPPv2N14FrameProcessor13GapFillPlugin17get_version_majorEv"></span><span id="FrameProcessor::GapFillPlugin::get_version_major"></span><span class="target" id="classFrameProcessor_1_1GapFillPlugin_1a12fb172019eba731c7cf166e283da5ef"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_major</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor13GapFillPlugin17get_version_majorEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor13GapFillPlugin17get_version_minorEv">
+<span id="_CPPv3N14FrameProcessor13GapFillPlugin17get_version_minorEv"></span><span id="_CPPv2N14FrameProcessor13GapFillPlugin17get_version_minorEv"></span><span id="FrameProcessor::GapFillPlugin::get_version_minor"></span><span class="target" id="classFrameProcessor_1_1GapFillPlugin_1ae886c4564da9f637ce991b8f92439aa0"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_minor</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor13GapFillPlugin17get_version_minorEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor13GapFillPlugin17get_version_patchEv">
+<span id="_CPPv3N14FrameProcessor13GapFillPlugin17get_version_patchEv"></span><span id="_CPPv2N14FrameProcessor13GapFillPlugin17get_version_patchEv"></span><span id="FrameProcessor::GapFillPlugin::get_version_patch"></span><span class="target" id="classFrameProcessor_1_1GapFillPlugin_1a7711465fdf5574acb3a1f52ab1d0cd48"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_patch</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor13GapFillPlugin17get_version_patchEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor13GapFillPlugin17get_version_shortEv">
+<span id="_CPPv3N14FrameProcessor13GapFillPlugin17get_version_shortEv"></span><span id="_CPPv2N14FrameProcessor13GapFillPlugin17get_version_shortEv"></span><span id="FrameProcessor::GapFillPlugin::get_version_short"></span><span class="target" id="classFrameProcessor_1_1GapFillPlugin_1a8008b188ed3920d927bdf3c07d799e3a"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_short</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor13GapFillPlugin17get_version_shortEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor13GapFillPlugin16get_version_longEv">
+<span id="_CPPv3N14FrameProcessor13GapFillPlugin16get_version_longEv"></span><span id="_CPPv2N14FrameProcessor13GapFillPlugin16get_version_longEv"></span><span id="FrameProcessor::GapFillPlugin::get_version_long"></span><span class="target" id="classFrameProcessor_1_1GapFillPlugin_1a75a934517978bfd9f1e2f84d572addbb"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_long</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor13GapFillPlugin16get_version_longEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
 </div>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-static-attributes">Public Static Attributes</p>
@@ -1727,6 +1848,26 @@ document.write(`
 <span id="_CPPv3N14FrameProcessor13GapFillPlugin7logger_E"></span><span id="_CPPv2N14FrameProcessor13GapFillPlugin7logger_E"></span><span id="FrameProcessor::GapFillPlugin::logger___LoggerPtr"></span><span class="target" id="classFrameProcessor_1_1GapFillPlugin_1af951fcf05b1fd8ecaea68eed42f04036"></span><span class="n"><span class="pre">LoggerPtr</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">logger_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor13GapFillPlugin7logger_E" title="Permalink to this definition">#</a><br /></dt>
 <dd><p>Pointer to logger </p>
 </dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor13GapFillPlugin5grid_E">
+<span id="_CPPv3N14FrameProcessor13GapFillPlugin5grid_E"></span><span id="_CPPv2N14FrameProcessor13GapFillPlugin5grid_E"></span><span id="FrameProcessor::GapFillPlugin::grid___std::vector:i:"></span><span class="target" id="classFrameProcessor_1_1GapFillPlugin_1ab625157c868dbeda5019e2367a174d1a"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">int</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">grid_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor13GapFillPlugin5grid_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor13GapFillPlugin5chip_E">
+<span id="_CPPv3N14FrameProcessor13GapFillPlugin5chip_E"></span><span id="_CPPv2N14FrameProcessor13GapFillPlugin5chip_E"></span><span id="FrameProcessor::GapFillPlugin::chip___std::vector:i:"></span><span class="target" id="classFrameProcessor_1_1GapFillPlugin_1a16001591947c2dea13dcb202f98544d7"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">int</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">chip_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor13GapFillPlugin5chip_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor13GapFillPlugin7gaps_x_E">
+<span id="_CPPv3N14FrameProcessor13GapFillPlugin7gaps_x_E"></span><span id="_CPPv2N14FrameProcessor13GapFillPlugin7gaps_x_E"></span><span id="FrameProcessor::GapFillPlugin::gaps_x___std::vector:i:"></span><span class="target" id="classFrameProcessor_1_1GapFillPlugin_1a5b923cea4aad8daae22fe691095ddc64"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">int</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">gaps_x_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor13GapFillPlugin7gaps_x_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor13GapFillPlugin7gaps_y_E">
+<span id="_CPPv3N14FrameProcessor13GapFillPlugin7gaps_y_E"></span><span id="_CPPv2N14FrameProcessor13GapFillPlugin7gaps_y_E"></span><span id="FrameProcessor::GapFillPlugin::gaps_y___std::vector:i:"></span><span class="target" id="classFrameProcessor_1_1GapFillPlugin_1a93a26095b1e53091b88676c302aaa069"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">int</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">gaps_y_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor13GapFillPlugin7gaps_y_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
 
 </div>
 </dd></dl>
@@ -1899,6 +2040,31 @@ document.write(`
 </dl>
 </dd></dl>
 
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor19KafkaProducerPlugin17get_version_majorEv">
+<span id="_CPPv3N14FrameProcessor19KafkaProducerPlugin17get_version_majorEv"></span><span id="_CPPv2N14FrameProcessor19KafkaProducerPlugin17get_version_majorEv"></span><span id="FrameProcessor::KafkaProducerPlugin::get_version_major"></span><span class="target" id="classFrameProcessor_1_1KafkaProducerPlugin_1aed93f4e747a81be4e7e793cc0e4d461a"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_major</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor19KafkaProducerPlugin17get_version_majorEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor19KafkaProducerPlugin17get_version_minorEv">
+<span id="_CPPv3N14FrameProcessor19KafkaProducerPlugin17get_version_minorEv"></span><span id="_CPPv2N14FrameProcessor19KafkaProducerPlugin17get_version_minorEv"></span><span id="FrameProcessor::KafkaProducerPlugin::get_version_minor"></span><span class="target" id="classFrameProcessor_1_1KafkaProducerPlugin_1a1aabfec56f32d6a052d32cea895a4044"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_minor</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor19KafkaProducerPlugin17get_version_minorEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor19KafkaProducerPlugin17get_version_patchEv">
+<span id="_CPPv3N14FrameProcessor19KafkaProducerPlugin17get_version_patchEv"></span><span id="_CPPv2N14FrameProcessor19KafkaProducerPlugin17get_version_patchEv"></span><span id="FrameProcessor::KafkaProducerPlugin::get_version_patch"></span><span class="target" id="classFrameProcessor_1_1KafkaProducerPlugin_1ab021eadbd9c384df079b7cde3a11b3d2"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_patch</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor19KafkaProducerPlugin17get_version_patchEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor19KafkaProducerPlugin17get_version_shortEv">
+<span id="_CPPv3N14FrameProcessor19KafkaProducerPlugin17get_version_shortEv"></span><span id="_CPPv2N14FrameProcessor19KafkaProducerPlugin17get_version_shortEv"></span><span id="FrameProcessor::KafkaProducerPlugin::get_version_short"></span><span class="target" id="classFrameProcessor_1_1KafkaProducerPlugin_1a702396416eeba0680d321e7931ad74f2"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_short</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor19KafkaProducerPlugin17get_version_shortEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor19KafkaProducerPlugin16get_version_longEv">
+<span id="_CPPv3N14FrameProcessor19KafkaProducerPlugin16get_version_longEv"></span><span id="_CPPv2N14FrameProcessor19KafkaProducerPlugin16get_version_longEv"></span><span id="FrameProcessor::KafkaProducerPlugin::get_version_long"></span><span class="target" id="classFrameProcessor_1_1KafkaProducerPlugin_1a4d6667baf9b485d653025237251a6758"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_long</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor19KafkaProducerPlugin16get_version_longEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
 </div>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-members">Private Members</p>
@@ -1961,6 +2127,16 @@ document.write(`
 <span id="_CPPv3N14FrameProcessor19KafkaProducerPlugin11frames_ack_E"></span><span id="_CPPv2N14FrameProcessor19KafkaProducerPlugin11frames_ack_E"></span><span id="FrameProcessor::KafkaProducerPlugin::frames_ack___uint32_t"></span><span class="target" id="classFrameProcessor_1_1KafkaProducerPlugin_1a901256ec804f62ffb78a600eb7e806ef"></span><span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">frames_ack_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor19KafkaProducerPlugin11frames_ack_E" title="Permalink to this definition">#</a><br /></dt>
 <dd><p>Number of acknowledged frames </p>
 </dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor19KafkaProducerPlugin17polling_timer_id_E">
+<span id="_CPPv3N14FrameProcessor19KafkaProducerPlugin17polling_timer_id_E"></span><span id="_CPPv2N14FrameProcessor19KafkaProducerPlugin17polling_timer_id_E"></span><span id="FrameProcessor::KafkaProducerPlugin::polling_timer_id___i"></span><span class="target" id="classFrameProcessor_1_1KafkaProducerPlugin_1a3b9941be173a16bdb3f0fc0c04dd8d63"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">polling_timer_id_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor19KafkaProducerPlugin17polling_timer_id_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor19KafkaProducerPlugin6mutex_E">
+<span id="_CPPv3N14FrameProcessor19KafkaProducerPlugin6mutex_E"></span><span id="_CPPv2N14FrameProcessor19KafkaProducerPlugin6mutex_E"></span><span id="FrameProcessor::KafkaProducerPlugin::mutex___boost::recursive_mutex"></span><span class="target" id="classFrameProcessor_1_1KafkaProducerPlugin_1a36d592e06a966a322a0cd2ee1ceb8fe5"></span><span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">recursive_mutex</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">mutex_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor19KafkaProducerPlugin6mutex_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor19KafkaProducerPlugin19include_parameters_E">
@@ -2195,6 +2371,31 @@ document.write(`
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor16FileWriterPlugin17get_version_majorEv">
+<span id="_CPPv3N14FrameProcessor16FileWriterPlugin17get_version_majorEv"></span><span id="_CPPv2N14FrameProcessor16FileWriterPlugin17get_version_majorEv"></span><span id="FrameProcessor::FileWriterPlugin::get_version_major"></span><span class="target" id="classFrameProcessor_1_1FileWriterPlugin_1af07f39eadaf08be237f6ebb28afd1aa4"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_major</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor16FileWriterPlugin17get_version_majorEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor16FileWriterPlugin17get_version_minorEv">
+<span id="_CPPv3N14FrameProcessor16FileWriterPlugin17get_version_minorEv"></span><span id="_CPPv2N14FrameProcessor16FileWriterPlugin17get_version_minorEv"></span><span id="FrameProcessor::FileWriterPlugin::get_version_minor"></span><span class="target" id="classFrameProcessor_1_1FileWriterPlugin_1a19bc44868c4285c6ef276ff7a2714860"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_minor</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor16FileWriterPlugin17get_version_minorEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor16FileWriterPlugin17get_version_patchEv">
+<span id="_CPPv3N14FrameProcessor16FileWriterPlugin17get_version_patchEv"></span><span id="_CPPv2N14FrameProcessor16FileWriterPlugin17get_version_patchEv"></span><span id="FrameProcessor::FileWriterPlugin::get_version_patch"></span><span class="target" id="classFrameProcessor_1_1FileWriterPlugin_1aeaac7ac32eaba20b64fed705b25c9200"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_patch</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor16FileWriterPlugin17get_version_patchEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor16FileWriterPlugin17get_version_shortEv">
+<span id="_CPPv3N14FrameProcessor16FileWriterPlugin17get_version_shortEv"></span><span id="_CPPv2N14FrameProcessor16FileWriterPlugin17get_version_shortEv"></span><span id="FrameProcessor::FileWriterPlugin::get_version_short"></span><span class="target" id="classFrameProcessor_1_1FileWriterPlugin_1ae0e23d43f64d4bbe734957b13dbce8da"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_short</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor16FileWriterPlugin17get_version_shortEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor16FileWriterPlugin16get_version_longEv">
+<span id="_CPPv3N14FrameProcessor16FileWriterPlugin16get_version_longEv"></span><span id="_CPPv2N14FrameProcessor16FileWriterPlugin16get_version_longEv"></span><span id="FrameProcessor::FileWriterPlugin::get_version_long"></span><span class="target" id="classFrameProcessor_1_1FileWriterPlugin_1a01f00e91d103f7ede2ef99317158e978"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_long</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor16FileWriterPlugin16get_version_longEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
 
 </div>
 <div class="breathe-sectiondef docutils container">
@@ -2548,6 +2749,16 @@ document.write(`
 </dd></dl>
 
 <dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor16FileWriterPlugin26CONFIG_DATASET_BLOSC_LEVELE">
+<span id="_CPPv3N14FrameProcessor16FileWriterPlugin26CONFIG_DATASET_BLOSC_LEVELE"></span><span id="_CPPv2N14FrameProcessor16FileWriterPlugin26CONFIG_DATASET_BLOSC_LEVELE"></span><span id="FrameProcessor::FileWriterPlugin::CONFIG_DATASET_BLOSC_LEVEL__ssC"></span><span class="target" id="classFrameProcessor_1_1FileWriterPlugin_1af6fd3b7053a032e478c970a00c99f500"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CONFIG_DATASET_BLOSC_LEVEL</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;blosc_level&quot;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor16FileWriterPlugin26CONFIG_DATASET_BLOSC_LEVELE" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor16FileWriterPlugin28CONFIG_DATASET_BLOSC_SHUFFLEE">
+<span id="_CPPv3N14FrameProcessor16FileWriterPlugin28CONFIG_DATASET_BLOSC_SHUFFLEE"></span><span id="_CPPv2N14FrameProcessor16FileWriterPlugin28CONFIG_DATASET_BLOSC_SHUFFLEE"></span><span id="FrameProcessor::FileWriterPlugin::CONFIG_DATASET_BLOSC_SHUFFLE__ssC"></span><span class="target" id="classFrameProcessor_1_1FileWriterPlugin_1ade616b32112d259bd67c923ca09586e3"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CONFIG_DATASET_BLOSC_SHUFFLE</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;blosc_shuffle&quot;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor16FileWriterPlugin28CONFIG_DATASET_BLOSC_SHUFFLEE" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor16FileWriterPlugin22CONFIG_DELETE_DATASETSE">
 <span id="_CPPv3N14FrameProcessor16FileWriterPlugin22CONFIG_DELETE_DATASETSE"></span><span id="_CPPv2N14FrameProcessor16FileWriterPlugin22CONFIG_DELETE_DATASETSE"></span><span id="FrameProcessor::FileWriterPlugin::CONFIG_DELETE_DATASETS__ssC"></span><span class="target" id="classFrameProcessor_1_1FileWriterPlugin_1a2d3661a0e8b899f1eb7ec1b57807f763"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CONFIG_DELETE_DATASETS</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;delete_datasets&quot;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor16FileWriterPlugin22CONFIG_DELETE_DATASETSE" title="Permalink to this definition">#</a><br /></dt>
 <dd><p>Configuration constant for deleting all datasets </p>
@@ -2595,6 +2806,21 @@ document.write(`
 <dd><p>Configuration constant for HDF5 call timeout durations before loggin an error </p>
 </dd></dl>
 
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor16FileWriterPlugin20WRITE_ERROR_DURATIONE">
+<span id="_CPPv3N14FrameProcessor16FileWriterPlugin20WRITE_ERROR_DURATIONE"></span><span id="_CPPv2N14FrameProcessor16FileWriterPlugin20WRITE_ERROR_DURATIONE"></span><span id="FrameProcessor::FileWriterPlugin::WRITE_ERROR_DURATION__ssC"></span><span class="target" id="classFrameProcessor_1_1FileWriterPlugin_1a2d7008645f5f8397ea1cdb8228ad9d6f"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">WRITE_ERROR_DURATION</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;write_error_duration&quot;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor16FileWriterPlugin20WRITE_ERROR_DURATIONE" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor16FileWriterPlugin20FLUSH_ERROR_DURATIONE">
+<span id="_CPPv3N14FrameProcessor16FileWriterPlugin20FLUSH_ERROR_DURATIONE"></span><span id="_CPPv2N14FrameProcessor16FileWriterPlugin20FLUSH_ERROR_DURATIONE"></span><span id="FrameProcessor::FileWriterPlugin::FLUSH_ERROR_DURATION__ssC"></span><span class="target" id="classFrameProcessor_1_1FileWriterPlugin_1aac3edf27120ee35b8024b905605bf989"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FLUSH_ERROR_DURATION</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;flush_error_duration&quot;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor16FileWriterPlugin20FLUSH_ERROR_DURATIONE" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor16FileWriterPlugin20CLOSE_ERROR_DURATIONE">
+<span id="_CPPv3N14FrameProcessor16FileWriterPlugin20CLOSE_ERROR_DURATIONE"></span><span id="_CPPv2N14FrameProcessor16FileWriterPlugin20CLOSE_ERROR_DURATIONE"></span><span id="FrameProcessor::FileWriterPlugin::CLOSE_ERROR_DURATION__ssC"></span><span class="target" id="classFrameProcessor_1_1FileWriterPlugin_1a9e90c61e33e3a447d0f51a247cb495f2"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CLOSE_ERROR_DURATION</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;close_error_duration&quot;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor16FileWriterPlugin20CLOSE_ERROR_DURATIONE" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
 </div>
 </dd></dl>
 
@@ -2605,6 +2831,16 @@ document.write(`
 <span id="_CPPv3N14FrameProcessor11AcquisitionE"></span><span id="_CPPv2N14FrameProcessor11AcquisitionE"></span><span id="FrameProcessor::Acquisition"></span><span class="target" id="classFrameProcessor_1_1Acquisition"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Acquisition</span></span></span><span class="w"> </span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">public</span></span><span class="w"> </span><span class="n"><span class="pre">FrameProcessor</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="#_CPPv4N14FrameProcessor20MetaMessagePublisherE" title="FrameProcessor::MetaMessagePublisher"><span class="n"><span class="pre">MetaMessagePublisher</span></span></a><a class="headerlink" href="#_CPPv4N14FrameProcessor11AcquisitionE" title="Permalink to this definition">#</a><br /></dt>
 <dd><div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11Acquisition11AcquisitionERK21HDF5ErrorDefinition_t">
+<span id="_CPPv3N14FrameProcessor11Acquisition11AcquisitionERK21HDF5ErrorDefinition_t"></span><span id="_CPPv2N14FrameProcessor11Acquisition11AcquisitionERK21HDF5ErrorDefinition_t"></span><span id="FrameProcessor::Acquisition::Acquisition__HDF5ErrorDefinition_tCR"></span><span class="target" id="classFrameProcessor_1_1Acquisition_1ac3ff0c7780ee39d0c8b93c9252a8e45c"></span><span class="sig-name descname"><span class="n"><span class="pre">Acquisition</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">HDF5ErrorDefinition_t</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">hdf5_error_definition</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor11Acquisition11AcquisitionERK21HDF5ErrorDefinition_t" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11AcquisitionD0Ev">
+<span id="_CPPv3N14FrameProcessor11AcquisitionD0Ev"></span><span id="_CPPv2N14FrameProcessor11AcquisitionD0Ev"></span><span id="FrameProcessor::Acquisition::~Acquisition"></span><span class="target" id="classFrameProcessor_1_1Acquisition_1a2bd1f67a133ff6fe9d8fbc95e5df7ca2"></span><span class="sig-name descname"><span class="n"><span class="pre">~Acquisition</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor11AcquisitionD0Ev" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11Acquisition14get_last_errorEv">
 <span id="_CPPv3N14FrameProcessor11Acquisition14get_last_errorEv"></span><span id="_CPPv2N14FrameProcessor11Acquisition14get_last_errorEv"></span><span id="FrameProcessor::Acquisition::get_last_error"></span><span class="target" id="classFrameProcessor_1_1Acquisition_1a7ac86cce765e8e7e116b064515219467"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_last_error</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor11Acquisition14get_last_errorEv" title="Permalink to this definition">#</a><br /></dt>
@@ -2812,6 +3048,11 @@ document.write(`
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-members">Public Members</p>
 <dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11Acquisition7logger_E">
+<span id="_CPPv3N14FrameProcessor11Acquisition7logger_E"></span><span id="_CPPv2N14FrameProcessor11Acquisition7logger_E"></span><span id="FrameProcessor::Acquisition::logger___LoggerPtr"></span><span class="target" id="classFrameProcessor_1_1Acquisition_1a4109e8ce58f45d2fbc5b64798305748b"></span><span class="n"><span class="pre">LoggerPtr</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">logger_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11Acquisition7logger_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11Acquisition13master_frame_E">
 <span id="_CPPv3N14FrameProcessor11Acquisition13master_frame_E"></span><span id="_CPPv2N14FrameProcessor11Acquisition13master_frame_E"></span><span id="FrameProcessor::Acquisition::master_frame___ss"></span><span class="target" id="classFrameProcessor_1_1Acquisition_1a654b20aeac2b8bbcea8f464693665f0c"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">master_frame_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11Acquisition13master_frame_E" title="Permalink to this definition">#</a><br /></dt>
 <dd><p>Name of master frame. When a master frame is received frame numbers increment </p>
@@ -2945,6 +3186,24 @@ document.write(`
 
 </div>
 <div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-functions">Private Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK14FrameProcessor11Acquisition22add_uint64_to_documentERKNSt6stringE6size_tPN9rapidjson8DocumentE">
+<span id="_CPPv3NK14FrameProcessor11Acquisition22add_uint64_to_documentERKNSt6stringE6size_tPN9rapidjson8DocumentE"></span><span id="_CPPv2NK14FrameProcessor11Acquisition22add_uint64_to_documentERKNSt6stringE6size_tPN9rapidjson8DocumentE"></span><span id="FrameProcessor::Acquisition::add_uint64_to_document__ssCR.s.rapidjson::DocumentPC"></span><span class="target" id="classFrameProcessor_1_1Acquisition_1a0a6b2c575791ea642f428491425d3f05"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">add_uint64_to_document</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">key</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">value</span></span>, <span class="n"><span class="pre">rapidjson</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Document</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">document</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK14FrameProcessor11Acquisition22add_uint64_to_documentERKNSt6stringE6size_tPN9rapidjson8DocumentE" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK14FrameProcessor11Acquisition22add_string_to_documentERKNSt6stringERKNSt6stringEPN9rapidjson8DocumentE">
+<span id="_CPPv3NK14FrameProcessor11Acquisition22add_string_to_documentERKNSt6stringERKNSt6stringEPN9rapidjson8DocumentE"></span><span id="_CPPv2NK14FrameProcessor11Acquisition22add_string_to_documentERKNSt6stringERKNSt6stringEPN9rapidjson8DocumentE"></span><span id="FrameProcessor::Acquisition::add_string_to_document__ssCR.ssCR.rapidjson::DocumentPC"></span><span class="target" id="classFrameProcessor_1_1Acquisition_1a4feed322ce4ab742de913b769d83481d"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">add_string_to_document</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">key</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">value</span></span>, <span class="n"><span class="pre">rapidjson</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Document</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">document</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK14FrameProcessor11Acquisition22add_string_to_documentERKNSt6stringERKNSt6stringEPN9rapidjson8DocumentE" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK14FrameProcessor11Acquisition18document_to_stringERN9rapidjson8DocumentE">
+<span id="_CPPv3NK14FrameProcessor11Acquisition18document_to_stringERN9rapidjson8DocumentE"></span><span id="_CPPv2NK14FrameProcessor11Acquisition18document_to_stringERN9rapidjson8DocumentE"></span><span id="FrameProcessor::Acquisition::document_to_string__rapidjson::DocumentRC"></span><span class="target" id="classFrameProcessor_1_1Acquisition_1af617e46c870487403ef79d012d6bd66c"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">document_to_string</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">rapidjson</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Document</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">document</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK14FrameProcessor11Acquisition18document_to_stringERN9rapidjson8DocumentE" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-members">Private Members</p>
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11Acquisition13current_file_E">
@@ -2975,6 +3234,26 @@ document.write(`
 <span id="_CPPv3N14FrameProcessor8HDF5FileE"></span><span id="_CPPv2N14FrameProcessor8HDF5FileE"></span><span id="FrameProcessor::HDF5File"></span><span class="target" id="classFrameProcessor_1_1HDF5File"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">HDF5File</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor8HDF5FileE" title="Permalink to this definition">#</a><br /></dt>
 <dd><div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor8HDF5File8HDF5FileERK21HDF5ErrorDefinition_t">
+<span id="_CPPv3N14FrameProcessor8HDF5File8HDF5FileERK21HDF5ErrorDefinition_t"></span><span id="_CPPv2N14FrameProcessor8HDF5File8HDF5FileERK21HDF5ErrorDefinition_t"></span><span id="FrameProcessor::HDF5File::HDF5File__HDF5ErrorDefinition_tCR"></span><span class="target" id="classFrameProcessor_1_1HDF5File_1aee1f1a5cfff55408305b10797af1c3c0"></span><span class="sig-name descname"><span class="n"><span class="pre">HDF5File</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">HDF5ErrorDefinition_t</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">hdf5_error_definition</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor8HDF5File8HDF5FileERK21HDF5ErrorDefinition_t" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor8HDF5FileD0Ev">
+<span id="_CPPv3N14FrameProcessor8HDF5FileD0Ev"></span><span id="_CPPv2N14FrameProcessor8HDF5FileD0Ev"></span><span id="FrameProcessor::HDF5File::~HDF5File"></span><span class="target" id="classFrameProcessor_1_1HDF5File_1a42e49302f8aca340aebe4781c6dc46f2"></span><span class="sig-name descname"><span class="n"><span class="pre">~HDF5File</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor8HDF5FileD0Ev" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor8HDF5File17hdf_error_handlerEjPK12H5E_error2_t">
+<span id="_CPPv3N14FrameProcessor8HDF5File17hdf_error_handlerEjPK12H5E_error2_t"></span><span id="_CPPv2N14FrameProcessor8HDF5File17hdf_error_handlerEjPK12H5E_error2_t"></span><span id="FrameProcessor::HDF5File::hdf_error_handler__unsigned.H5E_error2_tCP"></span><span class="target" id="classFrameProcessor_1_1HDF5File_1a252ace20b093c10eb1c3a53c2379c42f"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">hdf_error_handler</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">n</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">H5E_error2_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">err_desc</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor8HDF5File17hdf_error_handlerEjPK12H5E_error2_t" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor8HDF5File16clear_hdf_errorsEv">
+<span id="_CPPv3N14FrameProcessor8HDF5File16clear_hdf_errorsEv"></span><span id="_CPPv2N14FrameProcessor8HDF5File16clear_hdf_errorsEv"></span><span id="FrameProcessor::HDF5File::clear_hdf_errors"></span><span class="target" id="classFrameProcessor_1_1HDF5File_1aee92fe0429e2902ba3663c01cf7e1a2b"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">clear_hdf_errors</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor8HDF5File16clear_hdf_errorsEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor8HDF5File15handle_h5_errorERKNSt6stringERKNSt6stringERKNSt6stringEi">
 <span id="_CPPv3N14FrameProcessor8HDF5File15handle_h5_errorERKNSt6stringERKNSt6stringERKNSt6stringEi"></span><span id="_CPPv2N14FrameProcessor8HDF5File15handle_h5_errorERKNSt6stringERKNSt6stringERKNSt6stringEi"></span><span id="FrameProcessor::HDF5File::handle_h5_error__ssCR.ssCR.ssCR.i"></span><span class="target" id="classFrameProcessor_1_1HDF5File_1a2c413c75a4abe36f546f7e996cf5784a"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">handle_h5_error</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">message</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">function</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">filename</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">line</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor8HDF5File15handle_h5_errorERKNSt6stringERKNSt6stringERKNSt6stringEi" title="Permalink to this definition">#</a><br /></dt>
@@ -3179,6 +3458,11 @@ document.write(`
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-members">Private Members</p>
 <dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor8HDF5File7logger_E">
+<span id="_CPPv3N14FrameProcessor8HDF5File7logger_E"></span><span id="_CPPv2N14FrameProcessor8HDF5File7logger_E"></span><span id="FrameProcessor::HDF5File::logger___LoggerPtr"></span><span class="target" id="classFrameProcessor_1_1HDF5File_1a3bd255c02c8a013c5037f0440f66d396"></span><span class="n"><span class="pre">LoggerPtr</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">logger_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor8HDF5File7logger_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor8HDF5File13hdf5_file_id_E">
 <span id="_CPPv3N14FrameProcessor8HDF5File13hdf5_file_id_E"></span><span id="_CPPv2N14FrameProcessor8HDF5File13hdf5_file_id_E"></span><span id="FrameProcessor::HDF5File::hdf5_file_id___hid_t"></span><span class="target" id="classFrameProcessor_1_1HDF5File_1a1e102a428411bcf818ec0be8ff27b5b6"></span><span class="n"><span class="pre">hid_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">hdf5_file_id_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor8HDF5File13hdf5_file_id_E" title="Permalink to this definition">#</a><br /></dt>
 <dd><p>Internal ID of the file being written to </p>
@@ -3231,6 +3515,21 @@ document.write(`
 <span id="_CPPv3N14FrameProcessor8HDF5File6mutex_E"></span><span id="_CPPv2N14FrameProcessor8HDF5File6mutex_E"></span><span id="FrameProcessor::HDF5File::mutex___boost::recursive_mutex"></span><span class="target" id="classFrameProcessor_1_1HDF5File_1ac4b12fe2d6aeb0ac6be37ffa3001daae"></span><span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">recursive_mutex</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">mutex_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor8HDF5File6mutex_E" title="Permalink to this definition">#</a><br /></dt>
 <dd><p>Mutex used to make this class thread safe </p>
 </dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor8HDF5File15param_memspace_E">
+<span id="_CPPv3N14FrameProcessor8HDF5File15param_memspace_E"></span><span id="_CPPv2N14FrameProcessor8HDF5File15param_memspace_E"></span><span id="FrameProcessor::HDF5File::param_memspace___hid_t"></span><span class="target" id="classFrameProcessor_1_1HDF5File_1ad91f738ac738d47f64d2ed2b106f7b4f"></span><span class="n"><span class="pre">hid_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">param_memspace_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor8HDF5File15param_memspace_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor8HDF5File12last_flushedE">
+<span id="_CPPv3N14FrameProcessor8HDF5File12last_flushedE"></span><span id="_CPPv2N14FrameProcessor8HDF5File12last_flushedE"></span><span id="FrameProcessor::HDF5File::last_flushed__std::map:ss.boost::posix_time::ptime:"></span><span class="target" id="classFrameProcessor_1_1HDF5File_1abb5293d04edf39bd9d72f91294db6c54"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">map</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">posix_time</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">ptime</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">last_flushed</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor8HDF5File12last_flushedE" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor8HDF5File15watchdog_timer_E">
+<span id="_CPPv3N14FrameProcessor8HDF5File15watchdog_timer_E"></span><span id="_CPPv2N14FrameProcessor8HDF5File15watchdog_timer_E"></span><span id="FrameProcessor::HDF5File::watchdog_timer___WatchdogTimer"></span><span class="target" id="classFrameProcessor_1_1HDF5File_1a2f9871405d1e7d745ae5bd308f30101d"></span><a class="reference internal" href="#_CPPv4N14FrameProcessor13WatchdogTimerE" title="FrameProcessor::WatchdogTimer"><span class="n"><span class="pre">WatchdogTimer</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">watchdog_timer_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor8HDF5File15watchdog_timer_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor8HDF5File22hdf5_error_definition_E">
@@ -3361,6 +3660,16 @@ document.write(`
 <dd><div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
 <dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor13WatchdogTimer13WatchdogTimerERKN5boost8functionIFvRKNSt6stringEEEE">
+<span id="_CPPv3N14FrameProcessor13WatchdogTimer13WatchdogTimerERKN5boost8functionIFvRKNSt6stringEEEE"></span><span id="_CPPv2N14FrameProcessor13WatchdogTimer13WatchdogTimerERKN5boost8functionIFvRKNSt6stringEEEE"></span><span class="target" id="classFrameProcessor_1_1WatchdogTimer_1a9775dad4188cf3e65fd5784e90f1bbce"></span><span class="sig-name descname"><span class="n"><span class="pre">WatchdogTimer</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">function</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">void</span></span><span class="p"><span class="pre">(</span></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">&amp;</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">timeout_callback</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor13WatchdogTimer13WatchdogTimerERKN5boost8functionIFvRKNSt6stringEEEE" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor13WatchdogTimerD0Ev">
+<span id="_CPPv3N14FrameProcessor13WatchdogTimerD0Ev"></span><span id="_CPPv2N14FrameProcessor13WatchdogTimerD0Ev"></span><span id="FrameProcessor::WatchdogTimer::~WatchdogTimer"></span><span class="target" id="classFrameProcessor_1_1WatchdogTimer_1a4c75a5c5393448a178f3007d8f84859f"></span><span class="sig-name descname"><span class="n"><span class="pre">~WatchdogTimer</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor13WatchdogTimerD0Ev" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor13WatchdogTimer11start_timerERKNSt6stringEj">
 <span id="_CPPv3N14FrameProcessor13WatchdogTimer11start_timerERKNSt6stringEj"></span><span id="_CPPv2N14FrameProcessor13WatchdogTimer11start_timerERKNSt6stringEj"></span><span id="FrameProcessor::WatchdogTimer::start_timer__ssCR.unsigned-i"></span><span class="target" id="classFrameProcessor_1_1WatchdogTimer_1a736b68017a1558d1ea32bc2d91e130ba"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">start_timer</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">function_name</span></span>, <span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">watchdog_timeout_ms</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor13WatchdogTimer11start_timerERKNSt6stringEj" title="Permalink to this definition">#</a><br /></dt>
 <dd><p>Store the start time and schedule a deadline_timer to print an error</p>
@@ -3417,6 +3726,16 @@ document.write(`
 <span id="_CPPv3N14FrameProcessor13WatchdogTimer7logger_E"></span><span id="_CPPv2N14FrameProcessor13WatchdogTimer7logger_E"></span><span id="FrameProcessor::WatchdogTimer::logger___LoggerPtr"></span><span class="target" id="classFrameProcessor_1_1WatchdogTimer_1a8f6b6ad56c239f2f5195929a8e69f47b"></span><span class="n"><span class="pre">LoggerPtr</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">logger_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor13WatchdogTimer7logger_E" title="Permalink to this definition">#</a><br /></dt>
 <dd><p>Logger for logging </p>
 </dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor13WatchdogTimer11start_time_E">
+<span id="_CPPv3N14FrameProcessor13WatchdogTimer11start_time_E"></span><span id="_CPPv2N14FrameProcessor13WatchdogTimer11start_time_E"></span><span id="FrameProcessor::WatchdogTimer::start_time___timespec"></span><span class="target" id="classFrameProcessor_1_1WatchdogTimer_1ab5309d7f250b29a1a190186371ca6f3e"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">timespec</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">start_time_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor13WatchdogTimer11start_time_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor13WatchdogTimer14worker_thread_E">
+<span id="_CPPv3N14FrameProcessor13WatchdogTimer14worker_thread_E"></span><span id="_CPPv2N14FrameProcessor13WatchdogTimer14worker_thread_E"></span><span id="FrameProcessor::WatchdogTimer::worker_thread___boost::thread"></span><span class="target" id="classFrameProcessor_1_1WatchdogTimer_1a5ffc31a1f9cee12d677ab9a1693623ea"></span><span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">thread</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">worker_thread_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor13WatchdogTimer14worker_thread_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor13WatchdogTimer22worker_thread_running_E">
@@ -3532,6 +3851,31 @@ document.write(`
 </dl>
 </dd></dl>
 
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor14LiveViewPlugin17get_version_majorEv">
+<span id="_CPPv3N14FrameProcessor14LiveViewPlugin17get_version_majorEv"></span><span id="_CPPv2N14FrameProcessor14LiveViewPlugin17get_version_majorEv"></span><span id="FrameProcessor::LiveViewPlugin::get_version_major"></span><span class="target" id="classFrameProcessor_1_1LiveViewPlugin_1a9da05352485e339f97dec530f2060f00"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_major</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor14LiveViewPlugin17get_version_majorEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor14LiveViewPlugin17get_version_minorEv">
+<span id="_CPPv3N14FrameProcessor14LiveViewPlugin17get_version_minorEv"></span><span id="_CPPv2N14FrameProcessor14LiveViewPlugin17get_version_minorEv"></span><span id="FrameProcessor::LiveViewPlugin::get_version_minor"></span><span class="target" id="classFrameProcessor_1_1LiveViewPlugin_1adac548632147d1386c21daccf28e25da"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_minor</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor14LiveViewPlugin17get_version_minorEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor14LiveViewPlugin17get_version_patchEv">
+<span id="_CPPv3N14FrameProcessor14LiveViewPlugin17get_version_patchEv"></span><span id="_CPPv2N14FrameProcessor14LiveViewPlugin17get_version_patchEv"></span><span id="FrameProcessor::LiveViewPlugin::get_version_patch"></span><span class="target" id="classFrameProcessor_1_1LiveViewPlugin_1a26054cd2165a8f8bba2014e805f53b62"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_patch</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor14LiveViewPlugin17get_version_patchEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor14LiveViewPlugin17get_version_shortEv">
+<span id="_CPPv3N14FrameProcessor14LiveViewPlugin17get_version_shortEv"></span><span id="_CPPv2N14FrameProcessor14LiveViewPlugin17get_version_shortEv"></span><span id="FrameProcessor::LiveViewPlugin::get_version_short"></span><span class="target" id="classFrameProcessor_1_1LiveViewPlugin_1a8dcabee74326e003bc7c9a0ad5035452"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_short</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor14LiveViewPlugin17get_version_shortEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor14LiveViewPlugin16get_version_longEv">
+<span id="_CPPv3N14FrameProcessor14LiveViewPlugin16get_version_longEv"></span><span id="_CPPv2N14FrameProcessor14LiveViewPlugin16get_version_longEv"></span><span id="FrameProcessor::LiveViewPlugin::get_version_long"></span><span class="target" id="classFrameProcessor_1_1LiveViewPlugin_1a7f813f6f16d86bdb7992cd8022b59acb"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_long</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor14LiveViewPlugin16get_version_longEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
 </div>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-static-attributes">Public Static Attributes</p>
@@ -3599,6 +3943,16 @@ document.write(`
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-functions">Private Functions</p>
 <dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor14LiveViewPlugin15add_json_memberEPN9rapidjson8DocumentENSt6stringENSt6stringE">
+<span id="_CPPv3N14FrameProcessor14LiveViewPlugin15add_json_memberEPN9rapidjson8DocumentENSt6stringENSt6stringE"></span><span id="_CPPv2N14FrameProcessor14LiveViewPlugin15add_json_memberEPN9rapidjson8DocumentENSt6stringENSt6stringE"></span><span id="FrameProcessor::LiveViewPlugin::add_json_member__rapidjson::DocumentP.ss.ss"></span><span class="target" id="classFrameProcessor_1_1LiveViewPlugin_1aa7e01d7071f916c16c842445b4cd0b30"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">add_json_member</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">rapidjson</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Document</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">document</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">key</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">value</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor14LiveViewPlugin15add_json_memberEPN9rapidjson8DocumentENSt6stringENSt6stringE" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor14LiveViewPlugin15add_json_memberEPN9rapidjson8DocumentENSt6stringE8uint32_t">
+<span id="_CPPv3N14FrameProcessor14LiveViewPlugin15add_json_memberEPN9rapidjson8DocumentENSt6stringE8uint32_t"></span><span id="_CPPv2N14FrameProcessor14LiveViewPlugin15add_json_memberEPN9rapidjson8DocumentENSt6stringE8uint32_t"></span><span id="FrameProcessor::LiveViewPlugin::add_json_member__rapidjson::DocumentP.ss.uint32_t"></span><span class="target" id="classFrameProcessor_1_1LiveViewPlugin_1a089f7cadb3971da02b2a40cfc953d4fb"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">add_json_member</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">rapidjson</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Document</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">document</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">key</span></span>, <span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">value</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor14LiveViewPlugin15add_json_memberEPN9rapidjson8DocumentENSt6stringE8uint32_t" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor14LiveViewPlugin20requestConfigurationERN8OdinData10IpcMessageE">
 <span id="_CPPv3N14FrameProcessor14LiveViewPlugin20requestConfigurationERN8OdinData10IpcMessageE"></span><span id="_CPPv2N14FrameProcessor14LiveViewPlugin20requestConfigurationERN8OdinData10IpcMessageE"></span><span id="FrameProcessor::LiveViewPlugin::requestConfiguration__OdinData::IpcMessageR"></span><span class="target" id="classFrameProcessor_1_1LiveViewPlugin_1a7f4c381aedc4d8fe60a8100d69834585"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">requestConfiguration</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">reply</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor14LiveViewPlugin20requestConfigurationERN8OdinData10IpcMessageE" title="Permalink to this definition">#</a><br /></dt>
 <dd><p>Get the configuration values for this Plugin.</p>
@@ -3652,6 +4006,11 @@ document.write(`
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor14LiveViewPlugin24set_tagged_filter_configENSt6stringE">
+<span id="_CPPv3N14FrameProcessor14LiveViewPlugin24set_tagged_filter_configENSt6stringE"></span><span id="_CPPv2N14FrameProcessor14LiveViewPlugin24set_tagged_filter_configENSt6stringE"></span><span id="FrameProcessor::LiveViewPlugin::set_tagged_filter_config__ss"></span><span class="target" id="classFrameProcessor_1_1LiveViewPlugin_1af714762cbb3d310c8d2bbdb427638944"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">set_tagged_filter_config</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">value</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor14LiveViewPlugin24set_tagged_filter_configENSt6stringE" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
 
 </div>
 <div class="breathe-sectiondef docutils container">
@@ -3781,6 +4140,31 @@ document.write(`
 </dl>
 </dd></dl>
 
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor22OffsetAdjustmentPlugin17get_version_majorEv">
+<span id="_CPPv3N14FrameProcessor22OffsetAdjustmentPlugin17get_version_majorEv"></span><span id="_CPPv2N14FrameProcessor22OffsetAdjustmentPlugin17get_version_majorEv"></span><span id="FrameProcessor::OffsetAdjustmentPlugin::get_version_major"></span><span class="target" id="classFrameProcessor_1_1OffsetAdjustmentPlugin_1a9b3eca6245d0f3548f309efa8c2e80bc"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_major</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor22OffsetAdjustmentPlugin17get_version_majorEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor22OffsetAdjustmentPlugin17get_version_minorEv">
+<span id="_CPPv3N14FrameProcessor22OffsetAdjustmentPlugin17get_version_minorEv"></span><span id="_CPPv2N14FrameProcessor22OffsetAdjustmentPlugin17get_version_minorEv"></span><span id="FrameProcessor::OffsetAdjustmentPlugin::get_version_minor"></span><span class="target" id="classFrameProcessor_1_1OffsetAdjustmentPlugin_1ae8dbea6e50f9612496115dab4f81c629"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_minor</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor22OffsetAdjustmentPlugin17get_version_minorEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor22OffsetAdjustmentPlugin17get_version_patchEv">
+<span id="_CPPv3N14FrameProcessor22OffsetAdjustmentPlugin17get_version_patchEv"></span><span id="_CPPv2N14FrameProcessor22OffsetAdjustmentPlugin17get_version_patchEv"></span><span id="FrameProcessor::OffsetAdjustmentPlugin::get_version_patch"></span><span class="target" id="classFrameProcessor_1_1OffsetAdjustmentPlugin_1a7a1151f2de4372f48463f411c91e85cc"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_patch</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor22OffsetAdjustmentPlugin17get_version_patchEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor22OffsetAdjustmentPlugin17get_version_shortEv">
+<span id="_CPPv3N14FrameProcessor22OffsetAdjustmentPlugin17get_version_shortEv"></span><span id="_CPPv2N14FrameProcessor22OffsetAdjustmentPlugin17get_version_shortEv"></span><span id="FrameProcessor::OffsetAdjustmentPlugin::get_version_short"></span><span class="target" id="classFrameProcessor_1_1OffsetAdjustmentPlugin_1af99674bc3d33a6497af03393dfedc084"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_short</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor22OffsetAdjustmentPlugin17get_version_shortEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor22OffsetAdjustmentPlugin16get_version_longEv">
+<span id="_CPPv3N14FrameProcessor22OffsetAdjustmentPlugin16get_version_longEv"></span><span id="_CPPv2N14FrameProcessor22OffsetAdjustmentPlugin16get_version_longEv"></span><span id="FrameProcessor::OffsetAdjustmentPlugin::get_version_long"></span><span class="target" id="classFrameProcessor_1_1OffsetAdjustmentPlugin_1aa513b423589e1469904affcecac0206c"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_long</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor22OffsetAdjustmentPlugin16get_version_longEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
 </div>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-functions">Private Functions</p>
@@ -3860,6 +4244,31 @@ document.write(`
 </dl>
 </dd></dl>
 
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor25ParameterAdjustmentPlugin17get_version_majorEv">
+<span id="_CPPv3N14FrameProcessor25ParameterAdjustmentPlugin17get_version_majorEv"></span><span id="_CPPv2N14FrameProcessor25ParameterAdjustmentPlugin17get_version_majorEv"></span><span id="FrameProcessor::ParameterAdjustmentPlugin::get_version_major"></span><span class="target" id="classFrameProcessor_1_1ParameterAdjustmentPlugin_1adba89e70dfd5de9b9e0697badcb10c28"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_major</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor25ParameterAdjustmentPlugin17get_version_majorEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor25ParameterAdjustmentPlugin17get_version_minorEv">
+<span id="_CPPv3N14FrameProcessor25ParameterAdjustmentPlugin17get_version_minorEv"></span><span id="_CPPv2N14FrameProcessor25ParameterAdjustmentPlugin17get_version_minorEv"></span><span id="FrameProcessor::ParameterAdjustmentPlugin::get_version_minor"></span><span class="target" id="classFrameProcessor_1_1ParameterAdjustmentPlugin_1a71b8fe68100d9a5374bb832596cc7897"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_minor</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor25ParameterAdjustmentPlugin17get_version_minorEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor25ParameterAdjustmentPlugin17get_version_patchEv">
+<span id="_CPPv3N14FrameProcessor25ParameterAdjustmentPlugin17get_version_patchEv"></span><span id="_CPPv2N14FrameProcessor25ParameterAdjustmentPlugin17get_version_patchEv"></span><span id="FrameProcessor::ParameterAdjustmentPlugin::get_version_patch"></span><span class="target" id="classFrameProcessor_1_1ParameterAdjustmentPlugin_1a22bdd1e7ccd067053196595a7feb97aa"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_patch</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor25ParameterAdjustmentPlugin17get_version_patchEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor25ParameterAdjustmentPlugin17get_version_shortEv">
+<span id="_CPPv3N14FrameProcessor25ParameterAdjustmentPlugin17get_version_shortEv"></span><span id="_CPPv2N14FrameProcessor25ParameterAdjustmentPlugin17get_version_shortEv"></span><span id="FrameProcessor::ParameterAdjustmentPlugin::get_version_short"></span><span class="target" id="classFrameProcessor_1_1ParameterAdjustmentPlugin_1a6b3007d7a8dd08adc89dda3eb4172b49"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_short</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor25ParameterAdjustmentPlugin17get_version_shortEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor25ParameterAdjustmentPlugin16get_version_longEv">
+<span id="_CPPv3N14FrameProcessor25ParameterAdjustmentPlugin16get_version_longEv"></span><span id="_CPPv2N14FrameProcessor25ParameterAdjustmentPlugin16get_version_longEv"></span><span id="FrameProcessor::ParameterAdjustmentPlugin::get_version_long"></span><span class="target" id="classFrameProcessor_1_1ParameterAdjustmentPlugin_1ab77600ae7995588df547b6d1f65604ea"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_long</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor25ParameterAdjustmentPlugin16get_version_longEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
 </div>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-functions">Private Functions</p>
@@ -3929,6 +4338,31 @@ document.write(`
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor9SumPlugin17get_version_majorEv">
+<span id="_CPPv3N14FrameProcessor9SumPlugin17get_version_majorEv"></span><span id="_CPPv2N14FrameProcessor9SumPlugin17get_version_majorEv"></span><span id="FrameProcessor::SumPlugin::get_version_major"></span><span class="target" id="classFrameProcessor_1_1SumPlugin_1a24557566c34fca46442780f3c38fe949"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_major</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor9SumPlugin17get_version_majorEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor9SumPlugin17get_version_minorEv">
+<span id="_CPPv3N14FrameProcessor9SumPlugin17get_version_minorEv"></span><span id="_CPPv2N14FrameProcessor9SumPlugin17get_version_minorEv"></span><span id="FrameProcessor::SumPlugin::get_version_minor"></span><span class="target" id="classFrameProcessor_1_1SumPlugin_1aa585ae5bdeeab8b794c75829a8445b92"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_minor</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor9SumPlugin17get_version_minorEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor9SumPlugin17get_version_patchEv">
+<span id="_CPPv3N14FrameProcessor9SumPlugin17get_version_patchEv"></span><span id="_CPPv2N14FrameProcessor9SumPlugin17get_version_patchEv"></span><span id="FrameProcessor::SumPlugin::get_version_patch"></span><span class="target" id="classFrameProcessor_1_1SumPlugin_1a74f407d4b37a3342f3f8ddf9089c8d4f"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_patch</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor9SumPlugin17get_version_patchEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor9SumPlugin17get_version_shortEv">
+<span id="_CPPv3N14FrameProcessor9SumPlugin17get_version_shortEv"></span><span id="_CPPv2N14FrameProcessor9SumPlugin17get_version_shortEv"></span><span id="FrameProcessor::SumPlugin::get_version_short"></span><span class="target" id="classFrameProcessor_1_1SumPlugin_1abd6602e5a88d9a58388ca3147a22ffc0"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_short</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor9SumPlugin17get_version_shortEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor9SumPlugin16get_version_longEv">
+<span id="_CPPv3N14FrameProcessor9SumPlugin16get_version_longEv"></span><span id="_CPPv2N14FrameProcessor9SumPlugin16get_version_longEv"></span><span id="FrameProcessor::SumPlugin::get_version_long"></span><span class="target" id="classFrameProcessor_1_1SumPlugin_1a1913ee23b2fc8ba53b25c1e8d97635ef"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_long</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor9SumPlugin16get_version_longEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
 
 </div>
 <div class="breathe-sectiondef docutils container">
@@ -4155,6 +4589,21 @@ document.write(`
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
 <dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor20MetaMessagePublisher20MetaMessagePublisherEv">
+<span id="_CPPv3N14FrameProcessor20MetaMessagePublisher20MetaMessagePublisherEv"></span><span id="_CPPv2N14FrameProcessor20MetaMessagePublisher20MetaMessagePublisherEv"></span><span id="FrameProcessor::MetaMessagePublisher::MetaMessagePublisher"></span><span class="target" id="classFrameProcessor_1_1MetaMessagePublisher_1a91f721143783506accf80c6da97c8fd5"></span><span class="sig-name descname"><span class="n"><span class="pre">MetaMessagePublisher</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor20MetaMessagePublisher20MetaMessagePublisherEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor20MetaMessagePublisherD0Ev">
+<span id="_CPPv3N14FrameProcessor20MetaMessagePublisherD0Ev"></span><span id="_CPPv2N14FrameProcessor20MetaMessagePublisherD0Ev"></span><span id="FrameProcessor::MetaMessagePublisher::~MetaMessagePublisher"></span><span class="target" id="classFrameProcessor_1_1MetaMessagePublisher_1aea384957a383bd9065e01f482b3cedc8"></span><span class="sig-name descname"><span class="n"><span class="pre">~MetaMessagePublisher</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor20MetaMessagePublisherD0Ev" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor20MetaMessagePublisher20connect_meta_channelEv">
+<span id="_CPPv3N14FrameProcessor20MetaMessagePublisher20connect_meta_channelEv"></span><span id="_CPPv2N14FrameProcessor20MetaMessagePublisher20connect_meta_channelEv"></span><span id="FrameProcessor::MetaMessagePublisher::connect_meta_channel"></span><span class="target" id="classFrameProcessor_1_1MetaMessagePublisher_1a748bd77ff2df89c8212ca222a325b7ae"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">connect_meta_channel</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor20MetaMessagePublisher20connect_meta_channelEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor20MetaMessagePublisher12publish_metaEKNSt6stringERKNSt6stringE7int32_tRKNSt6stringE">
 <span id="_CPPv3N14FrameProcessor20MetaMessagePublisher12publish_metaEKNSt6stringERKNSt6stringE7int32_tRKNSt6stringE"></span><span id="_CPPv2N14FrameProcessor20MetaMessagePublisher12publish_metaEKNSt6stringERKNSt6stringE7int32_tRKNSt6stringE"></span><span id="FrameProcessor::MetaMessagePublisher::publish_meta__ssC.ssCR.int32_t.ssCR"></span><span class="target" id="classFrameProcessor_1_1MetaMessagePublisher_1a9c47e99dbc79daac777029a2676fe7f7"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">publish_meta</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">name</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">item</span></span>, <span class="n"><span class="pre">int32_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">value</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">header</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;&quot;</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor20MetaMessagePublisher12publish_metaEKNSt6stringERKNSt6stringE7int32_tRKNSt6stringE" title="Permalink to this definition">#</a><br /></dt>
 <dd><p>Publish meta data from this plugin.</p>
@@ -4168,6 +4617,21 @@ document.write(`
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor20MetaMessagePublisher12publish_metaEKNSt6stringERKNSt6stringE8uint64_tRKNSt6stringE">
+<span id="_CPPv3N14FrameProcessor20MetaMessagePublisher12publish_metaEKNSt6stringERKNSt6stringE8uint64_tRKNSt6stringE"></span><span id="_CPPv2N14FrameProcessor20MetaMessagePublisher12publish_metaEKNSt6stringERKNSt6stringE8uint64_tRKNSt6stringE"></span><span id="FrameProcessor::MetaMessagePublisher::publish_meta__ssC.ssCR.uint64_t.ssCR"></span><span class="target" id="classFrameProcessor_1_1MetaMessagePublisher_1a7cb1b036c7ee006dfcf51af4fac9ebc3"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">publish_meta</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">name</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">item</span></span>, <span class="n"><span class="pre">uint64_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">value</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">header</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;&quot;</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor20MetaMessagePublisher12publish_metaEKNSt6stringERKNSt6stringE8uint64_tRKNSt6stringE" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor20MetaMessagePublisher12publish_metaEKNSt6stringERKNSt6stringEdRKNSt6stringE">
+<span id="_CPPv3N14FrameProcessor20MetaMessagePublisher12publish_metaEKNSt6stringERKNSt6stringEdRKNSt6stringE"></span><span id="_CPPv2N14FrameProcessor20MetaMessagePublisher12publish_metaEKNSt6stringERKNSt6stringEdRKNSt6stringE"></span><span id="FrameProcessor::MetaMessagePublisher::publish_meta__ssC.ssCR.double.ssCR"></span><span class="target" id="classFrameProcessor_1_1MetaMessagePublisher_1ab8ecb4a8a3d8c8d3b2e2b61a755d110e"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">publish_meta</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">name</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">item</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">value</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">header</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;&quot;</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor20MetaMessagePublisher12publish_metaEKNSt6stringERKNSt6stringEdRKNSt6stringE" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor20MetaMessagePublisher12publish_metaEKNSt6stringERKNSt6stringERKNSt6stringERKNSt6stringE">
+<span id="_CPPv3N14FrameProcessor20MetaMessagePublisher12publish_metaEKNSt6stringERKNSt6stringERKNSt6stringERKNSt6stringE"></span><span id="_CPPv2N14FrameProcessor20MetaMessagePublisher12publish_metaEKNSt6stringERKNSt6stringERKNSt6stringERKNSt6stringE"></span><span id="FrameProcessor::MetaMessagePublisher::publish_meta__ssC.ssCR.ssCR.ssCR"></span><span class="target" id="classFrameProcessor_1_1MetaMessagePublisher_1a2dfdb13bbbabe692833c4d5762bcf6a1"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">publish_meta</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">name</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">item</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">value</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">header</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;&quot;</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor20MetaMessagePublisher12publish_metaEKNSt6stringERKNSt6stringERKNSt6stringERKNSt6stringE" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor20MetaMessagePublisher12publish_metaEKNSt6stringERKNSt6stringEPKv6size_tRKNSt6stringE">
@@ -4709,6 +5173,21 @@ document.write(`
 <span id="_CPPv3N14FrameProcessor13FrameMetaDataE"></span><span id="_CPPv2N14FrameProcessor13FrameMetaDataE"></span><span id="FrameProcessor::FrameMetaData"></span><span class="target" id="classFrameProcessor_1_1FrameMetaData"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FrameMetaData</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor13FrameMetaDataE" title="Permalink to this definition">#</a><br /></dt>
 <dd><div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor13FrameMetaData13FrameMetaDataERKxRKNSt6stringERK8DataTypeRKNSt6stringERKNSt6vectorIyEERK15CompressionType">
+<span id="_CPPv3N14FrameProcessor13FrameMetaData13FrameMetaDataERKxRKNSt6stringERK8DataTypeRKNSt6stringERKNSt6vectorIyEERK15CompressionType"></span><span id="_CPPv2N14FrameProcessor13FrameMetaData13FrameMetaDataERKxRKNSt6stringERK8DataTypeRKNSt6stringERKNSt6vectorIyEERK15CompressionType"></span><span id="FrameProcessor::FrameMetaData::FrameMetaData__l-lCR.ssCR.DataTypeCR.ssCR.std::vector:unsigned-l-l:CR.CompressionTypeCR"></span><span class="target" id="classFrameProcessor_1_1FrameMetaData_1a822a077682715454e6d7d1ccd0480abc"></span><span class="sig-name descname"><span class="n"><span class="pre">FrameMetaData</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">long</span></span><span class="w"> </span><span class="kt"><span class="pre">long</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">frame_number</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">dataset_name</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">DataType</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">data_type</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">acquisition_ID</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="kt"><span class="pre">long</span></span><span class="w"> </span><span class="kt"><span class="pre">long</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">dimensions</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">CompressionType</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">compression_type</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="n"><span class="pre">no_compression</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor13FrameMetaData13FrameMetaDataERKxRKNSt6stringERK8DataTypeRKNSt6stringERKNSt6vectorIyEERK15CompressionType" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor13FrameMetaData13FrameMetaDataEv">
+<span id="_CPPv3N14FrameProcessor13FrameMetaData13FrameMetaDataEv"></span><span id="_CPPv2N14FrameProcessor13FrameMetaData13FrameMetaDataEv"></span><span id="FrameProcessor::FrameMetaData::FrameMetaData"></span><span class="target" id="classFrameProcessor_1_1FrameMetaData_1ab9df8a2105403d43e39e3e08bea794bc"></span><span class="sig-name descname"><span class="n"><span class="pre">FrameMetaData</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor13FrameMetaData13FrameMetaDataEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor13FrameMetaData13FrameMetaDataERK13FrameMetaData">
+<span id="_CPPv3N14FrameProcessor13FrameMetaData13FrameMetaDataERK13FrameMetaData"></span><span id="_CPPv2N14FrameProcessor13FrameMetaData13FrameMetaDataERK13FrameMetaData"></span><span id="FrameProcessor::FrameMetaData::FrameMetaData__FrameMetaDataCR"></span><span class="target" id="classFrameProcessor_1_1FrameMetaData_1a18c7f2b4f0ab8c8eda50d96911f71967"></span><span class="sig-name descname"><span class="n"><span class="pre">FrameMetaData</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N14FrameProcessor13FrameMetaData13FrameMetaDataERK13FrameMetaData" title="FrameProcessor::FrameMetaData::FrameMetaData"><span class="n"><span class="pre">FrameMetaData</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">frame</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor13FrameMetaData13FrameMetaDataERK13FrameMetaData" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4NK14FrameProcessor13FrameMetaData14get_parametersEv">
 <span id="_CPPv3NK14FrameProcessor13FrameMetaData14get_parametersEv"></span><span id="_CPPv2NK14FrameProcessor13FrameMetaData14get_parametersEv"></span><span id="FrameProcessor::FrameMetaData::get_parametersC"></span><span class="target" id="classFrameProcessor_1_1FrameMetaData_1a8ff6f5a7cb8646de8591f185c847c56c"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">map</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">any</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-name descname"><span class="n"><span class="pre">get_parameters</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK14FrameProcessor13FrameMetaData14get_parametersEv" title="Permalink to this definition">#</a><br /></dt>
@@ -5260,6 +5739,14 @@ document.write(`
 </dd></dl>
 
 </div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-friends">Friends</p>
+<dl>
+<dt class="sig sig-object cpp">
+<em class="property"><span class="pre">friend</span> <span class="pre">class</span></em> <span class="pre">DataBlockPool</span></dt>
+</dl>
+
+</div>
 </dd></dl>
 
 </section>
@@ -5269,6 +5756,14 @@ document.write(`
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor13DataBlockPoolE">
 <span id="_CPPv3N14FrameProcessor13DataBlockPoolE"></span><span id="_CPPv2N14FrameProcessor13DataBlockPoolE"></span><span id="FrameProcessor::DataBlockPool"></span><span class="target" id="classFrameProcessor_1_1DataBlockPool"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">DataBlockPool</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor13DataBlockPoolE" title="Permalink to this definition">#</a><br /></dt>
 <dd><p>The <a class="reference internal" href="#classFrameProcessor_1_1DataBlock"><span class="std std-ref">DataBlock</span></a> and <a class="reference internal" href="#classFrameProcessor_1_1DataBlockPool"><span class="std std-ref">DataBlockPool</span></a> classes provide memory management for data within Frames. Memory is allocated by a data block on construction, and then the data block can be re-used without continually freeing and re- allocating the memory. The <a class="reference internal" href="#classFrameProcessor_1_1DataBlockPool"><span class="std std-ref">DataBlockPool</span></a> provides a singleton class that can be used to access data blocks through shared memory pointers and manages the data blocks to avoid continuous allocating and freeing of memory. The <a class="reference internal" href="#classFrameProcessor_1_1DataBlockPool"><span class="std std-ref">DataBlockPool</span></a> also contains details of how many blocks are available, in use and the total memory used. </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor13DataBlockPoolD0Ev">
+<span id="_CPPv3N14FrameProcessor13DataBlockPoolD0Ev"></span><span id="_CPPv2N14FrameProcessor13DataBlockPoolD0Ev"></span><span id="FrameProcessor::DataBlockPool::~DataBlockPool"></span><span class="target" id="classFrameProcessor_1_1DataBlockPool_1aec03a6d51b19f73e74669cc3a11b5a30"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">~DataBlockPool</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor13DataBlockPoolD0Ev" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+</div>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-static-functions">Public Static Functions</p>
 <dl class="cpp function">

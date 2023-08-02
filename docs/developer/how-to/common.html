@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Common API &#8212; odin-data 0+untagged.1.g7c2c187 documentation</title>
+    <title>Common API &#8212; odin-data 0+untagged.1.gef6c54b documentation</title>
   
   
   
@@ -359,15 +359,18 @@ document.write(`
 <li class="toctree-l2"><a class="reference internal" href="frame-decoder.html">FrameDecoder</a></li>
 <li class="toctree-l2"><a class="reference internal" href="frame-processor-plugin.html">FrameProcessorPlugin</a></li>
 <li class="toctree-l2"><a class="reference internal" href="frame-simulator-plugin.html">FrameSimulatorPlugin</a></li>
-<li class="toctree-l2"><a class="reference internal" href="docs.html">Docs</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="docs.html">Docs</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="excalidraw.html">How to embed Excalidraw diagrams</a></li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../explanations/index.html"><strong>Explanations</strong></a><input checked class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../explanations/index.html"><strong>Explanations</strong></a><input checked class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../explanations/overview.html">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../explanations/design-decisions.html">Design Decisions</a></li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../reference/index.html"><strong>Reference</strong></a><input checked class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../reference/index.html"><strong>Reference</strong></a><input checked class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../reference/api/common.html">Common API Reference</a></li>
 
 
@@ -385,7 +388,10 @@ document.write(`
 
 <li class="toctree-l2"><a class="reference internal" href="../reference/api/frame-simulator.html">FrameSimulator API Reference</a></li>
 
-<li class="toctree-l2"><a class="reference internal" href="../reference/design-docs/index.html">Design Docs</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../reference/design-docs/index.html">Design Docs</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/design-docs/live-view-spec.html">Specification For Odin Data Live View Plugin</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -454,9 +460,9 @@ document.write(`
 between them.</p>
 <section id="ipc-interface">
 <h2>IPC Interface<a class="headerlink" href="#ipc-interface" title="Permalink to this heading">#</a></h2>
-<p>The <a class="reference internal" href="#../reference/api/common#ipc_channel"><span class="xref myst">IpcChannel</span></a> and <a class="reference internal" href="#../reference/api/common#ipc_message"><span class="xref myst">IpcMessage</span></a> classes are used for all interprocess communications -
+<p>The <a class="reference internal" href="../reference/api/common.html#_CPPv4N8OdinData10IpcChannelE" title="OdinData::IpcChannel"><span class="xref myst cpp cpp-class">IpcChannel</span></a> and <a class="reference internal" href="../reference/api/common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="xref myst cpp cpp-class">IpcMessage</span></a> classes are used for all interprocess communications -
 both between frameReceiver and frameProcesor as well as for the control interface for
-client applications. The <code class="docutils literal notranslate"><span class="pre">IPCMessage</span></code> class has some enumerated message types for common
+client applications. The <a class="reference internal" href="../reference/api/common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="xref myst cpp cpp-class">IpcMessage</span></a> class has some enumerated message types for common
 functions.</p>
 </section>
 <section id="sharedbuffermanager">
@@ -470,7 +476,7 @@ manage access to the shared memory.</p>
 <h2>Detector Constants and Buffer Header<a class="headerlink" href="#detector-constants-and-buffer-header" title="Permalink to this heading">#</a></h2>
 <p>Detector implementations should create a definitions header containing any constants,
 utilities and most importantly a common frame header struct that can be used in both the
-<a class="reference internal" href="frame-decoder.html"><span class="doc std std-doc">FrameDecoder</span></a> and a <a class="reference internal" href="frame-processor-plugin.html"><span class="doc std std-doc">FrameProcessorPlugin</span></a> to read and write to buffers in shared
+<a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4N13FrameReceiver12FrameDecoderE" title="FrameReceiver::FrameDecoder"><span class="xref myst cpp cpp-class">FrameDecoder</span></a> and a <a class="reference internal" href="../reference/api/frame-processor.html#_CPPv4N14FrameProcessor20FrameProcessorPluginE" title="FrameProcessor::FrameProcessorPlugin"><span class="xref myst cpp cpp-class">FrameProcessorPlugin</span></a> to read and write to buffers in shared
 memory. With this common API, the decoder can insert the header in front of the data blob
 in shared memory and the processor plugin can simply cast the void pointer into a pointer
 to a detector specific header to access the members and offset that pointer by the size
@@ -478,16 +484,15 @@ of the header to access the data.</p>
 </section>
 <section id="dynamic-class-versioning">
 <h2>Dynamic Class Versioning<a class="headerlink" href="#dynamic-class-versioning" title="Permalink to this heading">#</a></h2>
-<p>As dynamically loadable classes, both the <code class="docutils literal notranslate"><span class="pre">FrameDecoder</span></code> and <code class="docutils literal notranslate"><span class="pre">FrameProcessorPlugin</span></code>
-inherit <code class="docutils literal notranslate"><span class="pre">IVersionedObject</span></code>, so must implement the following methods:</p>
+<p>As dynamically loadable classes, both the <a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4N13FrameReceiver12FrameDecoderE" title="FrameReceiver::FrameDecoder"><span class="xref myst cpp cpp-class">FrameDecoder</span></a> and <a class="reference internal" href="../reference/api/frame-processor.html#_CPPv4N14FrameProcessor20FrameProcessorPluginE" title="FrameProcessor::FrameProcessorPlugin"><span class="xref myst cpp cpp-class">FrameProcessorPlugin</span></a>
+inherit <a class="reference internal" href="../reference/api/common.html#_CPPv4N8OdinData16IVersionedObjectE" title="OdinData::IVersionedObject"><span class="xref myst cpp cpp-class">IVersionedObject</span></a>, so must implement the following methods:</p>
 <ul class="simple">
-<li><p>get_version_major</p></li>
-<li><p>get_version_minor</p></li>
-<li><p>get_version_patch</p></li>
-<li><p>get_version_short</p></li>
-<li><p>get_version_long</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_version_major</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_version_minor</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_version_patch</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_version_short</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_version_long</span></code></p></li>
 </ul>
-<p>See <a class="reference internal" href="#../reference/api/common#iversioned_object"><span class="xref myst">IVersionedObject</span></a> for details.</p>
 <p>These methods are used to provide version information to clients about the exact classes
 that have been loaded into the applications.</p>
 </section>

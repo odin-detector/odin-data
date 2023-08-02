@@ -1,32 +1,30 @@
 # FrameSimulatorPlugin
 
-The `FrameSimulatorPlugin` is the base class for detector specific implementations that
+The [FrameSimulatorPlugin] is the base class for detector specific implementations that
 can be loaded into the frameSimulator application.
 
 This class defines a few virtual methods to be implemented by concrete implementations.
 Some are pure virtual - annotated with `*` - and some are optional. These are:
 
-- `populate_options`
-- `setup`
-- `simulate*`
+- [populate_options]
+- [setup]
+- [simulate]*
 
 These methods are used to provide options to `--help` output, parse commandline options
 and run the simulation.
 
-```{note}
-See the [API Reference](../reference/api/frame-receiver/decoder.md#framedecoderudp)
-for more detail.
-```
-
-There is also a helper child class `FrameSimulatorPluginUDP` that provides some utility
+There is also a helper child class [FrameSimulatorPluginUDP] that provides some utility
 for loading pcap files, providing virtual methods to process the file into packets, and
-implements a generic `setup` and `simulate` methods. The methods for child classes to
+implements generic [setup] and [simulate] methods. The methods for child classes to
 implement are:
 
-- `extract_frames*`
-- `create_frames*`
+- [extract_frames]*
+- [create_frames]*
 
-```{note}
-See the [API Reference](../reference/api/frame-simulator/simulator.md)
-for more detail.
-```
+[FrameSimulatorPlugin]: FrameSimulator::FrameSimulatorPlugin
+[populate_options]: FrameSimulator::FrameSimulatorPlugin::populate_options
+[setup]: FrameSimulator::FrameSimulatorPlugin::setup
+[simulate]: FrameSimulator::FrameSimulatorPlugin::simulate
+[FrameSimulatorPluginUDP]: FrameSimulator::FrameSimulatorPluginUDP
+[extract_frames]: FrameSimulator::FrameSimulatorPluginUDP::extract_frames
+[create_frames]: FrameSimulator::FrameSimulatorPluginUDP::create_frames

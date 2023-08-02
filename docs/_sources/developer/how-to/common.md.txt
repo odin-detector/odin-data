@@ -7,7 +7,7 @@ between them.
 
 The [IpcChannel] and [IpcMessage] classes are used for all interprocess communications -
 both between frameReceiver and frameProcesor as well as for the control interface for
-client applications. The `IPCMessage` class has some enumerated message types for common
+client applications. The [IpcMessage] class has some enumerated message types for common
 functions.
 
 ## SharedBufferManager
@@ -29,23 +29,21 @@ of the header to access the data.
 
 ## Dynamic Class Versioning
 
-As dynamically loadable classes, both the `FrameDecoder` and `FrameProcessorPlugin`
-inherit `IVersionedObject`, so must implement the following methods:
+As dynamically loadable classes, both the [FrameDecoder] and [FrameProcessorPlugin]
+inherit [IVersionedObject], so must implement the following methods:
 
-- get_version_major
-- get_version_minor
-- get_version_patch
-- get_version_short
-- get_version_long
-
-See [IVersionedObject] for details.
+- `get_version_major`
+- `get_version_minor`
+- `get_version_patch`
+- `get_version_short`
+- `get_version_long`
 
 These methods are used to provide version information to clients about the exact classes
 that have been loaded into the applications.
 
-[IpcChannel]: ../reference/api/common#ipc_channel
-[IpcMessage]: ../reference/api/common#ipc_message
-[FrameDecoder]: ./frame-decoder
-[FrameProcessorPlugin]: ./frame-processor-plugin
-[IVersionedObject]: ../reference/api/common#iversioned_object
+[IpcChannel]: OdinData::IpcChannel
+[IpcMessage]: OdinData::IpcMessage
+[FrameDecoder]: FrameReceiver::FrameDecoder
+[FrameProcessorPlugin]: FrameProcessor::FrameProcessorPlugin
+[IVersionedObject]: OdinData::IVersionedObject
 

@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Deploy &#8212; odin-data 0+untagged.1.g7c2c187 documentation</title>
+    <title>Deploy &#8212; odin-data 0+untagged.1.gef6c54b documentation</title>
   
   
   
@@ -439,24 +439,23 @@ unique to each pair:</p>
 <p>Parameters with dashes are command line flags - those without are defined in the config files</p>
 </div>
 <ul class="simple">
-<li><p>Common (Note these must match between frameReceiver and frameProcessor)</p>
+<li><p>Common (These must match between frameReceiver and frameProcessor)</p>
 <ul>
-<li><p>Ready endpoint: <code class="docutils literal notranslate"><span class="pre">--ready</span></code></p></li>
-<li><p>Release endpoint: <code class="docutils literal notranslate"><span class="pre">--release</span></code></p></li>
+<li><p>Ready endpoint: <code class="docutils literal notranslate"><span class="pre">frame_ready_endpoint</span></code> and <code class="docutils literal notranslate"><span class="pre">fr_setup/fr_ready_cnxn</span></code></p></li>
+<li><p>Release endpoint: <code class="docutils literal notranslate"><span class="pre">frame_release_endpoint</span></code> and <code class="docutils literal notranslate"><span class="pre">fr_setup/fr_release_cnxn</span></code></p></li>
 </ul>
 </li>
 <li><p>FrameReceiver</p>
 <ul>
-<li><p>Shared memory buffer name: <code class="docutils literal notranslate"><span class="pre">--sharedbuf</span></code></p></li>
 <li><p>Control endpoint: <code class="docutils literal notranslate"><span class="pre">--ctrl</span></code></p></li>
+<li><p>Shared memory buffer name: <code class="docutils literal notranslate"><span class="pre">shared_buffer_name</span></code></p></li>
 <li><p>RX ports (depending on use case): <code class="docutils literal notranslate"><span class="pre">rx_ports</span></code></p></li>
 </ul>
 </li>
 <li><p>FrameProcessor</p>
 <ul>
 <li><p>Control endpoint: <code class="docutils literal notranslate"><span class="pre">--ctrl</span></code></p></li>
-<li><p>Meta TX publish channel: <code class="docutils literal notranslate"><span class="pre">--meta</span></code></p></li>
-<li><p>Meta internal RX channel: <code class="docutils literal notranslate"><span class="pre">meta_endpoint</span></code></p></li>
+<li><p>Meta TX publish channel: <code class="docutils literal notranslate"><span class="pre">meta_endpoint</span></code></p></li>
 <li><p>Process rank: <code class="docutils literal notranslate"><span class="pre">hdf/process/rank</span></code></p></li>
 </ul>
 </li>

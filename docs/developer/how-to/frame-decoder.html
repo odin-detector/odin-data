@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>FrameDecoder &#8212; odin-data 0+untagged.1.g7c2c187 documentation</title>
+    <title>FrameDecoder &#8212; odin-data 0+untagged.1.gef6c54b documentation</title>
   
   
   
@@ -359,15 +359,18 @@ document.write(`
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">FrameDecoder</a></li>
 <li class="toctree-l2"><a class="reference internal" href="frame-processor-plugin.html">FrameProcessorPlugin</a></li>
 <li class="toctree-l2"><a class="reference internal" href="frame-simulator-plugin.html">FrameSimulatorPlugin</a></li>
-<li class="toctree-l2"><a class="reference internal" href="docs.html">Docs</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="docs.html">Docs</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="excalidraw.html">How to embed Excalidraw diagrams</a></li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../explanations/index.html"><strong>Explanations</strong></a><input checked class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../explanations/index.html"><strong>Explanations</strong></a><input checked class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../explanations/overview.html">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../explanations/design-decisions.html">Design Decisions</a></li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../reference/index.html"><strong>Reference</strong></a><input checked class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../reference/index.html"><strong>Reference</strong></a><input checked class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../reference/api/common.html">Common API Reference</a></li>
 
 
@@ -385,7 +388,10 @@ document.write(`
 
 <li class="toctree-l2"><a class="reference internal" href="../reference/api/frame-simulator.html">FrameSimulator API Reference</a></li>
 
-<li class="toctree-l2"><a class="reference internal" href="../reference/design-docs/index.html">Design Docs</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../reference/design-docs/index.html">Design Docs</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/design-docs/live-view-spec.html">Specification For Odin Data Live View Plugin</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -450,55 +456,41 @@ document.write(`
                   
   <section id="framedecoder">
 <h1>FrameDecoder<a class="headerlink" href="#framedecoder" title="Permalink to this heading">#</a></h1>
-<p>The purpose of the <code class="docutils literal notranslate"><span class="pre">FrameDecoder</span></code> is to gather incoming packets or messages from a data
+<p>The purpose of the <a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4N13FrameReceiver12FrameDecoderE" title="FrameReceiver::FrameDecoder"><span class="xref myst cpp cpp-class">FrameDecoder</span></a> is to gather incoming packets or messages from a data
 stream, perform minimal work to construct a single data blob in shared memory for the
 FrameProcessor to handle further processing.</p>
 <p>This class defines a few virtual methods to be implemented by concrete implementations.
 Some are pure virtual - annotated with <code class="docutils literal notranslate"><span class="pre">*</span></code> - and some are optional. These are:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">get_frame_buffer_size*</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">get_frame_header_size*</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">monitor_buffers*</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">get_status</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">request_configuration</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">reset_statistics</span></code></p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4NK13FrameReceiver12FrameDecoder21get_frame_buffer_sizeEv" title="FrameReceiver::FrameDecoder::get_frame_buffer_size"><span class="xref myst cpp cpp-func">get_frame_buffer_size</span></a>*</p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4NK13FrameReceiver12FrameDecoder21get_frame_header_sizeEv" title="FrameReceiver::FrameDecoder::get_frame_header_size"><span class="xref myst cpp cpp-func">get_frame_header_size</span></a>*</p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4N13FrameReceiver12FrameDecoder15monitor_buffersEv" title="FrameReceiver::FrameDecoder::monitor_buffers"><span class="xref myst cpp cpp-func">monitor_buffers</span></a>*</p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4N13FrameReceiver12FrameDecoder10get_statusEKNSt6stringERN8OdinData10IpcMessageE" title="FrameReceiver::FrameDecoder::get_status"><span class="xref myst cpp cpp-func">get_status</span></a></p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4N13FrameReceiver12FrameDecoder21request_configurationEKNSt6stringERN8OdinData10IpcMessageE" title="FrameReceiver::FrameDecoder::request_configuration"><span class="xref myst cpp cpp-func">request_configuration</span></a></p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4N13FrameReceiver12FrameDecoder16reset_statisticsEv" title="FrameReceiver::FrameDecoder::reset_statistics"><span class="xref myst cpp cpp-func">reset_statistics</span></a></p></li>
 </ul>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>See the <a class="reference internal" href="#../reference/api/frame-receiver/decoder.md"><span class="xref myst">API Reference</span></a>
-for more detail.</p>
-</div>
 <p>There is generic support for UDP and ZMQ data streams that a decoder plugin can be built
-on top of, depending on the use case. These are <code class="docutils literal notranslate"><span class="pre">FrameDecoderUDP</span></code> and <code class="docutils literal notranslate"><span class="pre">FrameDecoderZMQ</span></code>,
-each a child of <code class="docutils literal notranslate"><span class="pre">FrameDecoder</span></code>. They must be paired with the <code class="docutils literal notranslate"><span class="pre">FrameReceiverUDPRxThread</span></code>
-and <code class="docutils literal notranslate"><span class="pre">FrameRecieverZMQRxThread</span></code> respectively (e.g. using <code class="docutils literal notranslate"><span class="pre">--rxtype</span> <span class="pre">udp</span></code>). Both extend
-the base class and add further virtual methods to be implemented in a concrete decoder.</p>
+on top of, depending on the use case. These are <a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4N13FrameReceiver15FrameDecoderUDPE" title="FrameReceiver::FrameDecoderUDP"><span class="xref myst cpp cpp-class">FrameDecoderUDP</span></a> and <a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4N13FrameReceiver15FrameDecoderZMQE" title="FrameReceiver::FrameDecoderZMQ"><span class="xref myst cpp cpp-class">FrameDecoderZMQ</span></a>,
+each a child of <a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4N13FrameReceiver12FrameDecoderE" title="FrameReceiver::FrameDecoder"><span class="xref myst cpp cpp-class">FrameDecoder</span></a>. They must be paired with the <a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4N13FrameReceiver24FrameReceiverUDPRxThreadE" title="FrameReceiver::FrameReceiverUDPRxThread"><span class="xref myst cpp cpp-class">FrameReceiverUDPRxThread</span></a>
+and <a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4N13FrameReceiver24FrameReceiverUDPRxThreadE" title="FrameReceiver::FrameReceiverUDPRxThread"><span class="xref myst cpp cpp-class">FrameReceiverUDPRxThread</span></a> respectively (e.g. setting the <code class="docutils literal notranslate"><span class="pre">rx_type</span></code> config to <code class="docutils literal notranslate"><span class="pre">udp</span></code>).
+Both extend the base class and add further virtual methods to be implemented in a
+concrete decoder.</p>
 <section id="framedecoderudp">
 <h2>FrameDecoderUDP<a class="headerlink" href="#framedecoderudp" title="Permalink to this heading">#</a></h2>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">requires_header_peek*</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">get_packet_header_size*</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">get_next_payload_buffer*</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">get_next_payload_size*</span></code></p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4NK13FrameReceiver15FrameDecoderUDP20requires_header_peekEv" title="FrameReceiver::FrameDecoderUDP::requires_header_peek"><span class="xref myst cpp cpp-func">requires_header_peek</span></a>*</p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4NK13FrameReceiver15FrameDecoderUDP22get_packet_header_sizeEv" title="FrameReceiver::FrameDecoderUDP::get_packet_header_size"><span class="xref myst cpp cpp-func">get_packet_header_size</span></a>*</p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4NK13FrameReceiver15FrameDecoderUDP23get_next_payload_bufferEv" title="FrameReceiver::FrameDecoderUDP::get_next_payload_buffer"><span class="xref myst cpp cpp-func">get_next_payload_buffer</span></a>*</p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4NK13FrameReceiver15FrameDecoderUDP21get_next_payload_sizeEv" title="FrameReceiver::FrameDecoderUDP::get_next_payload_size"><span class="xref myst cpp cpp-func">get_next_payload_size</span></a>*</p></li>
 </ul>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>See the <a class="reference internal" href="../reference/api/frame-receiver.html#framedecoderudp"><span class="std std-ref">API Reference</span></a>
-for more detail.</p>
-</div>
 </section>
 <section id="framedecoderzmq">
 <h2>FrameDecoderZMQ<a class="headerlink" href="#framedecoderzmq" title="Permalink to this heading">#</a></h2>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">get_next_message_buffer*</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">process_message*</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">frame_meta_data*</span></code></p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4N13FrameReceiver15FrameDecoderZMQ23get_next_message_bufferEv" title="FrameReceiver::FrameDecoderZMQ::get_next_message_buffer"><span class="xref myst cpp cpp-func">get_next_message_buffer</span></a>*</p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4N13FrameReceiver15FrameDecoderZMQ15process_messageE6size_t" title="FrameReceiver::FrameDecoderZMQ::process_message"><span class="xref myst cpp cpp-func">process_message</span></a>*</p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4N13FrameReceiver15FrameDecoderZMQ15frame_meta_dataEi" title="FrameReceiver::FrameDecoderZMQ::frame_meta_data"><span class="xref myst cpp cpp-func">frame_meta_data</span></a>*</p></li>
 </ul>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>See the <a class="reference internal" href="../reference/api/frame-receiver.html#framedecoderzmq"><span class="std std-ref">API Reference</span></a>
-for more detail.</p>
-</div>
 </section>
 </section>
 

@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>FrameReceiver API Reference &#8212; odin-data 0+untagged.1.g7c2c187 documentation</title>
+    <title>FrameReceiver API Reference &#8212; odin-data 0+untagged.1.gef6c54b documentation</title>
   
   
   
@@ -359,15 +359,18 @@ document.write(`
 <li class="toctree-l2"><a class="reference internal" href="../../how-to/frame-decoder.html">FrameDecoder</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../how-to/frame-processor-plugin.html">FrameProcessorPlugin</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../how-to/frame-simulator-plugin.html">FrameSimulatorPlugin</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../how-to/docs.html">Docs</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../how-to/docs.html">Docs</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../how-to/excalidraw.html">How to embed Excalidraw diagrams</a></li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../explanations/index.html"><strong>Explanations</strong></a><input checked class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../explanations/index.html"><strong>Explanations</strong></a><input checked class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../explanations/overview.html">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../explanations/design-decisions.html">Design Decisions</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html"><strong>Reference</strong></a><input checked class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html"><strong>Reference</strong></a><input checked class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="common.html">Common API Reference</a></li>
 
 
@@ -385,7 +388,10 @@ document.write(`
 
 <li class="toctree-l2"><a class="reference internal" href="frame-simulator.html">FrameSimulator API Reference</a></li>
 
-<li class="toctree-l2"><a class="reference internal" href="../design-docs/index.html">Design Docs</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../design-docs/index.html">Design Docs</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../design-docs/live-view-spec.html">Specification For Odin Data Live View Plugin</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -460,6 +466,40 @@ document.write(`
 <span id="_CPPv3N13FrameReceiver12FrameDecoderE"></span><span id="_CPPv2N13FrameReceiver12FrameDecoderE"></span><span id="FrameReceiver::FrameDecoder"></span><span class="target" id="classFrameReceiver_1_1FrameDecoder"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FrameDecoder</span></span></span><span class="w"> </span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">public</span></span><span class="w"> </span><span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData16IVersionedObjectE" title="OdinData::IVersionedObject"><span class="n"><span class="pre">IVersionedObject</span></span></a><a class="headerlink" href="#_CPPv4N13FrameReceiver12FrameDecoderE" title="Permalink to this definition">#</a><br /></dt>
 <dd><p>Subclassed by <a class="reference internal" href="#classFrameReceiver_1_1FrameDecoderUDP"><span class="std std-ref">FrameReceiver::FrameDecoderUDP</span></a>, <a class="reference internal" href="#classFrameReceiver_1_1FrameDecoderZMQ"><span class="std std-ref">FrameReceiver::FrameDecoderZMQ</span></a></p>
 <div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-types">Public Types</p>
+<dl class="cpp enum">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver12FrameDecoder17FrameReceiveStateE">
+<span id="_CPPv3N13FrameReceiver12FrameDecoder17FrameReceiveStateE"></span><span id="_CPPv2N13FrameReceiver12FrameDecoder17FrameReceiveStateE"></span><span class="target" id="classFrameReceiver_1_1FrameDecoder_1a80326940405f03608d633b882966d997"></span><span class="k"><span class="pre">enum</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FrameReceiveState</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver12FrameDecoder17FrameReceiveStateE" title="Permalink to this definition">#</a><br /></dt>
+<dd><p><em>Values:</em></p>
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver12FrameDecoder17FrameReceiveState22FrameReceiveStateEmptyE">
+<span id="_CPPv3N13FrameReceiver12FrameDecoder17FrameReceiveState22FrameReceiveStateEmptyE"></span><span id="_CPPv2N13FrameReceiver12FrameDecoder17FrameReceiveState22FrameReceiveStateEmptyE"></span><span class="target" id="classFrameReceiver_1_1FrameDecoder_1a80326940405f03608d633b882966d997a63a8480da80336c4f7a94396becaa51a"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FrameReceiveStateEmpty</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver12FrameDecoder17FrameReceiveState22FrameReceiveStateEmptyE" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver12FrameDecoder17FrameReceiveState27FrameReceiveStateIncompleteE">
+<span id="_CPPv3N13FrameReceiver12FrameDecoder17FrameReceiveState27FrameReceiveStateIncompleteE"></span><span id="_CPPv2N13FrameReceiver12FrameDecoder17FrameReceiveState27FrameReceiveStateIncompleteE"></span><span class="target" id="classFrameReceiver_1_1FrameDecoder_1a80326940405f03608d633b882966d997acd758b0274be0f43b45c4d9f298eb55d"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FrameReceiveStateIncomplete</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver12FrameDecoder17FrameReceiveState27FrameReceiveStateIncompleteE" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver12FrameDecoder17FrameReceiveState25FrameReceiveStateCompleteE">
+<span id="_CPPv3N13FrameReceiver12FrameDecoder17FrameReceiveState25FrameReceiveStateCompleteE"></span><span id="_CPPv2N13FrameReceiver12FrameDecoder17FrameReceiveState25FrameReceiveStateCompleteE"></span><span class="target" id="classFrameReceiver_1_1FrameDecoder_1a80326940405f03608d633b882966d997a54fec4554183a416f83e6583de42e64d"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FrameReceiveStateComplete</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver12FrameDecoder17FrameReceiveState25FrameReceiveStateCompleteE" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver12FrameDecoder17FrameReceiveState25FrameReceiveStateTimedoutE">
+<span id="_CPPv3N13FrameReceiver12FrameDecoder17FrameReceiveState25FrameReceiveStateTimedoutE"></span><span id="_CPPv2N13FrameReceiver12FrameDecoder17FrameReceiveState25FrameReceiveStateTimedoutE"></span><span class="target" id="classFrameReceiver_1_1FrameDecoder_1a80326940405f03608d633b882966d997a0ad29c2c4961d28dd5a0b85fac3b6543"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FrameReceiveStateTimedout</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver12FrameDecoder17FrameReceiveState25FrameReceiveStateTimedoutE" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver12FrameDecoder17FrameReceiveState22FrameReceiveStateErrorE">
+<span id="_CPPv3N13FrameReceiver12FrameDecoder17FrameReceiveState22FrameReceiveStateErrorE"></span><span id="_CPPv2N13FrameReceiver12FrameDecoder17FrameReceiveState22FrameReceiveStateErrorE"></span><span class="target" id="classFrameReceiver_1_1FrameDecoder_1a80326940405f03608d633b882966d997ab346d4a6aa9ea366e9b7d354e9701e3b"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FrameReceiveStateError</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver12FrameDecoder17FrameReceiveState22FrameReceiveStateErrorE" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver12FrameDecoder12FrameDecoderEv">
@@ -467,6 +507,11 @@ document.write(`
 <dd><p>Constructor for the <a class="reference internal" href="#classFrameReceiver_1_1FrameDecoder"><span class="std std-ref">FrameDecoder</span></a> class.</p>
 <p>This method initialises the base class of each frame decoder, storing default values for base configuration parameters and variables. </p>
 </dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver12FrameDecoderD0Ev">
+<span id="_CPPv3N13FrameReceiver12FrameDecoderD0Ev"></span><span id="_CPPv2N13FrameReceiver12FrameDecoderD0Ev"></span><span id="FrameReceiver::FrameDecoder::~FrameDecoder"></span><span class="target" id="classFrameReceiver_1_1FrameDecoder_1ab579fb7aa54d7fb06b1d575087875b1d"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">~FrameDecoder</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver12FrameDecoderD0Ev" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver12FrameDecoder4initER9LoggerPtrRN8OdinData10IpcMessageE">
@@ -500,6 +545,16 @@ document.write(`
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK13FrameReceiver12FrameDecoder21get_frame_buffer_sizeEv">
+<span id="_CPPv3NK13FrameReceiver12FrameDecoder21get_frame_buffer_sizeEv"></span><span id="_CPPv2NK13FrameReceiver12FrameDecoder21get_frame_buffer_sizeEv"></span><span id="FrameReceiver::FrameDecoder::get_frame_buffer_size__voidC"></span><span class="target" id="classFrameReceiver_1_1FrameDecoder_1a3dfdebc51b58716961e7b295005fd9cc"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_frame_buffer_size</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">void</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4NK13FrameReceiver12FrameDecoder21get_frame_buffer_sizeEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK13FrameReceiver12FrameDecoder21get_frame_header_sizeEv">
+<span id="_CPPv3NK13FrameReceiver12FrameDecoder21get_frame_header_sizeEv"></span><span id="_CPPv2NK13FrameReceiver12FrameDecoder21get_frame_header_sizeEv"></span><span id="FrameReceiver::FrameDecoder::get_frame_header_size__voidC"></span><span class="target" id="classFrameReceiver_1_1FrameDecoder_1aeccecf1c257c4c6e738574b8f8cfa000"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_frame_header_size</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">void</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4NK13FrameReceiver12FrameDecoder21get_frame_header_sizeEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver12FrameDecoder23register_buffer_managerEN8OdinData22SharedBufferManagerPtrE">
@@ -605,6 +660,16 @@ document.write(`
 </dd></dl>
 
 <dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver12FrameDecoder15monitor_buffersEv">
+<span id="_CPPv3N13FrameReceiver12FrameDecoder15monitor_buffersEv"></span><span id="_CPPv2N13FrameReceiver12FrameDecoder15monitor_buffersEv"></span><span id="FrameReceiver::FrameDecoder::monitor_buffers__void"></span><span class="target" id="classFrameReceiver_1_1FrameDecoder_1a5abe6043418a831e1816109278eecb55"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">monitor_buffers</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">void</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver12FrameDecoder15monitor_buffersEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver12FrameDecoder10get_statusEKNSt6stringERN8OdinData10IpcMessageE">
+<span id="_CPPv3N13FrameReceiver12FrameDecoder10get_statusEKNSt6stringERN8OdinData10IpcMessageE"></span><span id="_CPPv2N13FrameReceiver12FrameDecoder10get_statusEKNSt6stringERN8OdinData10IpcMessageE"></span><span id="FrameReceiver::FrameDecoder::get_status__ssC.OdinData::IpcMessageR"></span><span class="target" id="classFrameReceiver_1_1FrameDecoder_1a0b508feaf37ed9999de96d5fbf067d48"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_status</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">param_prefix</span></span>, <span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">status_msg</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver12FrameDecoder10get_statusEKNSt6stringERN8OdinData10IpcMessageE" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver12FrameDecoder7versionEKNSt6stringERN8OdinData10IpcMessageE">
 <span id="_CPPv3N13FrameReceiver12FrameDecoder7versionEKNSt6stringERN8OdinData10IpcMessageE"></span><span id="_CPPv2N13FrameReceiver12FrameDecoder7versionEKNSt6stringERN8OdinData10IpcMessageE"></span><span id="FrameReceiver::FrameDecoder::version__ssC.OdinData::IpcMessageR"></span><span class="target" id="classFrameReceiver_1_1FrameDecoder_1a2934204ba22fbcc9ec522a66ae056f73"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">version</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">param_prefix</span></span>, <span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">status</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver12FrameDecoder7versionEKNSt6stringERN8OdinData10IpcMessageE" title="Permalink to this definition">#</a><br /></dt>
 <dd><p>Collate version information for the decoder.</p>
@@ -696,6 +761,54 @@ document.write(`
 <dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver15FrameDecoderUDPE">
 <span id="_CPPv3N13FrameReceiver15FrameDecoderUDPE"></span><span id="_CPPv2N13FrameReceiver15FrameDecoderUDPE"></span><span id="FrameReceiver::FrameDecoderUDP"></span><span class="target" id="classFrameReceiver_1_1FrameDecoderUDP"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FrameDecoderUDP</span></span></span><span class="w"> </span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">public</span></span><span class="w"> </span><span class="n"><span class="pre">FrameReceiver</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="#_CPPv4N13FrameReceiver12FrameDecoderE" title="FrameReceiver::FrameDecoder"><span class="n"><span class="pre">FrameDecoder</span></span></a><a class="headerlink" href="#_CPPv4N13FrameReceiver15FrameDecoderUDPE" title="Permalink to this definition">#</a><br /></dt>
 <dd><p>Subclassed by <a class="reference internal" href="#classFrameReceiver_1_1DummyUDPFrameDecoder"><span class="std std-ref">FrameReceiver::DummyUDPFrameDecoder</span></a></p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver15FrameDecoderUDP15FrameDecoderUDPEv">
+<span id="_CPPv3N13FrameReceiver15FrameDecoderUDP15FrameDecoderUDPEv"></span><span id="_CPPv2N13FrameReceiver15FrameDecoderUDP15FrameDecoderUDPEv"></span><span id="FrameReceiver::FrameDecoderUDP::FrameDecoderUDP"></span><span class="target" id="classFrameReceiver_1_1FrameDecoderUDP_1ab6e6e85784b4a4a9725cd740e5959eb8"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FrameDecoderUDP</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver15FrameDecoderUDP15FrameDecoderUDPEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver15FrameDecoderUDPD0Ev">
+<span id="_CPPv3N13FrameReceiver15FrameDecoderUDPD0Ev"></span><span id="_CPPv2N13FrameReceiver15FrameDecoderUDPD0Ev"></span><span id="FrameReceiver::FrameDecoderUDP::~FrameDecoderUDP"></span><span class="target" id="classFrameReceiver_1_1FrameDecoderUDP_1a0ef095cc6168d46ff19ce40ff7c8624b"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">~FrameDecoderUDP</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver15FrameDecoderUDPD0Ev" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK13FrameReceiver15FrameDecoderUDP20requires_header_peekEv">
+<span id="_CPPv3NK13FrameReceiver15FrameDecoderUDP20requires_header_peekEv"></span><span id="_CPPv2NK13FrameReceiver15FrameDecoderUDP20requires_header_peekEv"></span><span id="FrameReceiver::FrameDecoderUDP::requires_header_peek__voidC"></span><span class="target" id="classFrameReceiver_1_1FrameDecoderUDP_1a2519b8e6ad8102f800810cf56f7c699e"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">requires_header_peek</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">void</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4NK13FrameReceiver15FrameDecoderUDP20requires_header_peekEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK13FrameReceiver15FrameDecoderUDP22get_packet_header_sizeEv">
+<span id="_CPPv3NK13FrameReceiver15FrameDecoderUDP22get_packet_header_sizeEv"></span><span id="_CPPv2NK13FrameReceiver15FrameDecoderUDP22get_packet_header_sizeEv"></span><span id="FrameReceiver::FrameDecoderUDP::get_packet_header_size__voidC"></span><span class="target" id="classFrameReceiver_1_1FrameDecoderUDP_1aabd2584e6aa2141ff4423da933a846c5"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_packet_header_size</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">void</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4NK13FrameReceiver15FrameDecoderUDP22get_packet_header_sizeEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver15FrameDecoderUDP24get_packet_header_bufferEv">
+<span id="_CPPv3N13FrameReceiver15FrameDecoderUDP24get_packet_header_bufferEv"></span><span id="_CPPv2N13FrameReceiver15FrameDecoderUDP24get_packet_header_bufferEv"></span><span id="FrameReceiver::FrameDecoderUDP::get_packet_header_buffer__void"></span><span class="target" id="classFrameReceiver_1_1FrameDecoderUDP_1ac1acea17abf9e3a506b089bf974ef4c3"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">get_packet_header_buffer</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">void</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver15FrameDecoderUDP24get_packet_header_bufferEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver15FrameDecoderUDP21process_packet_headerE6size_tiP11sockaddr_in">
+<span id="_CPPv3N13FrameReceiver15FrameDecoderUDP21process_packet_headerE6size_tiP11sockaddr_in"></span><span id="_CPPv2N13FrameReceiver15FrameDecoderUDP21process_packet_headerE6size_tiP11sockaddr_in"></span><span id="FrameReceiver::FrameDecoderUDP::process_packet_header__s.i.sockaddr_inP"></span><span class="target" id="classFrameReceiver_1_1FrameDecoderUDP_1acc3a438aef5a04a1a4892b1cc1695745"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">process_packet_header</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">bytes_received</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">port</span></span>, <span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">sockaddr_in</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">from_addr</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver15FrameDecoderUDP21process_packet_headerE6size_tiP11sockaddr_in" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK13FrameReceiver15FrameDecoderUDP23get_next_payload_bufferEv">
+<span id="_CPPv3NK13FrameReceiver15FrameDecoderUDP23get_next_payload_bufferEv"></span><span id="_CPPv2NK13FrameReceiver15FrameDecoderUDP23get_next_payload_bufferEv"></span><span id="FrameReceiver::FrameDecoderUDP::get_next_payload_buffer__voidC"></span><span class="target" id="classFrameReceiver_1_1FrameDecoderUDP_1a14994e691d160b321ad880070d9b29f6"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">get_next_payload_buffer</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">void</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4NK13FrameReceiver15FrameDecoderUDP23get_next_payload_bufferEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK13FrameReceiver15FrameDecoderUDP21get_next_payload_sizeEv">
+<span id="_CPPv3NK13FrameReceiver15FrameDecoderUDP21get_next_payload_sizeEv"></span><span id="_CPPv2NK13FrameReceiver15FrameDecoderUDP21get_next_payload_sizeEv"></span><span id="FrameReceiver::FrameDecoderUDP::get_next_payload_size__voidC"></span><span class="target" id="classFrameReceiver_1_1FrameDecoderUDP_1ab9a790faefb4e55fa4dfdc288eb5e291"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_next_payload_size</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">void</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4NK13FrameReceiver15FrameDecoderUDP21get_next_payload_sizeEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver15FrameDecoderUDP14process_packetE6size_tiP11sockaddr_in">
+<span id="_CPPv3N13FrameReceiver15FrameDecoderUDP14process_packetE6size_tiP11sockaddr_in"></span><span id="_CPPv2N13FrameReceiver15FrameDecoderUDP14process_packetE6size_tiP11sockaddr_in"></span><span id="FrameReceiver::FrameDecoderUDP::process_packet__s.i.sockaddr_inP"></span><span class="target" id="classFrameReceiver_1_1FrameDecoderUDP_1af7ce51cdd87c8282507d4f1aec6d0a67"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">FrameReceiveState</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">process_packet</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">bytes_received</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">port</span></span>, <span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">sockaddr_in</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">from_addr</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver15FrameDecoderUDP14process_packetE6size_tiP11sockaddr_in" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+</div>
 </dd></dl>
 
 </section>
@@ -704,7 +817,35 @@ document.write(`
 <dl class="cpp class">
 <dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver15FrameDecoderZMQE">
 <span id="_CPPv3N13FrameReceiver15FrameDecoderZMQE"></span><span id="_CPPv2N13FrameReceiver15FrameDecoderZMQE"></span><span id="FrameReceiver::FrameDecoderZMQ"></span><span class="target" id="classFrameReceiver_1_1FrameDecoderZMQ"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FrameDecoderZMQ</span></span></span><span class="w"> </span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">public</span></span><span class="w"> </span><span class="n"><span class="pre">FrameReceiver</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="#_CPPv4N13FrameReceiver12FrameDecoderE" title="FrameReceiver::FrameDecoder"><span class="n"><span class="pre">FrameDecoder</span></span></a><a class="headerlink" href="#_CPPv4N13FrameReceiver15FrameDecoderZMQE" title="Permalink to this definition">#</a><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver15FrameDecoderZMQ15FrameDecoderZMQEv">
+<span id="_CPPv3N13FrameReceiver15FrameDecoderZMQ15FrameDecoderZMQEv"></span><span id="_CPPv2N13FrameReceiver15FrameDecoderZMQ15FrameDecoderZMQEv"></span><span id="FrameReceiver::FrameDecoderZMQ::FrameDecoderZMQ"></span><span class="target" id="classFrameReceiver_1_1FrameDecoderZMQ_1af2d5c069fbc012ee90c53a478fa8fa59"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FrameDecoderZMQ</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver15FrameDecoderZMQ15FrameDecoderZMQEv" title="Permalink to this definition">#</a><br /></dt>
 <dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver15FrameDecoderZMQD0Ev">
+<span id="_CPPv3N13FrameReceiver15FrameDecoderZMQD0Ev"></span><span id="_CPPv2N13FrameReceiver15FrameDecoderZMQD0Ev"></span><span id="FrameReceiver::FrameDecoderZMQ::~FrameDecoderZMQ"></span><span class="target" id="classFrameReceiver_1_1FrameDecoderZMQ_1aa1b934c20d5045cdbb17531dfbd251aa"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">~FrameDecoderZMQ</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver15FrameDecoderZMQD0Ev" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver15FrameDecoderZMQ23get_next_message_bufferEv">
+<span id="_CPPv3N13FrameReceiver15FrameDecoderZMQ23get_next_message_bufferEv"></span><span id="_CPPv2N13FrameReceiver15FrameDecoderZMQ23get_next_message_bufferEv"></span><span id="FrameReceiver::FrameDecoderZMQ::get_next_message_buffer__void"></span><span class="target" id="classFrameReceiver_1_1FrameDecoderZMQ_1a7a3af2db9487bd488bbf59fec2aa5875"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">get_next_message_buffer</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">void</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver15FrameDecoderZMQ23get_next_message_bufferEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver15FrameDecoderZMQ15process_messageE6size_t">
+<span id="_CPPv3N13FrameReceiver15FrameDecoderZMQ15process_messageE6size_t"></span><span id="_CPPv2N13FrameReceiver15FrameDecoderZMQ15process_messageE6size_t"></span><span id="FrameReceiver::FrameDecoderZMQ::process_message__s"></span><span class="target" id="classFrameReceiver_1_1FrameDecoderZMQ_1a894a3bac76ec0a3be4069db1fe778e88"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">FrameReceiveState</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">process_message</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">bytes_received</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver15FrameDecoderZMQ15process_messageE6size_t" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver15FrameDecoderZMQ15frame_meta_dataEi">
+<span id="_CPPv3N13FrameReceiver15FrameDecoderZMQ15frame_meta_dataEi"></span><span id="_CPPv2N13FrameReceiver15FrameDecoderZMQ15frame_meta_dataEi"></span><span id="FrameReceiver::FrameDecoderZMQ::frame_meta_data__i"></span><span class="target" id="classFrameReceiver_1_1FrameDecoderZMQ_1a5ea477bd6ecf1cb516408a36aafa17a8"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">frame_meta_data</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">meta</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver15FrameDecoderZMQ15frame_meta_dataEi" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
 
 </section>
 <section id="dummyudpframedecoder">
@@ -726,6 +867,31 @@ document.write(`
 <span id="_CPPv3N13FrameReceiver20DummyUDPFrameDecoderD0Ev"></span><span id="_CPPv2N13FrameReceiver20DummyUDPFrameDecoderD0Ev"></span><span id="FrameReceiver::DummyUDPFrameDecoder::~DummyUDPFrameDecoder"></span><span class="target" id="classFrameReceiver_1_1DummyUDPFrameDecoder_1a4e8122223a29249386cd953da99c176b"></span><span class="sig-name descname"><span class="n"><span class="pre">~DummyUDPFrameDecoder</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver20DummyUDPFrameDecoderD0Ev" title="Permalink to this definition">#</a><br /></dt>
 <dd><p>Destructor for DummyDUPFrameDecoder. </p>
 </dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver20DummyUDPFrameDecoder17get_version_majorEv">
+<span id="_CPPv3N13FrameReceiver20DummyUDPFrameDecoder17get_version_majorEv"></span><span id="_CPPv2N13FrameReceiver20DummyUDPFrameDecoder17get_version_majorEv"></span><span id="FrameReceiver::DummyUDPFrameDecoder::get_version_major"></span><span class="target" id="classFrameReceiver_1_1DummyUDPFrameDecoder_1a8a65e6882bf59f3279a990a49c54a56f"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_major</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver20DummyUDPFrameDecoder17get_version_majorEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver20DummyUDPFrameDecoder17get_version_minorEv">
+<span id="_CPPv3N13FrameReceiver20DummyUDPFrameDecoder17get_version_minorEv"></span><span id="_CPPv2N13FrameReceiver20DummyUDPFrameDecoder17get_version_minorEv"></span><span id="FrameReceiver::DummyUDPFrameDecoder::get_version_minor"></span><span class="target" id="classFrameReceiver_1_1DummyUDPFrameDecoder_1a529c937c21585e14e68eebd46676adef"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_minor</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver20DummyUDPFrameDecoder17get_version_minorEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver20DummyUDPFrameDecoder17get_version_patchEv">
+<span id="_CPPv3N13FrameReceiver20DummyUDPFrameDecoder17get_version_patchEv"></span><span id="_CPPv2N13FrameReceiver20DummyUDPFrameDecoder17get_version_patchEv"></span><span id="FrameReceiver::DummyUDPFrameDecoder::get_version_patch"></span><span class="target" id="classFrameReceiver_1_1DummyUDPFrameDecoder_1a32993baa021a10d22e6106a27bebe307"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_patch</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver20DummyUDPFrameDecoder17get_version_patchEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver20DummyUDPFrameDecoder17get_version_shortEv">
+<span id="_CPPv3N13FrameReceiver20DummyUDPFrameDecoder17get_version_shortEv"></span><span id="_CPPv2N13FrameReceiver20DummyUDPFrameDecoder17get_version_shortEv"></span><span id="FrameReceiver::DummyUDPFrameDecoder::get_version_short"></span><span class="target" id="classFrameReceiver_1_1DummyUDPFrameDecoder_1a19787aa91238278a3a6615adc40de25e"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_short</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver20DummyUDPFrameDecoder17get_version_shortEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver20DummyUDPFrameDecoder16get_version_longEv">
+<span id="_CPPv3N13FrameReceiver20DummyUDPFrameDecoder16get_version_longEv"></span><span id="_CPPv2N13FrameReceiver20DummyUDPFrameDecoder16get_version_longEv"></span><span id="FrameReceiver::DummyUDPFrameDecoder::get_version_long"></span><span class="target" id="classFrameReceiver_1_1DummyUDPFrameDecoder_1abe9bcbd4c097266e3d376d7cb8b69ed8"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_long</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver20DummyUDPFrameDecoder16get_version_longEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver20DummyUDPFrameDecoder4initER9LoggerPtrRN8OdinData10IpcMessageE">
@@ -782,6 +948,11 @@ document.write(`
 </dd></dl>
 
 <dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK13FrameReceiver20DummyUDPFrameDecoder20requires_header_peekEv">
+<span id="_CPPv3NK13FrameReceiver20DummyUDPFrameDecoder20requires_header_peekEv"></span><span id="_CPPv2NK13FrameReceiver20DummyUDPFrameDecoder20requires_header_peekEv"></span><span id="FrameReceiver::DummyUDPFrameDecoder::requires_header_peek__voidC"></span><span class="target" id="classFrameReceiver_1_1DummyUDPFrameDecoder_1aaf5d0f1c6b410e2cab9cce787efb092b"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">requires_header_peek</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">void</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK13FrameReceiver20DummyUDPFrameDecoder20requires_header_peekEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4NK13FrameReceiver20DummyUDPFrameDecoder22get_packet_header_sizeEv">
 <span id="_CPPv3NK13FrameReceiver20DummyUDPFrameDecoder22get_packet_header_sizeEv"></span><span id="_CPPv2NK13FrameReceiver20DummyUDPFrameDecoder22get_packet_header_sizeEv"></span><span id="FrameReceiver::DummyUDPFrameDecoder::get_packet_header_size__voidC"></span><span class="target" id="classFrameReceiver_1_1DummyUDPFrameDecoder_1ac9cd4d11810ec9f424c81e0b03a64e59"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_packet_header_size</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">void</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK13FrameReceiver20DummyUDPFrameDecoder22get_packet_header_sizeEv" title="Permalink to this definition">#</a><br /></dt>
 <dd><p>Get the size of a packet header.</p>
@@ -810,6 +981,11 @@ document.write(`
 </dd></dl>
 
 <dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK13FrameReceiver20DummyUDPFrameDecoder12trailer_modeEv">
+<span id="_CPPv3NK13FrameReceiver20DummyUDPFrameDecoder12trailer_modeEv"></span><span id="_CPPv2NK13FrameReceiver20DummyUDPFrameDecoder12trailer_modeEv"></span><span id="FrameReceiver::DummyUDPFrameDecoder::trailer_mode__voidC"></span><span class="target" id="classFrameReceiver_1_1DummyUDPFrameDecoder_1ac3ee8b7ce98c87b997fd4e02dae92813"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">trailer_mode</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">void</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK13FrameReceiver20DummyUDPFrameDecoder12trailer_modeEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4NK13FrameReceiver20DummyUDPFrameDecoder23get_next_payload_bufferEv">
 <span id="_CPPv3NK13FrameReceiver20DummyUDPFrameDecoder23get_next_payload_bufferEv"></span><span id="_CPPv2NK13FrameReceiver20DummyUDPFrameDecoder23get_next_payload_bufferEv"></span><span id="FrameReceiver::DummyUDPFrameDecoder::get_next_payload_buffer__voidC"></span><span class="target" id="classFrameReceiver_1_1DummyUDPFrameDecoder_1a17d1680e696e003cf230c0850911039d"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">get_next_payload_buffer</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">void</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK13FrameReceiver20DummyUDPFrameDecoder23get_next_payload_bufferEv" title="Permalink to this definition">#</a><br /></dt>
 <dd><p>Get a pointer to the next payload buffer.</p>
@@ -835,7 +1011,7 @@ document.write(`
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver20DummyUDPFrameDecoder14process_packetE6size_tiP11sockaddr_in">
-<span id="_CPPv3N13FrameReceiver20DummyUDPFrameDecoder14process_packetE6size_tiP11sockaddr_in"></span><span id="_CPPv2N13FrameReceiver20DummyUDPFrameDecoder14process_packetE6size_tiP11sockaddr_in"></span><span id="FrameReceiver::DummyUDPFrameDecoder::process_packet__s.i.sockaddr_inP"></span><span class="target" id="classFrameReceiver_1_1DummyUDPFrameDecoder_1a253982c54a3cde72ffd86fff3c534391"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N13FrameReceiver12FrameDecoderE" title="FrameReceiver::FrameDecoder"><span class="n"><span class="pre">FrameDecoder</span></span></a><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">FrameReceiveState</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">process_packet</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">bytes_received</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">port</span></span>, <span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">sockaddr_in</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">from_addr</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver20DummyUDPFrameDecoder14process_packetE6size_tiP11sockaddr_in" title="Permalink to this definition">#</a><br /></dt>
+<span id="_CPPv3N13FrameReceiver20DummyUDPFrameDecoder14process_packetE6size_tiP11sockaddr_in"></span><span id="_CPPv2N13FrameReceiver20DummyUDPFrameDecoder14process_packetE6size_tiP11sockaddr_in"></span><span id="FrameReceiver::DummyUDPFrameDecoder::process_packet__s.i.sockaddr_inP"></span><span class="target" id="classFrameReceiver_1_1DummyUDPFrameDecoder_1a253982c54a3cde72ffd86fff3c534391"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N13FrameReceiver12FrameDecoderE" title="FrameReceiver::FrameDecoder"><span class="n"><span class="pre">FrameDecoder</span></span></a><span class="p"><span class="pre">::</span></span><a class="reference internal" href="#_CPPv4N13FrameReceiver12FrameDecoder17FrameReceiveStateE" title="FrameReceiver::FrameDecoder::FrameReceiveState"><span class="n"><span class="pre">FrameReceiveState</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">process_packet</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">bytes_received</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">port</span></span>, <span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">sockaddr_in</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">from_addr</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver20DummyUDPFrameDecoder14process_packetE6size_tiP11sockaddr_in" title="Permalink to this definition">#</a><br /></dt>
 <dd><p>Process a received packet payload.</p>
 <p>This method is called once the payload of a packet has been recevied. In this dummy decoder there is no processing of the content of the payload performed, so this method simply updates the state of the current frame buffer header and the decoder accordingly. If all packets of the frame have been received then the frame state is marked as complete and the frame is handed off to downstream processing.</p>
 <dl class="field-list simple">
@@ -949,6 +1125,79 @@ document.write(`
 </dd>
 </dl>
 </dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-members">Private Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver20DummyUDPFrameDecoder22udp_packets_per_frame_E">
+<span id="_CPPv3N13FrameReceiver20DummyUDPFrameDecoder22udp_packets_per_frame_E"></span><span id="_CPPv2N13FrameReceiver20DummyUDPFrameDecoder22udp_packets_per_frame_E"></span><span id="FrameReceiver::DummyUDPFrameDecoder::udp_packets_per_frame___unsigned-i"></span><span class="target" id="classFrameReceiver_1_1DummyUDPFrameDecoder_1a4a70098e5bbc21460b6d641276ba7b72"></span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">udp_packets_per_frame_</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver20DummyUDPFrameDecoder22udp_packets_per_frame_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver20DummyUDPFrameDecoder16udp_packet_size_E">
+<span id="_CPPv3N13FrameReceiver20DummyUDPFrameDecoder16udp_packet_size_E"></span><span id="_CPPv2N13FrameReceiver20DummyUDPFrameDecoder16udp_packet_size_E"></span><span id="FrameReceiver::DummyUDPFrameDecoder::udp_packet_size___std::s"></span><span class="target" id="classFrameReceiver_1_1DummyUDPFrameDecoder_1a0ca0b82a49610616ca3291eacc88656f"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">udp_packet_size_</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver20DummyUDPFrameDecoder16udp_packet_size_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver20DummyUDPFrameDecoder17status_get_count_E">
+<span id="_CPPv3N13FrameReceiver20DummyUDPFrameDecoder17status_get_count_E"></span><span id="_CPPv2N13FrameReceiver20DummyUDPFrameDecoder17status_get_count_E"></span><span id="FrameReceiver::DummyUDPFrameDecoder::status_get_count___unsigned-i"></span><span class="target" id="classFrameReceiver_1_1DummyUDPFrameDecoder_1aafd2669e0ef88c26aa0d13664c27a13c"></span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">status_get_count_</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver20DummyUDPFrameDecoder17status_get_count_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver20DummyUDPFrameDecoder22current_packet_header_E">
+<span id="_CPPv3N13FrameReceiver20DummyUDPFrameDecoder22current_packet_header_E"></span><span id="_CPPv2N13FrameReceiver20DummyUDPFrameDecoder22current_packet_header_E"></span><span id="FrameReceiver::DummyUDPFrameDecoder::current_packet_header___boost::shared_ptr:void:"></span><span class="target" id="classFrameReceiver_1_1DummyUDPFrameDecoder_1a33ff417eb08da376311ad805da558600"></span><span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">void</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">current_packet_header_</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver20DummyUDPFrameDecoder22current_packet_header_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver20DummyUDPFrameDecoder21dropped_frame_buffer_E">
+<span id="_CPPv3N13FrameReceiver20DummyUDPFrameDecoder21dropped_frame_buffer_E"></span><span id="_CPPv2N13FrameReceiver20DummyUDPFrameDecoder21dropped_frame_buffer_E"></span><span id="FrameReceiver::DummyUDPFrameDecoder::dropped_frame_buffer___boost::shared_ptr:void:"></span><span class="target" id="classFrameReceiver_1_1DummyUDPFrameDecoder_1a37a95ca0f541c7a233ebd1181e2a7ebf"></span><span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">void</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">dropped_frame_buffer_</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver20DummyUDPFrameDecoder21dropped_frame_buffer_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver20DummyUDPFrameDecoder19current_frame_seen_E">
+<span id="_CPPv3N13FrameReceiver20DummyUDPFrameDecoder19current_frame_seen_E"></span><span id="_CPPv2N13FrameReceiver20DummyUDPFrameDecoder19current_frame_seen_E"></span><span id="FrameReceiver::DummyUDPFrameDecoder::current_frame_seen___i"></span><span class="target" id="classFrameReceiver_1_1DummyUDPFrameDecoder_1ab7b278fe5ce4e4fb5f7486f85c6eb947"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">current_frame_seen_</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver20DummyUDPFrameDecoder19current_frame_seen_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver20DummyUDPFrameDecoder24current_frame_buffer_id_E">
+<span id="_CPPv3N13FrameReceiver20DummyUDPFrameDecoder24current_frame_buffer_id_E"></span><span id="_CPPv2N13FrameReceiver20DummyUDPFrameDecoder24current_frame_buffer_id_E"></span><span id="FrameReceiver::DummyUDPFrameDecoder::current_frame_buffer_id___i"></span><span class="target" id="classFrameReceiver_1_1DummyUDPFrameDecoder_1ae2db28944257eaa8a0736ae962b8f96a"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">current_frame_buffer_id_</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver20DummyUDPFrameDecoder24current_frame_buffer_id_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver20DummyUDPFrameDecoder21current_frame_buffer_E">
+<span id="_CPPv3N13FrameReceiver20DummyUDPFrameDecoder21current_frame_buffer_E"></span><span id="_CPPv2N13FrameReceiver20DummyUDPFrameDecoder21current_frame_buffer_E"></span><span id="FrameReceiver::DummyUDPFrameDecoder::current_frame_buffer___voidP"></span><span class="target" id="classFrameReceiver_1_1DummyUDPFrameDecoder_1a086d9383963e482d6994234360c678bc"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">current_frame_buffer_</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver20DummyUDPFrameDecoder21current_frame_buffer_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver20DummyUDPFrameDecoder21current_frame_header_E">
+<span id="_CPPv3N13FrameReceiver20DummyUDPFrameDecoder21current_frame_header_E"></span><span id="_CPPv2N13FrameReceiver20DummyUDPFrameDecoder21current_frame_header_E"></span><span id="FrameReceiver::DummyUDPFrameDecoder::current_frame_header___DummyUDP::FrameHeaderP"></span><span class="target" id="classFrameReceiver_1_1DummyUDPFrameDecoder_1a0aacab2749cdc49a2843f9d9df6225f7"></span><span class="n"><span class="pre">DummyUDP</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">FrameHeader</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">current_frame_header_</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver20DummyUDPFrameDecoder21current_frame_header_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver20DummyUDPFrameDecoder16num_active_fems_E">
+<span id="_CPPv3N13FrameReceiver20DummyUDPFrameDecoder16num_active_fems_E"></span><span id="_CPPv2N13FrameReceiver20DummyUDPFrameDecoder16num_active_fems_E"></span><span id="FrameReceiver::DummyUDPFrameDecoder::num_active_fems___std::s"></span><span class="target" id="classFrameReceiver_1_1DummyUDPFrameDecoder_1a0cbb5eb5a0288fde72978fa45166d168"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">num_active_fems_</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver20DummyUDPFrameDecoder16num_active_fems_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver20DummyUDPFrameDecoder20dropping_frame_data_E">
+<span id="_CPPv3N13FrameReceiver20DummyUDPFrameDecoder20dropping_frame_data_E"></span><span id="_CPPv2N13FrameReceiver20DummyUDPFrameDecoder20dropping_frame_data_E"></span><span id="FrameReceiver::DummyUDPFrameDecoder::dropping_frame_data___b"></span><span class="target" id="classFrameReceiver_1_1DummyUDPFrameDecoder_1a315409adf219f4cf4e172535726fcc31"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">dropping_frame_data_</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver20DummyUDPFrameDecoder20dropping_frame_data_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver20DummyUDPFrameDecoder17packets_received_E">
+<span id="_CPPv3N13FrameReceiver20DummyUDPFrameDecoder17packets_received_E"></span><span id="_CPPv2N13FrameReceiver20DummyUDPFrameDecoder17packets_received_E"></span><span id="FrameReceiver::DummyUDPFrameDecoder::packets_received___uint32_t"></span><span class="target" id="classFrameReceiver_1_1DummyUDPFrameDecoder_1ac02c5465b2fdd76f8cd0522173f2134a"></span><span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">packets_received_</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver20DummyUDPFrameDecoder17packets_received_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver20DummyUDPFrameDecoder13packets_lost_E">
+<span id="_CPPv3N13FrameReceiver20DummyUDPFrameDecoder13packets_lost_E"></span><span id="_CPPv2N13FrameReceiver20DummyUDPFrameDecoder13packets_lost_E"></span><span id="FrameReceiver::DummyUDPFrameDecoder::packets_lost___uint32_t"></span><span class="target" id="classFrameReceiver_1_1DummyUDPFrameDecoder_1ac806ce85990be85d32a533085b521ed5"></span><span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">packets_lost_</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver20DummyUDPFrameDecoder13packets_lost_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver20DummyUDPFrameDecoder16packets_dropped_E">
+<span id="_CPPv3N13FrameReceiver20DummyUDPFrameDecoder16packets_dropped_E"></span><span id="_CPPv2N13FrameReceiver20DummyUDPFrameDecoder16packets_dropped_E"></span><span id="FrameReceiver::DummyUDPFrameDecoder::packets_dropped___uint32_t"></span><span class="target" id="classFrameReceiver_1_1DummyUDPFrameDecoder_1a92f9690252eb3c754953bd384f381514"></span><span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">packets_dropped_</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver20DummyUDPFrameDecoder16packets_dropped_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
 
 </div>
 </dd></dl>
@@ -1475,6 +1724,16 @@ document.write(`
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-protected-functions">Protected Functions</p>
 <dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver21FrameReceiverRxThread20run_specific_serviceEv">
+<span id="_CPPv3N13FrameReceiver21FrameReceiverRxThread20run_specific_serviceEv"></span><span id="_CPPv2N13FrameReceiver21FrameReceiverRxThread20run_specific_serviceEv"></span><span id="FrameReceiver::FrameReceiverRxThread::run_specific_service__void"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverRxThread_1ac5ffe4375d45f809b033ca349058eb91"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">run_specific_service</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">void</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver21FrameReceiverRxThread20run_specific_serviceEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver21FrameReceiverRxThread24cleanup_specific_serviceEv">
+<span id="_CPPv3N13FrameReceiver21FrameReceiverRxThread24cleanup_specific_serviceEv"></span><span id="_CPPv2N13FrameReceiver21FrameReceiverRxThread24cleanup_specific_serviceEv"></span><span id="FrameReceiver::FrameReceiverRxThread::cleanup_specific_service__void"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverRxThread_1a3a0da64ff884c8ef265ca2e65e7686f8"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cleanup_specific_service</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">void</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver21FrameReceiverRxThread24cleanup_specific_serviceEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver21FrameReceiverRxThread21set_thread_init_errorERKNSt6stringE">
 <span id="_CPPv3N13FrameReceiver21FrameReceiverRxThread21set_thread_init_errorERKNSt6stringE"></span><span id="_CPPv2N13FrameReceiver21FrameReceiverRxThread21set_thread_init_errorERKNSt6stringE"></span><span id="FrameReceiver::FrameReceiverRxThread::set_thread_init_error__ssCR"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverRxThread_1ae60493b0e25fa6fbda537d79e32b9c63"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">set_thread_init_error</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">msg</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver21FrameReceiverRxThread21set_thread_init_errorERKNSt6stringE" title="Permalink to this definition">#</a><br /></dt>
 <dd><p>Set thread initialisation error condition.</p>
@@ -1500,6 +1759,19 @@ document.write(`
 </dd>
 </dl>
 </dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-protected-attributes">Protected Attributes</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver21FrameReceiverRxThread7config_E">
+<span id="_CPPv3N13FrameReceiver21FrameReceiverRxThread7config_E"></span><span id="_CPPv2N13FrameReceiver21FrameReceiverRxThread7config_E"></span><span id="FrameReceiver::FrameReceiverRxThread::config___FrameReceiverConfigR"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverRxThread_1abac315d2cec40d1fda93b89abc96d2e9"></span><a class="reference internal" href="#_CPPv4N13FrameReceiver19FrameReceiverConfigE" title="FrameReceiver::FrameReceiverConfig"><span class="n"><span class="pre">FrameReceiverConfig</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-name descname"><span class="n"><span class="pre">config_</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver21FrameReceiverRxThread7config_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver21FrameReceiverRxThread8reactor_E">
+<span id="_CPPv3N13FrameReceiver21FrameReceiverRxThread8reactor_E"></span><span id="_CPPv2N13FrameReceiver21FrameReceiverRxThread8reactor_E"></span><span id="FrameReceiver::FrameReceiverRxThread::reactor___IpcReactor"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverRxThread_1a5dce522c2f39a29256c26e8f88398757"></span><span class="n"><span class="pre">IpcReactor</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">reactor_</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver21FrameReceiverRxThread8reactor_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
 
 </div>
 <div class="breathe-sectiondef docutils container">
@@ -1636,7 +1908,51 @@ document.write(`
 <dl class="cpp class">
 <dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver24FrameReceiverUDPRxThreadE">
 <span id="_CPPv3N13FrameReceiver24FrameReceiverUDPRxThreadE"></span><span id="_CPPv2N13FrameReceiver24FrameReceiverUDPRxThreadE"></span><span id="FrameReceiver::FrameReceiverUDPRxThread"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverUDPRxThread"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FrameReceiverUDPRxThread</span></span></span><span class="w"> </span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">public</span></span><span class="w"> </span><span class="n"><span class="pre">FrameReceiver</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="#_CPPv4N13FrameReceiver21FrameReceiverRxThreadE" title="FrameReceiver::FrameReceiverRxThread"><span class="n"><span class="pre">FrameReceiverRxThread</span></span></a><a class="headerlink" href="#_CPPv4N13FrameReceiver24FrameReceiverUDPRxThreadE" title="Permalink to this definition">#</a><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver24FrameReceiverUDPRxThread24FrameReceiverUDPRxThreadER19FrameReceiverConfig22SharedBufferManagerPtr15FrameDecoderPtrj">
+<span id="_CPPv3N13FrameReceiver24FrameReceiverUDPRxThread24FrameReceiverUDPRxThreadER19FrameReceiverConfig22SharedBufferManagerPtr15FrameDecoderPtrj"></span><span id="_CPPv2N13FrameReceiver24FrameReceiverUDPRxThread24FrameReceiverUDPRxThreadER19FrameReceiverConfig22SharedBufferManagerPtr15FrameDecoderPtrj"></span><span id="FrameReceiver::FrameReceiverUDPRxThread::FrameReceiverUDPRxThread__FrameReceiverConfigR.SharedBufferManagerPtr.FrameDecoderPtr.unsigned-i"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverUDPRxThread_1a7eaf40d7237a1341a942233a42dea7f6"></span><span class="sig-name descname"><span class="n"><span class="pre">FrameReceiverUDPRxThread</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N13FrameReceiver19FrameReceiverConfigE" title="FrameReceiver::FrameReceiverConfig"><span class="n"><span class="pre">FrameReceiverConfig</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">config</span></span>, <span class="n"><span class="pre">SharedBufferManagerPtr</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">buffer_manager</span></span>, <span class="n"><span class="pre">FrameDecoderPtr</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">frame_decoder</span></span>, <span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">tick_period_ms</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">100</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver24FrameReceiverUDPRxThread24FrameReceiverUDPRxThreadER19FrameReceiverConfig22SharedBufferManagerPtr15FrameDecoderPtrj" title="Permalink to this definition">#</a><br /></dt>
 <dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver24FrameReceiverUDPRxThreadD0Ev">
+<span id="_CPPv3N13FrameReceiver24FrameReceiverUDPRxThreadD0Ev"></span><span id="_CPPv2N13FrameReceiver24FrameReceiverUDPRxThreadD0Ev"></span><span id="FrameReceiver::FrameReceiverUDPRxThread::~FrameReceiverUDPRxThread"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverUDPRxThread_1a7f0b84efd3a57a9a9277abe16d7674f2"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">~FrameReceiverUDPRxThread</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver24FrameReceiverUDPRxThreadD0Ev" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-functions">Private Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver24FrameReceiverUDPRxThread20run_specific_serviceEv">
+<span id="_CPPv3N13FrameReceiver24FrameReceiverUDPRxThread20run_specific_serviceEv"></span><span id="_CPPv2N13FrameReceiver24FrameReceiverUDPRxThread20run_specific_serviceEv"></span><span id="FrameReceiver::FrameReceiverUDPRxThread::run_specific_service__void"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverUDPRxThread_1ae056a0c38f81600cc8b8d2a1944bc2ac"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">run_specific_service</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">void</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver24FrameReceiverUDPRxThread20run_specific_serviceEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver24FrameReceiverUDPRxThread24cleanup_specific_serviceEv">
+<span id="_CPPv3N13FrameReceiver24FrameReceiverUDPRxThread24cleanup_specific_serviceEv"></span><span id="_CPPv2N13FrameReceiver24FrameReceiverUDPRxThread24cleanup_specific_serviceEv"></span><span id="FrameReceiver::FrameReceiverUDPRxThread::cleanup_specific_service__void"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverUDPRxThread_1a4ece34652c082b3a5245a3219487118a"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cleanup_specific_service</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">void</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver24FrameReceiverUDPRxThread24cleanup_specific_serviceEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver24FrameReceiverUDPRxThread21handle_receive_socketEii">
+<span id="_CPPv3N13FrameReceiver24FrameReceiverUDPRxThread21handle_receive_socketEii"></span><span id="_CPPv2N13FrameReceiver24FrameReceiverUDPRxThread21handle_receive_socketEii"></span><span id="FrameReceiver::FrameReceiverUDPRxThread::handle_receive_socket__i.i"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverUDPRxThread_1aebfac087feef2ef0e03537c6c5f3dc6b"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">handle_receive_socket</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">socket_fd</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">recv_port</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver24FrameReceiverUDPRxThread21handle_receive_socketEii" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-members">Private Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver24FrameReceiverUDPRxThread7logger_E">
+<span id="_CPPv3N13FrameReceiver24FrameReceiverUDPRxThread7logger_E"></span><span id="_CPPv2N13FrameReceiver24FrameReceiverUDPRxThread7logger_E"></span><span id="FrameReceiver::FrameReceiverUDPRxThread::logger___LoggerPtr"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverUDPRxThread_1ae3f732b683400df77695a802cb09a4f0"></span><span class="n"><span class="pre">LoggerPtr</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">logger_</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver24FrameReceiverUDPRxThread7logger_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver24FrameReceiverUDPRxThread14frame_decoder_E">
+<span id="_CPPv3N13FrameReceiver24FrameReceiverUDPRxThread14frame_decoder_E"></span><span id="_CPPv2N13FrameReceiver24FrameReceiverUDPRxThread14frame_decoder_E"></span><span id="FrameReceiver::FrameReceiverUDPRxThread::frame_decoder___FrameDecoderUDPPtr"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverUDPRxThread_1a75847b8aedba7d2431e6fd08b02b7575"></span><span class="n"><span class="pre">FrameDecoderUDPPtr</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">frame_decoder_</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver24FrameReceiverUDPRxThread14frame_decoder_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
 
 </section>
 <section id="framereceiverzmqrxthread">
@@ -1644,7 +1960,56 @@ document.write(`
 <dl class="cpp class">
 <dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver24FrameReceiverZMQRxThreadE">
 <span id="_CPPv3N13FrameReceiver24FrameReceiverZMQRxThreadE"></span><span id="_CPPv2N13FrameReceiver24FrameReceiverZMQRxThreadE"></span><span id="FrameReceiver::FrameReceiverZMQRxThread"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverZMQRxThread"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FrameReceiverZMQRxThread</span></span></span><span class="w"> </span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">public</span></span><span class="w"> </span><span class="n"><span class="pre">FrameReceiver</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="#_CPPv4N13FrameReceiver21FrameReceiverRxThreadE" title="FrameReceiver::FrameReceiverRxThread"><span class="n"><span class="pre">FrameReceiverRxThread</span></span></a><a class="headerlink" href="#_CPPv4N13FrameReceiver24FrameReceiverZMQRxThreadE" title="Permalink to this definition">#</a><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver24FrameReceiverZMQRxThread24FrameReceiverZMQRxThreadER19FrameReceiverConfig22SharedBufferManagerPtr15FrameDecoderPtrj">
+<span id="_CPPv3N13FrameReceiver24FrameReceiverZMQRxThread24FrameReceiverZMQRxThreadER19FrameReceiverConfig22SharedBufferManagerPtr15FrameDecoderPtrj"></span><span id="_CPPv2N13FrameReceiver24FrameReceiverZMQRxThread24FrameReceiverZMQRxThreadER19FrameReceiverConfig22SharedBufferManagerPtr15FrameDecoderPtrj"></span><span id="FrameReceiver::FrameReceiverZMQRxThread::FrameReceiverZMQRxThread__FrameReceiverConfigR.SharedBufferManagerPtr.FrameDecoderPtr.unsigned-i"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverZMQRxThread_1a2e046f9d38aaeeaae6f448b879798627"></span><span class="sig-name descname"><span class="n"><span class="pre">FrameReceiverZMQRxThread</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N13FrameReceiver19FrameReceiverConfigE" title="FrameReceiver::FrameReceiverConfig"><span class="n"><span class="pre">FrameReceiverConfig</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">config</span></span>, <span class="n"><span class="pre">SharedBufferManagerPtr</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">buffer_manager</span></span>, <span class="n"><span class="pre">FrameDecoderPtr</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">frame_decoder</span></span>, <span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">tick_period_ms</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">100</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver24FrameReceiverZMQRxThread24FrameReceiverZMQRxThreadER19FrameReceiverConfig22SharedBufferManagerPtr15FrameDecoderPtrj" title="Permalink to this definition">#</a><br /></dt>
 <dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver24FrameReceiverZMQRxThreadD0Ev">
+<span id="_CPPv3N13FrameReceiver24FrameReceiverZMQRxThreadD0Ev"></span><span id="_CPPv2N13FrameReceiver24FrameReceiverZMQRxThreadD0Ev"></span><span id="FrameReceiver::FrameReceiverZMQRxThread::~FrameReceiverZMQRxThread"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverZMQRxThread_1afaabe12e8a61ca09e17031a3b97ac46f"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">~FrameReceiverZMQRxThread</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver24FrameReceiverZMQRxThreadD0Ev" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-functions">Private Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver24FrameReceiverZMQRxThread20run_specific_serviceEv">
+<span id="_CPPv3N13FrameReceiver24FrameReceiverZMQRxThread20run_specific_serviceEv"></span><span id="_CPPv2N13FrameReceiver24FrameReceiverZMQRxThread20run_specific_serviceEv"></span><span id="FrameReceiver::FrameReceiverZMQRxThread::run_specific_service__void"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverZMQRxThread_1aecb44d90d0eafb1110c35d806cfb1b3c"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">run_specific_service</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">void</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver24FrameReceiverZMQRxThread20run_specific_serviceEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver24FrameReceiverZMQRxThread24cleanup_specific_serviceEv">
+<span id="_CPPv3N13FrameReceiver24FrameReceiverZMQRxThread24cleanup_specific_serviceEv"></span><span id="_CPPv2N13FrameReceiver24FrameReceiverZMQRxThread24cleanup_specific_serviceEv"></span><span id="FrameReceiver::FrameReceiverZMQRxThread::cleanup_specific_service__void"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverZMQRxThread_1a97dd5ffe9cb1921e5301167cbba6838c"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cleanup_specific_service</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">void</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver24FrameReceiverZMQRxThread24cleanup_specific_serviceEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver24FrameReceiverZMQRxThread21handle_receive_socketEv">
+<span id="_CPPv3N13FrameReceiver24FrameReceiverZMQRxThread21handle_receive_socketEv"></span><span id="_CPPv2N13FrameReceiver24FrameReceiverZMQRxThread21handle_receive_socketEv"></span><span id="FrameReceiver::FrameReceiverZMQRxThread::handle_receive_socket"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverZMQRxThread_1a0f92cf3c55838ad0caea551df290608a"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">handle_receive_socket</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver24FrameReceiverZMQRxThread21handle_receive_socketEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-members">Private Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver24FrameReceiverZMQRxThread7logger_E">
+<span id="_CPPv3N13FrameReceiver24FrameReceiverZMQRxThread7logger_E"></span><span id="_CPPv2N13FrameReceiver24FrameReceiverZMQRxThread7logger_E"></span><span id="FrameReceiver::FrameReceiverZMQRxThread::logger___LoggerPtr"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverZMQRxThread_1a33596a902a2d6e61c49ad3b4f2863ae4"></span><span class="n"><span class="pre">LoggerPtr</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">logger_</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver24FrameReceiverZMQRxThread7logger_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver24FrameReceiverZMQRxThread12skt_channel_E">
+<span id="_CPPv3N13FrameReceiver24FrameReceiverZMQRxThread12skt_channel_E"></span><span id="_CPPv2N13FrameReceiver24FrameReceiverZMQRxThread12skt_channel_E"></span><span id="FrameReceiver::FrameReceiverZMQRxThread::skt_channel___IpcChannel"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverZMQRxThread_1abba7aa03596b78163b8f5c7055986924"></span><span class="n"><span class="pre">IpcChannel</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">skt_channel_</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver24FrameReceiverZMQRxThread12skt_channel_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver24FrameReceiverZMQRxThread14frame_decoder_E">
+<span id="_CPPv3N13FrameReceiver24FrameReceiverZMQRxThread14frame_decoder_E"></span><span id="_CPPv2N13FrameReceiver24FrameReceiverZMQRxThread14frame_decoder_E"></span><span id="FrameReceiver::FrameReceiverZMQRxThread::frame_decoder___FrameDecoderZMQPtr"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverZMQRxThread_1a0f466dd3ac18679317d30451675354da"></span><span class="n"><span class="pre">FrameDecoderZMQPtr</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">frame_decoder_</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver24FrameReceiverZMQRxThread14frame_decoder_E" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
 
 </section>
 <section id="framereceiverconfig">
@@ -1653,6 +2018,42 @@ document.write(`
 <dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver19FrameReceiverConfigE">
 <span id="_CPPv3N13FrameReceiver19FrameReceiverConfigE"></span><span id="_CPPv2N13FrameReceiver19FrameReceiverConfigE"></span><span id="FrameReceiver::FrameReceiverConfig"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverConfig"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FrameReceiverConfig</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver19FrameReceiverConfigE" title="Permalink to this definition">#</a><br /></dt>
 <dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver19FrameReceiverConfig19FrameReceiverConfigEv">
+<span id="_CPPv3N13FrameReceiver19FrameReceiverConfig19FrameReceiverConfigEv"></span><span id="_CPPv2N13FrameReceiver19FrameReceiverConfig19FrameReceiverConfigEv"></span><span id="FrameReceiver::FrameReceiverConfig::FrameReceiverConfig"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverConfig_1a2b3412cf8f4ab5bd85cdb5bdc59b2044"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FrameReceiverConfig</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver19FrameReceiverConfig19FrameReceiverConfigEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver19FrameReceiverConfig18tokenize_port_listERNSt6vectorI8uint16_tEEKNSt6stringE">
+<span id="_CPPv3N13FrameReceiver19FrameReceiverConfig18tokenize_port_listERNSt6vectorI8uint16_tEEKNSt6stringE"></span><span id="_CPPv2N13FrameReceiver19FrameReceiverConfig18tokenize_port_listERNSt6vectorI8uint16_tEEKNSt6stringE"></span><span id="FrameReceiver::FrameReceiverConfig::tokenize_port_list__std::vector:uint16_t:R.ssC"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverConfig_1abde262598ec6f3f26bcf138670e6c914"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">tokenize_port_list</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">uint16_t</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">port_list</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">port_list_str</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver19FrameReceiverConfig18tokenize_port_listERNSt6vectorI8uint16_tEEKNSt6stringE" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver19FrameReceiverConfig12rx_port_listEv">
+<span id="_CPPv3N13FrameReceiver19FrameReceiverConfig12rx_port_listEv"></span><span id="_CPPv2N13FrameReceiver19FrameReceiverConfig12rx_port_listEv"></span><span id="FrameReceiver::FrameReceiverConfig::rx_port_list__void"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverConfig_1afe39f87868128521bddeacf74c438ba7"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">rx_port_list</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">void</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver19FrameReceiverConfig12rx_port_listEv" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver19FrameReceiverConfig14as_ipc_messageERN8OdinData10IpcMessageE">
+<span id="_CPPv3N13FrameReceiver19FrameReceiverConfig14as_ipc_messageERN8OdinData10IpcMessageE"></span><span id="_CPPv2N13FrameReceiver19FrameReceiverConfig14as_ipc_messageERN8OdinData10IpcMessageE"></span><span id="FrameReceiver::FrameReceiverConfig::as_ipc_message__OdinData::IpcMessageR"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverConfig_1a78b91ef1acccb6a8b6f342079fdb9f7d"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">as_ipc_message</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">config_msg</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver19FrameReceiverConfig14as_ipc_messageERN8OdinData10IpcMessageE" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-static-functions">Public Static Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver19FrameReceiverConfig19map_rx_name_to_typeERNSt6stringE">
+<span id="_CPPv3N13FrameReceiver19FrameReceiverConfig19map_rx_name_to_typeERNSt6stringE"></span><span id="_CPPv2N13FrameReceiver19FrameReceiverConfig19map_rx_name_to_typeERNSt6stringE"></span><span id="FrameReceiver::FrameReceiverConfig::map_rx_name_to_type__ssR"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverConfig_1a4ade87ac0d6d80accd9718d349b77e96"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="n"><span class="pre">Defaults</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">RxType</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">map_rx_name_to_type</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">rx_name</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver19FrameReceiverConfig19map_rx_name_to_typeERNSt6stringE" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver19FrameReceiverConfig19map_rx_type_to_nameEN8Defaults6RxTypeE">
+<span id="_CPPv3N13FrameReceiver19FrameReceiverConfig19map_rx_type_to_nameEN8Defaults6RxTypeE"></span><span id="_CPPv2N13FrameReceiver19FrameReceiverConfig19map_rx_type_to_nameEN8Defaults6RxTypeE"></span><span id="FrameReceiver::FrameReceiverConfig::map_rx_type_to_name__Defaults::RxType"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverConfig_1a9a393d93597e049b1d91b0297417d09d"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">map_rx_type_to_name</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">Defaults</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">RxType</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">rx_type</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver19FrameReceiverConfig19map_rx_type_to_nameEN8Defaults6RxTypeE" title="Permalink to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-members">Private Members</p>
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver19FrameReceiverConfig15max_buffer_mem_E">
@@ -1761,6 +2162,44 @@ document.write(`
 <span id="_CPPv3N13FrameReceiver19FrameReceiverConfig15force_reconfig_E"></span><span id="_CPPv2N13FrameReceiver19FrameReceiverConfig15force_reconfig_E"></span><span id="FrameReceiver::FrameReceiverConfig::force_reconfig___b"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverConfig_1af726d93b48f251b3cb0a3b1fe03ce811"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">force_reconfig_</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver19FrameReceiverConfig15force_reconfig_E" title="Permalink to this definition">#</a><br /></dt>
 <dd><p>Force a comlete reconfigure of the frame receiver. </p>
 </dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-friends">Friends</p>
+<dl>
+<dt class="sig sig-object cpp">
+<em class="property"><span class="pre">friend</span> <span class="pre">class</span></em> <span class="pre">FrameReceiverApp</span></dt>
+</dl>
+
+<dl>
+<dt class="sig sig-object cpp">
+<em class="property"><span class="pre">friend</span> <span class="pre">class</span></em> <span class="pre">FrameReceiverController</span></dt>
+</dl>
+
+<dl>
+<dt class="sig sig-object cpp">
+<em class="property"><span class="pre">friend</span> <span class="pre">class</span></em> <span class="pre">FrameReceiverRxThread</span></dt>
+</dl>
+
+<dl>
+<dt class="sig sig-object cpp">
+<em class="property"><span class="pre">friend</span> <span class="pre">class</span></em> <span class="pre">FrameReceiverUDPRxThread</span></dt>
+</dl>
+
+<dl>
+<dt class="sig sig-object cpp">
+<em class="property"><span class="pre">friend</span> <span class="pre">class</span></em> <span class="pre">FrameReceiverZMQRxThread</span></dt>
+</dl>
+
+<dl>
+<dt class="sig sig-object cpp">
+<em class="property"><span class="pre">friend</span> <span class="pre">class</span></em> <span class="pre">FrameReceiverConfigTestProxy</span></dt>
+</dl>
+
+<dl>
+<dt class="sig sig-object cpp">
+<em class="property"><span class="pre">friend</span> <span class="pre">class</span></em> <span class="pre">FrameReceiverRxThreadTestProxy</span></dt>
+</dl>
 
 </div>
 </dd></dl>

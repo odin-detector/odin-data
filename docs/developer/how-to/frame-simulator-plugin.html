@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>FrameSimulatorPlugin &#8212; odin-data 0+untagged.1.g7c2c187 documentation</title>
+    <title>FrameSimulatorPlugin &#8212; odin-data 0+untagged.1.gef6c54b documentation</title>
   
   
   
@@ -359,15 +359,18 @@ document.write(`
 <li class="toctree-l2"><a class="reference internal" href="frame-decoder.html">FrameDecoder</a></li>
 <li class="toctree-l2"><a class="reference internal" href="frame-processor-plugin.html">FrameProcessorPlugin</a></li>
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">FrameSimulatorPlugin</a></li>
-<li class="toctree-l2"><a class="reference internal" href="docs.html">Docs</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="docs.html">Docs</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="excalidraw.html">How to embed Excalidraw diagrams</a></li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../explanations/index.html"><strong>Explanations</strong></a><input checked class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../explanations/index.html"><strong>Explanations</strong></a><input checked class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../explanations/overview.html">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../explanations/design-decisions.html">Design Decisions</a></li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../reference/index.html"><strong>Reference</strong></a><input checked class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../reference/index.html"><strong>Reference</strong></a><input checked class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../reference/api/common.html">Common API Reference</a></li>
 
 
@@ -385,7 +388,10 @@ document.write(`
 
 <li class="toctree-l2"><a class="reference internal" href="../reference/api/frame-simulator.html">FrameSimulator API Reference</a></li>
 
-<li class="toctree-l2"><a class="reference internal" href="../reference/design-docs/index.html">Design Docs</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../reference/design-docs/index.html">Design Docs</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/design-docs/live-view-spec.html">Specification For Odin Data Live View Plugin</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -450,35 +456,25 @@ document.write(`
                   
   <section id="framesimulatorplugin">
 <h1>FrameSimulatorPlugin<a class="headerlink" href="#framesimulatorplugin" title="Permalink to this heading">#</a></h1>
-<p>The <code class="docutils literal notranslate"><span class="pre">FrameSimulatorPlugin</span></code> is the base class for detector specific implementations that
+<p>The <a class="reference internal" href="../reference/api/frame-simulator.html#_CPPv4N14FrameSimulator20FrameSimulatorPluginE" title="FrameSimulator::FrameSimulatorPlugin"><span class="xref myst cpp cpp-class">FrameSimulatorPlugin</span></a> is the base class for detector specific implementations that
 can be loaded into the frameSimulator application.</p>
 <p>This class defines a few virtual methods to be implemented by concrete implementations.
 Some are pure virtual - annotated with <code class="docutils literal notranslate"><span class="pre">*</span></code> - and some are optional. These are:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">populate_options</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">setup</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">simulate*</span></code></p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-simulator.html#_CPPv4N14FrameSimulator20FrameSimulatorPlugin16populate_optionsERN2po19options_descriptionE" title="FrameSimulator::FrameSimulatorPlugin::populate_options"><span class="xref myst cpp cpp-func">populate_options</span></a></p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-simulator.html#_CPPv4N14FrameSimulator20FrameSimulatorPlugin5setupERKN2po13variables_mapE" title="FrameSimulator::FrameSimulatorPlugin::setup"><span class="xref myst cpp cpp-func">setup</span></a></p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-simulator.html#_CPPv4N14FrameSimulator20FrameSimulatorPlugin8simulateEv" title="FrameSimulator::FrameSimulatorPlugin::simulate"><span class="xref myst cpp cpp-func">simulate</span></a>*</p></li>
 </ul>
 <p>These methods are used to provide options to <code class="docutils literal notranslate"><span class="pre">--help</span></code> output, parse commandline options
 and run the simulation.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>See the <a class="reference internal" href="#../reference/api/frame-receiver/decoder.md#framedecoderudp"><span class="xref myst">API Reference</span></a>
-for more detail.</p>
-</div>
-<p>There is also a helper child class <code class="docutils literal notranslate"><span class="pre">FrameSimulatorPluginUDP</span></code> that provides some utility
+<p>There is also a helper child class <a class="reference internal" href="../reference/api/frame-simulator.html#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDPE" title="FrameSimulator::FrameSimulatorPluginUDP"><span class="xref myst cpp cpp-class">FrameSimulatorPluginUDP</span></a> that provides some utility
 for loading pcap files, providing virtual methods to process the file into packets, and
-implements a generic <code class="docutils literal notranslate"><span class="pre">setup</span></code> and <code class="docutils literal notranslate"><span class="pre">simulate</span></code> methods. The methods for child classes to
+implements generic <a class="reference internal" href="../reference/api/frame-simulator.html#_CPPv4N14FrameSimulator20FrameSimulatorPlugin5setupERKN2po13variables_mapE" title="FrameSimulator::FrameSimulatorPlugin::setup"><span class="xref myst cpp cpp-func">setup</span></a> and <a class="reference internal" href="../reference/api/frame-simulator.html#_CPPv4N14FrameSimulator20FrameSimulatorPlugin8simulateEv" title="FrameSimulator::FrameSimulatorPlugin::simulate"><span class="xref myst cpp cpp-func">simulate</span></a> methods. The methods for child classes to
 implement are:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">extract_frames*</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">create_frames*</span></code></p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-simulator.html#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP14extract_framesEPK6u_charRKi" title="FrameSimulator::FrameSimulatorPluginUDP::extract_frames"><span class="xref myst cpp cpp-func">extract_frames</span></a>*</p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-simulator.html#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP13create_framesERKi" title="FrameSimulator::FrameSimulatorPluginUDP::create_frames"><span class="xref myst cpp cpp-func">create_frames</span></a>*</p></li>
 </ul>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>See the <a class="reference internal" href="#../reference/api/frame-simulator/simulator.md"><span class="xref myst">API Reference</span></a>
-for more detail.</p>
-</div>
 </section>
 
 
