@@ -41,9 +41,9 @@ namespace FrameSimulatorTest {
               args.push_back("--" + vc.first);
               PropertyTreeUtility::expandEnvVars(vc.second.data());
               args.push_back(vc.second.data());
-              if (vc.first == "json_file") {
-                std::string json_file = vc.second.data();
-                std::ifstream file(json_file.c_str());
+              if (vc.first == "config") {
+                std::string config = vc.second.data();
+                std::ifstream file(config.c_str());
                 std::string json;
                 std::string new_json;
                 while(std::getline(file, json)) {
@@ -51,7 +51,7 @@ namespace FrameSimulatorTest {
                   new_json += json;
                 }
                 std::ofstream updated_file;
-                updated_file.open(json_file.c_str(), std::ios::trunc);
+                updated_file.open(config.c_str(), std::ios::trunc);
                 updated_file << new_json;
                 updated_file.close();
               }

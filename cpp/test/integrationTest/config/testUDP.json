@@ -1,7 +1,7 @@
 {
     "Test":
     {
-        "output_file": "test_1_000001.h5",
+        "output_file": "/tmp/test_1_000001.h5",
         "frames": "10",
         "dimensions": "3",
         "width": "1400",

@@ -88,17 +88,7 @@ int parse_arguments(int argc,
 
     // Setup logging
 
-    if (vm.count("logconfig")) {
-      std::string logconf_fname = vm["logconfig"].as<std::string>();
-      if (has_suffix(logconf_fname, ".xml")) {
-        log4cxx::xml::DOMConfigurator::configure(logconf_fname);
-      } else {
-        PropertyConfigurator::configure(logconf_fname);
-      }
-      LOG4CXX_DEBUG(logger, "log4cxx config file is set to " << logconf_fname);
-    } else {
-      BasicConfigurator::configure();
-    }
+    BasicConfigurator::configure();
 
     // Read configuration file; store as boost::property_tree::ptree
 
