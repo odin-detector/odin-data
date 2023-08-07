@@ -1,4 +1,5 @@
 add_subdirectory(integrationTest)
+add_subdirectory(dummy_example)
 
 include_directories(${HDF5_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${LOG4CXX_INCLUDE_DIRS}/.. ${ZEROMQ_INCLUDE_DIRS})
 add_definitions(${HDF5_DEFINITIONS})

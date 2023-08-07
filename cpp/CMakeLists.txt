@@ -57,11 +57,11 @@ set(CMAKE_MACOSX_RPATH 1)
 SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
 
 # When building, don't use the install RPATH already (but later on when installing)
-SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
+SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
 SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
-# Add the automatically determined parts of the RPATH which point to directories outside the 
+# Add the automatically determined parts of the RPATH which point to directories outside the
 # build tree to the install RPATH
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
@@ -170,9 +170,6 @@ add_subdirectory(${FRAMESIMULATOR_DIR})
 
 # Add the test subdirectory
 add_subdirectory(${TEST_DIR})
-
-# Add the doc subdirectory
-add_subdirectory(doc)
 
 # Add the config subdirectory (config files used for integration testing)
 add_subdirectory(config)

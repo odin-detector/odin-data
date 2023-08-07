@@ -1,0 +1,22 @@
+
+INPUT = \
+    ../cpp/common/include \
+    ../cpp/common/src \
+    ../cpp/frameReceiver/include \
+    ../cpp/frameReceiver/src \
+    ../cpp/frameProcessor/include \
+    ../cpp/frameProcessor/src \
+    ../cpp/frameSimulator/include \
+    ../cpp/frameSimulator/src
+RECURSIVE = YES
+EXTRACT_PRIVATE = YES
+EXTRACT_ALL = YES
+EXCLUDE = \
+    ../cpp/common/include/zmq \
+    ../cpp/common/include/rapidjson
+EXCLUDE_PATTERNS = *md
+
+OUTPUT_DIRECTORY = build/doxygen
+GENERATE_XML = YES
+GENERATE_HTML = NO
+GENERATE_LATEX = NO
