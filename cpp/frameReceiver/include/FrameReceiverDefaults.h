@@ -27,8 +27,6 @@ enum RxType
   RxTypeZMQ,
 };
 
-const int          default_node                   = 1;
-const unsigned int default_io_threads             = 1;
 const std::size_t  default_max_buffer_mem         = 1048576;
 const std::string  default_decoder_path           = std::string(BUILD_DIR) + "/lib/";
 const std::string  default_decoder_type           = "unknown";
@@ -41,13 +39,8 @@ const int          default_rx_recv_buffer_size    = 1048576;
 const int          default_rx_recv_buffer_size    = 30000000;
 #endif
 const std::string  default_rx_chan_endpoint       = "inproc://rx_channel";
-const std::string  default_ctrl_chan_endpoint     = "tcp://*:5000";
-const std::string  default_frame_ready_endpoint   = "tcp://*:5001";
-const std::string  default_frame_release_endpoint = "tcp://*:5002";
-const std::string  default_json_config_file       = "";
-const std::string  default_shared_buffer_name     = "FrameReceiverBuffer";
+const std::string  default_ctrl_chan_endpoint     = "tcp://127.0.0.1:5000";
 const unsigned int default_frame_timeout_ms       = 1000;
-const unsigned int default_frame_count            = 0;
 const bool         default_enable_packet_logging  = false;
 const bool         default_force_reconfig         = false;
 
