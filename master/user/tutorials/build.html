@@ -1,0 +1,748 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>Build &#8212; odin-data 0+untagged.1.g75b06f3 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/design-tabs.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user/tutorials/build';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://odin-detector.github.io/odin-data/switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'master';
+        </script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Deploy" href="deploy.html" />
+    <link rel="prev" title="Tutorials" href="index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  <div class="navbar-header-items__start">
+    
+      <div class="navbar-item">
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/odin.png" class="logo__image only-light" alt="Logo image"/>
+    <script>document.write(`<img src="../../_static/odin.png" class="logo__image only-dark" alt="Logo image"/>`);</script>
+  
+  
+    <p class="title logo__title">odin-data</p>
+  
+</a></div>
+    
+  </div>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="../index.html">
+                        User Guide
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../developer/index.html">
+                        Developer Guide
+                      </a>
+                    </li>
+                
+
+                <li class="nav-item">
+                  <a class="nav-link nav-external" href="https://github.com/odin-detector/odin-data/releases">
+                    Release Notes
+                  </a>
+                </li>
+                
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+        </div>
+      
+      
+        <div class="navbar-item">
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/odin-detector/odin-data" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github"></i></span>
+            <label class="sr-only">GitHub</label></a>
+        </li>
+</ul></div>
+      
+        <div class="navbar-item">
+<script>
+document.write(`
+  <div class="version-switcher__container dropdown">
+    <button type="button" class="version-switcher__button btn btn-sm navbar-btn dropdown-toggle" data-bs-toggle="dropdown">
+      master  <!-- this text may get changed later by javascript -->
+      <span class="caret"></span>
+    </button>
+    <div class="version-switcher__menu dropdown-menu list-group-flush py-0">
+    <!-- dropdown will be populated by javascript on page load -->
+    </div>
+  </div>
+`);
+</script></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+    </div>
+  
+
+  
+    <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+    </label>
+  
+</div>
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="../index.html">
+                        User Guide
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../developer/index.html">
+                        Developer Guide
+                      </a>
+                    </li>
+                
+
+                <li class="nav-item">
+                  <a class="nav-link nav-external" href="https://github.com/odin-detector/odin-data/releases">
+                    Release Notes
+                  </a>
+                </li>
+                
+  </ul>
+</nav></div>
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/odin-detector/odin-data" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github"></i></span>
+            <label class="sr-only">GitHub</label></a>
+        </li>
+</ul></div>
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <div class="version-switcher__container dropdown">
+    <button type="button" class="version-switcher__button btn btn-sm navbar-btn dropdown-toggle" data-bs-toggle="dropdown">
+      master  <!-- this text may get changed later by javascript -->
+      <span class="caret"></span>
+    </button>
+    <div class="version-switcher__menu dropdown-menu list-group-flush py-0">
+    <!-- dropdown will be populated by javascript on page load -->
+    </div>
+  </div>
+`);
+</script></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item"><nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html"><strong>Tutorials</strong></a><input checked class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Build</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deploy.html">Deploy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="run.html">Run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tools.html">Using the Python Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../how-to/index.html"><strong>How-To Guides</strong></a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../explanations/index.html"><strong>Explanations</strong></a><input checked class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../explanations/frame-receiver.html">FrameReceiver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../explanations/frame-processor.html">FrameProcessor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../explanations/frame-simulator.html">FrameSimulator</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html"><strong>Reference</strong></a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumbs">
+  <ul class="bd-breadcrumbs" role="navigation" aria-label="Breadcrumb">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">User Guide</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link"><strong>Tutorials</strong></a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">Build</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="build">
+<h1>Build<a class="headerlink" href="#build" title="Permalink to this heading">#</a></h1>
+<section id="external-software-dependencies">
+<h2>External Software Dependencies<a class="headerlink" href="#external-software-dependencies" title="Permalink to this heading">#</a></h2>
+<p>The following libraries and packages are used:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="http://www.cmake.org">CMake</a> : build management system (version &gt;= 2.8)</p></li>
+<li><p><a class="reference external" href="http://www.boost.org">Boost</a> : portable C++ utility libraries. The following components are used - program_options, unit_test_framework, date_time, interprocess, bimap (version &gt;= 1.41)</p></li>
+<li><p><a class="reference external" href="http://zeromq.org">ZeroMQ</a> : high-performance asynchronous messaging library (version &gt;= 4.1.4)</p></li>
+<li><p><a class="reference external" href="http://logging.apache.org/log4cxx/">Log4CXX</a>: Configurable message logger (version &gt;= 0.10.0)</p></li>
+<li><p><a class="reference external" href="https://www.hdfgroup.org/HDF5">HDF5</a>: <strong>Optional:</strong> if found, the FrameProcessor application will be built (version &gt;= 1.8.14)</p></li>
+<li><p><a class="reference external" href="http://blosc.org">Blosc</a>/<a class="reference external" href="https://github.com/blosc/c-blosc">c-blosc</a>: <strong>Optional:</strong> if found, the FrameProcessor BloscPlugin will be built</p></li>
+</ul>
+</section>
+<section id="building-dependencies">
+<h2>Building Dependencies<a class="headerlink" href="#building-dependencies" title="Permalink to this heading">#</a></h2>
+<p>The supported development platform is Linux RedHat 7 (RHEL7) however distributions like
+CentOS and Scientific Linux are essentially clones of RHEL and can be used as free
+alternatives to RHEL.</p>
+<p>Most of the dependencies are available from the RHEL (or CentOS) repositories, but a few
+(log4cxx and zeromq) must be installed from the EPEL repository (or built from source).</p>
+<p>The following is an example of installing dependencies on CentOS 7:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span># Install the development environment: gcc, make, etc.
+yum groupinstall &quot;Development tools&quot;
+
+# Install the cmake and boost libraries
+yum install cmake boost-devel
+
+# Enable the EPEL repositories - the exact method may be dependent
+# on the distribution. This works for CentOS 6:
+yum install epel-release
+
+# Install the zeromq and log4cxx libraries from the EPEL repo
+yum --enablerepo=epel install zeromq3-devel log4cxx-devel
+</pre></div>
+</div>
+<p>These dependencies are commonly available on many linux distributions, e.g. on <a class="reference external" href="https://wiki.archlinux.org/">arch</a>:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ pacman -Sy gcc make cmake blosc boost hdf5 log4cxx
+</pre></div>
+</div>
+</section>
+<section id="building-odin-data">
+<h2>Building odin-data<a class="headerlink" href="#building-odin-data" title="Permalink to this heading">#</a></h2>
+<p>OdinData is built using CMake. The minimal commands to configure and build are:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>mkdir build &amp;&amp; cd build
+cmake ..
+make
+</pre></div>
+</div>
+<p>the name <code class="docutils literal notranslate"><span class="pre">build</span></code> has no significance and can be substituted. Some CMake flags will have
+to be used to build on most systems. Non-default installations of the required libraries
+and packages can be used by adding the following:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Boost_NO_BOOST_CMAKE=ON</span></code> and <code class="docutils literal notranslate"><span class="pre">BOOST_ROOT</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ZEROMQ_ROOTDIR</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">LOG4CXX_ROOT_DIR</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">HDF5_ROOT</span></code> - optional: the FrameProcessor will <strong>not</strong> be built if HDF5 is not found.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">BLOSC_ROOT_DIR</span></code> - optional: FrameProcessor BloscPlugin will not be built if the blosc
+library is not found</p></li>
+</ul>
+<p>The <code class="docutils literal notranslate"><span class="pre">Boost_NO_BOOST_CMAKE=ON</span></code> flag is required on systems with Boost installed on system
+paths (e.g. from a package repository) where there is a bug in the installed CMake
+package discovery utilities.</p>
+<p>Applications are compiled into the <code class="docutils literal notranslate"><span class="pre">bin</span></code> directory within <code class="docutils literal notranslate"><span class="pre">build</span></code> and the additional
+python etc tools installed into tools. Sample configuration files for testing the system
+are installed into <code class="docutils literal notranslate"><span class="pre">test_config</span></code>.  See the sections below further information on usage.</p>
+<section id="example-build-and-install-of-odin-data">
+<h3>Example build and install of odin-data<a class="headerlink" href="#example-build-and-install-of-odin-data" title="Permalink to this heading">#</a></h3>
+<p>Create an install directory to install odin-data and plugins into:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ mkdir prefix
+</pre></div>
+</div>
+<p>Create a build directory for CMake to use (N.B. odin-data uses CMake out-of-source build
+semantics):</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ mkdir build &amp;&amp; cd build
+</pre></div>
+</div>
+<p>Configure CMake to define use of correct packages and set up install directory:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ cmake -DBoost_NO_BOOST_CMAKE=ON -DBOOST_ROOT=$BOOST_ROOT \
+  -DZEROMQ_ROOTDIR=$ZEROMQ_ROOT -DLOG4CXX_ROOT_DIR=$LOG4CXX_ROOT \
+  -DHDF5_ROOT=$HDF5_ROOT -DBLOSC_ROOT_DIR=$BLOSC_ROOT \
+  -DCMAKE_INSTALL_PREFIX=&lt;path_to_odin-data&gt;/prefix ..
+</pre></div>
+</div>
+<p>Check output from CMake for errors and correct paths (below is an example where
+everything is found correctly in default locations):</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>[main] Configuring folder: odin-data
+[driver] Removing /scratch/development/odin/odin-data/build/CMakeCache.txt
+[driver] Removing /scratch/development/odin/odin-data/build/CMakeFiles
+[proc] Executing command: /usr/bin/cmake --no-warn-unused-cli -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Debug -DCMAKE_INSTALL_PREFIX:STRING=/scratch/development/odin/odin-data/prefix -DCMAKE_C_COMPILER:FILEPATH=/bin/x86_64-pc-linux-gnu-gcc-11.2.0 -S/scratch/development/odin/odin-data -B/scratch/development/odin/odin-data/build -G &quot;Unix Makefiles&quot;
+[cmake] Not searching for unused variables given on the command line.
+[cmake] -- The C compiler identification is GNU 11.2.0
+[cmake] -- The CXX compiler identification is GNU 11.2.0
+[cmake] -- Detecting C compiler ABI info
+[cmake] -- Detecting C compiler ABI info - done
+[cmake] -- Check for working C compiler: /bin/x86_64-pc-linux-gnu-gcc-11.2.0 - skipped
+[cmake] -- Detecting C compile features
+[cmake] -- Detecting C compile features - done
+[cmake] -- Detecting CXX compiler ABI info
+[cmake] -- Detecting CXX compiler ABI info - done
+[cmake] -- Check for working CXX compiler: /bin/c++ - skipped
+[cmake] -- Detecting CXX compile features
+[cmake] -- Detecting CXX compile features - done
+[cmake] CMake Deprecation Warning at CMakeLists.txt:5 (cmake_minimum_required):
+[cmake]   Compatibility with CMake &lt; 2.8.12 will be removed from a future version of
+[cmake]   CMake.
+[cmake]
+[cmake]   Update the VERSION argument &lt;min&gt; value or use a ...&lt;max&gt; suffix to tell
+[cmake]   CMake that the project does not need compatibility with older versions.
+[cmake]
+[cmake]
+[cmake] -- Found Boost: /usr/lib64/cmake/Boost-1.78.0/BoostConfig.cmake (found suitable version &quot;1.78.0&quot;, minimum required is &quot;1.41.0&quot;) found components: program_options system filesystem unit_test_framework date_time thread regex
+[cmake]
+[cmake] Looking for log4cxx headers and libraries
+[cmake] -- Found PkgConfig: /usr/bin/pkg-config (found version &quot;1.8.0&quot;)
+[cmake] using pkgconfig
+[cmake] -- Checking for module &#39;log4cxx&#39;
+[cmake] --   Package &#39;log4cxx&#39;, required by &#39;virtual:world&#39;, not found
+[cmake] -- Found LOG4CXX: /usr/lib/liblog4cxx.so (Required is at least version &quot;0.10.0&quot;)
+[cmake] -- Include directories: /usr/include/log4cxx
+[cmake] -- Libraries: /usr/lib/liblog4cxx.so
+[cmake]
+[cmake] Looking for ZeroMQ headers and libraries
+[cmake] -- Checking for one of the modules &#39;libzmq&#39;
+[cmake] -- Found ZEROMQ: /lib/libzmq.so (found suitable version &quot;4.3.4&quot;, minimum required is &quot;4.1.4&quot;)
+[cmake] -- Include directories: /usr/include
+[cmake] -- Libraries: /lib/libzmq.so
+[cmake]
+[cmake] Looking for pcap headers and libraries
+[cmake] -- Found PCAP: /usr/lib/libpcap.so (Required is at least version &quot;1.4.0&quot;)
+[cmake] -- Performing Test PCAP_LINKS
+[cmake] -- Performing Test PCAP_LINKS - Success
+[cmake]
+[cmake] Looking for blosc headers and libraries
+[cmake] -- Found Blosc: /usr/lib/libblosc.so
+[cmake]
+[cmake] Searching for HDF5
+[cmake] -- Found HDF5: /usr/lib/libhdf5.so;/usr/lib/libsz.so;/usr/lib/libz.so;/usr/lib/libdl.a;/usr/lib/libm.so (found suitable version &quot;1.12.1&quot;, minimum required is &quot;1.8.14&quot;) found components: C HL
+[cmake] -- HDF5 include files:  /usr/include
+[cmake] -- HDF5 libs:           /usr/lib/libhdf5.so/usr/lib/libsz.so/usr/lib/libz.so/usr/lib/libdl.a/usr/lib/libm.so/usr/lib/libhdf5_hl.so
+[cmake] -- HDF5 defs:           -D_FORTIFY_SOURCE=2
+[cmake]
+[cmake] Determining odin-data version
+[cmake] -- Git describe version: 1.7.0-24-g170f3f7-dirty
+[cmake] -- major:1 minor:7 patch:0 sha1:g170f3f7-dirty
+[cmake] -- short version: 1.7.0
+[cmake] -- Found Doxygen: /usr/bin/doxygen (found version &quot;1.9.3&quot;) found components: doxygen dot
+[cmake] -- Configuring done
+[cmake] -- Generating done
+[cmake] -- Build files have been written to: /scratch/development/odin/odin-data/build
+</pre></div>
+</div>
+<p>This creates all the source directories and makefiles needed to compile outside the
+source tree:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ tree -d -L 1
+.
+├── bin
+├── CMakeFiles
+├── common
+├── config
+├── doc
+├── frameProcessor
+├── frameReceiver
+├── lib
+└── tools
+</pre></div>
+</div>
+<p>Compile odin-data:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ make -j4
+</pre></div>
+</div>
+<p>This creates five applications in bin:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ tree bin
+bin
+├── frameProcessor
+├── frameProcessorTest
+├── frameReceiver
+├── frameReceiverTest
+└── frameSimulator
+
+0 directories, 5 files
+</pre></div>
+</div>
+<p>Run the unit test applications:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ bin/frameReceiverTest
+Running 32 test cases...
+
+*** No errors detected
+
+$ bin/frameProcessorTest
+...
+
+*** No errors detected
+</pre></div>
+</div>
+<p>Install odin-data into prefix:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ make install
+</pre></div>
+</div>
+<p>Run applications (now from the root of the repository):</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ prefix/bin/frameReceiver --help
+$ prefix/bin/frameProcessor --help
+$ prefix/bin/frameProcessor --help
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+                <footer class="bd-footer-article">
+                  
+<div class="footer-article-items footer-article__inner">
+  
+    <div class="footer-article-item"><!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title"><strong>Tutorials</strong></p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="deploy.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Deploy</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div></div>
+  
+</div>
+
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#external-software-dependencies">External Software Dependencies</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#building-dependencies">Building Dependencies</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#building-odin-data">Building odin-data</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-build-and-install-of-odin-data">Example build and install of odin-data</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/odin-detector/odin-data/edit/master/docs/user/tutorials/build.md">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+  <div class="sidebar-secondary-item">
+  <div class="tocsection sourcelink">
+    <a href="../../_sources/user/tutorials/build.md.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item"><p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.13.3.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
