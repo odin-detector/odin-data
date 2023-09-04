@@ -13,7 +13,7 @@ class HDF5CacheBlock(object):
 
 
 class HDF5UnlimitedCache(object):
-    """ An object to represent a cache used by an HDF5Dataset """
+    """An object to represent a cache used by an HDF5Dataset"""
 
     def __init__(self, name, dtype, fillvalue, block_size, data_shape, block_timeout):
         """
@@ -157,7 +157,13 @@ class HDF5Dataset(object):
         self.fillvalue = fillvalue
         self.shape = shape if shape is not None else (0,) * rank
         self.chunks = chunks
-        self.maxshape = maxshape if maxshape is not None else shape if shape is not None else (None,) * rank
+        self.maxshape = (
+            maxshape
+            if maxshape is not None
+            else shape
+            if shape is not None
+            else (None,) * rank
+        )
         self._cache = None
 
         data_shape = self.shape[1:]  # The shape of each data element in dataset
@@ -244,7 +250,7 @@ class HDF5Dataset(object):
                     self.name,
                     data.shape,
                     self.shape,
-                    exception
+                    exception,
                 )
                 return
 
