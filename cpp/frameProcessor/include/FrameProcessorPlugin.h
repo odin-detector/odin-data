@@ -38,9 +38,11 @@ public:
   void set_name(const std::string& name);
   std::string get_name();
   void set_error(const std::string& msg);
+  void set_warning(const std::string& msg);
   void clear_errors();
   virtual bool reset_statistics();
   std::vector<std::string> get_errors();
+  std::vector<std::string> get_warnings();
   virtual void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   virtual void requestConfiguration(OdinData::IpcMessage& reply);
   virtual void status(OdinData::IpcMessage& status);
@@ -79,6 +81,8 @@ private:
   std::map<std::string, boost::shared_ptr<IFrameCallback> > blocking_callbacks_;
   /** Error message array */
   std::vector<std::string> error_messages_;
+  /** Warning message array */
+  std::vector<std::string> warning_messages_;
   /** Mutex to make accessing error_messages_ threadsafe */
   boost::mutex mutex_;
   /** process_frame performance stats */

@@ -274,7 +274,7 @@ void FrameProcessorController::callback(boost::shared_ptr<Frame> frame) {
 void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply)
 {
   // Error messages
-  std::vector<std::string> error_messages;
+  std::vector<std::string> error_messages, warning_messages;
 
   // Request status information from the shared memory controller
   if (sharedMemController_) {
@@ -292,10 +292,17 @@ void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply)
     // Read error level
     std::vector<std::string> plugin_errors = iter->second->get_errors();
     error_messages.insert(error_messages.end(), plugin_errors.begin(), plugin_errors.end());
+    // Read warning level
+    std::vector<std::string> plugin_warnings = iter->second->get_warnings();
+    warning_messages.insert(warning_messages.end(), plugin_warnings.begin(), plugin_warnings.end());
   }
   std::vector<std::string>::iterator error_iter;
   for (error_iter = error_messages.begin(); error_iter != error_messages.end(); ++error_iter) {
     reply.set_param("error[]", *error_iter);
+  }
+  std::vector<std::string>::iterator warning_iter;
+  for (warning_iter = warning_messages.begin(); warning_iter != warning_messages.end(); ++warning_iter) {
+    reply.set_param("warning[]", *warning_iter);
   }
 
 }
