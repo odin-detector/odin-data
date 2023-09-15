@@ -1,5 +1,13 @@
 [
   {
+    "version": "master",
+    "url": "https://odin-detector.github.io/odin-data/master/"
+  },
+  {
+    "version": "client-docs",
+    "url": "https://odin-detector.github.io/odin-data/client-docs/"
+  },
+  {
     "version": "meta-string-types",
     "url": "https://odin-detector.github.io/odin-data/meta-string-types/"
   }
