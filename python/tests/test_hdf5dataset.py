@@ -1,8 +1,5 @@
 from unittest import TestCase
-import logging
-import pytest
 import numpy
-import os
 import time
 
 from odin_data.meta_writer.hdf5dataset import HDF5UnlimitedCache
@@ -32,7 +29,14 @@ class TestHDF5Dataset(TestCase):
         """verify that the cache functions as expected"""
 
         # Create a cache
-        cache = HDF5UnlimitedCache("test1", "int32", -2, 10, 1)
+        cache = HDF5UnlimitedCache(
+            name="test1",
+            dtype="int32",
+            fillvalue=-2,
+            block_size=10,
+            data_shape=(1,),
+            block_timeout=0.01,
+        )
 
         # Verify 1 block has been created, with a size of 10
         self.assertEqual(len(cache._blocks), 1)
@@ -100,8 +104,8 @@ class TestHDF5Dataset(TestCase):
         self.assertEqual(ds.values[1][8], -2)
         self.assertEqual(ds.values[1][9], -2)
 
-        # Now wait for 2 seconds
-        time.sleep(2.0)
+        # Now wait
+        time.sleep(0.1)
 
         # Now write another value into block[2] and then flush once again
         cache.add_value(3, 26)
@@ -132,7 +136,14 @@ class TestHDF5Dataset(TestCase):
         """verify that the cache functions as expected"""
 
         # Create a cache
-        cache = HDF5UnlimitedCache("test1", "int32", -2, 10, 1, shape=(2, 3))
+        cache = HDF5UnlimitedCache(
+            name="test1",
+            dtype="int32",
+            fillvalue=-2,
+            block_size=10,
+            data_shape=(2, 3),
+            block_timeout=0.01,
+        )
 
         # Verify 1 block has been created, with a size of 10x2x3
         self.assertEqual(len(cache._blocks), 1)
@@ -203,8 +214,8 @@ class TestHDF5Dataset(TestCase):
         self.assertEqual(ds.values[1][1][1][1], -2)
         self.assertEqual(ds.values[1][1][1][2], -2)
 
-        # Now wait for 2 seconds
-        time.sleep(2.0)
+        # Now wait
+        time.sleep(0.1)
 
         # Now write another value into block[2] and then flush once again
         cache.add_value(value, 26)
