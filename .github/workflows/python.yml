@@ -10,9 +10,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install odin-data
+      - name: Test odin-data
         run: |
           python3 -m venv venv && source venv/bin/activate && pip install --upgrade pip
           cd python
-          pip install .
+          pip install .[dev,meta_writer]
           python -c "from odin_data import __version__; print(__version__)"
+          pytest tests/test_hdf5dataset.py
