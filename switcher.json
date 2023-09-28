@@ -1,6 +1,6 @@
 [
   {
-    "version": "dataset-config",
-    "url": "https://odin-detector.github.io/odin-data/dataset-config/"
+    "version": "hdf5-references",
+    "url": "https://odin-detector.github.io/odin-data/hdf5-references/"
   }
 ]
