@@ -61,7 +61,7 @@ class LiveViewProxyAdapter(ApiAdapter):
             self.publish_channel.bind()
         except ZMQError as channel_err:
             # ZMQError raised here if the socket addr is already in use.
-            logging.error("Connection Failed. Error given: %s", channel_err.message)
+            logging.error("Connection Failed. Error given: %s", str(channel_err))
         self.max_queue = self.options.get(QUEUE_LENGTH_CONFIG_NAME, DEFAULT_QUEUE_LENGTH)
 
         if SOURCE_ENDPOINTS_CONFIG_NAME in self.options:
@@ -76,13 +76,16 @@ class LiveViewProxyAdapter(ApiAdapter):
                         self.drop_warn_percent,
                         self.add_to_queue))
                 except (ValueError, ZMQError):
-                    logging.debug("Error parsing target list: %s", target_str)
+                    logging.error("Error parsing target list: %s", target_str)
         else:
             self.source_endpoints = [LiveViewProxyNode(
                 "node_1",
                 DEFAULT_SOURCE_ENDPOINT,
                 self.drop_warn_percent,
                 self.add_to_queue)]
+
+        self.last_sent_frame = (0, 0)
+        self.dropped_frame_count = 0
 
         tree = {
             "target_endpoint": (lambda: self.dest_endpoint, None),
@@ -97,9 +100,6 @@ class LiveViewProxyAdapter(ApiAdapter):
         self.param_tree = ParameterTree(tree)
 
         self.queue = PriorityQueue(self.max_queue)
-
-        self.last_sent_frame = (0, 0)
-        self.dropped_frame_count = 0
 
         self.get_frame_from_queue()
 
