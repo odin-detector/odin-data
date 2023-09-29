@@ -1,6 +1,7 @@
 import logging
 from time import time
 
+import h5py as h5
 import numpy as np
 
 
@@ -12,7 +13,7 @@ class HDF5CacheBlock(object):
 
 
 class HDF5UnlimitedCache(object):
-    """ An object to represent a cache used by an HDF5Dataset """
+    """An object to represent a cache used by an HDF5Dataset"""
 
     def __init__(self, name, dtype, fillvalue, block_size, data_shape, block_timeout):
         """
@@ -156,7 +157,13 @@ class HDF5Dataset(object):
         self.fillvalue = fillvalue
         self.shape = shape if shape is not None else (0,) * rank
         self.chunks = chunks
-        self.maxshape = maxshape if maxshape is not None else shape if shape is not None else (None,) * rank
+        self.maxshape = (
+            maxshape
+            if maxshape is not None
+            else shape
+            if shape is not None
+            else (None,) * rank
+        )
         self._cache = None
 
         data_shape = self.shape[1:]  # The shape of each data element in dataset
@@ -241,9 +248,9 @@ class HDF5Dataset(object):
                     "%s | Data shape %s does not match dataset shape %s"
                     " and resize failed:\n%s",
                     self.name,
-                    self.shape,
                     data.shape,
-                    exception
+                    self.shape,
+                    exception,
                 )
                 return
 
@@ -392,7 +399,8 @@ class StringHDF5Dataset(HDF5Dataset):
     def __init__(
         self,
         name,
-        length,
+        length=None,
+        encoding="utf-8",
         shape=None,
         maxshape=None,
         cache=True,
@@ -402,12 +410,14 @@ class StringHDF5Dataset(HDF5Dataset):
     ):
         """
         Args:
-            length(int): Maximum length of the string elements
+            length(int): Length of string - None to store as variable-length objects
+            encoding(str): Encoding of string - either `"utf-8"` or `"ascii"`
 
         """
+        self.dtype = h5.string_dtype(encoding=encoding, length=length)
         super(StringHDF5Dataset, self).__init__(
             name,
-            dtype="S{}".format(length),
+            dtype=self.dtype,
             fillvalue="",
             shape=shape,
             maxshape=maxshape,
@@ -420,7 +430,11 @@ class StringHDF5Dataset(HDF5Dataset):
     def prepare_data(self, data):
         """Prepare data ready to write to hdf5 dataset
 
-        Convert data to raw strings to write to hdf5 dataset
+        Ensure data array contains the correct string dtype by converting first to bytes
+        and then to the specific string type. This initial conversion is required if
+        self.dtype is a variable-length string object data is not a string type because,
+        e.g., np.asarray(ndarray[int], object) leaves the data as int, but int cannot be
+        implicitly converted to an h5py dataset of dtype 'O' on write.
 
         Args:
             data(np.ndarray): Data to format
@@ -431,7 +445,12 @@ class StringHDF5Dataset(HDF5Dataset):
         """
         data = super(StringHDF5Dataset, self).prepare_data(data)
 
-        # Make sure data array contains str
-        data = np.array(data, dtype=str)
+        if self.dtype.kind == "O" and data.dtype.kind != "S":
+            # Ensure data is bytes before converting to variable-length object
+            data = np.asarray(data, dtype=bytes)
+
+        # Convert to specific string dtype - either variable-length object or
+        # fixed-length string. No copy is performed if the dtype already matches.
+        data = np.asarray(data, dtype=self.dtype)
 
         return data
