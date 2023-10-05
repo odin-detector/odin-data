@@ -10,6 +10,7 @@ SET(HEADERS ClassLoader.h
         Json.h
         logging.h
         OdinDataException.h
+        ParamContainer.h
         SegFaultHandler.h
         SharedBufferManager.h
         stringparse.h)

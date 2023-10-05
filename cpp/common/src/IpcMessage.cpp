@@ -141,12 +141,48 @@ IpcMessage::IpcMessage(const rapidjson::Value& value,
   doc_.AddMember("params", newValue, doc_.GetAllocator());
 }
 
+//! Updates parameters from another IPCMessage.
+//!
+//! This will iterate the parameters in the given IPCMessage and set them on this instance.
+//!
+//! \param other - IPCMessage to take parameters from
+
 void IpcMessage::update(const IpcMessage& other)
 {
   std::vector<std::string> params = other.get_param_names();
   for (std::vector<std::string>::const_iterator itr = params.begin(); itr != params.end(); ++itr) {
     this->set_param<const rapidjson::Value&>(*itr, other.get_param<const rapidjson::Value&>(*itr));
   }
+}
+
+//! Updates parameters from a rapidJSON object.
+//!
+//! This method will update the parameters in message with the contents of the specified
+//! JSON object.
+//!
+//! \param param_val - RapidJSON value object of parameters
+//! \param param_prefix - string prefix for parameter path to set
+
+void IpcMessage::update(const rapidjson::Value& param_val, std::string param_prefix)
+{
+    if (param_val.IsObject())
+    {
+      for (rapidjson::Value::ConstMemberIterator itr = param_val.MemberBegin();
+          itr != param_val.MemberEnd(); ++itr)
+      {
+
+          std::string param_path = itr->name.GetString();
+          if (!param_prefix.empty())
+          {
+            param_path = param_prefix + "/" + param_path;
+          }
+          this->update(itr->value, param_path);
+      }
+    }
+    else
+    {
+      this->set_param<const rapidjson::Value&>(param_prefix, param_val);
+    }
 }
 
 //! Returns a vector of all parameter names contained in the message.
@@ -219,6 +255,8 @@ bool IpcMessage::has_param(const std::string& param_name) const
 //! This method can be used to set this IpcMessage up as a rejection (nack) message.
 //! A reason is supplied and set as a parameter called 'error'
 //!
+//! \return void
+
 void IpcMessage::set_nack(const std::string& reason)
 {
   this->set_msg_type(MsgTypeNack);
@@ -358,6 +396,57 @@ const char* IpcMessage::encode(void)
 
   // Return the encoded buffer string
   return encode_buffer_.GetString();
+}
+
+//! Returns a JSON-encoded string of the message parameters at a specified path
+//!
+//! This method returns a JSON-encoded string version of the parameters associated with the message,
+//! or a subset of those at a specified slash-delimited path.
+//!
+//! \param param_path - JSON pointer-like slash delimited path into the parameter block
+//! \return  JSON encoded parameters as a null-terminated, string character array
+
+const char* IpcMessage::encode_params(const std::string& param_path)
+{
+
+  // Construct a JSON pointer string to the message parameters. If a path argument was specified
+  // append that accordingly.
+  std::string path = "/params";
+  if (!param_path.empty())
+  {
+    path = path + "/" + param_path;
+  }
+
+  // Resolve the pointer to the appropriate location in the parameters
+  const rapidjson::Value* param_ptr = rapidjson::Pointer(path.c_str()).Get(doc_);
+
+  // Clear the encode buffer, create a writer and associate with the parameter pointer
+  encode_buffer_.Clear();
+  rapidjson::Writer<rapidjson::StringBuffer, rapidjson::UTF8<> > writer(encode_buffer_);
+  param_ptr->Accept(writer);
+
+  // Return the string encoding of the requested parameters
+  return encode_buffer_.GetString();
+}
+
+//! Copies parameters at a specified into the specified JSON value object
+//!
+//! This method copies the message parameters at the specified path into a JSON value object.
+//!
+//! \param param_obj - reference to JSON value object to receive the parameters
+//! \param param_path - path of parameters in the message to copy
+
+void IpcMessage::copy_params(rapidjson::Value& param_obj, const std::string& param_path)
+{
+  std::string path = "/params";
+  if (!param_path.empty())
+  {
+    path = path + "/" + param_path;
+  }
+
+  const rapidjson::Value* param_ptr = rapidjson::Pointer(path.c_str()).Get(doc_);
+
+  param_obj.CopyFrom(*param_ptr, doc_.GetAllocator());
 }
 
 //! Overloaded equality relational operator.
