@@ -1,6 +1,22 @@
 [
   {
-    "version": "325_python_ci",
-    "url": "https://odin-detector.github.io/odin-data/325_python_ci/"
+    "version": "master",
+    "url": "https://odin-detector.github.io/odin-data/master/"
+  },
+  {
+    "version": "client-docs",
+    "url": "https://odin-detector.github.io/odin-data/client-docs/"
+  },
+  {
+    "version": "dataset-config",
+    "url": "https://odin-detector.github.io/odin-data/dataset-config/"
+  },
+  {
+    "version": "hdf5-references",
+    "url": "https://odin-detector.github.io/odin-data/hdf5-references/"
+  },
+  {
+    "version": "meta-string-types",
+    "url": "https://odin-detector.github.io/odin-data/meta-string-types/"
   }
 ]
