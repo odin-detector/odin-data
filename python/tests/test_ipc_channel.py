@@ -1,43 +1,41 @@
-from nose.tools import assert_equal
+import pytest
 from odin_data.control.ipc_channel import IpcChannel
 
+rx_endpoint = "inproc://rx_channel"
+
+
+@pytest.fixture(scope="class")
+def send_channel():
+    channel = IpcChannel(IpcChannel.CHANNEL_TYPE_PAIR)
+    channel.bind(rx_endpoint)
+    yield channel
+    channel.close()
+
+
+@pytest.fixture(scope="class")
+def recv_channel():
+    channel = IpcChannel(IpcChannel.CHANNEL_TYPE_PAIR)
+    channel.connect(rx_endpoint)
+    yield channel
+    channel.close()
+
+
 class TestIpcChannel:
-
-    @classmethod
-    def setup_class(cls):
-
-        cls.endpoint = "inproc://rx_channel"
-        cls.send_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_PAIR)
-        cls.recv_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_PAIR)
-
-        cls.send_channel.bind(cls.endpoint)
-        cls.recv_channel.connect(cls.endpoint)
-
-    @classmethod
-    def teardown_class(cls):
-
-        cls.recv_channel.close()
-        cls.send_channel.close()
-
-    def test_basic_send_receive(self):
-
+    def test_basic_send_receive(self, send_channel, recv_channel):
         msg = "This is a test message"
-        self.send_channel.send(msg)
+        send_channel.send(msg)
 
-        reply = self.recv_channel.recv()
+        reply = recv_channel.recv()
 
-        assert_equal(msg, reply)
-        assert_equal(type(msg), type(reply))
-
+        assert msg == reply
+        assert type(msg) == type(reply)
 
     def test_dealer_router(self):
-
-        endpoint = 'inproc://dr_channel'
+        endpoint = "inproc://dr_channel"
         msg = "This is a dealer router message"
-        dealer_indentity = 'test_dealer'
+        dealer_indentity = "test_dealer"
 
-        dealer_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_DEALER,
-                                    identity=dealer_indentity)
+        dealer_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_DEALER, identity=dealer_indentity)
         router_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_ROUTER)
 
         router_channel.bind(endpoint)
@@ -46,7 +44,7 @@ class TestIpcChannel:
         dealer_channel.send(msg)
         (recv_identity, reply) = router_channel.recv()
 
-        assert_equal(len(reply), 1)
-        assert_equal(msg, reply[0])
-        assert_equal(type(msg), type(reply[0]))
-        assert_equal(dealer_indentity, recv_identity)
+        assert len(reply) == 1
+        assert msg == reply[0]
+        assert type(msg) == type(reply[0])
+        assert dealer_indentity == recv_identity

@@ -4,16 +4,30 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11']
+    defaults:
+      run:
+        working-directory: python
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Test odin-data
+      - name: Set up python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install odin-data python pacakge
         run: |
-          python3 -m venv venv && source venv/bin/activate && pip install --upgrade pip
-          cd python
+          python -m pip install --upgrade pip
           pip install .[dev,meta_writer]
           python -c "from odin_data import __version__; print(__version__)"
-          pytest tests/test_hdf5dataset.py
+
+      - name: Run tests
+        run:
+          pytest -vs --cov=odin_data --cov-report=term-missing 
