@@ -33,7 +33,7 @@ const std::string FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_THRESHOLD = "alignm
 const std::string FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_VALUE     = "alignment_value";
 
 const std::string FileWriterPlugin::CONFIG_FILE                        = "file";
-const std::string FileWriterPlugin::CONFIG_FILE_NAME                   = "name";
+const std::string FileWriterPlugin::CONFIG_FILE_PREFIX                 = "prefix";
 const std::string FileWriterPlugin::CONFIG_FILE_USE_NUMBERS            = "use_numbers";
 const std::string FileWriterPlugin::CONFIG_FILE_NUMBER_START           = "first_number";
 const std::string FileWriterPlugin::CONFIG_FILE_POSTFIX                = "postfix";
@@ -382,7 +382,7 @@ void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 
   std::string file_str = get_name() + "/" + FileWriterPlugin::CONFIG_FILE + "/";
   reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_PATH, next_acquisition_->file_path_);
-  reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_NAME, next_acquisition_->configured_filename_);
+  reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_PREFIX, next_acquisition_->configured_filename_);
   reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_USE_NUMBERS, use_file_numbering_);
   reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_NUMBER_START, first_file_index_);
   reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_POSTFIX, file_postfix_);
@@ -542,7 +542,7 @@ void FileWriterPlugin::configure_process(OdinData::IpcMessage& config, OdinData:
  * This sets up the file writer plugin according to the configuration IpcMessage
  * objects that are received. The options are searched for:
  * CONFIG_FILE_PATH - Sets the path of the file to write to
- * CONFIG_FILE_NAME - Sets the filename of the file to write to
+ * CONFIG_FILE_PREFIX - Sets the filename of the file to write to
  *
  * The configuration is not applied if the writer is currently writing.
  *
@@ -586,8 +586,8 @@ void FileWriterPlugin::configure_file(OdinData::IpcMessage& config, OdinData::Ip
       reply.set_nack(ss.str());
     }
   }
-  if (config.has_param(FileWriterPlugin::CONFIG_FILE_NAME)) {
-    this->next_acquisition_->configured_filename_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_NAME);
+  if (config.has_param(FileWriterPlugin::CONFIG_FILE_PREFIX)) {
+    this->next_acquisition_->configured_filename_ = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_PREFIX);
     LOG4CXX_DEBUG_LEVEL(1, logger_, "Next file name changed to " << this->next_acquisition_->configured_filename_);
   }
   if (config.has_param(FileWriterPlugin::CONFIG_FILE_USE_NUMBERS)) {
@@ -822,7 +822,7 @@ bool FileWriterPlugin::reset_statistics()
  *  ii) this function has the side-effect of moving from the current-acq to
  *        the next-acq if that helps us match the frame.
  *
- *  The function will set an error if the frame does not match a writing acquisition. 
+ *  The function will set an error if the frame does not match a writing acquisition.
  * \param[in] frame - Pointer to the Frame object.
  */
 bool FileWriterPlugin::frame_in_acquisition(boost::shared_ptr<Frame> frame) {
