@@ -86,7 +86,7 @@ private:
   /** Configuration constant for file related items */
   static const std::string CONFIG_FILE;
   /** Configuration constant for file name */
-  static const std::string CONFIG_FILE_NAME;
+  static const std::string CONFIG_FILE_PREFIX;
   /** Configuration constant for using automatic file name numbering */
   static const std::string CONFIG_FILE_USE_NUMBERS;
   /** Configuration constant for starting file number if using numbering */
