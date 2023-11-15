@@ -5,16 +5,21 @@ Created on 6th September 2017
 """
 import logging
 import os
+import threading
+import queue
+from tornado.escape import json_decode
 
 from odin.adapters.adapter import (
     ApiAdapterRequest,
     ApiAdapterResponse,
     request_types,
     response_types,
+    wants_metadata
 )
 from tornado import escape
 
 from odin_data.control.odin_data_adapter import OdinDataAdapter
+from odin.adapters.parameter_tree import ParameterAccessor, ParameterTree
 
 FP_ADAPTER_KEY = 'fr_adapter_name'
 PCT_BUFFER_FREE_KEY = 'buffer_threshold'
@@ -55,15 +60,71 @@ class FrameProcessorAdapter(OdinDataAdapter):
         except ValueError:
             logging.error("Could not set the buffer threshold to: {}".format(kwargs[PCT_BUFFER_FREE_KEY]))
 
-        self._param = {
-            'config/hdf/acquisition_id': '',
-            'config/hdf/file/path': '',
-            'config/hdf/file/name': '',
-            'config/hdf/file/extension': 'h5',
-            'config/hdf/frames': 0
-        }
-        self._command = 'config/hdf/write'
+        # Create the command handling thread
+        self._command_lock = threading.Lock()
+        self._command_queue = queue.Queue()
+        self._command_thread = threading.Thread(target=self.command_loop)
+        self._command_thread.start()
+
         self.setup_rank()
+
+        self._acquisition_id = ''
+        self._frames = 0
+        self._file_path = ''
+        self._file_prefix = ''
+        self._file_extension = 'h5'
+        self._fp_params = ParameterTree({
+            'config': {
+                'hdf': {
+                    'acquisition_id': (self._get('_acquisition_id'), lambda v: self._set('_acquisition_id', v), {}),
+                    'frames': (self._get('_frames'), lambda v: self._set('_frames', v), {}),
+                    'file': {
+                        'path': (self._get('_file_path'), lambda v: self._set('_file_path', v), {}),
+                        'prefix': (self._get('_file_prefix'), lambda v: self._set('_file_prefix', v), {}),
+                        'extension': (self._get('_file_extension'), lambda v: self._set('_file_extension', v), {})
+                    },
+                    'write': (lambda: 1, self.queue_write, {})
+                }
+            }
+        }, mutable=True)
+
+    def _set(self, attr, val):
+        logging.debug("_set called: {}  {}".format(attr, val))
+        setattr(self, attr, val)
+
+    def _get(self, attr):
+
+        return lambda : getattr(self, attr)
+
+    def cleanup(self):
+        self._command_queue.put((None, None), block=False)
+
+    def queue_write(self, value):
+        logging.debug("Queueing write command: {}".format(value))
+        self._command_queue.put((self.execute_write, value), block=False)
+
+    def command_loop(self):
+        """ This method runs in a different thread to the main IOLoop
+        and can therefore be used to execute long running sequences
+        of commands and where response checking is required.
+
+        Each queued command is a tuple, first element the method to call
+        and the second element the argument.
+        """
+        running = True
+        while running:
+            try:
+                (command, arg) = self._command_queue.get()
+                if command:
+                    with self._command_lock:
+                        command(arg)
+                else:
+                    running = False
+            except Exception as e:
+                type_, value_, traceback_ = sys.exc_info()
+                ex = traceback.format_exception(type_, value_, traceback_)
+                logging.error(e)
+                self.set_error("Unhandled exception: {} => {}".format(str(e), str(ex)))
 
     def initialize(self, adapters):
         """Initialize the adapter after it has been loaded.
@@ -96,18 +157,9 @@ class FrameProcessorAdapter(OdinDataAdapter):
         status_code = 200
         response = {}
 
-        # First check if we are interested in the config items
-        #
-        # Store these parameters locally:
-        # config/hdf/file/path
-        # config/hdf/file/name
-        # config/hdf/file/extension
-        #
-        # When this arrives write all params into a single IPC message
-        # config/hdf/write
-        if path in self._param:
-            response['value'] = self._param[path]
-        else:
+        try:
+            response = self._fp_params.get(path, wants_metadata(request))
+        except:
             return super(FrameProcessorAdapter, self).get(path, request)
 
         return ApiAdapterResponse(response, status_code=status_code)
@@ -126,86 +178,93 @@ class FrameProcessorAdapter(OdinDataAdapter):
         status_code = 200
         response = {}
         logging.debug("PUT path: %s", path)
-        logging.debug("PUT request: %s", request)
+        logging.debug("PUT request: %s", escape.url_unescape(request.body))
 
-        # First check if we are interested in the config items
-        #
-        # Store these parameters locally:
-        # config/hdf/file/path
-        # config/hdf/file/name
-        # config/hdf/file/extension
-        #
-        # When this arrives write all params into a single IPC message
-        # config/hdf/write
         try:
-            self.clear_error()
-            if path in self._param:
-                logging.debug("Setting {} to {}".format(path, str(escape.url_unescape(request.body)).replace('"', '')))
-                if path == 'config/hdf/frames':
-                    self._param[path] = int(str(escape.url_unescape(request.body)).replace('"', ''))
-                else:
-                    self._param[path] = str(escape.url_unescape(request.body)).replace('"', '')
-                # Merge with the configuration store
+            self._fp_params.set(path, json_decode(request.body))
+        except Exception as e:
+            return super(FrameProcessorAdapter, self).put(path, request)
 
-            elif path == self._command:
-                write = bool_from_string(str(escape.url_unescape(request.body)))
-                config = {'hdf': {'write': write}}
-                logging.debug("Setting {} to {}".format(path, config))
-                if write:
-                    # Before attempting to write files, make some simple error checks
+        return ApiAdapterResponse(response, status_code=status_code)
 
-                    if self._fr_adapter is not None:
-                        # Check if we have a valid buffer status from the FR adapter
-                        valid, reason = self.check_fr_status()
-                        if not valid:
-                            raise RuntimeError(reason)
+    def execute_write(self, write):
+        try:
+            config = {'hdf': {'write': write}}
+            logging.debug("Executing write command {}".format(config))
+            if write:
+                # Before attempting to write files, make some simple error checks
 
-                    # Check the file path is valid
-                    if not os.path.isdir(str(self._param['config/hdf/file/path'])):
-                        raise RuntimeError("Invalid path specified [{}]".format(str(self._param['config/hdf/file/path'])))
-                    # Check the filename exists
-                    if str(self._param['config/hdf/file/name']) == '':
-                        raise RuntimeError("File name must not be empty")
+                # Check if we have a valid buffer status from the FR adapter
+                valid, reason = self.check_fr_status()
+                if not valid:
+                    raise RuntimeError(reason)
 
-                    # First setup the rank for the frameProcessor applications
-                    self.setup_rank()
-                    rank = 0
-                    for client in self._clients:
-                        # Send the configuration required to setup the acquisition
-                        # The file path is the same for all clients
-                        parameters = {
-                            'hdf': {
-                                'frames': self._param['config/hdf/frames']
-                            }
-                        }
-                        # Send the number of frames first
-                        client.send_configuration(parameters)
-                        parameters = {
-                            'hdf': {
-                                'acquisition_id': self._param['config/hdf/acquisition_id'],
-                                'file': {
-                                    'path': str(self._param['config/hdf/file/path']),
-                                    'name': str(self._param['config/hdf/file/name']),
-                                    'extension': str(self._param['config/hdf/file/extension'])
-                                }
-                            }
-                        }
-                        client.send_configuration(parameters)
-                        rank += 1
+                # First setup the rank for the frameProcessor applications
+                self.setup_rank()
+                rejected = False
+                timed_out = False
                 for client in self._clients:
-                    # Send the configuration required to start the acquisition
-                    client.send_configuration(config)
+                    # Send the configuration required to setup the acquisition
+                    # The file path is the same for all clients
+                    parameters = {
+                        'hdf': {
+                            'frames': self._frames
+                        }
+                    }
+                    # Send the number of frames first
+                    msg = client.send_configuration(parameters)
+                    if client.wait_for_response(msg.get_msg_id()):
+                        timed_out = True
+                    if client.check_for_rejection(msg.get_msg_id()):
+                        rejected = True
 
-            else:
-                return super(FrameProcessorAdapter, self).put(path, request)
+                if timed_out:
+                    raise RuntimeError("Setting number of frames timed out")
+                if rejected:
+                    raise RuntimeError("Setting number of frames was rejected")
+
+                rejected = False
+                timed_out = False
+                for client in self._clients:
+                    parameters = {
+                        'hdf': {
+                            'acquisition_id': self._acquisition_id,
+                            'file': {
+                                'path': self._file_path,
+                                'name': self._file_prefix,
+                                'extension': self._file_extension
+                            }
+                        }
+                    }
+                    msg = client.send_configuration(parameters)
+                    if client.wait_for_response(msg.get_msg_id()):
+                        timed_out = True
+                    if client.check_for_rejection(msg.get_msg_id()):
+                        rejected = True
+
+                if timed_out:
+                    raise RuntimeError("Setting write parameters timed out")
+                if rejected:
+                    raise RuntimeError("Setting write parameters was rejected")
+
+            rejected = False
+            timed_out = False
+            for client in self._clients:
+                # Send the configuration required to start the acquisition
+                msg = client.send_configuration(config)
+                if client.wait_for_response(msg.get_msg_id()):
+                    timed_out = True
+                if client.check_for_rejection(msg.get_msg_id()):
+                    rejected = True
+
+            if timed_out:
+                raise RuntimeError("Setting write parameters timed out")
+            if rejected:
+                raise RuntimeError("Setting write parameters was rejected")
 
         except Exception as ex:
             logging.error("Error: %s", ex)
             self.set_error(str(ex))
-            status_code = 503
-            response = {'error': str(ex)}
-
-        return ApiAdapterResponse(response, status_code=status_code)
 
     def check_fr_status(self):
         valid_check = True
