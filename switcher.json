@@ -1,6 +1,6 @@
 [
   {
-    "version": "optional-fr-adapter",
-    "url": "https://odin-detector.github.io/odin-data/optional-fr-adapter/"
+    "version": "hdf5-references",
+    "url": "https://odin-detector.github.io/odin-data/hdf5-references/"
   }
 ]

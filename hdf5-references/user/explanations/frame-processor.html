@@ -1,15 +1,14 @@
 
-
 <!DOCTYPE html>
 
 
-<html lang="en" >
+<html lang="en" data-content_root="../../" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>FrameProcessor &#8212; odin-data 0+untagged.1.ge465b08 documentation</title>
+    <title>FrameProcessor &#8212; odin-data 0+untagged.1.gadf75ea documentation</title>
   
   
   
@@ -19,35 +18,32 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
-<link href="../../_static/styles/bootstrap.css?digest=ac02cc09edc035673794" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
 
   
-  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
   <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794" />
-  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=ac02cc09edc035673794"></script>
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
 
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/sphinx_highlight.js"></script>
-    <script src="../../_static/design-tabs.js"></script>
+    <script src="../../_static/documentation_options.js?v=39f1af2e"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/design-tabs.js?v=36754332"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'user/explanations/frame-processor';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.14.1';
+        DOCUMENTATION_OPTIONS.theme_version = '0.14.4';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://odin-detector.github.io/odin-data/switcher.json';
         DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'hdf5-references';
         DOCUMENTATION_OPTIONS.show_version_warning_banner = false;
@@ -119,9 +115,11 @@
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item">
+
   
 
 <a class="navbar-brand logo" href="../../index.html">
+  
   
   
   
@@ -131,8 +129,8 @@
       
     
     
-    <img src="../../_static/odin.png" class="logo__image only-light" alt="Logo image"/>
-    <script>document.write(`<img src="../../_static/odin.png" class="logo__image only-dark" alt="Logo image"/>`);</script>
+    <img src="../../_static/odin.png" class="logo__image only-light" alt=""/>
+    <script>document.write(`<img src="../../_static/odin.png" class="logo__image only-dark" alt=""/>`);</script>
   
   
     <p class="title logo__title">odin-data</p>
@@ -145,7 +143,8 @@
     
     <div class="me-auto navbar-header-items__center">
       
-        <div class="navbar-item"><nav class="navbar-nav">
+        <div class="navbar-item">
+<nav class="navbar-nav">
   <p class="sidebar-header-items__title"
      role="heading"
      aria-level="1"
@@ -184,6 +183,7 @@
       
         <div class="navbar-item navbar-persistent--container">
           
+
  <script>
  document.write(`
    <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
@@ -197,6 +197,7 @@
       
       
         <div class="navbar-item">
+
 <script>
 document.write(`
   <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
@@ -227,12 +228,21 @@ document.write(`
 <script>
 document.write(`
   <div class="version-switcher__container dropdown">
-    <button id="versionswitcherbutton" type="button" role="button" class="version-switcher__button btn btn-sm navbar-btn dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="listbox" aria-controls="versionswitcherlist" aria-label="Version switcher list">
+    <button id="pst-version-switcher-button-2"
+      type="button"
+      class="version-switcher__button btn btn-sm navbar-btn dropdown-toggle"
+      data-bs-toggle="dropdown"
+      aria-haspopup="listbox"
+      aria-controls="pst-version-switcher-list-2"
+      aria-label="Version switcher list"
+    >
       Choose version  <!-- this text may get changed later by javascript -->
       <span class="caret"></span>
     </button>
-    <div id="versionswitcherlist" class="version-switcher__menu dropdown-menu list-group-flush py-0" role="listbox" aria-labelledby="versionswitcherbutton">
-    <!-- dropdown will be populated by javascript on page load -->
+    <div id="pst-version-switcher-list-2"
+      class="version-switcher__menu dropdown-menu list-group-flush py-0"
+      role="listbox" aria-labelledby="pst-version-switcher-button-2">
+      <!-- dropdown will be populated by javascript on page load -->
     </div>
   </div>
 `);
@@ -244,6 +254,7 @@ document.write(`
   
   
     <div class="navbar-persistent--mobile">
+
  <script>
  document.write(`
    <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
@@ -277,7 +288,8 @@ document.write(`
     
       <div class="sidebar-header-items__center">
         
-          <div class="navbar-item"><nav class="navbar-nav">
+          <div class="navbar-item">
+<nav class="navbar-nav">
   <p class="sidebar-header-items__title"
      role="heading"
      aria-level="1"
@@ -316,6 +328,7 @@ document.write(`
       <div class="sidebar-header-items__end">
         
           <div class="navbar-item">
+
 <script>
 document.write(`
   <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
@@ -346,12 +359,21 @@ document.write(`
 <script>
 document.write(`
   <div class="version-switcher__container dropdown">
-    <button id="versionswitcherbutton" type="button" role="button" class="version-switcher__button btn btn-sm navbar-btn dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="listbox" aria-controls="versionswitcherlist" aria-label="Version switcher list">
+    <button id="pst-version-switcher-button-3"
+      type="button"
+      class="version-switcher__button btn btn-sm navbar-btn dropdown-toggle"
+      data-bs-toggle="dropdown"
+      aria-haspopup="listbox"
+      aria-controls="pst-version-switcher-list-3"
+      aria-label="Version switcher list"
+    >
       Choose version  <!-- this text may get changed later by javascript -->
       <span class="caret"></span>
     </button>
-    <div id="versionswitcherlist" class="version-switcher__menu dropdown-menu list-group-flush py-0" role="listbox" aria-labelledby="versionswitcherbutton">
-    <!-- dropdown will be populated by javascript on page load -->
+    <div id="pst-version-switcher-list-3"
+      class="version-switcher__menu dropdown-menu list-group-flush py-0"
+      role="listbox" aria-labelledby="pst-version-switcher-button-3">
+      <!-- dropdown will be populated by javascript on page load -->
     </div>
   </div>
 `);
@@ -362,7 +384,8 @@ document.write(`
   </div>
   
     <div class="sidebar-primary-items__start sidebar-primary__section">
-        <div class="sidebar-primary-item"><nav class="bd-docs-nav bd-links"
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
@@ -442,9 +465,9 @@ document.write(`
                 <article class="bd-article" role="main">
                   
   <section id="frameprocessor">
-<h1>FrameProcessor<a class="headerlink" href="#frameprocessor" title="Permalink to this heading">#</a></h1>
+<h1>FrameProcessor<a class="headerlink" href="#frameprocessor" title="Link to this heading">#</a></h1>
 <section id="commandline-interface">
-<h2>Commandline Interface<a class="headerlink" href="#commandline-interface" title="Permalink to this heading">#</a></h2>
+<h2>Commandline Interface<a class="headerlink" href="#commandline-interface" title="Link to this heading">#</a></h2>
 <p>The following options and arguments can be given on the commandline:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ frameProcessor --version
 frameProcessor version 1.7.0
@@ -473,7 +496,7 @@ Configuration options:
 </div>
 </section>
 <section id="limitations">
-<h2>Limitations<a class="headerlink" href="#limitations" title="Permalink to this heading">#</a></h2>
+<h2>Limitations<a class="headerlink" href="#limitations" title="Link to this heading">#</a></h2>
 <p>Currently the application has a number of limitations (which will be addressed):</p>
 <ul class="simple">
 <li><p>No internal buffering: the application currently depend on the buffering available in
@@ -489,7 +512,7 @@ fine/coarse ADC and gain data can be generated in the file by a post-processing 
 </ul>
 </section>
 <section id="runtime-configuration">
-<h2>Runtime Configuration<a class="headerlink" href="#runtime-configuration" title="Permalink to this heading">#</a></h2>
+<h2>Runtime Configuration<a class="headerlink" href="#runtime-configuration" title="Link to this heading">#</a></h2>
 <p>Further configuration of the application is done by json configuration messages from a
 client, but for convenience configuration can be passed as a JSON file on startup to set
 them up without the need for a control connection. All configuration messages that are
@@ -498,7 +521,7 @@ supported from the control interface are also supported through the configuratio
 options and supply the full path and filename of the configuration file. The file must
 be correctly formatted JSON otherwise the parsing will fail.</p>
 <section id="file-structure">
-<h3>File Structure<a class="headerlink" href="#file-structure" title="Permalink to this heading">#</a></h3>
+<h3>File Structure<a class="headerlink" href="#file-structure" title="Link to this heading">#</a></h3>
 <p>The file must specify a list of dictionaries, with each dictionary representing a
 single configuration message that is to be submitted through the control interface.
 When the configuration file is parsed each dictionary is processed in turn and submitted
@@ -525,7 +548,7 @@ made available by the FrameReceiver.</p>
 </div>
 </section>
 <section id="configuration-options">
-<h3>Configuration Options<a class="headerlink" href="#configuration-options" title="Permalink to this heading">#</a></h3>
+<h3>Configuration Options<a class="headerlink" href="#configuration-options" title="Link to this heading">#</a></h3>
 <p>The IPC control channels operate via IPCMessages. There are a few main message types:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">cmd</span></code></p></li>
@@ -547,7 +570,7 @@ and <code class="docutils literal notranslate"><span class="pre">nack</span></co
 </ul>
 </section>
 <section id="frameprocessorcontroller">
-<h3>FrameProcessorController<a class="headerlink" href="#frameprocessorcontroller" title="Permalink to this heading">#</a></h3>
+<h3>FrameProcessorController<a class="headerlink" href="#frameprocessorcontroller" title="Link to this heading">#</a></h3>
 <p>Below are some common configurations to send to a frameProcessor application. In these
 examples, the given json is the value of <code class="docutils literal notranslate"><span class="pre">params</span></code> in the following complete control
 message:</p>
@@ -561,7 +584,7 @@ message:</p>
 </pre></div>
 </div>
 <section id="initialise-framereceiver-interface">
-<h4>Initialise FrameReceiver Interface<a class="headerlink" href="#initialise-framereceiver-interface" title="Permalink to this heading">#</a></h4>
+<h4>Initialise FrameReceiver Interface<a class="headerlink" href="#initialise-framereceiver-interface" title="Link to this heading">#</a></h4>
 <details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
 <summary class="sd-summary-title sd-card-header">
 FrameReceiver Interface<div class="sd-summary-down docutils">
@@ -580,7 +603,7 @@ FrameReceiver Interface<div class="sd-summary-down docutils">
 </div>
 </details></section>
 <section id="load-plugin">
-<h4>Load Plugin<a class="headerlink" href="#load-plugin" title="Permalink to this heading">#</a></h4>
+<h4>Load Plugin<a class="headerlink" href="#load-plugin" title="Link to this heading">#</a></h4>
 <p>Load an instance of a plugin into the application. This can be be done multiple times
 per class as long as the index is unique.</p>
 <details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
@@ -609,7 +632,7 @@ it to another plugin</p>
 </div>
 </section>
 <section id="connect-plugins">
-<h4>Connect Plugins<a class="headerlink" href="#connect-plugins" title="Permalink to this heading">#</a></h4>
+<h4>Connect Plugins<a class="headerlink" href="#connect-plugins" title="Link to this heading">#</a></h4>
 <p>Connect one plugin to another. Frames <code class="docutils literal notranslate"><span class="pre">push</span></code>ed by the plugin given as <code class="docutils literal notranslate"><span class="pre">connection</span></code> will
 be added to the queue of the plugin given by <code class="docutils literal notranslate"><span class="pre">index</span></code>.</p>
 <details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
@@ -632,7 +655,7 @@ Connect Plugin<div class="sd-summary-down docutils">
 </div>
 </details></section>
 <section id="disconnect-plugins">
-<h4>Disconnect Plugins<a class="headerlink" href="#disconnect-plugins" title="Permalink to this heading">#</a></h4>
+<h4>Disconnect Plugins<a class="headerlink" href="#disconnect-plugins" title="Link to this heading">#</a></h4>
 <p>Disconnect the plugin given as <code class="docutils literal notranslate"><span class="pre">index</span></code> from the plugin given as <code class="docutils literal notranslate"><span class="pre">connection</span></code>.</p>
 <details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
 <summary class="sd-summary-title sd-card-header">
@@ -654,7 +677,7 @@ Disconnect Plugin<div class="sd-summary-down docutils">
 </div>
 </details></section>
 <section id="disconnect-all-plugins">
-<h4>Disconnect All Plugins<a class="headerlink" href="#disconnect-all-plugins" title="Permalink to this heading">#</a></h4>
+<h4>Disconnect All Plugins<a class="headerlink" href="#disconnect-all-plugins" title="Link to this heading">#</a></h4>
 <p>A quick way to remove the connections between all plugins. This is useful as part of a
 stored <a class="reference internal" href="#store-config">stored config</a> for reconnecting plugins in a different mode.</p>
 <details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
@@ -674,7 +697,7 @@ Disconnect All Plugins<div class="sd-summary-down docutils">
 </div>
 </details></section>
 <section id="plugin-configuration">
-<h4>Plugin Configuration<a class="headerlink" href="#plugin-configuration" title="Permalink to this heading">#</a></h4>
+<h4>Plugin Configuration<a class="headerlink" href="#plugin-configuration" title="Link to this heading">#</a></h4>
 <p>See specific plugins for what configurations are accepted. As an example, here is a
 message to configure the <code class="docutils literal notranslate"><span class="pre">FileWriterPlugin</span></code> to start writing, i.e. the key is the
 <code class="docutils literal notranslate"><span class="pre">index</span></code> of the plugin to configure and the value is a json dictionary that will be
@@ -696,7 +719,7 @@ Configure Specific Plugin<div class="sd-summary-down docutils">
 </div>
 </details></section>
 <section id="set-debug-level">
-<h4>Set Debug Level<a class="headerlink" href="#set-debug-level" title="Permalink to this heading">#</a></h4>
+<h4>Set Debug Level<a class="headerlink" href="#set-debug-level" title="Link to this heading">#</a></h4>
 <p>Set the verbosity of debug level log messages.</p>
 <details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
 <summary class="sd-summary-title sd-card-header">
@@ -713,7 +736,7 @@ Set Debug Level<div class="sd-summary-down docutils">
 </div>
 </details></section>
 <section id="clear-errors">
-<h4>Clear Errors<a class="headerlink" href="#clear-errors" title="Permalink to this heading">#</a></h4>
+<h4>Clear Errors<a class="headerlink" href="#clear-errors" title="Link to this heading">#</a></h4>
 <p>Clear any error state.</p>
 <details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
 <summary class="sd-summary-title sd-card-header">
@@ -734,7 +757,7 @@ Set Debug Level<div class="sd-summary-down docutils">
 </div>
 </section>
 <section id="store-config">
-<h4>Store Config<a class="headerlink" href="#store-config" title="Permalink to this heading">#</a></h4>
+<h4>Store Config<a class="headerlink" href="#store-config" title="Link to this heading">#</a></h4>
 <p>Store a series of configuration messages to be applied with the given <code class="docutils literal notranslate"><span class="pre">index</span></code>. This is
 useful for reconnecting the plugins in a different design.</p>
 <details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
@@ -823,7 +846,7 @@ Store Plugin Connections Without Sum<div class="sd-summary-down docutils">
 </div>
 </details></section>
 <section id="execute-config">
-<h4>Execute Config<a class="headerlink" href="#execute-config" title="Permalink to this heading">#</a></h4>
+<h4>Execute Config<a class="headerlink" href="#execute-config" title="Link to this heading">#</a></h4>
 <p>Reconfigure a previously saved plugin connection config given by <code class="docutils literal notranslate"><span class="pre">index</span></code>.</p>
 <details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
 <summary class="sd-summary-title sd-card-header">
@@ -843,9 +866,9 @@ Execute Stored Config<div class="sd-summary-down docutils">
 </details></section>
 </section>
 <section id="filewriterplugin">
-<h3>FileWriterPlugin<a class="headerlink" href="#filewriterplugin" title="Permalink to this heading">#</a></h3>
+<h3>FileWriterPlugin<a class="headerlink" href="#filewriterplugin" title="Link to this heading">#</a></h3>
 <section id="process">
-<h4>Process<a class="headerlink" href="#process" title="Permalink to this heading">#</a></h4>
+<h4>Process<a class="headerlink" href="#process" title="Link to this heading">#</a></h4>
 <p>Configure the rank of the node and the total number of nodes in the deployment.</p>
 <details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
 <summary class="sd-summary-title sd-card-header">
@@ -865,7 +888,7 @@ Process<div class="sd-summary-down docutils">
 </div>
 </details></section>
 <section id="file">
-<h4>File<a class="headerlink" href="#file" title="Permalink to this heading">#</a></h4>
+<h4>File<a class="headerlink" href="#file" title="Link to this heading">#</a></h4>
 <p>Configure the output for the file.</p>
 <details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
 <summary class="sd-summary-title sd-card-header">
@@ -892,7 +915,7 @@ has written.</p>
 </div>
 </section>
 <section id="create-a-dataset">
-<h4>Create a Dataset<a class="headerlink" href="#create-a-dataset" title="Permalink to this heading">#</a></h4>
+<h4>Create a Dataset<a class="headerlink" href="#create-a-dataset" title="Link to this heading">#</a></h4>
 <p>Create a dataset to be written to the file.</p>
 <details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
 <summary class="sd-summary-title sd-card-header">
@@ -913,7 +936,7 @@ Create Dataset<div class="sd-summary-down docutils">
 </div>
 </section>
 <section id="dataset-config">
-<h4>Dataset Config<a class="headerlink" href="#dataset-config" title="Permalink to this heading">#</a></h4>
+<h4>Dataset Config<a class="headerlink" href="#dataset-config" title="Link to this heading">#</a></h4>
 <p>Configure a dataset in the file.</p>
 <details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
 <summary class="sd-summary-title sd-card-header">
@@ -951,7 +974,7 @@ Compression Modes</div>
 </div>
 </section>
 <section id="dataset-blosc-config">
-<h4>Dataset Blosc Config<a class="headerlink" href="#dataset-blosc-config" title="Permalink to this heading">#</a></h4>
+<h4>Dataset Blosc Config<a class="headerlink" href="#dataset-blosc-config" title="Link to this heading">#</a></h4>
 <p>Configure the blosc compression of the dataset.</p>
 <details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
 <summary class="sd-summary-title sd-card-header">
@@ -995,7 +1018,7 @@ Blosc Shuffle Modes</div>
 </div>
 </section>
 <section id="start-stop-writing">
-<h4>Start/Stop Writing<a class="headerlink" href="#start-stop-writing" title="Permalink to this heading">#</a></h4>
+<h4>Start/Stop Writing<a class="headerlink" href="#start-stop-writing" title="Link to this heading">#</a></h4>
 <p>Start and stop file writing.</p>
 <details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
 <summary class="sd-summary-title sd-card-header">
@@ -1036,7 +1059,7 @@ Stop file writing<div class="sd-summary-down docutils">
               
               
                 <footer class="prev-next-footer">
-                  <!-- Previous / next buttons -->
+                  
 <div class="prev-next-area">
     <a class="left-prev"
        href="frame-receiver.html"
@@ -1066,6 +1089,7 @@ Stop file writing<div class="sd-summary-down docutils">
                 <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
   <div class="sidebar-secondary-item">
+
   <div class="page-toc tocsection onthispage">
     <i class="fa-solid fa-list"></i> On this page
   </div>
@@ -1104,6 +1128,7 @@ Stop file writing<div class="sd-summary-down docutils">
   </nav></div>
 
   <div class="sidebar-secondary-item">
+
   
   <div class="tocsection editthispage">
     <a href="https://github.com/odin-detector/odin-data/edit/hdf5-references/docs/user/explanations/frame-processor.md">
@@ -1119,6 +1144,7 @@ Stop file writing<div class="sd-summary-down docutils">
 </div>
 
   <div class="sidebar-secondary-item">
+
   <div class="tocsection sourcelink">
     <a href="../../_sources/user/explanations/frame-processor.md.txt">
       <i class="fa-solid fa-file-lines"></i> Show Source
@@ -1139,8 +1165,8 @@ Stop file writing<div class="sd-summary-down docutils">
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794"></script>
-<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794"></script>
+  <script src="../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -1149,8 +1175,9 @@ Stop file writing<div class="sd-summary-down docutils">
   
     <div class="footer-items__end">
       
-        <div class="footer-item"><p class="theme-version">
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.1.
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.4.
 </p></div>
       
     </div>
