@@ -6,6 +6,7 @@
  */
 
 #include "LiveViewPlugin.h"
+#include "DebugLevelLogger.h"
 #include "version.h"
 #include <boost/algorithm/string.hpp>
 
@@ -59,8 +60,6 @@ LiveViewPlugin::~LiveViewPlugin()
  */
 void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
 {
-  /** Static Frame Count will increment each time this method is called, basically as a count of how many frames have been processed by the plugin*/
-  static uint32_t frame_count_;
   LOG4CXX_TRACE(logger_, "LiveViewPlugin Process Frame.");
   if(is_bound_)
   {
@@ -95,15 +94,15 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
           boost::posix_time::time_duration elapsed = (boost::posix_time::microsec_clock::local_time() - time_last_frame_);
           if (elapsed > time_between_frames_)
           {
-            LOG4CXX_TRACE(logger_, "Frame " << frame->get_frame_number() << " elapsed time " << elapsed << " > " << time_between_frames_);
+            LOG4CXX_DEBUG_LEVEL(2, logger_, "Frame " << frame->get_frame_number() << " elapsed time " << elapsed << " > " << time_between_frames_);
             pass_frame = true;
           }
         }
 
         // If the frame frequency setting is active, check if this frame should be sent
-        if (frame_freq_ != 0 && frame_count_ % frame_freq_ == 0)
+        if (frame_freq_ != 0 && frame->get_frame_number() % frame_freq_ == 0)
         {
-          LOG4CXX_TRACE(logger_, "Frame " << frame->get_frame_number() << " count matches frequency " << frame_freq_);
+          LOG4CXX_DEBUG_LEVEL(2, logger_, "Frame " << frame->get_frame_number() << " count matches frequency " << frame_freq_);
           pass_frame = true;
         }
 
@@ -111,9 +110,6 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
         if (pass_frame) {
           pass_live_frame(frame);
         }
-
-        //Count all frames that match the dataset(s) and tag(s)
-        frame_count_ ++;
       }
       else
       {
@@ -284,7 +280,7 @@ void LiveViewPlugin::pass_live_frame(boost::shared_ptr<Frame> frame)
 
   LOG4CXX_TRACE(logger_, "LiveViewPlugin Header Built, sending down socket.");
   publish_socket_.send(buffer.GetString(), ZMQ_SNDMORE);
-  LOG4CXX_TRACE(logger_, "LiveViewPlugin Sending frame raw data");
+  LOG4CXX_DEBUG_LEVEL(0, logger_, "LiveViewPlugin Sending frame raw data");
   publish_socket_.send(size, frame_data_copy, 0);
 
   time_last_frame_ = boost::posix_time::microsec_clock::local_time();
