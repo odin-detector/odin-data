@@ -17,7 +17,6 @@ from tornado import escape
 from odin_data.control.odin_data_adapter import OdinDataAdapter
 
 FP_ADAPTER_KEY = 'fr_adapter_name'
-FP_DEFAULT_ADAPTER_KEY = 'fr'
 PCT_BUFFER_FREE_KEY = 'buffer_threshold'
 
 def bool_from_string(value):
@@ -45,10 +44,7 @@ class FrameProcessorAdapter(OdinDataAdapter):
         logging.debug("FPA init called")
         super(FrameProcessorAdapter, self).__init__(**kwargs)
 
-        self._fr_adapter_name = FP_DEFAULT_ADAPTER_KEY
-        if FP_ADAPTER_KEY in kwargs:
-            self._fr_adapter_name = kwargs[FP_ADAPTER_KEY]
-
+        self._fr_adapter_name = kwargs.get(FP_ADAPTER_KEY, None)
         self._fr_adapter = None
 
         # Set the bufer threshold check, default to 0.0 (no check) if the option
@@ -73,11 +69,18 @@ class FrameProcessorAdapter(OdinDataAdapter):
         """Initialize the adapter after it has been loaded.
         Find and record the FR adapter for later error checks
         """
-        if self._fr_adapter_name in adapters:
-            self._fr_adapter = adapters[self._fr_adapter_name]
-            logging.info("FP adapter initiated connection to FR adapter: {}".format(self._fr_adapter_name))
-        else:
-            logging.error("FP adapter could not connect to the FR adapter: {}".format(self._fr_adapter_name))
+        if self._fr_adapter_name is None:
+            return
+
+        if self._fr_adapter_name not in adapters:
+            raise ValueError(
+                "Given FR adapter name '{}', but it is not in the loaded adapters {}".format(
+                    self._fr_adapter_name, adapters
+                )
+            )
+
+        self._fr_adapter = adapters[self._fr_adapter_name]
+        logging.info("FP adapter initiated connection to FR adapter: {}".format(self._fr_adapter_name))
 
     @request_types('application/json', 'application/vnd.odin-native')
     @response_types('application/json', default='application/json')
@@ -151,10 +154,11 @@ class FrameProcessorAdapter(OdinDataAdapter):
                 if write:
                     # Before attempting to write files, make some simple error checks
 
-                    # Check if we have a valid buffer status from the FR adapter
-                    valid, reason = self.check_fr_status()
-                    if not valid:
-                        raise RuntimeError(reason)
+                    if self._fr_adapter is not None:
+                        # Check if we have a valid buffer status from the FR adapter
+                        valid, reason = self.check_fr_status()
+                        if not valid:
+                            raise RuntimeError(reason)
 
                     # Check the file path is valid
                     if not os.path.isdir(str(self._param['config/hdf/file/path'])):
