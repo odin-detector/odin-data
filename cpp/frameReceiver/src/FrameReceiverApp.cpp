@@ -96,6 +96,10 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
         "Set number of IPC channel IO threads")
         ("ctrl",         po::value<std::string>()->default_value(FrameReceiver::Defaults::default_ctrl_chan_endpoint),
         "Set the control channel endpoint")
+        ("ready",        po::value<std::string>()->default_value(OdinData::Defaults::default_frame_ready_endpoint),
+         "Set the frame ready channel endpoint")
+        ("release",      po::value<std::string>()->default_value(OdinData::Defaults::default_frame_release_endpoint),
+         "Set the frame release channel endpoint")
         ("config,c",  po::value<std::string>()->default_value(OdinData::Defaults::default_json_config_file),
          "Path to a JSON configuration file to submit to the application")
         ;
@@ -151,6 +155,18 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
     {
       config_.ctrl_channel_endpoint_ = vm["ctrl"].as<std::string>();
       LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting control channel endpoint to " << config_.ctrl_channel_endpoint_);
+    }
+
+    if (vm.count("ready"))
+    {
+      config_.frame_ready_endpoint_ = vm["ready"].as<std::string>();
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting frame ready channel endpoint to " << config_.frame_ready_endpoint_);
+    }
+
+    if (vm.count("release"))
+    {
+      config_.frame_release_endpoint_ = vm["release"].as<std::string>();
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting frame release channel endpoint to " << config_.frame_release_endpoint_);
     }
 
     if (vm.count("config"))
