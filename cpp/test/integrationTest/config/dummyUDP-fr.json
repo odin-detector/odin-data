@@ -1,5 +1,7 @@
 [
   {
+    "frame_ready_endpoint": "tcp://127.0.0.1:5001",
+    "frame_release_endpoint": "tcp://127.0.0.1:5002",
     "decoder_type": "DummyUDP",
     "decoder_path": "${CMAKE_INSTALL_PREFIX}/lib",
     "rx_ports": "61649",

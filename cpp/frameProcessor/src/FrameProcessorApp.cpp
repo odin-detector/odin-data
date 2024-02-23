@@ -177,8 +177,10 @@ int FrameProcessorApp::parse_arguments(int argc, char** argv)
   return rc;
 }
 
-void FrameProcessorApp::run(void)
+int FrameProcessorApp::run(void)
 {
+
+  int rc = 0;
 
   LOG4CXX_INFO(logger_, "frameProcessor version " << ODIN_DATA_VERSION_STR << " starting up");
 
@@ -238,13 +240,20 @@ void FrameProcessorApp::run(void)
 
     controller_->run();
 
-    LOG4CXX_DEBUG_LEVEL(1, logger_, "FrameProcessorController run finished. Stopping app.");
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "frameProcessor stopped");
 
   }
-  catch (const std::exception& e) {
-    LOG4CXX_ERROR(logger_, "Caught unhandled exception in FrameProcessor, application will terminate: " << e.what());
-    throw;
+  catch (OdinData::OdinDataException& e)
+  {
+    LOG4CXX_ERROR(logger_, "frameProcessor run failed: " << e.what());
+    rc = 1;
   }
+  catch (const std::exception& e) {
+    LOG4CXX_ERROR(logger_, "Caught unhandled exception in frameProcessor, application will terminate: " << e.what());
+    rc = 1;
+  }
+
+  return rc;
 }
 
 /**
@@ -283,8 +292,7 @@ int main (int argc, char** argv)
 
   if (rc == -1) {
     // Run the application
-    app.run();
-    rc = 0;
+    rc = app.run();
   }
 
   return rc;

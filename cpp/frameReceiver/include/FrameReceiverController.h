@@ -39,7 +39,7 @@ using namespace OdinData;
 namespace FrameReceiver
 {
 
-  //! Frame receiver controller class/
+  //! Frame receiver controller class
   //!
   //! This class implements the main controller of the FrameReceiver application, providing
   //! the overall framework for running the frame receiver, capturing frames of incoming data and
@@ -51,7 +51,7 @@ namespace FrameReceiver
 
   public:
 
-    FrameReceiverController (FrameReceiverConfig& config);
+    FrameReceiverController(unsigned int num_io_threads);
     virtual ~FrameReceiverController ();
     void configure(OdinData::IpcMessage& config_msg, OdinData::IpcMessage& config_reply);
     void run(void);
@@ -95,7 +95,7 @@ namespace FrameReceiver
     FrameDecoderPtr                          frame_decoder_;   //!< Frame decoder object
     SharedBufferManagerPtr                   buffer_manager_;  //!< Buffer manager object
 
-    FrameReceiverConfig& config_;         //!< Configuration storage object
+    FrameReceiverConfig config_;         //!< Configuration storage object
     bool terminate_controller_;           //!< Flag to signal termination of the controller
 
     bool need_ipc_reconfig_;              //!< Flag to signal reconfiguration of IPC channels
@@ -108,7 +108,7 @@ namespace FrameReceiver
     bool buffer_manager_configured_;      //!< Indicates that the buffer manager is configured
     bool rx_thread_configured_;           //!< Indicates that the RX thread is configured
     bool configuration_complete_;         //!< Indicates that all components are configured
-    
+
     IpcContext& ipc_context_;             //!< ZMQ context for IPC channels
     IpcChannel rx_channel_;               //!< Channel for communication with receiver thread
     IpcChannel ctrl_channel_;             //!< Channel for communication with  control clients

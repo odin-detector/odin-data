@@ -29,7 +29,11 @@ public:
 #ifdef __MACH__
     config_.rx_recv_buffer_size_ = 1048576;
 #endif
+
+  config_.rx_channel_endpoint_ = Defaults::default_rx_chan_endpoint;
+
   }
+
 
   std::string& get_rx_channel_endpoint(void)
   {

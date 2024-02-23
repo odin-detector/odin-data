@@ -23,7 +23,8 @@ public:
 
   int parse_arguments(int argc, char** argv);
   void configure_controller(OdinData::IpcMessage& config_msg);
-  void run();
+  int run(void);
+  static void stop(void);
 
 private:
 

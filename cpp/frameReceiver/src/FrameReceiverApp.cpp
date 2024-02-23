@@ -12,6 +12,14 @@
 #include <streambuf>
 using namespace std;
 
+#include <log4cxx/logger.h>
+#include <log4cxx/basicconfigurator.h>
+#include <log4cxx/propertyconfigurator.h>
+#include <log4cxx/helpers/exception.h>
+#include <log4cxx/xml/domconfigurator.h>
+using namespace log4cxx;
+using namespace log4cxx::helpers;
+
 #include <boost/foreach.hpp>
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
@@ -88,15 +96,15 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
     // and in the configuration file
     po::options_description config("Configuration options");
     config.add_options()
-        ("debug-level,d",      po::value<unsigned int>()->default_value(debug_level),
+        ("debug-level,d", po::value<unsigned int>()->default_value(debug_level),
         "Set the debug level")
-        ("log-config,l",  po::value<string>(),
+        ("log-config,l", po::value<string>(),
         "Set the log4cxx logging configuration file")
-        ("io-threads",    po::value<unsigned int>()->default_value(OdinData::Defaults::default_io_threads),
+        ("io-threads", po::value<unsigned int>()->default_value(OdinData::Defaults::default_io_threads),
         "Set number of IPC channel IO threads")
-        ("ctrl",         po::value<std::string>()->default_value(FrameReceiver::Defaults::default_ctrl_chan_endpoint),
+        ("ctrl", po::value<std::string>()->default_value(FrameReceiver::Defaults::default_ctrl_chan_endpoint),
         "Set the control channel endpoint")
-        ("config,c",  po::value<std::string>()->default_value(OdinData::Defaults::default_json_config_file),
+        ("config,c",  po::value<std::string>(),
          "Path to a JSON configuration file to submit to the application")
         ;
 
@@ -143,14 +151,14 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
 
     if (vm.count("io-threads"))
     {
-      config_.io_threads_ = vm["io-threads"].as<unsigned int>();
-      LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting number of IO threads to " << config_.io_threads_);
+      io_threads_ = vm["io-threads"].as<unsigned int>();
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting number of IO threads to " << io_threads_);
     }
 
     if (vm.count("ctrl"))
     {
-      config_.ctrl_channel_endpoint_ = vm["ctrl"].as<std::string>();
-      LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting control channel endpoint to " << config_.ctrl_channel_endpoint_);
+      ctrl_channel_endpoint_ = vm["ctrl"].as<std::string>();
+      LOG4CXX_DEBUG_LEVEL(1, logger_, "Setting control channel endpoint to " << ctrl_channel_endpoint_);
     }
 
     if (vm.count("config"))
@@ -191,22 +199,24 @@ int FrameReceiverApp::parse_arguments(int argc, char** argv)
 //! the input configuration parameters and then run, blocking until completion
 //! of execution.
 
-void FrameReceiverApp::run(void)
+int FrameReceiverApp::run(void)
 {
+
+  int rc = 0;
 
   LOG4CXX_INFO(logger_, "frameReceiver version " << ODIN_DATA_VERSION_STR << " starting up");
 
   // Instantiate a controller
-  controller_ = boost::shared_ptr<FrameReceiverController>(
-    new FrameReceiverController(config_)
-  );
+  controller_ = boost::shared_ptr<FrameReceiverController>(new FrameReceiverController(io_threads_));
 
   try {
 
-    OdinData::IpcMessage config_msg, config_reply;
-    config_.as_ipc_message(config_msg);
-    config_msg.set_param<bool>(CONFIG_FORCE_RECONFIG, true);
-
+    // Send an initial configuration message to the controller to configure control and RX thread
+    // channel endpoints
+    OdinData::IpcMessage config_msg;
+    OdinData::IpcMessage config_reply;
+    config_msg.set_param<std::string>(CONFIG_CTRL_ENDPOINT, ctrl_channel_endpoint_);
+    config_msg.set_param<std::string>(CONFIG_RX_ENDPOINT, Defaults::default_rx_chan_endpoint);
     controller_->configure(config_msg, config_reply);
 
     // Check for a JSON configuration file option
@@ -256,24 +266,29 @@ void FrameReceiverApp::run(void)
 
     controller_->run();
 
+    LOG4CXX_INFO(logger_, "frameReceiver stopped");
+
   }
   catch (OdinData::OdinDataException& e)
   {
-    LOG4CXX_ERROR(logger_, "Frame receiver run failed: " << e.what());
+    LOG4CXX_ERROR(logger_, "frameReceiver run failed: " << e.what());
+    rc = 1;
   }
   catch (exception& e)
   {
-    LOG4CXX_ERROR(logger_, "Generic exception during frame receiver run:\n" << e.what());
+    LOG4CXX_ERROR(logger_, "Generic exception during frameReceiver run:\n" << e.what());
+    rc = 1;
   }
   catch (...)
   {
-    LOG4CXX_ERROR(logger_, "Unexpected exception during frame receiver run");
+    LOG4CXX_ERROR(logger_, "Unexpected exception during frameReceiver run");
+    rc = 1;
   }
 
-  LOG4CXX_INFO(logger_, "Frame receiver stopped");
+  return rc;
 }
 
-//! Stop the FrameRecevierApp.
+//! Stop the frameRecevierApp.
 //!
 //! This method stops the frame receiver by signalling to the controller to stop.
 
@@ -314,8 +329,7 @@ int main (int argc, char** argv)
 
   if (rc == -1) {
     // Run the application
-    app.run();
-    rc = 0;
+    rc = app.run();
   }
 
   return rc;
