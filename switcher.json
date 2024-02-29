@@ -1,6 +1,6 @@
 [
   {
-    "version": "fr_initial_config",
-    "url": "https://odin-detector.github.io/odin-data/fr_initial_config/"
+    "version": "dpdk_support",
+    "url": "https://odin-detector.github.io/odin-data/dpdk_support/"
   }
 ]
