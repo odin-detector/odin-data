@@ -1,6 +1,34 @@
 [
   {
-    "version": "fr_initial_config",
-    "url": "https://odin-detector.github.io/odin-data/fr_initial_config/"
+    "version": "master",
+    "url": "https://odin-detector.github.io/odin-data/master/"
+  },
+  {
+    "version": "cli-config-fix",
+    "url": "https://odin-detector.github.io/odin-data/cli-config-fix/"
+  },
+  {
+    "version": "client-docs",
+    "url": "https://odin-detector.github.io/odin-data/client-docs/"
+  },
+  {
+    "version": "dataset-config",
+    "url": "https://odin-detector.github.io/odin-data/dataset-config/"
+  },
+  {
+    "version": "fp-param-tree-draft",
+    "url": "https://odin-detector.github.io/odin-data/fp-param-tree-draft/"
+  },
+  {
+    "version": "hdf5-references",
+    "url": "https://odin-detector.github.io/odin-data/hdf5-references/"
+  },
+  {
+    "version": "meta-string-types",
+    "url": "https://odin-detector.github.io/odin-data/meta-string-types/"
+  },
+  {
+    "version": "optional-fr-adapter",
+    "url": "https://odin-detector.github.io/odin-data/optional-fr-adapter/"
   }
 ]
