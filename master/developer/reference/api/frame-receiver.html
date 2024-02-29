@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>FrameReceiver API Reference &#8212; odin-data 0+untagged.1.gf11b8bf documentation</title>
+    <title>FrameReceiver API Reference &#8212; odin-data 0+untagged.1.g627e156 documentation</title>
   
   
   
@@ -37,7 +37,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../../_static/documentation_options.js?v=490bd9c5"></script>
+    <script src="../../../_static/documentation_options.js?v=b1d153a6"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=36754332"></script>
@@ -1240,13 +1240,13 @@ document.write(`
 <dl class="cpp class">
 <dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver23FrameReceiverControllerE">
 <span id="_CPPv3N13FrameReceiver23FrameReceiverControllerE"></span><span id="_CPPv2N13FrameReceiver23FrameReceiverControllerE"></span><span id="FrameReceiver::FrameReceiverController"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverController"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FrameReceiverController</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver23FrameReceiverControllerE" title="Link to this definition">#</a><br /></dt>
-<dd><p>Frame receiver controller class/</p>
+<dd><p>Frame receiver controller class</p>
 <p>This class implements the main controller of the FrameReceiver application, providing the overall framework for running the frame receiver, capturing frames of incoming data and handing them off to a processing application via shared memory. The controller communicates with the downstream processing (and internally) via ZeroMQ inter-process channels. </p>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
 <dl class="cpp function">
-<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver23FrameReceiverController23FrameReceiverControllerER19FrameReceiverConfig">
-<span id="_CPPv3N13FrameReceiver23FrameReceiverController23FrameReceiverControllerER19FrameReceiverConfig"></span><span id="_CPPv2N13FrameReceiver23FrameReceiverController23FrameReceiverControllerER19FrameReceiverConfig"></span><span id="FrameReceiver::FrameReceiverController::FrameReceiverController__FrameReceiverConfigR"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverController_1a9cc4cfd1ad40b7cb65460291986b1494"></span><span class="sig-name descname"><span class="n"><span class="pre">FrameReceiverController</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N13FrameReceiver19FrameReceiverConfigE" title="FrameReceiver::FrameReceiverConfig"><span class="n"><span class="pre">FrameReceiverConfig</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">config</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver23FrameReceiverController23FrameReceiverControllerER19FrameReceiverConfig" title="Link to this definition">#</a><br /></dt>
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver23FrameReceiverController23FrameReceiverControllerEj">
+<span id="_CPPv3N13FrameReceiver23FrameReceiverController23FrameReceiverControllerEj"></span><span id="_CPPv2N13FrameReceiver23FrameReceiverController23FrameReceiverControllerEj"></span><span id="FrameReceiver::FrameReceiverController::FrameReceiverController__unsigned-i"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverController_1ab98d81faec2653a6308b11505a910dd0"></span><span class="sig-name descname"><span class="n"><span class="pre">FrameReceiverController</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">num_io_threads</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver23FrameReceiverController23FrameReceiverControllerEj" title="Link to this definition">#</a><br /></dt>
 <dd><p>Constructor for the <a class="reference internal" href="#classFrameReceiver_1_1FrameReceiverController"><span class="std std-ref">FrameReceiverController</span></a> class.</p>
 <p>This constructor initialises the logger, IPC channels and state of the controller. Configuration and running are deferred to the <a class="reference internal" href="#classFrameReceiver_1_1FrameReceiverController_1acef6321df8b1fc7fd86a2c67d0e2ddba"><span class="std std-ref">configure()</span></a> and <a class="reference internal" href="#classFrameReceiver_1_1FrameReceiverController_1ad2a976dd1fa468dfd4a7da601a648b13"><span class="std std-ref">run()</span></a> methods respectively. </p>
 </dd></dl>
@@ -1264,7 +1264,10 @@ document.write(`
 <p>This method configures the controller based on configuration parameters received as an IpcMessage. Depending on the parameters present in that message, IPC channels the frame decoder, frame buffer manager and RX thread are conditionally configured.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>config_msg</strong> – <strong>[in]</strong> - IpcMessage containing configuration parameters `param[out] reply_msg - Reply IpcMessage indicating success or failure of actions. </p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config_msg</strong> – <strong>[in]</strong> - IpcMessage containing configuration parameters </p></li>
+<li><p><strong>reply_msg</strong> – <strong>[out]</strong> - Reply IpcMessage indicating success or failure of actions. </p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -1560,7 +1563,7 @@ document.write(`
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver23FrameReceiverController7config_E">
-<span id="_CPPv3N13FrameReceiver23FrameReceiverController7config_E"></span><span id="_CPPv2N13FrameReceiver23FrameReceiverController7config_E"></span><span id="FrameReceiver::FrameReceiverController::config___FrameReceiverConfigR"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverController_1ae0de14e73f2d79183b71c6cab650e22f"></span><a class="reference internal" href="#_CPPv4N13FrameReceiver19FrameReceiverConfigE" title="FrameReceiver::FrameReceiverConfig"><span class="n"><span class="pre">FrameReceiverConfig</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-name descname"><span class="n"><span class="pre">config_</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver23FrameReceiverController7config_E" title="Link to this definition">#</a><br /></dt>
+<span id="_CPPv3N13FrameReceiver23FrameReceiverController7config_E"></span><span id="_CPPv2N13FrameReceiver23FrameReceiverController7config_E"></span><span id="FrameReceiver::FrameReceiverController::config___FrameReceiverConfig"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverController_1a1e558ed20f13e28e5e72d1e31ea88f69"></span><a class="reference internal" href="#_CPPv4N13FrameReceiver19FrameReceiverConfigE" title="FrameReceiver::FrameReceiverConfig"><span class="n"><span class="pre">FrameReceiverConfig</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">config_</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver23FrameReceiverController7config_E" title="Link to this definition">#</a><br /></dt>
 <dd><p>Configuration storage object. </p>
 </dd></dl>
 
@@ -2405,7 +2408,7 @@ document.write(`
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#controller">Controller</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#framereceivercontroller">FrameReceiverController</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N13FrameReceiver23FrameReceiverControllerE"><code class="docutils literal notranslate"><span class="pre">FrameReceiverController</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N13FrameReceiver23FrameReceiverController23FrameReceiverControllerER19FrameReceiverConfig"><code class="docutils literal notranslate"><span class="pre">FrameReceiverController::FrameReceiverController()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N13FrameReceiver23FrameReceiverController23FrameReceiverControllerEj"><code class="docutils literal notranslate"><span class="pre">FrameReceiverController::FrameReceiverController()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N13FrameReceiver23FrameReceiverControllerD0Ev"><code class="docutils literal notranslate"><span class="pre">FrameReceiverController::~FrameReceiverController()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N13FrameReceiver23FrameReceiverController9configureERN8OdinData10IpcMessageERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">FrameReceiverController::configure()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N13FrameReceiver23FrameReceiverController3runEv"><code class="docutils literal notranslate"><span class="pre">FrameReceiverController::run()</span></code></a></li>
