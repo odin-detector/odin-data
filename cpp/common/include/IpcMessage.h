@@ -63,7 +63,7 @@ private:
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/error/en.h"
-
+#include "rapidjson/pointer.h"
 
 namespace OdinData
 {
@@ -121,13 +121,11 @@ public:
              MsgVal msg_val=MsgValIllegal,
              bool strict_validation=true);
 
-  //! Update parameters from another IPCMessage.
-  //!
-  //! This will iterate the parameters in the given IPCMessage and set them on this instance.
-  //!
-  //! \param other - IPCMessage to take parameters from
-
+  //! Updates parameters from another IPCMessage.
   void update(const IpcMessage& other);
+
+  //! Updates parameters from a rapidJSON object.
+  void update(const rapidjson::Value& param_val, std::string param_prefix="");
 
   //! Gets the value of a named parameter in the message.
   //!
@@ -310,6 +308,12 @@ public:
 
   //! Returns a JSON-encoded string of the message
   const char* encode(void);
+
+  //! Returns a JSON-encoded string of the message parameters at a specified path
+  const char* encode_params(const std::string& param_path = std::string());
+
+  //! Copies parameters at a specified into the specified JSON value object
+  void copy_params(rapidjson::Value& param_obj, const std::string& param_path = std::string());
 
   //! Overloaded equality relational operator
   friend bool operator ==(IpcMessage const& lhs_msg, IpcMessage const& rhs_msg);

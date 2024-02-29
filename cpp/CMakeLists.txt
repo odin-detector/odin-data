@@ -153,6 +153,9 @@ include_directories(${CMAKE_BINARY_DIR}/include)
 # Add common/include directory to include path
 include_directories(${COMMON_DIR}/include)
 
+# Add the cmake subdirectory so that CMake finders are installed
+add_subdirectory(cmake)
+
 # Add the common subdirectory
 add_subdirectory(${COMMON_DIR})
 
