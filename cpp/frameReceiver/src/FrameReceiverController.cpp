@@ -22,9 +22,8 @@ using namespace FrameReceiver;
 //! of the controller. Configuration and running are deferred to the
 //! configure() and run() methods respectively.
 //!
-FrameReceiverController::FrameReceiverController (FrameReceiverConfig& config) :
+FrameReceiverController::FrameReceiverController(unsigned int num_io_threads) :
     logger_(log4cxx::Logger::getLogger("FR.Controller")),
-    config_(config),
     terminate_controller_(false),
     need_ipc_reconfig_(false),
     need_decoder_reconfig_(false),
@@ -35,7 +34,7 @@ FrameReceiverController::FrameReceiverController (FrameReceiverConfig& config) :
     buffer_manager_configured_(false),
     rx_thread_configured_(false),
     configuration_complete_(false),
-    ipc_context_(IpcContext::Instance(config.io_threads_)),
+    ipc_context_(IpcContext::Instance(num_io_threads)),
     rx_channel_(ZMQ_ROUTER),
     ctrl_channel_(ZMQ_ROUTER),
     frame_ready_channel_(ZMQ_PUB),
@@ -66,24 +65,13 @@ FrameReceiverController::~FrameReceiverController ()
 //! the frame decoder, frame buffer manager and RX thread are conditionally configured.
 //!
 //! \param[in] config_msg - IpcMessage containing configuration parameters
-//! `param[out] reply_msg - Reply IpcMessage indicating success or failure of actions.
+//! \param[out] reply_msg - Reply IpcMessage indicating success or failure of actions.
 //!
 void FrameReceiverController::configure(OdinData::IpcMessage& config_msg,
     OdinData::IpcMessage& config_reply)
 {
 
   LOG4CXX_DEBUG_LEVEL(2, logger_, "Configuration submitted: " << config_msg.encode());
-
-  // Determine if a forced reconfiguration of all parts of the system is requested
-  // and set up the individual reconfiguration flags appropriately. These can then
-  // be modified at each configuration step to handle interdependencies.
-
-  bool force_reconfig = config_msg.get_param<bool>(CONFIG_FORCE_RECONFIG, false);
-
-  need_ipc_reconfig_ = force_reconfig;
-  need_decoder_reconfig_ = force_reconfig;
-  need_buffer_manager_reconfig_ = force_reconfig;
-  need_rx_thread_reconfig_ = force_reconfig;
 
   config_reply.set_msg_val(config_msg.get_msg_val());
 
@@ -118,12 +106,12 @@ void FrameReceiverController::configure(OdinData::IpcMessage& config_msg,
       buffer_manager_configured_ & rx_thread_configured_;
 
     // Construct the acknowledgement reply, indicating in the parameters which elements
-    // have been reconfigured
+    // have been configured
     config_reply.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
-    config_reply.set_param<bool>("reconfigured/ipc", need_ipc_reconfig_);
-    config_reply.set_param<bool>("reconfigured/decoder", need_decoder_reconfig_);
-    config_reply.set_param<bool>("reconfigured/buffer_manager", need_buffer_manager_reconfig_);
-    config_reply.set_param<bool>("reconfigured/rx_thread", need_rx_thread_reconfig_);
+    config_reply.set_param<bool>("configured/ipc", ipc_configured_);
+    config_reply.set_param<bool>("configured/decoder", decoder_configured_);
+    config_reply.set_param<bool>("configured/buffer_manager", buffer_manager_configured_);
+    config_reply.set_param<bool>("configured/rx_thread", rx_thread_configured_);
 
   }
   catch (FrameReceiverException& e) {
@@ -208,54 +196,72 @@ void FrameReceiverController::stop(const bool deferred)
 void FrameReceiverController::configure_ipc_channels(OdinData::IpcMessage& config_msg)
 {
 
+  static bool ctrl_channel_configured = false;
+  static bool rx_channel_configured = false;
+  static bool ready_channel_configured = false;
+  static bool release_channel_configured = false;
+
   // Clear the IPC config status until successful completion
   ipc_configured_ = false;
 
   // If a new control endpoint is specified, bind the control channel
-  std::string ctrl_endpoint = config_msg.get_param<std::string>(
-      CONFIG_CTRL_ENDPOINT, config_.ctrl_channel_endpoint_);
-  if (need_ipc_reconfig_ || (ctrl_endpoint != config_.ctrl_channel_endpoint_))
-  {
-    this->unbind_channel(&ctrl_channel_, config_.ctrl_channel_endpoint_, true);
-    config_.ctrl_channel_endpoint_ = ctrl_endpoint;
-    this->setup_control_channel(ctrl_endpoint);
+  if (config_msg.has_param(CONFIG_CTRL_ENDPOINT)) {
+    std::string ctrl_endpoint = config_msg.get_param<std::string>(CONFIG_CTRL_ENDPOINT);
+    if (ctrl_endpoint != config_.ctrl_channel_endpoint_)
+    {
+      this->unbind_channel(&ctrl_channel_, config_.ctrl_channel_endpoint_, true);
+      this->setup_control_channel(ctrl_endpoint);
+      config_.ctrl_channel_endpoint_ = ctrl_endpoint;
+      ctrl_channel_configured = true;
+    }
   }
 
   // If a new endpoint is specified, bind the RX thread channel
-  std::string rx_endpoint = config_msg.get_param<std::string>(
-      CONFIG_RX_ENDPOINT, config_.rx_channel_endpoint_);
-  if (need_ipc_reconfig_ || (rx_endpoint != config_.rx_channel_endpoint_))
-  {
-    this->unbind_channel(&rx_channel_, config_.rx_channel_endpoint_, false);
-    config_.rx_channel_endpoint_ = rx_endpoint;
-    this->setup_rx_channel(rx_endpoint);
+  if (config_msg.has_param(CONFIG_RX_ENDPOINT)) {
+    std::string rx_endpoint = config_msg.get_param<std::string>(CONFIG_RX_ENDPOINT);
+    if (rx_endpoint != config_.rx_channel_endpoint_)
+    {
+      this->unbind_channel(&rx_channel_, config_.rx_channel_endpoint_, false);
+      this->setup_rx_channel(rx_endpoint);
+      config_.rx_channel_endpoint_ = rx_endpoint;
+      rx_channel_configured = true;
 
-    // The RX thread will have to be reconfigured if this endpoint changes
-    need_rx_thread_reconfig_ = true;
+      // The RX thread will have to be reconfigured if this endpoint changes
+      need_rx_thread_reconfig_ = true;
+    }
   }
 
-  // If the endpoint is specified, bind the frame ready notification channel
-  std::string frame_ready_endpoint = config_msg.get_param<std::string>(
-      CONFIG_FRAME_READY_ENDPOINT, config_.frame_ready_endpoint_);
-  if (need_ipc_reconfig_ || (frame_ready_endpoint != config_.frame_ready_endpoint_))
-  {
-    this->unbind_channel(&frame_ready_channel_, config_.frame_ready_endpoint_, false);
-    config_.frame_ready_endpoint_ = frame_ready_endpoint;
-    this->setup_frame_ready_channel(frame_ready_endpoint);
+  // If a new endpoint is specified, bind the frame ready notification channel
+  if (config_msg.has_param(CONFIG_FRAME_READY_ENDPOINT)) {
+    std::string frame_ready_endpoint =
+      config_msg.get_param<std::string>(CONFIG_FRAME_READY_ENDPOINT);
+    if (frame_ready_endpoint != config_.frame_ready_endpoint_)
+    {
+      this->unbind_channel(&frame_ready_channel_, config_.frame_ready_endpoint_, false);
+      this->setup_frame_ready_channel(frame_ready_endpoint);
+      config_.frame_ready_endpoint_ = frame_ready_endpoint;
+      ready_channel_configured = true;
+    }
   }
 
-  // If the endpoint is specified, bind the frame release notification channel
-  std::string frame_release_endpoint = config_msg.get_param<std::string>(
-      CONFIG_FRAME_RELEASE_ENDPOINT, config_.frame_release_endpoint_);
-  if (need_ipc_reconfig_ || (frame_release_endpoint != config_.frame_release_endpoint_))
-  {
-    this->unbind_channel(&frame_release_channel_, config_.frame_release_endpoint_, false);
-    config_.frame_release_endpoint_ = frame_release_endpoint;
-    this->setup_frame_release_channel(frame_release_endpoint);
+  // If a new endpoint is specified, bind the frame release notification channel
+  if (config_msg.has_param(CONFIG_FRAME_RELEASE_ENDPOINT)) {
+    std::string frame_release_endpoint =
+      config_msg.get_param<std::string>(CONFIG_FRAME_RELEASE_ENDPOINT);
+    if (frame_release_endpoint != config_.frame_release_endpoint_)
+    {
+      this->unbind_channel(&frame_release_channel_, config_.frame_release_endpoint_, false);
+      this->setup_frame_release_channel(frame_release_endpoint);
+      config_.frame_release_endpoint_ = frame_release_endpoint;
+      release_channel_configured = true;
+    }
   }
 
-  // Flag successful completion of IPC channel configuration
-  ipc_configured_ = true;
+  // Flag successful completion of IPC channel configuration if all channels configured
+  ipc_configured_ = (
+    ctrl_channel_configured && rx_channel_configured &&
+    ready_channel_configured && ready_channel_configured
+  );
 }
 
 //! Set up the control channel.

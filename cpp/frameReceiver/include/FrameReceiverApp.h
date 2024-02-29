@@ -8,23 +8,7 @@
 #ifndef FRAMERECEIVERAPP_H_
 #define FRAMERECEIVERAPP_H_
 
-#include <string>
-using namespace std;
-
-#include <time.h>
-
-#include <log4cxx/logger.h>
-#include <log4cxx/basicconfigurator.h>
-#include <log4cxx/propertyconfigurator.h>
-#include <log4cxx/helpers/exception.h>
-#include <log4cxx/xml/domconfigurator.h>
-using namespace log4cxx;
-using namespace log4cxx::helpers;
-
-#include <boost/shared_ptr.hpp>
-
 #include "DebugLevelLogger.h"
-#include "FrameReceiverConfig.h"
 #include "FrameReceiverController.h"
 
 using namespace OdinData;
@@ -32,7 +16,7 @@ using namespace OdinData;
 namespace FrameReceiver
 {
 
-//! Frame receiver application class/
+//! Frame receiver application class
 //!
 //! This class implements the main functionality of the FrameReceiver application, parsing command line
 //! and configuraiton file options before creating, configuring and running the controller.
@@ -47,7 +31,7 @@ public:
 
   int parse_arguments(int argc, char** argv);
 
-  void run(void);
+  int run(void);
   static void stop(void);
 
 private:
@@ -56,7 +40,8 @@ private:
   static boost::shared_ptr<FrameReceiverController> controller_;  //!< FrameReceiver controller object
 
   // Command line options
-  FrameReceiverConfig config_;  //!< Configuration storage object
+  unsigned int io_threads_;  //!< Number of IO threads for IPC channels
+  std::string ctrl_channel_endpoint_;  //!< IPC channel endpoint for control communication with other processes
   std::string config_file_;  //!< Full path to JSON configuration file
 
 };
