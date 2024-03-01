@@ -97,7 +97,7 @@ private:
   /**The socket the live view image frames will be sent to*/
   OdinData::IpcChannel publish_socket_;
   /**List of the dataset names to publish. If a frame comes in with a dataset name not on the list it will be ignored*/
-  std::vector<std::string> datasets_;
+  std::map<std::string, int> datasets_;
   /**List of Parameter names to look for. If a frame comes in without one of these tags it will be ignored*/
   std::vector<std::string> tags_;
 

@@ -66,7 +66,8 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
   {
     std::string frame_dataset = frame->get_meta_data().get_dataset_name();
     /* If datasets is empty, or contains the frame's dataset, then we can potentially send it*/
-    if (datasets_.empty() || std::find(datasets_.begin(), datasets_.end(), frame_dataset) != datasets_.end())
+    std::map<std::string, int>::iterator dataset = datasets_.find(frame_dataset);
+    if (datasets_.empty() || dataset != datasets_.end())
     {
       /* If either filtering by tag is disabled, or the frame has the tagged param */
       bool tag_filter_active = !tags_.empty();
@@ -101,7 +102,16 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
         }
 
         // If the frame frequency setting is active, check if this frame should be sent
-        if (frame_freq_ != 0 && frame_count_ % frame_freq_ == 0)
+        int count;
+        if(dataset != datasets_.end())
+        {
+          count = dataset->second++;
+        }
+        else
+        {
+          count = frame_count_++;
+        }
+        if (frame_freq_ != 0 && count % frame_freq_ == 0)
         {
           LOG4CXX_TRACE(logger_, "Frame " << frame->get_frame_number() << " count matches frequency " << frame_freq_);
           pass_frame = true;
@@ -111,9 +121,6 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
         if (pass_frame) {
           pass_live_frame(frame);
         }
-
-        //Count all frames that match the dataset(s) and tag(s)
-        frame_count_ ++;
       }
       else
       {
@@ -406,16 +413,24 @@ void LiveViewPlugin::set_dataset_name_config(std::string value)
 {
   std::string delim = ",";
   datasets_.clear();
+  std::vector<std::string> dataset_names;
   if (!value.empty())
   {
     //delim value string by comma
-    boost::split(datasets_, value, boost::is_any_of(delim));
+    
+    boost::split(dataset_names, value, boost::is_any_of(delim));
+    std::for_each(dataset_names.begin(), dataset_names.end(), [this](std::string& name)
+    {
+      boost::trim(name);
+      datasets_.insert(std::pair<std::string, int>(name, 0));
+    });
   }
+
+  //loop to log datasets
   std::string dataset_string = "";
-  for (int i = 0; i < datasets_.size(); i++)
+  for (int i = 0; i < dataset_names.size(); i++)
   {
-    boost::trim(datasets_[i]);
-    dataset_string += datasets_[i] + ",";
+    dataset_string += dataset_names[i] + ":";
   }
   LOG4CXX_INFO(logger_, "Setting the datasets allowed to: " << dataset_string);
 }
