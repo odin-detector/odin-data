@@ -205,7 +205,7 @@ class IpcTornadoClient(object):
         :param value: Value of the IpcMessage object
         """
         msg = IpcMessage("cmd", value)
-        self._send_message(msg)
+        return self._send_message(msg)
 
     def send_configuration(self, content, target=None, valid_error=None):
         """Creates a specific configure IpcMessage object.  Sets the
