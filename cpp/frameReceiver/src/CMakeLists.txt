@@ -15,7 +15,8 @@ file(GLOB APP_SOURCES FrameReceiverApp.cpp
                       FrameReceiverController.cpp
                       FrameReceiverRxThread.cpp
                       FrameReceiverUDPRxThread.cpp
-                      FrameReceiverZMQRxThread.cpp )
+                      FrameReceiverZMQRxThread.cpp
+                      FrameReceiverTCPRxThread.cpp )
 
 add_executable(frameReceiver ${APP_SOURCES})
 
