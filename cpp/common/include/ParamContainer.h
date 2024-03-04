@@ -13,6 +13,10 @@
 #include <boost/function.hpp>
 #include <boost/bind/bind.hpp>
 
+#ifdef BOOST_HAS_PLACEHOLDERS
+using namespace boost::placeholders;
+#endif
+
 namespace OdinData
 {
 
@@ -127,12 +131,12 @@ class ParamContainer
         {
             // Bind the parameter into the setter function map
             setter_map_[path] = boost::bind(
-                &ParamContainer::param_set<T>, this, boost::ref(param), boost::placeholders::_1
+                &ParamContainer::param_set<T>, this, boost::ref(param), _1
             );
 
             // Bind the parameter into the getter function map
             getter_map_[path] = boost::bind(
-                &ParamContainer::param_get<T>, this, boost::ref(param), boost::placeholders::_1
+                &ParamContainer::param_get<T>, this, boost::ref(param), _1
             );
 
         }
@@ -151,14 +155,12 @@ class ParamContainer
         {
             // Bind the vector parameter into the setter function map
             setter_map_[path] = boost::bind(
-                &ParamContainer::vector_param_set<T>, this, boost::ref(param),
-                boost::placeholders::_1
+                &ParamContainer::vector_param_set<T>, this, boost::ref(param), _1
             );
 
             // Bind the vector parameter into the getter function map
             getter_map_[path] = boost::bind(
-                &ParamContainer::vector_param_get<T>, this, boost::ref(param),
-                boost::placeholders::_1
+                &ParamContainer::vector_param_get<T>, this, boost::ref(param), _1
             );
         }
 
