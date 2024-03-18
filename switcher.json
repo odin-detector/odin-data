@@ -1,6 +1,6 @@
 [
   {
-    "version": "docker",
-    "url": "https://odin-detector.github.io/odin-data/docker/"
+    "version": "live-view-configured-dataset",
+    "url": "https://odin-detector.github.io/odin-data/live-view-configured-dataset/"
   }
 ]
