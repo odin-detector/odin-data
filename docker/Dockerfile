@@ -35,9 +35,15 @@ RUN rm -rf /tmp/odin-data
 # Runtime Image
 FROM fedora:37 as runtime
 
-RUN dnf update -y && dnf install -y \
+# Enable extra package repositories
+RUN dnf install -y 'dnf-command(copr)' && \
+    dnf copr enable -y varlad/zellij
+
+RUN dnf update -y && \dnf install -y \
     # odin-data C++ runtime dependencies
-    blosc boost hdf5 log4cxx libpcap zeromq && \
+    blosc boost hdf5 log4cxx libpcap zeromq \
+    # Useful tools
+    zellij && \
     # tidy up
     dnf -y clean all
 
