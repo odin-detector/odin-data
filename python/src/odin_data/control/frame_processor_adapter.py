@@ -92,7 +92,7 @@ class FrameProcessorAdapter(ApiAdapter):
 
         logging.error("{}".format(path))
         try:
-            response = self._fp_controller.get(path, wants_metadata(request))
+            response = self._fp_adapter._controller.get(path, wants_metadata(request))
             logging.error("{}".format(response))
         except ParameterTreeError as param_error:
             response = {
@@ -120,11 +120,11 @@ class FrameProcessorAdapter(ApiAdapter):
         logging.debug("PUT request: %s", escape.url_unescape(request.body))
 
         try:
-            self._fp_controller.put(path, json_decode(request.body))
+            self._fp_adapter._controller.put(path, json_decode(request.body))
         except Exception:
             return super(FrameProcessorAdapter, self).put(path, request)
 
         return ApiAdapterResponse(response, status_code=status_code)
 
     def cleanup(self):
-        self._fp_controller.shutdown()
+        self._controller.shutdown()
