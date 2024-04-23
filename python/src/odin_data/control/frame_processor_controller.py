@@ -3,13 +3,12 @@ Created on 30th November 2023
 
 :author: Alan Greer
 """
-import json
+
 import logging
 import threading
 import time
 
-from odin_data.control.odin_data_controller import OdinDataController
-from odin.adapters.parameter_tree import ParameterAccessor, ParameterTree
+from odin.adapters.parameter_tree import ParameterTree
 
 
 class FrameProcessorController(object):
@@ -90,7 +89,6 @@ class FrameProcessorController(object):
             "Setting up rank information for {} FP processes".format(processes)
         )
         rank = 0
-        parameters = []
         try:
             cfg_string = "config"
             cfg = []

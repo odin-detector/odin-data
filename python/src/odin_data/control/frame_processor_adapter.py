@@ -3,10 +3,8 @@ Created on 6th September 2017
 
 :author: Alan Greer
 """
-import json
+
 import logging
-import threading
-import time
 
 from odin.adapters.adapter import (
     ApiAdapter,
@@ -15,20 +13,13 @@ from odin.adapters.adapter import (
     response_types,
     wants_metadata,
 )
-from tornado import escape
-from tornado.ioloop import IOLoop
-from tornado.escape import json_decode
-
-from odin_data.control.ipc_tornado_client import IpcTornadoClient
-from odin_data.util import remove_prefix, remove_suffix
-from odin_data.control.odin_data_adapter import OdinDataAdapter
 from odin.adapters.parameter_tree import (
-    ParameterAccessor,
-    ParameterTree,
     ParameterTreeError,
 )
-from odin_data.control.frame_processor_controller import FrameProcessorController
+from tornado import escape
+from tornado.escape import json_decode
 
+from odin_data.control.frame_processor_controller import FrameProcessorController
 
 FP_ADAPTER_DEFAULT_KEY = "od_fps"
 FP_ADAPTER_KEY = "fp_adapter_key"
@@ -130,7 +121,7 @@ class FrameProcessorAdapter(ApiAdapter):
 
         try:
             self._fp_controller.put(path, json_decode(request.body))
-        except Exception as e:
+        except Exception:
             return super(FrameProcessorAdapter, self).put(path, request)
 
         return ApiAdapterResponse(response, status_code=status_code)
