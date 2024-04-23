@@ -3,14 +3,15 @@ Created on 30th November 2023
 
 :author: Alan Greer
 """
-import json
+
 import logging
 import threading
 import time
 
-from odin_data.control.ipc_tornado_client import IpcTornadoClient
-from odin.adapters.parameter_tree import ParameterAccessor, ParameterTree
 from deepdiff import DeepDiff
+from odin.adapters.parameter_tree import ParameterTree
+
+from odin_data.control.ipc_tornado_client import IpcTornadoClient
 
 
 class OdinDataController(object):
@@ -118,7 +119,8 @@ class OdinDataController(object):
                         try:
                             msg = client.send_request(parameter_tree)
                             if client.wait_for_response(msg.get_msg_id()):
-                                timed_out = True
+                                # timed_out = True
+                                pass
                         except Exception as e:
                             # Log the error, but do not stop the update loop
                             logging.error("Unhandled exception: %s", e)

@@ -3,10 +3,8 @@ Created on 6th September 2017
 
 :author: Alan Greer
 """
-import json
+
 import logging
-import threading
-import time
 
 from odin.adapters.adapter import (
     ApiAdapter,
@@ -15,17 +13,12 @@ from odin.adapters.adapter import (
     response_types,
     wants_metadata,
 )
-from tornado import escape
-from tornado.ioloop import IOLoop
-from tornado.escape import json_decode
-
-from odin_data.control.ipc_tornado_client import IpcTornadoClient
-from odin_data.util import remove_prefix, remove_suffix
 from odin.adapters.parameter_tree import (
-    ParameterAccessor,
-    ParameterTree,
     ParameterTreeError,
 )
+from tornado import escape
+from tornado.escape import json_decode
+
 from odin_data.control.odin_data_controller import OdinDataController
 
 
@@ -56,7 +49,7 @@ class OdinDataAdapter(ApiAdapter):
 
         try:
             self._endpoint_arg = self.options.get("endpoints")
-        except:
+        except Exception:
             raise RuntimeError(
                 "No endpoints specified for the frameProcessor client(s)"
             )
