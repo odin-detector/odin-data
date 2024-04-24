@@ -1,10 +1,3 @@
-/*
- * DummyFrameDecoderUDP.h
- *
- *  Created on: 12 May 2107
- *      Author: Tim Nicholls, STFC Application Engineering Group
- */
-
 #ifndef INCLUDE_DUMMYFRAMEDECODERTCP_H_
 #define INCLUDE_DUMMYFRAMEDECODERTCP_H_
 
@@ -12,21 +5,16 @@
 #include <stdint.h>
 #include <time.h>
 
-#include "DummyUDPDefinitions.h"
 #include "FrameDecoderTCP.h"
 
 namespace FrameReceiver {
 
-// const std::string CONFIG_DECODER_UDP_PACKETS_PER_FRAME =
-// "udp_packets_per_frame"; const std::string CONFIG_DECODER_UDP_PACKET_SIZE =
-// "udp_packet_size";
-
 namespace DummyTcpFrameDecoderDefaults {
-const int frame_number = -1;
-const int buffer_id = 0;
-const size_t max_size = 1000; // maximum size of a frame for dropped buffer
-size_t header_size = 100;
-int num_buffers = 5;
+  const int frame_number = -1;
+  const int buffer_id = 0;
+  const size_t max_size = 1000; // maximum size of a frame for dropped buffer, incl. header size
+  const size_t header_size = 100;
+  const int num_buffers = 5;
 } // namespace DummyTcpFrameDecoderDefaults
 
 class DummyTCPFrameDecoder : public FrameDecoderTCP {

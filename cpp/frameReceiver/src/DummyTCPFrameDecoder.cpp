@@ -15,24 +15,20 @@
 
 using namespace FrameReceiver;
 
-#include "FrameDecoderTCP.h"
-
-namespace FrameReceiver {
-
 DummyTCPFrameDecoder::DummyTCPFrameDecoder()
     : FrameDecoderTCP(),
       current_frame_number_(DummyTcpFrameDecoderDefaults::frame_number),
       current_frame_buffer_id_(DummyTcpFrameDecoderDefaults::buffer_id),
+      header_size_(DummyTcpFrameDecoderDefaults::header_size),
+      frame_size_(DummyTcpFrameDecoderDefaults::max_size),
+      num_buffers_(DummyTcpFrameDecoderDefaults::num_buffers),
       frames_dropped_(0), frames_sent_(0), read_so_far_(0),
       receive_state_(FrameDecoder::FrameReceiveStateEmpty) {
   this->logger_ = Logger::getLogger("FR.DummyTCPFrameDecoder");
   LOG4CXX_INFO(logger_, "DummyTCPFrameDecoder version "
                             << this->get_version_long() << " loaded");
-  num_buffers_ = DummyTcpFrameDecoderDefaults::num_buffers;
-  frame_size_ = DummyTcpFrameDecoderDefaults::max_size;
-  buffer_size_ = num_buffers_ * frame_size_;
   // buffer can fit 5 frames by default
-  header_size_ = DummyTcpFrameDecoderDefaults::header_size;
+  buffer_size_ = num_buffers_ * frame_size_;
   frame_buffer_.reset(new char[buffer_size_]);
 }
 
@@ -102,7 +98,7 @@ void *DummyTCPFrameDecoder::get_next_message_buffer(void) {
 //! \return size of frame buffer in bytes
 //!
 const size_t DummyTCPFrameDecoder::get_frame_buffer_size(void) const {
-  return DummyTcpFrameDecoderDefaults::header_size;
+  return buffer_size_;
 }
 
 //! Get the size of the frame header.
@@ -136,7 +132,7 @@ DummyTCPFrameDecoder::process_message(size_t bytes_received) {
 }
 
 const size_t DummyTCPFrameDecoder::get_next_message_size(void) const {
-  return DummyTcpFrameDecoderDefaults::max_size - read_so_far_;
+  return frame_size_ - read_so_far_;
 }
 
 void DummyTCPFrameDecoder::monitor_buffers(void) {}
@@ -166,5 +162,3 @@ std::string DummyTCPFrameDecoder::get_version_short() {
 std::string DummyTCPFrameDecoder::get_version_long() {
   return ODIN_DATA_VERSION_STR;
 }
-
-} // namespace FrameReceiver

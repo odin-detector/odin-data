@@ -35,3 +35,7 @@ install(TARGETS frameReceiver RUNTIME DESTINATION bin)
 add_library(DummyUDPFrameDecoder SHARED DummyUDPFrameDecoder.cpp DummyUDPFrameDecoderLib.cpp)
 target_link_libraries(DummyUDPFrameDecoder ${LIB_RECEIVER} ${COMMON_LIBRARY} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES})
 install(TARGETS DummyUDPFrameDecoder DESTINATION lib)
+
+add_library(DummyTCPFrameDecoder SHARED DummyTCPFrameDecoder.cpp DummyTCPFrameDecoderLib.cpp)
+target_link_libraries(DummyTCPFrameDecoder ${LIB_RECEIVER} ${COMMON_LIBRARY} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES})
+install(TARGETS DummyTCPFrameDecoder DESTINATION lib)

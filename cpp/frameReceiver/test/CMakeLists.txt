@@ -10,7 +10,10 @@ file(GLOB TEST_SOURCES *.cpp)
 # Build list of main project source files from src dir but exclude application main
 file(GLOB APP_SOURCES ${FRAMERECEIVER_DIR}/src/*.cpp)
 file(GLOB APP_MAIN_SOURCE ${FRAMERECEIVER_DIR}/src/FrameReceiverApp.cpp)
+file(GLOB LIB_SOURCES ${FRAMERECEIVER_DIR}/src/*Lib.cpp)
 list(REMOVE_ITEM APP_SOURCES ${APP_MAIN_SOURCE})
+list(REMOVE_ITEM APP_SOURCES ${LIB_SOURCES})
+
 
 # Add test and project source files to executable
 add_executable(frameReceiverTest ${TEST_SOURCES} ${APP_SOURCES})
