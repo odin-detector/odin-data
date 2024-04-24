@@ -14,7 +14,8 @@ FrameReceiverTCPRxThread::FrameReceiverTCPRxThread(FrameReceiverConfig& config,
                                                    FrameDecoderPtr frame_decoder,
                                                    unsigned int tick_period_ms) :
     FrameReceiverRxThread(config, buffer_manager, frame_decoder, tick_period_ms),
-    logger_(log4cxx::Logger::getLogger("FR.TCPRxThread"))
+    logger_(log4cxx::Logger::getLogger("FR.TCPRxThread")),
+    recv_socket_(-1)
 {
   LOG4CXX_DEBUG_LEVEL(1, logger_, "FrameReceiverTCPRxThread constructor entered....");
 
@@ -37,8 +38,8 @@ void FrameReceiverTCPRxThread::run_specific_service(void)
     uint16_t rx_port = *rx_port_itr;
 
     // Create the receive socket
-    int recv_socket = socket(AF_INET, SOCK_STREAM, 0);
-    if (recv_socket < 0)
+    int recv_socket_ = socket(AF_INET, SOCK_STREAM, 0);
+    if (recv_socket_ < 0)
     {
       std::stringstream ss;
       ss << "RX channel failed to create receive socket for port " << rx_port << " : " << strerror(errno);
@@ -47,7 +48,7 @@ void FrameReceiverTCPRxThread::run_specific_service(void)
     }
 
     // Set the socket receive buffer size
-    if (setsockopt(recv_socket, SOL_SOCKET, SO_REUSEADDR, &config_.rx_recv_buffer_size_, sizeof(config_.rx_recv_buffer_size_)) < 0)
+    if (setsockopt(recv_socket_, SOL_SOCKET, SO_REUSEADDR, &config_.rx_recv_buffer_size_, sizeof(config_.rx_recv_buffer_size_)) < 0)
     {
       std::stringstream ss;
       ss << "RX channel failed to set receive socket buffer size for port " << rx_port << " : " << strerror(errno);
@@ -58,10 +59,10 @@ void FrameReceiverTCPRxThread::run_specific_service(void)
     // Read it back and display
     int buffer_size;
     socklen_t len = sizeof(buffer_size);
-    getsockopt(recv_socket, SOL_SOCKET, SO_REUSEADDR, &buffer_size, &len);
+    getsockopt(recv_socket_, SOL_SOCKET, SO_REUSEADDR, &buffer_size, &len);
     LOG4CXX_DEBUG_LEVEL(1, logger_, "RX thread receive buffer size for port " << rx_port << " is " << buffer_size);
 
-    // Bind the socket to the specified port
+    // Connect the socket to the specified endpoint
     struct sockaddr_in recv_addr;
     memset(&recv_addr, 0, sizeof(recv_addr));
     recv_addr.sin_family      = AF_INET;
@@ -76,24 +77,29 @@ void FrameReceiverTCPRxThread::run_specific_service(void)
       return;
     }
 
-    if (connect(recv_socket, (struct sockaddr*)&recv_addr, sizeof(recv_addr)) == -1)
+    if (connect(recv_socket_, (struct sockaddr*)&recv_addr, sizeof(recv_addr)) == -1)
     {
       std::stringstream ss;
-      ss <<  "RX channel failed to bind receive socket for address " << config_.rx_address_ << " port " << rx_port << " : " << strerror(errno);
+      ss <<  "RX channel failed to connect receive socket to address " << config_.rx_address_ << " port " << rx_port << " : " << strerror(errno);
       this->set_thread_init_error(ss.str());
       return;
     }
 
     // Register this socket
-    this->register_socket(recv_socket, boost::bind(&FrameReceiverTCPRxThread::handle_receive_socket, this, recv_socket, (int)rx_port));
+    this->register_socket(recv_socket_, boost::bind(&FrameReceiverTCPRxThread::handle_receive_socket, this, recv_socket_, (int)rx_port));
   }
 }
 
 void FrameReceiverTCPRxThread::cleanup_specific_service(void)
 {
+  LOG4CXX_DEBUG_LEVEL(1, logger_, "Cleaning up TCP RX thread service");
+
+  // Remove the IPC socket from the reactor
+  reactor_.remove_socket(recv_socket_);
+  close(recv_socket_);
 }
 
-void FrameReceiverTCPRxThread::handle_receive_socket(int recv_socket, int recv_port)
+void FrameReceiverTCPRxThread::handle_receive_socket(int recv_socket_, int recv_port)
 {
   // Receive a message from the main thread channel and place it directly into the
   // provided memory buffer
@@ -102,7 +108,7 @@ void FrameReceiverTCPRxThread::handle_receive_socket(int recv_socket, int recv_p
   size_t bytes_received = 0;
 
   while (bytes_received < message_size) {
-    int msg_len = read(recv_socket, frame_buffer, message_size - bytes_received);
+    int msg_len = read(recv_socket_, frame_buffer, message_size - bytes_received);
     bytes_received += msg_len;
     frame_buffer += msg_len;
   }

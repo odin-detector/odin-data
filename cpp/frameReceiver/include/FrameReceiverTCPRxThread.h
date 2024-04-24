@@ -42,6 +42,7 @@ private:
 
   LoggerPtr          logger_;
   FrameDecoderTCPPtr frame_decoder_;
+  int recv_socket_;
 };
 
 } // namespace FrameReceiver
