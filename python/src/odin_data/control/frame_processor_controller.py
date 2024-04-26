@@ -90,13 +90,11 @@ class FrameProcessorController(object):
         )
         rank = 0
         try:
-            cfg_string = "config"
-            cfg = []
             for rank in range(processes):
                 # Setup the number of processes and the rank for each client
-                cfg.append({"hdf": {"process": {"number": processes, "rank": rank}}})
-            logging.debug("Sending config to FP odin adapter: %s", cfg)
-            self._odin_adapter_fps._controller.put(cfg_string, cfg)
+                config = {"hdf": {"process": {"number": processes, "rank": rank}}}
+                logging.debug("Sending config to FP odin adapter %i: %s", rank, config)
+                self._odin_adapter_fps._controller.put(f"{rank}/config", config)
 
         except Exception as err:
             logging.debug("Failed to send rank information to FP applications")
