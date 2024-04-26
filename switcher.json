@@ -1,6 +1,6 @@
 [
   {
-    "version": "docker",
-    "url": "https://odin-detector.github.io/odin-data/docker/"
+    "version": "fastcs-dev",
+    "url": "https://odin-detector.github.io/odin-data/fastcs-dev/"
   }
 ]
