@@ -37,18 +37,20 @@ class OdinDataController(object):
             self._clients.append(IpcTornadoClient(ep["ip_address"], ep["port"]))
             self._client_connections.append(False)
 
-        self._params = ParameterTree(
-            {
-                "api": (lambda: self._api, None, {}),
-                "module": (lambda: self._name, None, {}),
-                "endpoints": (lambda: self._endpoints, None, {}),
-                "count": (lambda: len(self._clients), None, {}),
-                "update_interval": (lambda: self._update_interval, None, {}),
+        _tree = {
+            "api": (lambda: self._api, None, {}),
+            "module": (lambda: self._name, None, {}),
+            "endpoints": (lambda: self._endpoints, None, {}),
+            "count": (lambda: len(self._clients), None, {}),
+            "update_interval": (lambda: self._update_interval, None, {}),
+        }
+        for idx, _client in enumerate(self._clients):
+            _tree[str(idx)] = {
                 "status": {"error": (lambda: self._error, None, {})},
                 "config": {},
-            },
-            mutable=True,
-        )
+            }
+        # TODO: Consider renaming this
+        self._params = ParameterTree(_tree, mutable=True)
 
         # Create the status loop handling thread
         self._status_running = True
@@ -80,6 +82,7 @@ class OdinDataController(object):
 
     def put(self, path, value):
         self._params.set(path, value)
+        # TODO: If this fails, the client could see that it has changed when it hasn't
         self.process_config_changes()
 
     def update_loop(self):
@@ -94,8 +97,6 @@ class OdinDataController(object):
             try:
                 # Handle background tasks
                 # Loop over all connected clients and obtain the status
-                status_tree = [{}] * len(self._clients)
-                config_tree = [{}] * len(self._clients)
                 for index, client in enumerate(self._clients):
                     try:
                         # First check for stale status within a client (1 seconds)
@@ -126,13 +127,18 @@ class OdinDataController(object):
                             logging.error("Unhandled exception: %s", e)
 
                     if "status" in client.parameters:
-                        status_tree[index] = client.parameters["status"]
+                        self._params.replace(
+                            f"{index}/status", client.parameters["status"]
+                        )
                     if "config" in client.parameters:
-                        config_tree[index] = client.parameters["config"]
+                        self._params.replace(
+                            f"{index}/config", client.parameters["config"]
+                        )
 
-                self._params.replace("status", status_tree)
-                self._params.replace("config", config_tree)
-                self._config_cache = self._params.get("config")
+                self._config_cache = [
+                    self._params.get(f"{idx}/config")
+                    for idx, _ in enumerate(self._clients)
+                ]
                 # Flag that we have made an update
                 self._first_update = True
 
@@ -150,7 +156,9 @@ class OdinDataController(object):
         This method must be called after the set method is called and needs to
         be executed in its own thread to avoid blocking the tornado loop.
         """
-        new_config = self._params.get("config")
+        new_config = [
+            self._params.get(f"{idx}/config") for idx, _ in enumerate(self._clients)
+        ]
         diff = DeepDiff(self._config_cache, new_config)
 
         if "values_changed" in diff:
@@ -165,9 +173,9 @@ class OdinDataController(object):
                     root.replace("root[", "").rstrip("]").replace("'", "").split("][")
                 )
                 logging.error("Path: {}".format(path))
-                # First element of the path is the key 'config'
-                # Second element of the path is the index of the client
-                index = int(path[1])
+                # First element of the path is the index of the client
+                # Second element of the path is the key 'config'
+                index = int(path[0])
                 # Build the config for this root
                 if configs[index] is None:
                     configs[index] = {}
