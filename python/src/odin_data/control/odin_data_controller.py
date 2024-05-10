@@ -40,10 +40,15 @@ class OdinDataController(object):
         _tree = {
             "api": (lambda: self._api, None, {}),
             "module": (lambda: self._name, None, {}),
-            "endpoints": (lambda: self._endpoints, None, {}),
+            "endpoints": [],
             "count": (lambda: len(self._clients), None, {}),
             "update_interval": (lambda: self._update_interval, None, {}),
         }
+        for idx, endpoint in enumerate(self._endpoints):
+            _tree["endpoints"].append(
+                # Note the default here binds unique variables into each closure
+                {k: (lambda v=v: v, None, {}) for k, v in endpoint.items()}
+            )
         for idx, _client in enumerate(self._clients):
             _tree[str(idx)] = {
                 "status": {"error": (lambda: self._error, None, {})},
