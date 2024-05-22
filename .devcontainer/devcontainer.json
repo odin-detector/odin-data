@@ -4,10 +4,7 @@
     "build": {
         "dockerfile": "../docker/Dockerfile",
         "context": "..",
-        // Update 'VARIANT' to pick a different base image
-        "args": {
-            "VARIANT": "focal"
-        }
+        "target": "build"
     },
     // "features": {
     //     // add quality of life features for developers including git config integration

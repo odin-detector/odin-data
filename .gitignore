@@ -1,6 +1,7 @@
 /external
 /*build*
 /*prefix/
+/vscode_prefix
 *.pyc
 /tools/python/venv/
 /.settings

@@ -5,6 +5,7 @@ on:
     # Build for main, tags and PRs
     # Builds from PRs are not pushed to the registry because of rules in the steps
     branches:
+      # push these changes to the branch 'docker' for container publishing
       - docker
     tags:
       - "*"
