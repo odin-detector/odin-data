@@ -15,7 +15,6 @@ tools/python/.coverage
 
 .idea/
 cmake-build*/
-.vscode/
 
 tools/imagej/plugins/*
 !tools/imagej/plugins/Odin-Data/
