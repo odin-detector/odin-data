@@ -1,0 +1,19 @@
+# avoid blowing the cache over build files
+
+.dockerignore
+
+external
+*build*
+*prefix*
+*.pyc
+tools/python/venv/
+venv*
+tools/python/.coverage
+*.egg-info/
+
+cmake-build*/
+
+tools/python/build/
+tools/python/dist/
+
+docs/build/
