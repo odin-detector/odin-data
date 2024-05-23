@@ -2,18 +2,18 @@
 {
     "name": "epics-containers IOC devcontainer",
     "build": {
-        "dockerfile": "../docker/Dockerfile",
+        "dockerfile": "../Dockerfile",
         "context": "..",
-        "target": "build"
+        "target": "developer"
     },
-    // "features": {
-    //     // add quality of life features for developers including git config integration
-    //     // note this is slow for the odin-data container - leaving out for now
-    //     "ghcr.io/devcontainers/features/common-utils:2": {
-    //         // don't upgrade to make this similar to the runtime container
-    //         "upgradePackages": false
-    //     }
-    // },
+    "features": {
+        // add quality of life features for developers including git config integration
+        // note this is slow for the odin-data container - leaving out for now
+        "ghcr.io/devcontainers/features/common-utils:2": {
+            // don't upgrade to make this similar to the runtime container
+            "upgradePackages": false
+        }
+    },
     // IMPORTANT for this devcontainer to work with docker VSCODE_REMOTE_USER must be
     // set to vscode. You will run as vscode with full sudo rights.
     // For podman it should be left blank. You will run as root but host mounts

@@ -6,14 +6,13 @@ external
 *build*
 *prefix*
 *.pyc
-tools/python/venv/
+tools/python/venv
 venv*
 tools/python/.coverage
-*.egg-info/
+*.egg-info
 
-cmake-build*/
 
-tools/python/build/
-tools/python/dist/
+tools/python/build
+tools/python/dist
 
 docs/build/
