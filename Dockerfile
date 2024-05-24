@@ -1,12 +1,12 @@
 # shared setup stage ###########################################################
-FROM ubuntu:22.04 AS common
+FROM ubuntu:24.04 AS common
 
 ENV PATH=/odin/bin:/venv/bin:$PATH
 
 # get fundamental packages
 RUN apt-get update -y && \
     apt-get install --no-install-recommends -y curl \
-    tar ca-certificates locales && \
+    tar ca-certificates software-properties-common && \
     apt-get -y clean all
 # get zellij
 RUN curl -L https://github.com/zellij-org/zellij/releases/download/v0.40.1/zellij-x86_64-unknown-linux-musl.tar.gz -o zellij.tar.gz && \
@@ -20,14 +20,15 @@ RUN mkdir -p ~/.config/zellij && \
 FROM common AS developer
 
 # system depenedencies
-RUN apt-get update -y && apt-get install -y --no-install-recommends \
+RUN add-apt-repository -y ppa:deadsnakes/ppa && \
+    apt-get update -y && apt-get install -y --no-install-recommends \
     # General build
     build-essential cmake git \
     # odin-data C++ dependencies
     libblosc-dev libboost-all-dev libhdf5-dev liblog4cxx-dev \
     libpcap-dev libczmq-dev \
     # python
-    python3-dev python3-pip python3-venv && \
+    python3.11-dev python3-pip python3-venv && \
     # tidy up
     apt-get -y clean all
 
@@ -39,11 +40,11 @@ RUN python3 -m venv /venv && \
 # build stage - throwaway stage for runtime assets #############################
 FROM developer AS build
 
-# Root of odin-data
-COPY . /tmp/odin-data
+# fetch the source
+WORKDIR /tmp/odin-data
+COPY . .
 
 # C++
-WORKDIR /tmp/odin-data
 RUN mkdir /odin && \
     mkdir -p build && cd build && \
     cmake -DCMAKE_INSTALL_PREFIX=/odin ../cpp && \

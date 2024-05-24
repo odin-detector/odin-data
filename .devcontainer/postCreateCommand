@@ -26,8 +26,3 @@ if [[ -f /workspaces/.devcontainer_rc ]] ; then
     source /workspaces/.devcontainer_rc
 fi
 
-# make the vscode prefix the same as /odin inside this container
-# doing this allows the vscode settings for prefix to work inside/outside
-# inside: prefix is /odin
-# outside: prefix is odin-data/vscode_prefix
-ln -sfrn /odin /workspaces/odin-data/vscode_prefix
