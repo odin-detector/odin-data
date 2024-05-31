@@ -28,12 +28,13 @@ RUN add-apt-repository -y ppa:deadsnakes/ppa && \
     libblosc-dev libboost-all-dev libhdf5-dev liblog4cxx-dev \
     libpcap-dev libczmq-dev \
     # python
-    python3.11-dev python3-pip python3-venv && \
+    python3.11-dev python3.11-venv && \
     # tidy up
     apt-get -y clean all
 
 # python dependencies
-RUN python3 -m venv /venv && \
+RUN python3.11 -m ensurepip && \
+    python3.11 -m venv /venv && \
     python -m pip install --upgrade pip && \
     python -m pip install git+https://github.com/odin-detector/odin-control@1.3.0
 
