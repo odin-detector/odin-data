@@ -1,0 +1,20 @@
+{
+    "cmake.generator": "Unix Makefiles",
+    "cmake.sourceDirectory": "${workspaceFolder}/cpp",
+    "cmake.buildDirectory": "${workspaceFolder}/vscode_build",
+    "cmake.installPrefix": "${workspaceFolder}/vscode_prefix",
+    "cmake.configureArgs": [
+        // all dependencies from system inside the container
+    ],
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "editor.formatOnSave": true,
+    "[python]": {
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+        },
+        "editor.defaultFormatter": "ms-python.python",
+        "editor.rulers": [
+            88
+        ]
+    }
+}

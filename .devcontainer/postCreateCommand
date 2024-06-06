@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Custom initialization goes here if needed.
+# Runs inside the dev container after the container is created
+
+################################################################################
+# When using docker we will not be root inside the container
+# You may wish to change ownership of files you want the user to modify
+################################################################################
+
+# if [[ $USER != "root" ]] ; then
+#     # make sure the non-root user can build iocs and (mounted in) support modules
+#     # sudo chown -R ${USER}:${USER} add_folders_here_if needed
+# fi
+
+################################################################################
+# Shell customizations for Generic IOC devcontainers
+################################################################################
+
+# pick a zsh theme that does not cause completion corruption in zsh vscode terminals
+sed -i $HOME/.zshrc -e 's/ZSH_THEME="devcontainers"/ZSH_THEME="dst"/'
+
+# allow personalization of all devcontainers in this subdirectory
+# by placing a .devcontainer_rc file in the workspace root
+if [[ -f /workspaces/.devcontainer_rc ]] ; then
+    source /workspaces/.devcontainer_rc
+fi
+
