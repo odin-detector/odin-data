@@ -25,8 +25,7 @@ RUN add-apt-repository -y ppa:deadsnakes/ppa && \
     # General build
     build-essential cmake git \
     # odin-data C++ dependencies
-    libblosc-dev libboost-all-dev libhdf5-dev liblog4cxx-dev \
-    libpcap-dev libczmq-dev \
+    libblosc-dev libboost-all-dev libhdf5-dev liblog4cxx-dev libpcap-dev libczmq-dev \
     # python
     python3.11-dev python3.11-venv && \
     # tidy up
@@ -61,7 +60,7 @@ FROM common as runtime
 # runtime system dependencies
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
     # odin-data C++ dependencies
-    libblosc1 libboost-dev libhdf5-103 liblog4cxx12 libpcap0.8 libczmq4 && \
+    libblosc-dev libboost-all-dev libhdf5-dev liblog4cxx-dev libpcap-dev libczmq-dev && \
     # tidy up
     apt-get -y clean all
 
