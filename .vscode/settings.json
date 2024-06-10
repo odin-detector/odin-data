@@ -1,20 +1,18 @@
 {
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
     "cmake.generator": "Unix Makefiles",
     "cmake.sourceDirectory": "${workspaceFolder}/cpp",
     "cmake.buildDirectory": "${workspaceFolder}/vscode_build",
-    "cmake.installPrefix": "${workspaceFolder}/vscode_prefix",
-    "cmake.configureArgs": [
-        // all dependencies from system inside the container
-    ],
-    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
-    "editor.formatOnSave": true,
+    "cmake.installPrefix": "/odin",
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit"
+    },
+    "files.insertFinalNewline": true,
     "[python]": {
-        "editor.codeActionsOnSave": {
-            "source.organizeImports": "explicit"
-        },
-        "editor.defaultFormatter": "ms-python.python",
-        "editor.rulers": [
-            88
-        ]
-    }
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.formatOnSave": true,
+        "editor.rulers": [88]
+    },
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
 }

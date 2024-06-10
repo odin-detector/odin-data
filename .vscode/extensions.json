@@ -1,9 +1,5 @@
 {
     "recommendations": [
         "ms-vscode-remote.remote-containers",
-        "twxs.cmake",
-        "ms-vscode.cpptools",
-        "ms-python.python",
-        "ms-python.vscode-pylance",
     ]
 }

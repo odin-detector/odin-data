@@ -5,8 +5,8 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "MetaWriter",
-            "type": "python",
+            "name": "Meta Writer",
+            "type": "debugpy",
             "request": "launch",
             "module": "odin_data.meta_writer.meta_writer_app",
             "args": [
