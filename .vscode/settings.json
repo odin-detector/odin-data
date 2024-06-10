@@ -2,7 +2,7 @@
     "cmake.generator": "Unix Makefiles",
     "cmake.sourceDirectory": "${workspaceFolder}/cpp",
     "cmake.buildDirectory": "${workspaceFolder}/vscode_build",
-    "cmake.installPrefix": "${workspaceFolder}/vscode_prefix",
+    "cmake.installPrefix": "/odin",
     "cmake.configureArgs": [
         // all dependencies from system inside the container
     ],
