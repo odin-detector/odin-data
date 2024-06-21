@@ -55,7 +55,7 @@ RUN mkdir /odin && \
 RUN python -m pip install /tmp/odin-data/python[meta_writer]
 
 # Runtime stage ################################################################
-FROM common as runtime
+FROM common AS runtime
 
 # runtime system dependencies
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
