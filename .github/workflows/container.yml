@@ -54,11 +54,34 @@ jobs:
         id: buildx
         uses: docker/setup-buildx-action@v1
 
+      - name: Docker meta config developer
+        id: meta-developer
+        uses: docker/metadata-action@v4
+        with:
+          images: ghcr.io/${{ github.repository }}-developer
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=raw,value=latest
+
+      - name: Docker build developer image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: Dockerfile
+          target: developer
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta-build.outputs.tags }}
+          labels: ${{ steps.meta-build.outputs.labels }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+
+
       - name: Docker meta config build
         id: meta-build
         uses: docker/metadata-action@v4
         with:
-          images: ghcr.io/${{ github.repository }}-developer
+          images: ghcr.io/${{ github.repository }}-build
           tags: |
             type=ref,event=branch
             type=ref,event=tag
@@ -69,7 +92,7 @@ jobs:
         with:
           context: .
           file: Dockerfile
-          target: developer
+          target: build
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta-build.outputs.tags }}
           labels: ${{ steps.meta-build.outputs.labels }}
