@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Common API Reference &#8212; odin-data 0+untagged.1.gb759abb documentation</title>
+    <title>Common API Reference &#8212; odin-data 0+untagged.1.gbef3b8b documentation</title>
   
   
   
@@ -37,7 +37,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=3ee479438cf8b5e0d341"></script>
 
-    <script src="../../../_static/documentation_options.js?v=5edf8a91"></script>
+    <script src="../../../_static/documentation_options.js?v=14f3d38b"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -1115,11 +1115,28 @@ document.write(`
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N8OdinData10IpcMessage6updateERK10IpcMessage">
 <span id="_CPPv3N8OdinData10IpcMessage6updateERK10IpcMessage"></span><span id="_CPPv2N8OdinData10IpcMessage6updateERK10IpcMessage"></span><span id="OdinData::IpcMessage::update__IpcMessageCR"></span><span class="target" id="classOdinData_1_1IpcMessage_1ab1fce1d54de61baeef22ae7544e55f08"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">update</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">other</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8OdinData10IpcMessage6updateERK10IpcMessage" title="Link to this definition">#</a><br /></dt>
-<dd><p>Update parameters from another IPCMessage.</p>
+<dd><p>Updates parameters from another IPCMessage. </p>
+<p>Updates parameters from another IPCMessage.</p>
 <p>This will iterate the parameters in the given IPCMessage and set them on this instance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>other</strong> – - IPCMessage to take parameters from </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8OdinData10IpcMessage6updateERKN9rapidjson5ValueENSt6stringE">
+<span id="_CPPv3N8OdinData10IpcMessage6updateERKN9rapidjson5ValueENSt6stringE"></span><span id="_CPPv2N8OdinData10IpcMessage6updateERKN9rapidjson5ValueENSt6stringE"></span><span id="OdinData::IpcMessage::update__rapidjson::ValueCR.ss"></span><span class="target" id="classOdinData_1_1IpcMessage_1aa04fba7e35297c186dc9d15a3f770167"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">update</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">rapidjson</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Value</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">param_val</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">param_prefix</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;&quot;</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8OdinData10IpcMessage6updateERKN9rapidjson5ValueENSt6stringE" title="Link to this definition">#</a><br /></dt>
+<dd><p>Updates parameters from a rapidJSON object. </p>
+<p>Updates parameters from a rapidJSON object.</p>
+<p>This method will update the parameters in message with the contents of the specified JSON object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>param_val</strong> – - RapidJSON value object of parameters </p></li>
+<li><p><strong>param_prefix</strong> – - string prefix for parameter path to set </p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -1204,7 +1221,12 @@ document.write(`
 <span id="_CPPv3N8OdinData10IpcMessage8set_nackERKNSt6stringE"></span><span id="_CPPv2N8OdinData10IpcMessage8set_nackERKNSt6stringE"></span><span id="OdinData::IpcMessage::set_nack__ssCR"></span><span class="target" id="classOdinData_1_1IpcMessage_1aa1aaa0cfc484fed493a373284eb1eef9"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">set_nack</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">reason</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8OdinData10IpcMessage8set_nackERKNSt6stringE" title="Link to this definition">#</a><br /></dt>
 <dd><p>Sets the nack message type with a reason parameter. </p>
 <p>Sets the message type to not acknowledged and sets an appropriate rejection message</p>
-<p>This method can be used to set this <a class="reference internal" href="#classOdinData_1_1IpcMessage"><span class="std std-ref">IpcMessage</span></a> up as a rejection (nack) message. A reason is supplied and set as a parameter called ‘error’ </p>
+<p>This method can be used to set this <a class="reference internal" href="#classOdinData_1_1IpcMessage"><span class="std std-ref">IpcMessage</span></a> up as a rejection (nack) message. A reason is supplied and set as a parameter called ‘error’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>void </p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="cpp function">
@@ -1333,6 +1355,38 @@ document.write(`
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>JSON encoded message as a null-terminated, string character array </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8OdinData10IpcMessage13encode_paramsERKNSt6stringE">
+<span id="_CPPv3N8OdinData10IpcMessage13encode_paramsERKNSt6stringE"></span><span id="_CPPv2N8OdinData10IpcMessage13encode_paramsERKNSt6stringE"></span><span id="OdinData::IpcMessage::encode_params__ssCR"></span><span class="target" id="classOdinData_1_1IpcMessage_1a9e915ff0826a882461e186e6cf6068f7"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">encode_params</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">param_path</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8OdinData10IpcMessage13encode_paramsERKNSt6stringE" title="Link to this definition">#</a><br /></dt>
+<dd><p>Returns a JSON-encoded string of the message parameters at a specified path. </p>
+<p>Returns a JSON-encoded string of the message parameters at a specified path</p>
+<p>This method returns a JSON-encoded string version of the parameters associated with the message, or a subset of those at a specified slash-delimited path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>param_path</strong> – - JSON pointer-like slash delimited path into the parameter block </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>JSON encoded parameters as a null-terminated, string character array </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8OdinData10IpcMessage11copy_paramsERN9rapidjson5ValueERKNSt6stringE">
+<span id="_CPPv3N8OdinData10IpcMessage11copy_paramsERN9rapidjson5ValueERKNSt6stringE"></span><span id="_CPPv2N8OdinData10IpcMessage11copy_paramsERN9rapidjson5ValueERKNSt6stringE"></span><span id="OdinData::IpcMessage::copy_params__rapidjson::ValueR.ssCR"></span><span class="target" id="classOdinData_1_1IpcMessage_1a3b44cc86f21e59813fff74c40e62f818"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">copy_params</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">rapidjson</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Value</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">param_obj</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">param_path</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8OdinData10IpcMessage11copy_paramsERN9rapidjson5ValueERKNSt6stringE" title="Link to this definition">#</a><br /></dt>
+<dd><p>Copies parameters at a specified into the specified JSON value object. </p>
+<p>Copies parameters at a specified into the specified JSON value object</p>
+<p>This method copies the message parameters at the specified path into a JSON value object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>param_obj</strong> – - reference to JSON value object to receive the parameters </p></li>
+<li><p><strong>param_path</strong> – - path of parameters in the message to copy </p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -2421,6 +2475,7 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N8OdinData10IpcMessage10IpcMessageEPKcb"><code class="docutils literal notranslate"><span class="pre">IpcMessage::IpcMessage()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N8OdinData10IpcMessage10IpcMessageERKN9rapidjson5ValueE7MsgType6MsgValb"><code class="docutils literal notranslate"><span class="pre">IpcMessage::IpcMessage()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N8OdinData10IpcMessage6updateERK10IpcMessage"><code class="docutils literal notranslate"><span class="pre">IpcMessage::update()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N8OdinData10IpcMessage6updateERKN9rapidjson5ValueENSt6stringE"><code class="docutils literal notranslate"><span class="pre">IpcMessage::update()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4I0ENK8OdinData10IpcMessage9get_paramE1TRKNSt6stringE"><code class="docutils literal notranslate"><span class="pre">IpcMessage::get_param()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4I0EN8OdinData10IpcMessage9get_paramE1TRKNSt6stringERK1T"><code class="docutils literal notranslate"><span class="pre">IpcMessage::get_param()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4NK8OdinData10IpcMessage15get_param_namesEv"><code class="docutils literal notranslate"><span class="pre">IpcMessage::get_param_names()</span></code></a></li>
@@ -2437,6 +2492,8 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N8OdinData10IpcMessage11set_msg_valEK6MsgVal"><code class="docutils literal notranslate"><span class="pre">IpcMessage::set_msg_val()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N8OdinData10IpcMessage10set_msg_idEj"><code class="docutils literal notranslate"><span class="pre">IpcMessage::set_msg_id()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N8OdinData10IpcMessage6encodeEv"><code class="docutils literal notranslate"><span class="pre">IpcMessage::encode()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N8OdinData10IpcMessage13encode_paramsERKNSt6stringE"><code class="docutils literal notranslate"><span class="pre">IpcMessage::encode_params()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N8OdinData10IpcMessage11copy_paramsERN9rapidjson5ValueERKNSt6stringE"><code class="docutils literal notranslate"><span class="pre">IpcMessage::copy_params()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4I0EN8OdinData10IpcMessage18internal_set_paramEvRKNSt6stringERK1T"><code class="docutils literal notranslate"><span class="pre">IpcMessage::internal_set_param()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4I0EN8OdinData10IpcMessage13get_attributeE1TRKNSt6stringE"><code class="docutils literal notranslate"><span class="pre">IpcMessage::get_attribute()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4I0EN8OdinData10IpcMessage13get_attributeE1TRKNSt6stringERK1T"><code class="docutils literal notranslate"><span class="pre">IpcMessage::get_attribute()</span></code></a></li>
