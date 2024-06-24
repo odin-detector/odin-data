@@ -58,9 +58,12 @@ RUN python -m pip install /tmp/odin-data/python[meta_writer]
 FROM common AS runtime
 
 # runtime system dependencies
-RUN apt-get update -y && apt-get install -y --no-install-recommends \
+RUN add-apt-repository -y ppa:deadsnakes/ppa && \
+    apt-get update -y && apt-get install -y --no-install-recommends \
     # odin-data C++ dependencies
-    libblosc-dev libboost-all-dev libhdf5-dev liblog4cxx-dev libpcap-dev libczmq-dev && \
+    libblosc-dev libboost-all-dev libhdf5-dev liblog4cxx-dev libpcap-dev libczmq-dev \
+    # python dependencies
+    python3.11 && \
     # tidy up
     apt-get -y clean all
 
