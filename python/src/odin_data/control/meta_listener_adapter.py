@@ -110,6 +110,10 @@ class MetaListenerAdapter(OdinDataAdapter):
 
         value = str(escape.url_unescape(request.body)).replace('"', '')
 
+        if path in self._config_parameters:
+            # Store config to re-send with acquisition ID when it is changed
+            self._config_parameters[path] = value
+
         if path == "config/acquisition_id":
             self.acquisition_id = value
             # Set inactive so process_updates doesn't clear acquisition ID
@@ -134,14 +138,9 @@ class MetaListenerAdapter(OdinDataAdapter):
             status_code, response = self._send_config(config)
 
             self.acquisition_id = None
-        elif path in self._config_parameters:
-            # Store config to re-send with acquisition ID when it is changed
-            self._config_parameters[path] = value
+        elif self.acquisition_id is not None:
             parameter = path.split("/", 1)[-1]  # Remove 'config/'
-            config = {
-                "acquisition_id": self.acquisition_id,
-                parameter: value
-            }
+            config = {"acquisition_id": self.acquisition_id, parameter: value}
             status_code, response = self._send_config(config)
         else:
             return super(MetaListenerAdapter, self).put(path, request)
