@@ -90,10 +90,10 @@ class FrameProcessorAdapter(ApiAdapter):
         status_code = 200
         content_type = "application/json"
 
-        logging.error("{}".format(path))
+        logging.debug("Get Request: {}".format(path))
         try:
             response = self._fp_adapter._controller.get(path, wants_metadata(request))
-            logging.error("{}".format(response))
+            logging.debug("Get Response: {}".format(response))
         except ParameterTreeError as param_error:
             response = {
                 "response": "OdinDatatAdapter GET error: {}".format(param_error)

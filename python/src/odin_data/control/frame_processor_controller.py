@@ -51,7 +51,7 @@ class FrameProcessorController(object):
                             {},
                         ),
                     },
-                    #'write': (lambda: 1, self.queue_write, {})
+                    "write": (lambda: False, self.execute_write, {})
                 },
             },
             mutable=True,
@@ -63,10 +63,68 @@ class FrameProcessorController(object):
         self._odin_adapter_frs = odin_adapter_frs
         self._odin_adapter_fps = odin_adapter_fps
 
+        self._odin_adapter_fps._controller.merge_external_tree("config", self._fp_params)
+
         # Set up the rank of the individual FP applications
         # This must be called after the adapters have started
         self._thread = threading.Thread(target=self.init_rank)
         self._thread.start()
+
+    def execute_write(self, value):
+        # Queue the write command
+        logging.error("Writing command: {}".format(value))
+
+        if value:
+            # Before attempting to write files, make some simple error checks
+
+            # Check if we have a valid buffer status from the FR adapter
+
+            # TODO: Need to check FR buffer status
+#            valid, reason = self.check_fr_status()
+#            if not valid:
+#                raise RuntimeError(reason)
+
+            # Check the file prefix is not empty
+            if str(self._file_prefix) == '':
+                raise RuntimeError("File prefix must not be empty")
+
+            # First setup the rank for the frameProcessor applications
+            self.setup_rank()
+
+            processes = self._odin_adapter_fps._controller.get("count", False)["count"]
+            try:
+                for rank in range(processes):
+                    # Setup the number of processes and the rank for each client
+                    config = {
+                        'hdf': {
+                            'frames': self._frames
+                        }
+                    }
+                    logging.error("Sending config to FP odin adapter %i: %s", rank, config)
+                    self._odin_adapter_fps._controller.put(f"{rank}/config", config)
+                    config = {
+                        'hdf': {
+                            'acquisition_id': self._acquisition_id,
+                            'file': {
+                                'path': str(self._file_path),
+                                'name': str(self._file_prefix),
+                                'extension': str(self._file_extension)
+                            }
+                        }
+                    }
+                    logging.error("Sending config to FP odin adapter %i: %s", rank, config)
+                    self._odin_adapter_fps._controller.put(f"{rank}/config", config)
+            except Exception as err:
+                logging.debug("Failed to send rank information to FP applications")
+                logging.error("Error: %s", err)
+        try:
+            config = {'hdf': {'write': value}}
+            for rank in range(processes):
+                logging.error("Sending config to FP odin adapter %i: %s", rank, config)
+                self._odin_adapter_fps._controller.put(f"{rank}/config", config)
+        except Exception as err:
+            logging.debug("Failed to send write command to FP applications")
+            logging.error("Error: %s", err)
 
     def init_rank(self):
         # Send the setup rank after allowing time for the

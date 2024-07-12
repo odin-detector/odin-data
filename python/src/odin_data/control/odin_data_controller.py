@@ -37,7 +37,7 @@ class OdinDataController(object):
             self._clients.append(IpcTornadoClient(ep["ip_address"], ep["port"]))
             self._client_connections.append(False)
 
-        _tree = {
+        self._tree = {
             "api": (lambda: self._api, None, {}),
             "module": (lambda: self._name, None, {}),
             "endpoints": [],
@@ -45,23 +45,29 @@ class OdinDataController(object):
             "update_interval": (lambda: self._update_interval, None, {}),
         }
         for idx, endpoint in enumerate(self._endpoints):
-            _tree["endpoints"].append(
+            self._tree["endpoints"].append(
                 # Note the default here binds unique variables into each closure
                 {k: (lambda v=v: v, None, {}) for k, v in endpoint.items()}
             )
         for idx, _client in enumerate(self._clients):
-            _tree[str(idx)] = {
+            self._tree[str(idx)] = {
                 "status": {"error": (lambda: self._error, None, {})},
                 "config": {},
             }
         # TODO: Consider renaming this
-        self._params = ParameterTree(_tree, mutable=True)
+        self._params = ParameterTree(self._tree, mutable=True)
 
         # Create the status loop handling thread
         self._status_running = True
         self._status_lock = threading.Lock()
         self._status_thread = threading.Thread(target=self.update_loop)
         self._status_thread.start()
+
+    def merge_external_tree(self, path, tree):
+        # First we need to insert the new parameter tree
+        self._tree[path] = tree
+        # Next, we must re-build the complete parameter tree
+        self._params = ParameterTree(self._tree, mutable=True)
 
     @property
     def first_update(self):
@@ -136,6 +142,9 @@ class OdinDataController(object):
                             f"{index}/status", client.parameters["status"]
                         )
                     if "config" in client.parameters:
+                        if "hdf" in client.parameters["config"]:
+                            # Hard code a write option
+                            client.parameters["config"]["hdf"]["write"] = False
                         self._params.replace(
                             f"{index}/config", client.parameters["config"]
                         )
