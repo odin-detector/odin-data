@@ -1,8 +1,13 @@
 import logging
 from time import time
+from typing import Optional
 
 import h5py as h5
 import numpy as np
+
+
+def units(unit:str):
+    return {"units": unit}
 
 
 class HDF5CacheBlock(object):
@@ -136,6 +141,7 @@ class HDF5Dataset(object):
         cache=True,
         block_size=1000000,
         block_timeout=600,
+        attributes=None
     ):
         """
         Args:
@@ -150,7 +156,7 @@ class HDF5Dataset(object):
                          or write directly to file
             block_size(int): See HDF5UnlimitedCache
             block_timeout(int): See HDF5UnlimitedCache
-
+            attributes(dict): A dict of attribute names and values to add to the dataset
         """
         self.name = name
         self.dtype = dtype
@@ -182,7 +188,9 @@ class HDF5Dataset(object):
                 block_timeout=block_timeout,
             )
 
-        self._h5py_dataset = None  # h5py.Dataset
+        self.attributes = attributes if attributes is not None else dict()
+
+        self._h5py_dataset: Optional[h5.Dataset] = None  # h5py.Dataset
         self._is_written = False
 
         self._logger = logging.getLogger("HDF5Dataset")
@@ -255,6 +263,10 @@ class HDF5Dataset(object):
                 return
 
         self._h5py_dataset[...] = data
+
+        for attribute, value in self.attributes.items():
+            self._h5py_dataset.attrs[attribute] = value
+
         self._is_written = True
 
     def prepare_data(self, data):
