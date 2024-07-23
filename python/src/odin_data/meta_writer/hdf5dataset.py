@@ -229,6 +229,10 @@ class HDF5Dataset(object):
         else:
             self._cache.add_value(value, offset)
 
+    def _add_attributes(self):
+        for attribute, value in self.attributes.items():
+            self._h5py_dataset.attrs[attribute] = value
+
     def write(self, data):
         """Write the entire dataset with the given data
 
@@ -264,8 +268,7 @@ class HDF5Dataset(object):
 
         self._h5py_dataset[...] = data
 
-        for attribute, value in self.attributes.items():
-            self._h5py_dataset.attrs[attribute] = value
+        self._add_attributes()
 
         self._is_written = True
 
