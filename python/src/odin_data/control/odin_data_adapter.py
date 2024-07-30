@@ -57,9 +57,12 @@ class OdinDataAdapter(ApiAdapter):
         # Setup the time between client update requests
         self._update_interval = float(self.options.get("update_interval", 0.5))
 
+        # Check for a Frame Processor flag
+        self._frame_processor_flag = bool(self.options.get("frame_processor", False))
+
         # Create the Frame Processor Controller object
         self._controller = OdinDataController(
-            self.name, self._endpoint_arg, self._update_interval
+            self.name, self._endpoint_arg, self._update_interval, self._frame_processor_flag
         )
 
     @request_types("application/json", "application/vnd.odin-native")
@@ -76,10 +79,10 @@ class OdinDataAdapter(ApiAdapter):
         status_code = 200
         content_type = "application/json"
 
-        logging.error("{}".format(path))
+        #logging.error("{}".format(path))
         try:
             response = self._controller.get(path, wants_metadata(request))
-            logging.error("{}".format(response))
+        #    logging.error("{}".format(response))
         except ParameterTreeError as param_error:
             response = {
                 "response": "OdinDatatAdapter GET error: {}".format(param_error)
