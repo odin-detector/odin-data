@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>&lt;no title&gt; &#8212; odin-data 0+untagged.1.ga36add2 documentation</title>
+    <title>Design Decisions &#8212; odin-data 0+untagged.1.g53be11e documentation</title>
   
   
   
@@ -37,7 +37,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../_static/documentation_options.js?v=c50c9256"></script>
+    <script src="../../_static/documentation_options.js?v=6185b9a1"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
@@ -50,8 +50,8 @@
         </script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="&lt;no title&gt;" href="../reference/index.html" />
-    <link rel="prev" title="&lt;no title&gt;" href="overview.html" />
+    <link rel="next" title="Reference" href="../reference/index.html" />
+    <link rel="prev" title="Overview" href="overview.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -151,14 +151,14 @@
     
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../../user/index.html">
-    <no title>
+    User Guide
   </a>
 </li>
 
 
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="../index.html">
-    <no title>
+    Developer Guide
   </a>
 </li>
 
@@ -295,14 +295,14 @@ document.write(`
     
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../../user/index.html">
-    <no title>
+    User Guide
   </a>
 </li>
 
 
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="../index.html">
-    <no title>
+    Developer Guide
   </a>
 </li>
 
@@ -384,8 +384,51 @@ document.write(`
 <nav class="bd-docs-nav bd-links"
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
-  <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../how-to/excalidraw.html">```</a></li>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../tutorials/index.html"><strong>Tutorials</strong></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/write-detector-support.html">Writing Detector Support</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../how-to/index.html"><strong>How-To Guides</strong></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../how-to/common.html">Common API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../how-to/frame-decoder.html">FrameDecoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../how-to/frame-processor-plugin.html">FrameProcessorPlugin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../how-to/frame-simulator-plugin.html">FrameSimulatorPlugin</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../how-to/docs.html">Docs</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../how-to/excalidraw.html">How to embed Excalidraw diagrams</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html"><strong>Explanations</strong></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Design Decisions</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../reference/index.html"><strong>Reference</strong></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/common.html">Common API Reference</a></li>
+
+
+
+
+
+
+
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/frame-receiver.html">FrameReceiver API Reference</a></li>
+
+
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/frame-processor.html">FrameProcessor API Reference</a></li>
+
+
+
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/frame-simulator.html">FrameSimulator API Reference</a></li>
+
+<li class="toctree-l2 has-children"><a class="reference internal" href="../reference/design-docs/index.html">Design Docs</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/design-docs/live-view-spec.html">Specification For Odin Data Live View Plugin</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
 </ul>
 </div>
 </nav></div>
@@ -424,12 +467,12 @@ document.write(`
       </a>
     </li>
     
-    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">&lt;no title&gt;</a></li>
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Developer Guide</a></li>
     
     
-    <li class="breadcrumb-item"><a href="index.html" class="nav-link">&lt;no title&gt;</a></li>
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link"><strong>Explanations</strong></a></li>
     
-    <li class="breadcrumb-item active" aria-current="page">&lt;no title&gt;</li>
+    <li class="breadcrumb-item active" aria-current="page">Design Decisions</li>
   </ul>
 </nav>
 </div>
@@ -446,10 +489,12 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <p># Design Decisions</p>
+  <section id="design-decisions">
+<h1>Design Decisions<a class="headerlink" href="#design-decisions" title="Link to this heading">#</a></h1>
 <p>The frameReceiver and frameProcessor are implemented as two separate applications for a
 few key reasons:</p>
-<p>## Separation of concerns</p>
+<section id="separation-of-concerns">
+<h2>Separation of concerns<a class="headerlink" href="#separation-of-concerns" title="Link to this heading">#</a></h2>
 <p>There are fundamentally two separate problem domains: data capture - receiving data from
 the network interface onto the system - and data processing. These two operations can be
 almost completely isolated with no coordination of the two processes other than to pass
@@ -462,7 +507,9 @@ system, it enters the domain of procesing and writing to persistent storage. In 
 domain bottlenecks in the processing can be overcome by increasing the resources of the
 processing server, such as by adding more memory, or by optimising the logic of an
 isolated FrameProcessorPlugin.</p>
-<p>## Monitoring</p>
+</section>
+<section id="monitoring">
+<h2>Monitoring<a class="headerlink" href="#monitoring" title="Link to this heading">#</a></h2>
 <p>The first failure point in the data acquisition pipeline is receiving data from the
 network interface into system memory. If this is not done quickly enough, packets will
 be dropped at the kernel layer with no indication of what went wrong. Allowing the
@@ -471,6 +518,8 @@ monitored and when it is exhausted it will be clear where data was lost. This mo
 extends throughout the frameProcessor through processing time metrics for each plugin
 and watchdog timers around certain I/O to show when a call is blocking for longer than
 expected.</p>
+</section>
+</section>
 
 
                 </article>
@@ -488,7 +537,7 @@ expected.</p>
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">&lt;no title&gt;</p>
+        <p class="prev-next-title">Overview</p>
       </div>
     </a>
     <a class="right-next"
@@ -496,7 +545,7 @@ expected.</p>
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">&lt;no title&gt;</p>
+        <p class="prev-next-title"><strong>Reference</strong></p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -517,9 +566,10 @@ expected.</p>
     <i class="fa-solid fa-list"></i> On this page
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
-    <ul class="simple visible nav section-nav flex-column">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#separation-of-concerns">Separation of concerns</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#monitoring">Monitoring</a></li>
 </ul>
-
   </nav></div>
 
   <div class="sidebar-secondary-item">

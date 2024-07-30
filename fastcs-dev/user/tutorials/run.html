@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>&lt;no title&gt; &#8212; odin-data 0+untagged.1.ga36add2 documentation</title>
+    <title>Run &#8212; odin-data 0+untagged.1.g53be11e documentation</title>
   
   
   
@@ -37,7 +37,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../_static/documentation_options.js?v=c50c9256"></script>
+    <script src="../../_static/documentation_options.js?v=6185b9a1"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
@@ -50,8 +50,8 @@
         </script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="&lt;no title&gt;" href="tools.html" />
-    <link rel="prev" title="&lt;no title&gt;" href="deploy.html" />
+    <link rel="next" title="Using the Python Tools" href="tools.html" />
+    <link rel="prev" title="Deploy" href="deploy.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -151,14 +151,14 @@
     
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="../index.html">
-    <no title>
+    User Guide
   </a>
 </li>
 
 
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../../developer/index.html">
-    <no title>
+    Developer Guide
   </a>
 </li>
 
@@ -295,14 +295,14 @@ document.write(`
     
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="../index.html">
-    <no title>
+    User Guide
   </a>
 </li>
 
 
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../../developer/index.html">
-    <no title>
+    Developer Guide
   </a>
 </li>
 
@@ -384,26 +384,22 @@ document.write(`
 <nav class="bd-docs-nav bd-links"
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
-  <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../explanations/frame-processor.html">}</a></li>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html"><strong>Tutorials</strong></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="build.html">Build</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deploy.html">Deploy</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tools.html">Using the Python Tools</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-to/index.html"><strong>How-To Guides</strong></a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../explanations/index.html"><strong>Explanations</strong></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../explanations/frame-receiver.html">FrameReceiver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../explanations/frame-processor.html">FrameProcessor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../explanations/frame-simulator.html">FrameSimulator</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html"><strong>Reference</strong></a></li>
 </ul>
 </div>
 </nav></div>
@@ -442,12 +438,12 @@ document.write(`
       </a>
     </li>
     
-    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">&lt;no title&gt;</a></li>
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">User Guide</a></li>
     
     
-    <li class="breadcrumb-item"><a href="index.html" class="nav-link">&lt;no title&gt;</a></li>
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link"><strong>Tutorials</strong></a></li>
     
-    <li class="breadcrumb-item active" aria-current="page">&lt;no title&gt;</li>
+    <li class="breadcrumb-item active" aria-current="page">Run</li>
   </ul>
 </nav>
 </div>
@@ -464,25 +460,29 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <p># Run</p>
-<p>## Minimal Example</p>
-<p>The scripts installed into the install prefix under <code class="xref any docutils literal notranslate"><span class="pre">dummy_example</span></code> fully define the
+  <section id="run">
+<h1>Run<a class="headerlink" href="#run" title="Link to this heading">#</a></h1>
+<section id="minimal-example">
+<h2>Minimal Example<a class="headerlink" href="#minimal-example" title="Link to this heading">#</a></h2>
+<p>The scripts installed into the install prefix under <code class="docutils literal notranslate"><span class="pre">dummy_example</span></code> fully define the
 configs for the frameReceiver, frameProcessor and frameSimulator to run a dummy
 acquisition. They can be run as they are, after building odin-data according to the
-[build](build) instructions. For example, from inside the install prefix, run the
+<a class="reference internal" href="build.html"><span class="doc std std-doc">build</span></a> instructions. For example, from inside the install prefix, run the
 following (in different terminals):</p>
-<blockquote>
-<div><p>$ dummy_example/frameReceiver.sh
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ dummy_example/frameReceiver.sh
 $ dummy_example/frameProcessor.sh
-$ dummy_example/frameSimulator.sh</p>
-</div></blockquote>
+$ dummy_example/frameSimulator.sh
+</pre></div>
+</div>
 <p>The simulator will generate UDP packets and send them to the frameReceiver. The
 frameReceiver will decode these packets into a full data frame and write them into
 /dev/shm/FrameReceiverBuffer and the frameProcessor will process the shared memory
 buffer and write the data frame to file. Once all the data has been processed, the
-applications will all shutdown automatically (due to the <code class="xref any docutils literal notranslate"><span class="pre">frames</span></code> configuration given).</p>
-<p>After running the dummy acquisition, an hdf5 file will have been written to <code class="xref any docutils literal notranslate"><span class="pre">/tmp</span></code>
-(check the <code class="xref any docutils literal notranslate"><span class="pre">Closing</span> <span class="pre">file</span></code> message in frameProcessor logs for the path).</p>
+applications will all shutdown automatically (due to the <code class="docutils literal notranslate"><span class="pre">frames</span></code> configuration given).</p>
+<p>After running the dummy acquisition, an hdf5 file will have been written to <code class="docutils literal notranslate"><span class="pre">/tmp</span></code>
+(check the <code class="docutils literal notranslate"><span class="pre">Closing</span> <span class="pre">file</span></code> message in frameProcessor logs for the path).</p>
+</section>
+</section>
 
 
                 </article>
@@ -500,7 +500,7 @@ applications will all shutdown automatically (due to the <code class="xref any d
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">&lt;no title&gt;</p>
+        <p class="prev-next-title">Deploy</p>
       </div>
     </a>
     <a class="right-next"
@@ -508,7 +508,7 @@ applications will all shutdown automatically (due to the <code class="xref any d
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">&lt;no title&gt;</p>
+        <p class="prev-next-title">Using the Python Tools</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -529,9 +529,9 @@ applications will all shutdown automatically (due to the <code class="xref any d
     <i class="fa-solid fa-list"></i> On this page
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
-    <ul class="simple visible nav section-nav flex-column">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#minimal-example">Minimal Example</a></li>
 </ul>
-
   </nav></div>
 
   <div class="sidebar-secondary-item">

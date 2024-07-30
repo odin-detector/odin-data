@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>&lt;no title&gt; &#8212; odin-data 0+untagged.1.ga36add2 documentation</title>
+    <title>FrameProcessorPlugin &#8212; odin-data 0+untagged.1.g53be11e documentation</title>
   
   
   
@@ -37,7 +37,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../_static/documentation_options.js?v=c50c9256"></script>
+    <script src="../../_static/documentation_options.js?v=6185b9a1"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
@@ -50,8 +50,8 @@
         </script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="&lt;no title&gt;" href="frame-simulator-plugin.html" />
-    <link rel="prev" title="&lt;no title&gt;" href="frame-decoder.html" />
+    <link rel="next" title="FrameSimulatorPlugin" href="frame-simulator-plugin.html" />
+    <link rel="prev" title="FrameDecoder" href="frame-decoder.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -151,14 +151,14 @@
     
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../../user/index.html">
-    <no title>
+    User Guide
   </a>
 </li>
 
 
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="../index.html">
-    <no title>
+    Developer Guide
   </a>
 </li>
 
@@ -295,14 +295,14 @@ document.write(`
     
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../../user/index.html">
-    <no title>
+    User Guide
   </a>
 </li>
 
 
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="../index.html">
-    <no title>
+    Developer Guide
   </a>
 </li>
 
@@ -384,8 +384,51 @@ document.write(`
 <nav class="bd-docs-nav bd-links"
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
-  <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="excalidraw.html">```</a></li>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../tutorials/index.html"><strong>Tutorials</strong></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/write-detector-support.html">Writing Detector Support</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html"><strong>How-To Guides</strong></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="common.html">Common API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frame-decoder.html">FrameDecoder</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">FrameProcessorPlugin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frame-simulator-plugin.html">FrameSimulatorPlugin</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="docs.html">Docs</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="excalidraw.html">How to embed Excalidraw diagrams</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../explanations/index.html"><strong>Explanations</strong></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../explanations/overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../explanations/design-decisions.html">Design Decisions</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../reference/index.html"><strong>Reference</strong></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/common.html">Common API Reference</a></li>
+
+
+
+
+
+
+
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/frame-receiver.html">FrameReceiver API Reference</a></li>
+
+
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/frame-processor.html">FrameProcessor API Reference</a></li>
+
+
+
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/frame-simulator.html">FrameSimulator API Reference</a></li>
+
+<li class="toctree-l2 has-children"><a class="reference internal" href="../reference/design-docs/index.html">Design Docs</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/design-docs/live-view-spec.html">Specification For Odin Data Live View Plugin</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
 </ul>
 </div>
 </nav></div>
@@ -424,12 +467,12 @@ document.write(`
       </a>
     </li>
     
-    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">&lt;no title&gt;</a></li>
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Developer Guide</a></li>
     
     
-    <li class="breadcrumb-item"><a href="index.html" class="nav-link">&lt;no title&gt;</a></li>
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link"><strong>How-To Guides</strong></a></li>
     
-    <li class="breadcrumb-item active" aria-current="page">&lt;no title&gt;</li>
+    <li class="breadcrumb-item active" aria-current="page">FrameProcessorPlugin</li>
   </ul>
 </nav>
 </div>
@@ -446,54 +489,53 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <p># FrameProcessorPlugin</p>
-<p>The [FrameProcessorPlugin] is implemented for various purposes and an arbitrary tree of
+  <section id="frameprocessorplugin">
+<h1>FrameProcessorPlugin<a class="headerlink" href="#frameprocessorplugin" title="Link to this heading">#</a></h1>
+<p>The <a class="reference internal" href="../reference/api/frame-processor.html#_CPPv4N14FrameProcessor20FrameProcessorPluginE" title="FrameProcessor::FrameProcessorPlugin"><span class="xref myst cpp cpp-class">FrameProcessorPlugin</span></a> is implemented for various purposes and an arbitrary tree of
 plugins can be loaded and connected within the frameProcessor application. Detector
 plugins are not special in any way from more general plugins, except that they are
 generally the first plugin in the tree.</p>
 <p>This class defines a few virtual methods to be implemented by concrete implementations.</p>
 <ul class="simple">
-<li><p>[process_frame]</p></li>
-<li><p>[configure]*</p></li>
-<li><p>[requestConfiguration]*</p></li>
-<li><p>[status]*</p></li>
-<li><p>[process_end_of_acquisition]*</p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-processor.html#_CPPv4N14FrameProcessor20FrameProcessorPlugin13process_frameEN5boost10shared_ptrI5FrameEE" title="FrameProcessor::FrameProcessorPlugin::process_frame"><span class="xref myst cpp cpp-func">process_frame</span></a></p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-processor.html#_CPPv4N14FrameProcessor20FrameProcessorPlugin9configureERN8OdinData10IpcMessageERN8OdinData10IpcMessageE" title="FrameProcessor::FrameProcessorPlugin::configure"><span class="xref myst cpp cpp-func">configure</span></a>*</p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-processor.html#_CPPv4N14FrameProcessor20FrameProcessorPlugin20requestConfigurationERN8OdinData10IpcMessageE" title="FrameProcessor::FrameProcessorPlugin::requestConfiguration"><span class="xref myst cpp cpp-func">requestConfiguration</span></a>*</p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-processor.html#_CPPv4N14FrameProcessor20FrameProcessorPlugin6statusERN8OdinData10IpcMessageE" title="FrameProcessor::FrameProcessorPlugin::status"><span class="xref myst cpp cpp-func">status</span></a>*</p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-processor.html#_CPPv4N14FrameProcessor20FrameProcessorPlugin26process_end_of_acquisitionEv" title="FrameProcessor::FrameProcessorPlugin::process_end_of_acquisition"><span class="xref myst cpp cpp-func">process_end_of_acquisition</span></a>*</p></li>
 </ul>
-<p>While the [configure], [requestConfiguration] and [status] methods are technically
+<p>While the <a class="reference internal" href="../reference/api/frame-processor.html#_CPPv4N14FrameProcessor20FrameProcessorPlugin9configureERN8OdinData10IpcMessageERN8OdinData10IpcMessageE" title="FrameProcessor::FrameProcessorPlugin::configure"><span class="xref myst cpp cpp-func">configure</span></a>, <a class="reference internal" href="../reference/api/frame-processor.html#_CPPv4N14FrameProcessor20FrameProcessorPlugin20requestConfigurationERN8OdinData10IpcMessageE" title="FrameProcessor::FrameProcessorPlugin::requestConfiguration"><span class="xref myst cpp cpp-func">requestConfiguration</span></a> and <a class="reference internal" href="../reference/api/frame-processor.html#_CPPv4N14FrameProcessor20FrameProcessorPlugin6statusERN8OdinData10IpcMessageE" title="FrameProcessor::FrameProcessorPlugin::status"><span class="xref myst cpp cpp-func">status</span></a> methods are technically
 optional, they should be implemented if the plugin has parameters to expose.</p>
 <p>If the plugin should take some action when an
-[end of acquisition frame](#endofacquisitionframe) is passed, then
-[process_end_of_acquisition] can be implemented to handle this case.</p>
-<p>Additionally, the base class provides the [push] method, which should be called by child
-classes at the end of [process_frame] to pass frames on to  any listening plugins in the
+<a class="reference internal" href="#endofacquisitionframe">end of acquisition frame</a> is passed, then
+<a class="reference internal" href="../reference/api/frame-processor.html#_CPPv4N14FrameProcessor20FrameProcessorPlugin26process_end_of_acquisitionEv" title="FrameProcessor::FrameProcessorPlugin::process_end_of_acquisition"><span class="xref myst cpp cpp-func">process_end_of_acquisition</span></a> can be implemented to handle this case.</p>
+<p>Additionally, the base class provides the <a class="reference internal" href="../reference/api/frame-processor.html#_CPPv4N14FrameProcessor20FrameProcessorPlugin4pushEN5boost10shared_ptrI5FrameEE" title="FrameProcessor::FrameProcessorPlugin::push"><span class="xref myst cpp cpp-func">push</span></a> method, which should be called by child
+classes at the end of <a class="reference internal" href="../reference/api/frame-processor.html#_CPPv4N14FrameProcessor20FrameProcessorPlugin13process_frameEN5boost10shared_ptrI5FrameEE" title="FrameProcessor::FrameProcessorPlugin::process_frame"><span class="xref myst cpp cpp-func">process_frame</span></a> to pass frames on to  any listening plugins in the
 plugin tree. If the plugin is intended to only be at the end of a plugin chain, then this
 does not need to be implemented.</p>
-<p>## Types of Frame</p>
-<p>The [Frame] class is the container used to pass data between plugins. It is an abstract
+<section id="types-of-frame">
+<h2>Types of Frame<a class="headerlink" href="#types-of-frame" title="Link to this heading">#</a></h2>
+<p>The <a class="reference internal" href="../reference/api/frame-processor.html#_CPPv4N14FrameProcessor5FrameE" title="FrameProcessor::Frame"><span class="xref myst cpp cpp-class">Frame</span></a> class is the container used to pass data between plugins. It is an abstract
 base class with a few concrete implementations.</p>
-<p>### SharedBufferFrame</p>
-<p>The [SharedBufferFrame] simply stores the pointer to the shared memory buffer as provided
+<section id="sharedbufferframe">
+<h3>SharedBufferFrame<a class="headerlink" href="#sharedbufferframe" title="Link to this heading">#</a></h3>
+<p>The <a class="reference internal" href="../reference/api/frame-processor.html#_CPPv4N14FrameProcessor17SharedBufferFrameE" title="FrameProcessor::SharedBufferFrame"><span class="xref myst cpp cpp-class">SharedBufferFrame</span></a> simply stores the pointer to the shared memory buffer as provided
 by the frameReceiver. When possible to perform any processing in place, it is best to
 publish an instance of this class to subsequent plugins to avoid an unecessary copy.</p>
-<p>### DataBlockFrame</p>
-<p>For cases where it is not possible to operate in place a [DataBlockFrame] can be
+</section>
+<section id="datablockframe">
+<h3>DataBlockFrame<a class="headerlink" href="#datablockframe" title="Link to this heading">#</a></h3>
+<p>For cases where it is not possible to operate in place a <a class="reference internal" href="../reference/api/frame-processor.html#_CPPv4N14FrameProcessor14DataBlockFrameE" title="FrameProcessor::DataBlockFrame"><span class="xref myst cpp cpp-class">DataBlockFrame</span></a> can be
 allocated from the DataBlockPool. For example, the BloscPlugin does this because the
 compression algorithm requires input and output data pointers.</p>
-<p>### EndOfAcquisitionFrame</p>
-<p>The [EndOfAcquisitionFrame] is a meta Frame that is used only to signal the end of an
+</section>
+<section id="endofacquisitionframe">
+<h3>EndOfAcquisitionFrame<a class="headerlink" href="#endofacquisitionframe" title="Link to this heading">#</a></h3>
+<p>The <a class="reference internal" href="../reference/api/frame-processor.html#_CPPv4N14FrameProcessor21EndOfAcquisitionFrameE" title="FrameProcessor::EndOfAcquisitionFrame"><span class="xref myst cpp cpp-class">EndOfAcquisitionFrame</span></a> is a meta Frame that is used only to signal the end of an
 acquisition to plugins further down the plugin chain. This is typically produced by
 detector processing plugins that can detect the end of acquisition from the data stream.</p>
-<p>[FrameProcessorPlugin]: FrameProcessor::FrameProcessorPlugin
-[process_frame]: FrameProcessor::FrameProcessorPlugin::process_frame
-[configure]: FrameProcessor::FrameProcessorPlugin::configure
-[requestConfiguration]: FrameProcessor::FrameProcessorPlugin::requestConfiguration
-[status]: FrameProcessor::FrameProcessorPlugin::status
-[process_end_of_acquisition]: FrameProcessor::FrameProcessorPlugin::process_end_of_acquisition
-[push]: FrameProcessor::FrameProcessorPlugin::push
-[Frame]: FrameProcessor::Frame
-[SharedBufferFrame]: FrameProcessor::SharedBufferFrame
-[DataBlockFrame]: FrameProcessor::DataBlockFrame
-[EndOfAcquisitionFrame]: FrameProcessor::EndOfAcquisitionFrame</p>
+</section>
+</section>
+</section>
 
 
                 </article>
@@ -511,7 +553,7 @@ detector processing plugins that can detect the end of acquisition from the data
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">&lt;no title&gt;</p>
+        <p class="prev-next-title">FrameDecoder</p>
       </div>
     </a>
     <a class="right-next"
@@ -519,7 +561,7 @@ detector processing plugins that can detect the end of acquisition from the data
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">&lt;no title&gt;</p>
+        <p class="prev-next-title">FrameSimulatorPlugin</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -540,9 +582,14 @@ detector processing plugins that can detect the end of acquisition from the data
     <i class="fa-solid fa-list"></i> On this page
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
-    <ul class="simple visible nav section-nav flex-column">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#types-of-frame">Types of Frame</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sharedbufferframe">SharedBufferFrame</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datablockframe">DataBlockFrame</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#endofacquisitionframe">EndOfAcquisitionFrame</a></li>
 </ul>
-
+</li>
+</ul>
   </nav></div>
 
   <div class="sidebar-secondary-item">
