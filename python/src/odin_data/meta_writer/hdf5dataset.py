@@ -6,7 +6,7 @@ import h5py as h5
 import numpy as np
 
 
-def units(unit:str):
+def units(unit: str):
     return {"units": unit}
 
 
@@ -188,9 +188,9 @@ class HDF5Dataset(object):
                 block_timeout=block_timeout,
             )
 
-        self.attributes = attributes if attributes is not None else dict()
+        self.attributes = attributes or dict()
 
-        self._h5py_dataset: Optional[h5.Dataset] = None  # h5py.Dataset
+        self._h5py_dataset: Optional[h5.Dataset] = None
         self._is_written = False
 
         self._logger = logging.getLogger("HDF5Dataset")
