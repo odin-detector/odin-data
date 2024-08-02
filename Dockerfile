@@ -47,18 +47,17 @@ RUN git clone https://github.com/DiamondLightSource/hdf5filters.git && cd hdf5fi
 FROM developer AS build
 
 # fetch the source
-WORKDIR /tmp/odin-data
+WORKDIR /odin/odin-data
 COPY . .
 
 # C++
-RUN mkdir /odin && \
-    mkdir -p build && cd build && \
+RUN mkdir -p build && cd build && \
     cmake -DCMAKE_INSTALL_PREFIX=/odin ../cpp && \
     make -j8 VERBOSE=1 && \
     make install
 
 # Python
-RUN python -m pip install /tmp/odin-data/python[meta_writer]
+RUN python -m pip install /odin/odin-data/python[meta_writer]
 
 # Runtime stage ################################################################
 FROM common AS runtime
@@ -75,5 +74,7 @@ RUN add-apt-repository -y ppa:deadsnakes/ppa && \
 
 COPY --from=build /odin /odin
 COPY --from=build /venv /venv
+
+RUN rm -rf /odin/odin-data /odin/odin-control /odin/hdf5filters
 
 WORKDIR /odin
