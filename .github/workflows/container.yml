@@ -1,14 +1,8 @@
 name: Container CI
 
+# Only tags are pushed to the registry because of rules in the steps
 on:
   push:
-    # Build for main, tags and PRs
-    # Builds from PRs are not pushed to the registry because of rules in the steps
-    branches:
-      # push these changes to the branch 'docker' for container publishing
-      - fastcs-dev
-    tags:
-      - "*"
   pull_request:
 
 jobs:
@@ -57,35 +51,68 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
+      - name: Create tags for developer image
+        id: meta-developer
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}-developer
+          tags: |
+            type=ref,event=tag
+            type=raw,value=latest
+
       - name: Push developer image
+        if: github.ref_type == 'tag'
         uses: docker/build-push-action@v4
         with:
           context: .
           file: Dockerfile
           target: developer
-          tags: ${{ env.TAG }}-developer:latest
+          tags: ${{ steps.meta-developer.outputs.tags }}
+          labels: ${{ steps.meta-developer.outputs.labels }}
           push: ${{ github.event_name != 'pull_request' }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
+      - name: Create tags for build image
+        id: meta-build
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}-build
+          tags: |
+            type=ref,event=tag
+            type=raw,value=latest
+
       - name: Push build image
+        if: github.ref_type == 'tag'
         uses: docker/build-push-action@v4
         with:
           context: .
           file: Dockerfile
           target: build
-          tags: ${{ env.TAG }}-build:latest
+          tags: ${{ steps.meta-build.outputs.tags }}
+          labels: ${{ steps.meta-build.outputs.labels }}
           push: ${{ github.event_name != 'pull_request' }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
+      - name: Create tags for runtime image
+        id: meta-runtime
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}-runtime
+          tags: |
+            type=ref,event=tag
+            type=raw,value=latest
+
       - name: Push runtime image
+        if: github.ref_type == 'tag'
         uses: docker/build-push-action@v4
         with:
           context: .
           file: Dockerfile
           target: runtime
-          tags: ${{ env.TAG }}-runtime:latest
+          tags: ${{ steps.meta-runtime.outputs.tags }}
+          labels: ${{ steps.meta-runtime.outputs.labels }}
           push: ${{ github.event_name != 'pull_request' }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
