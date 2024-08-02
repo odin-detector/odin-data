@@ -37,6 +37,12 @@ RUN python3.11 -m ensurepip && \
     python -m pip install --upgrade pip && \
     python -m pip install git+https://github.com/odin-detector/odin-control@1.3.0
 
+# Install hdf5filters from source
+RUN git clone https://github.com/DiamondLightSource/hdf5filters.git && cd hdf5filters && \
+    mkdir -p cmake-build && cd cmake-build && \
+    cmake -DCMAKE_INSTALL_PREFIX=/odin -DCMAKE_BUILD_TYPE=Release -DUSE_AVX2=ON .. && \
+    make install
+
 # build stage - throwaway stage for runtime assets #############################
 FROM developer AS build
 
