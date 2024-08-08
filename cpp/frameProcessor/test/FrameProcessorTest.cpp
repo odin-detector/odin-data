@@ -1011,6 +1011,31 @@ BOOST_AUTO_TEST_CASE( FileWriterPluginCalcNumFramesTest1000fpb )
 
 }
 
+BOOST_AUTO_TEST_CASE( FileWriterPluginZeroFrames )
+{
+  OdinData::IpcMessage reply;
+  FrameProcessor::FileWriterPlugin fwp;
+  fwp.set_name("hdf");
+  {
+    OdinData::IpcMessage cfg;
+    cfg.set_param("frames", 1);
+    fwp.configure(cfg, reply);
+
+    OdinData::IpcMessage reply2;
+    fwp.requestConfiguration(reply2);
+    BOOST_CHECK_EQUAL(1, reply2.get_param<int>("hdf/frames"));
+  }
+  {
+    OdinData::IpcMessage cfg;
+    cfg.set_param("frames", 0);
+    fwp.configure(cfg, reply);
+
+    OdinData::IpcMessage reply2;
+    fwp.requestConfiguration(reply2);
+    BOOST_CHECK_EQUAL(0, reply2.get_param<int>("hdf/frames"));
+  }
+}
+
 BOOST_AUTO_TEST_SUITE_END(); //FileWriterPluginTest
 
 BOOST_AUTO_TEST_SUITE(SumPluginUnitTest);
