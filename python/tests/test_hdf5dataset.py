@@ -7,7 +7,9 @@ import numpy
 from odin_data.meta_writer.hdf5dataset import (
     HDF5UnlimitedCache,
     StringHDF5Dataset,
+    Int32HDF5Dataset
 )
+import tempfile
 
 
 class _TestMockDataset:
@@ -264,7 +266,8 @@ def test_string_types():
         "variable_utf_int", encoding="utf-8", cache=False
     )
 
-    with h5.File("/tmp/strings.h5", "w") as f:
+    temp_file = tempfile.TemporaryFile()
+    with h5.File(temp_file, "w") as f:
         variable_utf.initialise(
             f.create_dataset(
                 "variable_utf", shape=(1,), maxshape=(1,), dtype=variable_utf.dtype
@@ -302,11 +305,29 @@ def test_string_types():
         fixed_ascii.write("fixed_ascii")
         variable_utf_int.write(2)  # Check non-strings can be handled
 
-    with h5.File("/tmp/strings.h5", "r") as f:
+    with h5.File(temp_file, "r") as f:
         assert f["variable_utf"][0] == b"variable_utf"
         assert f["variable_ascii"][0] == b"variable_ascii"
         assert f["fixed_utf"][0] == b"fixed_utf"
         assert f["fixed_ascii"][0] == b"fixed_ascii"
         assert f["variable_utf_int"][0] == b"2"
 
-    os.remove("/tmp/strings.h5")
+
+def test_attributes_added():
+    dataset_with_units = Int32HDF5Dataset("test_dataset", cache=False, attributes={"units": "m"})
+
+    temp_file = tempfile.TemporaryFile()
+    with h5.File(temp_file, "w") as f:
+        dataset_with_units.initialise(
+            f.create_dataset(
+                "test_dataset", shape=(1,), maxshape=(1,), dtype=dataset_with_units.dtype
+            ),
+            0,
+        )
+
+        dataset_with_units.write(2)
+
+    with h5.File(temp_file, "r") as f:
+        attributes = f["test_dataset"].attrs
+        assert len(attributes.values()) == 1
+        assert attributes["units"] == "m"
