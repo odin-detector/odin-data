@@ -302,7 +302,7 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
 
     // Check to see if we are being told how many frames to write
     if (config.has_param(FileWriterPlugin::CONFIG_FRAMES) &&
-        config.get_param<size_t>(FileWriterPlugin::CONFIG_FRAMES) > 0) {
+        config.get_param<size_t>(FileWriterPlugin::CONFIG_FRAMES) >= 0) {
       size_t totalFrames = config.get_param<size_t>(FileWriterPlugin::CONFIG_FRAMES);
       next_acquisition_->total_frames_ = totalFrames;
       next_acquisition_->frames_to_write_ = calc_num_frames(totalFrames);
@@ -822,7 +822,7 @@ bool FileWriterPlugin::reset_statistics()
  *  ii) this function has the side-effect of moving from the current-acq to
  *        the next-acq if that helps us match the frame.
  *
- *  The function will set an error if the frame does not match a writing acquisition. 
+ *  The function will set an error if the frame does not match a writing acquisition.
  * \param[in] frame - Pointer to the Frame object.
  */
 bool FileWriterPlugin::frame_in_acquisition(boost::shared_ptr<Frame> frame) {
