@@ -36,7 +36,7 @@ The following is an example of installing dependencies on CentOS 7:
 
 These dependencies are commonly available on many linux distributions, e.g. on [arch](https://wiki.archlinux.org/):
 
-    $ pacman -Sy gcc make cmake blosc boost hdf5 log4cxx
+    $ pacman -S gcc make cmake blosc boost hdf5 log4cxx
 
 ## Building odin-data
 

@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>FrameReceiver API Reference &#8212; odin-data 0+untagged.1.gd97b3bd documentation</title>
+    <title>FrameReceiver API Reference &#8212; odin-data 0+untagged.1.gaa578c6 documentation</title>
   
   
   
@@ -37,7 +37,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=13b71e8a"></script>
+    <script src="../../../_static/documentation_options.js?v=cb175c9e"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -499,7 +499,7 @@ document.write(`
 <dl class="cpp class">
 <dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver12FrameDecoderE">
 <span id="_CPPv3N13FrameReceiver12FrameDecoderE"></span><span id="_CPPv2N13FrameReceiver12FrameDecoderE"></span><span id="FrameReceiver::FrameDecoder"></span><span class="target" id="classFrameReceiver_1_1FrameDecoder"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FrameDecoder</span></span></span><span class="w"> </span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">public</span></span><span class="w"> </span><span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData16IVersionedObjectE" title="OdinData::IVersionedObject"><span class="n"><span class="pre">IVersionedObject</span></span></a><a class="headerlink" href="#_CPPv4N13FrameReceiver12FrameDecoderE" title="Link to this definition">#</a><br /></dt>
-<dd><p>Subclassed by <a class="reference internal" href="#classFrameReceiver_1_1FrameDecoderUDP"><span class="std std-ref">FrameReceiver::FrameDecoderUDP</span></a>, <a class="reference internal" href="#classFrameReceiver_1_1FrameDecoderZMQ"><span class="std std-ref">FrameReceiver::FrameDecoderZMQ</span></a></p>
+<dd><p>Subclassed by FrameReceiver::FrameDecoderTCP, <a class="reference internal" href="#classFrameReceiver_1_1FrameDecoderUDP"><span class="std std-ref">FrameReceiver::FrameDecoderUDP</span></a>, <a class="reference internal" href="#classFrameReceiver_1_1FrameDecoderZMQ"><span class="std std-ref">FrameReceiver::FrameDecoderZMQ</span></a></p>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-types">Public Types</p>
 <dl class="cpp enum">
@@ -1708,7 +1708,7 @@ document.write(`
 <dl class="cpp class">
 <dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver21FrameReceiverRxThreadE">
 <span id="_CPPv3N13FrameReceiver21FrameReceiverRxThreadE"></span><span id="_CPPv2N13FrameReceiver21FrameReceiverRxThreadE"></span><span id="FrameReceiver::FrameReceiverRxThread"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverRxThread"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FrameReceiverRxThread</span></span></span><a class="headerlink" href="#_CPPv4N13FrameReceiver21FrameReceiverRxThreadE" title="Link to this definition">#</a><br /></dt>
-<dd><p>Subclassed by <a class="reference internal" href="#classFrameReceiver_1_1FrameReceiverUDPRxThread"><span class="std std-ref">FrameReceiver::FrameReceiverUDPRxThread</span></a>, <a class="reference internal" href="#classFrameReceiver_1_1FrameReceiverZMQRxThread"><span class="std std-ref">FrameReceiver::FrameReceiverZMQRxThread</span></a></p>
+<dd><p>Subclassed by FrameReceiver::FrameReceiverTCPRxThread, <a class="reference internal" href="#classFrameReceiver_1_1FrameReceiverUDPRxThread"><span class="std std-ref">FrameReceiver::FrameReceiverUDPRxThread</span></a>, <a class="reference internal" href="#classFrameReceiver_1_1FrameReceiverZMQRxThread"><span class="std std-ref">FrameReceiver::FrameReceiverZMQRxThread</span></a></p>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
 <dl class="cpp function">
@@ -2227,6 +2227,11 @@ document.write(`
 <dl>
 <dt class="sig sig-object cpp">
 <em class="property"><span class="pre">friend</span> <span class="pre">class</span></em> <span class="pre">FrameReceiverZMQRxThread</span></dt>
+</dl>
+
+<dl>
+<dt class="sig sig-object cpp">
+<em class="property"><span class="pre">friend</span> <span class="pre">class</span></em> <span class="pre">FrameReceiverTCPRxThread</span></dt>
 </dl>
 
 <dl>
