@@ -42,6 +42,8 @@ const std::string FrameProcessorController::CONFIG_EXECUTE               = "exec
 const std::string FrameProcessorController::CONFIG_INDEX                 = "index";
 const std::string FrameProcessorController::CONFIG_VALUE                 = "value";
 
+const std::string FrameProcessorController::COMMAND_KEY                  = "command";
+
 const int FrameProcessorController::META_TX_HWM = 10000;
 
 /** Construct a new FrameProcessorController class.
@@ -133,6 +135,20 @@ void FrameProcessorController::handleCtrlChannel()
         replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
         this->requestConfiguration(replyMsg);
         LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (request configuration): "
+                               << replyMsg.encode());
+    }
+    else if ((ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) &&
+        (ctrlMsg.get_msg_val()  == OdinData::IpcMessage::MsgValCmdExecute)) {
+      replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
+      this->execute(ctrlMsg, replyMsg);
+      LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (command): "
+                             << replyMsg.encode());
+    }
+    else if ((ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) &&
+             (ctrlMsg.get_msg_val() == OdinData::IpcMessage::MsgValCmdRequestCommands)) {
+        replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
+        this->requestCommands(replyMsg);
+        LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (request commands): "
                                << replyMsg.encode());
     }
     else if ((ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) &&
@@ -504,6 +520,72 @@ void FrameProcessorController::requestConfiguration(OdinData::IpcMessage& reply)
   std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
   for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
     iter->second->requestConfiguration(reply);
+  }
+}
+
+/**
+ * Submit commands to the FrameProcessor plugins.
+ *
+ * Submits command(s) to execute on individual plugins if they
+ * support commands.  The IpcMessage should contain the command
+ * name and a structure of any parameters required by the command.
+ *
+ * This method searches for command objects that have the same
+ * index as loaded plugins. If any of these are found then the
+ * commands are passed down to the plugin for execution.
+ *
+ * \param[in] config - IpcMessage containing command and any parameter data.
+ * \param[out] reply - Response IpcMessage.
+ */
+void FrameProcessorController::execute(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
+{
+  LOG4CXX_DEBUG_LEVEL(1, logger_, "Command submitted: " << config.encode());
+
+  // Loop over plugins, checking for command messages
+  std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
+  bool commandPresent = false;
+  for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
+    if (config.has_param(iter->first)) {
+      OdinData::IpcMessage subConfig(config.get_param<const rapidjson::Value&>(iter->first),
+                                     config.get_msg_type(),
+                                     config.get_msg_val());
+      // Check if the payload has a command for this plugin
+      if (subConfig.has_param(FrameProcessorController::COMMAND_KEY)){
+        commandPresent = true;
+        // Extract the command and execute on the plugin
+        std::string commandName = subConfig.get_param<std::string>(FrameProcessorController::COMMAND_KEY);
+        iter->second->execute(commandName, reply);
+      }
+    }
+  }
+  if (!commandPresent){
+    // If no valid commands have been found after checking through all plugins then NACK the reply
+    reply.set_nack("No valid commands found");
+  }
+}
+
+/**
+ * Request the command set supported by this FrameProcessorController and
+ * its loaded plugins.
+ *
+ * The method searches through all loaded plugins.  Each plugin is
+ * also sent a request for its supported commands.
+ *
+ * \param[out] reply - Response IpcMessage with the current supported command set.
+ */
+void FrameProcessorController::requestCommands(OdinData::IpcMessage& reply)
+{
+  LOG4CXX_DEBUG_LEVEL(3, logger_, "Request for supported commands made");
+
+  // Loop over plugins and request current supported commands from each
+  std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
+  std::vector<std::string>::iterator cmd;
+  for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
+    std::vector<std::string> commands = iter->second->requestCommands();
+    for (cmd = commands.begin(); cmd != commands.end(); ++cmd) {
+      std::string command_str = iter->first + "/" + FrameProcessorController::COMMAND_KEY + "[]";
+      reply.set_param(command_str, *cmd);
+    }
   }
 }
 

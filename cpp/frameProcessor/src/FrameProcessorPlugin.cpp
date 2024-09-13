@@ -143,7 +143,7 @@ std::vector<std::string> FrameProcessorPlugin::get_warnings()
   return warning_messages_;
 }
 
-    /** Configure the plugin.
+/** Configure the plugin.
  *
  * In this abstract class the configure method does perform any
  * actions, this should be overridden by subclasses.
@@ -166,6 +166,38 @@ void FrameProcessorPlugin::configure(OdinData::IpcMessage& config, OdinData::Ipc
 void FrameProcessorPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
   // Default method simply does nothing
+}
+
+/** Execute a command within the plugin.
+ *
+ * In this abstract class the command method does perform any
+ * actions, this should be overridden by subclasses.
+ *
+ * \param[in] command - String containing the command to execute.
+ * \param[out] reply - Response IpcMessage.
+ */
+void FrameProcessorPlugin::execute(const std::string& command, OdinData::IpcMessage& reply)
+{
+  // A command has been submitted and this plugin has no execute implementation defined,
+  // throw a runtime error to report this.
+  std::stringstream is;
+  is << "Submitted command not supported: " << command;
+  LOG4CXX_ERROR(logger_, is.str());
+  throw std::runtime_error(is.str().c_str());
+}
+
+/** Request the plugin's supported commands.
+ *
+ * In this abstract class the request method does perform any
+ * actions, this should be overridden by subclasses.
+ *
+ * \return - Vector containing supported command strings.
+ */
+std::vector<std::string> FrameProcessorPlugin::requestCommands()
+{
+  // Default returns an empty vector.
+  std::vector<std::string> reply;
+  return reply;
 }
 
 /**

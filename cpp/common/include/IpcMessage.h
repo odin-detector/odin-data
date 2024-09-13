@@ -90,6 +90,8 @@ public:
     MsgValCmdStatus,                 //!< Status command message
     MsgValCmdConfigure,              //!< Configure command message
     MsgValCmdRequestConfiguration,   //!< Request configuration command message
+    MsgValCmdExecute,                //!< Execute a command message
+    MsgValCmdRequestCommands,        //!< Request available commands message
     MsgValCmdRequestVersion,         //!< Request version information message
     MsgValCmdBufferConfigRequest,    //!< Buffer configuration request
     MsgValCmdBufferPrechargeRequest, //!< Buffer precharge request
