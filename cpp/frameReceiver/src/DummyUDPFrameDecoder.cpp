@@ -459,7 +459,7 @@ void DummyUDPFrameDecoder::get_status(const std::string param_prefix,
     OdinData::IpcMessage& status_msg)
 {
   status_get_count_++;
-  status_msg.set_param(param_prefix + "name", std::string("DummyUDPFrameDecoder"));
+  status_msg.set_param(param_prefix + "class", std::string("DummyUDPFrameDecoder"));
   status_msg.set_param(param_prefix + "status_get_count", status_get_count_);
   status_msg.set_param(param_prefix + "packets_received", packets_received_);
   status_msg.set_param(param_prefix + "packets_lost", packets_lost_);
