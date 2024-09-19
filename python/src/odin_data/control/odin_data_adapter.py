@@ -29,6 +29,7 @@ class OdinDataAdapter(ApiAdapter):
     This class provides the adapter interface between the ODIN server and the ODIN-DATA detector system,
     transforming the REST-like API HTTP verbs into the appropriate frameProcessor ZeroMQ control messages
     """
+    _controller_cls = OdinDataController
 
     def __init__(self, **kwargs):
         """
@@ -57,12 +58,9 @@ class OdinDataAdapter(ApiAdapter):
         # Setup the time between client update requests
         self._update_interval = float(self.options.get("update_interval", 0.5))
 
-        # Check for a Frame Processor flag
-        self._frame_processor_flag = bool(self.options.get("frame_processor", False))
-
         # Create the Frame Processor Controller object
-        self._controller = OdinDataController(
-            self.name, self._endpoint_arg, self._update_interval, self._frame_processor_flag
+        self._controller = self._controller_cls(
+            self.name, self._endpoint_arg, self._update_interval
         )
 
     @request_types("application/json", "application/vnd.odin-native")
@@ -85,7 +83,7 @@ class OdinDataAdapter(ApiAdapter):
         #    logging.error("{}".format(response))
         except ParameterTreeError as param_error:
             response = {
-                "response": "OdinDataAdapter GET error: {}".format(param_error)
+                "response": f"{type(self).__name__} GET error: {param_error}"
             }
             status_code = 400
 
@@ -112,7 +110,7 @@ class OdinDataAdapter(ApiAdapter):
             self._controller.put(path, json_decode(request.body))
         except ParameterTreeError as param_error:
             response = {
-                "response": "OdinDataAdapter PUT error: {}".format(param_error)
+                "response": f"{type(self).__name__} PUT error: {param_error}"
             }
             status_code = 400
 

@@ -15,7 +15,7 @@ from odin_data.control.ipc_tornado_client import IpcTornadoClient
 
 
 class OdinDataController(object):
-    def __init__(self, name, endpoints, update_interval=0.5, frame_processor=False):
+    def __init__(self, name, endpoints, update_interval=0.5):
         self._clients = []
         self._client_connections = []
         self._update_interval = update_interval
@@ -23,9 +23,7 @@ class OdinDataController(object):
         self._api = 0.1
         self._error = ""
         self._endpoints = []
-        self._frame_processor = frame_processor
         self._config_cache = None
-        self._first_update = False
 
         for arg in endpoints.split(","):
             arg = arg.strip()
@@ -38,6 +36,19 @@ class OdinDataController(object):
             self._clients.append(IpcTornadoClient(ep["ip_address"], ep["port"]))
             self._client_connections.append(False)
 
+        # set up controller specific parameters
+        self.setup_parameter_tree()
+
+        # TODO: Consider renaming this
+        self._params = ParameterTree(self._tree, mutable=True)
+
+        # Create the status loop handling thread
+        self._status_running = True
+        self._status_lock = threading.Lock()
+        self._status_thread = threading.Thread(target=self.update_loop)
+        self._status_thread.start()
+
+    def setup_parameter_tree(self):
         self._tree = {
             "api": (lambda: self._api, None, {}),
             "module": (lambda: self._name, None, {}),
@@ -56,28 +67,11 @@ class OdinDataController(object):
                 "config": {},
             }
 
-        if self._frame_processor:
-            # Set up the specific FP parameters
-            self.setup_frame_processor()
-
-        # TODO: Consider renaming this
-        self._params = ParameterTree(self._tree, mutable=True)
-
-        # Create the status loop handling thread
-        self._status_running = True
-        self._status_lock = threading.Lock()
-        self._status_thread = threading.Thread(target=self.update_loop)
-        self._status_thread.start()
-
     def merge_external_tree(self, path, tree):
         # First we need to insert the new parameter tree
         self._tree[path] = tree
         # Next, we must re-build the complete parameter tree
         self._params = ParameterTree(self._tree, mutable=True)
-
-    @property
-    def first_update(self):
-        return self._first_update
 
     def set_error(self, err):
         # Record the error message into the status
@@ -112,9 +106,6 @@ class OdinDataController(object):
 
         while self._status_running:
             try:
-                # If we are a FP controller then we need to track the writing state
-                writing = [False]*len(self._clients)
-
                 # Handle background tasks
                 # Loop over all connected clients and obtain the status
                 for index, client in enumerate(self._clients):
@@ -146,40 +137,34 @@ class OdinDataController(object):
                             # Log the error, but do not stop the update loop
                             logging.error("Unhandled exception: %s", e)
 
+                    self.handle_client(client, index)
                     if "status" in client.parameters:
                         self._params.replace(
                             f"{index}/status", client.parameters["status"]
                         )
-                        if self._frame_processor:
-                            if "hdf" in client.parameters["status"]:
-#                                client.parameters["config"]["hdf"]["write"] = client.parameters["status"]["hdf"]["writing"]
-                                writing[index] = client.parameters["status"]["hdf"]["writing"]
                     if "config" in client.parameters:
                         self._params.replace(
                             f"{index}/config", client.parameters["config"]
                         )
 
-#                    self._params.set("{}/config/hdf/write".format(index), writing[index])
-
                 self._config_cache = [
                     self._params.get(f"{idx}/config")
                     for idx, _ in enumerate(self._clients)
                 ]
-                # Flag that we have made an update
-                if not self._first_update:
-                    # If we a re a FP controller then init the rank
-                    if self._frame_processor:
-                        self.setup_rank()
-                self._first_update = True
 
-                if self._frame_processor:
-                    self._write = all(writing)
                 self.process_updates()
 
             except Exception as ex:
                 logging.error("{}".format(ex))
 
             time.sleep(self._update_interval)
+
+    def handle_client(self, client, index):
+        """Called on each client in the update_loop loop before updating the
+        parameter tree and caching the config, can be overloaded by
+        subclasses to implement controller specific logic.
+        """
+        pass
 
     def process_config_changes(self):
         """Search through the application config trees and compare with the
@@ -273,128 +258,9 @@ class OdinDataController(object):
     def shutdown(self):
         self._status_running = False
 
-    def setup_frame_processor(self):
-        self._acquisition_id = ""
-        self._write = False
-        self._frames = 0
-        self._file_path = ""
-        self._file_prefix = ""
-        self._file_extension = "h5"
-        self._tree["config"] = {
-            "hdf": {
-                "acquisition_id": (
-                    self._get("_acquisition_id"),
-                    lambda v: self._set("_acquisition_id", v),
-                    {},
-                ),
-                "frames": (
-                    self._get("_frames"),
-                    lambda v: self._set("_frames", v),
-                    {},
-                ),
-                "file": {
-                    "path": (
-                        self._get("_file_path"),
-                        lambda v: self._set("_file_path", v),
-                        {},
-                    ),
-                    "prefix": (
-                        self._get("_file_prefix"),
-                        lambda v: self._set("_file_prefix", v),
-                        {},
-                    ),
-                    "extension": (
-                        self._get("_file_extension"),
-                        lambda v: self._set("_file_extension", v),
-                        {},
-                    ),
-                },
-                "write": (
-                    self._get("_write"),
-                     self.execute_write,
-                      {}
-                    )
-            },
-        }
-
-    def execute_write(self, value):
-        # Queue the write command
-        logging.debug("Executing write command with value: {}".format(value))
-        processes = len(self._clients)
-
-        if value:
-            # Before attempting to write files, make some simple error checks
-
-            # Check if we have a valid buffer status from the FR adapter
-
-            # TODO: Need to check FR buffer status
-#            valid, reason = self.check_fr_status()
-#            if not valid:
-#                raise RuntimeError(reason)
-
-            # Check the file prefix is not empty
-            if str(self._file_prefix) == '':
-                raise RuntimeError("File prefix must not be empty")
-
-            # First setup the rank for the frameProcessor applications
-            self.setup_rank()
-
-            try:
-                for rank in range(processes):
-                    # Setup the number of processes and the rank for each client
-                    config = {
-                        'hdf': {
-                            'frames': self._frames
-                        }
-                    }
-                    logging.info("Sending config to FP odin adapter %i: %s", rank, config)
-                    self._clients[rank].send_configuration(config)
-                    config = {
-                        'hdf': {
-                            'acquisition_id': self._acquisition_id,
-                            'file': {
-                                'path': str(self._file_path),
-                                'prefix': str(self._file_prefix),
-                                'extension': str(self._file_extension)
-                            }
-                        }
-                    }
-                    logging.info("Sending config to FP odin adapter %i: %s", rank, config)
-                    self._clients[rank].send_configuration(config)
-            except Exception as err:
-                logging.error("Failed to send information to FP applications")
-                logging.error("Error: %s", err)
-        try:
-            config = {'hdf': {'write': value}}
-            for rank in range(processes):
-                logging.info("Sending config to FP odin adapter %i: %s", rank, config)
-                #self._odin_adapter_fps._controller.put(f"{rank}/config", config)
-                self._clients[rank].send_configuration(config)
-        except Exception as err:
-            logging.error("Failed to send write command to FP applications")
-            logging.error("Error: %s", err)
-
     def _set(self, attr, val):
         logging.debug("_set called: {}  {}".format(attr, val))
         setattr(self, attr, val)
 
     def _get(self, attr):
         return lambda: getattr(self, attr)
-
-    def setup_rank(self):
-        # Attempt initialisation of the connected clients
-        processes = len(self._clients)
-        logging.info(
-            "Setting up rank information for {} FP processes".format(processes)
-        )
-        rank = 0
-        try:
-            for rank in range(processes):
-                # Setup the number of processes and the rank for each client
-                config = {"hdf": {"process": {"number": processes, "rank": rank}}}
-                logging.debug("Sending config to FP odin adapter %i: %s", rank, config)
-                self._clients[rank].send_configuration(config)
-
-        except Exception as err:
-            logging.debug("Failed to send rank information to FP applications")
-            logging.error("Error: %s", err)
