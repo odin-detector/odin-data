@@ -85,7 +85,7 @@ class OdinDataAdapter(ApiAdapter):
         #    logging.error("{}".format(response))
         except ParameterTreeError as param_error:
             response = {
-                "response": "OdinDatatAdapter GET error: {}".format(param_error)
+                "response": "OdinDataAdapter GET error: {}".format(param_error)
             }
             status_code = 400
 
@@ -112,7 +112,7 @@ class OdinDataAdapter(ApiAdapter):
             self._controller.put(path, json_decode(request.body))
         except ParameterTreeError as param_error:
             response = {
-                "response": "OdinDatatAdapter GET error: {}".format(param_error)
+                "response": "OdinDataAdapter PUT error: {}".format(param_error)
             }
             status_code = 400
 
