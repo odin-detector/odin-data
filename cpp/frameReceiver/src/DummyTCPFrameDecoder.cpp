@@ -139,7 +139,7 @@ void DummyTCPFrameDecoder::monitor_buffers(void) {}
 
 void DummyTCPFrameDecoder::get_status(const std::string param_prefix,
                                       OdinData::IpcMessage &status_msg) {
-  status_msg.set_param(param_prefix + "name",
+  status_msg.set_param(param_prefix + "class",
                        std::string("DummyTCPFrameDecoder"));
 }
 
