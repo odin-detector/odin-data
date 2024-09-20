@@ -42,6 +42,8 @@ public:
 
   void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   void requestConfiguration(OdinData::IpcMessage& reply);
+  void execute(const std::string& command, OdinData::IpcMessage& reply);
+  std::vector<std::string> requestCommands();
   void status(OdinData::IpcMessage& status);
   bool reset_statistics(void);
 
@@ -53,6 +55,9 @@ private:
   static const std::string CONFIG_IMAGE_HEIGHT;
   /** Configuraiton constant for copy frame mode **/
   static const std::string CONFIG_COPY_FRAME;
+
+  /** Command execution constant for print command **/
+  static const std::string EXECUTE_PRINT;
 
   void process_frame(boost::shared_ptr<Frame> frame);
   void process_lost_packets(boost::shared_ptr<Frame>& frame);

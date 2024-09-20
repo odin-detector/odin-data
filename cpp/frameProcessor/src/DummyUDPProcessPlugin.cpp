@@ -15,6 +15,8 @@ namespace FrameProcessor
   const std::string DummyUDPProcessPlugin::CONFIG_IMAGE_WIDTH = "width";
   const std::string DummyUDPProcessPlugin::CONFIG_IMAGE_HEIGHT = "height";
   const std::string DummyUDPProcessPlugin::CONFIG_COPY_FRAME = "copy_frame";
+  // Command and parameters
+  const std::string DummyUDPProcessPlugin::EXECUTE_PRINT = "print";
 
   /**
    * The constructor sets up default configuration parameters and logging used within the class.
@@ -133,6 +135,43 @@ namespace FrameProcessor
     reply.set_param(base_str + DummyUDPProcessPlugin::CONFIG_IMAGE_WIDTH, image_width_);
     reply.set_param(base_str + DummyUDPProcessPlugin::CONFIG_IMAGE_HEIGHT, image_height_);
     reply.set_param(base_str + DummyUDPProcessPlugin::CONFIG_COPY_FRAME, copy_frame_);
+  }
+
+  /**
+   * Execute a command on the plugin.  This receives an IpcMessage which should be processed
+   * to execute a command within the plugin, and any response can be added to the reply IpcMessage.
+   * The dummy plugin implements a single command "print" that prints the value of the parameter named.
+   *
+   * \param[in] config - String containing the command to execute.
+   * \param[out] reply - Reference to the reply IpcMessage object.
+   */
+  void DummyUDPProcessPlugin::execute(const std::string& command, OdinData::IpcMessage& reply)
+  {
+    if (command == DummyUDPProcessPlugin::EXECUTE_PRINT){
+      LOG4CXX_INFO(logger_, "Image width is " << image_width_);
+      LOG4CXX_INFO(logger_, "Image height is " << image_height_);
+      LOG4CXX_INFO(logger_, "Copy frame is " << copy_frame_);
+    } else {
+      std::stringstream is;
+      is << "Submitted command not supported: " << command;
+      LOG4CXX_ERROR(logger_, is.str());
+      throw std::runtime_error(is.str().c_str());
+    }
+  }
+
+  /**
+   * Respond to command execution requests from clients.
+   * 
+   * This method responds to command executions requests from client, populating the supplied IpcMessage
+   * reply with the commands and command parameters supported by this plugin.
+   * 
+   * \return - Vector containing supported command strings.
+   */
+  std::vector<std::string> DummyUDPProcessPlugin::requestCommands()
+  {
+    // Reply with a vector of supported command strings.
+    std::vector<std::string> cmds = {DummyUDPProcessPlugin::EXECUTE_PRINT};
+    return cmds;
   }
 
   /**
