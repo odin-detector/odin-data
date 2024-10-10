@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>FrameProcessor API Reference &#8212; odin-data 0+untagged.1.gacdcc9d documentation</title>
+    <title>FrameProcessor API Reference &#8212; odin-data 0+untagged.1.g004b15e documentation</title>
   
   
   
@@ -37,7 +37,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=1790cfe4"></script>
+    <script src="../../../_static/documentation_options.js?v=223e6ff7"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -581,6 +581,34 @@ document.write(`
 </dd></dl>
 
 <dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor24FrameProcessorController7executeERN8OdinData10IpcMessageERN8OdinData10IpcMessageE">
+<span id="_CPPv3N14FrameProcessor24FrameProcessorController7executeERN8OdinData10IpcMessageERN8OdinData10IpcMessageE"></span><span id="_CPPv2N14FrameProcessor24FrameProcessorController7executeERN8OdinData10IpcMessageERN8OdinData10IpcMessageE"></span><span id="FrameProcessor::FrameProcessorController::execute__OdinData::IpcMessageR.OdinData::IpcMessageR"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorController_1ada5c7f1244dbbf8f4a1656e116882563"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">execute</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">config</span></span>, <span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">reply</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor24FrameProcessorController7executeERN8OdinData10IpcMessageERN8OdinData10IpcMessageE" title="Link to this definition">#</a><br /></dt>
+<dd><p>Submit commands to the FrameProcessor plugins.</p>
+<p>Submits command(s) to execute on individual plugins if they support commands. The IpcMessage should contain the command name and a structure of any parameters required by the command.</p>
+<p>This method searches for command objects that have the same index as loaded plugins. If any of these are found then the commands are passed down to the plugin for execution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> – <strong>[in]</strong> - IpcMessage containing command and any parameter data. </p></li>
+<li><p><strong>reply</strong> – <strong>[out]</strong> - Response IpcMessage. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor24FrameProcessorController15requestCommandsERN8OdinData10IpcMessageE">
+<span id="_CPPv3N14FrameProcessor24FrameProcessorController15requestCommandsERN8OdinData10IpcMessageE"></span><span id="_CPPv2N14FrameProcessor24FrameProcessorController15requestCommandsERN8OdinData10IpcMessageE"></span><span id="FrameProcessor::FrameProcessorController::requestCommands__OdinData::IpcMessageR"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorController_1acadf72406cf3d29f8e1b6645eb5b9ba6"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">requestCommands</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">reply</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor24FrameProcessorController15requestCommandsERN8OdinData10IpcMessageE" title="Link to this definition">#</a><br /></dt>
+<dd><p>Request the command set supported by this <a class="reference internal" href="#classFrameProcessor_1_1FrameProcessorController"><span class="std std-ref">FrameProcessorController</span></a> and its loaded plugins.</p>
+<p>The method searches through all loaded plugins. Each plugin is also sent a request for its supported commands.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>reply</strong> – <strong>[out]</strong> - Response IpcMessage with the current supported command set. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor24FrameProcessorController15resetStatisticsERN8OdinData10IpcMessageE">
 <span id="_CPPv3N14FrameProcessor24FrameProcessorController15resetStatisticsERN8OdinData10IpcMessageE"></span><span id="_CPPv2N14FrameProcessor24FrameProcessorController15resetStatisticsERN8OdinData10IpcMessageE"></span><span id="FrameProcessor::FrameProcessorController::resetStatistics__OdinData::IpcMessageR"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorController_1a7dd25fe901ef96130cd75dd933c14963"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">resetStatistics</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">reply</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor24FrameProcessorController15resetStatisticsERN8OdinData10IpcMessageE" title="Link to this definition">#</a><br /></dt>
 <dd><p>Reset statistics on all of the loaded plugins.</p>
@@ -1058,6 +1086,12 @@ document.write(`
 </dd></dl>
 
 <dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor24FrameProcessorController11COMMAND_KEYE">
+<span id="_CPPv3N14FrameProcessor24FrameProcessorController11COMMAND_KEYE"></span><span id="_CPPv2N14FrameProcessor24FrameProcessorController11COMMAND_KEYE"></span><span id="FrameProcessor::FrameProcessorController::COMMAND_KEY__ssC"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorController_1a56867907ecff4d8c960f20bcb0b2e304"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">COMMAND_KEY</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;command&quot;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor24FrameProcessorController11COMMAND_KEYE" title="Link to this definition">#</a><br /></dt>
+<dd><p>Configuration constant for the a command to execute </p>
+</dd></dl>
+
+<dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor24FrameProcessorController11META_TX_HWME">
 <span id="_CPPv3N14FrameProcessor24FrameProcessorController11META_TX_HWME"></span><span id="_CPPv2N14FrameProcessor24FrameProcessorController11META_TX_HWME"></span><span id="FrameProcessor::FrameProcessorController::META_TX_HWM__iC"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorController_1ac4cc77b5c3cdc1cc95538421121c5429"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">META_TX_HWM</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">10000</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor24FrameProcessorController11META_TX_HWME" title="Link to this definition">#</a><br /></dt>
 <dd><p>Configuration constant for the meta TX channel high water mark </p>
@@ -1354,6 +1388,33 @@ document.write(`
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>reply</strong> – <strong>[out]</strong> - Response IpcMessage with current configuration. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor20FrameProcessorPlugin7executeERKNSt6stringERN8OdinData10IpcMessageE">
+<span id="_CPPv3N14FrameProcessor20FrameProcessorPlugin7executeERKNSt6stringERN8OdinData10IpcMessageE"></span><span id="_CPPv2N14FrameProcessor20FrameProcessorPlugin7executeERKNSt6stringERN8OdinData10IpcMessageE"></span><span id="FrameProcessor::FrameProcessorPlugin::execute__ssCR.OdinData::IpcMessageR"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorPlugin_1acbb990f801740c008a1dc2180f5d7ddd"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">execute</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">command</span></span>, <span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">reply</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin7executeERKNSt6stringERN8OdinData10IpcMessageE" title="Link to this definition">#</a><br /></dt>
+<dd><p>Execute a command within the plugin.</p>
+<p>In this abstract class the command method does perform any actions, this should be overridden by subclasses.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>command</strong> – <strong>[in]</strong> - String containing the command to execute. </p></li>
+<li><p><strong>reply</strong> – <strong>[out]</strong> - Response IpcMessage. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor20FrameProcessorPlugin15requestCommandsEv">
+<span id="_CPPv3N14FrameProcessor20FrameProcessorPlugin15requestCommandsEv"></span><span id="_CPPv2N14FrameProcessor20FrameProcessorPlugin15requestCommandsEv"></span><span id="FrameProcessor::FrameProcessorPlugin::requestCommands"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorPlugin_1a16ccdc60b1dc588ed44cce873155ddd9"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">requestCommands</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin15requestCommandsEv" title="Link to this definition">#</a><br /></dt>
+<dd><p>Request the plugin’s supported commands.</p>
+<p>In this abstract class the request method does perform any actions, this should be overridden by subclasses.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>- Vector containing supported command strings. </p>
 </dd>
 </dl>
 </dd></dl>
@@ -4537,6 +4598,32 @@ document.write(`
 </dd></dl>
 
 <dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor21DummyUDPProcessPlugin7executeERKNSt6stringERN8OdinData10IpcMessageE">
+<span id="_CPPv3N14FrameProcessor21DummyUDPProcessPlugin7executeERKNSt6stringERN8OdinData10IpcMessageE"></span><span id="_CPPv2N14FrameProcessor21DummyUDPProcessPlugin7executeERKNSt6stringERN8OdinData10IpcMessageE"></span><span id="FrameProcessor::DummyUDPProcessPlugin::execute__ssCR.OdinData::IpcMessageR"></span><span class="target" id="classFrameProcessor_1_1DummyUDPProcessPlugin_1ae05d16b7f4999c4b4a110c872be44ee7"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">execute</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">command</span></span>, <span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">reply</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor21DummyUDPProcessPlugin7executeERKNSt6stringERN8OdinData10IpcMessageE" title="Link to this definition">#</a><br /></dt>
+<dd><p>Execute a command on the plugin. This receives an IpcMessage which should be processed to execute a command within the plugin, and any response can be added to the reply IpcMessage. The dummy plugin implements a single command “print” that prints the value of the parameter named.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> – <strong>[in]</strong> - String containing the command to execute. </p></li>
+<li><p><strong>reply</strong> – <strong>[out]</strong> - Reference to the reply IpcMessage object. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor21DummyUDPProcessPlugin15requestCommandsEv">
+<span id="_CPPv3N14FrameProcessor21DummyUDPProcessPlugin15requestCommandsEv"></span><span id="_CPPv2N14FrameProcessor21DummyUDPProcessPlugin15requestCommandsEv"></span><span id="FrameProcessor::DummyUDPProcessPlugin::requestCommands"></span><span class="target" id="classFrameProcessor_1_1DummyUDPProcessPlugin_1a18ad141de8cb02156c95edf93d9d4d68"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">requestCommands</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor21DummyUDPProcessPlugin15requestCommandsEv" title="Link to this definition">#</a><br /></dt>
+<dd><p>Respond to command execution requests from clients.</p>
+<p>This method responds to command executions requests from client, populating the supplied IpcMessage reply with the commands and command parameters supported by this plugin.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>- Vector containing supported command strings. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor21DummyUDPProcessPlugin6statusERN8OdinData10IpcMessageE">
 <span id="_CPPv3N14FrameProcessor21DummyUDPProcessPlugin6statusERN8OdinData10IpcMessageE"></span><span id="_CPPv2N14FrameProcessor21DummyUDPProcessPlugin6statusERN8OdinData10IpcMessageE"></span><span id="FrameProcessor::DummyUDPProcessPlugin::status__OdinData::IpcMessageR"></span><span class="target" id="classFrameProcessor_1_1DummyUDPProcessPlugin_1a8ffb120181073815940191564123c64c"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">status</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">status</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor21DummyUDPProcessPlugin6statusERN8OdinData10IpcMessageE" title="Link to this definition">#</a><br /></dt>
 <dd><p>Collate status information for the plugin. The status is added to the status IpcMessage object.</p>
@@ -4630,6 +4717,12 @@ document.write(`
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor21DummyUDPProcessPlugin17CONFIG_COPY_FRAMEE">
 <span id="_CPPv3N14FrameProcessor21DummyUDPProcessPlugin17CONFIG_COPY_FRAMEE"></span><span id="_CPPv2N14FrameProcessor21DummyUDPProcessPlugin17CONFIG_COPY_FRAMEE"></span><span id="FrameProcessor::DummyUDPProcessPlugin::CONFIG_COPY_FRAME__ssC"></span><span class="target" id="classFrameProcessor_1_1DummyUDPProcessPlugin_1acd399aa34cbd3a70d44a90237cd55e7d"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CONFIG_COPY_FRAME</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;copy_frame&quot;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor21DummyUDPProcessPlugin17CONFIG_COPY_FRAMEE" title="Link to this definition">#</a><br /></dt>
 <dd><p>Configuraiton constant for copy frame mode </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor21DummyUDPProcessPlugin13EXECUTE_PRINTE">
+<span id="_CPPv3N14FrameProcessor21DummyUDPProcessPlugin13EXECUTE_PRINTE"></span><span id="_CPPv2N14FrameProcessor21DummyUDPProcessPlugin13EXECUTE_PRINTE"></span><span id="FrameProcessor::DummyUDPProcessPlugin::EXECUTE_PRINT__ssC"></span><span class="target" id="classFrameProcessor_1_1DummyUDPProcessPlugin_1a5ca4d978d1ed270f28123dc84dfe2df8"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">EXECUTE_PRINT</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;print&quot;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor21DummyUDPProcessPlugin13EXECUTE_PRINTE" title="Link to this definition">#</a><br /></dt>
+<dd><p>Command execution constant for print command </p>
 </dd></dl>
 
 </div>
@@ -6295,6 +6388,8 @@ document.write(`
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor24FrameProcessorController14provideVersionERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">FrameProcessorController::provideVersion()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor24FrameProcessorController9configureERN8OdinData10IpcMessageERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">FrameProcessorController::configure()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor24FrameProcessorController20requestConfigurationERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">FrameProcessorController::requestConfiguration()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor24FrameProcessorController7executeERN8OdinData10IpcMessageERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">FrameProcessorController::execute()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor24FrameProcessorController15requestCommandsERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">FrameProcessorController::requestCommands()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor24FrameProcessorController15resetStatisticsERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">FrameProcessorController::resetStatistics()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor24FrameProcessorController15configurePluginERN8OdinData10IpcMessageERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">FrameProcessorController::configurePlugin()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor24FrameProcessorController10loadPluginERKNSt6stringERKNSt6stringERKNSt6stringE"><code class="docutils literal notranslate"><span class="pre">FrameProcessorController::loadPlugin()</span></code></a></li>
@@ -6363,6 +6458,7 @@ document.write(`
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor24FrameProcessorController14CONFIG_EXECUTEE"><code class="docutils literal notranslate"><span class="pre">FrameProcessorController::CONFIG_EXECUTE</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor24FrameProcessorController12CONFIG_INDEXE"><code class="docutils literal notranslate"><span class="pre">FrameProcessorController::CONFIG_INDEX</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor24FrameProcessorController12CONFIG_VALUEE"><code class="docutils literal notranslate"><span class="pre">FrameProcessorController::CONFIG_VALUE</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor24FrameProcessorController11COMMAND_KEYE"><code class="docutils literal notranslate"><span class="pre">FrameProcessorController::COMMAND_KEY</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor24FrameProcessorController11META_TX_HWME"><code class="docutils literal notranslate"><span class="pre">FrameProcessorController::META_TX_HWM</span></code></a></li>
 </ul>
 </li>
@@ -6409,6 +6505,8 @@ document.write(`
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin12get_warningsEv"><code class="docutils literal notranslate"><span class="pre">FrameProcessorPlugin::get_warnings()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin9configureERN8OdinData10IpcMessageERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">FrameProcessorPlugin::configure()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin20requestConfigurationERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">FrameProcessorPlugin::requestConfiguration()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin7executeERKNSt6stringERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">FrameProcessorPlugin::execute()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin15requestCommandsEv"><code class="docutils literal notranslate"><span class="pre">FrameProcessorPlugin::requestCommands()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin6statusERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">FrameProcessorPlugin::status()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin21add_performance_statsERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">FrameProcessorPlugin::add_performance_stats()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin23reset_performance_statsEv"><code class="docutils literal notranslate"><span class="pre">FrameProcessorPlugin::reset_performance_stats()</span></code></a></li>
@@ -6879,6 +6977,8 @@ document.write(`
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor21DummyUDPProcessPlugin16get_version_longEv"><code class="docutils literal notranslate"><span class="pre">DummyUDPProcessPlugin::get_version_long()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor21DummyUDPProcessPlugin9configureERN8OdinData10IpcMessageERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">DummyUDPProcessPlugin::configure()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor21DummyUDPProcessPlugin20requestConfigurationERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">DummyUDPProcessPlugin::requestConfiguration()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor21DummyUDPProcessPlugin7executeERKNSt6stringERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">DummyUDPProcessPlugin::execute()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor21DummyUDPProcessPlugin15requestCommandsEv"><code class="docutils literal notranslate"><span class="pre">DummyUDPProcessPlugin::requestCommands()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor21DummyUDPProcessPlugin6statusERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">DummyUDPProcessPlugin::status()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor21DummyUDPProcessPlugin16reset_statisticsEv"><code class="docutils literal notranslate"><span class="pre">DummyUDPProcessPlugin::reset_statistics()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor21DummyUDPProcessPlugin13process_frameEN5boost10shared_ptrI5FrameEE"><code class="docutils literal notranslate"><span class="pre">DummyUDPProcessPlugin::process_frame()</span></code></a></li>
@@ -6891,6 +6991,7 @@ document.write(`
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor21DummyUDPProcessPlugin18CONFIG_IMAGE_WIDTHE"><code class="docutils literal notranslate"><span class="pre">DummyUDPProcessPlugin::CONFIG_IMAGE_WIDTH</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor21DummyUDPProcessPlugin19CONFIG_IMAGE_HEIGHTE"><code class="docutils literal notranslate"><span class="pre">DummyUDPProcessPlugin::CONFIG_IMAGE_HEIGHT</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor21DummyUDPProcessPlugin17CONFIG_COPY_FRAMEE"><code class="docutils literal notranslate"><span class="pre">DummyUDPProcessPlugin::CONFIG_COPY_FRAME</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor21DummyUDPProcessPlugin13EXECUTE_PRINTE"><code class="docutils literal notranslate"><span class="pre">DummyUDPProcessPlugin::EXECUTE_PRINT</span></code></a></li>
 </ul>
 </li>
 </ul>
