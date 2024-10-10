@@ -45,6 +45,8 @@ public:
   void provideVersion(OdinData::IpcMessage& reply);
   void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   void requestConfiguration(OdinData::IpcMessage& reply);
+  void execute(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
+  void requestCommands(OdinData::IpcMessage& reply);
   void resetStatistics(OdinData::IpcMessage& reply);
   void configurePlugin(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   void loadPlugin(const std::string& index, const std::string& name, const std::string& library);
@@ -108,6 +110,9 @@ private:
   static const std::string CONFIG_INDEX;
   /** Configuration constant for the value of a stored configuration object **/
   static const std::string CONFIG_VALUE;
+
+  /** Configuration constant for the a command to execute **/
+  static const std::string COMMAND_KEY;
 
   /** Configuration constant for the meta TX channel high water mark **/
   static const int META_TX_HWM;

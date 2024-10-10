@@ -10,6 +10,7 @@ file(GLOB TEST_SOURCES
     FrameProcessorTest.cpp
     GapFillPluginTest.cpp
     MetaMessageTest.cpp
+    DummyUDPProcessPluginTest.cpp
 )
 # Add tests for BloscPlugin if Blosc is present
 if (${BLOSC_FOUND})
@@ -39,6 +40,7 @@ target_link_libraries(frameProcessorTest
         LiveViewPlugin
         SumPlugin
         GapFillPlugin
+        DummyUDPProcessPlugin
         ${COMMON_LIBRARY})
 
 # Link for BloscPlugin if Blosc is present

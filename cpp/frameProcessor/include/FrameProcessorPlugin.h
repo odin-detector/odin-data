@@ -45,6 +45,8 @@ public:
   std::vector<std::string> get_warnings();
   virtual void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   virtual void requestConfiguration(OdinData::IpcMessage& reply);
+  virtual void execute(const std::string& command, OdinData::IpcMessage& reply);
+  virtual std::vector<std::string> requestCommands();
   virtual void status(OdinData::IpcMessage& status);
   void add_performance_stats(OdinData::IpcMessage& status);
   void reset_performance_stats();
