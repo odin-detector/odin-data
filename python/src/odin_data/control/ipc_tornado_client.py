@@ -175,7 +175,7 @@ class IpcTornadoClient(object):
     def _update_commands(self, commands_msg):
         """Store the response to a request_commands message in the _parameters dict.
 
-        :param commands_msg: Incoming commands message reponse
+        :param commands_msg: Incoming commands message response
         """
         params = commands_msg['params']
         self._parameters['commands'] = params

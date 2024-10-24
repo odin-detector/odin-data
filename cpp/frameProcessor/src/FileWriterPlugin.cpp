@@ -64,6 +64,8 @@ const std::string FileWriterPlugin::WRITE_ERROR_DURATION = "write_error_duration
 const std::string FileWriterPlugin::FLUSH_ERROR_DURATION = "flush_error_duration";
 const std::string FileWriterPlugin::CLOSE_ERROR_DURATION = "close_error_duration";
 
+const std::string FileWriterPlugin::START_WRITING = "start_writing";
+const std::string FileWriterPlugin::STOP_WRITING = "stop_writing";
 
 /**
  * Create a FileWriterPlugin with default values.
@@ -338,26 +340,6 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
         } else {
           LOG4CXX_INFO(logger_, "Not starting timeout as not currently writing");
         }
-      }
-    }
-
-    // Final check is to start or stop writing
-    if (config.has_param(FileWriterPlugin::CONFIG_WRITE)) {
-      if (config.get_param<bool>(FileWriterPlugin::CONFIG_WRITE) == true) {
-        // Only start writing if we have frames to write, or if the total number of frames is 0 (free running mode)
-        if (next_acquisition_->total_frames_ > 0 && next_acquisition_->frames_to_write_ == 0) {
-          // We're not expecting any frames, so just clear out the nextAcquisition for the next one and don't start writing
-          this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
-          if (!writing_) {
-            this->current_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
-          }
-          LOG4CXX_INFO(logger_,
-                       "FrameProcessor will not receive any frames from this acquisition and so no output file will be created");
-        } else {
-          this->start_writing();
-        }
-      } else {
-        this->stop_writing();
       }
     }
   }
@@ -988,6 +970,35 @@ size_t FileWriterPlugin::calc_num_frames(size_t totalFrames)
   }
 
   return num_of_frames;
+}
+
+void FileWriterPlugin::execute(const std::string& command, OdinData::IpcMessage& reply)
+{
+  if (command == FileWriterPlugin::START_WRITING) {
+      // Only start writing if we have frames to write, or if the total number of frames is 0 (free running mode)
+      if (next_acquisition_->total_frames_ > 0 && next_acquisition_->frames_to_write_ == 0) {
+        // We're not expecting any frames, so just clear out the nextAcquisition for the next one and don't start writing
+        this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
+        if (!writing_) {
+          this->current_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
+        }
+        LOG4CXX_INFO(logger_,
+                      "FrameProcessor will not receive any frames from this acquisition and so no output file will be created");
+      } else {
+        this->start_writing();
+      }
+  } else if (command == FileWriterPlugin::STOP_WRITING) {
+      this->stop_writing();
+  } else std::cout << "Command " << command << " not implemented for FileWriterPlugin\n";
+}
+
+std::vector<std::string> FileWriterPlugin::requestCommands()
+{
+  std::vector<std::string> reply = {
+    FileWriterPlugin::START_WRITING,
+    FileWriterPlugin::STOP_WRITING
+  };
+  return reply;
 }
 
 int FileWriterPlugin::get_version_major()
