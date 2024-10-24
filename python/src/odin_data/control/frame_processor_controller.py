@@ -105,11 +105,10 @@ class FrameProcessorController(OdinDataController):
                 logging.error("Failed to send information to FP applications")
                 logging.error("Error: %s", err)
         try:
-            config = {'hdf': {'write': value}}
             for rank in range(processes):
-                logging.info("Sending config to FP odin adapter %i: %s", rank, config)
-                #self._odin_adapter_fps._controller.put(f"{rank}/config", config)
-                self._clients[rank].send_configuration(config)
+                command = "start_writing" if value else "stop_writing"
+                logging.info("Sending command to FP hdf plugin %i: %s", rank, command)
+                self._clients[rank].execute_command("hdf", command)
         except Exception as err:
             logging.error("Failed to send write command to FP applications")
             logging.error("Error: %s", err)

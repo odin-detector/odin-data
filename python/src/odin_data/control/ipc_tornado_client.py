@@ -15,6 +15,7 @@ class IpcTornadoClient(object):
     MSG_CHECK_SLEEP_DELTA = 0.01
     IPC_VAL_REQ_VERS = "request_version"
     IPC_VAL_REQ_CFG = "request_configuration"
+    IPC_VAL_REQ_CMDS = "request_commands"
     IPC_VAL_STATUS = "status"
     CLIENT_CONNECTED = "connected"
 
@@ -106,6 +107,7 @@ class IpcTornadoClient(object):
         The handled message types are:
         - Reply to 'request_version'
         - Reply to 'request_configuration'
+        - Reply to 'request_commands'
         - Reply to 'status'
         - Reply to 'configure'
 
@@ -120,12 +122,15 @@ class IpcTornadoClient(object):
         """
         # Handle the multi-part message
         reply = IpcMessage(from_str=msg[0])
-        if self.IPC_VAL_REQ_VERS in reply.get_msg_val():
+        msg_val = reply.get_msg_val()
+        if self.IPC_VAL_REQ_VERS in msg_val:
             self._update_versions(reply.attrs)
-        elif self.IPC_VAL_REQ_CFG in reply.get_msg_val():
+        elif self.IPC_VAL_REQ_CFG in msg_val:
             self._update_configuration(reply.attrs)
-        elif self.IPC_VAL_STATUS in reply.get_msg_val():
+        elif self.IPC_VAL_STATUS in msg_val:
             self._update_status(reply.attrs)
+        elif self.IPC_VAL_REQ_CMDS in msg_val:
+            self._update_commands(reply.attrs)
         with self._lock:
             self._active_msgs.pop(reply.get_msg_id())
             if reply.get_msg_type() == "nack" and reply.get_msg_val() == "configure":
@@ -166,6 +171,14 @@ class IpcTornadoClient(object):
 
         # If we have received a status response then we must be connected
         self._parameters[self.IPC_VAL_STATUS][self.CLIENT_CONNECTED] = True
+
+    def _update_commands(self, commands_msg):
+        """Store the response to a request_commands message in the _parameters dict.
+
+        :param commands_msg: Incoming commands message reponse
+        """
+        params = commands_msg['params']
+        self._parameters['commands'] = params
 
     def connected(self):
         """Returns the connected state of this client.
@@ -225,6 +238,19 @@ class IpcTornadoClient(object):
 
         if "clear_errors" in msg.get_params():
             self.clear_rejected_configs()
+
+        return self._send_message(msg)
+
+    def execute_command(self, plugin, command):
+        """
+
+        :param plugin: the name of the plugin to which the command belongs
+        :param command: the name of the command to execute
+        :return: The message object that has been created and sent
+
+        """
+        msg = IpcMessage("cmd", "execute")
+        msg.set_param(plugin, {"command": command})
 
         return self._send_message(msg)
 

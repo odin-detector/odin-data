@@ -68,6 +68,8 @@ class OdinDataClient(object):
                             help='Specify JSON configuration file to send as configure command')
         parser.add_argument('--request-config', action='store_true',
                             help='Request configuration from odin-data application')
+        parser.add_argument('--request-commands', action='store_true',
+                            help='Request commands from odin-data application')
         parser.add_argument('--status', action='store_true',
                             help='Request a status report from the odin-data application')
         parser.add_argument('--shutdown', action='store_true',
@@ -92,6 +94,9 @@ class OdinDataClient(object):
 
         if self.args.request_config:
             self.do_request_config_cmd()
+
+        if self.args.request_commands:
+            self.do_request_command_cmd()
 
         if self.args.status:
             self.do_status_cmd()
@@ -125,9 +130,16 @@ class OdinDataClient(object):
         self.await_response()
 
     def do_request_config_cmd(self):
-        """Send a request configurtion command to odin-data."""
+        """Send a request configuration command to odin-data."""
         status_msg = IpcMessage('cmd', 'request_configuration', id=self._next_msg_id())
         self.logger.info("Sending configuration request to the odin-data application")
+        self.ctrl_channel.send(status_msg.encode())
+        self.await_response()
+
+    def do_request_command_cmd(self):
+        """Send a request commands command to odin-data"""
+        status_msg = IpcMessage('cmd', 'request_commands', id=self._next_msg_id())
+        self.logger.info("Sending command request to the odin-data application")
         self.ctrl_channel.send(status_msg.encode())
         self.await_response()
 
