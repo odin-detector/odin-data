@@ -50,11 +50,11 @@ class OdinDataController(object):
 
     def setup_parameter_tree(self):
         self._tree = {
-            "api": (lambda: self._api, None, {}),
-            "module": (lambda: self._name, None, {}),
+            "api": (lambda: self._api, {}),
+            "module": (lambda: self._name, {}),
             "endpoints": [],
-            "count": (lambda: len(self._clients), None, {}),
-            "update_interval": (lambda: self._update_interval, None, {}),
+            "count": (lambda: len(self._clients), {}),
+            "update_interval": (lambda: self._update_interval, {}),
         }
         for idx, endpoint in enumerate(self._endpoints):
             self._tree["endpoints"].append(

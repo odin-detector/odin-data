@@ -6,7 +6,7 @@ class FrameProcessorController(OdinDataController):
     def __init__(self, name, endpoints, update_interval=0.5):
         super().__init__(name, endpoints, update_interval)
         # If we are a FP controller then we need to track the writing state
-        self._first_update = False
+        self._first_update = True
         self._writing = [False]*len(self._clients)
 
     @property
@@ -15,6 +15,8 @@ class FrameProcessorController(OdinDataController):
 
     def setup_parameter_tree(self):
         super(FrameProcessorController, self).setup_parameter_tree()
+        for idx, _client in enumerate(self._clients):
+            self._tree[str(idx)]["commands"] = {}
         self._acquisition_id = ""
         self._write = False
         self._frames = 0
@@ -116,7 +118,25 @@ class FrameProcessorController(OdinDataController):
     def handle_client(self, client, index):
         if "hdf" in client.parameters["status"]:
             self._writing[index] = client.parameters["status"]["hdf"]["writing"]
-            # self._params.set("{}/config/hdf/write".format(index), writing[index])
+
+        try:
+            msg = client.send_request("request_commands")
+            if client.wait_for_response(msg.get_msg_id()):
+                # timed_out
+                pass
+        except Exception as e:
+            # Log the error, but do not stop the update loop
+            logging.error("Unhandled exception: %s", e)
+
+        if "commands" in client.parameters:
+            # reformat response for parameter tree
+            commands_response = client._parameters["commands"]
+            commands = {}
+            for plugin, data in commands_response.items():
+                commands[plugin] = data.get("command", [])
+            self._params.set(
+                f"{index}/commands", commands
+            )
 
     def setup_rank(self):
         # Attempt initialisation of the connected clients
@@ -137,9 +157,9 @@ class FrameProcessorController(OdinDataController):
             logging.error("Error: %s", err)
 
     def process_updates(self):
-        if not self._first_update:
+        if self._first_update:
             self.setup_rank()
-            self._first_update = True
+            self._first_update = False
         self._write = all(self._writing)
 
     # def check_controller_status(self):
