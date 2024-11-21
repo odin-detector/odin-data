@@ -989,7 +989,12 @@ void FileWriterPlugin::execute(const std::string& command, OdinData::IpcMessage&
       }
   } else if (command == FileWriterPlugin::STOP_WRITING) {
       this->stop_writing();
-  } else std::cout << "Command " << command << " not implemented for FileWriterPlugin\n";
+  } else {
+    std::stringstream ss;
+    ss << "Command " << command << " not implemented for FileWriterPlugin";
+    LOG4CXX_ERROR(logger_, ss.str());
+    reply.set_nack(ss.str());
+  }
 }
 
 std::vector<std::string> FileWriterPlugin::requestCommands()
