@@ -10,7 +10,8 @@
             "process": true,
             "command": "${CMAKE_INSTALL_PREFIX}/bin/frameProcessor",
             "pos-args": "",
-            "sleep": "1"
+            "sleep": "1",
+            "socket": "tcp://0.0.0.0:5004"
         },
         "simulator": {
             "process": false,
