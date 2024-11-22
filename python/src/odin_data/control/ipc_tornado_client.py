@@ -50,6 +50,7 @@ class IpcTornadoClient(object):
         # Dictionary of outstanding config messages
         self._active_msgs = {}
         self._rejected_configs = {}
+        self._rejected_commands = {}
 
         self._lock = RLock()
 
@@ -72,12 +73,26 @@ class IpcTornadoClient(object):
         """
         return self._rejected_configs
 
+    def read_rejected_commands(self):
+        """Return the current dict of rejected command execution messages.
+
+        :return: a dict of rejected command execution requests
+        """
+        return self._rejected_commands
+
     def clear_rejected_configs(self):
         """Clear any rejected configuration messages.
         """
         self.logger.debug("Clearing rejected configurations")
         with self._lock:
             self._rejected_configs.clear()
+
+    def clear_rejected_commands(self):
+        """Clear any rejected command messages.
+        """
+        self.logger.debug("Clearing rejected commands")
+        with self._lock:
+            self._rejected_commands.clear()
 
     def _monitor_callback(self, msg):
         """Handles incoming messages from the monitoring ZeroMQ socket.
@@ -110,6 +125,7 @@ class IpcTornadoClient(object):
         - Reply to 'request_commands'
         - Reply to 'status'
         - Reply to 'configure'
+        - Reply to 'execute'
 
         Replies to request_version, request_configuration and status
         are stored in the _parameters according to the message type.
@@ -133,9 +149,11 @@ class IpcTornadoClient(object):
             self._update_commands(reply.attrs)
         with self._lock:
             self._active_msgs.pop(reply.get_msg_id())
-            if reply.get_msg_type() == "nack" and reply.get_msg_val() == "configure":
-                with self._lock:
+            if reply.get_msg_type() == "nack":
+                if reply.get_msg_val() == "configure":
                     self._rejected_configs[reply.get_msg_id()] = reply
+                elif reply.get_msg_val() == "execute":
+                    self._rejected_commands[reply.get_msg_id()] = reply
 
     def _update_versions(self, version_msg):
         """Store the response to a request_version message in the
