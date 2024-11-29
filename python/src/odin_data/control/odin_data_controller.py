@@ -31,6 +31,9 @@ class OdinDataController(object):
             ep = {"ip_address": arg.split(":")[0], "port": int(arg.split(":")[1])}
             self._endpoints.append(ep)
 
+        self._command_cache = [None]*len(self._endpoints)
+        self._queued_command = [None]*len(self._endpoints)
+
         for ep in self._endpoints:
             logging.debug("Creating client {}:{}".format(ep["ip_address"], ep["port"]))
             self._clients.append(IpcTornadoClient(ep["ip_address"], ep["port"]))
@@ -65,6 +68,7 @@ class OdinDataController(object):
             self._tree[str(idx)] = {
                 "status": {"error": (lambda: self._error, None, {})},
                 "config": {},
+                "command": {}
             }
 
     def merge_external_tree(self, path, tree):
@@ -94,6 +98,8 @@ class OdinDataController(object):
     def put(self, path, value):
         self._params.set(path, value)
         self.process_config_changes()
+        # After all config processing has completed, execute queued commands
+        self.execute_queued()
 
     def update_loop(self):
         """Handle background update loop tasks.
@@ -123,7 +129,11 @@ class OdinDataController(object):
                         logging.error("Unhandled exception: %s", e)
 
                     # Request parameter updates
-                    for parameter_tree in ["status", "request_configuration"]:
+                    for parameter_tree in [
+                        "status",
+                        "request_configuration",
+                        "request_commands"
+                    ]:
                         try:
                             msg = client.send_request(parameter_tree)
                             if client.wait_for_response(msg.get_msg_id()):
@@ -144,6 +154,8 @@ class OdinDataController(object):
                         self._params.replace(
                             f"{index}/config", client.parameters["config"]
                         )
+                    if "commands" in client.parameters:
+                        self.parse_available_commands(index, client)
 
                 self._config_cache = [
                     self._params.get(f"{idx}/config")
@@ -156,6 +168,63 @@ class OdinDataController(object):
                 logging.error("{}".format(ex))
 
             time.sleep(self._update_interval)
+
+    def parse_available_commands(self, index, client):
+        # Check for differences in the command structure
+        # If differences exist build a new ParameterTree structure for commands
+        diff = DeepDiff(self._command_cache[index], client.parameters["commands"])
+        if diff:
+            logging.debug(
+                f"Command structure has changed: {client.parameters['commands']}"
+            )
+            command_tree = {}
+            for plugin in client.parameters["commands"]:
+                # Build the execution branch for each plugin
+                command_tree[plugin] = {
+                    "allowed": (
+                        lambda x=client.parameters["commands"][plugin]["supported"]: x,
+                        None,
+                        {}
+                    ),
+                    "execute": (
+                        "",
+                        lambda value,
+                        index = index,
+                        plugin = plugin: self.queue_command(index, plugin, value),
+                        {}
+                    )
+                }
+
+            # If the structure has changed then update the parameter tree
+            self._params.replace(
+                f"{index}/command", command_tree
+            )
+            self._command_cache[index] = client.parameters["commands"]
+
+    def queue_command(self, index, plugin, value):
+        """Called for each command PUT that is received by the adapter
+        PUT URI is of the form index/command/plugin/execute and the 
+        value is the name of the command to execute.
+        This method simply queues commands for execution after any configuration
+        changes have been applied.
+        """
+        logging.info(
+            f"Queue command: index [{index}] plugin [{plugin}] command [{value}]"
+        )
+        self._queued_command[index] = (plugin, value)
+
+    def execute_queued(self):
+        """ After configuration changes have been applied this method is called.  It
+        checks to see if any commands have been queued, and if any are found then 
+        they are executed.
+        """
+        for index, _ in enumerate(self._queued_command):
+            if self._queued_command[index] is not None:
+                plugin, command = self._queued_command[index]
+                self._queued_command[index] = None
+                logging.info(
+                    f"Execute: index[{index}] plugin [{plugin}] command [{command}]"
+                )
 
     def handle_client(self, client, index):
         """Called on each client in the update_loop loop before updating the
