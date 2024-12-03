@@ -31,7 +31,7 @@ class OdinDataController(object):
             ep = {"ip_address": arg.split(":")[0], "port": int(arg.split(":")[1])}
             self._endpoints.append(ep)
 
-        self._command_cache = [None]*len(self._endpoints)
+        self._supported_commands = [None]*len(self._endpoints)
         self._queued_command = [None]*len(self._endpoints)
 
         for ep in self._endpoints:
@@ -172,7 +172,7 @@ class OdinDataController(object):
     def parse_available_commands(self, index, client):
         # Check for differences in the command structure
         # If differences exist build a new ParameterTree structure for commands
-        diff = DeepDiff(self._command_cache[index], client.parameters["commands"])
+        diff = DeepDiff(self._supported_commands[index], client.parameters["commands"])
         if diff:
             logging.debug(
                 f"Command structure has changed: {client.parameters['commands']}"
@@ -199,7 +199,7 @@ class OdinDataController(object):
             self._params.replace(
                 f"{index}/command", command_tree
             )
-            self._command_cache[index] = client.parameters["commands"]
+            self._supported_commands[index] = client.parameters["commands"]
 
     def queue_command(self, index, plugin, value):
         """Called for each command PUT that is received by the adapter
@@ -226,10 +226,10 @@ class OdinDataController(object):
                     f"Execute: index[{index}] plugin [{plugin}] command [{command}]"
                 )
                 # Call the execution check method prior to sending to a client
-                if self.execution_check(index, plugin, command):
+                if self.can_execute(index, plugin, command):
                     self._clients[index].execute_command(plugin, command)
 
-    def execution_check(self, index, plugin, command):
+    def can_execute(self, index, plugin, command):
         """Called for each command that is about to be sent to a client
         application.  If this method returns false then the command is not
         sent.  This method can be overloaded by subclasses to implement
