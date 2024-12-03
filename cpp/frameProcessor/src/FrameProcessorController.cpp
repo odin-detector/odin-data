@@ -43,6 +43,7 @@ const std::string FrameProcessorController::CONFIG_INDEX                 = "inde
 const std::string FrameProcessorController::CONFIG_VALUE                 = "value";
 
 const std::string FrameProcessorController::COMMAND_KEY                  = "command";
+const std::string FrameProcessorController::SUPPORTED_KEY                = "supported";
 
 const int FrameProcessorController::META_TX_HWM = 10000;
 
@@ -583,7 +584,7 @@ void FrameProcessorController::requestCommands(OdinData::IpcMessage& reply)
   for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
     std::vector<std::string> commands = iter->second->requestCommands();
     for (cmd = commands.begin(); cmd != commands.end(); ++cmd) {
-      std::string command_str = iter->first + "/" + FrameProcessorController::COMMAND_KEY + "[]";
+      std::string command_str = iter->first + "/" + FrameProcessorController::SUPPORTED_KEY + "[]";
       reply.set_param(command_str, *cmd);
     }
   }
