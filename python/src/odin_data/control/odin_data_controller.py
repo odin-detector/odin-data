@@ -225,6 +225,17 @@ class OdinDataController(object):
                 logging.info(
                     f"Execute: index[{index}] plugin [{plugin}] command [{command}]"
                 )
+                # Call the execution check method prior to sending to a client
+                if self.execution_check(index, plugin, command):
+                    self._clients[index].execute_command(plugin, command)
+
+    def execution_check(self, index, plugin, command):
+        """Called for each command that is about to be sent to a client
+        application.  If this method returns false then the command is not
+        sent.  This method can be overloaded by subclasses to implement
+        controller specific logic checks prior to sending the command.
+        """
+        return True
 
     def handle_client(self, client, index):
         """Called on each client in the update_loop loop before updating the
