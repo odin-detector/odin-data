@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>FrameProcessor API Reference &#8212; odin-data 0+untagged.1.gb157ac3 documentation</title>
+    <title>FrameProcessor API Reference &#8212; odin-data 0+untagged.1.g5fe54f5 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../../../_static/documentation_options.js?v=136e39b9"></script>
+    <script src="../../../_static/documentation_options.js?v=d10c286e"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -2332,6 +2332,33 @@
 </dd></dl>
 
 <dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor16FileWriterPlugin7executeERKNSt6stringERN8OdinData10IpcMessageE">
+<span id="_CPPv3N14FrameProcessor16FileWriterPlugin7executeERKNSt6stringERN8OdinData10IpcMessageE"></span><span id="_CPPv2N14FrameProcessor16FileWriterPlugin7executeERKNSt6stringERN8OdinData10IpcMessageE"></span><span id="FrameProcessor::FileWriterPlugin::execute__ssCR.OdinData::IpcMessageR"></span><span class="target" id="classFrameProcessor_1_1FileWriterPlugin_1aff6919ddeba6f16bfc3b70d0e89cf54e"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">execute</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">command</span></span>, <span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">reply</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor16FileWriterPlugin7executeERKNSt6stringERN8OdinData10IpcMessageE" title="Link to this definition">#</a><br /></dt>
+<dd><p>Execute a command within the plugin.</p>
+<p>In this abstract class the command method does perform any actions, this should be overridden by subclasses.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>command</strong> – <strong>[in]</strong> - String containing the command to execute. </p></li>
+<li><p><strong>reply</strong> – <strong>[out]</strong> - Response IpcMessage. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor16FileWriterPlugin15requestCommandsEv">
+<span id="_CPPv3N14FrameProcessor16FileWriterPlugin15requestCommandsEv"></span><span id="_CPPv2N14FrameProcessor16FileWriterPlugin15requestCommandsEv"></span><span id="FrameProcessor::FileWriterPlugin::requestCommands"></span><span class="target" id="classFrameProcessor_1_1FileWriterPlugin_1af05dfe2d8bc48697a5e9e53e2346528d"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">requestCommands</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor16FileWriterPlugin15requestCommandsEv" title="Link to this definition">#</a><br /></dt>
+<dd><p>Request the plugin’s supported commands.</p>
+<p>In this abstract class the request method does perform any actions, this should be overridden by subclasses.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>- Vector containing supported command strings. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor16FileWriterPlugin17configure_processERN8OdinData10IpcMessageERN8OdinData10IpcMessageE">
 <span id="_CPPv3N14FrameProcessor16FileWriterPlugin17configure_processERN8OdinData10IpcMessageERN8OdinData10IpcMessageE"></span><span id="_CPPv2N14FrameProcessor16FileWriterPlugin17configure_processERN8OdinData10IpcMessageERN8OdinData10IpcMessageE"></span><span id="FrameProcessor::FileWriterPlugin::configure_process__OdinData::IpcMessageR.OdinData::IpcMessageR"></span><span class="target" id="classFrameProcessor_1_1FileWriterPlugin_1a18d283dac51a1f9ee70e44cb795a7016"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">configure_process</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">config</span></span>, <span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">reply</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor16FileWriterPlugin17configure_processERN8OdinData10IpcMessageERN8OdinData10IpcMessageE" title="Link to this definition">#</a><br /></dt>
 <dd><p>Set configuration options for the file writer process count.</p>
@@ -2905,6 +2932,16 @@
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor16FileWriterPlugin20CLOSE_ERROR_DURATIONE">
 <span id="_CPPv3N14FrameProcessor16FileWriterPlugin20CLOSE_ERROR_DURATIONE"></span><span id="_CPPv2N14FrameProcessor16FileWriterPlugin20CLOSE_ERROR_DURATIONE"></span><span id="FrameProcessor::FileWriterPlugin::CLOSE_ERROR_DURATION__ssC"></span><span class="target" id="classFrameProcessor_1_1FileWriterPlugin_1a9e90c61e33e3a447d0f51a247cb495f2"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CLOSE_ERROR_DURATION</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;close_error_duration&quot;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor16FileWriterPlugin20CLOSE_ERROR_DURATIONE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor16FileWriterPlugin13START_WRITINGE">
+<span id="_CPPv3N14FrameProcessor16FileWriterPlugin13START_WRITINGE"></span><span id="_CPPv2N14FrameProcessor16FileWriterPlugin13START_WRITINGE"></span><span id="FrameProcessor::FileWriterPlugin::START_WRITING__ssC"></span><span class="target" id="classFrameProcessor_1_1FileWriterPlugin_1a56253dac3c7d98808a5f593a034bb9d0"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">START_WRITING</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;start_writing&quot;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor16FileWriterPlugin13START_WRITINGE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor16FileWriterPlugin12STOP_WRITINGE">
+<span id="_CPPv3N14FrameProcessor16FileWriterPlugin12STOP_WRITINGE"></span><span id="_CPPv2N14FrameProcessor16FileWriterPlugin12STOP_WRITINGE"></span><span id="FrameProcessor::FileWriterPlugin::STOP_WRITING__ssC"></span><span class="target" id="classFrameProcessor_1_1FileWriterPlugin_1ad710341018c4cf7ffe03c5ef538bd7a5"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">STOP_WRITING</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;stop_writing&quot;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor16FileWriterPlugin12STOP_WRITINGE" title="Link to this definition">#</a><br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -6612,6 +6649,8 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor16FileWriterPlugin12stop_writingEv"><code class="docutils literal notranslate"><span class="pre">FileWriterPlugin::stop_writing()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor16FileWriterPlugin9configureERN8OdinData10IpcMessageERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">FileWriterPlugin::configure()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor16FileWriterPlugin20requestConfigurationERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">FileWriterPlugin::requestConfiguration()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor16FileWriterPlugin7executeERKNSt6stringERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">FileWriterPlugin::execute()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor16FileWriterPlugin15requestCommandsEv"><code class="docutils literal notranslate"><span class="pre">FileWriterPlugin::requestCommands()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor16FileWriterPlugin17configure_processERN8OdinData10IpcMessageERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">FileWriterPlugin::configure_process()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor16FileWriterPlugin14configure_fileERN8OdinData10IpcMessageERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">FileWriterPlugin::configure_file()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor16FileWriterPlugin17configure_datasetERKNSt6stringERN8OdinData10IpcMessageERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">FileWriterPlugin::configure_dataset()</span></code></a></li>
@@ -6696,6 +6735,8 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor16FileWriterPlugin20WRITE_ERROR_DURATIONE"><code class="docutils literal notranslate"><span class="pre">FileWriterPlugin::WRITE_ERROR_DURATION</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor16FileWriterPlugin20FLUSH_ERROR_DURATIONE"><code class="docutils literal notranslate"><span class="pre">FileWriterPlugin::FLUSH_ERROR_DURATION</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor16FileWriterPlugin20CLOSE_ERROR_DURATIONE"><code class="docutils literal notranslate"><span class="pre">FileWriterPlugin::CLOSE_ERROR_DURATION</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor16FileWriterPlugin13START_WRITINGE"><code class="docutils literal notranslate"><span class="pre">FileWriterPlugin::START_WRITING</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor16FileWriterPlugin12STOP_WRITINGE"><code class="docutils literal notranslate"><span class="pre">FileWriterPlugin::STOP_WRITING</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#acquisition">Acquisition</a><ul class="nav section-nav flex-column">
