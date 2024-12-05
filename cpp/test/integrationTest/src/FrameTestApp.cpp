@@ -144,6 +144,13 @@ int main(int argc, char *argv[]) {
         boost::optional<std::string> configuration = pt.get_optional<std::string>("Main." + process + "." + "configure");
         if(configuration)
           control->send_configuration(configuration.get());
+        if (!process.compare("processor")) {
+          std::string command_message = // send start_writing command to FrameProcessor
+            "{\"id\":263,\"msg_type\":\"cmd\",\"msg_val\":\"execute\","
+            "\"timestamp\":\"2024-11-21T08:53:06.340914\","
+            "\"params\":{\"hdf\":{\"command\":\"start_writing\"}}}";
+          control->send_configuration(command_message);
+        }
       }
       else
         control->run_command();

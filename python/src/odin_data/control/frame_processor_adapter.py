@@ -62,7 +62,7 @@ class FrameProcessorAdapter(OdinDataAdapter):
             'config/hdf/file/extension': 'h5',
             'config/hdf/frames': 0
         }
-        self._command = 'config/hdf/write'
+        self._write_command = 'config/hdf/write'
         self.setup_rank()
 
     def initialize(self, adapters):
@@ -147,10 +147,9 @@ class FrameProcessorAdapter(OdinDataAdapter):
                     self._param[path] = str(escape.url_unescape(request.body)).replace('"', '')
                 # Merge with the configuration store
 
-            elif path == self._command:
+            elif path == self._write_command:
                 write = bool_from_string(str(escape.url_unescape(request.body)))
-                config = {'hdf': {'write': write}}
-                logging.debug("Setting {} to {}".format(path, config))
+                logging.debug("Setting {} to {}".format(path, write))
                 if write:
                     # Before attempting to write files, make some simple error checks
 
@@ -192,9 +191,11 @@ class FrameProcessorAdapter(OdinDataAdapter):
                         }
                         client.send_configuration(parameters)
                         rank += 1
+                command = "start_writing" if write else "stop_writing"
                 for client in self._clients:
-                    # Send the configuration required to start the acquisition
-                    client.send_configuration(config)
+                    # Send the start/stop_writing command to the clients to start/stop
+                    # the acquisition
+                    client.execute_command("hdf", command)
 
             else:
                 return super(FrameProcessorAdapter, self).put(path, request)

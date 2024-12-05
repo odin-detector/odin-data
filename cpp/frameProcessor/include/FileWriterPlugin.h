@@ -45,6 +45,8 @@ public:
   void stop_writing();
   void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   void requestConfiguration(OdinData::IpcMessage& reply);
+  virtual void execute(const std::string& command, OdinData::IpcMessage& reply);
+  virtual std::vector<std::string> requestCommands();
   void configure_process(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   void configure_file(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   void configure_dataset(const std::string& dataset_name, OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
@@ -133,6 +135,9 @@ private:
   static const std::string WRITE_ERROR_DURATION;
   static const std::string FLUSH_ERROR_DURATION;
   static const std::string CLOSE_ERROR_DURATION;
+
+  static const std::string START_WRITING;
+  static const std::string STOP_WRITING;
 
   /**
    * Prevent a copy of the FileWriterPlugin plugin.

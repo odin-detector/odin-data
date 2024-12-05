@@ -70,8 +70,7 @@
 			},
 			"frames": 10,
 			"acquisition_id": "test_1",
-			"timeout_timer_period": 3000,
-			"write": true
+			"timeout_timer_period": 3000
 		}
 	}
 ]
