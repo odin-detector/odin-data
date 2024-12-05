@@ -33,7 +33,8 @@ class MetaListenerAdapter(OdinDataAdapter):
 
         # Parameters must be created before base init called
         super(MetaListenerAdapter, self).__init__(**kwargs)
-        self._client = self._clients[0]  # We only have one client
+        self._client = self._controller._clients[0]  # We only have one client
+        self._controller.process_updates = self.process_updates
 
     def _set_defaults(self):
         self._status_parameters = {
@@ -70,22 +71,22 @@ class MetaListenerAdapter(OdinDataAdapter):
         logging.debug("GET request: %s", request)
 
         if path == "config/acquisition_id":
-            response["value"] = self.acquisition_id
+            response["acquisition_id"] = self.acquisition_id
         elif path == "status/acquisition_active":
-            response["value"] = self.acquisition_active
+            response["acquisition_active"] = self.acquisition_active
         elif path == "config/acquisitions":
             acquisition_tree = self.traverse_parameters(
                 self._clients[0].parameters,
                 ["config", "acquisitions"]
             )
             if acquisition_tree is not None:
-                response["value"] = "," .join(acquisition_tree.keys())
+                response["acquisitions"] = "," .join(acquisition_tree.keys())
             else:
-                response["value"] = None
+                response["acquisitions"] = None
         elif path in self._status_parameters:
-            response["value"] = self._status_parameters[path]
+            response[path.split("/")[-1]] = self._status_parameters[path]
         elif path in self._config_parameters:
-            response["value"] = self._config_parameters[path]
+            response[path.split("/")[-1]] = self._config_parameters[path]
         else:
             return super(MetaListenerAdapter, self).get(path, request)
 
