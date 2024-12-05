@@ -1,6 +1,7 @@
 /external
 /*build*
 /*prefix/
+/vscode_prefix
 *.pyc
 /tools/python/venv/
 /.settings
@@ -15,7 +16,6 @@ tools/python/.coverage
 
 .idea/
 cmake-build*/
-.vscode/
 
 tools/imagej/plugins/*
 !tools/imagej/plugins/Odin-Data/

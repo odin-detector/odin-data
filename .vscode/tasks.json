@@ -1,0 +1,27 @@
+// See https://go.microsoft.com/fwlink/?LinkId=733558
+// for the documentation about the tasks.json format
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "Tests, lint and docs",
+            "command": "tox -p",
+            "options": {
+                "cwd": "${workspaceRoot}"
+            },
+            "problemMatcher": [],
+        },
+        {
+            "label": "Run Dummy Decoder System Test",
+            "type": "shell",
+            "options": {
+                "env": {
+                    "INSTALL_PREFIX": "${workspaceFolder}/vscode_prefix"
+                },
+            },
+            "command": "${workspaceFolder}/vscode_prefix/bin/odinDataTest --json=${workspaceFolder}/vscode_prefix/test_config/dummyUDP.json",
+            "problemMatcher": [],
+        }
+    ]
+}
