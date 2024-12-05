@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>FrameProcessor API Reference &#8212; odin-data 0+untagged.1.g5fe54f5 documentation</title>
+    <title>FrameProcessor API Reference &#8212; odin-data 0+untagged.1.ge490d45 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../../../_static/documentation_options.js?v=d10c286e"></script>
+    <script src="../../../_static/documentation_options.js?v=16cfc4ac"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -2378,7 +2378,7 @@
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor16FileWriterPlugin14configure_fileERN8OdinData10IpcMessageERN8OdinData10IpcMessageE">
 <span id="_CPPv3N14FrameProcessor16FileWriterPlugin14configure_fileERN8OdinData10IpcMessageERN8OdinData10IpcMessageE"></span><span id="_CPPv2N14FrameProcessor16FileWriterPlugin14configure_fileERN8OdinData10IpcMessageERN8OdinData10IpcMessageE"></span><span id="FrameProcessor::FileWriterPlugin::configure_file__OdinData::IpcMessageR.OdinData::IpcMessageR"></span><span class="target" id="classFrameProcessor_1_1FileWriterPlugin_1ad78eb003e148240b05680a64bd8de3b1"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">configure_file</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">config</span></span>, <span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">reply</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor16FileWriterPlugin14configure_fileERN8OdinData10IpcMessageERN8OdinData10IpcMessageE" title="Link to this definition">#</a><br /></dt>
 <dd><p>Set file configuration options for the file writer.</p>
-<p>This sets up the file writer plugin according to the configuration IpcMessage objects that are received. The options are searched for: CONFIG_FILE_PATH - Sets the path of the file to write to CONFIG_FILE_NAME - Sets the filename of the file to write to</p>
+<p>This sets up the file writer plugin according to the configuration IpcMessage objects that are received. The options are searched for: CONFIG_FILE_PATH - Sets the path of the file to write to CONFIG_FILE_PREFIX - Sets the filename of the file to write to</p>
 <p>The configuration is not applied if the writer is currently writing.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -2784,8 +2784,8 @@
 </dd></dl>
 
 <dl class="cpp var">
-<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor16FileWriterPlugin16CONFIG_FILE_NAMEE">
-<span id="_CPPv3N14FrameProcessor16FileWriterPlugin16CONFIG_FILE_NAMEE"></span><span id="_CPPv2N14FrameProcessor16FileWriterPlugin16CONFIG_FILE_NAMEE"></span><span id="FrameProcessor::FileWriterPlugin::CONFIG_FILE_NAME__ssC"></span><span class="target" id="classFrameProcessor_1_1FileWriterPlugin_1a085a3ba8a59830f7d916cdde71b8bd51"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CONFIG_FILE_NAME</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;name&quot;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor16FileWriterPlugin16CONFIG_FILE_NAMEE" title="Link to this definition">#</a><br /></dt>
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor16FileWriterPlugin18CONFIG_FILE_PREFIXE">
+<span id="_CPPv3N14FrameProcessor16FileWriterPlugin18CONFIG_FILE_PREFIXE"></span><span id="_CPPv2N14FrameProcessor16FileWriterPlugin18CONFIG_FILE_PREFIXE"></span><span id="FrameProcessor::FileWriterPlugin::CONFIG_FILE_PREFIX__ssC"></span><span class="target" id="classFrameProcessor_1_1FileWriterPlugin_1aca25f1b9967aca22c0ff5469626534ef"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CONFIG_FILE_PREFIX</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;prefix&quot;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor16FileWriterPlugin18CONFIG_FILE_PREFIXE" title="Link to this definition">#</a><br /></dt>
 <dd><p>Configuration constant for file name </p>
 </dd></dl>
 
@@ -6709,7 +6709,7 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor16FileWriterPlugin34CONFIG_PROCESS_ALIGNMENT_THRESHOLDE"><code class="docutils literal notranslate"><span class="pre">FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_THRESHOLD</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor16FileWriterPlugin30CONFIG_PROCESS_ALIGNMENT_VALUEE"><code class="docutils literal notranslate"><span class="pre">FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_VALUE</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor16FileWriterPlugin11CONFIG_FILEE"><code class="docutils literal notranslate"><span class="pre">FileWriterPlugin::CONFIG_FILE</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor16FileWriterPlugin16CONFIG_FILE_NAMEE"><code class="docutils literal notranslate"><span class="pre">FileWriterPlugin::CONFIG_FILE_NAME</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor16FileWriterPlugin18CONFIG_FILE_PREFIXE"><code class="docutils literal notranslate"><span class="pre">FileWriterPlugin::CONFIG_FILE_PREFIX</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor16FileWriterPlugin23CONFIG_FILE_USE_NUMBERSE"><code class="docutils literal notranslate"><span class="pre">FileWriterPlugin::CONFIG_FILE_USE_NUMBERS</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor16FileWriterPlugin24CONFIG_FILE_NUMBER_STARTE"><code class="docutils literal notranslate"><span class="pre">FileWriterPlugin::CONFIG_FILE_NUMBER_START</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor16FileWriterPlugin19CONFIG_FILE_POSTFIXE"><code class="docutils literal notranslate"><span class="pre">FileWriterPlugin::CONFIG_FILE_POSTFIX</span></code></a></li>
