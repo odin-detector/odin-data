@@ -1,5 +1,6 @@
-from odin_data.control.odin_data_controller import OdinDataController
 import logging
+
+from odin_data.control.odin_data_controller import OdinDataController
 
 
 class FrameProcessorController(OdinDataController):
@@ -117,7 +118,6 @@ class FrameProcessorController(OdinDataController):
     def handle_client(self, client, index):
         if "hdf" in client.parameters["status"]:
             self._writing[index] = client.parameters["status"]["hdf"]["writing"]
-            # self._params.set("{}/config/hdf/write".format(index), writing[index])
 
     def setup_rank(self):
         # Attempt initialisation of the connected clients

@@ -93,7 +93,6 @@ class OdinDataController(object):
 
     def put(self, path, value):
         self._params.set(path, value)
-        # TODO: If this fails, the client could see that it has changed when it hasn't
         self.process_config_changes()
 
     def update_loop(self):
@@ -118,9 +117,6 @@ class OdinDataController(object):
                         else:
                             if not self._client_connections[index]:
                                 self._client_connections[index] = True
-                                # Reconnection event so push configuration
-                                logging.debug("Client reconnection event")
-                    #                            self.process_reconnection(index)
 
                     except Exception as e:
                         # Exception caught, log the error but do not stop the update loop
@@ -131,8 +127,10 @@ class OdinDataController(object):
                         try:
                             msg = client.send_request(parameter_tree)
                             if client.wait_for_response(msg.get_msg_id()):
-                                # timed_out = True
-                                pass
+                                logging.error(
+                                    f"{parameter_tree} request to "
+                                    f"{client.ctrl_endpoint} timed out"
+                                )
                         except Exception as e:
                             # Log the error, but do not stop the update loop
                             logging.error("Unhandled exception: %s", e)
@@ -189,7 +187,7 @@ class OdinDataController(object):
                 path = (
                     root.replace("root[", "").rstrip("]").replace("'", "").split("][")
                 )
-                logging.error("Path: {}".format(path))
+                logging.debug("Path: {}".format(path))
                 # First element of the path is the index of the client
                 # Second element of the path is the key 'config'
                 index = int(path[0])
@@ -204,9 +202,8 @@ class OdinDataController(object):
                         cfg[item] = {}
                     cfg = cfg[item]
                 cfg[path[-1]] = diff["values_changed"][root]["new_value"]
-                # configs[index] = {**configs[index], **client_cfg}
 
-            logging.error("Sending configs: %s", configs)
+            logging.info("Sending configs: %s", configs)
 
             # Loop through the new params
             index = 0
@@ -218,8 +215,8 @@ class OdinDataController(object):
     def create_demand_config(self, new_params, old_params):
         config = None
         for item in new_params:
-            logging.error("Param: {}".format(item))
-            logging.error("   Type: {}".format(type(new_params[item])))
+            logging.debug("Param: {}".format(item))
+            logging.debug("   Type: {}".format(type(new_params[item])))
             if item in old_params:
                 if isinstance(new_params[item], dict):
                     diff = self.create_demand_config(new_params[item], old_params[item])
@@ -230,7 +227,6 @@ class OdinDataController(object):
                 elif isinstance(new_params[item], list):
                     if config is None:
                         config = {item: []}
-                    #                    logging.error("List: {}".format(new_params[item]))
                     for new_item, old_item in zip(new_params[item], old_params[item]):
                         if isinstance(new_item, dict):
                             config[item].append(
