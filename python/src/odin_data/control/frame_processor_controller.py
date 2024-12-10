@@ -1,5 +1,6 @@
-from odin_data.control.odin_data_controller import OdinDataController
 import logging
+
+from odin_data.control.odin_data_controller import OdinDataController
 
 
 class FrameProcessorController(OdinDataController):
@@ -13,15 +14,15 @@ class FrameProcessorController(OdinDataController):
     def first_update(self):
         return self._first_update
 
-    def setup_parameter_tree(self):
-        super(FrameProcessorController, self).setup_parameter_tree()
+    def _setup_parameter_tree(self):
+        super(FrameProcessorController, self)._setup_parameter_tree()
         self._acquisition_id = ""
         self._write = False
         self._frames = 0
         self._file_path = ""
         self._file_prefix = ""
         self._file_extension = "h5"
-        self._tree["config"] = {
+        self._parameters["config"] = {
             "hdf": {
                 "acquisition_id": (
                     self._get("_acquisition_id"),
@@ -117,7 +118,6 @@ class FrameProcessorController(OdinDataController):
     def handle_client(self, client, index):
         if "hdf" in client.parameters["status"]:
             self._writing[index] = client.parameters["status"]["hdf"]["writing"]
-            # self._params.set("{}/config/hdf/write".format(index), writing[index])
 
     def setup_rank(self):
         # Attempt initialisation of the connected clients

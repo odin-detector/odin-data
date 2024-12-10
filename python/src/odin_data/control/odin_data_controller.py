@@ -36,11 +36,7 @@ class OdinDataController(object):
             self._clients.append(IpcTornadoClient(ep["ip_address"], ep["port"]))
             self._client_connections.append(False)
 
-        # set up controller specific parameters
-        self.setup_parameter_tree()
-
-        # TODO: Consider renaming this
-        self._params = ParameterTree(self._tree, mutable=True)
+        self._tree = self._setup_parameter_tree()
 
         # Create the status loop handling thread
         self._status_running = True
@@ -48,8 +44,8 @@ class OdinDataController(object):
         self._status_thread = threading.Thread(target=self.update_loop)
         self._status_thread.start()
 
-    def setup_parameter_tree(self):
-        self._tree = {
+    def _setup_parameter_tree(self):
+        self._parameters = {
             "api": (lambda: self._api, None, {}),
             "module": (lambda: self._name, None, {}),
             "endpoints": [],
@@ -57,21 +53,23 @@ class OdinDataController(object):
             "update_interval": (lambda: self._update_interval, None, {}),
         }
         for idx, endpoint in enumerate(self._endpoints):
-            self._tree["endpoints"].append(
+            self._parameters["endpoints"].append(
                 # Note the default here binds unique variables into each closure
                 {k: (lambda v=v: v, None, {}) for k, v in endpoint.items()}
             )
         for idx, _client in enumerate(self._clients):
-            self._tree[str(idx)] = {
+            self._parameters[str(idx)] = {
                 "status": {"error": (lambda: self._error, None, {})},
                 "config": {},
             }
 
+        return ParameterTree(self._parameters, mutable=True)
+
     def merge_external_tree(self, path, tree):
         # First we need to insert the new parameter tree
-        self._tree[path] = tree
+        self._parameters[path] = tree
         # Next, we must re-build the complete parameter tree
-        self._params = ParameterTree(self._tree, mutable=True)
+        self._tree = ParameterTree(self._parameters, mutable=True)
 
     def set_error(self, err):
         # Record the error message into the status
@@ -89,10 +87,10 @@ class OdinDataController(object):
         :param meta: Should the ParameterTree return the meta data associated with the value
         :return: dict object containing the value and meta data if requested
         """
-        return self._params.get(path, meta)
+        return self._tree.get(path, meta)
 
     def put(self, path, value):
-        self._params.set(path, value)
+        self._tree.set(path, value)
         # TODO: If this fails, the client could see that it has changed when it hasn't
         self.process_config_changes()
 
@@ -139,16 +137,16 @@ class OdinDataController(object):
 
                     self.handle_client(client, index)
                     if "status" in client.parameters:
-                        self._params.replace(
+                        self._tree.replace(
                             f"{index}/status", client.parameters["status"]
                         )
                     if "config" in client.parameters:
-                        self._params.replace(
+                        self._tree.replace(
                             f"{index}/config", client.parameters["config"]
                         )
 
                 self._config_cache = [
-                    self._params.get(f"{idx}/config")
+                    self._tree.get(f"{idx}/config")
                     for idx, _ in enumerate(self._clients)
                 ]
 
@@ -174,7 +172,7 @@ class OdinDataController(object):
         be executed in its own thread to avoid blocking the tornado loop.
         """
         new_config = [
-            self._params.get(f"{idx}/config") for idx, _ in enumerate(self._clients)
+            self._tree.get(f"{idx}/config") for idx, _ in enumerate(self._clients)
         ]
         diff = DeepDiff(self._config_cache, new_config)
 
@@ -189,7 +187,7 @@ class OdinDataController(object):
                 path = (
                     root.replace("root[", "").rstrip("]").replace("'", "").split("][")
                 )
-                logging.error("Path: {}".format(path))
+                logging.debug("Path: {}".format(path))
                 # First element of the path is the index of the client
                 # Second element of the path is the key 'config'
                 index = int(path[0])
@@ -206,7 +204,7 @@ class OdinDataController(object):
                 cfg[path[-1]] = diff["values_changed"][root]["new_value"]
                 # configs[index] = {**configs[index], **client_cfg}
 
-            logging.error("Sending configs: %s", configs)
+            logging.info("Sending configs: %s", configs)
 
             # Loop through the new params
             index = 0
@@ -218,8 +216,8 @@ class OdinDataController(object):
     def create_demand_config(self, new_params, old_params):
         config = None
         for item in new_params:
-            logging.error("Param: {}".format(item))
-            logging.error("   Type: {}".format(type(new_params[item])))
+            logging.debug("Param: {}".format(item))
+            logging.debug("   Type: {}".format(type(new_params[item])))
             if item in old_params:
                 if isinstance(new_params[item], dict):
                     diff = self.create_demand_config(new_params[item], old_params[item])
@@ -230,7 +228,6 @@ class OdinDataController(object):
                 elif isinstance(new_params[item], list):
                     if config is None:
                         config = {item: []}
-                    #                    logging.error("List: {}".format(new_params[item]))
                     for new_item, old_item in zip(new_params[item], old_params[item]):
                         if isinstance(new_item, dict):
                             config[item].append(

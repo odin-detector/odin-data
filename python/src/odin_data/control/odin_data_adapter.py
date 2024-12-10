@@ -77,10 +77,10 @@ class OdinDataAdapter(ApiAdapter):
         status_code = 200
         content_type = "application/json"
 
-        #logging.error("{}".format(path))
         try:
             response = self._controller.get(path, wants_metadata(request))
-        #    logging.error("{}".format(response))
+            logging.debug("GET {}".format(path))
+            logging.debug("GET response: {}".format(response))
         except ParameterTreeError as param_error:
             response = {
                 "response": f"{type(self).__name__} GET error: {param_error}"
