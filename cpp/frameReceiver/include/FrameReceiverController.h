@@ -86,6 +86,8 @@ namespace FrameReceiver
     void get_version(OdinData::IpcMessage& version_reply);
     void reset_statistics(OdinData::IpcMessage& reset_reply);
     void request_configuration(OdinData::IpcMessage& config_reply);
+    void request_commands(OdinData::IpcMessage& command_reply);
+    void execute(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
 
 #ifdef FR_CONTROLLER_TICK_TIMER
     void tick_timer(void);

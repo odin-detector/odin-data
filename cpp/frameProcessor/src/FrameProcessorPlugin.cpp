@@ -145,7 +145,7 @@ std::vector<std::string> FrameProcessorPlugin::get_warnings()
 
 /** Configure the plugin.
  *
- * In this abstract class the configure method does perform any
+ * In this abstract class the configure method doesn't perform any
  * actions, this should be overridden by subclasses.
  *
  * \param[in] config - IpcMessage containing configuration data.
@@ -158,7 +158,7 @@ void FrameProcessorPlugin::configure(OdinData::IpcMessage& config, OdinData::Ipc
 
 /** Request the plugin's current configuration.
  *
- * In this abstract class the request method does perform any
+ * In this abstract class the request method doesn't perform any
  * actions, this should be overridden by subclasses.
  *
  * \param[out] reply - Response IpcMessage with current configuration.
@@ -170,7 +170,7 @@ void FrameProcessorPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 
 /** Execute a command within the plugin.
  *
- * In this abstract class the command method does perform any
+ * In this abstract class the command method doesn't perform any
  * actions, this should be overridden by subclasses.
  *
  * \param[in] command - String containing the command to execute.
@@ -180,15 +180,15 @@ void FrameProcessorPlugin::execute(const std::string& command, OdinData::IpcMess
 {
   // A command has been submitted and this plugin has no execute implementation defined,
   // throw a runtime error to report this.
-  std::stringstream is;
-  is << "Submitted command not supported: " << command;
-  LOG4CXX_ERROR(logger_, is.str());
-  throw std::runtime_error(is.str().c_str());
+  std::stringstream ss;
+  ss << "Submitted command not supported: " << command;
+  LOG4CXX_ERROR(logger_, ss.str());
+  reply.set_nack(ss.str());
 }
 
 /** Request the plugin's supported commands.
  *
- * In this abstract class the request method does perform any
+ * In this abstract class the request method doesn't perform any
  * actions, this should be overridden by subclasses.
  *
  * \return - Vector containing supported command strings.
@@ -204,7 +204,7 @@ std::vector<std::string> FrameProcessorPlugin::requestCommands()
  * Collate status information for the plugin.
  *
  * The status is added to the status IpcMessage object.
- * In this abstract class the status method does perform any
+ * In this abstract class the status method doesn't perform any
  * actions, this should be overridden by subclasses.
  *
  * \param[out] status - Reference to an IpcMessage value to store the status.
