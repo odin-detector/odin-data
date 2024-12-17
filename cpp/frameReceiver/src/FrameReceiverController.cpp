@@ -1232,7 +1232,7 @@ void FrameReceiverController::execute(OdinData::IpcMessage& config, OdinData::Ip
 {
   LOG4CXX_DEBUG_LEVEL(1, logger_, "Command submitted: " << config.encode());
 
-  // Loop over plugins, checking for command messages
+  // Check for decoder commands
   bool commandPresent = false;
   if (config.has_param("decoder")) {
     OdinData::IpcMessage subConfig(config.get_param<const rapidjson::Value&>("decoder"),
@@ -1246,7 +1246,7 @@ void FrameReceiverController::execute(OdinData::IpcMessage& config, OdinData::Ip
     }
   }
   if (!commandPresent){
-    // If no valid commands have been found after checking through all plugins then NACK the reply
+    // If no valid commands have been found then NACK the reply
     reply.set_nack("No valid commands found");
   }
 }

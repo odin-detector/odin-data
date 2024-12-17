@@ -180,10 +180,10 @@ void FrameProcessorPlugin::execute(const std::string& command, OdinData::IpcMess
 {
   // A command has been submitted and this plugin has no execute implementation defined,
   // throw a runtime error to report this.
-  std::stringstream is;
-  is << "Submitted command not supported: " << command;
-  LOG4CXX_ERROR(logger_, is.str());
-  throw std::runtime_error(is.str().c_str());
+  std::stringstream ss;
+  ss << "Submitted command not supported: " << command;
+  LOG4CXX_ERROR(logger_, ss.str());
+  reply.set_nack(ss.str());
 }
 
 /** Request the plugin's supported commands.
