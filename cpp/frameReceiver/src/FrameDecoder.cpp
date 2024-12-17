@@ -66,6 +66,20 @@ void FrameDecoder::request_configuration(const std::string param_prefix,
     config_reply.set_param(param_prefix + CONFIG_DECODER_FRAME_TIMEOUT_MS, frame_timeout_ms_);
 }
 
+/** Request the decoder's supported commands.
+ *
+ * In this abstract class the request method does perform any
+ * actions, this should be overridden by subclasses.
+ *
+ * \return - Vector containing supported command strings.
+ */
+std::vector<std::string> FrameDecoder::request_commands()
+{
+  // Default returns an empty vector.
+  std::vector<std::string> reply;
+  return reply;
+}
+
 //! Register a buffer manager with the decoder.
 //!
 //! This method registers a SharedBufferManager instance with the decoder, to be used when

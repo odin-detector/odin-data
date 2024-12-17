@@ -820,6 +820,12 @@ void FrameReceiverController::handle_ctrl_channel(void)
             this->request_configuration(ctrl_reply);
             break;
 
+          case IpcMessage::MsgValCmdRequestCommands:
+            LOG4CXX_DEBUG_LEVEL(3, logger_,
+                "Got control channel read commands request from client " << client_identity);
+            this->request_commands(ctrl_reply);
+            break;
+
           case IpcMessage::MsgValCmdStatus:
             LOG4CXX_DEBUG_LEVEL(3, logger_,
                 "Got control channel status request from client " << client_identity);
@@ -1203,6 +1209,21 @@ void FrameReceiverController::request_configuration(OdinData::IpcMessage& config
   // Add frame count to reply parameters
   config_reply.set_param(CONFIG_FRAME_COUNT, config_.frame_count_);
 
+}
+
+/**
+ * Request the command set supported by this FrameReceiver
+ *
+ * \param[out] reply - Response IpcMessage with the current supported command set.
+ */
+void FrameReceiverController::request_commands(OdinData::IpcMessage& reply)
+{
+  LOG4CXX_DEBUG_LEVEL(3, logger_, "Request for supported commands made");
+  std::vector<std::string>::iterator cmd;
+  std::vector<std::string> decoder_commands = frame_decoder_->request_commands();
+  for (cmd = decoder_commands.begin(); cmd != decoder_commands.end(); ++cmd) {
+    reply.set_param("decoder/supported[]", *cmd);
+  }
 }
 
 //! Reset the frame receiver statistics.
