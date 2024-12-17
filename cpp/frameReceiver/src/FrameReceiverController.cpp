@@ -851,6 +851,13 @@ void FrameReceiverController::handle_ctrl_channel(void)
               ctrl_reply.set_msg_type(IpcMessage::MsgTypeAck);
               break;
 
+          case IpcMessage::MsgValCmdExecute:
+              ctrl_reply.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
+              this->execute(ctrl_req, ctrl_reply);
+              LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (command): "
+                             << ctrl_reply.encode());
+              break;
+
           default:
             request_ok = false;
             error_ss << "Illegal command request value: " << req_val;
@@ -1209,6 +1216,39 @@ void FrameReceiverController::request_configuration(OdinData::IpcMessage& config
   // Add frame count to reply parameters
   config_reply.set_param(CONFIG_FRAME_COUNT, config_.frame_count_);
 
+}
+
+/**
+ * Submit commands to the FrameReceiver
+ *
+ * Submits command(s) to execute on the frame decoder if it
+ * support commands.  The IpcMessage should contain the command
+ * name and a structure of any parameters required by the command.
+ *
+ * \param[in] config - IpcMessage containing command and any parameter data.
+ * \param[out] reply - Response IpcMessage.
+ */
+void FrameReceiverController::execute(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
+{
+  LOG4CXX_DEBUG_LEVEL(1, logger_, "Command submitted: " << config.encode());
+
+  // Loop over plugins, checking for command messages
+  bool commandPresent = false;
+  if (config.has_param("decoder")) {
+    OdinData::IpcMessage subConfig(config.get_param<const rapidjson::Value&>("decoder"),
+                                    config.get_msg_type(),
+                                    config.get_msg_val());
+    if (subConfig.has_param("command")){
+      commandPresent = true;
+      // Extract the command and execute on the decoder
+      std::string commandName = subConfig.get_param<std::string>("command");
+      frame_decoder_->execute(commandName, reply);
+    }
+  }
+  if (!commandPresent){
+    // If no valid commands have been found after checking through all plugins then NACK the reply
+    reply.set_nack("No valid commands found");
+  }
 }
 
 /**
