@@ -1232,21 +1232,21 @@ void FrameReceiverController::execute(OdinData::IpcMessage& config, OdinData::Ip
 {
   LOG4CXX_DEBUG_LEVEL(1, logger_, "Command submitted: " << config.encode());
 
-  // Loop over plugins, checking for command messages
-  bool commandPresent = false;
+  // Check for decoder commands
+  bool command_present = false;
   if (config.has_param("decoder")) {
-    OdinData::IpcMessage subConfig(config.get_param<const rapidjson::Value&>("decoder"),
+    OdinData::IpcMessage sub_config(config.get_param<const rapidjson::Value&>("decoder"),
                                     config.get_msg_type(),
                                     config.get_msg_val());
-    if (subConfig.has_param("command")){
-      commandPresent = true;
+    if (sub_config.has_param("command")){
+      command_present = true;
       // Extract the command and execute on the decoder
-      std::string commandName = subConfig.get_param<std::string>("command");
-      frame_decoder_->execute(commandName, reply);
+      std::string command_name = sub_config.get_param<std::string>("command");
+      frame_decoder_->execute(command_name, reply);
     }
   }
-  if (!commandPresent){
-    // If no valid commands have been found after checking through all plugins then NACK the reply
+  if (!command_present){
+    // If no valid commands have been found then NACK the reply
     reply.set_nack("No valid commands found");
   }
 }
