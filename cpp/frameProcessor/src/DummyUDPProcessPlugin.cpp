@@ -202,7 +202,7 @@ namespace FrameProcessor
    *
    * \param[in] frame - Pointer to a Frame object.
    */
-  void DummyUDPProcessPlugin::process_frame(boost::shared_ptr<Frame> frame)
+  void DummyUDPProcessPlugin::process_frame(std::shared_ptr<Frame> frame)
   {
     LOG4CXX_TRACE(logger_, "Received a new frame");
 
@@ -247,8 +247,8 @@ namespace FrameProcessor
       LOG4CXX_DEBUG(logger_, "Copying data for frame " << hdr_ptr->frame_number << " to output");
 
       // Construct a new data block object to output the processed frame 
-      boost::shared_ptr<Frame> output_frame;
-      output_frame = boost::shared_ptr<Frame>(new DataBlockFrame(frame_meta, output_image_size));
+      std::shared_ptr<Frame> output_frame;
+      output_frame = std::shared_ptr<Frame>(new DataBlockFrame(frame_meta, output_image_size));
 
       // Get a pointer to the data buffer in the output frame
       void* output_ptr = output_frame->get_data_ptr();
@@ -282,7 +282,7 @@ namespace FrameProcessor
    *
    * \param[in] frame - Pointer to a Frame object.
    */
-  void DummyUDPProcessPlugin::process_lost_packets(boost::shared_ptr<Frame>& frame)
+  void DummyUDPProcessPlugin::process_lost_packets(std::shared_ptr<Frame>& frame)
   {
     const DummyUDP::FrameHeader* hdr_ptr = 
       static_cast<const DummyUDP::FrameHeader*>(frame->get_data_ptr());

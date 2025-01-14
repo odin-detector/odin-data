@@ -12,8 +12,6 @@
 #include <map>
 
 #include "zmq/zmq.hpp"
-#include <boost/bind/bind.hpp>
-#include <boost/function.hpp>
 
 namespace OdinData
 {

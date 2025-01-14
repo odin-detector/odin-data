@@ -2,7 +2,7 @@
 #define ODINDATA_LOGGING_H
 
 #include <pwd.h>
-#include <string.h>
+#include <cstring>
 #include <unistd.h>
 
 #include <log4cxx/basicconfigurator.h>

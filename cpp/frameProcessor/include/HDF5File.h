@@ -13,9 +13,6 @@
 #include <vector>
 #include <map>
 
-#include <boost/shared_ptr.hpp>
-#include <boost/thread.hpp>
-
 #include <log4cxx/logger.h>
 using namespace log4cxx;
 
@@ -52,7 +49,7 @@ struct HDF5ErrorDefinition_t
   unsigned int write_duration;
   unsigned int flush_duration;
   unsigned int close_duration;
-  boost::function<void(const std::string&)> callback;
+  std::function<void(const std::string&)> callback;
 };
 
 class HDF5File
@@ -131,7 +128,7 @@ private:
   /** Whether datasets use H5S_UNLIMITED as the outermost dimension extent */
   bool unlimited_;
   /** Mutex used to make this class thread safe */
-  boost::recursive_mutex mutex_;
+  std::recursive_mutex mutex_;
   /* Parameters memspace */
   hid_t param_memspace_;
   /* Map containing time each dataset was last flushed*/

@@ -5,8 +5,7 @@
  *      Author: vtu42223
  */
 
-#include <boost/filesystem.hpp>
-#include <boost/any.hpp>
+#include <filesystem>
 
 #include "Frame.h"
 #include "Acquisition.h"
@@ -81,7 +80,7 @@ std::string Acquisition::get_last_error()
  * \param[in] frame - The frame to process
  * \return - The Status of the processing.
  */
-ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame, HDF5CallDurations_t& call_durations) {
+ProcessFrameStatus Acquisition::process_frame(std::shared_ptr<Frame> frame, HDF5CallDurations_t& call_durations) {
   ProcessFrameStatus return_status = status_ok;
 
   try {
@@ -102,7 +101,7 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame, HD
         }
       }
 
-      boost::shared_ptr<HDF5File> file = this->get_file(frame_offset, call_durations);
+      std::shared_ptr<HDF5File> file = this->get_file(frame_offset, call_durations);
 
       if (file == 0) {
         last_error_ = "Unable to get file for this frame";
@@ -125,8 +124,8 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame, HD
       file->write_frame(*frame, frame_offset_in_file, outer_chunk_dimension, call_durations);
 
       // Loops over all parameters, checking if there is a matching dataset and write to it if so
-      const std::map<std::string, boost::any> &frame_parameters = frame->get_meta_data().get_parameters();
-      std::map<std::string, boost::any>::const_iterator param_iter;
+      const std::map<std::string, std::any> &frame_parameters = frame->get_meta_data().get_parameters();
+      std::map<std::string, std::any>::const_iterator param_iter;
       for (param_iter = frame_parameters.begin(); param_iter != frame_parameters.end(); ++param_iter) {
         std::map<std::string, DatasetDefinition>::iterator dset_iter;
         dset_iter = dataset_defs_.find(param_iter->first);
@@ -215,10 +214,10 @@ void Acquisition::create_file(size_t file_number, HDF5CallDurations_t& call_dura
   close_file(previous_file_, call_durations);
   previous_file_ = current_file_;
 
-  current_file_ = boost::shared_ptr<HDF5File>(new HDF5File(hdf5_error_definition_));
+  current_file_ = std::shared_ptr<HDF5File>(new HDF5File(hdf5_error_definition_));
 
   // Create the file
-  boost::filesystem::path full_path = boost::filesystem::path(file_path_) / boost::filesystem::path(filename_);
+  std::filesystem::path full_path = std::filesystem::path(file_path_) / std::filesystem::path(filename_);
   size_t create_duration = current_file_->create_file(
     full_path.string(), file_number, use_earliest_hdf5_, alignment_threshold_, alignment_value_
   );
@@ -286,7 +285,7 @@ void Acquisition::create_file(size_t file_number, HDF5CallDurations_t& call_dura
  *
  * \param[in] file - The HDF5File to call to close its file
  */
-void Acquisition::close_file(boost::shared_ptr<HDF5File> file, HDF5CallDurations_t& call_durations) {
+void Acquisition::close_file(std::shared_ptr<HDF5File> file, HDF5CallDurations_t& call_durations) {
   if (file != 0) {
     LOG4CXX_INFO(logger_, "Closing file " << file->get_filename());
     size_t close_duration = file->close_file();
@@ -410,7 +409,7 @@ void Acquisition::stop_acquisition(HDF5CallDurations_t& call_durations) {
  * \param[in] frame - Pointer to the Frame object.
  * \return - true if the frame was valid
  */
-bool Acquisition::check_frame_valid(boost::shared_ptr<Frame> frame)
+bool Acquisition::check_frame_valid(std::shared_ptr<Frame> frame)
 {
   bool invalid = false;
   const FrameMetaData frame_meta_data = frame->get_meta_data();
@@ -542,7 +541,7 @@ size_t Acquisition::get_file_index(size_t frame_offset) const {
  * \param[in] frame_offset - The frame offset to get the file for
  * \return - The file that should be used to write this frame
  */
-boost::shared_ptr<HDF5File> Acquisition::get_file(size_t frame_offset, HDF5CallDurations_t& call_durations) {
+std::shared_ptr<HDF5File> Acquisition::get_file(size_t frame_offset, HDF5CallDurations_t& call_durations) {
   if (blocks_per_file_ == 0) {
     return this->current_file_;
   }
@@ -575,7 +574,7 @@ boost::shared_ptr<HDF5File> Acquisition::get_file(size_t frame_offset, HDF5CallD
     return this->current_file_;
   } else {
     LOG4CXX_WARN(logger_,"Unable to write frame offset " << frame_offset << " as no suitable file found");
-    return boost::shared_ptr<HDF5File>();
+    return std::shared_ptr<HDF5File>();
   }
 
 }
@@ -591,7 +590,7 @@ boost::shared_ptr<HDF5File> Acquisition::get_file(size_t frame_offset, HDF5CallD
  *
  * Returns the dataset offset for frame number (frame_no)
  */
-size_t Acquisition::adjust_frame_offset(boost::shared_ptr<Frame> frame) const {
+size_t Acquisition::adjust_frame_offset(std::shared_ptr<Frame> frame) const {
   size_t frame_no = frame->get_frame_number();
   int64_t frame_offset_adjustment = frame->get_meta_data().get_frame_offset();
   size_t frame_offset = 0;

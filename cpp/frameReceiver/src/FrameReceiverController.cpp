@@ -137,7 +137,7 @@ void FrameReceiverController::run(void)
 
 #ifdef FR_CONTROLLER_TICK_TIMER
   int tick_timer_id = reactor_.register_timer(
-      deferred_action_delay_ms, 0, boost::bind(&FrameReceiverController::tick_timer, this));
+      deferred_action_delay_ms, 0, std::bind(&FrameReceiverController::tick_timer, this));
 #endif
 
   // Run the reactor event loop
@@ -172,7 +172,7 @@ void FrameReceiverController::stop(const bool deferred)
   if (deferred)
   {
     reactor_.register_timer(deferred_action_delay_ms, 1,
-      boost::bind(&FrameReceiverController::stop, this, false)
+      std::bind(&FrameReceiverController::stop, this, false)
     );
   }
   else
@@ -288,7 +288,7 @@ void FrameReceiverController::setup_control_channel(const std::string& endpoint)
 
   // Add channel to the reactor
   reactor_.register_channel(ctrl_channel_,
-    boost::bind(&FrameReceiverController::handle_ctrl_channel, this)
+    std::bind(&FrameReceiverController::handle_ctrl_channel, this)
   );
 
 }
@@ -315,7 +315,7 @@ void FrameReceiverController::setup_rx_channel(const std::string& endpoint)
 
   // Add channel to the reactor
   reactor_.register_channel(rx_channel_,
-    boost::bind(&FrameReceiverController::handle_rx_channel, this)
+    std::bind(&FrameReceiverController::handle_rx_channel, this)
   );
 
 }
@@ -371,7 +371,7 @@ void FrameReceiverController::setup_frame_release_channel(const std::string& end
 
   // Add channel to the reactor
   reactor_.register_channel(frame_release_channel_,
-            boost::bind(&FrameReceiverController::handle_frame_release_channel, this));
+            std::bind(&FrameReceiverController::handle_frame_release_channel, this));
 
 }
 
@@ -393,7 +393,7 @@ void FrameReceiverController::unbind_channel(OdinData::IpcChannel* channel,
     if (deferred)
     {
       reactor_.register_timer(deferred_action_delay_ms, 1,
-          boost::bind(&FrameReceiverController::unbind_channel, this, channel, endpoint, false)
+          std::bind(&FrameReceiverController::unbind_channel, this, channel, endpoint, false)
       );
     }
     else
@@ -470,7 +470,7 @@ void FrameReceiverController::configure_frame_decoder(OdinData::IpcMessage& conf
   // decoder configuration; update and force a reconfig if so
   if (config_msg.has_param(CONFIG_DECODER_CONFIG))
   {
-    boost::scoped_ptr<IpcMessage> new_decoder_config(
+    std::unique_ptr                                                                                                            <IpcMessage> new_decoder_config(
         new IpcMessage(config_msg.get_param<const rapidjson::Value&>(CONFIG_DECODER_CONFIG)));
     if (*new_decoder_config != *(config_.decoder_config_))
     {
@@ -1056,7 +1056,7 @@ void FrameReceiverController::notify_buffer_config(const bool deferred)
   if (deferred)
   {
     reactor_.register_timer(deferred_action_delay_ms, 1,
-      boost::bind(&FrameReceiverController::notify_buffer_config, this, false)
+      std::bind(&FrameReceiverController::notify_buffer_config, this, false)
     );
   }
   else

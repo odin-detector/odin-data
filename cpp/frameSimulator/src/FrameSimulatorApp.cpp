@@ -6,8 +6,9 @@
 
 #include "FrameSimulatorPlugin.h"
 
-#include <boost/shared_ptr.hpp>
-#include <boost/filesystem.hpp>
+#include <memory>
+#include <cstdlib>
+#include <filesystem>
 
 #include <log4cxx/logger.h>
 #include <log4cxx/basicconfigurator.h>
@@ -44,14 +45,14 @@ static const FrameSimulatorOption<std::string> opt_log_config("log-config", "Set
  * /return shared pointer to an instance of the requested FrameSimulatorPlugin  class
  * the 'detector' argument must match the library name prefix i.e. 'lib<detector>FrameSimulatorPlugin.so'
  */
-boost::shared_ptr <FrameSimulator::FrameSimulatorPlugin> get_requested_plugin(const po::variables_map &vm, LoggerPtr &logger) {
+std::shared_ptr <FrameSimulator::FrameSimulatorPlugin> get_requested_plugin(const po::variables_map &vm, LoggerPtr &logger) {
 
     std::string pluginClass = opt_detector.get_val(vm) + librarySuffix;
 
-    boost::filesystem::path libraryPathAndName = boost::filesystem::path(opt_libpath.get_val(vm)) /
-                                                 boost::filesystem::path("lib" + pluginClass + ".so");
+    std::filesystem::path libraryPathAndName = std::filesystem::path(opt_libpath.get_val(vm)) /
+                                                 std::filesystem::path("lib" + pluginClass + ".so");
 
-    boost::shared_ptr <FrameSimulator::FrameSimulatorPlugin> plugin;
+    std::shared_ptr <FrameSimulator::FrameSimulatorPlugin> plugin;
 
     try {
         plugin = OdinData::ClassLoader<FrameSimulator::FrameSimulatorPlugin>::load_class(pluginClass, libraryPathAndName.string());
@@ -81,7 +82,7 @@ static bool has_suffix(const std::string &str, const std::string &suffix) {
  * /param[in] plugin - pointer to plugin instance
  */
 int parse_arguments(int argc, char **argv, po::variables_map &vm, LoggerPtr &logger,
-                    boost::shared_ptr <FrameSimulator::FrameSimulatorPlugin> &plugin) {
+                    std::shared_ptr <FrameSimulator::FrameSimulatorPlugin> &plugin) {
 
     int rc = 0;
 
@@ -142,8 +143,8 @@ int parse_arguments(int argc, char **argv, po::variables_map &vm, LoggerPtr &log
 
             po::options_description config("Detector options");
 
-            boost::filesystem::path libraryPathAndName = boost::filesystem::path(opt_libpath.get_val(vm)) /
-                                                         boost::filesystem::path(
+            std::filesystem::path libraryPathAndName = std::filesystem::path(opt_libpath.get_val(vm)) /
+                                                         std::filesystem::path(
                                                                  "lib" + detector + librarySuffix + ".so");
 
             std::string pluginClass = detector + librarySuffix;
@@ -216,7 +217,7 @@ int main(int argc, char *argv[]) {
 
     {
 
-        boost::shared_ptr <FrameSimulator::FrameSimulatorPlugin> plugin;
+        std::shared_ptr <FrameSimulator::FrameSimulatorPlugin> plugin;
 
         po::variables_map vm;
         parse_arguments(argc, argv, vm, logger, plugin);
