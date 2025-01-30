@@ -11,6 +11,9 @@
 #include <dlfcn.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <map>
+#include <stdexcept>
+#include <string>
 
 #define REGISTER(Base,Class,Name) OdinData::ClassLoader<Base> cl(Name, OdinData::maker<Base,Class>);
 
