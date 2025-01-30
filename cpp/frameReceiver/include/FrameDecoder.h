@@ -14,9 +14,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <netinet/in.h>
-
-#include <boost/shared_ptr.hpp>
-#include <boost/function.hpp>
+#include <memory>
 
 #include <log4cxx/logger.h>
 using namespace log4cxx;
@@ -40,7 +38,7 @@ public:
   FrameDecoderException(const std::string what) : OdinData::OdinDataException(what) { };
 };
 
-typedef boost::function<void(int, int)> FrameReadyCallback;
+typedef std::function<void(int, int)> FrameReadyCallback;
 typedef std::queue<int> EmptyBufferQueue;
 typedef std::map<int, int> FrameBufferMap;
 
@@ -101,7 +99,7 @@ protected:
 
 inline FrameDecoder::~FrameDecoder() {};
 
-typedef boost::shared_ptr<FrameDecoder> FrameDecoderPtr;
+typedef std::shared_ptr<FrameDecoder> FrameDecoderPtr;
 
 } // namespace FrameReceiver
 #endif /* INCLUDE_FRAMEDECODER_H_ */

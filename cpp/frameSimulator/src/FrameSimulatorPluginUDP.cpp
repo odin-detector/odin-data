@@ -100,7 +100,7 @@ namespace FrameSimulator {
             // Loop over the pcap file to read the packets and send them to pkt_callback
             pcap_loop(m_handle, -1, pkt_callback, reinterpret_cast<u_char *>(this));
         } else {
-            create_frames(replay_numframes_.get());
+            create_frames(replay_numframes_.value());
         }
 
         return true;
@@ -138,7 +138,7 @@ namespace FrameSimulator {
         LOG4CXX_DEBUG(logger_, "Replaying frame(s)");
         LOG4CXX_ASSERT(logger_, 0<frames_.size(), "I have no frames to replay");
 
-        int frames_to_replay = replay_numframes_ ? replay_numframes_.get() : frames_.size();
+        int frames_to_replay = replay_numframes_ ? replay_numframes_.value() : frames_.size();
 
         LOG4CXX_DEBUG(logger_, "Replaying frames");
         LOG4CXX_DEBUG(logger_, frames_to_replay);
@@ -162,14 +162,14 @@ namespace FrameSimulator {
             int frame_packets_dropped = 0;
             int frame_bytes_sent = 0;
 
-            LOG4CXX_DEBUG(logger_, "Frame " + boost::lexical_cast<std::string>(n) + " packets: " +
-                                   boost::lexical_cast<std::string>(num_packets));
+            LOG4CXX_DEBUG(logger_, "Frame " + std::to_string(n) + " packets: " +
+                                   std::to_string(num_packets));
 
             for (int p = 0; p < num_packets; p++) {
 
                 // If drop fraction specified, decide if packet should be dropped
                 if (drop_frac_) {
-                    if (((double) rand() / RAND_MAX) < drop_frac_.get()) {
+                    if (((double) rand() / RAND_MAX) < drop_frac_.value()) {
                         frame_packets_dropped += 1;
                         continue;
                     }
@@ -178,8 +178,8 @@ namespace FrameSimulator {
                 // If drop list was specified and this packet is in it, drop the packet
 
                 if (drop_packets_) {
-                    std::vector<std::string> drop_packet_vec = drop_packets_.get();
-                    if (std::find(drop_packet_vec.begin(), drop_packet_vec.end(), boost::lexical_cast<std::string>(p)) != drop_packet_vec.end()) {
+                    std::vector<std::string> drop_packet_vec = drop_packets_.value();
+                    if (std::find(drop_packet_vec.begin(), drop_packet_vec.end(), std::to_string(p)) != drop_packet_vec.end()) {
                         frame_packets_dropped += 1;
                         continue;
                     }
@@ -189,9 +189,9 @@ namespace FrameSimulator {
                 frame_packets_sent += 1;
 
                 // Add brief pause between 'packet_gap' frames if packet gap specified
-                if (packet_gap_ && (frame_packets_sent % packet_gap_.get() == 0)) {
+                if (packet_gap_ && (frame_packets_sent % packet_gap_.value() == 0)) {
                     LOG4CXX_DEBUG(logger_,
-                                  "Pause - just sent packet - " + boost::lexical_cast<std::string>(frame_packets_sent));
+                                  "Pause - just sent packet - " + std::to_string(frame_packets_sent));
 
                     usleep(10000);
                 }
@@ -205,10 +205,10 @@ namespace FrameSimulator {
 
             // Calculate wait time and sleep so that frames are sent at requested intervals
             if (frame_gap_secs_) {
-                float wait_time_s = frame_gap_secs_.get() - frame_time_s;
+                float wait_time_s = frame_gap_secs_.value() - frame_time_s;
                 if (wait_time_s > 0) {
                     LOG4CXX_DEBUG(logger_,
-                                  "Pause after frame " + boost::lexical_cast<std::string>(n));
+                                  "Pause after frame " + std::to_string(n));
                     struct timespec wait_spec;
                     wait_spec.tv_sec = (int)wait_time_s;
                     wait_spec.tv_nsec = (long)((wait_time_s - (float)wait_spec.tv_sec) * 1000000000L);
@@ -216,10 +216,10 @@ namespace FrameSimulator {
                 }
             }
 
-            LOG4CXX_DEBUG(logger_, "Sent " + boost::lexical_cast<std::string>(frame_bytes_sent) + " bytes in " +
-                                   boost::lexical_cast<std::string>(frame_packets_sent) + " packets for frame " + boost::lexical_cast<std::string>(n) +
-                                   ", dropping " + boost::lexical_cast<std::string>(frame_packets_dropped) + " packets (" +
-                                   boost::lexical_cast<std::string>(float(100.0*frame_packets_dropped)/(frame_packets_dropped + frame_packets_sent)) + "%)");
+            LOG4CXX_DEBUG(logger_, "Sent " + std::to_string(frame_bytes_sent) + " bytes in " +
+                                   std::to_string(frame_packets_sent) + " packets for frame " + std::to_string(n) +
+                                   ", dropping " + std::to_string(frame_packets_dropped) + " packets (" +
+                                   std::to_string(float(100.0*frame_packets_dropped)/(frame_packets_dropped + frame_packets_sent)) + "%)");
 
             total_frames_sent += 1;
             total_packets_sent += frame_packets_sent;
@@ -228,11 +228,11 @@ namespace FrameSimulator {
 
         }
 
-        LOG4CXX_DEBUG(logger_, "Sent " + boost::lexical_cast<std::string>(total_frames_sent) + " frames with a total of " +
-                               boost::lexical_cast<std::string>(total_bytes_sent) + " bytes in " +
-                               boost::lexical_cast<std::string>(total_packets_sent) + " packets, dropping " +
-                               boost::lexical_cast<std::string>(total_packets_dropped) + " packets (" +
-                               boost::lexical_cast<std::string>(float(100.0*total_packets_dropped)/(total_packets_dropped + total_packets_sent)) + "%)");
+        LOG4CXX_DEBUG(logger_, "Sent " + std::to_string(total_frames_sent) + " frames with a total of " +
+                               std::to_string(total_bytes_sent) + " bytes in " +
+                               std::to_string(total_packets_sent) + " packets, dropping " +
+                               std::to_string(total_packets_dropped) + " packets (" +
+                               std::to_string(float(100.0*total_packets_dropped)/(total_packets_dropped + total_packets_sent)) + "%)");
     }
 
     /** All Packets should be sent using send_packet
@@ -240,7 +240,7 @@ namespace FrameSimulator {
      * /param[in] frame to which packet belongs
      * this ensures each frame is sent to the appropriate destination port
      */
-    int FrameSimulatorPluginUDP::send_packet(const boost::shared_ptr<Packet> &packet, const int &frame) const {
+    int FrameSimulatorPluginUDP::send_packet(const std::shared_ptr<Packet> &packet, const int &frame) const {
         if (frame != curr_frame) {
             curr_port_index = (curr_port_index + 1 < m_addrs.size()) ? curr_port_index + 1 : 0;
             curr_frame = frame;

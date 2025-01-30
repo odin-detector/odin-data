@@ -31,7 +31,7 @@ public:
     dset_def.chunks = chunk_dims;
 
     FrameProcessor::FrameMetaData frame_meta(7, "data", FrameProcessor::raw_16bit, "scan1", img_dims, FrameProcessor::no_compression);
-    frame = boost::shared_ptr<FrameProcessor::DataBlockFrame>(new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(img), 24));
+    frame = std::shared_ptr<FrameProcessor::DataBlockFrame>(new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(img), 24));
 
     for (int i = 1; i<6; i++)
     {
@@ -40,13 +40,13 @@ public:
       tmp_frame_meta.set_frame_number(i);
       tmp_frame_meta.set_acquisition_ID("scan2");
       tmp_frame_meta.set_data_type(FrameProcessor::raw_32bit);
-      boost::shared_ptr<FrameProcessor::DataBlockFrame> tmp_frame(new FrameProcessor::DataBlockFrame(tmp_frame_meta, static_cast<void*>(img), 24));
+      std::shared_ptr<FrameProcessor::DataBlockFrame> tmp_frame(new FrameProcessor::DataBlockFrame(tmp_frame_meta, static_cast<void*>(img), 24));
       frames.push_back(tmp_frame);
     }
   }
   ~BloscPluginTestFixture() {}
-  boost::shared_ptr<FrameProcessor::Frame> frame;
-  std::vector< boost::shared_ptr<FrameProcessor::Frame> >frames;
+  std::shared_ptr<FrameProcessor::Frame> frame;
+  std::vector< std::shared_ptr<FrameProcessor::Frame> >frames;
   FrameProcessor::BloscPlugin blosc_plugin;
   FrameProcessor::DatasetDefinition dset_def;
 };

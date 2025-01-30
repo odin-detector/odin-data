@@ -10,14 +10,15 @@
 #include <vector>
 #include <map>
 
-#include <boost/shared_ptr.hpp>
-#include <boost/thread.hpp>
-
 #include <log4cxx/logger.h>
 using namespace log4cxx;
 
 #include "FrameProcessorPlugin.h"
 #include "FrameProcessorDefinitions.h"
+#include <condition_variable>
+#include <thread>
+#include <memory>
+#include <mutex>
 #include "Acquisition.h"
 #include "ClassLoader.h"
 
@@ -146,14 +147,14 @@ private:
    */
   FileWriterPlugin(const FileWriterPlugin& src); // prevent copying one of these
 
-  void process_frame(boost::shared_ptr<Frame> frame);
+  void process_frame(std::shared_ptr<Frame> frame);
   void process_end_of_acquisition();
-  bool frame_in_acquisition(boost::shared_ptr<Frame> frame);
+  bool frame_in_acquisition(std::shared_ptr<Frame> frame);
 
   /** Pointer to logger */
   LoggerPtr logger_;
   /** Mutex used to make this class thread safe */
-  boost::recursive_mutex mutex_;
+  std::recursive_mutex mutex_;
   /** Is this plugin writing frames to file? */
   bool writing_;
   /** Number of concurrent file writers executing */
@@ -161,9 +162,9 @@ private:
   /** Rank of this file writer */
   size_t concurrent_rank_;
   /** Details of the acquisition currently being written */
-  boost::shared_ptr<Acquisition> current_acquisition_;
+  std::shared_ptr<Acquisition> current_acquisition_;
   /** Details of the next acquisition to be written */
-  boost::shared_ptr<Acquisition> next_acquisition_;
+  std::shared_ptr<Acquisition> next_acquisition_;
   /** Map of dataset definitions */
   std::map<std::string, DatasetDefinition> dataset_defs_;
   /** Number of frames to write consecutively in a file */
@@ -179,19 +180,19 @@ private:
   /** Timeout for closing the file after receiving no data */
   size_t timeout_period_;
   /** Mutex used to make starting the close file timeout thread safe */
-  boost::mutex start_timeout_mutex_;
+  std::mutex start_timeout_mutex_;
   /** Mutex used to make running the close file timeout thread safe */
-  boost::mutex close_file_mutex_;
+  std::mutex close_file_mutex_;
   /** Condition variable used to start the close file timeout */
-  boost::condition_variable start_condition_;
+  std::condition_variable start_condition_;
   /** Condition variable used to run the close file timeout */
-  boost::condition_variable timeout_condition_;
+  std::condition_variable timeout_condition_;
   /** Close file timeout active switch */
   bool timeout_active_;
   /** Close file timeout thread running */
   bool timeout_thread_running_;
   /** The close file timeout thread */
-  boost::thread timeout_thread_;
+  std::thread timeout_thread_;
   /** Starting file index (default to 0 index based numbering) */
   uint32_t first_file_index_;
   /** Do we use file numbers in the file name construction.  Defaults to true */

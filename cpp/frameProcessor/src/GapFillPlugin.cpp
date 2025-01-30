@@ -38,13 +38,13 @@ namespace FrameProcessor
      *
      * \param[in] frame - pointer to a frame object.
      */
-    void GapFillPlugin::process_frame(boost::shared_ptr<Frame> frame)
+    void GapFillPlugin::process_frame(std::shared_ptr<Frame> frame)
     {
         LOG4CXX_TRACE(logger_, "GapFillPlugin Process Frame.");
 
         // Call the insert gaps method and push the resulting frame if it is not null
         if (this->configuration_valid(frame)){
-            boost::shared_ptr<Frame> gap_frame = this->insert_gaps(frame);
+            std::shared_ptr<Frame> gap_frame = this->insert_gaps(frame);
             if (gap_frame){
                 this->push(gap_frame);
             }
@@ -60,7 +60,7 @@ namespace FrameProcessor
      * \param[in] frame - pointer to a frame object.
      * \return verified - true if the configuration is valid, false otherwise.
      */
-    bool GapFillPlugin::configuration_valid(boost::shared_ptr<Frame> frame)
+    bool GapFillPlugin::configuration_valid(std::shared_ptr<Frame> frame)
     {
         bool verified = false;
         dimensions_t frame_dimensions = frame->get_meta_data().get_dimensions();
@@ -122,9 +122,9 @@ namespace FrameProcessor
      * \param[in] frame - pointer to a frame object.
      * \return gap_frame - pointer to a frame that has gaps inserted.
      */
-    boost::shared_ptr<Frame> GapFillPlugin::insert_gaps(boost::shared_ptr<Frame> frame) {
+    std::shared_ptr<Frame> GapFillPlugin::insert_gaps(std::shared_ptr<Frame> frame) {
 
-        boost::shared_ptr<Frame> gap_frame;
+        std::shared_ptr<Frame> gap_frame;
 
         dimensions_t frame_dimensions = frame->get_meta_data().get_dimensions();
 
@@ -188,7 +188,7 @@ namespace FrameProcessor
        FrameProcessor::FrameMetaData frame_meta = frame->get_meta_data_copy();
        frame_meta.set_dimensions(img_dims);
 
-       gap_frame = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
+       gap_frame = std::shared_ptr<FrameProcessor::DataBlockFrame>(
                 new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(new_image), img_x * img_y * get_size_from_enum(frame->get_meta_data().get_data_type())));
 
         // Free the allocated memory

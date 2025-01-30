@@ -7,12 +7,8 @@
 
 #include "FrameReceiverRxThread.h"
 
-#ifdef BOOST_HAS_PLACEHOLDERS
-using namespace boost::placeholders;
-#endif
-
 using namespace FrameReceiver;
-
+using namespace std::placeholders;
 //! Constructor for the FrameReceiverRxThread class.
 //!
 //! This constructor initialises the member variables of the class. Startup of the thread
@@ -53,8 +49,8 @@ bool FrameReceiverRxThread::start()
 
   bool init_ok = true;
 
-  rx_thread_ = boost::shared_ptr<boost::thread>(
-    new boost::thread(boost::bind(&FrameReceiverRxThread::run_service, this)));
+  rx_thread_ = std::shared_ptr<std::thread>(
+    new std::thread(std::bind(&FrameReceiverRxThread::run_service, this)));
 
   // Wait for the thread service to initialise and be running properly, logging an error
   // an returning false if the thread fails to start within a reasonable time. Also
@@ -133,22 +129,22 @@ void FrameReceiverRxThread::run_service(void)
 
   // Add the RX channel to the reactor
   reactor_.register_channel(rx_channel_, 
-    boost::bind(&FrameReceiverRxThread::handle_rx_channel, this));
+    std::bind(&FrameReceiverRxThread::handle_rx_channel, this));
 
   // Run the specific service setup implemented in subclass
   run_specific_service();
 
   // Add the tick timer to the reactor
   int tick_timer_id = reactor_.register_timer(tick_period_ms_, 0, 
-    boost::bind(&FrameReceiverRxThread::tick_timer, this));
+    std::bind(&FrameReceiverRxThread::tick_timer, this));
 
   // Add the buffer monitor timer to the reactor
   int buffer_monitor_timer_id = reactor_.register_timer(frame_decoder_->get_frame_timeout_ms(), 0, 
-    boost::bind(&FrameReceiverRxThread::buffer_monitor_timer, this));
+    std::bind(&FrameReceiverRxThread::buffer_monitor_timer, this));
 
   // Register the frame release callback with the decoder
   frame_decoder_->register_frame_ready_callback(
-    boost::bind(&FrameReceiverRxThread::frame_ready, this, _1, _2));
+    std::bind(&FrameReceiverRxThread::frame_ready, this, _1, _2));
 
   // If there was any prior error setting the thread up, return
   if (thread_init_error_)

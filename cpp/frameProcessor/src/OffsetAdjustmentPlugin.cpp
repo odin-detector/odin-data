@@ -37,7 +37,7 @@ OffsetAdjustmentPlugin::~OffsetAdjustmentPlugin()
  *
  * \param[in] frame - Pointer to a Frame object.
  */
-void OffsetAdjustmentPlugin::process_frame(boost::shared_ptr<Frame> frame)
+void OffsetAdjustmentPlugin::process_frame(std::shared_ptr<Frame> frame)
 {
   frame->meta_data().adjust_frame_offset(offset_adjustment_);
   this->push(frame);

@@ -40,11 +40,11 @@ class BloscPlugin : public FrameProcessorPlugin
 public:
   BloscPlugin();
   virtual ~BloscPlugin();
-  boost::shared_ptr<Frame> compress_frame(boost::shared_ptr<Frame> frame);
+  std::shared_ptr<Frame> compress_frame(std::shared_ptr<Frame> frame);
 
 private:
   // Baseclass API to implement:
-  void process_frame(boost::shared_ptr<Frame> frame);
+  void process_frame(std::shared_ptr<Frame> frame);
   void status(OdinData::IpcMessage& status);
   void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   void requestConfiguration(OdinData::IpcMessage& reply);
@@ -62,7 +62,7 @@ private:
   /** Pointer to logger */
   LoggerPtr logger_;
   /** Mutex used to make this class thread safe */
-  boost::recursive_mutex mutex_;
+  std::recursive_mutex mutex_;
   /** Current acquisition ID */
   std::string current_acquisition_;
   /** Compression settings */

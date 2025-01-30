@@ -16,9 +16,6 @@
 
 #include "zmq/zmq.hpp"
 
-#include <boost/scoped_ptr.hpp>
-#include <boost/shared_ptr.hpp>
-
 #include "IpcChannel.h"
 #include "IpcMessage.h"
 #include "IpcReactor.h"
@@ -92,7 +89,7 @@ namespace FrameReceiver
 #endif
 
     log4cxx::LoggerPtr                       logger_;          //!< Pointer to the logging facility
-    boost::scoped_ptr<FrameReceiverRxThread> rx_thread_;       //!< Receiver thread object
+    std::unique_ptr<FrameReceiverRxThread> rx_thread_;       //!< Receiver thread object
     FrameDecoderPtr                          frame_decoder_;   //!< Frame decoder object
     SharedBufferManagerPtr                   buffer_manager_;  //!< Buffer manager object
 
@@ -124,7 +121,7 @@ namespace FrameReceiver
 
     std::string rx_thread_identity_;      //!< Identity of the RX thread dealer channel
 
-    boost::scoped_ptr<OdinData::IpcMessage> rx_thread_status_; //!< Status of the receiver thread
+    std::unique_ptr<OdinData::IpcMessage> rx_thread_status_; //!< Status of the receiver thread
 
   };
 

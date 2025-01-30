@@ -59,7 +59,7 @@ FrameProcessorController::FrameProcessorController(unsigned int num_io_threads) 
     pluginShutdownSent_(false),
     shutdown_(false),
     ipc_context_(OdinData::IpcContext::Instance(num_io_threads)),
-    ctrlThread_(boost::bind(&FrameProcessorController::runIpcService, this)),
+    ctrlThread_(std::bind(&FrameProcessorController::runIpcService, this)),
     ctrlChannelEndpoint_(""),
     ctrlChannel_(ZMQ_ROUTER),
     metaRxChannel_(ZMQ_PULL),
@@ -260,7 +260,7 @@ void FrameProcessorController::handleMetaRxChannel()
  *
  * @param frame - Pointer to the frame
  */
-void FrameProcessorController::callback(boost::shared_ptr<Frame> frame) {
+void FrameProcessorController::callback(std::shared_ptr<Frame> frame) {
 
   // If frame is a master frame, or all frames are included (no master frames), increment frame count
   if (masterFrame == "" || frame->get_meta_data().get_dataset_name() == masterFrame) {
@@ -298,7 +298,7 @@ void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply)
   }
 
   // Loop over plugins, list names and request status from each
-  std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
+  std::map<std::string, std::shared_ptr<FrameProcessorPlugin> >::iterator iter;
   for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
     reply.set_param("plugins/names[]", iter->first);
     // Request status for the plugin
@@ -342,7 +342,7 @@ void FrameProcessorController::provideVersion(OdinData::IpcMessage& reply)
   reply.set_param("version/odin-data/full", std::string(ODIN_DATA_VERSION_STR));
 
   // Loop over plugins, list version information from each
-  std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
+  std::map<std::string, std::shared_ptr<FrameProcessorPlugin> >::iterator iter;
   for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
     iter->second->version(reply);
   }
@@ -380,7 +380,7 @@ void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData:
 
   // Check if we have been asked to reset any errors
   if (config.has_param("clear_errors")) {
-    std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
+    std::map<std::string, std::shared_ptr<FrameProcessorPlugin> >::iterator iter;
     for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
       iter->second->clear_errors();
     }
@@ -486,7 +486,7 @@ void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData:
   }
 
   // Loop over plugins, checking for configuration messages
-  std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
+  std::map<std::string, std::shared_ptr<FrameProcessorPlugin> >::iterator iter;
   for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
     if (config.has_param(iter->first)) {
       OdinData::IpcMessage subConfig(config.get_param<const rapidjson::Value&>(iter->first),
@@ -517,7 +517,7 @@ void FrameProcessorController::requestConfiguration(OdinData::IpcMessage& reply)
   reply.set_param(fr_cnxn_str + FrameProcessorController::CONFIG_FR_RELEASE, frReleaseEndpoint_);
 
   // Loop over plugins and request current configuration from each
-  std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
+  std::map<std::string, std::shared_ptr<FrameProcessorPlugin> >::iterator iter;
   for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
     iter->second->requestConfiguration(reply);
   }
@@ -542,7 +542,7 @@ void FrameProcessorController::execute(OdinData::IpcMessage& config, OdinData::I
   LOG4CXX_DEBUG_LEVEL(1, logger_, "Command submitted: " << config.encode());
 
   // Loop over plugins, checking for command messages
-  std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
+  std::map<std::string, std::shared_ptr<FrameProcessorPlugin> >::iterator iter;
   bool commandPresent = false;
   for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
     if (config.has_param(iter->first)) {
@@ -578,7 +578,7 @@ void FrameProcessorController::requestCommands(OdinData::IpcMessage& reply)
   LOG4CXX_DEBUG_LEVEL(3, logger_, "Request for supported commands made");
 
   // Loop over plugins and request current supported commands from each
-  std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
+  std::map<std::string, std::shared_ptr<FrameProcessorPlugin> >::iterator iter;
   std::vector<std::string>::iterator cmd;
   for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
     std::vector<std::string> commands = iter->second->requestCommands();
@@ -602,7 +602,7 @@ void FrameProcessorController::resetStatistics(OdinData::IpcMessage& reply)
   bool reset_ok = true;
 
   // Loop over plugins and call reset statistics on each
-  std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
+  std::map<std::string, std::shared_ptr<FrameProcessorPlugin> >::iterator iter;
   for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
     iter->second->reset_performance_stats();
     reset_ok = iter->second->reset_statistics();
@@ -703,7 +703,7 @@ void FrameProcessorController::loadPlugin(const std::string& index, const std::s
   if (plugins_.count(index) == 0) {
     // Dynamically class load the plugin
     // Add the plugin to the map, indexed by the name
-    boost::shared_ptr<FrameProcessorPlugin> plugin = OdinData::ClassLoader<FrameProcessorPlugin>::load_class(name, library);
+    std::shared_ptr<FrameProcessorPlugin> plugin = OdinData::ClassLoader<FrameProcessorPlugin>::load_class(name, library);
     if (plugin) {
       plugin->set_name(index);
       plugin->connect_meta_channel();
@@ -795,7 +795,7 @@ void FrameProcessorController::disconnectPlugin(const std::string& index, const 
 void FrameProcessorController::disconnectAllPlugins()
 {
   // Loop over all plugins and remove the callbacks from each one
-  std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator it;
+  std::map<std::string, std::shared_ptr<FrameProcessorPlugin> >::iterator it;
   for (it = plugins_.begin(); it != plugins_.end(); it++) {
     LOG4CXX_DEBUG_LEVEL(1, logger_, "Disconnecting plugin callbacks for " << it->first);
     it->second->remove_all_callbacks();
@@ -819,7 +819,7 @@ void FrameProcessorController::shutdown() {
     LOG4CXX_INFO(logger_, "Received shutdown command");
     // Stop all plugin worker threads
     LOG4CXX_DEBUG_LEVEL(1, logger_, "Stopping plugin worker threads");
-    std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator it;
+    std::map<std::string, std::shared_ptr<FrameProcessorPlugin> >::iterator it;
     for (it = plugins_.begin(); it != plugins_.end(); it++) {
       it->second->stop();
     }
@@ -857,7 +857,7 @@ void FrameProcessorController::shutdown() {
  */
 void FrameProcessorController::waitForShutdown()
 {
-  boost::unique_lock<boost::mutex> lock(exitMutex_);
+  std::unique_lock<std::mutex> lock(exitMutex_);
   exitCondition_.wait(lock);
 }
 
@@ -887,7 +887,7 @@ void FrameProcessorController::setupFrameReceiverInterface(const std::string& fr
         sharedMemController_.reset();
       }
       // Create the new shared memory controller and give it the parser and publisher
-      sharedMemController_ = boost::shared_ptr<SharedMemoryController>(
+      sharedMemController_ = std::shared_ptr<SharedMemoryController>(
           new SharedMemoryController(reactor_, frSubscriberString, frPublisherString));
       frReadyEndpoint_ = frSubscriberString;
       frReleaseEndpoint_ = frPublisherString;
@@ -942,7 +942,7 @@ void FrameProcessorController::setupControlInterface(const std::string& ctrlEndp
   }
 
   // Add the control channel to the reactor
-  reactor_->register_channel(ctrlChannel_, boost::bind(&FrameProcessorController::handleCtrlChannel, this));
+  reactor_->register_channel(ctrlChannel_, std::bind(&FrameProcessorController::handleCtrlChannel, this));
 }
 
 /** Close the control interface.
@@ -972,7 +972,7 @@ void FrameProcessorController::setupMetaRxInterface()
   }
 
   // Add the control channel to the reactor
-  reactor_->register_channel(metaRxChannel_, boost::bind(&FrameProcessorController::handleMetaRxChannel, this));
+  reactor_->register_channel(metaRxChannel_, std::bind(&FrameProcessorController::handleMetaRxChannel, this));
 }
 
 void FrameProcessorController::closeMetaRxInterface()
@@ -1025,10 +1025,10 @@ void FrameProcessorController::runIpcService(void)
   LOG4CXX_DEBUG_LEVEL(1, logger_, "Running IPC thread service");
 
   // Create the reactor
-  reactor_ = boost::shared_ptr<OdinData::IpcReactor>(new OdinData::IpcReactor());
+  reactor_ = std::shared_ptr<OdinData::IpcReactor>(new OdinData::IpcReactor());
 
   // Add the tick timer to the reactor
-  int tick_timer_id = reactor_->register_timer(1000, 0, boost::bind(&FrameProcessorController::tickTimer, this));
+  int tick_timer_id = reactor_->register_timer(1000, 0, std::bind(&FrameProcessorController::tickTimer, this));
 
   // Set thread state to running, allows constructor to return
   threadRunning_ = true;
