@@ -59,8 +59,8 @@ private:
   /** Command execution constant for print command **/
   static const std::string EXECUTE_PRINT;
 
-  void process_frame(boost::shared_ptr<Frame> frame);
-  void process_lost_packets(boost::shared_ptr<Frame>& frame);
+  void process_frame(std::shared_ptr<Frame> frame);
+  void process_lost_packets(std::shared_ptr<Frame>& frame);
 
   /** Pointer to logger */
   LoggerPtr logger_;

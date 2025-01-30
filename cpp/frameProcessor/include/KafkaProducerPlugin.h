@@ -71,7 +71,7 @@ namespace FrameProcessor {
 
     void status(OdinData::IpcMessage &status);
 
-    void process_frame(boost::shared_ptr <Frame> frame);
+    void process_frame(std::shared_ptr <Frame> frame);
 
     bool reset_statistics();
 
@@ -92,10 +92,10 @@ namespace FrameProcessor {
 
     void configure_dataset(std::string dataset);
 
-    void *create_message(boost::shared_ptr<Frame> frame,
+    void *create_message(std::shared_ptr<Frame> frame,
                          size_t &nbytes);
 
-    void enqueue_frame(boost::shared_ptr<Frame> frame);
+    void enqueue_frame(std::shared_ptr<Frame> frame);
 
     int get_version_major();
 
@@ -133,7 +133,7 @@ namespace FrameProcessor {
     int polling_timer_id_;
     /* For protecting critical region, specially when configuring, we don't
      * want to poll or produce while the handlers are been destroyed */
-    boost::recursive_mutex mutex_;
+    std::recursive_mutex mutex_;
 
     /** True if frame parameters need to be included in the message header */
     bool include_parameters_;

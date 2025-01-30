@@ -16,8 +16,6 @@
 #include <vector>
 #include <iostream>
 
-#include <boost/scoped_ptr.hpp>
-
 #include "FrameReceiverDefaults.h"
 #include "OdinDataDefaults.h"
 #include "IpcMessage.h"
@@ -188,7 +186,7 @@ private:
   std::size_t           max_buffer_mem_;         //!< Amount of shared buffer memory to allocate for frame buffers
   std::string           decoder_path_;           //!< Path to decoder library
   std::string           decoder_type_;           //!< Decoder type receiving data for - drives frame size
-  boost::scoped_ptr<IpcMessage> decoder_config_; //!< Decoder configuration data as IpcMessage
+  std::unique_ptr<IpcMessage> decoder_config_; //!< Decoder configuration data as IpcMessage
   Defaults::RxType      rx_type_;                //!< Type of receiver interface (UDP or ZMQ)
   std::vector<uint16_t> rx_ports_;               //!< Port(s) to receive frame data on
   std::string           rx_address_;             //!< IP address to receive frame data on

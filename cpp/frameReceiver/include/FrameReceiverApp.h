@@ -37,7 +37,7 @@ public:
 private:
 
   LoggerPtr logger_;  //!< Log4CXX logger instance pointer
-  static boost::shared_ptr<FrameReceiverController> controller_;  //!< FrameReceiver controller object
+  static std::shared_ptr<FrameReceiverController> controller_;  //!< FrameReceiver controller object
 
   // Command line options
   unsigned int io_threads_;  //!< Number of IO threads for IPC channels

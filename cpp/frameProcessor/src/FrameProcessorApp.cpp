@@ -20,10 +20,9 @@ using namespace std;
 using namespace log4cxx;
 using namespace log4cxx::helpers;
 
-#include <boost/foreach.hpp>
+// #include <boost/foreach.hpp>
 #include <boost/program_options.hpp>
 #include "boost/date_time/posix_time/posix_time.hpp"
-#include <boost/filesystem.hpp>
 namespace po = boost::program_options;
 
 #include "rapidjson/document.h"
@@ -41,7 +40,7 @@ using namespace rapidjson;
 
 using namespace FrameProcessor;
 
-boost::shared_ptr<FrameProcessorController> FrameProcessorApp::controller_;
+std::shared_ptr<FrameProcessorController> FrameProcessorApp::controller_;
 
 static bool has_suffix(const std::string &str, const std::string &suffix)
 {
@@ -185,7 +184,7 @@ int FrameProcessorApp::run(void)
   LOG4CXX_INFO(logger_, "frameProcessor version " << ODIN_DATA_VERSION_STR << " starting up");
 
     // Instantiate a controller
-    controller_ = boost::shared_ptr<FrameProcessorController>(
+    controller_ = std::shared_ptr<FrameProcessorController>(
       new FrameProcessorController(io_threads_)
     );
 

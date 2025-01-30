@@ -32,7 +32,7 @@ namespace po = boost::program_options;
 
 using namespace FrameReceiver;
 
-boost::shared_ptr<FrameReceiverController> FrameReceiverApp::controller_;
+std::shared_ptr<FrameReceiverController> FrameReceiverApp::controller_;
 
 static bool has_suffix(const std::string &str, const std::string &suffix)
 {
@@ -207,7 +207,7 @@ int FrameReceiverApp::run(void)
   LOG4CXX_INFO(logger_, "frameReceiver version " << ODIN_DATA_VERSION_STR << " starting up");
 
   // Instantiate a controller
-  controller_ = boost::shared_ptr<FrameReceiverController>(new FrameReceiverController(io_threads_));
+  controller_ = std::shared_ptr<FrameReceiverController>(new FrameReceiverController(io_threads_));
 
   try {
 

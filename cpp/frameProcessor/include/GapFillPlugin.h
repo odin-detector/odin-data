@@ -29,9 +29,9 @@ namespace FrameProcessor
 
         GapFillPlugin();
         virtual ~GapFillPlugin();
-        void process_frame(boost::shared_ptr<Frame> frame);
-        bool configuration_valid(boost::shared_ptr<Frame> frame);
-        boost::shared_ptr<Frame> insert_gaps(boost::shared_ptr<Frame> frame);
+        void process_frame(std::shared_ptr<Frame> frame);
+        bool configuration_valid(std::shared_ptr<Frame> frame);
+        std::shared_ptr<Frame> insert_gaps(std::shared_ptr<Frame> frame);
         void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
         int get_version_major();
         int get_version_minor();

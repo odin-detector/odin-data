@@ -9,11 +9,12 @@
 #define ODIN_DATA_CLASSLOADER_H_
 
 #include <dlfcn.h>
-#include <stdio.h>
+#include <cstdio>
 #include <unistd.h>
 #include <map>
 #include <stdexcept>
 #include <string>
+#include <memory>
 
 #define REGISTER(Base,Class,Name) OdinData::ClassLoader<Base> cl(Name, OdinData::maker<Base,Class>);
 
@@ -23,9 +24,9 @@ namespace OdinData
  * Function template to instantiate a class.
  * It returns a shared pointer to its base class
  */
-template <typename BaseClass, typename SubClass> boost::shared_ptr<BaseClass> maker()
+template <typename BaseClass, typename SubClass> std::shared_ptr<BaseClass> maker()
 {
-  boost::shared_ptr<BaseClass> ptr = boost::shared_ptr<BaseClass>(new SubClass);
+  std::shared_ptr<BaseClass> ptr = std::shared_ptr<BaseClass>(new SubClass);
   return ptr;
 }
 
@@ -44,7 +45,7 @@ template <typename BaseClass> class ClassLoader
   /**
    * Shared pointer to the specified BaseClass
    */
-  typedef boost::shared_ptr<BaseClass> maker_t();
+  typedef std::shared_ptr<BaseClass> maker_t();
 
 public:
   /**
@@ -62,7 +63,7 @@ public:
    * \param[in] name - name of class to load
    * \param[in] path - full path of the library to load
    */
-  static boost::shared_ptr<BaseClass> load_class(const std::string& name, const std::string& path)
+  static std::shared_ptr<BaseClass> load_class(const std::string& name, const std::string& path)
   {
     // First do we already have this class loaded?
     if (!is_registered(name)){
@@ -84,7 +85,7 @@ public:
         // make function with the factory map ready to produce instances.
       }
     }
-    boost::shared_ptr<BaseClass> obj;
+    std::shared_ptr<BaseClass> obj;
     try {
       if (factory_map().count(name)) {
         obj = factory_map()[name]();

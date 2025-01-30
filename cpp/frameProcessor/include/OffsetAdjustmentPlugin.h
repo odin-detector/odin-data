@@ -33,7 +33,7 @@ class OffsetAdjustmentPlugin : public FrameProcessorPlugin
 public:
   OffsetAdjustmentPlugin();
   virtual ~OffsetAdjustmentPlugin();
-  void process_frame(boost::shared_ptr<Frame> frame);
+  void process_frame(std::shared_ptr<Frame> frame);
   void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   int get_version_major();
   int get_version_minor();

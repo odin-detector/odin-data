@@ -14,9 +14,9 @@
 
 namespace FrameProcessor {
 
-WatchdogTimer::WatchdogTimer(const boost::function<void(const std::string&)>& timeout_callback) :
+WatchdogTimer::WatchdogTimer(const std::function<void(const std::string&)>& timeout_callback) :
         worker_thread_running_(false),
-        worker_thread_(boost::bind(&WatchdogTimer::run, this)),
+        worker_thread_(std::bind(&WatchdogTimer::run, this)),
         timeout_callback_(timeout_callback)
 {
   this->logger_ = Logger::getLogger("FP.WatchdogTimer");
@@ -53,7 +53,7 @@ void WatchdogTimer::start_timer(const std::string& function_name, unsigned int w
     timer_id_ = reactor_.register_timer(
         watchdog_timeout_ms, 1,
         // Bind member function to this instance with function_name argument
-        boost::bind(&WatchdogTimer::call_timeout_callback, this, function_name)
+        std::bind(&WatchdogTimer::call_timeout_callback, this, function_name)
     );
   }
 }
@@ -95,7 +95,7 @@ void WatchdogTimer::run() {
   worker_thread_running_ = true;
 
   // Register a repeating timer to keep the reactor alive and check for shutdown every millisecond
-  reactor_.register_timer(1, 0, boost::bind(&WatchdogTimer::heartbeat, this));
+  reactor_.register_timer(1, 0, std::bind(&WatchdogTimer::heartbeat, this));
   reactor_.run();
 }
 

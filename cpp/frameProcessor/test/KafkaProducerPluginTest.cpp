@@ -25,7 +25,7 @@ public:
     FrameProcessor::FrameMetaData frame_meta(
             7, "data", FrameProcessor::raw_16bit, "test", test_dims, FrameProcessor::no_compression
     );
-    frame = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
+    frame = std::shared_ptr<FrameProcessor::DataBlockFrame>(
             new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void *>(test_data), 24));
     frame->meta_data().set_parameter<uint64_t>(TEST_PARAM1_NAME, TEST_PARAM1_VALUE);
     frame->meta_data().set_parameter<float>(TEST_PARAM2_NAME, TEST_PARAM2_VALUE);
@@ -38,7 +38,7 @@ public:
   unsigned short test_data[12];
   dimensions_t test_dims;
   FrameProcessor::KafkaProducerPlugin plugin;
-  boost::shared_ptr<FrameProcessor::Frame> frame;
+  std::shared_ptr<FrameProcessor::Frame> frame;
 };
 
 BOOST_FIXTURE_TEST_SUITE(KafkaProducerPluginUnitTest, KafkaProducerPluginTestFixture);

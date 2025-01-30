@@ -40,9 +40,9 @@ namespace FrameProcessor {
     }
 
     /** Get frame parameters
-     * @return std::map <std::string, boost::any>  map
+     * @return std::map <std::string, std::any>  map
      */
-    const std::map <std::string, boost::any> &FrameMetaData::get_parameters() const {
+    const std::map <std::string, std::any> &FrameMetaData::get_parameters() const {
       return this->parameters_;
     };
 
