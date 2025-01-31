@@ -20,6 +20,11 @@ jobs:
         run: docs/doxygen.sh
         shell: bash
 
+      - name: Set up python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
       - name: Build Docs
         run: pip install ./python[dev] && sphinx-build -ET docs/ docs/build/html/
 
