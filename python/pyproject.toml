@@ -1,0 +1,62 @@
+[build-system]
+requires = ["setuptools>=64", "setuptools_scm[toml]>=8"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "odin-data"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+description = "DAQ software libraries for capturing and storing data from parallel detector systems"
+dynamic = ["version"]
+readme = "README.md"
+license.file = "LICENSE"
+authors = [
+    {name = "Tim Nicholls", email = "tim.nicholls@stfc.ac.uk"},
+]
+dependencies = [
+    "odin-control@git+https://git@github.com/odin-detector/odin-control",
+    "posix_ipc>=1.0.4",
+    "pysnmp>=4.4.4",
+    "numpy>=1.14.0",
+    "pyzmq>=17.1.0",
+    "pygelf>=0.3.5",
+    "deepdiff",
+]
+
+[project.optional-dependencies]
+dev = [
+    "myst-parser",
+    "pydata-sphinx-theme>=0.12",
+    "pytest",
+    "pytest-cov",
+    "sphinx-autobuild",
+    "sphinx-external-toc",
+    "sphinx-design",
+    "tox-direct",
+    "types-mock",
+    "breathe",
+    "h5py>=2.9.0",
+]
+meta_writer = [
+    "h5py>=2.9.0",
+]
+
+[project.scripts]
+odin_data_client = "odin_data.client:main"
+meta_writer = "odin_data.meta_writer.meta_writer_app:main"
+
+[project.urls]
+GitHub = "https://github.com/odin-detector/odin-data"
+
+[tool.setuptools_scm]
+version_file = "src/odin_data/_version.py"
+root = "../"
+
+[tool.coverage.paths]
+source = ["src", "**/site-packages/"]

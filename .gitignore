@@ -13,6 +13,7 @@
 venv*
 tools/python/.coverage
 *.egg-info/
+python/src/odin_data/_version.py
 
 .idea/
 cmake-build*/
