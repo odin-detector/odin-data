@@ -1,6 +1,6 @@
 [
   {
-    "version": "command-dev",
-    "url": "https://odin-detector.github.io/odin-data/command-dev/"
+    "version": "setuptools_scm",
+    "url": "https://odin-detector.github.io/odin-data/setuptools_scm/"
   }
 ]
