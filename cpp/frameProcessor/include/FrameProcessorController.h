@@ -111,8 +111,10 @@ private:
   /** Configuration constant for the value of a stored configuration object **/
   static const std::string CONFIG_VALUE;
 
-  /** Configuration constant for the a command to execute **/
+  /** Configuration constant for executing a command **/
   static const std::string COMMAND_KEY;
+  /** Configuration constant for obtaining a list of supported commands **/
+  static const std::string SUPPORTED_KEY;
 
   /** Configuration constant for the meta TX channel high water mark **/
   static const int META_TX_HWM;
