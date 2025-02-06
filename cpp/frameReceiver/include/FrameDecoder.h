@@ -65,6 +65,8 @@ public:
   virtual void init(OdinData::IpcMessage& config_msg);
   virtual void request_configuration(const std::string param_prefix,
       OdinData::IpcMessage& config_reply);
+  virtual std::vector<std::string> request_commands();
+  virtual void execute(const std::string& command, OdinData::IpcMessage& reply);
   virtual const size_t get_frame_buffer_size(void) const = 0;
   virtual const size_t get_frame_header_size(void) const = 0;
 

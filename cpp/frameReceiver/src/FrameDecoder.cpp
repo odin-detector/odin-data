@@ -66,6 +66,38 @@ void FrameDecoder::request_configuration(const std::string param_prefix,
     config_reply.set_param(param_prefix + CONFIG_DECODER_FRAME_TIMEOUT_MS, frame_timeout_ms_);
 }
 
+/** Request the decoder's supported commands.
+ *
+ * In this abstract class the request method doesn't perform any
+ * actions, this should be overridden by subclasses.
+ *
+ * \return - Vector containing supported command strings.
+ */
+std::vector<std::string> FrameDecoder::request_commands()
+{
+  // Default returns an empty vector.
+  std::vector<std::string> reply;
+  return reply;
+}
+
+/** Execute a command within the decoder.
+ *
+ * In this abstract class the command method doesn't perform any
+ * actions, this should be overridden by subclasses.
+ *
+ * \param[in] command - String containing the command to execute.
+ * \param[out] reply - Response IpcMessage.
+ */
+void FrameDecoder::execute(const std::string& command, OdinData::IpcMessage& reply)
+{
+  // A command has been submitted and this decoder has no execute implementation defined,
+  // throw a runtime error to report this.
+  std::stringstream ss;
+  ss << "Submitted command not supported: " << command;
+  LOG4CXX_ERROR(logger_, ss.str());
+  reply.set_nack(ss.str());
+}
+
 //! Register a buffer manager with the decoder.
 //!
 //! This method registers a SharedBufferManager instance with the decoder, to be used when

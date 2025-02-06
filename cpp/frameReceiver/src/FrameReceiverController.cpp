@@ -820,6 +820,12 @@ void FrameReceiverController::handle_ctrl_channel(void)
             this->request_configuration(ctrl_reply);
             break;
 
+          case IpcMessage::MsgValCmdRequestCommands:
+            LOG4CXX_DEBUG_LEVEL(3, logger_,
+                "Got control channel read commands request from client " << client_identity);
+            this->request_commands(ctrl_reply);
+            break;
+
           case IpcMessage::MsgValCmdStatus:
             LOG4CXX_DEBUG_LEVEL(3, logger_,
                 "Got control channel status request from client " << client_identity);
@@ -843,6 +849,13 @@ void FrameReceiverController::handle_ctrl_channel(void)
                 "Got shutdown command request from client " << client_identity);
               this->stop(true);
               ctrl_reply.set_msg_type(IpcMessage::MsgTypeAck);
+              break;
+
+          case IpcMessage::MsgValCmdExecute:
+              ctrl_reply.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
+              this->execute(ctrl_req, ctrl_reply);
+              LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (command): "
+                             << ctrl_reply.encode());
               break;
 
           default:
@@ -1203,6 +1216,54 @@ void FrameReceiverController::request_configuration(OdinData::IpcMessage& config
   // Add frame count to reply parameters
   config_reply.set_param(CONFIG_FRAME_COUNT, config_.frame_count_);
 
+}
+
+/**
+ * Submit commands to the FrameReceiver
+ *
+ * Submits command(s) to execute on the frame decoder if it
+ * support commands.  The IpcMessage should contain the command
+ * name and a structure of any parameters required by the command.
+ *
+ * \param[in] config - IpcMessage containing command and any parameter data.
+ * \param[out] reply - Response IpcMessage.
+ */
+void FrameReceiverController::execute(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
+{
+  LOG4CXX_DEBUG_LEVEL(1, logger_, "Command submitted: " << config.encode());
+
+  // Check for decoder commands
+  bool command_present = false;
+  if (config.has_param("decoder")) {
+    OdinData::IpcMessage sub_config(config.get_param<const rapidjson::Value&>("decoder"),
+                                    config.get_msg_type(),
+                                    config.get_msg_val());
+    if (sub_config.has_param("command")){
+      command_present = true;
+      // Extract the command and execute on the decoder
+      std::string command_name = sub_config.get_param<std::string>("command");
+      frame_decoder_->execute(command_name, reply);
+    }
+  }
+  if (!command_present){
+    // If no valid commands have been found then NACK the reply
+    reply.set_nack("No valid commands found");
+  }
+}
+
+/**
+ * Request the command set supported by this FrameReceiver
+ *
+ * \param[out] reply - Response IpcMessage with the current supported command set.
+ */
+void FrameReceiverController::request_commands(OdinData::IpcMessage& reply)
+{
+  LOG4CXX_DEBUG_LEVEL(3, logger_, "Request for supported commands made");
+  std::vector<std::string>::iterator cmd;
+  std::vector<std::string> decoder_commands = frame_decoder_->request_commands();
+  for (cmd = decoder_commands.begin(); cmd != decoder_commands.end(); ++cmd) {
+    reply.set_param("decoder/supported[]", *cmd);
+  }
 }
 
 //! Reset the frame receiver statistics.
