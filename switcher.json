@@ -1,6 +1,6 @@
 [
   {
-    "version": "master",
-    "url": "https://odin-detector.github.io/odin-data/master/"
+    "version": "remove_fp_caching",
+    "url": "https://odin-detector.github.io/odin-data/remove_fp_caching/"
   }
 ]

@@ -1,0 +1,617 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>FrameDecoder &#8212; odin-data 0.1.dev1+gc643c9c documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../_static/documentation_options.js?v=07444ed6"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'developer/how-to/frame-decoder';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://odin-detector.github.io/odin-data/switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'remove_fp_caching';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="FrameProcessorPlugin" href="frame-processor-plugin.html" />
+    <link rel="prev" title="Common API" href="common.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="remove_fp_caching" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/odin.png" class="logo__image only-light" alt=""/>
+    <img src="../../_static/odin.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">odin-data</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../index.html">
+    Developer Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/odin-detector/odin-data/releases">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/odin-detector/odin-data" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../index.html">
+    Developer Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/odin-detector/odin-data/releases">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/odin-detector/odin-data" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../tutorials/index.html"><strong>Tutorials</strong></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/write-detector-support.html">Writing Detector Support</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html"><strong>How-To Guides</strong></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="common.html">Common API</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">FrameDecoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frame-processor-plugin.html">FrameProcessorPlugin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frame-simulator-plugin.html">FrameSimulatorPlugin</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="docs.html">Docs</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="excalidraw.html">How to embed Excalidraw diagrams</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../explanations/index.html"><strong>Explanations</strong></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../explanations/overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../explanations/design-decisions.html">Design Decisions</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../reference/index.html"><strong>Reference</strong></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/common.html">Common API Reference</a></li>
+
+
+
+
+
+
+
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/frame-receiver.html">FrameReceiver API Reference</a></li>
+
+
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/frame-processor.html">FrameProcessor API Reference</a></li>
+
+
+
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/frame-simulator.html">FrameSimulator API Reference</a></li>
+
+<li class="toctree-l2 has-children"><a class="reference internal" href="../reference/design-docs/index.html">Design Docs</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/design-docs/live-view-spec.html">Specification For Odin Data Live View Plugin</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Developer Guide</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link"><strong>How-To Guides</strong></a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">FrameDecoder</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="framedecoder">
+<h1>FrameDecoder<a class="headerlink" href="#framedecoder" title="Link to this heading">#</a></h1>
+<p>The purpose of the <a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4N13FrameReceiver12FrameDecoderE" title="FrameReceiver::FrameDecoder"><span class="xref myst cpp cpp-class">FrameDecoder</span></a> is to gather incoming packets or messages from a data
+stream, perform minimal work to construct a single data blob in shared memory for the
+FrameProcessor to handle further processing.</p>
+<p>This class defines a few virtual methods to be implemented by concrete implementations.
+Some are pure virtual - annotated with <code class="docutils literal notranslate"><span class="pre">*</span></code> - and some are optional. These are:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4NK13FrameReceiver12FrameDecoder21get_frame_buffer_sizeEv" title="FrameReceiver::FrameDecoder::get_frame_buffer_size"><span class="xref myst cpp cpp-func">get_frame_buffer_size</span></a>*</p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4NK13FrameReceiver12FrameDecoder21get_frame_header_sizeEv" title="FrameReceiver::FrameDecoder::get_frame_header_size"><span class="xref myst cpp cpp-func">get_frame_header_size</span></a>*</p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4N13FrameReceiver12FrameDecoder15monitor_buffersEv" title="FrameReceiver::FrameDecoder::monitor_buffers"><span class="xref myst cpp cpp-func">monitor_buffers</span></a>*</p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4N13FrameReceiver12FrameDecoder10get_statusEKNSt6stringERN8OdinData10IpcMessageE" title="FrameReceiver::FrameDecoder::get_status"><span class="xref myst cpp cpp-func">get_status</span></a></p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4N13FrameReceiver12FrameDecoder21request_configurationEKNSt6stringERN8OdinData10IpcMessageE" title="FrameReceiver::FrameDecoder::request_configuration"><span class="xref myst cpp cpp-func">request_configuration</span></a></p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4N13FrameReceiver12FrameDecoder16reset_statisticsEv" title="FrameReceiver::FrameDecoder::reset_statistics"><span class="xref myst cpp cpp-func">reset_statistics</span></a></p></li>
+</ul>
+<p>There is generic support for UDP and ZMQ data streams that a decoder plugin can be built
+on top of, depending on the use case. These are <a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4N13FrameReceiver15FrameDecoderUDPE" title="FrameReceiver::FrameDecoderUDP"><span class="xref myst cpp cpp-class">FrameDecoderUDP</span></a> and <a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4N13FrameReceiver15FrameDecoderZMQE" title="FrameReceiver::FrameDecoderZMQ"><span class="xref myst cpp cpp-class">FrameDecoderZMQ</span></a>,
+each a child of <a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4N13FrameReceiver12FrameDecoderE" title="FrameReceiver::FrameDecoder"><span class="xref myst cpp cpp-class">FrameDecoder</span></a>. They must be paired with the <a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4N13FrameReceiver24FrameReceiverUDPRxThreadE" title="FrameReceiver::FrameReceiverUDPRxThread"><span class="xref myst cpp cpp-class">FrameReceiverUDPRxThread</span></a>
+and <a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4N13FrameReceiver24FrameReceiverUDPRxThreadE" title="FrameReceiver::FrameReceiverUDPRxThread"><span class="xref myst cpp cpp-class">FrameReceiverUDPRxThread</span></a> respectively (e.g. setting the <code class="docutils literal notranslate"><span class="pre">rx_type</span></code> config to <code class="docutils literal notranslate"><span class="pre">udp</span></code>).
+Both extend the base class and add further virtual methods to be implemented in a
+concrete decoder.</p>
+<section id="framedecoderudp">
+<h2>FrameDecoderUDP<a class="headerlink" href="#framedecoderudp" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4NK13FrameReceiver15FrameDecoderUDP20requires_header_peekEv" title="FrameReceiver::FrameDecoderUDP::requires_header_peek"><span class="xref myst cpp cpp-func">requires_header_peek</span></a>*</p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4NK13FrameReceiver15FrameDecoderUDP22get_packet_header_sizeEv" title="FrameReceiver::FrameDecoderUDP::get_packet_header_size"><span class="xref myst cpp cpp-func">get_packet_header_size</span></a>*</p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4NK13FrameReceiver15FrameDecoderUDP23get_next_payload_bufferEv" title="FrameReceiver::FrameDecoderUDP::get_next_payload_buffer"><span class="xref myst cpp cpp-func">get_next_payload_buffer</span></a>*</p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4NK13FrameReceiver15FrameDecoderUDP21get_next_payload_sizeEv" title="FrameReceiver::FrameDecoderUDP::get_next_payload_size"><span class="xref myst cpp cpp-func">get_next_payload_size</span></a>*</p></li>
+</ul>
+</section>
+<section id="framedecoderzmq">
+<h2>FrameDecoderZMQ<a class="headerlink" href="#framedecoderzmq" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4N13FrameReceiver15FrameDecoderZMQ23get_next_message_bufferEv" title="FrameReceiver::FrameDecoderZMQ::get_next_message_buffer"><span class="xref myst cpp cpp-func">get_next_message_buffer</span></a>*</p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4N13FrameReceiver15FrameDecoderZMQ15process_messageE6size_t" title="FrameReceiver::FrameDecoderZMQ::process_message"><span class="xref myst cpp cpp-func">process_message</span></a>*</p></li>
+<li><p><a class="reference internal" href="../reference/api/frame-receiver.html#_CPPv4N13FrameReceiver15FrameDecoderZMQ15frame_meta_dataEi" title="FrameReceiver::FrameDecoderZMQ::frame_meta_data"><span class="xref myst cpp cpp-func">frame_meta_data</span></a>*</p></li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="common.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Common API</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="frame-processor-plugin.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">FrameProcessorPlugin</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#framedecoderudp">FrameDecoderUDP</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#framedecoderzmq">FrameDecoderZMQ</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/odin-detector/odin-data/edit/remove_fp_caching/docs/developer/how-to/frame-decoder.md">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/developer/how-to/frame-decoder.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
