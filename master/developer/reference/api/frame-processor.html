@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>FrameProcessor API Reference &#8212; odin-data 0.1.dev1+ge9d757a documentation</title>
+    <title>FrameProcessor API Reference &#8212; odin-data 0.1.dev1+gcfbce93 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=4ccc261d"></script>
+    <script src="../../../_static/documentation_options.js?v=297e7284"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -1342,7 +1342,7 @@
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor20FrameProcessorPlugin9configureERN8OdinData10IpcMessageERN8OdinData10IpcMessageE">
 <span id="_CPPv3N14FrameProcessor20FrameProcessorPlugin9configureERN8OdinData10IpcMessageERN8OdinData10IpcMessageE"></span><span id="_CPPv2N14FrameProcessor20FrameProcessorPlugin9configureERN8OdinData10IpcMessageERN8OdinData10IpcMessageE"></span><span id="FrameProcessor::FrameProcessorPlugin::configure__OdinData::IpcMessageR.OdinData::IpcMessageR"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorPlugin_1a75132ab2b03a69aeaeedc459cb429877"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">configure</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">config</span></span>, <span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">reply</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin9configureERN8OdinData10IpcMessageERN8OdinData10IpcMessageE" title="Link to this definition">#</a><br /></dt>
 <dd><p>Configure the plugin.</p>
-<p>In this abstract class the configure method does perform any actions, this should be overridden by subclasses.</p>
+<p>In this abstract class the configure method doesn’t perform any actions, this should be overridden by subclasses.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -1357,7 +1357,7 @@
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor20FrameProcessorPlugin20requestConfigurationERN8OdinData10IpcMessageE">
 <span id="_CPPv3N14FrameProcessor20FrameProcessorPlugin20requestConfigurationERN8OdinData10IpcMessageE"></span><span id="_CPPv2N14FrameProcessor20FrameProcessorPlugin20requestConfigurationERN8OdinData10IpcMessageE"></span><span id="FrameProcessor::FrameProcessorPlugin::requestConfiguration__OdinData::IpcMessageR"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorPlugin_1a32dfac4a87b819da6a6a0459b65865c7"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">requestConfiguration</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">reply</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin20requestConfigurationERN8OdinData10IpcMessageE" title="Link to this definition">#</a><br /></dt>
 <dd><p>Request the plugin’s current configuration.</p>
-<p>In this abstract class the request method does perform any actions, this should be overridden by subclasses.</p>
+<p>In this abstract class the request method doesn’t perform any actions, this should be overridden by subclasses.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>reply</strong> – <strong>[out]</strong> - Response IpcMessage with current configuration. </p>
@@ -1369,7 +1369,7 @@
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor20FrameProcessorPlugin7executeERKNSt6stringERN8OdinData10IpcMessageE">
 <span id="_CPPv3N14FrameProcessor20FrameProcessorPlugin7executeERKNSt6stringERN8OdinData10IpcMessageE"></span><span id="_CPPv2N14FrameProcessor20FrameProcessorPlugin7executeERKNSt6stringERN8OdinData10IpcMessageE"></span><span id="FrameProcessor::FrameProcessorPlugin::execute__ssCR.OdinData::IpcMessageR"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorPlugin_1acbb990f801740c008a1dc2180f5d7ddd"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">execute</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">command</span></span>, <span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">reply</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin7executeERKNSt6stringERN8OdinData10IpcMessageE" title="Link to this definition">#</a><br /></dt>
 <dd><p>Execute a command within the plugin.</p>
-<p>In this abstract class the command method does perform any actions, this should be overridden by subclasses.</p>
+<p>In this abstract class the command method doesn’t perform any actions, this should be overridden by subclasses.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -1384,7 +1384,7 @@
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor20FrameProcessorPlugin15requestCommandsEv">
 <span id="_CPPv3N14FrameProcessor20FrameProcessorPlugin15requestCommandsEv"></span><span id="_CPPv2N14FrameProcessor20FrameProcessorPlugin15requestCommandsEv"></span><span id="FrameProcessor::FrameProcessorPlugin::requestCommands"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorPlugin_1a16ccdc60b1dc588ed44cce873155ddd9"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">requestCommands</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin15requestCommandsEv" title="Link to this definition">#</a><br /></dt>
 <dd><p>Request the plugin’s supported commands.</p>
-<p>In this abstract class the request method does perform any actions, this should be overridden by subclasses.</p>
+<p>In this abstract class the request method doesn’t perform any actions, this should be overridden by subclasses.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>- Vector containing supported command strings. </p>
@@ -1396,7 +1396,7 @@
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor20FrameProcessorPlugin6statusERN8OdinData10IpcMessageE">
 <span id="_CPPv3N14FrameProcessor20FrameProcessorPlugin6statusERN8OdinData10IpcMessageE"></span><span id="_CPPv2N14FrameProcessor20FrameProcessorPlugin6statusERN8OdinData10IpcMessageE"></span><span id="FrameProcessor::FrameProcessorPlugin::status__OdinData::IpcMessageR"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorPlugin_1af0f66193521844baf0bb44914dc3f540"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">status</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">status</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin6statusERN8OdinData10IpcMessageE" title="Link to this definition">#</a><br /></dt>
 <dd><p>Collate status information for the plugin.</p>
-<p>The status is added to the status IpcMessage object. In this abstract class the status method does perform any actions, this should be overridden by subclasses.</p>
+<p>The status is added to the status IpcMessage object. In this abstract class the status method doesn’t perform any actions, this should be overridden by subclasses.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>status</strong> – <strong>[out]</strong> - Reference to an IpcMessage value to store the status. </p>
@@ -2329,7 +2329,7 @@
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor16FileWriterPlugin20requestConfigurationERN8OdinData10IpcMessageE">
 <span id="_CPPv3N14FrameProcessor16FileWriterPlugin20requestConfigurationERN8OdinData10IpcMessageE"></span><span id="_CPPv2N14FrameProcessor16FileWriterPlugin20requestConfigurationERN8OdinData10IpcMessageE"></span><span id="FrameProcessor::FileWriterPlugin::requestConfiguration__OdinData::IpcMessageR"></span><span class="target" id="classFrameProcessor_1_1FileWriterPlugin_1af7c5f1b00526cbf0683ebdda1229d2b1"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">requestConfiguration</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">reply</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor16FileWriterPlugin20requestConfigurationERN8OdinData10IpcMessageE" title="Link to this definition">#</a><br /></dt>
 <dd><p>Request the plugin’s current configuration.</p>
-<p>In this abstract class the request method does perform any actions, this should be overridden by subclasses.</p>
+<p>In this abstract class the request method doesn’t perform any actions, this should be overridden by subclasses.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>reply</strong> – <strong>[out]</strong> - Response IpcMessage with current configuration. </p>
@@ -2341,7 +2341,7 @@
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor16FileWriterPlugin7executeERKNSt6stringERN8OdinData10IpcMessageE">
 <span id="_CPPv3N14FrameProcessor16FileWriterPlugin7executeERKNSt6stringERN8OdinData10IpcMessageE"></span><span id="_CPPv2N14FrameProcessor16FileWriterPlugin7executeERKNSt6stringERN8OdinData10IpcMessageE"></span><span id="FrameProcessor::FileWriterPlugin::execute__ssCR.OdinData::IpcMessageR"></span><span class="target" id="classFrameProcessor_1_1FileWriterPlugin_1aff6919ddeba6f16bfc3b70d0e89cf54e"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">execute</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">command</span></span>, <span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">reply</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor16FileWriterPlugin7executeERKNSt6stringERN8OdinData10IpcMessageE" title="Link to this definition">#</a><br /></dt>
 <dd><p>Execute a command within the plugin.</p>
-<p>In this abstract class the command method does perform any actions, this should be overridden by subclasses.</p>
+<p>In this abstract class the command method doesn’t perform any actions, this should be overridden by subclasses.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -2356,7 +2356,7 @@
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor16FileWriterPlugin15requestCommandsEv">
 <span id="_CPPv3N14FrameProcessor16FileWriterPlugin15requestCommandsEv"></span><span id="_CPPv2N14FrameProcessor16FileWriterPlugin15requestCommandsEv"></span><span id="FrameProcessor::FileWriterPlugin::requestCommands"></span><span class="target" id="classFrameProcessor_1_1FileWriterPlugin_1af05dfe2d8bc48697a5e9e53e2346528d"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">requestCommands</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor16FileWriterPlugin15requestCommandsEv" title="Link to this definition">#</a><br /></dt>
 <dd><p>Request the plugin’s supported commands.</p>
-<p>In this abstract class the request method does perform any actions, this should be overridden by subclasses.</p>
+<p>In this abstract class the request method doesn’t perform any actions, this should be overridden by subclasses.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>- Vector containing supported command strings. </p>

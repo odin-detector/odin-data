@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>FrameReceiver API Reference &#8212; odin-data 0.1.dev1+ge9d757a documentation</title>
+    <title>FrameReceiver API Reference &#8212; odin-data 0.1.dev1+gcfbce93 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=4ccc261d"></script>
+    <script src="../../../_static/documentation_options.js?v=297e7284"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -549,6 +549,33 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>param_prefix</strong> – <strong>[in]</strong> - parameter prefix to use on all parameter names </p></li>
 <li><p><strong>config_reply</strong> – <strong>[inout]</strong> - reply IpcMessage to populate with parameters </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver12FrameDecoder16request_commandsEv">
+<span id="_CPPv3N13FrameReceiver12FrameDecoder16request_commandsEv"></span><span id="_CPPv2N13FrameReceiver12FrameDecoder16request_commandsEv"></span><span id="FrameReceiver::FrameDecoder::request_commands"></span><span class="target" id="classFrameReceiver_1_1FrameDecoder_1a3b12283653be57fa192c8b33dc3fee60"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">request_commands</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver12FrameDecoder16request_commandsEv" title="Link to this definition">#</a><br /></dt>
+<dd><p>Request the decoder’s supported commands.</p>
+<p>In this abstract class the request method doesn’t perform any actions, this should be overridden by subclasses.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>- Vector containing supported command strings. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver12FrameDecoder7executeERKNSt6stringERN8OdinData10IpcMessageE">
+<span id="_CPPv3N13FrameReceiver12FrameDecoder7executeERKNSt6stringERN8OdinData10IpcMessageE"></span><span id="_CPPv2N13FrameReceiver12FrameDecoder7executeERKNSt6stringERN8OdinData10IpcMessageE"></span><span id="FrameReceiver::FrameDecoder::execute__ssCR.OdinData::IpcMessageR"></span><span class="target" id="classFrameReceiver_1_1FrameDecoder_1a45bad79c40a927b40b9ed74b85ec2aa5"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">execute</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">command</span></span>, <span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">reply</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver12FrameDecoder7executeERKNSt6stringERN8OdinData10IpcMessageE" title="Link to this definition">#</a><br /></dt>
+<dd><p>Execute a command within the decoder.</p>
+<p>In this abstract class the command method doesn’t perform any actions, this should be overridden by subclasses.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>command</strong> – <strong>[in]</strong> - String containing the command to execute. </p></li>
+<li><p><strong>reply</strong> – <strong>[out]</strong> - Response IpcMessage. </p></li>
 </ul>
 </dd>
 </dl>
@@ -1513,6 +1540,32 @@
 </dl>
 </dd></dl>
 
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver23FrameReceiverController16request_commandsERN8OdinData10IpcMessageE">
+<span id="_CPPv3N13FrameReceiver23FrameReceiverController16request_commandsERN8OdinData10IpcMessageE"></span><span id="_CPPv2N13FrameReceiver23FrameReceiverController16request_commandsERN8OdinData10IpcMessageE"></span><span id="FrameReceiver::FrameReceiverController::request_commands__OdinData::IpcMessageR"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverController_1a6d15cb62144618e072fd4f55afd298b1"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">request_commands</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">command_reply</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver23FrameReceiverController16request_commandsERN8OdinData10IpcMessageE" title="Link to this definition">#</a><br /></dt>
+<dd><p>Request the command set supported by this FrameReceiver</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>reply</strong> – <strong>[out]</strong> - Response IpcMessage with the current supported command set. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N13FrameReceiver23FrameReceiverController7executeERN8OdinData10IpcMessageERN8OdinData10IpcMessageE">
+<span id="_CPPv3N13FrameReceiver23FrameReceiverController7executeERN8OdinData10IpcMessageERN8OdinData10IpcMessageE"></span><span id="_CPPv2N13FrameReceiver23FrameReceiverController7executeERN8OdinData10IpcMessageERN8OdinData10IpcMessageE"></span><span id="FrameReceiver::FrameReceiverController::execute__OdinData::IpcMessageR.OdinData::IpcMessageR"></span><span class="target" id="classFrameReceiver_1_1FrameReceiverController_1ad071356be9c7b7cb850d3942843b07fd"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">execute</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">config</span></span>, <span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">reply</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N13FrameReceiver23FrameReceiverController7executeERN8OdinData10IpcMessageERN8OdinData10IpcMessageE" title="Link to this definition">#</a><br /></dt>
+<dd><p>Submit commands to the FrameReceiver</p>
+<p>Submits command(s) to execute on the frame decoder if it support commands. The IpcMessage should contain the command name and a structure of any parameters required by the command.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> – <strong>[in]</strong> - IpcMessage containing command and any parameter data. </p></li>
+<li><p><strong>reply</strong> – <strong>[out]</strong> - Response IpcMessage. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-members">Private Members</p>
@@ -2287,6 +2340,8 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N13FrameReceiver12FrameDecoder4initER9LoggerPtrRN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">FrameDecoder::init()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N13FrameReceiver12FrameDecoder4initERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">FrameDecoder::init()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N13FrameReceiver12FrameDecoder21request_configurationEKNSt6stringERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">FrameDecoder::request_configuration()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N13FrameReceiver12FrameDecoder16request_commandsEv"><code class="docutils literal notranslate"><span class="pre">FrameDecoder::request_commands()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N13FrameReceiver12FrameDecoder7executeERKNSt6stringERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">FrameDecoder::execute()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4NK13FrameReceiver12FrameDecoder21get_frame_buffer_sizeEv"><code class="docutils literal notranslate"><span class="pre">FrameDecoder::get_frame_buffer_size()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4NK13FrameReceiver12FrameDecoder21get_frame_header_sizeEv"><code class="docutils literal notranslate"><span class="pre">FrameDecoder::get_frame_header_size()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N13FrameReceiver12FrameDecoder23register_buffer_managerEN8OdinData22SharedBufferManagerPtrE"><code class="docutils literal notranslate"><span class="pre">FrameDecoder::register_buffer_manager()</span></code></a></li>
@@ -2420,6 +2475,8 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N13FrameReceiver23FrameReceiverController11get_versionERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">FrameReceiverController::get_version()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N13FrameReceiver23FrameReceiverController16reset_statisticsERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">FrameReceiverController::reset_statistics()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N13FrameReceiver23FrameReceiverController21request_configurationERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">FrameReceiverController::request_configuration()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N13FrameReceiver23FrameReceiverController16request_commandsERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">FrameReceiverController::request_commands()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N13FrameReceiver23FrameReceiverController7executeERN8OdinData10IpcMessageERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">FrameReceiverController::execute()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N13FrameReceiver23FrameReceiverController7logger_E"><code class="docutils literal notranslate"><span class="pre">FrameReceiverController::logger_</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N13FrameReceiver23FrameReceiverController10rx_thread_E"><code class="docutils literal notranslate"><span class="pre">FrameReceiverController::rx_thread_</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N13FrameReceiver23FrameReceiverController14frame_decoder_E"><code class="docutils literal notranslate"><span class="pre">FrameReceiverController::frame_decoder_</span></code></a></li>
