@@ -107,7 +107,7 @@ void FrameReceiverTCPRxThread::handle_receive_socket(int recv_socket_,
                                                      int recv_port) {
   // Receive a message from the main thread channel and place it directly into
   // the provided memory buffer
-  void *frame_buffer = frame_decoder_->get_next_message_buffer();
+  char *frame_buffer = static_cast<char*>(frame_decoder_->get_next_message_buffer());
   size_t message_size = frame_decoder_->get_next_message_size();
   size_t bytes_received = 0;
 
