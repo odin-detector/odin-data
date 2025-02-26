@@ -9,7 +9,7 @@
 #define ODINDATADEFAULTS_H_
 
 #include <cstddef>
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 
 namespace OdinData

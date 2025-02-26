@@ -20,7 +20,7 @@ FrameReceiverZMQRxThread::FrameReceiverZMQRxThread(FrameReceiverConfig& config,
   LOG4CXX_DEBUG_LEVEL(1, logger_, "FrameReceiverZMQRxThread constructor entered....");
 
   // Store the frame decoder as a UDP type frame decoder
-  frame_decoder_ = boost::dynamic_pointer_cast<FrameDecoderZMQ>(frame_decoder);
+  frame_decoder_ = std::dynamic_pointer_cast<FrameDecoderZMQ>(frame_decoder);
 }
 
 FrameReceiverZMQRxThread::~FrameReceiverZMQRxThread()
@@ -41,7 +41,7 @@ void FrameReceiverZMQRxThread::run_specific_service(void)
     skt_channel_.connect(ss.str().c_str());
 
     // Register the IPC channel with the reactor
-    reactor_.register_channel(skt_channel_, boost::bind(&FrameReceiverZMQRxThread::handle_receive_socket, this));
+    reactor_.register_channel(skt_channel_, std::bind(&FrameReceiverZMQRxThread::handle_receive_socket, this));
 
   }
 }

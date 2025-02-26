@@ -4,8 +4,11 @@
  */
 
 #include <assert.h>
-
-#include <boost/filesystem.hpp>
+#include <functional>
+#include <system_error>
+#include <filesystem>
+#include <cstdlib>
+#include <chrono>
 #include <hdf5_hl.h>
 
 #include "Frame.h"
@@ -16,9 +19,7 @@
 #include "DebugLevelLogger.h"
 #include "version.h"
 
-#ifdef BOOST_HAS_PLACEHOLDERS
-using namespace boost::placeholders;
-#endif
+using namespace std::placeholders;
 
 namespace FrameProcessor
 {
@@ -90,17 +91,17 @@ FileWriterPlugin::FileWriterPlugin() :
         alignment_value_(1),
         timeout_period_(0),
         timeout_thread_running_(true),
-        timeout_thread_(boost::bind(&FileWriterPlugin::run_close_file_timeout, this))
+        timeout_thread_(std::bind(&FileWriterPlugin::run_close_file_timeout, this))
 {
   this->logger_ = Logger::getLogger("FP.FileWriterPlugin");
   LOG4CXX_INFO(logger_, "FileWriterPlugin version " << this->get_version_long() << " loaded");
-  this->current_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
-  this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
+  this->current_acquisition_ = std::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
+  this->next_acquisition_ = std::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
   hdf5_error_definition_.create_duration = 0;
   hdf5_error_definition_.write_duration = 0;
   hdf5_error_definition_.flush_duration = 0;
   hdf5_error_definition_.close_duration = 0;
-  hdf5_error_definition_.callback = boost::bind(&FileWriterPlugin::set_warning, this, _1);
+  hdf5_error_definition_.callback = std::bind(&FileWriterPlugin::set_warning, this, _1);
 }
 
 /**
@@ -112,11 +113,11 @@ FileWriterPlugin::~FileWriterPlugin()
   timeout_active_ = false;
   // Notify the close timeout thread to clean up resources
   {
-    boost::mutex::scoped_lock lock2(close_file_mutex_);
+    std::scoped_lock lock2(close_file_mutex_);
     timeout_condition_.notify_all();
   }
   {
-    boost::mutex::scoped_lock lock(start_timeout_mutex_);
+    std::scoped_lock lock(start_timeout_mutex_);
     start_condition_.notify_all();
   }
   timeout_thread_.join();
@@ -136,11 +137,11 @@ FileWriterPlugin::~FileWriterPlugin()
  *
  * \param[in] frame - Pointer to the Frame object.
  */
-void FileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame)
+void FileWriterPlugin::process_frame(std::shared_ptr<Frame> frame)
 {
   // Protect this method
-  boost::mutex::scoped_lock cflock(close_file_mutex_);
-  boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+  std::scoped_lock cflock(close_file_mutex_);
+  std::lock_guard<std::recursive_mutex> lock(mutex_);
 
   // check it matches the current (or next) acquisition.
   // frames that don't match are dropped / ignored.
@@ -197,7 +198,7 @@ void FileWriterPlugin::start_writing()
     // rank has been changed since the frame count was set
     next_acquisition_->frames_to_write_ = calc_num_frames(this->next_acquisition_->total_frames_);
     this->current_acquisition_ = next_acquisition_;
-    this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
+    this->next_acquisition_ = std::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
 
     // Set up datasets within the current acquisition
     std::map<std::string, DatasetDefinition>::iterator iter;
@@ -254,7 +255,7 @@ void FileWriterPlugin::stop_writing()
 void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
   // Protect this method
-  boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+  std::lock_guard<std::recursive_mutex> lock(mutex_);
 
   LOG4CXX_INFO(logger_, config.encode());
 
@@ -537,12 +538,12 @@ void FileWriterPlugin::configure_file(OdinData::IpcMessage& config, OdinData::Ip
   // Check for file path and file name
   if (config.has_param(FileWriterPlugin::CONFIG_FILE_PATH)) {
     std::string file_path = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_PATH);
-    boost::filesystem::path p(file_path);
+    std::filesystem::path p(file_path);
     // Check path exists
-    boost::system::error_code ec;
-    if (boost::filesystem::exists(p, ec)){
+    std::error_code ec;
+    if (std::filesystem::exists(p, ec)){
       // Check path is a directory
-      if (boost::filesystem::is_directory(p, ec)){
+      if (std::filesystem::is_directory(p, ec)){
         // Check directory has write permission
         if (eaccess(file_path.c_str(), W_OK)){
           // Return code other then zero is a failure
@@ -807,7 +808,7 @@ bool FileWriterPlugin::reset_statistics()
  *  The function will set an error if the frame does not match a writing acquisition.
  * \param[in] frame - Pointer to the Frame object.
  */
-bool FileWriterPlugin::frame_in_acquisition(boost::shared_ptr<Frame> frame) {
+bool FileWriterPlugin::frame_in_acquisition(std::shared_ptr<Frame> frame) {
 
   std::string frame_acquisition_ID = frame->get_meta_data().get_acquisition_ID();
 
@@ -878,7 +879,7 @@ void FileWriterPlugin::stop_acquisition() {
     if (!next_acquisition_->configured_filename_.empty() || !next_acquisition_->acquisition_id_.empty()) {
       if (next_acquisition_->total_frames_ > 0 && next_acquisition_->frames_to_write_ == 0) {
         // We're not expecting any frames, so just clear out the nextAcquisition for the next one and don't start writing
-        this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
+        this->next_acquisition_ = std::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
         LOG4CXX_INFO(logger_, "FrameProcessor will not receive any frames from this acquisition and so no output file will be created");
       } else {
         this->start_writing();
@@ -897,7 +898,7 @@ void FileWriterPlugin::start_close_file_timeout()
 {
   if (timeout_active_ == false) {
     LOG4CXX_INFO(logger_, "Starting close file timeout");
-    boost::mutex::scoped_lock lock(start_timeout_mutex_);
+    std::scoped_lock lock(start_timeout_mutex_);
     start_condition_.notify_all();
   } else {
     LOG4CXX_INFO(logger_, "Close file timeout already active");
@@ -916,17 +917,17 @@ void FileWriterPlugin::start_close_file_timeout()
 void FileWriterPlugin::run_close_file_timeout()
 {
   OdinData::configure_logging_mdc(OdinData::app_path.c_str());
-  boost::mutex::scoped_lock startLock(start_timeout_mutex_);
+  std::unique_lock startLock(start_timeout_mutex_);
   while (timeout_thread_running_) {
     start_condition_.wait(startLock);
     if (timeout_thread_running_) {
       timeout_active_ = true;
-      boost::mutex::scoped_lock lock(close_file_mutex_);
+      std::unique_lock lock(close_file_mutex_);
       while (timeout_active_) {
-        if (!timeout_condition_.timed_wait(lock, boost::posix_time::milliseconds(timeout_period_))) {
+        if (!timeout_condition_.wait_until(lock, std::chrono::system_clock::now() + std::chrono::milliseconds(timeout_period_), []{ return false;})) {
           // Timeout
           LOG4CXX_DEBUG_LEVEL(1, logger_, "Close file Timeout timed out");
-          boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+          std::lock_guard<std::recursive_mutex> lock(mutex_);
           if (writing_ && timeout_active_) {
             set_error("Timed out waiting for frames, stopping writing");
             stop_acquisition();
@@ -978,9 +979,9 @@ void FileWriterPlugin::execute(const std::string& command, OdinData::IpcMessage&
       // Only start writing if we have frames to write, or if the total number of frames is 0 (free running mode)
       if (next_acquisition_->total_frames_ > 0 && next_acquisition_->frames_to_write_ == 0) {
         // We're not expecting any frames, so just clear out the nextAcquisition for the next one and don't start writing
-        this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
+        this->next_acquisition_ = std::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
         if (!writing_) {
-          this->current_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
+          this->current_acquisition_ = std::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
         }
         LOG4CXX_INFO(logger_,
                       "FrameProcessor will not receive any frames from this acquisition and so no output file will be created");
