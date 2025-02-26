@@ -8,7 +8,7 @@
 #include <iostream>
 
 #include <boost/test/unit_test.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include <log4cxx/logger.h>
 #include <log4cxx/consoleappender.h>
@@ -32,7 +32,7 @@ BOOST_FIXTURE_TEST_SUITE(MetaMessageUnitTest, MetaMessageUnitTestFixture);
 BOOST_AUTO_TEST_CASE( MetaMessageTest )
 {
   int v1 = 12345;
-  boost::shared_ptr<FrameProcessor::MetaMessage> mm1(new FrameProcessor::MetaMessage("name1", "item1", "integer", "header1", sizeof(int), &v1));
+  std::shared_ptr<FrameProcessor::MetaMessage> mm1(new FrameProcessor::MetaMessage("name1", "item1", "integer", "header1", sizeof(int), &v1));
 
   BOOST_CHECK_EQUAL(mm1->getName(), "name1");
   BOOST_CHECK_EQUAL(mm1->getItem(), "item1");

@@ -8,9 +8,9 @@
 #ifndef INCLUDE_DUMMYUDP_DEFINITIONS_H_
 #define INCLUDE_DUMMYUDP_DEFINITIONS_H_
 
-#include <stddef.h>
-#include <stdint.h>
-#include <time.h>
+#include <cstddef>
+#include <cstdint>
+#include <ctime>
 
 namespace DummyUDP {
 

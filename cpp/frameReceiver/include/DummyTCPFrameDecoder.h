@@ -51,7 +51,7 @@ public:
   uint32_t get_packet_number(void) const;
 
 private:
-  boost::shared_ptr<void> frame_buffer_;
+  std::shared_ptr<void> frame_buffer_;
   size_t frames_dropped_;
   size_t frames_sent_;
   size_t read_so_far_;

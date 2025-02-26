@@ -211,10 +211,10 @@ void IpcReactor::remove_socket(int socket_fd)
 int IpcReactor::register_timer(size_t delay_ms, size_t times, TimerCallback callback)
 {
   // Take lock while modifying timers_
-  boost::lock_guard<boost::mutex> lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
 
   // Create a smart pointer to a new timer object
-  boost::shared_ptr<IpcReactorTimer> timer(new IpcReactorTimer(delay_ms, times, callback));
+  std::shared_ptr<IpcReactorTimer> timer(new IpcReactorTimer(delay_ms, times, callback));
 
   // Add the timer to the timer map
   timers_[timer->get_id()] = timer;
@@ -231,7 +231,7 @@ int IpcReactor::register_timer(size_t delay_ms, size_t times, TimerCallback call
 void IpcReactor::remove_timer(int timer_id)
 {
   // Take lock while modifying timers_
-  boost::lock_guard<boost::mutex> lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   timers_.erase(timer_id);
 }
 
@@ -247,7 +247,7 @@ void IpcReactor::remove_timer(int timer_id)
 int IpcReactor::run(void)
 {
   int rc = 0;
-  boost::unique_lock<boost::mutex> lock(mutex_, boost::defer_lock);
+  std::unique_lock<std::mutex> lock(mutex_, std::defer_lock);
 
   // Loop until the terminate flag is set
   while (!terminate_reactor_)
@@ -410,7 +410,7 @@ void IpcReactor::rebuild_pollitems(void)
 long IpcReactor::calculate_timeout(void)
 {
   // Take lock while accessing timers_
-  boost::lock_guard<boost::mutex> lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
 
   // Calculate shortest timeout up to one hour (!!), looping through
   // current timers to see which fires first

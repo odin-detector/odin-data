@@ -20,13 +20,11 @@
 #include <iostream>
 #include <sstream>
 #include <map>
-#include <time.h>
+#include <ctime>
 
-#include <boost/bind/bind.hpp>
-#include <boost/function.hpp>
-#include <boost/ref.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/thread.hpp>
+#include <functional>
+#include <memory>
+#include <mutex>
 #include "zmq/zmq.hpp"
 
 #include "IpcChannel.h"
@@ -42,7 +40,7 @@ public:
 };
 
 //! Function signature for timer callback methods
-typedef boost::function<void()> TimerCallback;
+typedef std::function<void()> TimerCallback;
 
 //! Reactor millisecond time type
 typedef int64_t TimeMs;
@@ -87,7 +85,7 @@ private:
 };
 
 //! Function signature for reactor callback methods
-typedef boost::function<void()> ReactorCallback;
+typedef std::function<void()> ReactorCallback;
 
 //! Pointer to underlying ZMQ socket of a channel
 typedef zmq::socket_t* SocketPtr;
@@ -98,7 +96,7 @@ typedef std::map<SocketPtr, ReactorCallback> ChannelMap;
 typedef std::map<int, ReactorCallback> SocketMap;
 
 //! Internal map to associate timer ID with a timer
-typedef std::map<int, boost::shared_ptr<IpcReactorTimer> > TimerMap;
+typedef std::map<int, std::shared_ptr<IpcReactorTimer> > TimerMap;
 
 class IpcReactor
 {
@@ -147,7 +145,7 @@ private:
   ReactorCallback* callbacks_;     //!< Ptr to matched array of callbacks
   std::size_t      pollsize_;      //!< Number if active items to poll
   bool             needs_rebuild_; //!< Indicates that the poll item list needs rebuilding
-  boost::mutex mutex_;             //!< Mutex used to make some calls in this class thread safe
+  std::mutex mutex_;             //!< Mutex used to make some calls in this class thread safe
 };
 
 } // namespace OdinData

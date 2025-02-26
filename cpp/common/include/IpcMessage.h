@@ -14,7 +14,7 @@
 #include <algorithm>
 #include <map>
 #include <sstream>
-#include <time.h>
+#include <ctime>
 
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "boost/bimap.hpp"

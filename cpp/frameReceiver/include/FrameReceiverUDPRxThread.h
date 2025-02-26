@@ -8,7 +8,6 @@
 #ifndef FRAMERECEIVERUDPRXTHREAD_H_
 #define FRAMERECEIVERUDPRXTHREAD_H_
 
-#include <boost/thread.hpp>
 #include <boost/asio.hpp>
 
 #include <log4cxx/logger.h>

@@ -11,9 +11,8 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <memory>
 
-
-#include <boost/shared_ptr.hpp>
 
 #include <log4cxx/logger.h>
 using namespace log4cxx;
@@ -32,9 +31,9 @@ public:
   Acquisition(const HDF5ErrorDefinition_t& hdf5_error_definition);
   ~Acquisition();
   std::string get_last_error();
-  ProcessFrameStatus process_frame(boost::shared_ptr<Frame> frame, HDF5CallDurations_t& call_durations);
+  ProcessFrameStatus process_frame(std::shared_ptr<Frame> frame, HDF5CallDurations_t& call_durations);
   void create_file(size_t file_number, HDF5CallDurations_t& call_durations);
-  void close_file(boost::shared_ptr<HDF5File> file, HDF5CallDurations_t& call_durations);
+  void close_file(std::shared_ptr<HDF5File> file, HDF5CallDurations_t& call_durations);
   void validate_dataset_definition(DatasetDefinition definition);
   bool start_acquisition(
     size_t concurrent_rank,
@@ -52,11 +51,11 @@ public:
     HDF5CallDurations_t& call_durations
   );
   void stop_acquisition(HDF5CallDurations_t& call_durations);
-  bool check_frame_valid(boost::shared_ptr<Frame> frame);
+  bool check_frame_valid(std::shared_ptr<Frame> frame);
   size_t get_frame_offset_in_file(size_t frame_offset) const;
   size_t get_file_index(size_t frame_offset) const;
-  size_t adjust_frame_offset(boost::shared_ptr<Frame> frame) const;
-  boost::shared_ptr<HDF5File> get_file(size_t frame_offset, HDF5CallDurations_t& call_durations);
+  size_t adjust_frame_offset(std::shared_ptr<Frame> frame) const;
+  std::shared_ptr<HDF5File> get_file(size_t frame_offset, HDF5CallDurations_t& call_durations);
   std::string get_create_meta_header();
   std::string get_meta_header();
   std::string generate_filename(size_t file_number=0);
@@ -114,9 +113,9 @@ private:
   std::string document_to_string(rapidjson::Document& document) const;
 
   /** The current file that frames are being written to */
-  boost::shared_ptr<HDF5File> current_file_;
+  std::shared_ptr<HDF5File> current_file_;
   /** The previous file that frames were written to, held in case of late frames  */
-  boost::shared_ptr<HDF5File> previous_file_;
+  std::shared_ptr<HDF5File> previous_file_;
   /** Most recently generated error message */
   std::string last_error_;
 };
