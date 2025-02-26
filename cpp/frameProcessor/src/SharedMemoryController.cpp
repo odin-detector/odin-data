@@ -170,7 +170,12 @@ void SharedMemoryController::handleRxChannel() {
           FrameProcessor::FrameMetaData frame_meta(frame_number, "raw", FrameProcessor::raw_64bit, "", std::vector<unsigned long long>());
 
           std::shared_ptr<SharedBufferFrame> frame;
-          frame = std::shared_ptr<SharedBufferFrame>(new SharedBufferFrame(frame_meta, sbm_->get_buffer_address(bufferID), sbm_->get_buffer_size(), bufferID, &tx_channel_));
+          frame = std::shared_ptr<SharedBufferFrame>(new SharedBufferFrame(
+															frame_meta, sbm_->get_buffer_address(bufferID), 
+															sbm_->get_buffer_size(), 
+															bufferID, 
+															&tx_channel_
+													));
 
           // Loop over registered callbacks, placing the frame onto each queue
           std::map<std::string, std::shared_ptr<IFrameCallback> >::iterator cbIter;
@@ -188,7 +193,7 @@ void SharedMemoryController::handleRxChannel() {
     } else if ((rxMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeNotify) &&
                (rxMsg.get_msg_val()  == OdinData::IpcMessage::MsgValNotifyBufferConfig))
     {
-      try{
+      try {
         std::string shared_buffer_name = rxMsg.get_param<std::string>("shared_buffer_name");
         LOG4CXX_DEBUG_LEVEL(1, logger_, "Shared buffer config notification received for " << shared_buffer_name);
         this->setSharedBufferManager(shared_buffer_name);
