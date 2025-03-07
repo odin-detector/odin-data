@@ -62,22 +62,17 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
   /** Static Frame Count will increment each time this method is called, basically as a count of how many frames have been processed by the plugin*/
   static uint32_t frame_count_;
   LOG4CXX_TRACE(logger_, "LiveViewPlugin Process Frame.");
-  if(is_bound_)
-  {
+  if(is_bound_) {
     std::string frame_dataset = frame->get_meta_data().get_dataset_name();
     /* If datasets is empty, or contains the frame's dataset, then we can potentially send it*/
     std::map<std::string, int>::iterator dataset = datasets_.find(frame_dataset);
-    if (datasets_.empty() || dataset != datasets_.end())
-    {
+    if (datasets_.empty() || dataset != datasets_.end()) {
       /* If either filtering by tag is disabled, or the frame has the tagged param */
       bool tag_filter_active = !tags_.empty();
       bool is_tagged = false;
-      if (tag_filter_active)
-      {
-        for (int i = 0; i < tags_.size(); i++)
-        {
-          if (frame->get_meta_data().has_parameter(tags_[i]))
-          {
+      if (tag_filter_active) {
+        for (int i = 0; i < tags_.size(); i++) {
+          if (frame->get_meta_data().has_parameter(tags_[i])) {
             is_tagged = true;
             break;
           }
@@ -86,16 +81,13 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
 
       // If the frame is tagged or the tag filter is inactive, test if the rate and frequency
       // conditions are set to pass the frame to clients
-      if (!tag_filter_active || is_tagged)
-      {
+      if (!tag_filter_active || is_tagged) {
         bool pass_frame = false;
 
         // If the per-second rate setting is active, check time since last live view frame sent
-        if (per_second_ != 0)
-        {
+        if (per_second_ != 0) {
           boost::posix_time::time_duration elapsed = (boost::posix_time::microsec_clock::local_time() - time_last_frame_);
-          if (elapsed > time_between_frames_)
-          {
+          if (elapsed > time_between_frames_) {
             LOG4CXX_TRACE(logger_, "Frame " << frame->get_frame_number() << " elapsed time " << elapsed << " > " << time_between_frames_);
             pass_frame = true;
           }
@@ -103,16 +95,13 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
 
         // If the frame frequency setting is active, check if this frame should be sent
         int count;
-        if(dataset != datasets_.end())
-        {
+        if(dataset != datasets_.end()) {
           count = dataset->second++;
         }
-        else
-        {
+        else {
           count = frame_count_++;
         }
-        if (frame_freq_ != 0 && count % frame_freq_ == 0)
-        {
+        if (frame_freq_ != 0 && count % frame_freq_ == 0) {
           LOG4CXX_TRACE(logger_, "Frame " << frame->get_frame_number() << " count matches frequency " << frame_freq_);
           pass_frame = true;
         }
@@ -122,19 +111,16 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
           pass_live_frame(frame);
         }
       }
-      else
-      {
+      else {
         LOG4CXX_TRACE(logger_, "LiveViewPlugin No Tag(s) found, frame skipped.");
       }
     }
-    else
-    {
+    else {
       LOG4CXX_TRACE(logger_,"Frame dataset: " << frame_dataset << " not desired");
     }
 
   }
-  else
-  {
+  else {
     LOG4CXX_WARN(logger_, "Socket is unbound. Check if address " << image_view_socket_addr_ << " is in use.");
   }
 
@@ -156,42 +142,34 @@ void LiveViewPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessag
 {
   try{
     /* Check if we're setting the frequency of frames to show*/
-    if (config.has_param(CONFIG_FRAME_FREQ))
-    {
+    if (config.has_param(CONFIG_FRAME_FREQ)) {
       set_frame_freq_config(config.get_param<int32_t>(CONFIG_FRAME_FREQ));
     }
     /* Check if we're setting the per_second config*/
-    if (config.has_param(CONFIG_PER_SECOND))
-    {
+    if (config.has_param(CONFIG_PER_SECOND)) {
       set_per_second_config(config.get_param<int32_t>(CONFIG_PER_SECOND));
     }
     /* Check if we are setting the dataset name filter*/
-    if (config.has_param(CONFIG_DATASET_NAME))
-    {
+    if (config.has_param(CONFIG_DATASET_NAME)) {
       set_dataset_name_config(config.get_param<std::string>(CONFIG_DATASET_NAME));
     }
-    if (config.has_param(CONFIG_TAGGED_FILTER_NAME))
-    {
+    if (config.has_param(CONFIG_TAGGED_FILTER_NAME)) {
       set_tagged_filter_config(config.get_param<std::string>(CONFIG_TAGGED_FILTER_NAME));
     }
     /* Display warning if configuration sets the plugin to do nothing*/
-    if (per_second_ == 0 && frame_freq_ == 0)
-    {
+    if (per_second_ == 0 && frame_freq_ == 0) {
       LOG4CXX_WARN(logger_, "Current Live View Config results in it doing nothing.");
     }
     /* Check if we're setting the address of the socket to send the live view frames to.*/
-    if (config.has_param(CONFIG_SOCKET_ADDR))
-    {
+    if (config.has_param(CONFIG_SOCKET_ADDR)) {
       set_socket_addr_config(config.get_param<std::string>(CONFIG_SOCKET_ADDR));
     }
-    else if (not is_bound_) //do not default if the socket is already bound
-    {
+    else if (not is_bound_) {  //do not default if the socket is already bound
       set_socket_addr_config(DEFAULT_IMAGE_VIEW_SOCKET_ADDR);
     }
     
   }
-  catch (std::runtime_error& e)
-  {
+  catch (std::runtime_error& e) {
     std::stringstream ss;
     ss << "Bad ctrl msg: " << e.what();
     this->set_error(ss.str());
@@ -255,12 +233,9 @@ void LiveViewPlugin::pass_live_frame(boost::shared_ptr<Frame> frame)
   //getting tags manually because it is an array
   rapidjson::Value keyTags("tags", document.GetAllocator());
   rapidjson::Value valueTags(rapidjson::kArrayType);
-  if (!tags_.empty())
-  {
-    for(int i = 0; i < tags_.size(); i++)
-    {
-      if (meta_data.has_parameter(tags_[i]))
-      {
+  if (!tags_.empty()) {
+    for(int i = 0; i < tags_.size(); i++) {
+      if (meta_data.has_parameter(tags_[i])) {
         rapidjson::Value tagStringVal(tags_[i].c_str(), document.GetAllocator());
         valueTags.PushBack(tagStringVal, document.GetAllocator());
       }
@@ -273,8 +248,7 @@ void LiveViewPlugin::pass_live_frame(boost::shared_ptr<Frame> frame)
   rapidjson::Value valueDims(rapidjson::kArrayType);
 
   size_t dim_size = dim.size();
-  for(size_t i=0; i < dim_size; i++)
-  {
+  for(size_t i=0; i < dim_size; i++) {
     std::string dimString = boost::to_string(dim[i]);
     rapidjson::Value dimStringVal(dimString.c_str(), document.GetAllocator());
     valueDims.PushBack(dimStringVal, document.GetAllocator());
@@ -344,12 +318,10 @@ void LiveViewPlugin::set_per_second_config(int32_t value)
 {
   per_second_ = value;
 
-  if (per_second_ == 0)
-  {
+  if (per_second_ == 0) {
     LOG4CXX_INFO(logger_, "Disabling Frames Per Second Option");
   }
-  else
-  {
+  else {
     LOG4CXX_INFO(logger_, "Displaying " << per_second_ << " frames per second");
     time_between_frames_ = boost::posix_time::milliseconds(1000 / per_second_);
   }
@@ -362,12 +334,10 @@ void LiveViewPlugin::set_per_second_config(int32_t value)
 void LiveViewPlugin::set_frame_freq_config(int32_t value)
 {
   frame_freq_ = value;
-  if (frame_freq_ == 0)
-  {
+  if (frame_freq_ == 0) {
     LOG4CXX_INFO(logger_, "Disabling Frame Frequency");
   }
-  else
-  {
+  else {
     LOG4CXX_INFO(logger_, "Showing every " << frame_freq_ << " frame(s)");
   }
 }
@@ -379,14 +349,12 @@ void LiveViewPlugin::set_frame_freq_config(int32_t value)
 void LiveViewPlugin::set_socket_addr_config(std::string value)
 {
   //we dont want to unbind and rebind the same address, as it can cause an error if it takes time to unbind, so we check first
-  if (publish_socket_.has_bound_endpoint(value))
-  {
+  if (publish_socket_.has_bound_endpoint(value)) {
     LOG4CXX_WARN(logger_, "Socket already bound to " << value << ". Doing nothing");
     return;
   }
 
-  try
-  {
+  try {
     uint32_t linger = 0;
     publish_socket_.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
     publish_socket_.unbind(image_view_socket_addr_.c_str());
@@ -398,8 +366,7 @@ void LiveViewPlugin::set_socket_addr_config(std::string value)
     is_bound_ = true;
     LOG4CXX_INFO(logger_, "Live View Socket bound successfully");
   }
-  catch(zmq::error_t& e)
-  {
+  catch(zmq::error_t& e) {
     LOG4CXX_ERROR(logger_, "Error binding socket to address " << value << " Error Number: " << e.num());
   }
 }
@@ -414,22 +381,21 @@ void LiveViewPlugin::set_dataset_name_config(std::string value)
   std::string delim = ",";
   datasets_.clear();
   std::vector<std::string> dataset_names;
-  if (!value.empty())
-  {
+  if (!value.empty()) {
     //delim value string by comma
     
     boost::split(dataset_names, value, boost::is_any_of(delim));
     std::for_each(dataset_names.begin(), dataset_names.end(), [this](std::string& name)
-    {
-      boost::trim(name);
-      datasets_.insert(std::pair<std::string, int>(name, 0));
-    });
+      {
+        boost::trim(name);
+        datasets_.insert(std::pair<std::string, int>(name, 0));
+      }
+    );
   }
 
   //loop to log datasets
   std::string dataset_string = "";
-  for (int i = 0; i < dataset_names.size(); i++)
-  {
+  for (int i = 0; i < dataset_names.size(); i++) {
     dataset_string += dataset_names[i] + ":";
   }
   LOG4CXX_INFO(logger_, "Setting the datasets allowed to: " << dataset_string);
@@ -439,13 +405,11 @@ void LiveViewPlugin::set_tagged_filter_config(std::string value)
 {
   std::string delim = ",";
   tags_.clear();
-  if (!value.empty())
-  {
+  if (!value.empty()) {
     boost::split(tags_, value, boost::is_any_of(delim));
   }
   std::string tags_string = "";
-  for (int i = 0; i < tags_.size(); i++)
-  {
+  for (int i = 0; i < tags_.size(); i++) {
     boost::trim(tags_[i]);
     tags_string += tags_[i] + ", ";
   }
