@@ -100,7 +100,12 @@ private:
   std::map<std::string, int> datasets_;
   /**List of Parameter names to look for. If a frame comes in without one of these tags it will be ignored*/
   std::vector<std::string> tags_;
-  /**List of dataset names set during object configuration and could be reported when required*/
+
+  /**List of dataset names set during object configuration and could be reported when required. 
+   *NOTE: This data member is only modified at the configuration step. It is equal to the list of keys in 'datasets_' map.
+   *It is essentially a class invariant and if the dataset names are to be modified post configuration of the object 
+    * by a different method, then change the logic around this data member.
+  */
   std::string dataset_names_;
 
   /**Boolean that shows if the plugin has a successfully bound ZMQ endpoint*/
