@@ -8,7 +8,7 @@
 #ifndef INCLUDE_GETTIME_H_
 #define INCLUDE_GETTIME_H_
 
-#include <time.h>
+#include <ctime>
 #include <sys/time.h>
 
 #ifdef __MACH__

@@ -1,8 +1,7 @@
 #include "ControlUtility.h"
 #include "PropertyTreeUtility.h"
 
-#include <boost/lexical_cast.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <sys/wait.h>
 #include "zmq/zmq.hpp"
 
@@ -33,7 +32,7 @@ namespace FrameSimulatorTest {
       process_path_ = ptree.get<std::string>(process_entry);
       PropertyTreeUtility::expandEnvVars(process_path_);
 
-      boost::filesystem::path path(process_path_);
+      std::filesystem::path path(process_path_);
 
       // Prepend list of process (command) arguments with (<process> (deduced from path) and) (optionally) <positional_arg>
 
@@ -59,7 +58,7 @@ namespace FrameSimulatorTest {
 
       if (process_pid_ > 0) {
         LOG4CXX_DEBUG(logger_, "Launching " + process_path_ + "(" +
-                               boost::lexical_cast<std::string>(process_pid_) + ")");
+                               std::to_string(process_pid_) + ")");
         int status;
         if (wait_child) {
           wait(NULL);
@@ -112,7 +111,7 @@ namespace FrameSimulatorTest {
       socket.connect (socket_.get().c_str());
 
       LOG4CXX_DEBUG(logger_, "Sending configuration " + process_path_ + " " + message + " (" +
-                             boost::lexical_cast<std::string>(process_pid_) + ")");
+                             std::to_string(process_pid_) + ")");
 
       std::string command(message.c_str());
       zmq::message_t request (command.size());
@@ -128,7 +127,7 @@ namespace FrameSimulatorTest {
 
       if(!kill_message_) {
         LOG4CXX_DEBUG(logger_, "Terminating " + process_path_ + "(" +
-                               boost::lexical_cast<std::string>(process_pid_) + ")");
+                               std::to_string(process_pid_) + ")");
         kill(process_pid_, SIGTERM);
         return;
       }
@@ -139,7 +138,7 @@ namespace FrameSimulatorTest {
       socket.connect (socket_.get().c_str());
 
       LOG4CXX_DEBUG(logger_, "Requesting termination " + process_path_ + "(" +
-                               boost::lexical_cast<std::string>(process_pid_) + ")");
+                               std::to_string(process_pid_) + ")");
 
       std::string command(kill_message_.get().c_str());
       zmq::message_t request (command.size());

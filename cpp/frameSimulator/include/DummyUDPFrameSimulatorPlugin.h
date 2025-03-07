@@ -8,7 +8,6 @@
 using namespace log4cxx;
 using namespace log4cxx::helpers;
 
-#include <boost/shared_ptr.hpp>
 #include <map>
 #include <string>
 #include <stdexcept>

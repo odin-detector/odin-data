@@ -35,7 +35,7 @@ ParameterAdjustmentPlugin::~ParameterAdjustmentPlugin()
  *
  * \param[in] frame - Pointer to a Frame object.
  */
-void ParameterAdjustmentPlugin::process_frame(boost::shared_ptr<Frame> frame)
+void ParameterAdjustmentPlugin::process_frame(std::shared_ptr<Frame> frame)
 {
   // Apply any parameter adjustments
   if (parameter_adjustments_.size() != 0)
