@@ -100,6 +100,8 @@ private:
   std::map<std::string, int> datasets_;
   /**List of Parameter names to look for. If a frame comes in without one of these tags it will be ignored*/
   std::vector<std::string> tags_;
+  /**List of dataset names set during object configuration and could be reported when required*/
+  std::string names_cnfg;
 
   /**Boolean that shows if the plugin has a successfully bound ZMQ endpoint*/
   bool is_bound_;
