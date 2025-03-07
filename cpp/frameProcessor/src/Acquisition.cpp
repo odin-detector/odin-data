@@ -565,7 +565,7 @@ boost::shared_ptr<HDF5File> Acquisition::get_file(size_t frame_offset, HDF5CallD
       LOG4CXX_DEBUG_LEVEL(1, logger_,"Creating missing file " << next_expected_file_index);
       filename_ = generate_filename(next_expected_file_index);
       if (filename_.empty()) {
-        last_error_ = "Unable to fetch file - no filename to write to";
+        last_error_ = "Failed to generate a valid file name - not creating file.";
         LOG4CXX_ERROR(logger_, last_error_);
         return boost::shared_ptr<HDF5File>();
       }
