@@ -187,7 +187,7 @@ void LiveViewPlugin::requestConfiguration(OdinData::IpcMessage& reply)
   reply.set_param(get_name() + "/" + LiveViewPlugin::CONFIG_FRAME_FREQ, frame_freq_);
   reply.set_param(get_name() + "/" + LiveViewPlugin::CONFIG_SOCKET_ADDR, image_view_socket_addr_);
   reply.set_param(get_name() + "/" + LiveViewPlugin::CONFIG_PER_SECOND, per_second_);
-  reply.set_param(get_name() + "/" + LiveViewPlugin::CONFIG_DATASET_NAME, names_cnfg);
+  reply.set_param(get_name() + "/" + LiveViewPlugin::CONFIG_DATASET_NAME, dataset_names_);
 }
 
 /**
@@ -395,11 +395,11 @@ void LiveViewPlugin::set_dataset_name_config(std::string value)
   }
 
   //loop to log datasets
-  names_cnfg = "";
+  dataset_names_ = "";
   for (int i = 0; i < dataset_names.size(); i++) {
-    names_cnfg += dataset_names[i] + ":";
+    dataset_names_ += dataset_names[i] + ":";
   }
-  LOG4CXX_INFO(logger_, "Setting the datasets allowed to: " << names_cnfg);
+  LOG4CXX_INFO(logger_, "Setting the datasets allowed to: " << dataset_names_);
 }
 
 void LiveViewPlugin::set_tagged_filter_config(std::string value)
