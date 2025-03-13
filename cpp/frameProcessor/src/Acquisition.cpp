@@ -561,16 +561,17 @@ boost::shared_ptr<HDF5File> Acquisition::get_file(size_t frame_offset, HDF5CallD
 
     // Check for missing files and create them if they have been missed
     size_t next_expected_file_index = current_file_->get_file_index() + concurrent_processes_;
-    while (next_expected_file_index < file_index) {
+    while (next_expected_file_index <= file_index) {
       LOG4CXX_DEBUG_LEVEL(1, logger_,"Creating missing file " << next_expected_file_index);
       filename_ = generate_filename(next_expected_file_index);
+      if (filename_.empty()) {
+        last_error_ = "Failed to generate a valid file name - not creating file.";
+        LOG4CXX_ERROR(logger_, last_error_);
+        return boost::shared_ptr<HDF5File>();
+      }
       create_file(next_expected_file_index, call_durations);
       next_expected_file_index = current_file_->get_file_index() + concurrent_processes_;
     }
-
-    filename_ = generate_filename(file_index);
-
-    create_file(file_index, call_durations);
 
     return this->current_file_;
   } else {
