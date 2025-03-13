@@ -1,11 +1,7 @@
 // For format details, see https://containers.dev/implementors/json_reference/
 {
     "name": "odin-data devcontainer",
-    "build": {
-        "dockerfile": "../Dockerfile",
-        "context": "..",
-        "target": "developer"
-    },
+    "image": "ghcr.io/odin-detector/odin-data-developer:latest",
     "remoteEnv": {
         // Allow X11 apps to run inside the container
         "DISPLAY": "${localEnv:DISPLAY}"
