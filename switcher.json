@@ -1,6 +1,6 @@
 [
   {
-    "version": "devcontainer-image",
-    "url": "https://odin-detector.github.io/odin-data/devcontainer-image/"
+    "version": "github-actions-cache",
+    "url": "https://odin-detector.github.io/odin-data/github-actions-cache/"
   }
 ]
