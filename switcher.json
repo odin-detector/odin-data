@@ -1,6 +1,6 @@
 [
   {
-    "version": "master",
-    "url": "https://odin-detector.github.io/odin-data/master/"
+    "version": "github-actions-cache",
+    "url": "https://odin-detector.github.io/odin-data/github-actions-cache/"
   }
 ]
