@@ -1,6 +1,6 @@
 [
   {
-    "version": "master",
-    "url": "https://odin-detector.github.io/odin-data/master/"
+    "version": "devcontainer-image",
+    "url": "https://odin-detector.github.io/odin-data/devcontainer-image/"
   }
 ]
