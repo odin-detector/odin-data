@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>FrameProcessor API Reference &#8212; odin-data 0.1.dev1+ge98545e documentation</title>
+    <title>FrameProcessor API Reference &#8212; odin-data 0.1.dev1+gca1fd5d documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=d6ef70fe"></script>
+    <script src="../../../_static/documentation_options.js?v=1add3d76"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -4205,6 +4205,12 @@
 </dd></dl>
 
 <dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor14LiveViewPlugin14dataset_names_E">
+<span id="_CPPv3N14FrameProcessor14LiveViewPlugin14dataset_names_E"></span><span id="_CPPv2N14FrameProcessor14LiveViewPlugin14dataset_names_E"></span><span id="FrameProcessor::LiveViewPlugin::dataset_names___ss"></span><span class="target" id="classFrameProcessor_1_1LiveViewPlugin_1ac5ae82ec29e489eba95eb4507f136ab1"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">dataset_names_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor14LiveViewPlugin14dataset_names_E" title="Link to this definition">#</a><br /></dt>
+<dd><p>List of the dataset names configured to an object of this class. This function is an invariant currently modified only when config() is called and the particular modifying function is <a class="reference internal" href="#classFrameProcessor_1_1LiveViewPlugin_1aa55c8de1a792dcb510583ece750e2ecf"><span class="std std-ref">set_dataset_name_config()</span></a>. It is the list of strings in the std::map datasets_, if another function modifies datasets_, then that function ought to modify dataset_names_ too. </p>
+</dd></dl>
+
+<dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor14LiveViewPlugin9is_bound_E">
 <span id="_CPPv3N14FrameProcessor14LiveViewPlugin9is_bound_E"></span><span id="_CPPv2N14FrameProcessor14LiveViewPlugin9is_bound_E"></span><span id="FrameProcessor::LiveViewPlugin::is_bound___b"></span><span class="target" id="classFrameProcessor_1_1LiveViewPlugin_1a4de2f9aded34c560c2c6132842601bfb"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">is_bound_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor14LiveViewPlugin9is_bound_E" title="Link to this definition">#</a><br /></dt>
 <dd><p>Boolean that shows if the plugin has a successfully bound ZMQ endpoint </p>
@@ -6929,6 +6935,7 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor14LiveViewPlugin15publish_socket_E"><code class="docutils literal notranslate"><span class="pre">publish_socket_</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor14LiveViewPlugin9datasets_E"><code class="docutils literal notranslate"><span class="pre">datasets_</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor14LiveViewPlugin5tags_E"><code class="docutils literal notranslate"><span class="pre">tags_</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor14LiveViewPlugin14dataset_names_E"><code class="docutils literal notranslate"><span class="pre">dataset_names_</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor14LiveViewPlugin9is_bound_E"><code class="docutils literal notranslate"><span class="pre">is_bound_</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor14LiveViewPlugin10DATA_TYPESE"><code class="docutils literal notranslate"><span class="pre">DATA_TYPES</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor14LiveViewPlugin14COMPRESS_TYPESE"><code class="docutils literal notranslate"><span class="pre">COMPRESS_TYPES</span></code></a></li>
