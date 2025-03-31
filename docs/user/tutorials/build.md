@@ -202,4 +202,4 @@ Run applications (now from the root of the repository):
 
     $ prefix/bin/frameReceiver --help
     $ prefix/bin/frameProcessor --help
-    $ prefix/bin/frameProcessor --help
+    $ prefix/bin/frameSimulator --help
