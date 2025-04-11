@@ -54,7 +54,7 @@ public:
    */
   ClassLoader(std::string name, maker_t *value)
   {
-    factory_map()[name] = value;
+    factory[name] = value;
   }
 
   /**
@@ -86,8 +86,8 @@ public:
     }
     boost::shared_ptr<BaseClass> obj;
     try {
-      if (factory_map().count(name)) {
-        obj = factory_map()[name]();
+      if (factory.count(name)) {
+        obj = factory[name]();
       }
     } catch(const std::exception& ex) {
       // Most likely the requested class and loaded class do not match.
@@ -96,16 +96,16 @@ public:
     return obj;
   }
 
-  /**
-   * Function to return a map of functions returning base class pointers.
-   * The map is indexed by the name of the class that is loaded.
-   * \return - map of functions returning base class pointers.
-   */
-  static std::map<std::string, maker_t *> &factory_map()
-  {
-    static std::map<std::string, maker_t *> factory;
-    return factory;
-  }
+  // /**
+  //  * Function to return a map of functions returning base class pointers.
+  //  * The map is indexed by the name of the class that is loaded.
+  //  * \return - map of functions returning base class pointers.
+  //  */
+  // static std::map<std::string, maker_t *> &factory_map()
+  // {
+  //   static std::map<std::string, maker_t *> factory;
+  //   return factory;
+  // }
 
   /**
    * Check if a class of the given name is already registered with
@@ -115,8 +115,11 @@ public:
    */
   static bool is_registered(std::string name)
   {
-    return factory_map().end() != factory_map().find(name);
+    return factory.end() != factory.find(name);
   }
+
+  private:
+    inline static std::map<std::string, maker_t *> factory;
 };
 
 } /* namespace OdinData */
