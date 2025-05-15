@@ -28,29 +28,6 @@ const std::string BloscPlugin::CONFIG_BLOSC_SHUFFLE    = "shuffle";
 #define BLOSC_SHUFFLE_STR "SHUFFLE"
 #define BLOSC_BITSHUFFLE_STR "BITSHUFFLE"
 
-static inline std::string shuffle_i2str(const unsigned int shuffle)
-{
-	switch(shuffle){
-		case BLOSC_NOSHUFFLE: return BLOSC_NOSHUFFLE_STR;
-		case BLOSC_SHUFFLE: return BLOSC_SHUFFLE_STR;
-		case BLOSC_BITSHUFFLE: return BLOSC_BITSHUFFLE_STR;
-		default: return "BLOSC_SHUFF_ERROR";
-	};
-}
-
-static inline std::string compressor_i2str(const unsigned int compressor)
-{
-	switch(compressor){
-		case BLOSC_BLOSCLZ: return BLOSC_BLOSCLZ_COMPNAME;
-		case BLOSC_LZ4: return BLOSC_LZ4_COMPNAME;
-		case BLOSC_LZ4HC: return BLOSC_LZ4HC_COMPNAME;
-		case BLOSC_SNAPPY: return BLOSC_SNAPPY_COMPNAME;
-		case BLOSC_ZLIB: return BLOSC_ZLIB_COMPNAME;
-		case BLOSC_ZSTD: return BLOSC_ZSTD_COMPNAME;
-		default: return "BLOSC_COMP_ERROR";
-	};
-}
-
 static const std::unordered_map<std::string, const unsigned int> shuffle_str2i {{BLOSC_NOSHUFFLE_STR, 0}, {BLOSC_SHUFFLE_STR, 1}, {BLOSC_BITSHUFFLE_STR, 2}};
 static const std::unordered_map<std::string, const unsigned int> compressor_str2i {{BLOSC_BLOSCLZ_COMPNAME, 0}, {BLOSC_LZ4_COMPNAME, 1}, {BLOSC_LZ4HC_COMPNAME, 2}, {BLOSC_SNAPPY_COMPNAME, 3}, {BLOSC_ZLIB_COMPNAME, 4}, {BLOSC_ZSTD_COMPNAME, 5}};
 
@@ -299,12 +276,12 @@ void BloscPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& 
   if (config.has_param(BloscPlugin::CONFIG_BLOSC_SHUFFLE)) {
     std::string blosc_shuffle = config.get_param<std::string>(BloscPlugin::CONFIG_BLOSC_SHUFFLE);
     // Range checking: 0, 1, 2 are valid values. Anything else result in setting value 0 (no shuffle)
-    if (auto search = shuffle_str2i.find(blosc_shuffle); search != shuffle_str2i.end()) {
+    if (auto search = shuffle_str2i.find(blosc_shuffle); search == shuffle_str2i.end()) {
       LOG4CXX_WARN(logger_, "Commanded blosc shuffle: " << blosc_shuffle << " is invalid. Disabling SHUFFLE filter");
-      blosc_shuffle = "NOSHUFFLE";
+      blosc_shuffle = BLOSC_NOSHUFFLE_STR;
       reply.set_param<std::string>("warning: shuffle filter", "Disabled");
     }
-    this->commanded_compression_settings_.shuffle = BLOSC_BITSHUFFLE_STR;
+    this->commanded_compression_settings_.shuffle = blosc_shuffle;
     if (this->current_acquisition_ == "") {
       this->update_compression_settings();
     }
@@ -333,7 +310,7 @@ void BloscPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& 
       blosc_compressor = BLOSC_LZ4_COMPNAME;
       reply.set_param<int>("warning: compressor", BLOSC_LZ4);
     }
-    this->commanded_compression_settings_.blosc_compressor = BLOSC_LZ4_COMPNAME;
+    this->commanded_compression_settings_.blosc_compressor = blosc_compressor;
     if (this->current_acquisition_ == "") {
       this->update_compression_settings();
     }
@@ -347,7 +324,7 @@ void BloscPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& 
 void BloscPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
   reply.set_param(this->get_name() + "/" + BloscPlugin::CONFIG_BLOSC_COMPRESSOR,
-                 this->commanded_compression_settings_.blosc_compressor);
+                  this->commanded_compression_settings_.blosc_compressor);
   reply.set_param(this->get_name() + "/" + BloscPlugin::CONFIG_BLOSC_THREADS,
                   this->commanded_compression_settings_.threads);
   reply.set_param(this->get_name() + "/" + BloscPlugin::CONFIG_BLOSC_SHUFFLE,

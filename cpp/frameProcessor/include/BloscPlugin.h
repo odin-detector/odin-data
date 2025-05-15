@@ -41,8 +41,12 @@ public:
   BloscPlugin();
   virtual ~BloscPlugin();
   boost::shared_ptr<Frame> compress_frame(boost::shared_ptr<Frame> frame);
+  /** Configuration constants */
+  static const std::string CONFIG_BLOSC_COMPRESSOR;
+  static const std::string CONFIG_BLOSC_THREADS;
+  static const std::string CONFIG_BLOSC_LEVEL;
+  static const std::string CONFIG_BLOSC_SHUFFLE;
 
-private:
   // Baseclass API to implement:
   void process_frame(boost::shared_ptr<Frame> frame);
   void status(OdinData::IpcMessage& status);
@@ -54,6 +58,7 @@ private:
   std::string get_version_short();
   std::string get_version_long();
 
+private:
   // Methods unique to this class
   void update_compression_settings();
   void * get_buffer(size_t nbytes);
@@ -72,14 +77,6 @@ private:
   /** Temporary buffer for compressed data */
   void * data_buffer_ptr_;
   size_t data_buffer_size_;
-
-private:
-  /** Configuration constants */
-  static const std::string CONFIG_BLOSC_COMPRESSOR;
-  static const std::string CONFIG_BLOSC_THREADS;
-  static const std::string CONFIG_BLOSC_LEVEL;
-  static const std::string CONFIG_BLOSC_SHUFFLE;
-
 };
 
 } /* namespace FrameProcessor */
