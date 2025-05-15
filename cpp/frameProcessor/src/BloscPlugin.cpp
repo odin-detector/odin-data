@@ -328,7 +328,7 @@ void BloscPlugin::requestConfiguration(OdinData::IpcMessage& reply)
   reply.set_param(this->get_name() + "/" + BloscPlugin::CONFIG_BLOSC_THREADS,
                   this->commanded_compression_settings_.threads);
   reply.set_param(this->get_name() + "/" + BloscPlugin::CONFIG_BLOSC_SHUFFLE,
-                  this->compression_settings_.shuffle);
+                  this->commanded_compression_settings_.shuffle);
   reply.set_param(this->get_name() + "/" + BloscPlugin::CONFIG_BLOSC_LEVEL,
                   this->commanded_compression_settings_.compression_level);
 }
