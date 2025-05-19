@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE( BloscPlugin_check_config )
   cfg.set_param<std::string>(FrameProcessor::BloscPlugin::CONFIG_BLOSC_COMPRESSOR, "snappy");
   cfg.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_THREADS, 3);
   cfg.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_LEVEL, 1);
-  cfg.set_param<std::string>(FrameProcessor::BloscPlugin::CONFIG_BLOSC_SHUFFLE, "SHUFFLE");
+  cfg.set_param<std::string>(FrameProcessor::BloscPlugin::CONFIG_BLOSC_SHUFFLE, "shuffle");
 
   OdinData::IpcMessage request;
   blosc_plugin.configure(cfg, reply);
