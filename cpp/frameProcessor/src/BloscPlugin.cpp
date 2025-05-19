@@ -24,9 +24,9 @@ const std::string BloscPlugin::CONFIG_BLOSC_THREADS    = "threads";
 const std::string BloscPlugin::CONFIG_BLOSC_LEVEL      = "level";
 const std::string BloscPlugin::CONFIG_BLOSC_SHUFFLE    = "shuffle";
 
-#define BLOSC_NOSHUFFLE_STR "NOSHUFFLE"
-#define BLOSC_SHUFFLE_STR "SHUFFLE"
-#define BLOSC_BITSHUFFLE_STR "BITSHUFFLE"
+#define BLOSC_NOSHUFFLE_STR "noshuffle"
+#define BLOSC_SHUFFLE_STR "shuffle"
+#define BLOSC_BITSHUFFLE_STR "bitshuffle"
 
 static const std::unordered_map<std::string, const unsigned int> shuffle_str2i {{BLOSC_NOSHUFFLE_STR, 0}, {BLOSC_SHUFFLE_STR, 1}, {BLOSC_BITSHUFFLE_STR, 2}};
 static const std::unordered_map<std::string, const unsigned int> compressor_str2i {{BLOSC_BLOSCLZ_COMPNAME, 0}, {BLOSC_LZ4_COMPNAME, 1}, {BLOSC_LZ4HC_COMPNAME, 2}, {BLOSC_SNAPPY_COMPNAME, 3}, {BLOSC_ZLIB_COMPNAME, 4}, {BLOSC_ZSTD_COMPNAME, 5}};
