@@ -48,10 +48,6 @@
     "url": "https://odin-detector.github.io/odin-data/client-docs/"
   },
   {
-    "version": "dataset-config",
-    "url": "https://odin-detector.github.io/odin-data/dataset-config/"
-  },
-  {
     "version": "docker",
     "url": "https://odin-detector.github.io/odin-data/docker/"
   },
