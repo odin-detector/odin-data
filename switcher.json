@@ -44,10 +44,6 @@
     "url": "https://odin-detector.github.io/odin-data/client-docs/"
   },
   {
-    "version": "fastcs-dev",
-    "url": "https://odin-detector.github.io/odin-data/fastcs-dev/"
-  },
-  {
     "version": "fp-param-tree-draft",
     "url": "https://odin-detector.github.io/odin-data/fp-param-tree-draft/"
   },
