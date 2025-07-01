@@ -28,7 +28,13 @@ public:
 
   FrameMetaData();
 
-  FrameMetaData(const FrameMetaData& frame);
+  FrameMetaData(const FrameMetaData& frame); // copy constructor
+
+  FrameMetaData& operator=(const FrameMetaData& frame); // copy assignment operator
+
+  FrameMetaData(FrameMetaData&& frame); // move constructor
+
+  FrameMetaData& operator=(FrameMetaData&& frame); // move operator
 
   /** Return frame parameters */
   const std::map <std::string, std::any> &get_parameters() const;

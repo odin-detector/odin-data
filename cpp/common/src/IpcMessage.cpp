@@ -195,8 +195,7 @@ std::vector<std::string> IpcMessage::get_param_names() const
   rapidjson::Value::ConstMemberIterator itr = doc_.FindMember("params");
   for (rapidjson::Value::ConstMemberIterator param_itr = itr->value.MemberBegin();
       param_itr != itr->value.MemberEnd(); ++param_itr){
-    std::string param_name(param_itr->name.GetString());
-    names.push_back(param_name);
+    names.emplace_back(param_itr->name.GetString());
   }
   return names;
 }

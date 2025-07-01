@@ -231,10 +231,8 @@ BOOST_AUTO_TEST_CASE(LiveViewDownscaleTest)
   std::vector<std::string> processed_frames;
   while(recv_socket.poll(10))
   {
-    std::string tmp_string = recv_socket.recv();
-    processed_frames.push_back(tmp_string);
+    processed_frames.emplace_back(recv_socket.recv());
     recv_socket.recv_raw(pbuf); //we dont need the data for this test but still need to read from the socket to clear it
-
   }
   BOOST_CHECK_EQUAL(processed_frames.size(), 5);
 
@@ -264,9 +262,9 @@ BOOST_AUTO_TEST_CASE(LiveViewDatasetFilterTest)
   std::vector<std::string> dataset_processed_frames;
   while(recv_socket.poll(10))
   {
-    std::string tmp_string = recv_socket.recv();
-    BOOST_TEST_MESSAGE( "Received Header: " << tmp_string);
-    dataset_processed_frames.push_back(tmp_string);
+    dataset_processed_frames.emplace_back(recv_socket.recv());
+    BOOST_TEST_MESSAGE( "Received Header: " << dataset_processed_frames.back());
+    
     recv_socket.recv_raw(pbuf); //we dont need the data for this test but still need to read from the socket to clear it from the queue
   }
   for(int i = 0; i < dataset_processed_frames.size(); i++)
@@ -328,9 +326,9 @@ BOOST_AUTO_TEST_CASE(LiveViewTagFilterTest)
   std::vector<std::string> tagged_processed_frames;
   while(recv_socket.poll(10))
   {
-    std::string tmp_string = recv_socket.recv();
-    BOOST_TEST_MESSAGE( "Received Header: " << tmp_string);
-    tagged_processed_frames.push_back(tmp_string);
+    tagged_processed_frames.emplace_back(recv_socket.recv());
+    BOOST_TEST_MESSAGE( "Received Header: " << tagged_processed_frames.back());
+    
     recv_socket.recv_raw(pbuf); //we dont need the data for this test but still need to read from the socket to clear it from the queue
   }
   for(int i = 0; i < tagged_processed_frames.size(); i++)

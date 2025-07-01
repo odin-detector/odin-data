@@ -54,8 +54,8 @@ public:
   void send(size_t msg_size, void *message, int flags = 0,
     const std::string& identity_str = std::string());
 
-  const std::string recv(std::string* identity_str=0);
-  const std::size_t recv_raw(void *msg_buf, std::string* identity_str=0);
+  std::string recv(std::string* identity_str = nullptr);
+  std::pair<std::size_t, std::string> recv_raw(void *msg_buf);
 
   void setsockopt(int option, const void *option_value, std::size_t option_len);
   void getsockopt(int option, void *option_value, std::size_t *option_len);

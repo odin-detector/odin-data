@@ -18,11 +18,14 @@ class Frame {
 
   /** Base constructor */
   Frame(const FrameMetaData &meta_data, const size_t &data_size, const int &image_offset = 0);
-  /** Shallow-copy copy */
+  /** Copy constructor: Deep-copy */
   Frame(const Frame &frame);
-
-  /** Deep-copy assignment */
+  /** Move constructor */
+  Frame(Frame&& frame);
+  /** Copy Assignment operator: Deep-copy assignment */
   Frame &operator=(const Frame& frame);
+  /** Move Assignment operator */
+  Frame &operator=(Frame&& frame);
 
   /** Return if frame is valid */
   bool is_valid() const;

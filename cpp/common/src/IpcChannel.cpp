@@ -325,7 +325,7 @@ void IpcChannel::router_send_identity(const std::string& identity_str)
 //! \param[out] identity_str - pointer to string to receive identity on ROUTER sockets
 //! \return string containing the message
 //!
-const std::string IpcChannel::recv(std::string* identity_str)
+std::string IpcChannel::recv(std::string* identity_str)
 {
   // For ROUTER channels, receive the required identity message part first and copy
   // into the specified string location if not NULL.
@@ -350,36 +350,33 @@ const std::string IpcChannel::recv(std::string* identity_str)
 //! This method receives a raw message on the channel, copying it into the
 //! buffer specified in the argument and returning the size of the message received.
 //! For ROUTER-type channels, the string pointer argument has the incoming
-//! message identity copied into it. If this argument is NULL, the identity will
-//! not be copied.
+//! message identity copied into it.
 //!
 //! \param[out] msg_buf - pointer to buffer where message should be copied
 //! \param[out] identity_str - pointer to string to receive identity on ROUTER sockets
 //! \return size of the received message
 //!
-const std::size_t IpcChannel::recv_raw(void *msg_buf, std::string* identity_str)
+std::pair<std::size_t, std::string> IpcChannel::recv_raw(void *msg_buf)
 {
 
   // For ROUTER channels, receive the required identity message part first and copy
   // into the specified string location if not NULL.
+  std::pair<std::size_t, std::string> ret;
   if (socket_type_ == ZMQ_ROUTER) {
     zmq::message_t identity_msg;
     socket_.recv(&identity_msg);
-    if (identity_str != NULL) {
-      *identity_str = std::string(static_cast<char*>(identity_msg.data()), identity_msg.size());
-    }
+    ret.second = std::string(static_cast<char*>(identity_msg.data()), identity_msg.size());
   }
 
   // Receive the message payload
-  std::size_t msg_size;
   zmq::message_t msg;
   socket_.recv(&msg);
 
   // Copy the message into the specified buffer and return the size
-  msg_size = msg.size();
-  memcpy(msg_buf, msg.data(), msg_size);
+  ret.first = msg.size();
+  memcpy(msg_buf, msg.data(), ret.first);
 
-  return msg_size;
+  return ret;
 }
 
 //! Set an option on the channel socket

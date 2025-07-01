@@ -216,7 +216,7 @@ class ParamContainer
             {
                 T val;
                 set_value<T>(val, *itr);
-                param.push_back(val);
+                param.emplace_back(std::move(val));
             }
         }
 

@@ -180,8 +180,7 @@ namespace FrameSimulator {
                 LOG4CXX_WARN(logger_, "Detected SOF marker on packet number != 0");
             }
 
-            UDPFrame frame(frame_number);
-            frames_.push_back(frame);
+            frames_.emplace_back(UDPFrame{frame_number});
             frames_[frames_.size() - 1].SOF_markers.push_back(frame_number);
 
         }

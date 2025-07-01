@@ -132,7 +132,7 @@ size_t HDF5File::create_file(std::string filename, size_t file_index, bool use_e
   std::lock_guard<std::recursive_mutex> lock(mutex_);
   hid_t fapl; // File access property list
   hid_t fcpl;
-  filename_ = filename;
+  filename_ = std::move(filename);
   use_earliest_version_ = use_earliest_version;
 
   // Create file access property list
@@ -156,11 +156,11 @@ size_t HDF5File::create_file(std::string filename, size_t file_index, bool use_e
   ensure_h5_result(fcpl, "H5Pcreate failed to create the file creation property list");
 
   // Creating the file with SWMR write access
-  LOG4CXX_INFO(logger_, "Creating file: " << filename);
+  LOG4CXX_INFO(logger_, "Creating file: " << filename_);
   unsigned int flags = H5F_ACC_TRUNC;
 
   watchdog_timer_.start_timer("H5Fcreate", hdf5_error_definition_.create_duration);
-  this->hdf5_file_id_ = H5Fcreate(filename.c_str(), flags, fcpl, fapl);
+  this->hdf5_file_id_ = H5Fcreate(filename_.c_str(), flags, fcpl, fapl);
   size_t create_duration = watchdog_timer_.finish_timer();
 
   ensure_h5_result(this->hdf5_file_id_, "Failed to create HDF5 file");
@@ -169,7 +169,7 @@ size_t HDF5File::create_file(std::string filename, size_t file_index, bool use_e
     ensure_h5_result(H5Pclose(fapl), "H5Pclose failed after create file failed");
     // Now throw a runtime error to explain that the file could not be created
     std::stringstream err;
-    err << "Could not create file " << filename;
+    err << "Could not create file " << filename_;
     throw std::runtime_error(err.str().c_str());
   }
   // Close file access property list
