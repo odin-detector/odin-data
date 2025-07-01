@@ -59,6 +59,7 @@ namespace FrameProcessor {
       compression_type_ = frame.compression_type_;
       frame_offset_ = frame.frame_offset_;
       logger = frame.logger;
+      return *this;
     }
 
     FrameMetaData& FrameMetaData::operator=(const FrameMetaData& frame){
@@ -71,6 +72,7 @@ namespace FrameProcessor {
       compression_type_ = frame.compression_type_;
       frame_offset_ = frame.frame_offset_;
       logger = frame.logger;
+      return *this;
     }
 
 

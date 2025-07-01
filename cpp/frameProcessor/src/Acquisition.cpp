@@ -566,7 +566,7 @@ std::shared_ptr<HDF5File> Acquisition::get_file(size_t frame_offset, HDF5CallDur
       if (filename_.empty()) {
         last_error_ = "Failed to generate a valid file name - not creating file.";
         LOG4CXX_ERROR(logger_, last_error_);
-        return boost::shared_ptr<HDF5File>();
+        return std::shared_ptr<HDF5File>();
       }
       create_file(next_expected_file_index, call_durations);
       next_expected_file_index = current_file_->get_file_index() + concurrent_processes_;
