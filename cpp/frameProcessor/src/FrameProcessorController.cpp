@@ -15,35 +15,35 @@
 namespace FrameProcessor
 {
 
-const std::string FrameProcessorController::META_RX_INTERFACE            = "inproc://meta_rx";
+const std::string_view FrameProcessorController::META_RX_INTERFACE            = "inproc://meta_rx";
 
-const std::string FrameProcessorController::CONFIG_EOA                   = "inject_eoa";
-const std::string FrameProcessorController::CONFIG_DEBUG                 = "debug_level";
+const std::string_view FrameProcessorController::CONFIG_EOA                   = "inject_eoa";
+const std::string_view FrameProcessorController::CONFIG_DEBUG                 = "debug_level";
 
-const std::string FrameProcessorController::CONFIG_FR_RELEASE            = "fr_release_cnxn";
-const std::string FrameProcessorController::CONFIG_FR_READY              = "fr_ready_cnxn";
-const std::string FrameProcessorController::CONFIG_FR_SETUP              = "fr_setup";
+const std::string_view FrameProcessorController::CONFIG_FR_RELEASE            = "fr_release_cnxn";
+const std::string_view FrameProcessorController::CONFIG_FR_READY              = "fr_ready_cnxn";
+const std::string_view FrameProcessorController::CONFIG_FR_SETUP              = "fr_setup";
 
-const std::string FrameProcessorController::CONFIG_CTRL_ENDPOINT         = "ctrl_endpoint";
-const std::string FrameProcessorController::CONFIG_META_ENDPOINT         = "meta_endpoint";
+const std::string_view FrameProcessorController::CONFIG_CTRL_ENDPOINT         = "ctrl_endpoint";
+const std::string_view FrameProcessorController::CONFIG_META_ENDPOINT         = "meta_endpoint";
 
-const std::string FrameProcessorController::CONFIG_PLUGIN                = "plugin";
-const std::string FrameProcessorController::CONFIG_PLUGIN_LOAD           = "load";
-const std::string FrameProcessorController::CONFIG_PLUGIN_CONNECT        = "connect";
-const std::string FrameProcessorController::CONFIG_PLUGIN_DISCONNECT     = "disconnect";
-const std::string FrameProcessorController::CONFIG_PLUGIN_DISCONNECT_ALL = "all";
-const std::string FrameProcessorController::CONFIG_PLUGIN_NAME           = "name";
-const std::string FrameProcessorController::CONFIG_PLUGIN_INDEX          = "index";
-const std::string FrameProcessorController::CONFIG_PLUGIN_LIBRARY        = "library";
-const std::string FrameProcessorController::CONFIG_PLUGIN_CONNECTION     = "connection";
+const std::string_view FrameProcessorController::CONFIG_PLUGIN                = "plugin";
+const std::string_view FrameProcessorController::CONFIG_PLUGIN_LOAD           = "load";
+const std::string_view FrameProcessorController::CONFIG_PLUGIN_CONNECT        = "connect";
+const std::string_view FrameProcessorController::CONFIG_PLUGIN_DISCONNECT     = "disconnect";
+const std::string_view FrameProcessorController::CONFIG_PLUGIN_DISCONNECT_ALL = "all";
+const std::string_view FrameProcessorController::CONFIG_PLUGIN_NAME           = "name";
+const std::string_view FrameProcessorController::CONFIG_PLUGIN_INDEX          = "index";
+const std::string_view FrameProcessorController::CONFIG_PLUGIN_LIBRARY        = "library";
+const std::string_view FrameProcessorController::CONFIG_PLUGIN_CONNECTION     = "connection";
 
-const std::string FrameProcessorController::CONFIG_STORE                 = "store";
-const std::string FrameProcessorController::CONFIG_EXECUTE               = "execute";
-const std::string FrameProcessorController::CONFIG_INDEX                 = "index";
-const std::string FrameProcessorController::CONFIG_VALUE                 = "value";
+const std::string_view FrameProcessorController::CONFIG_STORE                 = "store";
+const std::string_view FrameProcessorController::CONFIG_EXECUTE               = "execute";
+const std::string_view FrameProcessorController::CONFIG_INDEX                 = "index";
+const std::string_view FrameProcessorController::CONFIG_VALUE                 = "value";
 
-const std::string FrameProcessorController::COMMAND_KEY                  = "command";
-const std::string FrameProcessorController::SUPPORTED_KEY                = "supported";
+const std::string_view FrameProcessorController::COMMAND_KEY                  = "command";
+const std::string_view FrameProcessorController::SUPPORTED_KEY                = "supported";
 
 const int FrameProcessorController::META_TX_HWM = 10000;
 
@@ -511,11 +511,11 @@ void FrameProcessorController::requestConfiguration(OdinData::IpcMessage& reply)
   LOG4CXX_DEBUG_LEVEL(3, logger_, "Request for configuration made");
 
   // Add local configuration parameter values to the reply
-  reply.set_param(FrameProcessorController::CONFIG_CTRL_ENDPOINT, ctrlChannelEndpoint_);
-  reply.set_param(FrameProcessorController::CONFIG_META_ENDPOINT, metaTxChannelEndpoint_);
-  std::string fr_cnxn_str = FrameProcessorController::CONFIG_FR_SETUP + "/";
-  reply.set_param(fr_cnxn_str + FrameProcessorController::CONFIG_FR_READY, frReadyEndpoint_);
-  reply.set_param(fr_cnxn_str + FrameProcessorController::CONFIG_FR_RELEASE, frReleaseEndpoint_);
+  reply.set_param(std::string{FrameProcessorController::CONFIG_CTRL_ENDPOINT}, ctrlChannelEndpoint_);
+  reply.set_param(std::string{FrameProcessorController::CONFIG_META_ENDPOINT}, metaTxChannelEndpoint_);
+  std::string fr_cnxn_str = std::string{FrameProcessorController::CONFIG_FR_SETUP} + "/";
+  reply.set_param(fr_cnxn_str + std::string{FrameProcessorController::CONFIG_FR_READY}, frReadyEndpoint_);
+  reply.set_param(fr_cnxn_str + std::string{FrameProcessorController::CONFIG_FR_RELEASE}, frReleaseEndpoint_);
 
   // Loop over plugins and request current configuration from each
   std::map<std::string, std::shared_ptr<FrameProcessorPlugin> >::iterator iter;
@@ -584,7 +584,7 @@ void FrameProcessorController::requestCommands(OdinData::IpcMessage& reply)
   for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
     std::vector<std::string> commands = iter->second->requestCommands();
     for (cmd = commands.begin(); cmd != commands.end(); ++cmd) {
-      std::string command_str = iter->first + "/" + FrameProcessorController::SUPPORTED_KEY + "[]";
+      std::string command_str = iter->first + "/" + std::string{FrameProcessorController::SUPPORTED_KEY} + "[]";
       reply.set_param(command_str, *cmd);
     }
   }
@@ -966,7 +966,7 @@ void FrameProcessorController::setupMetaRxInterface()
 {
   try {
     LOG4CXX_DEBUG_LEVEL(1, logger_, "Connecting meta RX channel to endpoint: " << META_RX_INTERFACE);
-    metaRxChannel_.bind(META_RX_INTERFACE.c_str());
+    metaRxChannel_.bind(META_RX_INTERFACE.data());
   }
   catch (zmq::error_t& e) {
     throw std::runtime_error(e.what());
