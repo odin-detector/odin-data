@@ -1199,7 +1199,7 @@ void FrameReceiverController::request_configuration(OdinData::IpcMessage& config
   // Add the decoder configuration parameter block to the reply parameters if the decoder has been
   // configured
   if (frame_decoder_) {
-    std::string decoder_prefix = CONFIG_DECODER_CONFIG + "/";
+    std::string decoder_prefix{std::string(CONFIG_DECODER_CONFIG) + "/"};
     frame_decoder_->request_configuration(decoder_prefix, config_reply);
   }
 

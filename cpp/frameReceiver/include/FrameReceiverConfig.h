@@ -15,6 +15,7 @@
 #include <map>
 #include <vector>
 #include <iostream>
+#include <string_view>
 
 #include "FrameReceiverDefaults.h"
 #include "OdinDataDefaults.h"
@@ -25,25 +26,25 @@ using namespace OdinData;
 namespace FrameReceiver
 {
 
-  const std::string CONFIG_MAX_BUFFER_MEM = "max_buffer_mem";
-  const std::string CONFIG_DECODER_PATH = "decoder_path";
-  const std::string CONFIG_DECODER_TYPE = "decoder_type";
-  const std::string CONFIG_DECODER_CONFIG = "decoder_config";
-  const std::string CONFIG_RX_TYPE = "rx_type";
-  const std::string CONFIG_CTRL_ENDPOINT = "ctrl_endpoint";
-  const std::string CONFIG_RX_ENDPOINT = "rx_endpoint";
-  const std::string CONFIG_FRAME_READY_ENDPOINT = "frame_ready_endpoint";
-  const std::string CONFIG_FRAME_RELEASE_ENDPOINT = "frame_release_endpoint";
-  const std::string CONFIG_RX_PORTS = "rx_ports";
-  const std::string CONFIG_RX_ADDRESS = "rx_address";
-  const std::string CONFIG_RX_RECV_BUFFER_SIZE = "rx_recv_buffer_size";
-  const std::string CONFIG_SHARED_BUFFER_NAME = "shared_buffer_name";
-  const std::string CONFIG_FRAME_TIMEOUT_MS = "frame_timeout_ms";
-  const std::string CONFIG_FRAME_COUNT = "frame_count";
-  const std::string CONFIG_ENABLE_PACKET_LOGGING = "enable_packet_logging";
-  const std::string CONFIG_FORCE_RECONFIG = "force_reconfig";
-  const std::string CONFIG_DEBUG = "debug_level";
-  const std::string CONFIG_FRAMES = "frames";
+  const std::string_view CONFIG_MAX_BUFFER_MEM = "max_buffer_mem";
+  const std::string_view CONFIG_DECODER_PATH = "decoder_path";
+  const std::string_view CONFIG_DECODER_TYPE = "decoder_type";
+  const std::string_view CONFIG_DECODER_CONFIG = "decoder_config";
+  const std::string_view CONFIG_RX_TYPE = "rx_type";
+  const std::string_view CONFIG_CTRL_ENDPOINT = "ctrl_endpoint";
+  const std::string_view CONFIG_RX_ENDPOINT = "rx_endpoint";
+  const std::string_view CONFIG_FRAME_READY_ENDPOINT = "frame_ready_endpoint";
+  const std::string_view CONFIG_FRAME_RELEASE_ENDPOINT = "frame_release_endpoint";
+  const std::string_view CONFIG_RX_PORTS = "rx_ports";
+  const std::string_view CONFIG_RX_ADDRESS = "rx_address";
+  const std::string_view CONFIG_RX_RECV_BUFFER_SIZE = "rx_recv_buffer_size";
+  const std::string_view CONFIG_SHARED_BUFFER_NAME = "shared_buffer_name";
+  const std::string_view CONFIG_FRAME_TIMEOUT_MS = "frame_timeout_ms";
+  const std::string_view CONFIG_FRAME_COUNT = "frame_count";
+  const std::string_view CONFIG_ENABLE_PACKET_LOGGING = "enable_packet_logging";
+  const std::string_view CONFIG_FORCE_RECONFIG = "force_reconfig";
+  const std::string_view CONFIG_DEBUG = "debug_level";
+  const std::string_view CONFIG_FRAMES = "frames";
 
 class FrameReceiverConfig
 {
@@ -174,8 +175,8 @@ public:
     config_msg.set_param<int>(CONFIG_FRAME_COUNT, frame_count_);
 
     std::string decoder_config_path("decoder_config/");
-    config_msg.set_param<int>(decoder_config_path + CONFIG_FRAME_TIMEOUT_MS, frame_timeout_ms_);
-    config_msg.set_param<bool>(decoder_config_path + CONFIG_ENABLE_PACKET_LOGGING,
+    config_msg.set_param<int>(decoder_config_path + std::string(CONFIG_FRAME_TIMEOUT_MS), frame_timeout_ms_);
+    config_msg.set_param<bool>(decoder_config_path + std::string(CONFIG_ENABLE_PACKET_LOGGING),
                                enable_packet_logging_);
 
     config_msg.set_param<bool>(CONFIG_FORCE_RECONFIG, force_reconfig_);

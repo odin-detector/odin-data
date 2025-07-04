@@ -212,12 +212,12 @@ public:
   //! \param param_name - string name of the parameter to set
   //! \param param_value - value of parameter to set
 
-  template<typename T> void set_param(const std::string& param_name, T const& param_value)
+  template<typename T> void set_param(const std::string_view param_name, T const& param_value)
   {
     bool found_array = false;
     std::vector<std::string> names;
     // Split the name by / character
-    std::stringstream ss(param_name);
+    std::stringstream ss(std::string{param_name});
     std::string item;
     while (getline(ss, item, '/')) {
       names.push_back(item);
