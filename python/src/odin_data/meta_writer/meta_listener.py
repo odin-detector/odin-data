@@ -5,16 +5,17 @@ on to a MetaWriter to write. Also handles odin Ipc control messages.
 
 Matt Taylor, Diamond Light Source
 """
+
+import importlib
 import logging
 import re
 from json import loads
-import importlib
 
 import zmq
 from zmq.utils.strtypes import cast_bytes
 
-from odin_data.control.ipc_message import IpcMessage
 import odin_data._version as versioneer
+from odin_data.control.ipc_message import IpcMessage
 from odin_data.util import construct_version_dict
 
 DEFAULT_ACQUISITION_ID = ""
@@ -79,7 +80,6 @@ class MetaListener(object):
             socket.connect(endpoint)
             socket.setsockopt(zmq.SUBSCRIBE, cast_bytes(""))
             data_sockets[endpoint] = socket
-
 
         poller = zmq.Poller()
         poller.register(ctrl_socket, zmq.POLLIN)
@@ -146,7 +146,7 @@ class MetaListener(object):
         self._logger.debug("Header message:\n%s", header)
 
         # Messages are filed according to their starting location.  The endpoint
-        # is unique to each FP application and so this source endpoint of the 
+        # is unique to each FP application and so this source endpoint of the
         # message is stored in the header so that it can be used within the writer.
         header["header"][ENDPOINT] = endpoint
 
