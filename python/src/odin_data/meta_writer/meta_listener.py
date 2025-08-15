@@ -205,6 +205,7 @@ class MetaListener(object):
             "status": self.status,
             "configure": self.configure,
             "request_configuration": self.request_configuration,
+            "request_commands": self.request_commands,
             "request_version": self.version,
             "shutdown": self.shutdown,
         }
@@ -397,6 +398,21 @@ class MetaListener(object):
         reply.set_param("acquisitions", writer_config)
         reply.set_param("data_endpoints", self._data_endpoints)
         reply.set_param("ctrl_port", self._ctrl_port)
+        return reply
+
+    def request_commands(self, request):
+        """Handle a commands request message.
+        This application has no commands
+
+        Args:
+            request(IpcMessage): The request message
+
+        Returns:
+            reply(IpcMessage): Reply containing an empty list
+
+        """
+        self._logger.debug("Handling request commands")
+        reply = self._construct_reply(request.get_msg_val(), request.get_msg_id())
         return reply
 
     def version(self, request):
