@@ -34,7 +34,7 @@ The following classes are used by the FrameProcessor, an a brief description is 
 
 Below is a class diagram for the FrameProcessor.
 
-![classes](https://github.com/odin-detector/odin-data/blob/master/frameProcessor/doc/classes.png "Class Diagram")
+![classes](https://github.com/odin-detector/odin-data/blob/master/cpp/frameProcessor/doc/classes.png "Class Diagram")
 
 ### Startup
 
@@ -302,19 +302,19 @@ python ./file_writer_client.py
 
 Once the application starts you are presented with the introductory screen, which allows you to specify the control endpoint for the FrameProcessor instance that you wish to communicate with.
 
-![intro screen](https://github.com/odin-detector/odin-data/blob/master/frameProcessor/doc/client_intro.png "Client Introduction")
+![intro screen](https://github.com/odin-detector/odin-data/blob/master/cpp/frameProcessor/doc/client_intro.png "Client Introduction")
 
 Once the endpoint has been chosen, navigate to the OK button and press return.  You are then presented with the Main Menu.  From here you can submit many common configurations to the FrameProcessor.  When a configuration is submitted any response from the FrameProcessor is displayed in the "Response:" box.  For example if a configuration is submitted to list the loaded plugins for a freshly executed FrameProcessor the response will be an empty message, see below.
 
-![list plugin](https://github.com/odin-detector/odin-data/blob/master/frameProcessor/doc/client_list.png "Client List")
+![list plugin](https://github.com/odin-detector/odin-data/blob/master/cpp/frameProcessor/doc/client_list.png "Client List")
 
 The FrameProcessor can be setup for the processing of Percival or Excalibur frames for testing purposes.  When selecting Excalibur you are then presented with the option to specify which type of Excalibur frames are to be expected.
 
-![excalibur](https://github.com/odin-detector/odin-data/blob/master/frameProcessor/doc/client_excalibur.png "Client Excalibur")
+![excalibur](https://github.com/odin-detector/odin-data/blob/master/cpp/frameProcessor/doc/client_excalibur.png "Client Excalibur")
 
 Other options available are self explanatory, and most result in either a message being sent to the FrameProcessor, or another screen is presented to allow setting of options before sending the message.  Note that this client application does not perform any checking whatsoever, so for example it is perfectly possible to setup the FrameProcessor for Percival and Excalibur, but this will not end well if you then receive some frames...
 
 Below is an example of sending the status message after selecting an Excalibur configuration.
 
-![status](https://github.com/odin-detector/odin-data/blob/master/frameProcessor/doc/client_status.png "Client Status")
+![status](https://github.com/odin-detector/odin-data/blob/master/cpp/frameProcessor/doc/client_status.png "Client Status")
 
