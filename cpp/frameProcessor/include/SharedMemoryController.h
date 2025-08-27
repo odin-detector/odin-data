@@ -39,7 +39,7 @@ namespace FrameProcessor
 class SharedMemoryController
 {
 public:
-  SharedMemoryController(boost::shared_ptr<OdinData::IpcReactor> reactor, const std::string& rxEndPoint, const std::string& txEndPoint);
+  SharedMemoryController(boost::shared_ptr<OdinData::IpcReactor> reactor, const std::string& rx_endpoint, const std::string& tx_endpoint);
   virtual ~SharedMemoryController();
   void setSharedBufferManager(const std::string& shared_buffer_name);
   void requestSharedBufferConfig(const bool deferred=false);
@@ -59,13 +59,13 @@ private:
   /** IpcReactor pointer, for managing IpcMessage objects */
   boost::shared_ptr<OdinData::IpcReactor> reactor_;
   /** IpcChannel for receiving notifications of new frames */
-  OdinData::IpcChannel             rxChannel_;
+  OdinData::IpcChannel             rx_channel_;
   /** IpcChannel for sending notifications of frame release */
-  OdinData::IpcChannel             txChannel_;
+  OdinData::IpcChannel             tx_channel_;
   /** Shared buffer configured status flag */
-  bool sharedBufferConfigured_;
+  bool shared_buffer_configured_;
   /** Shared buffer config request deferred flag */
-  bool sharedBufferConfigRequestDeferred_;
+  bool shared_buffer_config_request_deferred_;
 
   /** Name of class used in status messages */
   static const std::string SHARED_MEMORY_CONTROLLER_NAME;
