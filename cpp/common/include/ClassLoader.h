@@ -26,8 +26,7 @@ namespace OdinData
  */
 template <typename BaseClass, typename SubClass> std::shared_ptr<BaseClass> maker()
 {
-  std::shared_ptr<BaseClass> ptr = std::shared_ptr<BaseClass>(new SubClass);
-  return ptr;
+  return std::shared_ptr<BaseClass>(new SubClass);
 }
 
 /**

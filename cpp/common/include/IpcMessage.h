@@ -139,7 +139,7 @@ public:
   //! \param param_name - string name of the parameter to return
   //! \return The value of the parameter if present, otherwise an exception is thrown
 
-  template<typename T> T get_param(const std::string_view param_name) const
+  template<typename T> T get_param(const std::string_view& param_name) const
   {
     // Locate the params block and throw exception if absent
     rapidjson::Value::ConstMemberIterator itr = doc_.FindMember("params");
@@ -177,7 +177,7 @@ public:
   //! \param default_value - default value to return if parameter not present in message
   //! \return The value of the parameter if present, otherwise the specified default value
 
-  template<typename T> T get_param(const std::string_view param_name, T const& default_value)
+  template<typename T> T get_param(const std::string_view& param_name, T const& default_value)
   {
     T the_value = default_value;
 
@@ -212,7 +212,7 @@ public:
   //! \param param_name - string name of the parameter to set
   //! \param param_value - value of parameter to set
 
-  template<typename T> void set_param(const std::string_view param_name, T const& param_value)
+  template<typename T> void set_param(const std::string_view& param_name, T const& param_value)
   {
     bool found_array = false;
     std::vector<std::string> names;
@@ -336,7 +336,7 @@ private:
   //! \param param_name - string name of the parameter to set
   //! \param param_value - value of parameter to set
 
-  template<typename T> void internal_set_param(const std::string_view param_name, T const& param_value)
+  template<typename T> void internal_set_param(const std::string_view& param_name, T const& param_value)
   {
     rapidjson::Document::AllocatorType& allocator = doc_.GetAllocator();
 

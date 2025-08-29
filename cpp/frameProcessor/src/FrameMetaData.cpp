@@ -42,7 +42,6 @@ namespace FrameProcessor {
     FrameMetaData::FrameMetaData(FrameMetaData &&frame) : dataset_name_{std::move(frame.dataset_name_)}, acquisition_ID_{std::move(frame.acquisition_ID_)}, dimensions_{std::move(frame.dimensions_)}, parameters_{std::move(frame.parameters_)} {
       frame_number_ = frame.frame_number_;
       data_type_ = frame.data_type_;
-      acquisition_ID_ = frame.acquisition_ID_;
       compression_type_ = frame.compression_type_;
       frame_offset_ = frame.frame_offset_;
       logger = frame.logger;
