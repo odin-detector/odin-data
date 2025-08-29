@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE( ReactorTimerTest )
 {
 
   int max_count = 10;
-  int timer_id = reactor.register_timer(10, max_count, boost::bind(&ReactorTestFixture::timer_handler, this));
+  int timer_id = reactor.register_timer(10, max_count, std::bind(&ReactorTestFixture::timer_handler, this));
   reactor.run();
   BOOST_CHECK_EQUAL(timer_count, max_count);
 }
@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE( ReactorTimerTest )
 BOOST_AUTO_TEST_CASE( ReactorChannelTest )
 {
 
-  reactor.register_channel(recv_channel, boost::bind(&ReactorTestFixture::recv_handler, this));
+  reactor.register_channel(recv_channel, std::bind(&ReactorTestFixture::recv_handler, this));
 
   send_channel.send(test_message);
   reactor.run();
@@ -90,8 +90,8 @@ BOOST_AUTO_TEST_CASE( ReactorChannelTest )
 
 BOOST_AUTO_TEST_CASE( ReactorSendFromTimerTest )
 {
-  reactor.register_channel(recv_channel, boost::bind(&ReactorTestFixture::recv_handler, this));
-  int timer_id = reactor.register_timer(10, 1, boost::bind(&ReactorTestFixture::timed_send_handler, this));
+  reactor.register_channel(recv_channel, std::bind(&ReactorTestFixture::recv_handler, this));
+  int timer_id = reactor.register_timer(10, 1, std::bind(&ReactorTestFixture::timed_send_handler, this));
   reactor.run();
 
   BOOST_CHECK_EQUAL(test_message, received_message);

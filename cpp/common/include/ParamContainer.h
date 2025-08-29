@@ -10,12 +10,9 @@
 
 #include <map>
 #include <vector>
-#include <boost/function.hpp>
-#include <boost/bind/bind.hpp>
+#include <functional>
 
-#ifdef BOOST_HAS_PLACEHOLDERS
-using namespace boost::placeholders;
-#endif
+using namespace std::placeholders;
 
 namespace OdinData
 {
@@ -73,11 +70,11 @@ class ParamContainer
 {
 
     //! Parameter setter function type definition
-    typedef boost::function<void(rapidjson::Value&)> SetterFunc;
+    typedef std::function<void(rapidjson::Value&)> SetterFunc;
     //! Parameter setter function map type definition
     typedef std::map<std::string, SetterFunc> SetterFuncMap;
     //! Parameter getter function type definition
-    typedef boost::function<void(rapidjson::Value&)> GetterFunc;
+    typedef std::function<void(rapidjson::Value&)> GetterFunc;
     //! Parameter getter function map type definition
     typedef std::map<std::string, GetterFunc> GetterFuncMap;
 
@@ -130,13 +127,13 @@ class ParamContainer
         void bind_param(T& param, const std::string& path)
         {
             // Bind the parameter into the setter function map
-            setter_map_[path] = boost::bind(
-                &ParamContainer::param_set<T>, this, boost::ref(param), _1
+            setter_map_[path] = std::bind(
+                &ParamContainer::param_set<T>, this, std::ref(param), _1
             );
 
             // Bind the parameter into the getter function map
-            getter_map_[path] = boost::bind(
-                &ParamContainer::param_get<T>, this, boost::ref(param), _1
+            getter_map_[path] = std::bind(
+                &ParamContainer::param_get<T>, this, std::ref(param), _1
             );
 
         }
@@ -154,13 +151,13 @@ class ParamContainer
         void bind_vector_param(std::vector<T>& param, const std::string& path)
         {
             // Bind the vector parameter into the setter function map
-            setter_map_[path] = boost::bind(
-                &ParamContainer::vector_param_set<T>, this, boost::ref(param), _1
+            setter_map_[path] = std::bind(
+                &ParamContainer::vector_param_set<T>, this, std::ref(param), _1
             );
 
             // Bind the vector parameter into the getter function map
-            getter_map_[path] = boost::bind(
-                &ParamContainer::vector_param_get<T>, this, boost::ref(param), _1
+            getter_map_[path] = std::bind(
+                &ParamContainer::vector_param_get<T>, this, std::ref(param), _1
             );
         }
 
@@ -219,7 +216,7 @@ class ParamContainer
             {
                 T val;
                 set_value<T>(val, *itr);
-                param.push_back(val);
+                param.emplace_back(val);
             }
         }
 

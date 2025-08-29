@@ -28,7 +28,7 @@ public:
     //set up the recieve sockets so we can read data from the plugin's live output.
     recv_socket.subscribe("");
     recv_socket_other.subscribe("");
-    std::string addr = global_socket_addr + boost::to_string(global_socket_port);
+    std::string addr = global_socket_addr + std::to_string(global_socket_port);
     BOOST_TEST_MESSAGE("Address: " + addr);
     recv_socket.connect(addr);
     recv_socket_other.connect("tcp://127.0.0.1:5050");
@@ -43,7 +43,7 @@ public:
       img_16[i] = i+1;
     }
 
-    DATA_TYPES[0] = "unknown"
+    DATA_TYPES[0] = "unknown";
     DATA_TYPES[1]  = "uint8";
     DATA_TYPES[2]  = "uint16";
     DATA_TYPES[3]  = "uint32";
@@ -60,7 +60,7 @@ public:
     );
 
     //create test frame
-    frame = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
+    frame = std::shared_ptr<FrameProcessor::DataBlockFrame>(
             new FrameProcessor::DataBlockFrame(2, frame_meta, static_cast<void*>(img_8), 12));
 
     FrameProcessor::FrameMetaData frame_16_meta(
@@ -68,7 +68,7 @@ public:
     );
 
     //create test frame with uint16 data
-    frame_16 = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
+    frame_16 = std::shared_ptr<FrameProcessor::DataBlockFrame>(
             new FrameProcessor::DataBlockFrame(2, frame_16_meta, static_cast<void*>(img_16), 24));
 
     //create multiple test frames
@@ -79,7 +79,7 @@ public:
       );
       if (i % 4)
         tmp_frame_meta.set_parameter><uint8_t>("test_tag", 0);
-      boost::shared_ptr<FrameProcessor::DataBlockFrame> tmp_frame(
+        std::shared_ptr<FrameProcessor::DataBlockFrame> tmp_frame(
               new FrameProcessor::DataBlockFrame(i, tmp_frame_meta, static_cast<void*>(img_8), 12));
       frames.push_back(tmp_frame);
     }
@@ -110,9 +110,9 @@ public:
 
   }
 
-  boost::shared_ptr<FrameProcessor::Frame> frame;
-  boost::shared_ptr<FrameProcessor::Frame> frame_16;
-  std::vector< boost::shared_ptr<FrameProcessor::Frame> >frames;
+  std::shared_ptr<FrameProcessor::Frame> frame;
+  std::shared_ptr<FrameProcessor::Frame> frame_16;
+  std::vector< std::shared_ptr<FrameProcessor::Frame> >frames;
 
   uint8_t img_8[12];
   uint16_t img_16[12];
@@ -231,10 +231,8 @@ BOOST_AUTO_TEST_CASE(LiveViewDownscaleTest)
   std::vector<std::string> processed_frames;
   while(recv_socket.poll(10))
   {
-    std::string tmp_string = recv_socket.recv();
-    processed_frames.push_back(tmp_string);
+    processed_frames.emplace_back(recv_socket.recv());
     recv_socket.recv_raw(pbuf); //we dont need the data for this test but still need to read from the socket to clear it
-
   }
   BOOST_CHECK_EQUAL(processed_frames.size(), 5);
 
@@ -264,9 +262,9 @@ BOOST_AUTO_TEST_CASE(LiveViewDatasetFilterTest)
   std::vector<std::string> dataset_processed_frames;
   while(recv_socket.poll(10))
   {
-    std::string tmp_string = recv_socket.recv();
-    BOOST_TEST_MESSAGE( "Received Header: " << tmp_string);
-    dataset_processed_frames.push_back(tmp_string);
+    dataset_processed_frames.emplace_back(recv_socket.recv());
+    BOOST_TEST_MESSAGE( "Received Header: " << dataset_processed_frames.back());
+    
     recv_socket.recv_raw(pbuf); //we dont need the data for this test but still need to read from the socket to clear it from the queue
   }
   for(int i = 0; i < dataset_processed_frames.size(); i++)
@@ -328,9 +326,9 @@ BOOST_AUTO_TEST_CASE(LiveViewTagFilterTest)
   std::vector<std::string> tagged_processed_frames;
   while(recv_socket.poll(10))
   {
-    std::string tmp_string = recv_socket.recv();
-    BOOST_TEST_MESSAGE( "Received Header: " << tmp_string);
-    tagged_processed_frames.push_back(tmp_string);
+    tagged_processed_frames.emplace_back(recv_socket.recv());
+    BOOST_TEST_MESSAGE( "Received Header: " << tagged_processed_frames.back());
+    
     recv_socket.recv_raw(pbuf); //we dont need the data for this test but still need to read from the socket to clear it from the queue
   }
   for(int i = 0; i < tagged_processed_frames.size(); i++)

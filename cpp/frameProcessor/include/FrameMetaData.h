@@ -5,8 +5,7 @@
 #include <map>
 #include <vector>
 #include <stdint.h>
-
-#include <boost/any.hpp>
+#include <any>
 #include <log4cxx/logger.h>
 
 #include "FrameProcessorDefinitions.h"
@@ -29,10 +28,16 @@ public:
 
   FrameMetaData();
 
-  FrameMetaData(const FrameMetaData& frame);
+  FrameMetaData(const FrameMetaData& frame); // copy constructor
+
+  FrameMetaData& operator=(const FrameMetaData& frame); // copy assignment operator
+
+  FrameMetaData(FrameMetaData&& frame); // move constructor
+
+  FrameMetaData& operator=(FrameMetaData&& frame); // move operator
 
   /** Return frame parameters */
-  const std::map <std::string, boost::any> &get_parameters() const;
+  const std::map <std::string, std::any> &get_parameters() const;
 
   /** Get frame parameter
    *
@@ -42,7 +47,7 @@ public:
    */
   template<class T>
   T get_parameter(const std::string &parameter_name) const {
-    std::map<std::string, boost::any>::const_iterator iter = parameters_.find(parameter_name);
+    std::map<std::string, std::any>::const_iterator iter = parameters_.find(parameter_name);
     if (iter == parameters_.end())
     {
       LOG4CXX_ERROR(logger, "Unable to find parameter: " + parameter_name);
@@ -50,9 +55,9 @@ public:
     }
     try
     {
-      return boost::any_cast<T>(iter->second);
+      return std::any_cast<T>(iter->second);
     }
-    catch (boost::bad_any_cast &e)
+    catch (std::bad_any_cast &e)
     {
       LOG4CXX_ERROR(logger, "Parameter has wrong type: " + parameter_name);
       throw std::runtime_error("Parameter has wrong type");
@@ -151,7 +156,7 @@ private:
   CompressionType compression_type_;
 
   /** Map of parameters */
-  std::map <std::string, boost::any> parameters_;
+  std::map <std::string, std::any> parameters_;
 
   /** Frame offset */
   int64_t frame_offset_;

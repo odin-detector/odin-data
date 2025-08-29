@@ -17,16 +17,26 @@ namespace FrameProcessor {
             logger_(log4cxx::Logger::getLogger("FP.Frame")) {
     }
 
-/** Copy constructor;
- * implement as shallow copy
+/** Move constructor;
+ * implement as move initialization
  * @param frame - source frame
  */
-    Frame::Frame(const Frame &frame) {
-      meta_data_ = frame.meta_data_;
-      image_offset_ = frame.image_offset_;
-      outer_chunk_size_ = frame.outer_chunk_size_;
-      logger_ = frame.logger_;
-    }
+Frame::Frame(Frame&& frame) : meta_data_{std::move(frame.meta_data_)}, data_size_{frame.data_size_}, image_size_{frame.image_size_},
+ image_offset_{frame.image_offset_}, outer_chunk_size_{frame.outer_chunk_size_}, logger_{std::move(frame.logger_)} {
+}
+
+/** Copy constructor;
+ * implement as deep copy
+ * @param frame - source frame
+ */
+Frame::Frame(const Frame &frame) {
+  meta_data_ = frame.meta_data_;
+  data_size_ = frame.data_size_;
+  image_size_ = frame.image_size_;
+  image_offset_ = frame.image_offset_;
+  outer_chunk_size_ = frame.outer_chunk_size_;
+  logger_ = frame.logger_;
+}
 
 /** Assignment operator;
  * implement as deep copy
@@ -38,6 +48,22 @@ namespace FrameProcessor {
       image_offset_ = frame.image_offset_;
       outer_chunk_size_ = frame.outer_chunk_size_;
       logger_ = frame.logger_;
+      return *this;
+    }
+
+/** Move Assignment operator;
+ * implement with move semantics
+ * @param frame - source frame
+ * @return Frame
+ */
+    Frame &Frame::operator=(Frame&& frame) {
+      meta_data_ = std::move(frame.meta_data_);
+      frame.logger_ = std::move(frame.logger_);
+      data_size_ = frame.data_size_;
+      image_size_ = frame.image_size_;
+      image_offset_ = frame.image_offset_;
+      outer_chunk_size_ = frame.outer_chunk_size_;
+      frame.data_size_ = frame.image_size_ = frame.image_offset_ = frame.outer_chunk_size_ = 0;
       return *this;
     }
 

@@ -3,11 +3,11 @@
 
 #include "Packet.h"
 #include <vector>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 namespace FrameSimulator {
 
-    typedef std::vector<boost::shared_ptr<Packet> > PacketList;
+    typedef std::vector<std::shared_ptr<Packet> > PacketList;
 
     /** UDPFrame class
      *

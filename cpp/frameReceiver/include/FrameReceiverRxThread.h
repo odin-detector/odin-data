@@ -8,7 +8,6 @@
 #ifndef FRAMERECEIVERRXTHREAD_H_
 #define FRAMERECEIVERRXTHREAD_H_
 
-#include <boost/thread.hpp>
 #include <boost/asio.hpp>
 
 #include <log4cxx/logger.h>
@@ -77,7 +76,7 @@ private:
   FrameDecoderPtr        frame_decoder_;       //!< Pointer to the frame decoder
   unsigned int           tick_period_ms_;      //!< Receiver thread tick timer period
 
-  boost::shared_ptr<boost::thread> rx_thread_; //!< Pointer to RX thread
+  std::shared_ptr<std::thread> rx_thread_; //!< Pointer to RX thread
   IpcChannel             rx_channel_;          //!< Channel for communication with the main thread
   std::vector<int>       recv_sockets_;        //!< List of receive socket file descriptors
 

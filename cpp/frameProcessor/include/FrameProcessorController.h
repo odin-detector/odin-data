@@ -8,8 +8,13 @@
 #ifndef TOOLS_FILEWRITER_FrameProcessorController_H_
 #define TOOLS_FILEWRITER_FrameProcessorController_H_
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <log4cxx/logger.h>
+
+#include <any>
+#include <condition_variable>
+#include <thread>
+#include <string_view>
 
 #include "logging.h"
 #include "IpcReactor.h"
@@ -34,7 +39,7 @@ namespace FrameProcessor
  * The class uses an IpcReactor to manage connections and status updates.
  */
 class FrameProcessorController : public IFrameCallback,
-                                 public boost::enable_shared_from_this<FrameProcessorController>
+                                 public std::enable_shared_from_this<FrameProcessorController>
 {
 public:
   FrameProcessorController(unsigned int num_io_threads=OdinData::Defaults::default_io_threads);
@@ -58,63 +63,63 @@ public:
   void shutdown();
 private:
   /** Configuration constant for the meta-data Rx interface **/
-  static const std::string META_RX_INTERFACE;
+  static const std::string_view META_RX_INTERFACE;
 
   /** Configuration constant to shutdown the frame processor **/
-  static const std::string CONFIG_SHUTDOWN;
+  static const std::string_view CONFIG_SHUTDOWN;
 
   /** Configuration constant to inject an End Of Acquisition frame into the plugin chain **/
-  static const std::string CONFIG_EOA;
+  static const std::string_view CONFIG_EOA;
 
   /** Configuration constant to set the debug level of the frame processor **/
-  static const std::string CONFIG_DEBUG;
+  static const std::string_view CONFIG_DEBUG;
 
   /** Configuration constant for name of shared memory storage **/
-  static const std::string CONFIG_FR_SHARED_MEMORY;
+  static const std::string_view CONFIG_FR_SHARED_MEMORY;
   /** Configuration constant for connection string for frame release **/
-  static const std::string CONFIG_FR_RELEASE;
+  static const std::string_view CONFIG_FR_RELEASE;
   /** Configuration constant for connection string for frame ready **/
-  static const std::string CONFIG_FR_READY;
+  static const std::string_view CONFIG_FR_READY;
   /** Configuration constant for executing setup of shared memory interface **/
-  static const std::string CONFIG_FR_SETUP;
+  static const std::string_view CONFIG_FR_SETUP;
 
   /** Configuration constant for control socket endpoint **/
-  static const std::string CONFIG_CTRL_ENDPOINT;
+  static const std::string_view CONFIG_CTRL_ENDPOINT;
   /** Configuration constant for meta data endpoint **/
-  static const std::string CONFIG_META_ENDPOINT;
+  static const std::string_view CONFIG_META_ENDPOINT;
 
   /** Configuration constant for plugin related items **/
-  static const std::string CONFIG_PLUGIN;
+  static const std::string_view CONFIG_PLUGIN;
   /** Configuration constant for listing loaded plugins **/
-  static const std::string CONFIG_PLUGIN_LOAD;
+  static const std::string_view CONFIG_PLUGIN_LOAD;
   /** Configuration constant for connecting plugins **/
-  static const std::string CONFIG_PLUGIN_CONNECT;
+  static const std::string_view CONFIG_PLUGIN_CONNECT;
   /** Configuration constant for disconnecting plugins **/
-  static const std::string CONFIG_PLUGIN_DISCONNECT;
+  static const std::string_view CONFIG_PLUGIN_DISCONNECT;
   /** Configuration keyword for disconnecting all plugins **/
-  static const std::string CONFIG_PLUGIN_DISCONNECT_ALL;
+  static const std::string_view CONFIG_PLUGIN_DISCONNECT_ALL;
   /** Configuration constant for a plugin name **/
-  static const std::string CONFIG_PLUGIN_NAME;
+  static const std::string_view CONFIG_PLUGIN_NAME;
   /** Configuration constant for a plugin index **/
-  static const std::string CONFIG_PLUGIN_INDEX;
+  static const std::string_view CONFIG_PLUGIN_INDEX;
   /** Configuration constant for a plugin external library **/
-  static const std::string CONFIG_PLUGIN_LIBRARY;
+  static const std::string_view CONFIG_PLUGIN_LIBRARY;
   /** Configuration constant for setting up a plugin connection **/
-  static const std::string CONFIG_PLUGIN_CONNECTION;
+  static const std::string_view CONFIG_PLUGIN_CONNECTION;
 
   /** Configuration constant for storing a named configuration object **/
-  static const std::string CONFIG_STORE;
+  static const std::string_view CONFIG_STORE;
   /** Configuration constant for executing a named configuration object **/
-  static const std::string CONFIG_EXECUTE;
+  static const std::string_view CONFIG_EXECUTE;
   /** Configuration constant for the name of a stored configuration object **/
-  static const std::string CONFIG_INDEX;
+  static const std::string_view CONFIG_INDEX;
   /** Configuration constant for the value of a stored configuration object **/
-  static const std::string CONFIG_VALUE;
+  static const std::string_view CONFIG_VALUE;
 
   /** Configuration constant for executing a command **/
-  static const std::string COMMAND_KEY;
+  static const std::string_view COMMAND_KEY;
   /** Configuration constant for obtaining a list of supported commands **/
-  static const std::string SUPPORTED_KEY;
+  static const std::string_view SUPPORTED_KEY;
 
   /** Configuration constant for the meta TX channel high water mark **/
   static const int META_TX_HWM;
@@ -130,18 +135,18 @@ private:
   void closeMetaTxInterface();
   void runIpcService(void);
   void tickTimer(void);
-  void callback(boost::shared_ptr<Frame> frame);
+  void callback(std::shared_ptr<Frame> frame);
 
   /** Pointer to the logging facility */
   log4cxx::LoggerPtr                                              logger_;
   /** Pointer to the shared memory controller instance for this process */
-  boost::shared_ptr<SharedMemoryController>                       sharedMemController_;
+  std::shared_ptr<SharedMemoryController>                       sharedMemController_;
   /** Map of plugins loaded, indexed by plugin index */
-  std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> > plugins_;
+  std::map<std::string, std::shared_ptr<FrameProcessorPlugin> > plugins_;
   /** Map of stored configuration objects */
   std::map<std::string, std::string>                              stored_configs_;
   /** Condition for exiting this file writing process */
-  boost::condition_variable                                       exitCondition_;
+  std::condition_variable                                       exitCondition_;
   /** Frames to write before shutting down - 0 to disable shutdown */
   int                                                             shutdownFrameCount;
   /** Total frames processed */
@@ -149,7 +154,7 @@ private:
   /** Master frame specifier - Frame to include in count of total frames processed */
   std::string                                                     masterFrame;
   /** Mutex used for locking the exitCondition */
-  boost::mutex                                                    exitMutex_;
+  std::mutex                                                    exitMutex_;
   /** Used to check for Ipc tick timer termination */
   bool                                                            runThread_;
   /** Is the main thread running */
@@ -161,11 +166,11 @@ private:
   /** Have we successfully shutdown */
   bool                                                            shutdown_;
   /** Main thread used for control message handling */
-  boost::thread                                                   ctrlThread_;
+  std::thread                                                   ctrlThread_;
   /** Store for any messages occurring during thread initialisation */
   std::string                                                     threadInitMsg_;
   /** Pointer to the IpcReactor for incoming frame handling */
-  boost::shared_ptr<OdinData::IpcReactor>                         reactor_;
+  std::shared_ptr<OdinData::IpcReactor>                         reactor_;
   /** End point for control messages */
   std::string                                                     ctrlChannelEndpoint_;
   /** ZMQ context for IPC channels */

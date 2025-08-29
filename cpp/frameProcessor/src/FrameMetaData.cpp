@@ -39,10 +39,46 @@ namespace FrameProcessor {
       logger = frame.logger;
     }
 
+    FrameMetaData::FrameMetaData(FrameMetaData &&frame) : dataset_name_{std::move(frame.dataset_name_)}, acquisition_ID_{std::move(frame.acquisition_ID_)}, dimensions_{std::move(frame.dimensions_)}, parameters_{std::move(frame.parameters_)} {
+      frame_number_ = frame.frame_number_;
+      data_type_ = frame.data_type_;
+      compression_type_ = frame.compression_type_;
+      frame_offset_ = frame.frame_offset_;
+      logger = frame.logger;
+    }
+
+    FrameMetaData& FrameMetaData::operator=(FrameMetaData &&frame){
+      dataset_name_ = std::move(frame.dataset_name_);
+      dimensions_ = std::move(frame.dimensions_);
+      parameters_ = std::move(frame.parameters_);
+      acquisition_ID_ = std::move(frame.acquisition_ID_);
+      frame_number_ = frame.frame_number_;
+      data_type_ = frame.data_type_;
+      
+      compression_type_ = frame.compression_type_;
+      frame_offset_ = frame.frame_offset_;
+      logger = frame.logger;
+      return *this;
+    }
+
+    FrameMetaData& FrameMetaData::operator=(const FrameMetaData& frame){
+      dataset_name_ = frame.dataset_name_;
+      dimensions_ = frame.dimensions_;
+      parameters_ = frame.parameters_;
+      frame_number_ = frame.frame_number_;
+      data_type_ = frame.data_type_;
+      acquisition_ID_ = frame.acquisition_ID_;
+      compression_type_ = frame.compression_type_;
+      frame_offset_ = frame.frame_offset_;
+      logger = frame.logger;
+      return *this;
+    }
+
+
     /** Get frame parameters
-     * @return std::map <std::string, boost::any>  map
+     * @return std::map <std::string, std::any>  map
      */
-    const std::map <std::string, boost::any> &FrameMetaData::get_parameters() const {
+    const std::map <std::string, std::any> &FrameMetaData::get_parameters() const {
       return this->parameters_;
     };
 

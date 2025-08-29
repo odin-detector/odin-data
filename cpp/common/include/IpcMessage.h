@@ -14,7 +14,8 @@
 #include <algorithm>
 #include <map>
 #include <sstream>
-#include <time.h>
+#include <ctime>
+#include <string_view>
 
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "boost/bimap.hpp"
@@ -138,7 +139,7 @@ public:
   //! \param param_name - string name of the parameter to return
   //! \return The value of the parameter if present, otherwise an exception is thrown
 
-  template<typename T> T get_param(std::string const& param_name) const
+  template<typename T> T get_param(const std::string_view& param_name) const
   {
     // Locate the params block and throw exception if absent
     rapidjson::Value::ConstMemberIterator itr = doc_.FindMember("params");
@@ -147,16 +148,15 @@ public:
       throw IpcMessageException("Missing params block in message");
     }
 
-    if (param_name.find("/") != param_name.npos) {
-      std::string nodeName = param_name.substr(0, param_name.find("/"));
-      std::string subParam = param_name.substr(param_name.find("/") + 1, param_name.npos);
-
-      OdinData::IpcMessage node(this->get_param<const rapidjson::Value &>(nodeName));
+    if (std::size_t i{param_name.find("/")}; i != param_name.npos) {
+      std::string nodeName{param_name.substr(0, i)};
+      std::string subParam{param_name.substr(i + 1, param_name.npos)};
+      OdinData::IpcMessage node(this->get_param<const rapidjson::Value &>(nodeName.data()));
       return node.get_param<T>(subParam);
     }
     else {
       // Locate parameter within block and throw exception if absent, otherwise return value
-      rapidjson::Value::ConstMemberIterator param_itr = itr->value.FindMember(param_name.c_str());
+      rapidjson::Value::ConstMemberIterator param_itr = itr->value.FindMember(param_name.data());
       if (param_itr == itr->value.MemberEnd())
       {
         std::stringstream ss;
@@ -177,7 +177,7 @@ public:
   //! \param default_value - default value to return if parameter not present in message
   //! \return The value of the parameter if present, otherwise the specified default value
 
-  template<typename T> T get_param(std::string const& param_name, T const& default_value)
+  template<typename T> T get_param(const std::string_view& param_name, T const& default_value)
   {
     T the_value = default_value;
 
@@ -185,7 +185,7 @@ public:
     rapidjson::Value::ConstMemberIterator itr = doc_.FindMember("params");
     if (itr != doc_.MemberEnd())
     {
-      rapidjson::Value::ConstMemberIterator param_itr = itr->value.FindMember(param_name.c_str());
+      rapidjson::Value::ConstMemberIterator param_itr = itr->value.FindMember(param_name.data());
       if (param_itr != itr->value.MemberEnd())
       {
         the_value = get_value<T>(param_itr);
@@ -201,7 +201,7 @@ public:
   std::vector<std::string> get_param_names() const;
 
   //! Returns true if the parameter is found within the message
-  bool has_param(const std::string& param_name) const;
+  bool has_param(const std::string_view param_name) const;
 
   //! Sets the value of a named parameter in the message.
   //!
@@ -212,12 +212,12 @@ public:
   //! \param param_name - string name of the parameter to set
   //! \param param_value - value of parameter to set
 
-  template<typename T> void set_param(const std::string& param_name, T const& param_value)
+  template<typename T> void set_param(const std::string_view& param_name, T const& param_value)
   {
     bool found_array = false;
     std::vector<std::string> names;
     // Split the name by / character
-    std::stringstream ss(param_name);
+    std::stringstream ss(std::string{param_name});
     std::string item;
     while (getline(ss, item, '/')) {
       names.push_back(item);
@@ -336,7 +336,7 @@ private:
   //! \param param_name - string name of the parameter to set
   //! \param param_value - value of parameter to set
 
-  template<typename T> void internal_set_param(std::string const& param_name, T const& param_value)
+  template<typename T> void internal_set_param(const std::string_view& param_name, T const& param_value)
   {
     rapidjson::Document::AllocatorType& allocator = doc_.GetAllocator();
 
@@ -352,10 +352,10 @@ private:
 
     // Now search through the params block for the parameter, creating it if missing, and set
     // the value appropriately
-    rapidjson::Value::MemberIterator param_itr = params.FindMember(param_name.c_str());
+    rapidjson::Value::MemberIterator param_itr = params.FindMember(param_name.data());
     if (param_itr == params.MemberEnd())
     {
-      rapidjson::Value param_name_val(param_name.c_str(), allocator);
+      rapidjson::Value param_name_val(param_name.data(), allocator);
       rapidjson::Value param_value_val;
       set_value(param_value_val, param_value);
       params.AddMember(param_name_val, param_value_val, allocator);

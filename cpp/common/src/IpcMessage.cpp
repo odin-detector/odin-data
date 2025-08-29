@@ -195,8 +195,7 @@ std::vector<std::string> IpcMessage::get_param_names() const
   rapidjson::Value::ConstMemberIterator itr = doc_.FindMember("params");
   for (rapidjson::Value::ConstMemberIterator param_itr = itr->value.MemberBegin();
       param_itr != itr->value.MemberEnd(); ++param_itr){
-    std::string param_name(param_itr->name.GetString());
-    names.push_back(param_name);
+    names.emplace_back(param_itr->name.GetString());
   }
   return names;
 }
@@ -209,7 +208,7 @@ std::vector<std::string> IpcMessage::get_param_names() const
 //! \param param_name - string name of the parameter to return
 //! \return true if the parameter is present, otherwise false
 
-bool IpcMessage::has_param(const std::string& param_name) const
+bool IpcMessage::has_param(const std::string_view param_name) const
 {
   bool param_found = true;
 
@@ -224,11 +223,11 @@ bool IpcMessage::has_param(const std::string& param_name) const
   {
     if (param_name.find("/") != param_name.npos)
     {
-      std::string nodeName = param_name.substr(0, param_name.find("/"));
-      std::string subParam = param_name.substr(param_name.find("/") + 1, param_name.npos);
+      std::string nodeName{param_name.substr(0, param_name.find("/"))};
+      std::string subParam{param_name.substr(param_name.find("/") + 1, param_name.npos)};
       if (this->has_param(nodeName))
       {
-        OdinData::IpcMessage node(this->get_param<const rapidjson::Value &>(nodeName));
+        OdinData::IpcMessage node(this->get_param<const rapidjson::Value &>(nodeName.c_str()));
         param_found = node.has_param(subParam);
       }
       else
@@ -238,7 +237,7 @@ bool IpcMessage::has_param(const std::string& param_name) const
     } else
     {
       // Attempt to locate parameter within block
-      rapidjson::Value::ConstMemberIterator param_itr = itr->value.FindMember(param_name.c_str());
+      rapidjson::Value::ConstMemberIterator param_itr = itr->value.FindMember(param_name.data());
       if (param_itr == itr->value.MemberEnd())
       {
         // Couldn't find the parameter
