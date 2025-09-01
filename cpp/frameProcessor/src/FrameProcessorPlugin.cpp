@@ -168,6 +168,30 @@ void FrameProcessorPlugin::requestConfiguration(OdinData::IpcMessage& reply)
   // Default method simply does nothing
 }
 
+/** Request the plugin's Metadata configuration.
+ *
+ * In this abstract class the requestMetadata method doesn't 
+ * perform any actions, this should be overridden by subclasses.
+ *
+ * \param[out] reply - Response IpcMessage with current configuration.
+ */
+void FrameProcessorPlugin::requestMetadata(OdinData::IpcMessage& reply)
+{
+  // Default method simply does nothing
+}
+
+/** Request the plugin's Metadata configuration.
+ *
+ * In this abstract class the requestStatusMetadata method doesn't 
+ * perform any actions, this should be overridden by subclasses.
+ *
+ * \param[out] reply - Response IpcMessage with current configuration.
+ */
+void FrameProcessorPlugin::requestStatusMetadata(OdinData::IpcMessage& reply)
+{
+  // Default method simply does nothing
+}
+
 /** Execute a command within the plugin.
  *
  * In this abstract class the command method doesn't perform any
