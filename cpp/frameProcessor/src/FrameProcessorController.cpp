@@ -304,6 +304,8 @@ void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply)
     reply.set_param("plugins/names[]", iter->first);
     // Request status for the plugin
     iter->second->status(reply);
+    // Request status metadata for the plugin
+    iter->second->requestStatusMetadata(reply);
     // Add performance statistics
     iter->second->add_performance_stats(reply);
     // Read error level
@@ -521,6 +523,7 @@ void FrameProcessorController::requestConfiguration(OdinData::IpcMessage& reply)
   std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
   for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
     iter->second->requestConfiguration(reply);
+    iter->second->requestMetadata(reply);
   }
 }
 
