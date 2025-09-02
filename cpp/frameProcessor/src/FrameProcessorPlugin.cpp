@@ -175,7 +175,7 @@ void FrameProcessorPlugin::requestConfiguration(OdinData::IpcMessage& reply)
  *
  * \param[out] reply - Response IpcMessage with current configuration.
  */
-void FrameProcessorPlugin::requestMetadata(OdinData::IpcMessage& reply)
+void FrameProcessorPlugin::requestConfigurationMetadata(OdinData::IpcMessage& reply)
 {
   // Default method simply does nothing
 }

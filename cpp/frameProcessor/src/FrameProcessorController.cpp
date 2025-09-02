@@ -523,7 +523,7 @@ void FrameProcessorController::requestConfiguration(OdinData::IpcMessage& reply)
   std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
   for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
     iter->second->requestConfiguration(reply);
-    iter->second->requestMetadata(reply);
+    iter->second->requestConfigurationMetadata(reply);
   }
 }
 
