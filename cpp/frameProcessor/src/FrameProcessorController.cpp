@@ -124,61 +124,60 @@ void FrameProcessorController::handleCtrlChannel()
     msg_id = ctrlMsg.get_msg_id();
     replyMsg.set_msg_id(msg_id);
 
-    if ((ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) &&
-        (ctrlMsg.get_msg_val()  == OdinData::IpcMessage::MsgValCmdConfigure)) {
+    if(ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) {
       replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
-      this->configure(ctrlMsg, replyMsg);
-      LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (configure): "
-                             << replyMsg.encode());
-    }
-    else if ((ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) &&
-             (ctrlMsg.get_msg_val() == OdinData::IpcMessage::MsgValCmdRequestConfiguration)) {
-        replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
-        this->requestConfiguration(replyMsg);
-        LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (request configuration): "
-                               << replyMsg.encode());
-    }
-    else if ((ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) &&
-        (ctrlMsg.get_msg_val()  == OdinData::IpcMessage::MsgValCmdExecute)) {
-      replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
-      this->execute(ctrlMsg, replyMsg);
-      LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (command): "
-                             << replyMsg.encode());
-    }
-    else if ((ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) &&
-             (ctrlMsg.get_msg_val() == OdinData::IpcMessage::MsgValCmdRequestCommands)) {
-        replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
-        this->requestCommands(replyMsg);
-        LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (request commands): "
-                               << replyMsg.encode());
-    }
-    else if ((ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) &&
-             (ctrlMsg.get_msg_val() == OdinData::IpcMessage::MsgValCmdStatus)) {
-      replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
-      this->provideStatus(replyMsg);
-      LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (status): "
-                             << replyMsg.encode());
-    }
-    else if ((ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) &&
-             (ctrlMsg.get_msg_val() == OdinData::IpcMessage::MsgValCmdRequestVersion)) {
-      replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
-      this->provideVersion(replyMsg);
-      LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (request version): "
-                             << replyMsg.encode());
-    }
-    else if ((ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) &&
-             (ctrlMsg.get_msg_val() == OdinData::IpcMessage::MsgValCmdResetStatistics)) {
-      replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
-      this->resetStatistics(replyMsg);
-      LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (reset statistics): "
-              << replyMsg.encode());
-    }
-    else if ((ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) &&
-             (ctrlMsg.get_msg_val() == OdinData::IpcMessage::MsgValCmdShutdown)) {
-      replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
-      exitCondition_.notify_all();
-      LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (shutdown): "
-              << replyMsg.encode());
+      OdinData::IpcMessage::MsgVal mval = ctrlMsg.get_msg_val();
+      switch (mval) { 
+        case OdinData::IpcMessage::MsgValCmdConfigure: {
+          this->configure(ctrlMsg, replyMsg);
+          LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (configure): "
+                                 << replyMsg.encode());
+          break;
+        }
+          
+        case OdinData::IpcMessage::MsgValCmdRequestConfiguration: {
+          this->requestConfiguration(replyMsg);
+          LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (request configuration): "
+                                 << replyMsg.encode());
+          break;
+        }
+        case OdinData::IpcMessage::MsgValCmdExecute: {
+          this->execute(ctrlMsg, replyMsg);
+          LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (command): "
+                                 << replyMsg.encode());
+          break;
+        }
+        case OdinData::IpcMessage::MsgValCmdRequestCommands: {
+          this->requestCommands(replyMsg);
+          LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (request commands): "
+                                 << replyMsg.encode());
+          break;
+        }
+        case OdinData::IpcMessage::MsgValCmdStatus: {
+          this->provideStatus(replyMsg);
+          LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (status): "
+                                 << replyMsg.encode());
+          break;
+        }
+        case OdinData::IpcMessage::MsgValCmdRequestVersion: {
+          this->provideVersion(replyMsg);
+          LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (request version): "
+                                 << replyMsg.encode());
+          break;
+        }
+        case OdinData::IpcMessage::MsgValCmdResetStatistics: {
+          this->resetStatistics(replyMsg);
+          LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (reset statistics): "
+                                 << replyMsg.encode());
+          break;
+        }
+        case OdinData::IpcMessage::MsgValCmdShutdown: {
+          exitCondition_.notify_all();
+          LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (shutdown): "
+                                 << replyMsg.encode());
+          break;
+        }
+      };
     }
     else {
       LOG4CXX_ERROR(logger_, "Control thread got unexpected message: " << ctrlMsgEncoded);
