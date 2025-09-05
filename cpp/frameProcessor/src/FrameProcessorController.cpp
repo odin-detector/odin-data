@@ -136,7 +136,7 @@ void FrameProcessorController::handleCtrlChannel()
         }
           
         case OdinData::IpcMessage::MsgValCmdRequestConfiguration: {
-          this->requestConfiguration(replyMsg);
+          this->requestConfiguration(ctrlMsg, replyMsg);
           LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (request configuration): "
                                  << replyMsg.encode());
           break;
@@ -154,7 +154,7 @@ void FrameProcessorController::handleCtrlChannel()
           break;
         }
         case OdinData::IpcMessage::MsgValCmdStatus: {
-          this->provideStatus(replyMsg);
+          this->provideStatus(ctrlMsg, replyMsg);
           LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (status): "
                                  << replyMsg.encode());
           break;
@@ -287,7 +287,7 @@ void FrameProcessorController::callback(boost::shared_ptr<Frame> frame) {
  *
  * @param[in,out] reply - response IPC message to be populated with status parameters
  */
-void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply)
+void FrameProcessorController::provideStatus(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
   // Error messages
   std::vector<std::string> error_messages, warning_messages;
@@ -297,14 +297,19 @@ void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply)
     sharedMemController_->status(reply);
   }
 
-  // Loop over plugins, list names and request status from each
   std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
+  if(config.has_param("metadata") && config.get_param<bool>("metadata") == true){
+    for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
+      // Request status metadata for the plugin
+      iter->second->requestStatusMetadata(reply);
+    }
+  }
+
+  // Loop over plugins, list names and request status from each
   for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
     reply.set_param("plugins/names[]", iter->first);
     // Request status for the plugin
     iter->second->status(reply);
-    // Request status metadata for the plugin
-    iter->second->requestStatusMetadata(reply);
     // Add performance statistics
     iter->second->add_performance_stats(reply);
     // Read error level
@@ -507,7 +512,7 @@ void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData:
  *
  * \param[out] reply - Response IpcMessage with the current configuration.
  */
-void FrameProcessorController::requestConfiguration(OdinData::IpcMessage& reply)
+void FrameProcessorController::requestConfiguration(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
   LOG4CXX_DEBUG_LEVEL(3, logger_, "Request for configuration made");
 
@@ -522,7 +527,11 @@ void FrameProcessorController::requestConfiguration(OdinData::IpcMessage& reply)
   std::map<std::string, boost::shared_ptr<FrameProcessorPlugin> >::iterator iter;
   for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
     iter->second->requestConfiguration(reply);
-    iter->second->requestConfigurationMetadata(reply);
+  }
+  if(config.has_param("metadata") && config.get_param<bool>("metadata") == true) {  
+    for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
+      iter->second->requestConfigurationMetadata(reply);
+    }
   }
 }
 

@@ -165,31 +165,25 @@ void FrameProcessorPlugin::configure(OdinData::IpcMessage& config, OdinData::Ipc
  */
 void FrameProcessorPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
-  // Default method simply does nothing
+  // Default method TO-DO: Implement Famous
 }
 
 /** Request the plugin's Metadata configuration.
  *
- * In this abstract class the requestMetadata method doesn't 
- * perform any actions, this should be overridden by subclasses.
- *
- * \param[out] reply - Response IpcMessage with current configuration.
+ * \param[out] reply - Response IpcMessage with current configuration metadata.
  */
 void FrameProcessorPlugin::requestConfigurationMetadata(OdinData::IpcMessage& reply)
 {
-  // Default method simply does nothing
+  // Default method
 }
 
-/** Request the plugin's Metadata configuration.
+/** Request the plugin's Status Metadata configuration.
  *
- * In this abstract class the requestStatusMetadata method doesn't 
- * perform any actions, this should be overridden by subclasses.
- *
- * \param[out] reply - Response IpcMessage with current configuration.
+ * \param[out] reply - Response IpcMessage with current status metadata.
  */
 void FrameProcessorPlugin::requestStatusMetadata(OdinData::IpcMessage& reply)
 {
-  // Default method simply does nothing
+  // Default method TO-DO: Implement Famous
 }
 
 /** Execute a command within the plugin.
