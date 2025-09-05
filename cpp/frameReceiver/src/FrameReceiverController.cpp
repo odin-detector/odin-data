@@ -454,7 +454,7 @@ void FrameReceiverController::configure_frame_decoder(OdinData::IpcMessage& conf
   // Check if the last character is '/', if not append it
   if (*decoder_path.rbegin() != '/')
   {
-    decoder_path += "/";
+    decoder_path += '/';
   }
 
   // Resolve the decoder type if specified in the config message

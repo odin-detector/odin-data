@@ -314,13 +314,13 @@ void BloscPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& 
  */
 void BloscPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
-  reply.set_param(this->get_name() + "/" + BloscPlugin::CONFIG_BLOSC_COMPRESSOR,
+  reply.set_param(this->get_name() + '/' + BloscPlugin::CONFIG_BLOSC_COMPRESSOR,
                   this->commanded_compression_settings_.blosc_compressor);
-  reply.set_param(this->get_name() + "/" + BloscPlugin::CONFIG_BLOSC_THREADS,
+  reply.set_param(this->get_name() + '/' + BloscPlugin::CONFIG_BLOSC_THREADS,
                   this->commanded_compression_settings_.threads);
-  reply.set_param(this->get_name() + "/" + BloscPlugin::CONFIG_BLOSC_SHUFFLE,
+  reply.set_param(this->get_name() + '/' + BloscPlugin::CONFIG_BLOSC_SHUFFLE,
                   this->commanded_compression_settings_.shuffle);
-  reply.set_param(this->get_name() + "/" + BloscPlugin::CONFIG_BLOSC_LEVEL,
+  reply.set_param(this->get_name() + '/' + BloscPlugin::CONFIG_BLOSC_LEVEL,
                   this->commanded_compression_settings_.compression_level);
 }
 

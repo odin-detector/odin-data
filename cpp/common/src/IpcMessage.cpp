@@ -414,7 +414,7 @@ const char* IpcMessage::encode_params(const std::string& param_path)
   std::string path = "/params";
   if (!param_path.empty())
   {
-    path = path + "/" + param_path;
+    path = path + '/' + param_path;
   }
 
   // Resolve the pointer to the appropriate location in the parameters
@@ -441,7 +441,7 @@ void IpcMessage::copy_params(rapidjson::Value& param_obj, const std::string& par
   std::string path = "/params";
   if (!param_path.empty())
   {
-    path = path + "/" + param_path;
+    path = path + '/' + param_path;
   }
 
   const rapidjson::Value* param_ptr = rapidjson::Pointer(path.c_str()).Get(doc_);

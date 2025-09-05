@@ -112,15 +112,15 @@ namespace FrameProcessor {
    */
   void KafkaProducerPlugin::requestConfiguration(OdinData::IpcMessage &reply)
   {
-    reply.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_SERVERS,
+    reply.set_param(get_name() + '/' + KafkaProducerPlugin::CONFIG_SERVERS,
                     this->servers_);
-    reply.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_TOPIC,
+    reply.set_param(get_name() + '/' + KafkaProducerPlugin::CONFIG_TOPIC,
                     this->topic_name_);
-    reply.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_PARTITION,
+    reply.set_param(get_name() + '/' + KafkaProducerPlugin::CONFIG_PARTITION,
                     this->partition_);
-    reply.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_DATASET,
+    reply.set_param(get_name() + '/' + KafkaProducerPlugin::CONFIG_DATASET,
                     this->dataset_name_);
-    reply.set_param(get_name() + "/" + KafkaProducerPlugin::CONFIG_INCLUDE_PARAMETERS,
+    reply.set_param(get_name() + '/' + KafkaProducerPlugin::CONFIG_INCLUDE_PARAMETERS,
                     this->include_parameters_);
   }
 
@@ -134,11 +134,11 @@ namespace FrameProcessor {
     // Make sure statistics are updated
     poll_delivery_message_report_queue();
     /* Number of sent frames */
-    status.set_param(get_name() + "/" + "sent", frames_sent_);
+    status.set_param(get_name() + '/' + "sent", frames_sent_);
     /* Number of lost frames */
-    status.set_param(get_name() + "/" + "lost", frames_lost_);
+    status.set_param(get_name() + '/' + "lost", frames_lost_);
     /* Number of acknowledged frames */
-    status.set_param(get_name() + "/" + "ack", frames_ack_);
+    status.set_param(get_name() + '/' + "ack", frames_ack_);
   }
 
   /**
