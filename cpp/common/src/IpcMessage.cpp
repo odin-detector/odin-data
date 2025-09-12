@@ -174,7 +174,7 @@ void IpcMessage::update(const rapidjson::Value& param_val, std::string param_pre
           std::string param_path = itr->name.GetString();
           if (!param_prefix.empty())
           {
-            param_path = param_prefix + "/" + param_path;
+            param_path = param_prefix + '/' + param_path;
           }
           this->update(itr->value, param_path);
       }
@@ -222,10 +222,10 @@ bool IpcMessage::has_param(const std::string& param_name) const
   }
   else
   {
-    if (param_name.find("/") != param_name.npos)
+    if (param_name.find('/') != param_name.npos)
     {
-      std::string nodeName = param_name.substr(0, param_name.find("/"));
-      std::string subParam = param_name.substr(param_name.find("/") + 1, param_name.npos);
+      std::string nodeName = param_name.substr(0, param_name.find('/'));
+      std::string subParam = param_name.substr(param_name.find('/') + 1, param_name.npos);
       if (this->has_param(nodeName))
       {
         OdinData::IpcMessage node(this->get_param<const rapidjson::Value &>(nodeName));
@@ -414,7 +414,7 @@ const char* IpcMessage::encode_params(const std::string& param_path)
   std::string path = "/params";
   if (!param_path.empty())
   {
-    path = path + "/" + param_path;
+    path = path + '/' + param_path;
   }
 
   // Resolve the pointer to the appropriate location in the parameters
@@ -441,7 +441,7 @@ void IpcMessage::copy_params(rapidjson::Value& param_obj, const std::string& par
   std::string path = "/params";
   if (!param_path.empty())
   {
-    path = path + "/" + param_path;
+    path = path + '/' + param_path;
   }
 
   const rapidjson::Value* param_ptr = rapidjson::Pointer(path.c_str()).Get(doc_);

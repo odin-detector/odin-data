@@ -144,14 +144,14 @@ void ParameterAdjustmentPlugin::requestConfiguration(OdinData::IpcMessage& reply
 {
   std::map<std::string, int64_t>::iterator iter;
   for (iter = parameter_adjustments_.begin(); iter != parameter_adjustments_.end(); ++iter) {
-    reply.set_param(get_name() + "/" + PARAMETER_NAME_CONFIG + "/" + iter->first + "/"
+    reply.set_param(get_name() + '/' + PARAMETER_NAME_CONFIG + '/' + iter->first + '/'
         + PARAMETER_ADJUSTMENT_CONFIG, (int64_t)iter->second);
   }
 
   std::map<std::string, std::string>::iterator input_iter;
   for (input_iter = parameter_inputs_.begin(); input_iter != parameter_inputs_.end(); ++input_iter) {
-    reply.set_param(get_name() + "/" + PARAMETER_NAME_CONFIG + "/" + input_iter->first
-        + "/" + PARAMETER_INPUT_CONFIG, input_iter->second);
+    reply.set_param(get_name() + '/' + PARAMETER_NAME_CONFIG + '/' + input_iter->first
+        + '/' + PARAMETER_INPUT_CONFIG, input_iter->second);
   }
 }
 

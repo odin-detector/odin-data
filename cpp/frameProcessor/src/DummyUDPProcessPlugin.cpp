@@ -131,7 +131,7 @@ namespace FrameProcessor
   void DummyUDPProcessPlugin::requestConfiguration(OdinData::IpcMessage& reply)
   {
 
-    std::string base_str = get_name() + "/";
+    std::string base_str = get_name() + '/';
     reply.set_param(base_str + DummyUDPProcessPlugin::CONFIG_IMAGE_WIDTH, image_width_);
     reply.set_param(base_str + DummyUDPProcessPlugin::CONFIG_IMAGE_HEIGHT, image_height_);
     reply.set_param(base_str + DummyUDPProcessPlugin::CONFIG_COPY_FRAME, copy_frame_);
@@ -181,7 +181,7 @@ namespace FrameProcessor
    */
   void DummyUDPProcessPlugin::status(OdinData::IpcMessage& status)
   {
-    std::string base_str = get_name() + "/";
+    std::string base_str = get_name() + '/';
     status.set_param(base_str + "packets_lost", packets_lost_);
   }
 
