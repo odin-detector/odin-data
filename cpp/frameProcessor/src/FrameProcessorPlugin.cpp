@@ -165,25 +165,39 @@ void FrameProcessorPlugin::configure(OdinData::IpcMessage& config, OdinData::Ipc
  */
 void FrameProcessorPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
-  // Default method TO-DO: Implement Famous
+  // Default method
+}
+
+/** Request the plugin's Metadata configuration.
+ *
+ * \returns reference to vector of ParamMetadata structs specific to each plugin.
+ */
+std::vector<OdinData::ParamMetadata>& FrameProcessorPlugin::get_plugin_metadata() const
+{
+  // Default method simply does nothing!
 }
 
 /** Request the plugin's Metadata configuration.
  *
  * \param[out] reply - Response IpcMessage with current configuration metadata.
  */
-void FrameProcessorPlugin::requestConfigurationMetadata(OdinData::IpcMessage& reply)
+void FrameProcessorPlugin::requestConfigurationMetadata(OdinData::IpcMessage& reply) const
 {
   // Default method
+  auto end = get_plugin_metadata().end();
+  for(auto itr = get_plugin_metadata().begin(); itr != end; ++itr){
+    add_metadata(reply, *itr);
+  }
 }
 
 /** Request the plugin's Status Metadata configuration.
  *
  * \param[out] reply - Response IpcMessage with current status metadata.
  */
-void FrameProcessorPlugin::requestStatusMetadata(OdinData::IpcMessage& reply)
+void FrameProcessorPlugin::requestStatusMetadata(OdinData::IpcMessage& reply) const
 {
   // Default method TO-DO: Implement Famous
+  
 }
 
 /** Execute a command within the plugin.

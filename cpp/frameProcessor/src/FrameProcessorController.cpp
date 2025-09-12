@@ -134,7 +134,6 @@ void FrameProcessorController::handleCtrlChannel()
                                  << replyMsg.encode());
           break;
         }
-          
         case OdinData::IpcMessage::MsgValCmdRequestConfiguration: {
           bool metadata = ctrlMsg.has_param("metadata") && (ctrlMsg.get_param<bool>("metadata") == true);
           this->requestConfiguration(replyMsg, metadata);
