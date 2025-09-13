@@ -45,8 +45,8 @@ public:
   std::vector<std::string> get_warnings();
   virtual void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   virtual void requestConfiguration(OdinData::IpcMessage& reply);
-  void requestConfigurationMetadata(OdinData::IpcMessage& reply);
-  void requestStatusMetadata(OdinData::IpcMessage& reply);
+  inline void requestConfigurationMetadata(OdinData::IpcMessage& reply) const;
+  inline void requestStatusMetadata(OdinData::IpcMessage& reply) const;
   virtual void execute(const std::string& command, OdinData::IpcMessage& reply);
   virtual std::vector<std::string> requestCommands();
   virtual void status(OdinData::IpcMessage& status);
@@ -65,6 +65,29 @@ protected:
 private:
   /** Pointer to logger */
   LoggerPtr logger_;
+
+  /** Metadata helper function (implicitly inlined)
+   *  \param [in]  metadata - metadata struct to be read from
+   *  \param [out] message  - IpcMessage to be appended with metadata
+  */
+  void add_metadata(OdinData::IpcMessage& message, const OdinData::ParamMetadata& metadata) const
+  {
+    // TO-DO add "allowed_values" metadata
+    message.set_param("metadata/" +  metadata.path +  "/type", metadata.type);
+    message.set_param("metadata/" +  metadata.path +  "/access_mode", metadata.access_mode);
+    message.set_param("metadata/" +  metadata.path +  "/min", metadata.min);
+    message.set_param("metadata/" +  metadata.path +  "/max", metadata.max);
+    message.set_param("metadata/" +  metadata.path +  "/has_min", metadata.has_min);
+    message.set_param("metadata/" +  metadata.path +  "/has_max", metadata.has_max);
+  }
+
+  /** This is a private pure virtual method which
+   *  MUST be customized by every derived FrameProcessor 
+   *  plugin class that can append metadata.
+   *  It is essentially something in guise of a factory method.
+   * \returns a vector of ParamMetadata
+   */
+  virtual std::vector<OdinData::ParamMetadata>& get_plugin_metadata() const;
 
   void callback(boost::shared_ptr<Frame> frame);
 

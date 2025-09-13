@@ -18,9 +18,23 @@
 
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "boost/bimap.hpp"
+#include "boost/variant.hpp"
 
 namespace OdinData
 {
+/** This struct is a representation of the metadata
+*/
+struct ParamMetadata
+{
+  const std::string path;
+  const std::string type;
+  const std::string access_mode;
+  const std::vector<boost::variant<std::string, int, float>> allowed_values;
+  const int32_t min;
+  const int32_t max;
+  const bool has_min;
+  const bool has_max;
+};
 //! IpcMessageException - custom exception class implementing "what" for error string
 class IpcMessageException : public std::exception
 {
