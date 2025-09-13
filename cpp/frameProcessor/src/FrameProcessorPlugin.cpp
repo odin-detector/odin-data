@@ -183,7 +183,7 @@ std::vector<OdinData::ParamMetadata>& FrameProcessorPlugin::get_plugin_metadata(
 void FrameProcessorPlugin::requestConfigurationMetadata(OdinData::IpcMessage& reply) const
 {
   auto end = get_plugin_metadata().end();
-  for(auto itr = get_plugin_metadata().begin(); itr != end; ++itr){
+  for(auto itr = get_plugin_metadata().begin(); itr != end; ++itr) {
     add_metadata(reply, *itr);
   }
 }

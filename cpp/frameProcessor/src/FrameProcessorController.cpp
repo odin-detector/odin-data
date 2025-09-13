@@ -530,11 +530,11 @@ void FrameProcessorController::requestConfiguration(OdinData::IpcMessage& reply,
     iter->second->requestConfiguration(reply);
   }
 
-    if(metadata) {  
-      for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
-        iter->second->requestConfigurationMetadata(reply);
-      }
+  if(metadata) {  
+    for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
+      iter->second->requestConfigurationMetadata(reply);
     }
+  }
 }
 
 /**
