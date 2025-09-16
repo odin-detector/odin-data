@@ -47,7 +47,7 @@ void FrameProcessorPlugin::set_name(const std::string& name)
  *
  * \return The name.
  */
-std::string FrameProcessorPlugin::get_name()
+std::string FrameProcessorPlugin::get_name() const
 {
   // Return our name
   return name_;
@@ -172,18 +172,20 @@ void FrameProcessorPlugin::requestConfiguration(OdinData::IpcMessage& reply)
  *
  * \returns reference to vector of ParamMetadata structs specific to each plugin.
  */
-std::vector<ParamMetadata>& FrameProcessorPlugin::get_pluginconfig_metadata() const noexcept
+std::vector<ParamMetadata>& FrameProcessorPlugin::get_config_metadata() const noexcept
 {
-  
+  static std::vector<ParamMetadata> v1;
+  return v1;
 }
 
 /** Request the plugin's Status Metadata.
  *
  * \returns reference to vector of ParamMetadata structs specific to each plugin.
  */
-std::vector<ParamMetadata>& FrameProcessorPlugin::get_pluginstatus_metadata() const noexcept
+std::vector<ParamMetadata>& FrameProcessorPlugin::get_status_metadata() const noexcept
 {
-  
+  static std::vector<ParamMetadata> v2;
+  return v2;
 }
 
 /** Request the plugin's configuration Metadata.
@@ -191,8 +193,8 @@ std::vector<ParamMetadata>& FrameProcessorPlugin::get_pluginstatus_metadata() co
  */
 void FrameProcessorPlugin::requestConfigurationMetadata(OdinData::IpcMessage& reply) const
 {
-  auto end = get_pluginconfig_metadata().end();
-  for(auto itr = get_pluginconfig_metadata().begin(); itr != end; ++itr) {
+  auto end = get_config_metadata().end();
+  for(auto itr = get_config_metadata().begin(); itr != end; ++itr) {
     add_metadata(reply, *itr);
   }
 }
@@ -202,8 +204,8 @@ void FrameProcessorPlugin::requestConfigurationMetadata(OdinData::IpcMessage& re
  */
 void FrameProcessorPlugin::requestStatusMetadata(OdinData::IpcMessage& reply) const
 {
-  auto end = get_pluginstatus_metadata().end();
-  for(auto itr = get_pluginstatus_metadata().begin(); itr != end; ++itr) {
+  auto end = get_status_metadata().end();
+  for(auto itr = get_status_metadata().begin(); itr != end; ++itr) {
     add_metadata(reply, *itr);
   }
 }

@@ -29,10 +29,11 @@ struct JsonNullType{};
 */
 struct ParamMetadata
 {
+  using param_metadata_vec = std::vector<boost::variant<std::string, int>>;
   const std::string path;
   const std::string type;
   const std::string access_mode;
-  const std::vector<boost::variant<std::string, int>> allowed_vals;
+  const param_metadata_vec allowed_values;
   const int32_t min;
   const int32_t max;
   const bool has_min;
@@ -52,7 +53,7 @@ public:
   FrameProcessorPlugin();
   virtual ~FrameProcessorPlugin();
   void set_name(const std::string& name);
-  std::string get_name();
+  std::string get_name() const;
   void set_error(const std::string& msg);
   void set_warning(const std::string& msg);
   void clear_errors();
@@ -90,45 +91,32 @@ private:
    */
   void add_metadata(OdinData::IpcMessage& message, const ParamMetadata& metadata) const
   {
-    std::string str = "metadata/";
-    static std::string& str_static = str;
-    static OdinData::IpcMessage&& message_static = std::move(message);
-
-    str += metadata.path;
-
+    std::string str = get_name() + metadata.path + '/';
     message.set_param(str +  "/type", metadata.type);
     message.set_param(str +  "/access_mode", metadata.access_mode);
-    if(metadata.has_min)
+    if(metadata.has_min){
       message.set_param(str +  "/min", metadata.min);
-    if(metadata.has_max)
+    }
+    if(metadata.has_max){
       message.set_param(str +  "/max", metadata.max);
+    }
 
-    str +=  "/allowed_vals[]";
+    str +=  "/allowed_values[]";
 
-    // static variables are initialized only once, so ensure to reassign them each function call here
-    str_static = str;
-    message_static  = std::move(message);
-
-    struct VariantVisitor : public boost::static_visitor<void> 
-    {
-      void operator() (JsonNullType) const{
-        return;
-      }
-      void operator() (const std::string& s) const {
-        message_static.set_param(str_static, s);
-      }
-
-      void operator() (int n) const{
-        message_static.set_param(str_static, n);
-      }
-    };
-
-    auto first = metadata.allowed_vals.begin();
-    auto end = metadata.allowed_vals.end();
-    for (; first != end; ++first)
-	    boost::apply_visitor(VariantVisitor(), *first);
-    // std::for_each(metadata.allowed_vals.begin(), metadata.allowed_vals.end(), boost::apply_visitor(VariantVisitor()));
-
+    auto first = metadata.allowed_values.begin();
+    auto end = metadata.allowed_values.end();
+    for (; first != end; ++first) {
+      switch (first->which()) {
+        case 0:
+          message.set_param(str, boost::get<std::string>(*first));
+          break;
+        case 1:
+          message.set_param(str, boost::get<int>(*first));
+          break;
+        default:
+          return;
+      };
+    }
   }
 
   /** These is a private virtual methods
@@ -137,8 +125,8 @@ private:
    *  It is essentially something in guise of a factory method.
    * \returns a vector of ParamMetadata
    */
-  virtual std::vector<ParamMetadata>& get_pluginconfig_metadata() const noexcept;
-  virtual std::vector<ParamMetadata>& get_pluginstatus_metadata() const noexcept;
+  virtual std::vector<ParamMetadata>& get_config_metadata() const noexcept;
+  virtual std::vector<ParamMetadata>& get_status_metadata() const noexcept;
 
   void callback(boost::shared_ptr<Frame> frame);
 
