@@ -168,33 +168,44 @@ void FrameProcessorPlugin::requestConfiguration(OdinData::IpcMessage& reply)
   // Default method simply does nothing
 }
 
-/** Request the plugin's Metadata configuration.
+/** Request the plugin's Configuration Metadata.
  *
  * \returns reference to vector of ParamMetadata structs specific to each plugin.
  */
-std::vector<OdinData::ParamMetadata>& FrameProcessorPlugin::get_plugin_metadata() const
+std::vector<OdinData::ParamMetadata>& FrameProcessorPlugin::get_pluginconfig_metadata() const noexcept
 {
-  // Default method simply does nothing!
+  
 }
 
-/** Request the plugin's Metadata configuration.
+/** Request the plugin's Status Metadata.
+ *
+ * \returns reference to vector of ParamMetadata structs specific to each plugin.
+ */
+std::vector<OdinData::ParamMetadata>& FrameProcessorPlugin::get_pluginstatus_metadata() const noexcept
+{
+  
+}
+
+/** Request the plugin's configuration Metadata.
  * \param[out] reply - Response IpcMessage with current config metadata.
  */
 void FrameProcessorPlugin::requestConfigurationMetadata(OdinData::IpcMessage& reply) const
 {
-  auto end = get_plugin_metadata().end();
-  for(auto itr = get_plugin_metadata().begin(); itr != end; ++itr) {
+  auto end = get_pluginconfig_metadata().end();
+  for(auto itr = get_pluginconfig_metadata().begin(); itr != end; ++itr) {
     add_metadata(reply, *itr);
   }
 }
 
-/** Request the plugin's Metadata configuration.
+/** Request the plugin's status Metadata.
  * \param[out] reply - Response IpcMessage with current status metadata.
  */
 void FrameProcessorPlugin::requestStatusMetadata(OdinData::IpcMessage& reply) const
 {
-  // stub function
-  // Default method. Famous TODO: Implement
+  auto end = get_pluginstatus_metadata().end();
+  for(auto itr = get_pluginstatus_metadata().begin(); itr != end; ++itr) {
+    add_metadata(reply, *itr);
+  }
 }
 
 /** Execute a command within the plugin.

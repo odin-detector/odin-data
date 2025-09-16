@@ -22,6 +22,10 @@
 
 namespace OdinData
 {
+
+// represents json null type
+struct JsonNullType{};
+
 /** This struct is a representation of the metadata
 */
 struct ParamMetadata
@@ -29,7 +33,7 @@ struct ParamMetadata
   const std::string path;
   const std::string type;
   const std::string access_mode;
-  const std::vector<boost::variant<std::string, int, float>> allowed_values;
+  const std::vector<boost::variant<std::string, int>> allowed_vals;
   const int32_t min;
   const int32_t max;
   const bool has_min;

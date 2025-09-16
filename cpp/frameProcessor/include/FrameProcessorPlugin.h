@@ -66,28 +66,63 @@ private:
   /** Pointer to logger */
   LoggerPtr logger_;
 
+
+
   /** Metadata helper function (implicitly inlined)
    *  \param [in]  metadata - metadata struct to be read from
    *  \param [out] message  - IpcMessage to be appended with metadata
-  */
+   */
   void add_metadata(OdinData::IpcMessage& message, const OdinData::ParamMetadata& metadata) const
   {
-    // TO-DO add "allowed_values" metadata
-    message.set_param("metadata/" +  metadata.path +  "/type", metadata.type);
-    message.set_param("metadata/" +  metadata.path +  "/access_mode", metadata.access_mode);
-    message.set_param("metadata/" +  metadata.path +  "/min", metadata.min);
-    message.set_param("metadata/" +  metadata.path +  "/max", metadata.max);
-    message.set_param("metadata/" +  metadata.path +  "/has_min", metadata.has_min);
-    message.set_param("metadata/" +  metadata.path +  "/has_max", metadata.has_max);
+    std::string str = "metadata/";
+    static std::string& str_static = str;
+    static OdinData::IpcMessage&& message_static = std::move(message);
+
+    str += metadata.path;
+
+    message.set_param(str +  "/type", metadata.type);
+    message.set_param(str +  "/access_mode", metadata.access_mode);
+    message.set_param(str +  "/min", metadata.min);
+    message.set_param(str +  "/max", metadata.max);
+    message.set_param(str +  "/has_min", metadata.has_min);
+    message.set_param(str +  "/has_max", metadata.has_max);
+
+    str +=  "/allowed_vals[]";
+
+    // static variables are initialized only once, so ensure to reassign them each function call here
+    str_static = str;
+    message_static  = std::move(message);
+
+    struct VariantVisitor : public boost::static_visitor<void> 
+    {
+      void operator() (OdinData::JsonNullType) const{
+        return;
+      }
+      void operator() (const std::string& s) const {
+        message_static.set_param(str_static, s);
+      }
+
+      void operator() (int n) const{
+        message_static.set_param(str_static, n);
+      }
+    };
+
+    auto first = metadata.allowed_vals.begin();
+    auto end = metadata.allowed_vals.end();
+    for (; first != end; ++first)
+	    boost::apply_visitor(VariantVisitor(), *first);
+    // std::for_each(metadata.allowed_vals.begin(), metadata.allowed_vals.end(), boost::apply_visitor(VariantVisitor()));
+
   }
 
-  /** This is a private pure virtual method which
+  /** These is a private virtual methods
    *  MUST be customized by every derived FrameProcessor 
    *  plugin class that can append metadata.
    *  It is essentially something in guise of a factory method.
    * \returns a vector of ParamMetadata
    */
-  virtual std::vector<OdinData::ParamMetadata>& get_plugin_metadata() const;
+  virtual std::vector<OdinData::ParamMetadata>& get_pluginconfig_metadata() const noexcept;
+  virtual std::vector<OdinData::ParamMetadata>& get_pluginstatus_metadata() const noexcept;
 
   void callback(boost::shared_ptr<Frame> frame);
 
