@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>FrameProcessor API Reference &#8212; odin-data 0.1.dev1+gda7ff1ec1 documentation</title>
+    <title>FrameProcessor API Reference &#8212; odin-data 0.1.dev1+g8f99bcca9 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=30e3b4fe"></script>
+    <script src="../../../_static/documentation_options.js?v=06cb7800"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -1374,7 +1374,7 @@
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4NK14FrameProcessor20FrameProcessorPlugin28requestConfigurationMetadataERN8OdinData10IpcMessageE">
 <span id="_CPPv3NK14FrameProcessor20FrameProcessorPlugin28requestConfigurationMetadataERN8OdinData10IpcMessageE"></span><span id="_CPPv2NK14FrameProcessor20FrameProcessorPlugin28requestConfigurationMetadataERN8OdinData10IpcMessageE"></span><span id="FrameProcessor::FrameProcessorPlugin::requestConfigurationMetadata__OdinData::IpcMessageRC"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorPlugin_1a3fbe3fccba6c8da0ce4ed348560e4186"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">requestConfigurationMetadata</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">reply</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK14FrameProcessor20FrameProcessorPlugin28requestConfigurationMetadataERN8OdinData10IpcMessageE" title="Link to this definition">#</a><br /></dt>
-<dd><p>Request the plugin’s Metadata configuration. </p>
+<dd><p>Request the plugin’s configuration Metadata. </p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>reply</strong> – <strong>[out]</strong> - Response IpcMessage with current config metadata. </p>
@@ -1385,7 +1385,7 @@
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4NK14FrameProcessor20FrameProcessorPlugin21requestStatusMetadataERN8OdinData10IpcMessageE">
 <span id="_CPPv3NK14FrameProcessor20FrameProcessorPlugin21requestStatusMetadataERN8OdinData10IpcMessageE"></span><span id="_CPPv2NK14FrameProcessor20FrameProcessorPlugin21requestStatusMetadataERN8OdinData10IpcMessageE"></span><span id="FrameProcessor::FrameProcessorPlugin::requestStatusMetadata__OdinData::IpcMessageRC"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorPlugin_1a931a786ca6249399068b97aca3460eb7"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">requestStatusMetadata</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">reply</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK14FrameProcessor20FrameProcessorPlugin21requestStatusMetadataERN8OdinData10IpcMessageE" title="Link to this definition">#</a><br /></dt>
-<dd><p>Request the plugin’s Metadata configuration. </p>
+<dd><p>Request the plugin’s status Metadata. </p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>reply</strong> – <strong>[out]</strong> - Response IpcMessage with current status metadata. </p>
@@ -1549,10 +1549,10 @@
 </dd></dl>
 
 <dl class="cpp function">
-<dt class="sig sig-object cpp" id="_CPPv4NK14FrameProcessor20FrameProcessorPlugin19get_plugin_metadataEv">
-<span id="_CPPv3NK14FrameProcessor20FrameProcessorPlugin19get_plugin_metadataEv"></span><span id="_CPPv2NK14FrameProcessor20FrameProcessorPlugin19get_plugin_metadataEv"></span><span id="FrameProcessor::FrameProcessorPlugin::get_plugin_metadataC"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorPlugin_1a6ded39adbb96a9b24b05cd115a44b855"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">ParamMetadata</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-name descname"><span class="n"><span class="pre">get_plugin_metadata</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK14FrameProcessor20FrameProcessorPlugin19get_plugin_metadataEv" title="Link to this definition">#</a><br /></dt>
-<dd><p>This is a private pure virtual method which MUST be customized by every derived FrameProcessor<p>plugin class that can append metadata. It is essentially something in guise of a factory method.</p>
-<p>Request the plugin’s Metadata configuration.</p>
+<dt class="sig sig-object cpp" id="_CPPv4NK14FrameProcessor20FrameProcessorPlugin25get_pluginconfig_metadataEv">
+<span id="_CPPv3NK14FrameProcessor20FrameProcessorPlugin25get_pluginconfig_metadataEv"></span><span id="_CPPv2NK14FrameProcessor20FrameProcessorPlugin25get_pluginconfig_metadataEv"></span><span id="FrameProcessor::FrameProcessorPlugin::get_pluginconfig_metadataC"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorPlugin_1a0c1b5a034008e865a88c4299149f20bf"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">ParamMetadata</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-name descname"><span class="n"><span class="pre">get_pluginconfig_metadata</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">noexcept</span></span><a class="headerlink" href="#_CPPv4NK14FrameProcessor20FrameProcessorPlugin25get_pluginconfig_metadataEv" title="Link to this definition">#</a><br /></dt>
+<dd><p>These is a private virtual methods MUST be customized by every derived FrameProcessor<p>plugin class that can append metadata. It is essentially something in guise of a factory method.</p>
+<p>Request the plugin’s Configuration Metadata.</p>
 </p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1560,6 +1560,17 @@
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>reference to vector of ParamMetadata structs specific to each plugin. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK14FrameProcessor20FrameProcessorPlugin25get_pluginstatus_metadataEv">
+<span id="_CPPv3NK14FrameProcessor20FrameProcessorPlugin25get_pluginstatus_metadataEv"></span><span id="_CPPv2NK14FrameProcessor20FrameProcessorPlugin25get_pluginstatus_metadataEv"></span><span id="FrameProcessor::FrameProcessorPlugin::get_pluginstatus_metadataC"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorPlugin_1af127400cfa52e8ade63f353b783b2db1"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">ParamMetadata</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-name descname"><span class="n"><span class="pre">get_pluginstatus_metadata</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">noexcept</span></span><a class="headerlink" href="#_CPPv4NK14FrameProcessor20FrameProcessorPlugin25get_pluginstatus_metadataEv" title="Link to this definition">#</a><br /></dt>
+<dd><p>Request the plugin’s Status Metadata.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>reference to vector of ParamMetadata structs specific to each plugin. </p>
 </dd>
 </dl>
 </dd></dl>
@@ -6596,7 +6607,8 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin4pushEN5boost10shared_ptrI5FrameEE"><code class="docutils literal notranslate"><span class="pre">push()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin4pushERKNSt6stringEN5boost10shared_ptrI5FrameEE"><code class="docutils literal notranslate"><span class="pre">push()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4NK14FrameProcessor20FrameProcessorPlugin12add_metadataERN8OdinData10IpcMessageERKN8OdinData13ParamMetadataE"><code class="docutils literal notranslate"><span class="pre">add_metadata()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4NK14FrameProcessor20FrameProcessorPlugin19get_plugin_metadataEv"><code class="docutils literal notranslate"><span class="pre">get_plugin_metadata()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4NK14FrameProcessor20FrameProcessorPlugin25get_pluginconfig_metadataEv"><code class="docutils literal notranslate"><span class="pre">get_pluginconfig_metadata()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4NK14FrameProcessor20FrameProcessorPlugin25get_pluginstatus_metadataEv"><code class="docutils literal notranslate"><span class="pre">get_pluginstatus_metadata()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin8callbackEN5boost10shared_ptrI5FrameEE"><code class="docutils literal notranslate"><span class="pre">callback()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin13process_frameEN5boost10shared_ptrI5FrameEE"><code class="docutils literal notranslate"><span class="pre">process_frame()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin26process_end_of_acquisitionEv"><code class="docutils literal notranslate"><span class="pre">process_end_of_acquisition()</span></code></a></li>
