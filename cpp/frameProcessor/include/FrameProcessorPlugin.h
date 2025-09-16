@@ -22,6 +22,22 @@
 
 namespace FrameProcessor
 {
+// represents json null type
+struct JsonNullType{};
+
+/** This struct is a representation of the metadata
+*/
+struct ParamMetadata
+{
+  const std::string path;
+  const std::string type;
+  const std::string access_mode;
+  const std::vector<boost::variant<std::string, int>> allowed_vals;
+  const int32_t min;
+  const int32_t max;
+  const bool has_min;
+  const bool has_max;
+};
 
 /** Abstract plugin class, providing the IFrameCallback interface.
  *
@@ -72,7 +88,7 @@ private:
    *  \param [in]  metadata - metadata struct to be read from
    *  \param [out] message  - IpcMessage to be appended with metadata
    */
-  void add_metadata(OdinData::IpcMessage& message, const OdinData::ParamMetadata& metadata) const
+  void add_metadata(OdinData::IpcMessage& message, const ParamMetadata& metadata) const
   {
     std::string str = "metadata/";
     static std::string& str_static = str;
@@ -95,7 +111,7 @@ private:
 
     struct VariantVisitor : public boost::static_visitor<void> 
     {
-      void operator() (OdinData::JsonNullType) const{
+      void operator() (JsonNullType) const{
         return;
       }
       void operator() (const std::string& s) const {
@@ -121,8 +137,8 @@ private:
    *  It is essentially something in guise of a factory method.
    * \returns a vector of ParamMetadata
    */
-  virtual std::vector<OdinData::ParamMetadata>& get_pluginconfig_metadata() const noexcept;
-  virtual std::vector<OdinData::ParamMetadata>& get_pluginstatus_metadata() const noexcept;
+  virtual std::vector<ParamMetadata>& get_pluginconfig_metadata() const noexcept;
+  virtual std::vector<ParamMetadata>& get_pluginstatus_metadata() const noexcept;
 
   void callback(boost::shared_ptr<Frame> frame);
 

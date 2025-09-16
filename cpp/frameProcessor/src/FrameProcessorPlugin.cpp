@@ -172,7 +172,7 @@ void FrameProcessorPlugin::requestConfiguration(OdinData::IpcMessage& reply)
  *
  * \returns reference to vector of ParamMetadata structs specific to each plugin.
  */
-std::vector<OdinData::ParamMetadata>& FrameProcessorPlugin::get_pluginconfig_metadata() const noexcept
+std::vector<ParamMetadata>& FrameProcessorPlugin::get_pluginconfig_metadata() const noexcept
 {
   
 }
@@ -181,7 +181,7 @@ std::vector<OdinData::ParamMetadata>& FrameProcessorPlugin::get_pluginconfig_met
  *
  * \returns reference to vector of ParamMetadata structs specific to each plugin.
  */
-std::vector<OdinData::ParamMetadata>& FrameProcessorPlugin::get_pluginstatus_metadata() const noexcept
+std::vector<ParamMetadata>& FrameProcessorPlugin::get_pluginstatus_metadata() const noexcept
 {
   
 }
