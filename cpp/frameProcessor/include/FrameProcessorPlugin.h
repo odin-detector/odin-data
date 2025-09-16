@@ -82,10 +82,10 @@ private:
 
     message.set_param(str +  "/type", metadata.type);
     message.set_param(str +  "/access_mode", metadata.access_mode);
-    message.set_param(str +  "/min", metadata.min);
-    message.set_param(str +  "/max", metadata.max);
-    message.set_param(str +  "/has_min", metadata.has_min);
-    message.set_param(str +  "/has_max", metadata.has_max);
+    if(metadata.has_min)
+      message.set_param(str +  "/min", metadata.min);
+    if(metadata.has_max)
+      message.set_param(str +  "/max", metadata.max);
 
     str +=  "/allowed_vals[]";
 
