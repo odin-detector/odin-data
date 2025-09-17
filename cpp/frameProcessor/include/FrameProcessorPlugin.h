@@ -9,6 +9,7 @@
 #define TOOLS_FILEWRITER_FrameProcessorPlugin_H_
 
 #include <boost/thread.hpp>
+#include <boost/variant.hpp>
 
 #include "IFrameCallback.h"
 #include "IVersionedObject.h"
@@ -22,18 +23,15 @@
 
 namespace FrameProcessor
 {
-// represents json null type
-struct JsonNullType{};
-
 /** This struct is a representation of the metadata
 */
 struct ParamMetadata
 {
-  using param_metadata_vec = std::vector<boost::variant<std::string, int>>;
+  using allowed_values_t = boost::variant<std::string, int>;
   const std::string path;
   const std::string type;
   const std::string access_mode;
-  const param_metadata_vec allowed_values;
+  const std::vector<allowed_values_t> allowed_values;
   const int32_t min;
   const int32_t max;
   const bool has_min;
@@ -91,27 +89,27 @@ private:
    */
   void add_metadata(OdinData::IpcMessage& message, const ParamMetadata& metadata) const
   {
-    std::string str = get_name() + metadata.path + '/';
-    message.set_param(str +  "/type", metadata.type);
-    message.set_param(str +  "/access_mode", metadata.access_mode);
+    std::string param_prefix = "metadata" + get_name() + metadata.path + '/';
+    message.set_param(param_prefix +  "type", metadata.type);
+    message.set_param(param_prefix +  "access_mode", metadata.access_mode);
     if(metadata.has_min){
-      message.set_param(str +  "/min", metadata.min);
+      message.set_param(param_prefix +  "min", metadata.min);
     }
     if(metadata.has_max){
-      message.set_param(str +  "/max", metadata.max);
+      message.set_param(param_prefix +  "max", metadata.max);
     }
 
-    str +=  "/allowed_values[]";
+    param_prefix +=  "allowed_values[]";
 
-    auto first = metadata.allowed_values.begin();
+    auto itr = metadata.allowed_values.begin();
     auto end = metadata.allowed_values.end();
-    for (; first != end; ++first) {
-      switch (first->which()) {
+    for (; itr != end; ++itr) {
+      switch (itr->which()) {
         case 0:
-          message.set_param(str, boost::get<std::string>(*first));
+          message.set_param(param_prefix, boost::get<std::string>(*itr));
           break;
         case 1:
-          message.set_param(str, boost::get<int>(*first));
+          message.set_param(param_prefix, boost::get<int>(*itr));
           break;
         default:
           return;

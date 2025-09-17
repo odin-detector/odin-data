@@ -18,7 +18,6 @@
 
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "boost/bimap.hpp"
-#include "boost/variant.hpp"
 
 namespace OdinData
 {
