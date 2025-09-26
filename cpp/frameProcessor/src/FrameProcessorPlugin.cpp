@@ -168,26 +168,6 @@ void FrameProcessorPlugin::requestConfiguration(OdinData::IpcMessage& reply)
   // Default method simply does nothing
 }
 
-/** Request the plugin's Configuration Metadata.
- *
- * \returns reference to vector of ParamMetadata structs specific to each plugin.
- */
-std::vector<ParamMetadata>& FrameProcessorPlugin::get_config_metadata() const noexcept
-{
-  static std::vector<ParamMetadata> v;
-  return v;
-}
-
-/** Request the plugin's Status Metadata.
- *
- * \returns reference to vector of ParamMetadata structs specific to each plugin.
- */
-std::vector<ParamMetadata>& FrameProcessorPlugin::get_status_metadata() const noexcept
-{
-  static std::vector<ParamMetadata> v;
-  return v;
-}
-
 /** Request the plugin's configuration Metadata.
  * \param[out] reply - Response IpcMessage with current config metadata.
  */
@@ -195,7 +175,7 @@ void FrameProcessorPlugin::requestConfigurationMetadata(OdinData::IpcMessage& re
 {
   auto end = get_config_metadata().end();
   for(auto itr = get_config_metadata().begin(); itr != end; ++itr) {
-    add_metadata(reply, *itr);
+    add_metadata(reply, itr->second);
   }
 }
 
@@ -206,7 +186,7 @@ void FrameProcessorPlugin::requestStatusMetadata(OdinData::IpcMessage& reply) co
 {
   auto end = get_status_metadata().end();
   for(auto itr = get_status_metadata().begin(); itr != end; ++itr) {
-    add_metadata(reply, *itr);
+    add_metadata(reply, itr->second);
   }
 }
 

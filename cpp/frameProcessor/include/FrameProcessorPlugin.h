@@ -10,6 +10,7 @@
 
 #include <boost/thread.hpp>
 #include <boost/variant.hpp>
+#include <unordered_map>
 
 #include "IFrameCallback.h"
 #include "IVersionedObject.h"
@@ -23,20 +24,6 @@
 
 namespace FrameProcessor
 {
-/** This struct is a representation of the metadata
-*/
-struct ParamMetadata
-{
-  using allowed_values_t = boost::variant<std::string, int>;
-  const std::string path;
-  const std::string type;
-  const std::string access_mode;
-  const std::vector<allowed_values_t> allowed_values;
-  const int32_t min;
-  const int32_t max;
-  const bool has_min;
-  const bool has_max;
-};
 
 /** Abstract plugin class, providing the IFrameCallback interface.
  *
@@ -77,6 +64,21 @@ protected:
   void push(boost::shared_ptr<Frame> frame);
   void push(const std::string& plugin_name, boost::shared_ptr<Frame> frame);
 
+  /** This struct is a representation of the metadata
+  */
+  struct ParamMetadata
+  {
+    using allowed_values_t = boost::variant<std::string, int>;
+    const std::string path;
+    const std::string type;
+    const std::string access_mode;
+    const std::vector<allowed_values_t> allowed_values;
+    const int32_t min;
+    const int32_t max;
+    const bool has_min;
+    const bool has_max;
+  };
+
 private:
   /** Pointer to logger */
   LoggerPtr logger_;
@@ -89,7 +91,7 @@ private:
    */
   void add_metadata(OdinData::IpcMessage& message, const ParamMetadata& metadata) const
   {
-    std::string param_prefix = "metadata" + get_name() + metadata.path + '/';
+    std::string param_prefix = "metadata/" + get_name() + metadata.path + '/';
     message.set_param(param_prefix +  "type", metadata.type);
     message.set_param(param_prefix +  "access_mode", metadata.access_mode);
     if(metadata.has_min){
@@ -117,14 +119,20 @@ private:
     }
   }
 
-  /** These is a private virtual methods
+  /** These are private virtual (inline) methods
    *  MUST be customized by every derived FrameProcessor 
-   *  plugin class that can append metadata.
-   *  It is essentially something in guise of a factory method.
-   * \returns a vector of ParamMetadata
+   *  plugin derived class that can requires metadata.
+   * \returns a map of ParamMetadata's
    */
-  virtual std::vector<ParamMetadata>& get_config_metadata() const noexcept;
-  virtual std::vector<ParamMetadata>& get_status_metadata() const noexcept;
+  using ParameterBucket_t = std::unordered_map<std::string, ParamMetadata>;
+  virtual ParameterBucket_t& get_config_metadata() const noexcept{
+    static ParameterBucket_t v;
+    return v;
+  }
+  virtual ParameterBucket_t& get_status_metadata() const noexcept{
+    static ParameterBucket_t v;
+    return v;
+  }
 
   void callback(boost::shared_ptr<Frame> frame);
 
