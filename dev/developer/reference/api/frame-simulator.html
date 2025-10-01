@@ -1,0 +1,1165 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>FrameSimulator API Reference &#8212; odin-data 0.1.dev1+gc9fbdfa15 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../../_static/documentation_options.js?v=d87c12d4"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'developer/reference/api/frame-simulator';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://odin-detector.github.io/odin-data/switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Design Docs" href="../design-docs/index.html" />
+    <link rel="prev" title="FrameProcessor API Reference" href="frame-processor.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="dev" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/odin.png" class="logo__image only-light" alt=""/>
+    <img src="../../../_static/odin.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">odin-data</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    Developer Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/odin-detector/odin-data/releases">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/odin-detector/odin-data" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    Developer Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/odin-detector/odin-data/releases">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/odin-detector/odin-data" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/index.html"><strong>Tutorials</strong></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/write-detector-support.html">Writing Detector Support</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../how-to/index.html"><strong>How-To Guides</strong></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../how-to/common.html">Common API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../how-to/frame-decoder.html">FrameDecoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../how-to/frame-processor-plugin.html">FrameProcessorPlugin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../how-to/frame-simulator-plugin.html">FrameSimulatorPlugin</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../how-to/docs.html">Docs</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../how-to/excalidraw.html">How to embed Excalidraw diagrams</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../explanations/index.html"><strong>Explanations</strong></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../explanations/overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../explanations/design-decisions.html">Design Decisions</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html"><strong>Reference</strong></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="common.html">Common API Reference</a></li>
+
+
+
+
+
+
+
+<li class="toctree-l2"><a class="reference internal" href="frame-receiver.html">FrameReceiver API Reference</a></li>
+
+
+<li class="toctree-l2"><a class="reference internal" href="frame-processor.html">FrameProcessor API Reference</a></li>
+
+
+
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">FrameSimulator API Reference</a></li>
+
+<li class="toctree-l2 has-children"><a class="reference internal" href="../design-docs/index.html">Design Docs</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../design-docs/live-view-spec.html">Specification For Odin Data Live View Plugin</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Developer Guide</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link"><strong>Reference</strong></a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">FrameSimulator API Reference</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="framesimulator-api-reference">
+<h1>FrameSimulator API Reference<a class="headerlink" href="#framesimulator-api-reference" title="Link to this heading">#</a></h1>
+</section>
+<section id="plugins">
+<h1>Plugins<a class="headerlink" href="#plugins" title="Link to this heading">#</a></h1>
+<section id="framesimulatorplugin">
+<h2>FrameSimulatorPlugin<a class="headerlink" href="#framesimulatorplugin" title="Link to this heading">#</a></h2>
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator20FrameSimulatorPluginE">
+<span id="_CPPv3N14FrameSimulator20FrameSimulatorPluginE"></span><span id="_CPPv2N14FrameSimulator20FrameSimulatorPluginE"></span><span id="FrameSimulator::FrameSimulatorPlugin"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPlugin"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FrameSimulatorPlugin</span></span></span><span class="w"> </span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">public</span></span><span class="w"> </span><span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData16IVersionedObjectE" title="OdinData::IVersionedObject"><span class="n"><span class="pre">IVersionedObject</span></span></a><a class="headerlink" href="#_CPPv4N14FrameSimulator20FrameSimulatorPluginE" title="Link to this definition">#</a><br /></dt>
+<dd><p>Abstract plugin class</p>
+<p>All frame simulator plugins must inherit from this class. Once an instance of a plugin is constructed the plugin options are populated from the command line program options with a call to ‘setup’. Once setup successfully the simulation is executed with a call to ‘simulate’.</p>
+<p>‘populate_options’ is called by the main executable (FrameSimulatorApp.cpp) to determine the plugin options required </p>
+<p>Subclassed by <a class="reference internal" href="#classFrameSimulator_1_1FrameSimulatorPluginUDP"><span class="std std-ref">FrameSimulator::FrameSimulatorPluginUDP</span></a></p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator20FrameSimulatorPlugin20FrameSimulatorPluginEv">
+<span id="_CPPv3N14FrameSimulator20FrameSimulatorPlugin20FrameSimulatorPluginEv"></span><span id="_CPPv2N14FrameSimulator20FrameSimulatorPlugin20FrameSimulatorPluginEv"></span><span id="FrameSimulator::FrameSimulatorPlugin::FrameSimulatorPlugin"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPlugin_1aac6e2625896066f51ab715837891ec70"></span><span class="sig-name descname"><span class="n"><span class="pre">FrameSimulatorPlugin</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameSimulator20FrameSimulatorPlugin20FrameSimulatorPluginEv" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator20FrameSimulatorPlugin5setupERKN2po13variables_mapE">
+<span id="_CPPv3N14FrameSimulator20FrameSimulatorPlugin5setupERKN2po13variables_mapE"></span><span id="_CPPv2N14FrameSimulator20FrameSimulatorPlugin5setupERKN2po13variables_mapE"></span><span id="FrameSimulator::FrameSimulatorPlugin::setup__po::variables_mapCR"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPlugin_1a19bd111ba0ec29c964044f4a20e1bd4e"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">setup</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">po</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">variables_map</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">vm</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameSimulator20FrameSimulatorPlugin5setupERKN2po13variables_mapE" title="Link to this definition">#</a><br /></dt>
+<dd><p>Setup frame simulator plugin class from store of command line options</p>
+<p>
+Derived plugins must additionally call this base method even if overridden </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>vm</strong> – <strong>[in]</strong> - store of given command line options </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>true (false) if required program options are (not) specified and the simulator plugin is not ready to use</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator20FrameSimulatorPlugin8simulateEv">
+<span id="_CPPv3N14FrameSimulator20FrameSimulatorPlugin8simulateEv"></span><span id="_CPPv2N14FrameSimulator20FrameSimulatorPlugin8simulateEv"></span><span id="FrameSimulator::FrameSimulatorPlugin::simulate"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPlugin_1a831a9e8bc489c36645ae74754cf0bf43"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">simulate</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N14FrameSimulator20FrameSimulatorPlugin8simulateEv" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator20FrameSimulatorPlugin16populate_optionsERN2po19options_descriptionE">
+<span id="_CPPv3N14FrameSimulator20FrameSimulatorPlugin16populate_optionsERN2po19options_descriptionE"></span><span id="_CPPv2N14FrameSimulator20FrameSimulatorPlugin16populate_optionsERN2po19options_descriptionE"></span><span id="FrameSimulator::FrameSimulatorPlugin::populate_options__po::options_descriptionR"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPlugin_1a116c9a22d1a9e15150dcee280e9a2964"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">populate_options</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">po</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">options_description</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">config</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameSimulator20FrameSimulatorPlugin16populate_optionsERN2po19options_descriptionE" title="Link to this definition">#</a><br /></dt>
+<dd><p>Populate boost program options with appropriate command line options for plugin</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>config</strong> – <strong>[out]</strong> - boost::program_options::options_description to populate with appropriate plugin command line options </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-protected-attributes">Protected Attributes</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator20FrameSimulatorPlugin17replay_numframes_E">
+<span id="_CPPv3N14FrameSimulator20FrameSimulatorPlugin17replay_numframes_E"></span><span id="_CPPv2N14FrameSimulator20FrameSimulatorPlugin17replay_numframes_E"></span><span id="FrameSimulator::FrameSimulatorPlugin::replay_numframes___boost::optional:i:"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPlugin_1ab77ca5f8da395c8fe372f58894b06846"></span><span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">optional</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">int</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">replay_numframes_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameSimulator20FrameSimulatorPlugin17replay_numframes_E" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator20FrameSimulatorPlugin15frame_gap_secs_E">
+<span id="_CPPv3N14FrameSimulator20FrameSimulatorPlugin15frame_gap_secs_E"></span><span id="_CPPv2N14FrameSimulator20FrameSimulatorPlugin15frame_gap_secs_E"></span><span id="FrameSimulator::FrameSimulatorPlugin::frame_gap_secs___boost::optional:float:"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPlugin_1ae8837dbb1c6965311a234d33ce42c9c2"></span><span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">optional</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">float</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">frame_gap_secs_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameSimulator20FrameSimulatorPlugin15frame_gap_secs_E" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-members">Private Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator20FrameSimulatorPlugin7logger_E">
+<span id="_CPPv3N14FrameSimulator20FrameSimulatorPlugin7logger_E"></span><span id="_CPPv2N14FrameSimulator20FrameSimulatorPlugin7logger_E"></span><span id="FrameSimulator::FrameSimulatorPlugin::logger___LoggerPtr"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPlugin_1a848c3c65907bf87d2a027777398cfb6b"></span><span class="n"><span class="pre">LoggerPtr</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">logger_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameSimulator20FrameSimulatorPlugin7logger_E" title="Link to this definition">#</a><br /></dt>
+<dd><p>Pointer to logger </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+<section id="framesimulatoroption">
+<h3>FrameSimulatorOption<a class="headerlink" href="#framesimulatoroption" title="Link to this heading">#</a></h3>
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv4I0EN14FrameSimulator20FrameSimulatorOptionE">
+<span id="_CPPv3I0EN14FrameSimulator20FrameSimulatorOptionE"></span><span id="_CPPv2I0EN14FrameSimulator20FrameSimulatorOptionE"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="classFrameSimulator_1_1FrameSimulatorOption"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FrameSimulatorOption</span></span></span><a class="headerlink" href="#_CPPv4I0EN14FrameSimulator20FrameSimulatorOptionE" title="Link to this definition">#</a><br /></dt>
+<dd><p>Helper class for specifying frame simulator plugin command line options specifies argument string for option displayed description and (optional) a default value </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator20FrameSimulatorOption20FrameSimulatorOptionERKNSt6stringERKNSt6stringE">
+<span id="_CPPv3N14FrameSimulator20FrameSimulatorOption20FrameSimulatorOptionERKNSt6stringERKNSt6stringE"></span><span id="_CPPv2N14FrameSimulator20FrameSimulatorOption20FrameSimulatorOptionERKNSt6stringERKNSt6stringE"></span><span id="FrameSimulator::FrameSimulatorOption::FrameSimulatorOption__ssCR.ssCR"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorOption_1a0e57ddbbe5e5330ab28bed68c8c639a9"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FrameSimulatorOption</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">astr</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">desc</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameSimulator20FrameSimulatorOption20FrameSimulatorOptionERKNSt6stringERKNSt6stringE" title="Link to this definition">#</a><br /></dt>
+<dd><p>constructors for a <a class="reference internal" href="#classFrameSimulator_1_1FrameSimulatorOption"><span class="std std-ref">FrameSimulatorOption</span></a> </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>astr</strong> – <strong>[in]</strong> argument string used for specifying option </p></li>
+<li><p><strong>desc</strong> – <strong>[in]</strong> description of program option to be displayed </p></li>
+<li><p><strong>dval</strong> – <strong>[in]</strong> (optional) default value </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator20FrameSimulatorOption20FrameSimulatorOptionERKNSt6stringERKNSt6stringERK1T">
+<span id="_CPPv3N14FrameSimulator20FrameSimulatorOption20FrameSimulatorOptionERKNSt6stringERKNSt6stringERK1T"></span><span id="_CPPv2N14FrameSimulator20FrameSimulatorOption20FrameSimulatorOptionERKNSt6stringERKNSt6stringERK1T"></span><span id="FrameSimulator::FrameSimulatorOption::FrameSimulatorOption__ssCR.ssCR.TCR"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorOption_1a38a96e4e023f0862f16183985e73a107"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FrameSimulatorOption</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">astr</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">desc</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I0EN14FrameSimulator20FrameSimulatorOptionE" title="FrameSimulator::FrameSimulatorOption::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">dval</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameSimulator20FrameSimulatorOption20FrameSimulatorOptionERKNSt6stringERKNSt6stringERK1T" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK14FrameSimulator20FrameSimulatorOption7get_argEv">
+<span id="_CPPv3NK14FrameSimulator20FrameSimulatorOption7get_argEv"></span><span id="_CPPv2NK14FrameSimulator20FrameSimulatorOption7get_argEv"></span><span id="FrameSimulator::FrameSimulatorOption::get_argC"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorOption_1a2cd0d44a100bbc4c51838d41ad141141"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">get_arg</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK14FrameSimulator20FrameSimulatorOption7get_argEv" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK14FrameSimulator20FrameSimulatorOption13get_argstringEv">
+<span id="_CPPv3NK14FrameSimulator20FrameSimulatorOption13get_argstringEv"></span><span id="_CPPv2NK14FrameSimulator20FrameSimulatorOption13get_argstringEv"></span><span id="FrameSimulator::FrameSimulatorOption::get_argstringC"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorOption_1ad743ac73db19b3e472b910b4f2d8f45d"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_argstring</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK14FrameSimulator20FrameSimulatorOption13get_argstringEv" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK14FrameSimulator20FrameSimulatorOption15get_descriptionEv">
+<span id="_CPPv3NK14FrameSimulator20FrameSimulatorOption15get_descriptionEv"></span><span id="_CPPv2NK14FrameSimulator20FrameSimulatorOption15get_descriptionEv"></span><span id="FrameSimulator::FrameSimulatorOption::get_descriptionC"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorOption_1a7550120e6937405ef6530b9d4a8ca8d4"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_description</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK14FrameSimulator20FrameSimulatorOption15get_descriptionEv" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK14FrameSimulator20FrameSimulatorOption12is_specifiedERKN2po13variables_mapE">
+<span id="_CPPv3NK14FrameSimulator20FrameSimulatorOption12is_specifiedERKN2po13variables_mapE"></span><span id="_CPPv2NK14FrameSimulator20FrameSimulatorOption12is_specifiedERKN2po13variables_mapE"></span><span id="FrameSimulator::FrameSimulatorOption::is_specified__po::variables_mapCRC"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorOption_1a37aad9988e2f3410db09f211147ad92d"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">is_specified</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">po</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">variables_map</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">vm</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK14FrameSimulator20FrameSimulatorOption12is_specifiedERKN2po13variables_mapE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK14FrameSimulator20FrameSimulatorOption7get_valERKN2po13variables_mapE">
+<span id="_CPPv3NK14FrameSimulator20FrameSimulatorOption7get_valERKN2po13variables_mapE"></span><span id="_CPPv2NK14FrameSimulator20FrameSimulatorOption7get_valERKN2po13variables_mapE"></span><span id="FrameSimulator::FrameSimulatorOption::get_val__po::variables_mapCRC"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorOption_1ae4e589ebcd87c914e3aa12aa396935b2"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I0EN14FrameSimulator20FrameSimulatorOptionE" title="FrameSimulator::FrameSimulatorOption::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_val</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">po</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">variables_map</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">vm</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK14FrameSimulator20FrameSimulatorOption7get_valERKN2po13variables_mapE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK14FrameSimulator20FrameSimulatorOption7get_valERKN2po13variables_mapERN5boost8optionalI1TEE">
+<span id="_CPPv3NK14FrameSimulator20FrameSimulatorOption7get_valERKN2po13variables_mapERN5boost8optionalI1TEE"></span><span id="_CPPv2NK14FrameSimulator20FrameSimulatorOption7get_valERKN2po13variables_mapERN5boost8optionalI1TEE"></span><span id="FrameSimulator::FrameSimulatorOption::get_val__po::variables_mapCR.boost::optional:T:RC"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorOption_1a21c69ec13ae6ede45bb14ed72d62d48f"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_val</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">po</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">variables_map</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">vm</span></span>, <span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">optional</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0EN14FrameSimulator20FrameSimulatorOptionE" title="FrameSimulator::FrameSimulatorOption::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">val</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK14FrameSimulator20FrameSimulatorOption7get_valERKN2po13variables_mapERN5boost8optionalI1TEE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK14FrameSimulator20FrameSimulatorOption13add_option_toERN2po19options_descriptionE">
+<span id="_CPPv3NK14FrameSimulator20FrameSimulatorOption13add_option_toERN2po19options_descriptionE"></span><span id="_CPPv2NK14FrameSimulator20FrameSimulatorOption13add_option_toERN2po19options_descriptionE"></span><span id="FrameSimulator::FrameSimulatorOption::add_option_to__po::options_descriptionRC"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorOption_1a13fd6227306efdc9450a4d2d056ba0b4"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">add_option_to</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">po</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">options_description</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">options</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK14FrameSimulator20FrameSimulatorOption13add_option_toERN2po19options_descriptionE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-members">Private Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator20FrameSimulatorOption10defaultvalE">
+<span id="_CPPv3N14FrameSimulator20FrameSimulatorOption10defaultvalE"></span><span id="_CPPv2N14FrameSimulator20FrameSimulatorOption10defaultvalE"></span><span id="FrameSimulator::FrameSimulatorOption::defaultval__boost::optional:T:C"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorOption_1ac5342bcab96c99dfae49d31c1b095427"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">optional</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0EN14FrameSimulator20FrameSimulatorOptionE" title="FrameSimulator::FrameSimulatorOption::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">defaultval</span></span></span><a class="headerlink" href="#_CPPv4N14FrameSimulator20FrameSimulatorOption10defaultvalE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator20FrameSimulatorOption9argstringE">
+<span id="_CPPv3N14FrameSimulator20FrameSimulatorOption9argstringE"></span><span id="_CPPv2N14FrameSimulator20FrameSimulatorOption9argstringE"></span><span id="FrameSimulator::FrameSimulatorOption::argstring__ssC"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorOption_1aae5617f3c6d48e23130a027eb97b8b04"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">argstring</span></span></span><a class="headerlink" href="#_CPPv4N14FrameSimulator20FrameSimulatorOption9argstringE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator20FrameSimulatorOption11descriptionE">
+<span id="_CPPv3N14FrameSimulator20FrameSimulatorOption11descriptionE"></span><span id="_CPPv2N14FrameSimulator20FrameSimulatorOption11descriptionE"></span><span id="FrameSimulator::FrameSimulatorOption::description__ssC"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorOption_1ae53bb754e9344eb4d6b572c85ff81dc9"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">description</span></span></span><a class="headerlink" href="#_CPPv4N14FrameSimulator20FrameSimulatorOption11descriptionE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+</section>
+</section>
+<section id="framesimulatorpluginudp">
+<h2>FrameSimulatorPluginUDP<a class="headerlink" href="#framesimulatorpluginudp" title="Link to this heading">#</a></h2>
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator23FrameSimulatorPluginUDPE">
+<span id="_CPPv3N14FrameSimulator23FrameSimulatorPluginUDPE"></span><span id="_CPPv2N14FrameSimulator23FrameSimulatorPluginUDPE"></span><span id="FrameSimulator::FrameSimulatorPluginUDP"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPluginUDP"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FrameSimulatorPluginUDP</span></span></span><span class="w"> </span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">public</span></span><span class="w"> </span><span class="n"><span class="pre">FrameSimulator</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="#_CPPv4N14FrameSimulator20FrameSimulatorPluginE" title="FrameSimulator::FrameSimulatorPlugin"><span class="n"><span class="pre">FrameSimulatorPlugin</span></span></a><a class="headerlink" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDPE" title="Link to this definition">#</a><br /></dt>
+<dd><p><a class="reference internal" href="#classFrameSimulator_1_1FrameSimulatorPluginUDP"><span class="std std-ref">FrameSimulatorPluginUDP</span></a></p>
+<p>Any frame simulator plugin which reads pcap or creates dummy frames to send over a socket should inherit from this class not <a class="reference internal" href="#classFrameSimulator_1_1FrameSimulatorPlugin"><span class="std std-ref">FrameSimulatorPlugin</span></a> ‘prepare_packets’ (and then ‘extract_frames’) is called on setup if a pcap file is specified: this takes the content of the pcap file and organises it in frames to store ‘create_frames’ is called on setup if no pcap file is specified ‘replay_frames’ is called by simulate: this will replay the created/stored frames </p>
+<p>Subclassed by <a class="reference internal" href="#classFrameSimulator_1_1DummyUDPFrameSimulatorPlugin"><span class="std std-ref">FrameSimulator::DummyUDPFrameSimulatorPlugin</span></a></p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP23FrameSimulatorPluginUDPEv">
+<span id="_CPPv3N14FrameSimulator23FrameSimulatorPluginUDP23FrameSimulatorPluginUDPEv"></span><span id="_CPPv2N14FrameSimulator23FrameSimulatorPluginUDP23FrameSimulatorPluginUDPEv"></span><span id="FrameSimulator::FrameSimulatorPluginUDP::FrameSimulatorPluginUDP"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPluginUDP_1a8352cbef016b69394349ede9cca97e6f"></span><span class="sig-name descname"><span class="n"><span class="pre">FrameSimulatorPluginUDP</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP23FrameSimulatorPluginUDPEv" title="Link to this definition">#</a><br /></dt>
+<dd><p>Construct a <a class="reference internal" href="#classFrameSimulator_1_1FrameSimulatorPluginUDP"><span class="std std-ref">FrameSimulatorPluginUDP</span></a> setup an instance of the logger initialises curr_frame and curr_port_index for handling assignment of frames to appropriate ports </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator23FrameSimulatorPluginUDPD0Ev">
+<span id="_CPPv3N14FrameSimulator23FrameSimulatorPluginUDPD0Ev"></span><span id="_CPPv2N14FrameSimulator23FrameSimulatorPluginUDPD0Ev"></span><span id="FrameSimulator::FrameSimulatorPluginUDP::~FrameSimulatorPluginUDP"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPluginUDP_1ae8851c2f09c0565c4e6e71ac389bbfa6"></span><span class="sig-name descname"><span class="n"><span class="pre">~FrameSimulatorPluginUDP</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDPD0Ev" title="Link to this definition">#</a><br /></dt>
+<dd><p>Class destructor closes socket </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP16populate_optionsERN2po19options_descriptionE">
+<span id="_CPPv3N14FrameSimulator23FrameSimulatorPluginUDP16populate_optionsERN2po19options_descriptionE"></span><span id="_CPPv2N14FrameSimulator23FrameSimulatorPluginUDP16populate_optionsERN2po19options_descriptionE"></span><span id="FrameSimulator::FrameSimulatorPluginUDP::populate_options__po::options_descriptionR"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPluginUDP_1ab1daf3949d376f2dd22264a6a8c4c6d2"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">populate_options</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">po</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">options_description</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">config</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP16populate_optionsERN2po19options_descriptionE" title="Link to this definition">#</a><br /></dt>
+<dd><p>Populate boost program options with appropriate command line options for plugin /param[out] config - boost::program_options::options_description to populate with appropriate plugin command line options </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP5setupERKN2po13variables_mapE">
+<span id="_CPPv3N14FrameSimulator23FrameSimulatorPluginUDP5setupERKN2po13variables_mapE"></span><span id="_CPPv2N14FrameSimulator23FrameSimulatorPluginUDP5setupERKN2po13variables_mapE"></span><span id="FrameSimulator::FrameSimulatorPluginUDP::setup__po::variables_mapCR"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPluginUDP_1a4f3445b82fa973a033c1e079f5ca15ae"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">setup</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">po</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">variables_map</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">vm</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP5setupERKN2po13variables_mapE" title="Link to this definition">#</a><br /></dt>
+<dd><p>Setup frame simulator plugin class from store of command line options</p>
+<p>
+Derived plugins must additionally call this base method even if overridden </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>vm</strong> – <strong>[in]</strong> - store of given command line options </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>true (false) if required program options are (not) specified and the simulator plugin is not ready to use</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP8simulateEv">
+<span id="_CPPv3N14FrameSimulator23FrameSimulatorPluginUDP8simulateEv"></span><span id="_CPPv2N14FrameSimulator23FrameSimulatorPluginUDP8simulateEv"></span><span id="FrameSimulator::FrameSimulatorPluginUDP::simulate"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPluginUDP_1a0aaf86c5595060012d08bc5489e90dd9"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">simulate</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP8simulateEv" title="Link to this definition">#</a><br /></dt>
+<dd><p>Simulate detector by replaying frames </p>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-protected-functions">Protected Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK14FrameSimulator23FrameSimulatorPluginUDP11send_packetERKN5boost10shared_ptrI6PacketEERKi">
+<span id="_CPPv3NK14FrameSimulator23FrameSimulatorPluginUDP11send_packetERKN5boost10shared_ptrI6PacketEERKi"></span><span id="_CPPv2NK14FrameSimulator23FrameSimulatorPluginUDP11send_packetERKN5boost10shared_ptrI6PacketEERKi"></span><span id="FrameSimulator::FrameSimulatorPluginUDP::send_packet__boost::shared_ptr:Packet:CR.iCRC"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPluginUDP_1a300d48ed912f62a25c95181b560eea7d"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">send_packet</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">Packet</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">packet</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">frame</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK14FrameSimulator23FrameSimulatorPluginUDP11send_packetERKN5boost10shared_ptrI6PacketEERKi" title="Link to this definition">#</a><br /></dt>
+<dd><p>All Packets should be sent using send_packet /param[in] packet to send /param[in] frame to which packet belongs this ensures each frame is sent to the appropriate destination port </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP14extract_framesEPK6u_charRKi">
+<span id="_CPPv3N14FrameSimulator23FrameSimulatorPluginUDP14extract_framesEPK6u_charRKi"></span><span id="_CPPv2N14FrameSimulator23FrameSimulatorPluginUDP14extract_framesEPK6u_charRKi"></span><span id="FrameSimulator::FrameSimulatorPluginUDP::extract_frames__u_charCP.iCR"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPluginUDP_1a0e6316c2beb2f97b8f3bc0f8b70ec982"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">extract_frames</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">u_char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">data</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">size</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP14extract_framesEPK6u_charRKi" title="Link to this definition">#</a><br /></dt>
+<dd><p>Extract frames from pcap read data </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP15prepare_packetsEPK11pcap_pkthdrPK6u_char">
+<span id="_CPPv3N14FrameSimulator23FrameSimulatorPluginUDP15prepare_packetsEPK11pcap_pkthdrPK6u_char"></span><span id="_CPPv2N14FrameSimulator23FrameSimulatorPluginUDP15prepare_packetsEPK11pcap_pkthdrPK6u_char"></span><span id="FrameSimulator::FrameSimulatorPluginUDP::prepare_packets__pcap_pkthdrCP.u_charCP"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPluginUDP_1a5cc07b6ccdf4f56f540bef471a608f42"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">prepare_packets</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">pcap_pkthdr</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">header</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">u_char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">buffer</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP15prepare_packetsEPK11pcap_pkthdrPK6u_char" title="Link to this definition">#</a><br /></dt>
+<dd><p>Prepare frames from pcap header and data buffer</p>
+<p>Prepare frame(s) for replay by processing the pcap file /param[in] header /param[in] buffer calls extract_frames which should be implemented by each parent class to extract frames of the appropriate type </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP13create_framesERKi">
+<span id="_CPPv3N14FrameSimulator23FrameSimulatorPluginUDP13create_framesERKi"></span><span id="_CPPv2N14FrameSimulator23FrameSimulatorPluginUDP13create_framesERKi"></span><span id="FrameSimulator::FrameSimulatorPluginUDP::create_frames__iCR"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPluginUDP_1a40c98453199b8f2f8c4be806def45984"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">create_frames</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">num_frames</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP13create_framesERKi" title="Link to this definition">#</a><br /></dt>
+<dd><p>Create dummy frames </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP13replay_framesEv">
+<span id="_CPPv3N14FrameSimulator23FrameSimulatorPluginUDP13replay_framesEv"></span><span id="_CPPv2N14FrameSimulator23FrameSimulatorPluginUDP13replay_framesEv"></span><span id="FrameSimulator::FrameSimulatorPluginUDP::replay_frames"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPluginUDP_1a8a7e25ef1f0ef611e87125b153897ca9"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">replay_frames</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP13replay_framesEv" title="Link to this definition">#</a><br /></dt>
+<dd><p>Replay the extracted or created frames</p>
+<p>Replay the stored frames called by simulate </p>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-protected-attributes">Protected Attributes</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP11packet_gap_E">
+<span id="_CPPv3N14FrameSimulator23FrameSimulatorPluginUDP11packet_gap_E"></span><span id="_CPPv2N14FrameSimulator23FrameSimulatorPluginUDP11packet_gap_E"></span><span id="FrameSimulator::FrameSimulatorPluginUDP::packet_gap___boost::optional:i:"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPluginUDP_1aa2ca37dcd5148465b29079d12df8a3d1"></span><span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">optional</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">int</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">packet_gap_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP11packet_gap_E" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP10drop_frac_E">
+<span id="_CPPv3N14FrameSimulator23FrameSimulatorPluginUDP10drop_frac_E"></span><span id="_CPPv2N14FrameSimulator23FrameSimulatorPluginUDP10drop_frac_E"></span><span id="FrameSimulator::FrameSimulatorPluginUDP::drop_frac___boost::optional:float:"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPluginUDP_1aa6dffd4eecd82c2ffb06adc1191c787b"></span><span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">optional</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">float</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">drop_frac_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP10drop_frac_E" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP13drop_packets_E">
+<span id="_CPPv3N14FrameSimulator23FrameSimulatorPluginUDP13drop_packets_E"></span><span id="_CPPv2N14FrameSimulator23FrameSimulatorPluginUDP13drop_packets_E"></span><span id="FrameSimulator::FrameSimulatorPluginUDP::drop_packets___boost::optional:std::vector:ss::"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPluginUDP_1a6ded824665bedd4baeedb3ecfad43a7a"></span><span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">optional</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">drop_packets_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP13drop_packets_E" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP7frames_E">
+<span id="_CPPv3N14FrameSimulator23FrameSimulatorPluginUDP7frames_E"></span><span id="_CPPv2N14FrameSimulator23FrameSimulatorPluginUDP7frames_E"></span><span id="FrameSimulator::FrameSimulatorPluginUDP::frames___UDPFrames"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPluginUDP_1aabf16d309d58abb9da0806e82f671f5f"></span><span class="n"><span class="pre">UDPFrames</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">frames_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP7frames_E" title="Link to this definition">#</a><br /></dt>
+<dd><p>Frames </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP13total_packetsE">
+<span id="_CPPv3N14FrameSimulator23FrameSimulatorPluginUDP13total_packetsE"></span><span id="_CPPv2N14FrameSimulator23FrameSimulatorPluginUDP13total_packetsE"></span><span id="FrameSimulator::FrameSimulatorPluginUDP::total_packets__i"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPluginUDP_1a07dd598b487f4abe9fe5040cca1c3f61"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">total_packets</span></span></span><a class="headerlink" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP13total_packetsE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP11total_bytesE">
+<span id="_CPPv3N14FrameSimulator23FrameSimulatorPluginUDP11total_bytesE"></span><span id="_CPPv2N14FrameSimulator23FrameSimulatorPluginUDP11total_bytesE"></span><span id="FrameSimulator::FrameSimulatorPluginUDP::total_bytes__i"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPluginUDP_1a29c71d2a620c5c8e836c35361e4352a3"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">total_bytes</span></span></span><a class="headerlink" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP11total_bytesE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP17current_frame_numE">
+<span id="_CPPv3N14FrameSimulator23FrameSimulatorPluginUDP17current_frame_numE"></span><span id="_CPPv2N14FrameSimulator23FrameSimulatorPluginUDP17current_frame_numE"></span><span id="FrameSimulator::FrameSimulatorPluginUDP::current_frame_num__i"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPluginUDP_1aa5dfd9f79bc486c20a332fe791a40342"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">current_frame_num</span></span></span><a class="headerlink" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP17current_frame_numE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP20current_subframe_numE">
+<span id="_CPPv3N14FrameSimulator23FrameSimulatorPluginUDP20current_subframe_numE"></span><span id="_CPPv2N14FrameSimulator23FrameSimulatorPluginUDP20current_subframe_numE"></span><span id="FrameSimulator::FrameSimulatorPluginUDP::current_subframe_num__i"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPluginUDP_1ac64664d15635f0b6b7ae0a3a366677d1"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">current_subframe_num</span></span></span><a class="headerlink" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP20current_subframe_numE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-protected-static-functions">Protected Static Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP12pkt_callbackEP6u_charPK11pcap_pkthdrPK6u_char">
+<span id="_CPPv3N14FrameSimulator23FrameSimulatorPluginUDP12pkt_callbackEP6u_charPK11pcap_pkthdrPK6u_char"></span><span id="_CPPv2N14FrameSimulator23FrameSimulatorPluginUDP12pkt_callbackEP6u_charPK11pcap_pkthdrPK6u_char"></span><span id="FrameSimulator::FrameSimulatorPluginUDP::pkt_callback__u_charP.pcap_pkthdrCP.u_charCP"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPluginUDP_1a4d565180d55aee818aec5f8a17ffcc61"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">pkt_callback</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">u_char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">user</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">pcap_pkthdr</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">hdr</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">u_char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">buffer</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP12pkt_callbackEP6u_charPK11pcap_pkthdrPK6u_char" title="Link to this definition">#</a><br /></dt>
+<dd><p>Packet callback function callback for pcap_loop(m_handle, -1, pkt_callback, reinterpret_cast&lt;u_char *&gt;(this)); /param[in] user - final argument of pcap_loop; this class instance /param[in] hdr - pcap header /param[in] buffer pointer to first byte of chunk of data containing the entire packet </p>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-members">Private Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP7m_addrsE">
+<span id="_CPPv3N14FrameSimulator23FrameSimulatorPluginUDP7m_addrsE"></span><span id="_CPPv2N14FrameSimulator23FrameSimulatorPluginUDP7m_addrsE"></span><span id="FrameSimulator::FrameSimulatorPluginUDP::m_addrs__std::vector:sockaddr_in:"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPluginUDP_1a74f5ceab50ed4337ee75d3206a6fec82"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">sockaddr_in</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">m_addrs</span></span></span><a class="headerlink" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP7m_addrsE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP8m_socketE">
+<span id="_CPPv3N14FrameSimulator23FrameSimulatorPluginUDP8m_socketE"></span><span id="_CPPv2N14FrameSimulator23FrameSimulatorPluginUDP8m_socketE"></span><span id="FrameSimulator::FrameSimulatorPluginUDP::m_socket__i"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPluginUDP_1ac95e108a7586ccb853b64fffe89f1c06"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">m_socket</span></span></span><a class="headerlink" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP8m_socketE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP15curr_port_indexE">
+<span id="_CPPv3N14FrameSimulator23FrameSimulatorPluginUDP15curr_port_indexE"></span><span id="_CPPv2N14FrameSimulator23FrameSimulatorPluginUDP15curr_port_indexE"></span><span id="FrameSimulator::FrameSimulatorPluginUDP::curr_port_index__i"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPluginUDP_1a9011eaf9f1f0f1585e1848a2ed30ea42"></span><span class="k"><span class="pre">mutable</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">curr_port_index</span></span></span><a class="headerlink" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP15curr_port_indexE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP10curr_frameE">
+<span id="_CPPv3N14FrameSimulator23FrameSimulatorPluginUDP10curr_frameE"></span><span id="_CPPv2N14FrameSimulator23FrameSimulatorPluginUDP10curr_frameE"></span><span id="FrameSimulator::FrameSimulatorPluginUDP::curr_frame__i"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPluginUDP_1a4a434d849e37ae59ebaae9a8b3e985ce"></span><span class="k"><span class="pre">mutable</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">curr_frame</span></span></span><a class="headerlink" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP10curr_frameE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP8m_handleE">
+<span id="_CPPv3N14FrameSimulator23FrameSimulatorPluginUDP8m_handleE"></span><span id="_CPPv2N14FrameSimulator23FrameSimulatorPluginUDP8m_handleE"></span><span id="FrameSimulator::FrameSimulatorPluginUDP::m_handle__pcap_tP"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPluginUDP_1aa8cf605ea59d3d444cd46d0cb6d6c3af"></span><span class="n"><span class="pre">pcap_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">m_handle</span></span></span><a class="headerlink" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP8m_handleE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP6errbufE">
+<span id="_CPPv3N14FrameSimulator23FrameSimulatorPluginUDP6errbufE"></span><span id="_CPPv2N14FrameSimulator23FrameSimulatorPluginUDP6errbufE"></span><span id="FrameSimulator::FrameSimulatorPluginUDP::errbuf__cA"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPluginUDP_1a71f3a17dc6fae6438116ed1f285625b7"></span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">errbuf</span></span></span><span class="p"><span class="pre">[</span></span><span class="n"><span class="pre">PCAP_ERRBUF_SIZE</span></span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP6errbufE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP7logger_E">
+<span id="_CPPv3N14FrameSimulator23FrameSimulatorPluginUDP7logger_E"></span><span id="_CPPv2N14FrameSimulator23FrameSimulatorPluginUDP7logger_E"></span><span id="FrameSimulator::FrameSimulatorPluginUDP::logger___LoggerPtr"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPluginUDP_1a6c2c00aba5701b5cd94c44f229fc881f"></span><span class="n"><span class="pre">LoggerPtr</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">logger_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP7logger_E" title="Link to this definition">#</a><br /></dt>
+<dd><p>Pointer to logger </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP14pcap_playback_E">
+<span id="_CPPv3N14FrameSimulator23FrameSimulatorPluginUDP14pcap_playback_E"></span><span id="_CPPv2N14FrameSimulator23FrameSimulatorPluginUDP14pcap_playback_E"></span><span id="FrameSimulator::FrameSimulatorPluginUDP::pcap_playback___b"></span><span class="target" id="classFrameSimulator_1_1FrameSimulatorPluginUDP_1afd1e0f87c295fbd888fb23dc488fa853"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">pcap_playback_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP14pcap_playback_E" title="Link to this definition">#</a><br /></dt>
+<dd><p>Replay frames from pcap file </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+</section>
+<section id="dummyudpframesimulatorplugin">
+<h2>DummyUDPFrameSimulatorPlugin<a class="headerlink" href="#dummyudpframesimulatorplugin" title="Link to this heading">#</a></h2>
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPluginE">
+<span id="_CPPv3N14FrameSimulator28DummyUDPFrameSimulatorPluginE"></span><span id="_CPPv2N14FrameSimulator28DummyUDPFrameSimulatorPluginE"></span><span id="FrameSimulator::DummyUDPFrameSimulatorPlugin"></span><span class="target" id="classFrameSimulator_1_1DummyUDPFrameSimulatorPlugin"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">DummyUDPFrameSimulatorPlugin</span></span></span><span class="w"> </span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">public</span></span><span class="w"> </span><span class="n"><span class="pre">FrameSimulator</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDPE" title="FrameSimulator::FrameSimulatorPluginUDP"><span class="n"><span class="pre">FrameSimulatorPluginUDP</span></span></a><a class="headerlink" href="#_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPluginE" title="Link to this definition">#</a><br /></dt>
+<dd><p><a class="reference internal" href="#classFrameSimulator_1_1DummyUDPFrameSimulatorPlugin"><span class="std std-ref">DummyUDPFrameSimulatorPlugin</span></a></p>
+<p>‘prepare_packets’ (and then ‘extract_frames’) is called on setup if a pcap file is specified: this takes the content of the pcap file and organises it in frames to store ‘create_frames’ is called on setup if no pcap file is specified ‘replay_frames’ is called by simulate: this will replay the created/stored frames </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin28DummyUDPFrameSimulatorPluginEv">
+<span id="_CPPv3N14FrameSimulator28DummyUDPFrameSimulatorPlugin28DummyUDPFrameSimulatorPluginEv"></span><span id="_CPPv2N14FrameSimulator28DummyUDPFrameSimulatorPlugin28DummyUDPFrameSimulatorPluginEv"></span><span id="FrameSimulator::DummyUDPFrameSimulatorPlugin::DummyUDPFrameSimulatorPlugin"></span><span class="target" id="classFrameSimulator_1_1DummyUDPFrameSimulatorPlugin_1a8e075382acee6a577bd146588dd85b5b"></span><span class="sig-name descname"><span class="n"><span class="pre">DummyUDPFrameSimulatorPlugin</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin28DummyUDPFrameSimulatorPluginEv" title="Link to this definition">#</a><br /></dt>
+<dd><p>Construct an <a class="reference internal" href="#classFrameSimulator_1_1DummyUDPFrameSimulatorPlugin"><span class="std std-ref">DummyUDPFrameSimulatorPlugin</span></a> setup an instance of the logger initialises data and frame counts </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin16populate_optionsERN2po19options_descriptionE">
+<span id="_CPPv3N14FrameSimulator28DummyUDPFrameSimulatorPlugin16populate_optionsERN2po19options_descriptionE"></span><span id="_CPPv2N14FrameSimulator28DummyUDPFrameSimulatorPlugin16populate_optionsERN2po19options_descriptionE"></span><span id="FrameSimulator::DummyUDPFrameSimulatorPlugin::populate_options__po::options_descriptionR"></span><span class="target" id="classFrameSimulator_1_1DummyUDPFrameSimulatorPlugin_1a22b201718a79765124c11f0428c54d7c"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">populate_options</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">po</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">options_description</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">config</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin16populate_optionsERN2po19options_descriptionE" title="Link to this definition">#</a><br /></dt>
+<dd><p>Populate boost program options with appropriate command line options for plugin /param[out] config - boost::program_options::options_description to populate with appropriate plugin command line options </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin5setupERKN2po13variables_mapE">
+<span id="_CPPv3N14FrameSimulator28DummyUDPFrameSimulatorPlugin5setupERKN2po13variables_mapE"></span><span id="_CPPv2N14FrameSimulator28DummyUDPFrameSimulatorPlugin5setupERKN2po13variables_mapE"></span><span id="FrameSimulator::DummyUDPFrameSimulatorPlugin::setup__po::variables_mapCR"></span><span class="target" id="classFrameSimulator_1_1DummyUDPFrameSimulatorPlugin_1a9a49b8efdec76f5fd786c3f2c836523e"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">setup</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">po</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">variables_map</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">vm</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin5setupERKN2po13variables_mapE" title="Link to this definition">#</a><br /></dt>
+<dd><p>Setup frame simulator plugin class from store of command line options</p>
+<p>
+Derived plugins must additionally call this base method even if overridden </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>vm</strong> – <strong>[in]</strong> - store of given command line options </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>true (false) if required program options are (not) specified and the simulator plugin is not ready to use</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin17get_version_majorEv">
+<span id="_CPPv3N14FrameSimulator28DummyUDPFrameSimulatorPlugin17get_version_majorEv"></span><span id="_CPPv2N14FrameSimulator28DummyUDPFrameSimulatorPlugin17get_version_majorEv"></span><span id="FrameSimulator::DummyUDPFrameSimulatorPlugin::get_version_major"></span><span class="target" id="classFrameSimulator_1_1DummyUDPFrameSimulatorPlugin_1a8ad4c128c410368c76b8b17d4891f2ad"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_major</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin17get_version_majorEv" title="Link to this definition">#</a><br /></dt>
+<dd><p>Get the plugin major version number.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>major version number as an integer </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin17get_version_minorEv">
+<span id="_CPPv3N14FrameSimulator28DummyUDPFrameSimulatorPlugin17get_version_minorEv"></span><span id="_CPPv2N14FrameSimulator28DummyUDPFrameSimulatorPlugin17get_version_minorEv"></span><span id="FrameSimulator::DummyUDPFrameSimulatorPlugin::get_version_minor"></span><span class="target" id="classFrameSimulator_1_1DummyUDPFrameSimulatorPlugin_1a83f7a13ec36513bf2d6f97e168aa265b"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_minor</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin17get_version_minorEv" title="Link to this definition">#</a><br /></dt>
+<dd><p>Get the plugin minor version number.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>minor version number as an integer </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin17get_version_patchEv">
+<span id="_CPPv3N14FrameSimulator28DummyUDPFrameSimulatorPlugin17get_version_patchEv"></span><span id="_CPPv2N14FrameSimulator28DummyUDPFrameSimulatorPlugin17get_version_patchEv"></span><span id="FrameSimulator::DummyUDPFrameSimulatorPlugin::get_version_patch"></span><span class="target" id="classFrameSimulator_1_1DummyUDPFrameSimulatorPlugin_1accae2cc9d1aa0f7ce013c5ecf6705f92"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_patch</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin17get_version_patchEv" title="Link to this definition">#</a><br /></dt>
+<dd><p>Get the plugin patch version number.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>patch version number as an integer </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin17get_version_shortEv">
+<span id="_CPPv3N14FrameSimulator28DummyUDPFrameSimulatorPlugin17get_version_shortEv"></span><span id="_CPPv2N14FrameSimulator28DummyUDPFrameSimulatorPlugin17get_version_shortEv"></span><span id="FrameSimulator::DummyUDPFrameSimulatorPlugin::get_version_short"></span><span class="target" id="classFrameSimulator_1_1DummyUDPFrameSimulatorPlugin_1aa33338675acc2ee4a309f30cb096bccd"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_short</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin17get_version_shortEv" title="Link to this definition">#</a><br /></dt>
+<dd><p>Get the plugin short version (e.g. x.y.z) string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>short version as a string </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin16get_version_longEv">
+<span id="_CPPv3N14FrameSimulator28DummyUDPFrameSimulatorPlugin16get_version_longEv"></span><span id="_CPPv2N14FrameSimulator28DummyUDPFrameSimulatorPlugin16get_version_longEv"></span><span id="FrameSimulator::DummyUDPFrameSimulatorPlugin::get_version_long"></span><span class="target" id="classFrameSimulator_1_1DummyUDPFrameSimulatorPlugin_1add842c96eac4d2f8132b55874b3327cd"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_version_long</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin16get_version_longEv" title="Link to this definition">#</a><br /></dt>
+<dd><p>Get the plugin long version (e.g. x.y.z-qualifier) string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>long version as a string </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-protected-functions">Protected Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin14extract_framesEPK6u_charRKi">
+<span id="_CPPv3N14FrameSimulator28DummyUDPFrameSimulatorPlugin14extract_framesEPK6u_charRKi"></span><span id="_CPPv2N14FrameSimulator28DummyUDPFrameSimulatorPlugin14extract_framesEPK6u_charRKi"></span><span id="FrameSimulator::DummyUDPFrameSimulatorPlugin::extract_frames__u_charCP.iCR"></span><span class="target" id="classFrameSimulator_1_1DummyUDPFrameSimulatorPlugin_1af915d20a8603ba45c22672182a6103c1"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">extract_frames</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">u_char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">data</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">size</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin14extract_framesEPK6u_charRKi" title="Link to this definition">#</a><br /></dt>
+<dd><p>Extracts the frames from the pcap data file buffer </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – <strong>[in]</strong> - pcap data </p></li>
+<li><p><strong>size</strong> – <strong>[in]</strong> </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin13create_framesERKi">
+<span id="_CPPv3N14FrameSimulator28DummyUDPFrameSimulatorPlugin13create_framesERKi"></span><span id="_CPPv2N14FrameSimulator28DummyUDPFrameSimulatorPlugin13create_framesERKi"></span><span id="FrameSimulator::DummyUDPFrameSimulatorPlugin::create_frames__iCR"></span><span class="target" id="classFrameSimulator_1_1DummyUDPFrameSimulatorPlugin_1a4240cb125e30d7cf1fb94eb71b615153"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">create_frames</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">num_frames</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin13create_framesERKi" title="Link to this definition">#</a><br /></dt>
+<dd><p>Creates a number of frames</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>num_frames</strong> – - number of frames to create </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-members">Private Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin7logger_E">
+<span id="_CPPv3N14FrameSimulator28DummyUDPFrameSimulatorPlugin7logger_E"></span><span id="_CPPv2N14FrameSimulator28DummyUDPFrameSimulatorPlugin7logger_E"></span><span id="FrameSimulator::DummyUDPFrameSimulatorPlugin::logger___LoggerPtr"></span><span class="target" id="classFrameSimulator_1_1DummyUDPFrameSimulatorPlugin_1a97dfbe73bb29d35c69ad751039631176"></span><span class="n"><span class="pre">LoggerPtr</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">logger_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin7logger_E" title="Link to this definition">#</a><br /></dt>
+<dd><p>Pointer to logger </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin12image_width_E">
+<span id="_CPPv3N14FrameSimulator28DummyUDPFrameSimulatorPlugin12image_width_E"></span><span id="_CPPv2N14FrameSimulator28DummyUDPFrameSimulatorPlugin12image_width_E"></span><span id="FrameSimulator::DummyUDPFrameSimulatorPlugin::image_width___i"></span><span class="target" id="classFrameSimulator_1_1DummyUDPFrameSimulatorPlugin_1a60cf602f8944ee6ff1e79bde9f48be04"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">image_width_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin12image_width_E" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin13image_height_E">
+<span id="_CPPv3N14FrameSimulator28DummyUDPFrameSimulatorPlugin13image_height_E"></span><span id="_CPPv2N14FrameSimulator28DummyUDPFrameSimulatorPlugin13image_height_E"></span><span id="FrameSimulator::DummyUDPFrameSimulatorPlugin::image_height___i"></span><span class="target" id="classFrameSimulator_1_1DummyUDPFrameSimulatorPlugin_1aaea245209faf0a2300795b3f99375ec2"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">image_height_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin13image_height_E" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin11packet_len_E">
+<span id="_CPPv3N14FrameSimulator28DummyUDPFrameSimulatorPlugin11packet_len_E"></span><span id="_CPPv2N14FrameSimulator28DummyUDPFrameSimulatorPlugin11packet_len_E"></span><span id="FrameSimulator::DummyUDPFrameSimulatorPlugin::packet_len___i"></span><span class="target" id="classFrameSimulator_1_1DummyUDPFrameSimulatorPlugin_1acb66bf0d0f602b03901b77b538df9d1a"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">packet_len_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin11packet_len_E" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="frame-processor.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">FrameProcessor API Reference</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../design-docs/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Design Docs</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">FrameSimulator API Reference</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#plugins">Plugins</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#framesimulatorplugin">FrameSimulatorPlugin</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator20FrameSimulatorPluginE"><code class="docutils literal notranslate"><span class="pre">FrameSimulator::FrameSimulatorPlugin</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator20FrameSimulatorPlugin20FrameSimulatorPluginEv"><code class="docutils literal notranslate"><span class="pre">FrameSimulatorPlugin()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator20FrameSimulatorPlugin5setupERKN2po13variables_mapE"><code class="docutils literal notranslate"><span class="pre">setup()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator20FrameSimulatorPlugin8simulateEv"><code class="docutils literal notranslate"><span class="pre">simulate()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator20FrameSimulatorPlugin16populate_optionsERN2po19options_descriptionE"><code class="docutils literal notranslate"><span class="pre">populate_options()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator20FrameSimulatorPlugin17replay_numframes_E"><code class="docutils literal notranslate"><span class="pre">replay_numframes_</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator20FrameSimulatorPlugin15frame_gap_secs_E"><code class="docutils literal notranslate"><span class="pre">frame_gap_secs_</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator20FrameSimulatorPlugin7logger_E"><code class="docutils literal notranslate"><span class="pre">logger_</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#framesimulatoroption">FrameSimulatorOption</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4I0EN14FrameSimulator20FrameSimulatorOptionE"><code class="docutils literal notranslate"><span class="pre">FrameSimulator::FrameSimulatorOption</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator20FrameSimulatorOption20FrameSimulatorOptionERKNSt6stringERKNSt6stringE"><code class="docutils literal notranslate"><span class="pre">FrameSimulatorOption()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator20FrameSimulatorOption20FrameSimulatorOptionERKNSt6stringERKNSt6stringERK1T"><code class="docutils literal notranslate"><span class="pre">FrameSimulatorOption()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4NK14FrameSimulator20FrameSimulatorOption7get_argEv"><code class="docutils literal notranslate"><span class="pre">get_arg()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4NK14FrameSimulator20FrameSimulatorOption13get_argstringEv"><code class="docutils literal notranslate"><span class="pre">get_argstring()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4NK14FrameSimulator20FrameSimulatorOption15get_descriptionEv"><code class="docutils literal notranslate"><span class="pre">get_description()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4NK14FrameSimulator20FrameSimulatorOption12is_specifiedERKN2po13variables_mapE"><code class="docutils literal notranslate"><span class="pre">is_specified()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4NK14FrameSimulator20FrameSimulatorOption7get_valERKN2po13variables_mapE"><code class="docutils literal notranslate"><span class="pre">get_val()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4NK14FrameSimulator20FrameSimulatorOption7get_valERKN2po13variables_mapERN5boost8optionalI1TEE"><code class="docutils literal notranslate"><span class="pre">get_val()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4NK14FrameSimulator20FrameSimulatorOption13add_option_toERN2po19options_descriptionE"><code class="docutils literal notranslate"><span class="pre">add_option_to()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator20FrameSimulatorOption10defaultvalE"><code class="docutils literal notranslate"><span class="pre">defaultval</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator20FrameSimulatorOption9argstringE"><code class="docutils literal notranslate"><span class="pre">argstring</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator20FrameSimulatorOption11descriptionE"><code class="docutils literal notranslate"><span class="pre">description</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#framesimulatorpluginudp">FrameSimulatorPluginUDP</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDPE"><code class="docutils literal notranslate"><span class="pre">FrameSimulator::FrameSimulatorPluginUDP</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP23FrameSimulatorPluginUDPEv"><code class="docutils literal notranslate"><span class="pre">FrameSimulatorPluginUDP()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDPD0Ev"><code class="docutils literal notranslate"><span class="pre">~FrameSimulatorPluginUDP()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP16populate_optionsERN2po19options_descriptionE"><code class="docutils literal notranslate"><span class="pre">populate_options()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP5setupERKN2po13variables_mapE"><code class="docutils literal notranslate"><span class="pre">setup()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP8simulateEv"><code class="docutils literal notranslate"><span class="pre">simulate()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4NK14FrameSimulator23FrameSimulatorPluginUDP11send_packetERKN5boost10shared_ptrI6PacketEERKi"><code class="docutils literal notranslate"><span class="pre">send_packet()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP14extract_framesEPK6u_charRKi"><code class="docutils literal notranslate"><span class="pre">extract_frames()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP15prepare_packetsEPK11pcap_pkthdrPK6u_char"><code class="docutils literal notranslate"><span class="pre">prepare_packets()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP13create_framesERKi"><code class="docutils literal notranslate"><span class="pre">create_frames()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP13replay_framesEv"><code class="docutils literal notranslate"><span class="pre">replay_frames()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP11packet_gap_E"><code class="docutils literal notranslate"><span class="pre">packet_gap_</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP10drop_frac_E"><code class="docutils literal notranslate"><span class="pre">drop_frac_</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP13drop_packets_E"><code class="docutils literal notranslate"><span class="pre">drop_packets_</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP7frames_E"><code class="docutils literal notranslate"><span class="pre">frames_</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP13total_packetsE"><code class="docutils literal notranslate"><span class="pre">total_packets</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP11total_bytesE"><code class="docutils literal notranslate"><span class="pre">total_bytes</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP17current_frame_numE"><code class="docutils literal notranslate"><span class="pre">current_frame_num</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP20current_subframe_numE"><code class="docutils literal notranslate"><span class="pre">current_subframe_num</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP12pkt_callbackEP6u_charPK11pcap_pkthdrPK6u_char"><code class="docutils literal notranslate"><span class="pre">pkt_callback()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP7m_addrsE"><code class="docutils literal notranslate"><span class="pre">m_addrs</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP8m_socketE"><code class="docutils literal notranslate"><span class="pre">m_socket</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP15curr_port_indexE"><code class="docutils literal notranslate"><span class="pre">curr_port_index</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP10curr_frameE"><code class="docutils literal notranslate"><span class="pre">curr_frame</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP8m_handleE"><code class="docutils literal notranslate"><span class="pre">m_handle</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP6errbufE"><code class="docutils literal notranslate"><span class="pre">errbuf</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP7logger_E"><code class="docutils literal notranslate"><span class="pre">logger_</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator23FrameSimulatorPluginUDP14pcap_playback_E"><code class="docutils literal notranslate"><span class="pre">pcap_playback_</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dummyudpframesimulatorplugin">DummyUDPFrameSimulatorPlugin</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPluginE"><code class="docutils literal notranslate"><span class="pre">FrameSimulator::DummyUDPFrameSimulatorPlugin</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin28DummyUDPFrameSimulatorPluginEv"><code class="docutils literal notranslate"><span class="pre">DummyUDPFrameSimulatorPlugin()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin16populate_optionsERN2po19options_descriptionE"><code class="docutils literal notranslate"><span class="pre">populate_options()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin5setupERKN2po13variables_mapE"><code class="docutils literal notranslate"><span class="pre">setup()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin17get_version_majorEv"><code class="docutils literal notranslate"><span class="pre">get_version_major()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin17get_version_minorEv"><code class="docutils literal notranslate"><span class="pre">get_version_minor()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin17get_version_patchEv"><code class="docutils literal notranslate"><span class="pre">get_version_patch()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin17get_version_shortEv"><code class="docutils literal notranslate"><span class="pre">get_version_short()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin16get_version_longEv"><code class="docutils literal notranslate"><span class="pre">get_version_long()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin14extract_framesEPK6u_charRKi"><code class="docutils literal notranslate"><span class="pre">extract_frames()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin13create_framesERKi"><code class="docutils literal notranslate"><span class="pre">create_frames()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin7logger_E"><code class="docutils literal notranslate"><span class="pre">logger_</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin12image_width_E"><code class="docutils literal notranslate"><span class="pre">image_width_</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin13image_height_E"><code class="docutils literal notranslate"><span class="pre">image_height_</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameSimulator28DummyUDPFrameSimulatorPlugin11packet_len_E"><code class="docutils literal notranslate"><span class="pre">packet_len_</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/odin-detector/odin-data/edit/dev/docs/developer/reference/api/frame-simulator.md">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../../_sources/developer/reference/api/frame-simulator.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
