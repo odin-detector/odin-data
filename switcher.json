@@ -1,6 +1,82 @@
 [
   {
+    "version": "master",
+    "url": "https://odin-detector.github.io/odin-data/master/"
+  },
+  {
+    "version": "1.10.0",
+    "url": "https://odin-detector.github.io/odin-data/1.10.0/"
+  },
+  {
+    "version": "1.10.1",
+    "url": "https://odin-detector.github.io/odin-data/1.10.1/"
+  },
+  {
+    "version": "1.10.1_fastcs-dev1",
+    "url": "https://odin-detector.github.io/odin-data/1.10.1_fastcs-dev1/"
+  },
+  {
+    "version": "1.10.1_fastcs-dev2",
+    "url": "https://odin-detector.github.io/odin-data/1.10.1_fastcs-dev2/"
+  },
+  {
+    "version": "1.10.1_fastcs-dev3",
+    "url": "https://odin-detector.github.io/odin-data/1.10.1_fastcs-dev3/"
+  },
+  {
+    "version": "1.10.1_fastcs-dev4",
+    "url": "https://odin-detector.github.io/odin-data/1.10.1_fastcs-dev4/"
+  },
+  {
+    "version": "1.10.2",
+    "url": "https://odin-detector.github.io/odin-data/1.10.2/"
+  },
+  {
+    "version": "1.11.0",
+    "url": "https://odin-detector.github.io/odin-data/1.11.0/"
+  },
+  {
     "version": "1.11.0_dev1",
     "url": "https://odin-detector.github.io/odin-data/1.11.0_dev1/"
+  },
+  {
+    "version": "360_block_write",
+    "url": "https://odin-detector.github.io/odin-data/360_block_write/"
+  },
+  {
+    "version": "client-docs",
+    "url": "https://odin-detector.github.io/odin-data/client-docs/"
+  },
+  {
+    "version": "dev",
+    "url": "https://odin-detector.github.io/odin-data/dev/"
+  },
+  {
+    "version": "famous31_branch",
+    "url": "https://odin-detector.github.io/odin-data/famous31_branch/"
+  },
+  {
+    "version": "fp-param-tree-draft",
+    "url": "https://odin-detector.github.io/odin-data/fp-param-tree-draft/"
+  },
+  {
+    "version": "hdf5-references",
+    "url": "https://odin-detector.github.io/odin-data/hdf5-references/"
+  },
+  {
+    "version": "metadata-helper-methods_ISSUE_407_Fix",
+    "url": "https://odin-detector.github.io/odin-data/metadata-helper-methods_ISSUE_407_Fix/"
+  },
+  {
+    "version": "optional-fr-adapter",
+    "url": "https://odin-detector.github.io/odin-data/optional-fr-adapter/"
+  },
+  {
+    "version": "request-commands-bugfix",
+    "url": "https://odin-detector.github.io/odin-data/request-commands-bugfix/"
+  },
+  {
+    "version": "stream2",
+    "url": "https://odin-detector.github.io/odin-data/stream2/"
   }
 ]
