@@ -7,7 +7,9 @@
 
 #ifndef BLOSCPLUGIN_H_
 #define BLOSCPLUGIN_H_
+#include <cstdint>
 
+#include <blosc.h>
 #include <log4cxx/logger.h>
 using namespace log4cxx;
 
@@ -79,6 +81,26 @@ private:
   static const std::string CONFIG_BLOSC_THREADS;
   static const std::string CONFIG_BLOSC_LEVEL;
   static const std::string CONFIG_BLOSC_SHUFFLE;
+
+/** These are private virtual (inline) methods
+ *  MUST be customized by every derived FrameProcessor 
+ *  plugin derived class that can requires metadata.
+ * \returns a map of ParamMetadata's
+ */
+  using ParameterBucket_t = std::unordered_map<std::string, ParamMetadata>;
+  virtual ParameterBucket_t& get_config_metadata() const noexcept{
+    static ParameterBucket_t config_metadata_bucket{{CONFIG_BLOSC_COMPRESSOR, {"int", "ro", {}, BLOSC_BLOSCLZ, BLOSC_ZSTD} },
+                                                    {CONFIG_BLOSC_THREADS, {"int", "ro", {}, 1, INT32_MAX} },
+                                                    {CONFIG_BLOSC_LEVEL, {"int", "ro", {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 1, 9} },
+                                                    {CONFIG_BLOSC_SHUFFLE, {"int", "ro", {BLOSC_NOSHUFFLE, BLOSC_SHUFFLE, BLOSC_BITSHUFFLE}, BLOSC_NOSHUFFLE, BLOSC_BITSHUFFLE} },
+                                                                };
+    std::cout << "In BLOSC PLUGIN NOW!!!!\n";
+    return config_metadata_bucket;
+  }
+  virtual ParameterBucket_t& get_status_metadata() const noexcept{
+    static BloscPlugin::ParameterBucket_t status_metadata_bucket{};
+    return status_metadata_bucket;
+  }
 
 };
 

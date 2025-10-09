@@ -175,7 +175,7 @@ void FrameProcessorPlugin::requestConfigurationMetadata(OdinData::IpcMessage& re
 {
   auto end = get_config_metadata().end();
   for(auto itr = get_config_metadata().begin(); itr != end; ++itr) {
-    add_metadata(reply, itr->second);
+    add_metadata(reply, *itr);
   }
 }
 
@@ -186,7 +186,7 @@ void FrameProcessorPlugin::requestStatusMetadata(OdinData::IpcMessage& reply) co
 {
   auto end = get_status_metadata().end();
   for(auto itr = get_status_metadata().begin(); itr != end; ++itr) {
-    add_metadata(reply, itr->second);
+    add_metadata(reply, *itr);
   }
 }
 

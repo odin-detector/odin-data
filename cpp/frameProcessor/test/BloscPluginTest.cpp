@@ -22,6 +22,8 @@ public:
     dimensions_t img_dims(2); img_dims[0] = 3; img_dims[1] = 4;
     dimensions_t chunk_dims(3); chunk_dims[0] = 1; chunk_dims[1] = 3; chunk_dims[2] = 4;
 
+    blosc_plugin.set_name("BloscPluginTest");
+
     dset_def.name = "data";
     dset_def.num_frames = 2; //unused?
     dset_def.data_type = FrameProcessor::raw_16bit;
@@ -65,14 +67,14 @@ BOOST_AUTO_TEST_CASE( BloscPlugin_process_frame )
 
 BOOST_AUTO_TEST_CASE( BloscPlugin_request_metadata )
 {
-  // In a plugin which implements "metadata," the metadata hashmap
-  // is already constructed as of here.
-  // This "Test" is a placeholder for when BloscPlugin implements 
-  // its own metadata.
   // TODO Famous: Update test case when BloscPlugin has "metadata" implemented
   OdinData::IpcMessage reply; // IpcMessage to be populated with metadata
   blosc_plugin.requestConfigurationMetadata(reply);
-  BOOST_CHECK(!reply.has_param("metadata")); // !false == true;
+  BOOST_CHECK(reply.has_param("metadata"));
+  BOOST_CHECK(reply.has_param("metadata/" + blosc_plugin.get_name() + "/compressor"));
+  BOOST_CHECK(reply.has_param("metadata/" + blosc_plugin.get_name() + "/level"));
+  BOOST_CHECK(reply.has_param("metadata/" + blosc_plugin.get_name() + "/shuffle"));
+  BOOST_CHECK(reply.has_param("metadata/" + blosc_plugin.get_name() + "/threads"));
 }
 
 BOOST_AUTO_TEST_SUITE_END(); //BloscPluginUnitTest
