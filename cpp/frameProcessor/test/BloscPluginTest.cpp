@@ -63,4 +63,16 @@ BOOST_AUTO_TEST_CASE( BloscPlugin_process_frame )
 
 }
 
+BOOST_AUTO_TEST_CASE( BloscPlugin_request_metadata )
+{
+  // In a plugin which implements "metadata," the metadata hashmap
+  // is already constructed as of here.
+  // This "Test" is a placeholder for when BloscPlugin implements 
+  // its own metadata.
+  // TODO Famous: Update test case when BloscPlugin has "metadata" implemented
+  OdinData::IpcMessage reply; // IpcMessage to be populated with metadata
+  blosc_plugin.requestConfigurationMetadata(reply);
+  BOOST_CHECK(!reply.has_param("metadata")); // !false == true;
+}
+
 BOOST_AUTO_TEST_SUITE_END(); //BloscPluginUnitTest
