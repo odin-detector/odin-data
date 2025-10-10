@@ -92,9 +92,8 @@ private:
     static ParameterBucket_t config_metadata_bucket{{CONFIG_BLOSC_COMPRESSOR, {"int", "ro", {}, BLOSC_BLOSCLZ, BLOSC_ZSTD} },
                                                     {CONFIG_BLOSC_THREADS, {"int", "ro", {}, 1, INT32_MAX} },
                                                     {CONFIG_BLOSC_LEVEL, {"int", "ro", {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 1, 9} },
-                                                    {CONFIG_BLOSC_SHUFFLE, {"int", "ro", {BLOSC_NOSHUFFLE, BLOSC_SHUFFLE, BLOSC_BITSHUFFLE}, BLOSC_NOSHUFFLE, BLOSC_BITSHUFFLE} },
-                                                                };
-    std::cout << "In BLOSC PLUGIN NOW!!!!\n";
+                                                    {CONFIG_BLOSC_SHUFFLE, {"int", "ro", {BLOSC_NOSHUFFLE, BLOSC_SHUFFLE, BLOSC_BITSHUFFLE}, BLOSC_NOSHUFFLE, BLOSC_BITSHUFFLE} }
+    };
     return config_metadata_bucket;
   }
   virtual ParameterBucket_t& get_status_metadata() const noexcept{

@@ -88,11 +88,13 @@ private:
    */
   void add_metadata(OdinData::IpcMessage& message, const std::pair<std::string, ParamMetadata>& metadata) const
   {
-    std::string param_prefix = "metadata/" + get_name() + '/' + metadata.path + '/';
-    message.set_param(param_prefix +  "type", metadata.type);
-    message.set_param(param_prefix +  "access_mode", metadata.access_mode);
-    if(metadata.has_min){
-      message.set_param(param_prefix +  "min", metadata.min);
+    std::string param_prefix;
+    param_prefix.reserve(100u);
+    param_prefix = "metadata/" + get_name() + '/' + metadata.first + '/';
+    message.set_param(param_prefix +  "type", metadata.second.type);
+    message.set_param(param_prefix +  "access_mode", metadata.second.access_mode);
+    if(metadata.second.min != INT32_MIN){
+      message.set_param(param_prefix +  "min", metadata.second.min);
     }
     if(metadata.second.max != INT32_MAX) {
       message.set_param(param_prefix +  "max", metadata.second.max);
