@@ -107,15 +107,21 @@ void FrameReceiverTCPRxThread::handle_receive_socket(int recv_socket_,
                                                      int recv_port) {
   // Receive a message from the main thread channel and place it directly into
   // the provided memory buffer
-  void *frame_buffer = frame_decoder_->get_next_message_buffer();
+  char *frame_buffer = static_cast<char*>(frame_decoder_->get_next_message_buffer());
   size_t message_size = frame_decoder_->get_next_message_size();
-  size_t bytes_received = 0;
+  size_t total_bytes_read = 0;
+  int bytes_read = 0;
 
-  while (bytes_received < message_size) {
-    int msg_len =
-        read(recv_socket_, frame_buffer, message_size - bytes_received);
-    bytes_received += msg_len;
-    frame_buffer += msg_len;
+  while (total_bytes_read < message_size) {
+    bytes_read = read(recv_socket_, frame_buffer, message_size - total_bytes_read);
+
+    if (bytes_read < 0) {
+      LOG4CXX_ERROR(logger_, "Error reading from socket in TCP RX thread");
+      return;
+    }
+
+    total_bytes_read += bytes_read;
+    frame_buffer += bytes_read;
   }
-  frame_decoder_->process_message(bytes_received);
+  frame_decoder_->process_message(total_bytes_read);
 }
