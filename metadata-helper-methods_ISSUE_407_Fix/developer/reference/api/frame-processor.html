@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>FrameProcessor API Reference &#8212; odin-data 0.1.dev1+g44890db6f documentation</title>
+    <title>FrameProcessor API Reference &#8212; odin-data 0.1.dev1+gf2bb519fb documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=eeb1e676"></script>
+    <script src="../../../_static/documentation_options.js?v=670feb72"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -1503,6 +1503,20 @@
 
 </div>
 <div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-protected-types">Protected Types</p>
+<dl class="cpp type">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor20FrameProcessorPlugin17ParameterBucket_tE">
+<span id="_CPPv3N14FrameProcessor20FrameProcessorPlugin17ParameterBucket_tE"></span><span id="_CPPv2N14FrameProcessor20FrameProcessorPlugin17ParameterBucket_tE"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorPlugin_1afb64dbb281a2528f795fb74440ffe8ac"></span><span class="k"><span class="pre">using</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ParameterBucket_t</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">unordered_map</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin13ParamMetadataE" title="FrameProcessor::FrameProcessorPlugin::ParamMetadata"><span class="n"><span class="pre">ParamMetadata</span></span></a><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin17ParameterBucket_tE" title="Link to this definition">#</a><br /></dt>
+<dd><p>These are protected member data which MUST be initialized by every derived FrameProcessor plugin derived class that can requires metadata. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Return<span class="colon">:</span></dt>
+<dd class="field-odd"><p>a map of <a class="reference internal" href="#structFrameProcessor_1_1FrameProcessorPlugin_1_1ParamMetadata"><span class="std std-ref">ParamMetadata</span></a>’s </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-protected-functions">Protected Functions</p>
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor20FrameProcessorPlugin4pushEN5boost10shared_ptrI5FrameEE">
@@ -1533,24 +1547,23 @@
 
 </div>
 <div class="breathe-sectiondef docutils container">
-<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-types">Private Types</p>
-<dl class="cpp type">
-<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor20FrameProcessorPlugin17ParameterBucket_tE">
-<span id="_CPPv3N14FrameProcessor20FrameProcessorPlugin17ParameterBucket_tE"></span><span id="_CPPv2N14FrameProcessor20FrameProcessorPlugin17ParameterBucket_tE"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorPlugin_1afb64dbb281a2528f795fb74440ffe8ac"></span><span class="k"><span class="pre">using</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ParameterBucket_t</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">unordered_map</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin13ParamMetadataE" title="FrameProcessor::FrameProcessorPlugin::ParamMetadata"><span class="n"><span class="pre">ParamMetadata</span></span></a><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin17ParameterBucket_tE" title="Link to this definition">#</a><br /></dt>
-<dd><p>These are private virtual (inline) methods MUST be customized by every derived FrameProcessor plugin derived class that can requires metadata. </p>
-<dl class="field-list simple">
-<dt class="field-odd">Return<span class="colon">:</span></dt>
-<dd class="field-odd"><p>a map of <a class="reference internal" href="#structFrameProcessor_1_1FrameProcessorPlugin_1_1ParamMetadata"><span class="std std-ref">ParamMetadata</span></a>’s </p>
-</dd>
-</dl>
-</dd></dl>
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-protected-attributes">Protected Attributes</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor20FrameProcessorPlugin23config_metadata_bucket_E">
+<span id="_CPPv3N14FrameProcessor20FrameProcessorPlugin23config_metadata_bucket_E"></span><span id="_CPPv2N14FrameProcessor20FrameProcessorPlugin23config_metadata_bucket_E"></span><span id="FrameProcessor::FrameProcessorPlugin::config_metadata_bucket___ParameterBucket_t"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorPlugin_1a49f3a4c1f7034eeef6449adb63945a1d"></span><a class="reference internal" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin17ParameterBucket_tE" title="FrameProcessor::FrameProcessorPlugin::ParameterBucket_t"><span class="n"><span class="pre">ParameterBucket_t</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">config_metadata_bucket_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin23config_metadata_bucket_E" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor20FrameProcessorPlugin23status_metadata_bucket_E">
+<span id="_CPPv3N14FrameProcessor20FrameProcessorPlugin23status_metadata_bucket_E"></span><span id="_CPPv2N14FrameProcessor20FrameProcessorPlugin23status_metadata_bucket_E"></span><span id="FrameProcessor::FrameProcessorPlugin::status_metadata_bucket___ParameterBucket_t"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorPlugin_1a45784045c7e9df44ff8b2513bb26ce5e"></span><a class="reference internal" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin17ParameterBucket_tE" title="FrameProcessor::FrameProcessorPlugin::ParameterBucket_t"><span class="n"><span class="pre">ParameterBucket_t</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">status_metadata_bucket_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin23status_metadata_bucket_E" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
 
 </div>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-functions">Private Functions</p>
 <dl class="cpp function">
-<dt class="sig sig-object cpp" id="_CPPv4NK14FrameProcessor20FrameProcessorPlugin12add_metadataERN8OdinData10IpcMessageERK13ParamMetadata">
-<span id="_CPPv3NK14FrameProcessor20FrameProcessorPlugin12add_metadataERN8OdinData10IpcMessageERK13ParamMetadata"></span><span id="_CPPv2NK14FrameProcessor20FrameProcessorPlugin12add_metadataERN8OdinData10IpcMessageERK13ParamMetadata"></span><span id="FrameProcessor::FrameProcessorPlugin::add_metadata__OdinData::IpcMessageR.ParamMetadataCRC"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorPlugin_1a0776a0aa73b1506b660f1f80746fc71b"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">add_metadata</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">message</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin13ParamMetadataE" title="FrameProcessor::FrameProcessorPlugin::ParamMetadata"><span class="n"><span class="pre">ParamMetadata</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">metadata</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK14FrameProcessor20FrameProcessorPlugin12add_metadataERN8OdinData10IpcMessageERK13ParamMetadata" title="Link to this definition">#</a><br /></dt>
+<dt class="sig sig-object cpp" id="_CPPv4NK14FrameProcessor20FrameProcessorPlugin12add_metadataERN8OdinData10IpcMessageERKNSt4pairINSt6stringE13ParamMetadataEE">
+<span id="_CPPv3NK14FrameProcessor20FrameProcessorPlugin12add_metadataERN8OdinData10IpcMessageERKNSt4pairINSt6stringE13ParamMetadataEE"></span><span id="_CPPv2NK14FrameProcessor20FrameProcessorPlugin12add_metadataERN8OdinData10IpcMessageERKNSt4pairINSt6stringE13ParamMetadataEE"></span><span id="FrameProcessor::FrameProcessorPlugin::add_metadata__OdinData::IpcMessageR.std::pair:ss.ParamMetadata:CRC"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorPlugin_1a7655db492dc4c285d8ace74523b5efdc"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">add_metadata</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">message</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">pair</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin13ParamMetadataE" title="FrameProcessor::FrameProcessorPlugin::ParamMetadata"><span class="n"><span class="pre">ParamMetadata</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">metadata</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK14FrameProcessor20FrameProcessorPlugin12add_metadataERN8OdinData10IpcMessageERKNSt4pairINSt6stringE13ParamMetadataEE" title="Link to this definition">#</a><br /></dt>
 <dd><p>Metadata helper function (implicitly inlined) </p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1561,16 +1574,6 @@
 </dd>
 </dl>
 </dd></dl>
-
-<dl class="cpp function">
-<dt class="sig sig-object cpp" id="_CPPv4NK14FrameProcessor20FrameProcessorPlugin19get_config_metadataEv">
-<span id="_CPPv3NK14FrameProcessor20FrameProcessorPlugin19get_config_metadataEv"></span><span id="_CPPv2NK14FrameProcessor20FrameProcessorPlugin19get_config_metadataEv"></span><span id="FrameProcessor::FrameProcessorPlugin::get_config_metadataC"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorPlugin_1ad6676de6a780ace514125b0adfc41f39"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin17ParameterBucket_tE" title="FrameProcessor::FrameProcessorPlugin::ParameterBucket_t"><span class="n"><span class="pre">ParameterBucket_t</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-name descname"><span class="n"><span class="pre">get_config_metadata</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">noexcept</span></span><a class="headerlink" href="#_CPPv4NK14FrameProcessor20FrameProcessorPlugin19get_config_metadataEv" title="Link to this definition">#</a><br /></dt>
-<dd></dd></dl>
-
-<dl class="cpp function">
-<dt class="sig sig-object cpp" id="_CPPv4NK14FrameProcessor20FrameProcessorPlugin19get_status_metadataEv">
-<span id="_CPPv3NK14FrameProcessor20FrameProcessorPlugin19get_status_metadataEv"></span><span id="_CPPv2NK14FrameProcessor20FrameProcessorPlugin19get_status_metadataEv"></span><span id="FrameProcessor::FrameProcessorPlugin::get_status_metadataC"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorPlugin_1a90408028dfa967bd343a36ec44eea530"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin17ParameterBucket_tE" title="FrameProcessor::FrameProcessorPlugin::ParameterBucket_t"><span class="n"><span class="pre">ParameterBucket_t</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-name descname"><span class="n"><span class="pre">get_status_metadata</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">noexcept</span></span><a class="headerlink" href="#_CPPv4NK14FrameProcessor20FrameProcessorPlugin19get_status_metadataEv" title="Link to this definition">#</a><br /></dt>
-<dd></dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor20FrameProcessorPlugin8callbackEN5boost10shared_ptrI5FrameEE">
@@ -1661,17 +1664,12 @@
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-types">Public Types</p>
 <dl class="cpp type">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor20FrameProcessorPlugin13ParamMetadata16allowed_values_tE">
-<span id="_CPPv3N14FrameProcessor20FrameProcessorPlugin13ParamMetadata16allowed_values_tE"></span><span id="_CPPv2N14FrameProcessor20FrameProcessorPlugin13ParamMetadata16allowed_values_tE"></span><span class="target" id="structFrameProcessor_1_1FrameProcessorPlugin_1_1ParamMetadata_1acfdbb07eca25e20e18441bc99e8e0678"></span><span class="k"><span class="pre">using</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">allowed_values_t</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">variant</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin13ParamMetadata16allowed_values_tE" title="Link to this definition">#</a><br /></dt>
+<span id="_CPPv3N14FrameProcessor20FrameProcessorPlugin13ParamMetadata16allowed_values_tE"></span><span id="_CPPv2N14FrameProcessor20FrameProcessorPlugin13ParamMetadata16allowed_values_tE"></span><span class="target" id="structFrameProcessor_1_1FrameProcessorPlugin_1_1ParamMetadata_1a95b49d95e3c8af2cfea60511a4e4cf40"></span><span class="k"><span class="pre">using</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">allowed_values_t</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">variant</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">blank</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin13ParamMetadata16allowed_values_tE" title="Link to this definition">#</a><br /></dt>
 <dd></dd></dl>
 
 </div>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-members">Public Members</p>
-<dl class="cpp var">
-<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor20FrameProcessorPlugin13ParamMetadata4pathE">
-<span id="_CPPv3N14FrameProcessor20FrameProcessorPlugin13ParamMetadata4pathE"></span><span id="_CPPv2N14FrameProcessor20FrameProcessorPlugin13ParamMetadata4pathE"></span><span id="FrameProcessor::FrameProcessorPlugin::ParamMetadata::path__ssC"></span><span class="target" id="structFrameProcessor_1_1FrameProcessorPlugin_1_1ParamMetadata_1a7c7b53223f2dfc8430168ce2dc660af5"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">path</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin13ParamMetadata4pathE" title="Link to this definition">#</a><br /></dt>
-<dd></dd></dl>
-
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor20FrameProcessorPlugin13ParamMetadata4typeE">
 <span id="_CPPv3N14FrameProcessor20FrameProcessorPlugin13ParamMetadata4typeE"></span><span id="_CPPv2N14FrameProcessor20FrameProcessorPlugin13ParamMetadata4typeE"></span><span id="FrameProcessor::FrameProcessorPlugin::ParamMetadata::type__ssC"></span><span class="target" id="structFrameProcessor_1_1FrameProcessorPlugin_1_1ParamMetadata_1adfd5b8d41d00937c7c4d5b9ca0423404"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">type</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin13ParamMetadata4typeE" title="Link to this definition">#</a><br /></dt>
@@ -1695,16 +1693,6 @@
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor20FrameProcessorPlugin13ParamMetadata3maxE">
 <span id="_CPPv3N14FrameProcessor20FrameProcessorPlugin13ParamMetadata3maxE"></span><span id="_CPPv2N14FrameProcessor20FrameProcessorPlugin13ParamMetadata3maxE"></span><span id="FrameProcessor::FrameProcessorPlugin::ParamMetadata::max__int32_tC"></span><span class="target" id="structFrameProcessor_1_1FrameProcessorPlugin_1_1ParamMetadata_1a345f0220a80c416a6e2aed5bb3bf25c7"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">int32_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">max</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin13ParamMetadata3maxE" title="Link to this definition">#</a><br /></dt>
-<dd></dd></dl>
-
-<dl class="cpp var">
-<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor20FrameProcessorPlugin13ParamMetadata7has_minE">
-<span id="_CPPv3N14FrameProcessor20FrameProcessorPlugin13ParamMetadata7has_minE"></span><span id="_CPPv2N14FrameProcessor20FrameProcessorPlugin13ParamMetadata7has_minE"></span><span id="FrameProcessor::FrameProcessorPlugin::ParamMetadata::has_min__bC"></span><span class="target" id="structFrameProcessor_1_1FrameProcessorPlugin_1_1ParamMetadata_1a05a264cb40e4b021a16b30eed6d2f207"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">has_min</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin13ParamMetadata7has_minE" title="Link to this definition">#</a><br /></dt>
-<dd></dd></dl>
-
-<dl class="cpp var">
-<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor20FrameProcessorPlugin13ParamMetadata7has_maxE">
-<span id="_CPPv3N14FrameProcessor20FrameProcessorPlugin13ParamMetadata7has_maxE"></span><span id="_CPPv2N14FrameProcessor20FrameProcessorPlugin13ParamMetadata7has_maxE"></span><span id="FrameProcessor::FrameProcessorPlugin::ParamMetadata::has_max__bC"></span><span class="target" id="structFrameProcessor_1_1FrameProcessorPlugin_1_1ParamMetadata_1acf7f8535670d98c859db0e9f9e27cb96"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">has_max</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin13ParamMetadata7has_maxE" title="Link to this definition">#</a><br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -6658,12 +6646,12 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin15remove_callbackERKNSt6stringE"><code class="docutils literal notranslate"><span class="pre">remove_callback()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin20remove_all_callbacksEv"><code class="docutils literal notranslate"><span class="pre">remove_all_callbacks()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin25notify_end_of_acquisitionEv"><code class="docutils literal notranslate"><span class="pre">notify_end_of_acquisition()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin17ParameterBucket_tE"><code class="docutils literal notranslate"><span class="pre">ParameterBucket_t</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin4pushEN5boost10shared_ptrI5FrameEE"><code class="docutils literal notranslate"><span class="pre">push()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin4pushERKNSt6stringEN5boost10shared_ptrI5FrameEE"><code class="docutils literal notranslate"><span class="pre">push()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin17ParameterBucket_tE"><code class="docutils literal notranslate"><span class="pre">ParameterBucket_t</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4NK14FrameProcessor20FrameProcessorPlugin12add_metadataERN8OdinData10IpcMessageERK13ParamMetadata"><code class="docutils literal notranslate"><span class="pre">add_metadata()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4NK14FrameProcessor20FrameProcessorPlugin19get_config_metadataEv"><code class="docutils literal notranslate"><span class="pre">get_config_metadata()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4NK14FrameProcessor20FrameProcessorPlugin19get_status_metadataEv"><code class="docutils literal notranslate"><span class="pre">get_status_metadata()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin23config_metadata_bucket_E"><code class="docutils literal notranslate"><span class="pre">config_metadata_bucket_</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin23status_metadata_bucket_E"><code class="docutils literal notranslate"><span class="pre">status_metadata_bucket_</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4NK14FrameProcessor20FrameProcessorPlugin12add_metadataERN8OdinData10IpcMessageERKNSt4pairINSt6stringE13ParamMetadataEE"><code class="docutils literal notranslate"><span class="pre">add_metadata()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin8callbackEN5boost10shared_ptrI5FrameEE"><code class="docutils literal notranslate"><span class="pre">callback()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin13process_frameEN5boost10shared_ptrI5FrameEE"><code class="docutils literal notranslate"><span class="pre">process_frame()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin26process_end_of_acquisitionEv"><code class="docutils literal notranslate"><span class="pre">process_end_of_acquisition()</span></code></a></li>
@@ -6677,14 +6665,11 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin17process_duration_E"><code class="docutils literal notranslate"><span class="pre">process_duration_</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin13ParamMetadataE"><code class="docutils literal notranslate"><span class="pre">FrameProcessor::FrameProcessorPlugin::ParamMetadata</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin13ParamMetadata16allowed_values_tE"><code class="docutils literal notranslate"><span class="pre">allowed_values_t</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin13ParamMetadata4pathE"><code class="docutils literal notranslate"><span class="pre">path</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin13ParamMetadata4typeE"><code class="docutils literal notranslate"><span class="pre">type</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin13ParamMetadata11access_modeE"><code class="docutils literal notranslate"><span class="pre">access_mode</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin13ParamMetadata14allowed_valuesE"><code class="docutils literal notranslate"><span class="pre">allowed_values</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin13ParamMetadata3minE"><code class="docutils literal notranslate"><span class="pre">min</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin13ParamMetadata3maxE"><code class="docutils literal notranslate"><span class="pre">max</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin13ParamMetadata7has_minE"><code class="docutils literal notranslate"><span class="pre">has_min</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor20FrameProcessorPlugin13ParamMetadata7has_maxE"><code class="docutils literal notranslate"><span class="pre">has_max</span></code></a></li>
 </ul>
 </li>
 </ul>
