@@ -173,9 +173,9 @@ void FrameProcessorPlugin::requestConfiguration(OdinData::IpcMessage& reply)
  */
 void FrameProcessorPlugin::requestConfigurationMetadata(OdinData::IpcMessage& reply) const
 {
-  auto end = get_config_metadata().end();
-  for(auto itr = get_config_metadata().begin(); itr != end; ++itr) {
-    add_metadata(reply, itr->second);
+  auto end = config_metadata_bucket_.end();
+  for(auto itr = config_metadata_bucket_.begin(); itr != end; ++itr) {
+    add_metadata(reply, *itr);
   }
 }
 
@@ -184,9 +184,9 @@ void FrameProcessorPlugin::requestConfigurationMetadata(OdinData::IpcMessage& re
  */
 void FrameProcessorPlugin::requestStatusMetadata(OdinData::IpcMessage& reply) const
 {
-  auto end = get_status_metadata().end();
-  for(auto itr = get_status_metadata().begin(); itr != end; ++itr) {
-    add_metadata(reply, itr->second);
+  auto end = status_metadata_bucket_.end();
+  for(auto itr = status_metadata_bucket_.begin(); itr != end; ++itr) {
+    add_metadata(reply, *itr);
   }
 }
 

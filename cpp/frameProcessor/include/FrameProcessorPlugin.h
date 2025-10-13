@@ -68,70 +68,61 @@ protected:
   */
   struct ParamMetadata
   {
-    using allowed_values_t = boost::variant<std::string, int>;
-    const std::string path;
+    using allowed_values_t = boost::variant<boost::blank, std::string, int>;
     const std::string type;
     const std::string access_mode;
     const std::vector<allowed_values_t> allowed_values;
     const int32_t min;
     const int32_t max;
-    const bool has_min;
-    const bool has_max;
   };
+
+  /** These are protected member data which
+   *  MUST be initialized by every derived FrameProcessor 
+   *  plugin derived class that can requires metadata.
+   * \returns a map of ParamMetadata's
+   */
+  using ParameterBucket_t = std::unordered_map<std::string, ParamMetadata>;
+  ParameterBucket_t config_metadata_bucket_;
+  ParameterBucket_t status_metadata_bucket_;
 
 private:
   /** Pointer to logger */
   LoggerPtr logger_;
 
-
-
   /** Metadata helper function (implicitly inlined)
    *  \param [in]  metadata - metadata struct to be read from
    *  \param [out] message  - IpcMessage to be appended with metadata
    */
-  void add_metadata(OdinData::IpcMessage& message, const ParamMetadata& metadata) const
+  void add_metadata(OdinData::IpcMessage& message, const std::pair<std::string, ParamMetadata>& metadata) const
   {
-    std::string param_prefix = "metadata/" + get_name() + '/' + metadata.path + '/';
-    message.set_param(param_prefix +  "type", metadata.type);
-    message.set_param(param_prefix +  "access_mode", metadata.access_mode);
-    if(metadata.has_min){
-      message.set_param(param_prefix +  "min", metadata.min);
+    std::string param_prefix;
+    param_prefix.reserve(100);
+    "metadata/" + get_name() + '/' + metadata.first + '/';
+    message.set_param(param_prefix +  "type", metadata.second.type);
+    message.set_param(param_prefix +  "access_mode", metadata.second.access_mode);
+    if(metadata.second.min == INT32_MIN){
+      message.set_param(param_prefix +  "min", metadata.second.min);
     }
-    if(metadata.has_max){
-      message.set_param(param_prefix +  "max", metadata.max);
+    if(metadata.second.max == INT32_MAX){
+      message.set_param(param_prefix +  "max", metadata.second.max);
     }
 
     param_prefix +=  "allowed_values[]";
 
-    auto itr = metadata.allowed_values.begin();
-    auto end = metadata.allowed_values.end();
+    auto itr = metadata.second.allowed_values.begin();
+    auto end = metadata.second.allowed_values.end();
     for (; itr != end; ++itr) {
       switch (itr->which()) {
-        case 0:
+        case 1:
           message.set_param(param_prefix, boost::get<std::string>(*itr));
           break;
-        case 1:
+        case 2:
           message.set_param(param_prefix, boost::get<int>(*itr));
           break;
         default:
           return;
       };
     }
-  }
-
-  /** These are private virtual (inline) methods
-   *  MUST be customized by every derived FrameProcessor 
-   *  plugin derived class that can requires metadata.
-   * \returns a map of ParamMetadata's
-   */
-  using ParameterBucket_t = std::unordered_map<std::string, ParamMetadata>;
-  virtual ParameterBucket_t& get_config_metadata() const noexcept{
-    static ParameterBucket_t v;
-    return v;
-  }
-  virtual ParameterBucket_t& get_status_metadata() const noexcept{
-    static ParameterBucket_t v;
-    return v;
   }
 
   void callback(boost::shared_ptr<Frame> frame);
