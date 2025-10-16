@@ -96,8 +96,8 @@ private:
   void add_metadata(OdinData::IpcMessage& message, const std::pair<std::string, ParamMetadata>& metadata) const
   {
     std::string param_prefix;
-    param_prefix.reserve(100);
-    "metadata/" + get_name() + '/' + metadata.first + '/';
+    param_prefix.reserve(128);
+    param_prefix = "metadata/" + get_name() + '/' + metadata.first + '/';
     message.set_param(param_prefix +  "type", metadata.second.type);
     message.set_param(param_prefix +  "access_mode", metadata.second.access_mode);
     if(metadata.second.min == INT32_MIN){
