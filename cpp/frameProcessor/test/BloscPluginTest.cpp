@@ -30,6 +30,8 @@ public:
     dset_def.frame_dimensions[1] = 4;
     dset_def.chunks = chunk_dims;
 
+    blosc_plugin.set_name("BloscPluginTest");
+
     FrameProcessor::FrameMetaData frame_meta(7, "data", FrameProcessor::raw_16bit, "scan1", img_dims, FrameProcessor::no_compression);
     frame = boost::shared_ptr<FrameProcessor::DataBlockFrame>(new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(img), 24));
 
@@ -65,14 +67,17 @@ BOOST_AUTO_TEST_CASE( BloscPlugin_process_frame )
 
 BOOST_AUTO_TEST_CASE( BloscPlugin_request_metadata )
 {
-  // In a plugin which implements "metadata," the metadata hashmap
-  // is already constructed as of here.
-  // This "Test" is a placeholder for when BloscPlugin implements 
-  // its own metadata.
-  // TODO Famous: Update test case when BloscPlugin has "metadata" implemented
+  /** To-do: change raw strings of "/compressor" ==to==> '/' + FrameProcessor::BloscPlugin::CONFIG_BLOSC_COMPRESSOR 
+   *  As well as the other config settings!
+  *   This should be possible once PR 401 "Update BLOSC Setting As String" is merged!
+  */
   OdinData::IpcMessage reply; // IpcMessage to be populated with metadata
   blosc_plugin.requestConfigurationMetadata(reply);
-  BOOST_CHECK(!reply.has_param("metadata")); // !false == true;
+  BOOST_CHECK(reply.has_param("metadata"));
+  BOOST_CHECK(reply.has_param("metadata/" + blosc_plugin.get_name() + "/compressor"));
+  BOOST_CHECK(reply.has_param("metadata/" + blosc_plugin.get_name() + "/threads"));
+  BOOST_CHECK(reply.has_param("metadata/" + blosc_plugin.get_name() + "/level"));
+  BOOST_CHECK(reply.has_param("metadata/" + blosc_plugin.get_name() + "/shuffle"));
 }
 
 BOOST_AUTO_TEST_SUITE_END(); //BloscPluginUnitTest
