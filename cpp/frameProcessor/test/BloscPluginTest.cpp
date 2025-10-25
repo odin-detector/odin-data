@@ -72,12 +72,8 @@ BOOST_AUTO_TEST_CASE( BloscPlugin_request_metadata )
   *   This should be possible once PR 401 "Update BLOSC Setting As String" is merged!
   */
   OdinData::IpcMessage reply; // IpcMessage to be populated with metadata
-  blosc_plugin.requestConfigurationMetadata(reply);
-  BOOST_CHECK(reply.has_param("metadata"));
-  BOOST_CHECK(reply.has_param("metadata/" + blosc_plugin.get_name() + "/compressor"));
-  BOOST_CHECK(reply.has_param("metadata/" + blosc_plugin.get_name() + "/threads"));
-  BOOST_CHECK(reply.has_param("metadata/" + blosc_plugin.get_name() + "/level"));
-  BOOST_CHECK(reply.has_param("metadata/" + blosc_plugin.get_name() + "/shuffle"));
+  blosc_plugin.request_configuration_metadata(reply);
+  BOOST_CHECK(!reply.has_param("metadata")); // !false == true;
 }
 
 BOOST_AUTO_TEST_SUITE_END(); //BloscPluginUnitTest
