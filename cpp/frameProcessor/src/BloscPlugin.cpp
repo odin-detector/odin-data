@@ -55,6 +55,16 @@ void create_cd_values(const BloscCompressionSettings& settings, std::vector<unsi
 BloscPlugin::BloscPlugin() :
 current_acquisition_(""), data_buffer_ptr_(NULL), data_buffer_size_(0)
 {
+  add_config_parammetadata(CONFIG_BLOSC_COMPRESSOR, "int", "rw", {BLOSC_BLOSCLZ, BLOSC_LZ4, BLOSC_LZ4HC, BLOSC_SNAPPY, BLOSC_ZLIB, BLOSC_ZSTD});
+  add_config_parammetadata(CONFIG_BLOSC_THREADS, "int", "rw", 1, ParamMetadata::MAX_UNSET);
+  add_config_parammetadata(CONFIG_BLOSC_LEVEL, "int", "rw", 1, 9);
+  add_config_parammetadata(CONFIG_BLOSC_SHUFFLE, "int", "rw",  {BLOSC_NOSHUFFLE, BLOSC_SHUFFLE, BLOSC_BITSHUFFLE});
+
+  add_status_parammetadata(CONFIG_BLOSC_COMPRESSOR, "int", "rw", {BLOSC_BLOSCLZ, BLOSC_LZ4, BLOSC_LZ4HC, BLOSC_SNAPPY, BLOSC_ZLIB, BLOSC_ZSTD});
+  add_status_parammetadata(CONFIG_BLOSC_THREADS, "int", "rw", 1, ParamMetadata::MAX_UNSET);
+  add_status_parammetadata(CONFIG_BLOSC_LEVEL, "int", "rw", 1, 9);
+  add_status_parammetadata(CONFIG_BLOSC_SHUFFLE, "int", "rw",  {BLOSC_NOSHUFFLE, BLOSC_SHUFFLE, BLOSC_BITSHUFFLE});
+  
   this->commanded_compression_settings_.blosc_compressor = BLOSC_LZ4;
   this->commanded_compression_settings_.shuffle = BLOSC_BITSHUFFLE;
   this->commanded_compression_settings_.compression_level = 1;
