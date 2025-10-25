@@ -47,8 +47,22 @@ public:
   std::vector<std::string> get_warnings();
   virtual void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   virtual void requestConfiguration(OdinData::IpcMessage& reply);
-  void requestConfigurationMetadata(OdinData::IpcMessage& reply) const;
-  void requestStatusMetadata(OdinData::IpcMessage& reply) const;
+
+  /** Request the plugin's configuration and status Metadata.
+   * \param[out] reply - Response IpcMessage with current config metadata.
+   */
+  __attribute__((always_inline)) void request_configuration_metadata(OdinData::IpcMessage& reply) const{
+    auto end = config_metadata_bucket_.end();
+    for(auto itr = config_metadata_bucket_.begin(); itr != end; ++itr) {
+      add_metadata(reply, *itr);
+    }
+  }
+  __attribute__((always_inline)) void request_status_metadata(OdinData::IpcMessage& reply) const{
+    auto end = status_metadata_bucket_.end();
+    for(auto itr = status_metadata_bucket_.begin(); itr != end; ++itr) {
+      add_metadata(reply, *itr);
+    }
+  }
   virtual void execute(const std::string& command, OdinData::IpcMessage& reply);
   virtual std::vector<std::string> requestCommands();
   virtual void status(OdinData::IpcMessage& status);
