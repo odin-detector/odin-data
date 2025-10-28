@@ -103,14 +103,16 @@ protected:
     // delete copy assignment and constructor methods we expect it to always be move constructed
     ParamMetadata(const ParamMetadata& rhs) = delete;
     ParamMetadata& operator=(const ParamMetadata& rhs) = delete;
-
-    std::string access_mode_;
-    std::string type_;
-    std::vector<allowed_values_t> allowed_values_;
-    int32_t min_;
-    int32_t max_;
     static constexpr int MAX_UNSET = std::numeric_limits<int>::min();
     static constexpr int MIN_UNSET = std::numeric_limits<int>::max();
+    friend class FrameProcessorPlugin;
+    
+    private:
+      std::string access_mode_;
+      std::string type_;
+      std::vector<allowed_values_t> allowed_values_;
+      int32_t min_;
+      int32_t max_;
   };
 
   using ParameterBucket_t = std::unordered_map<std::string, ParamMetadata>;
@@ -126,21 +128,21 @@ protected:
    *                                                         of ParamMetadata accepts lvalues as references.
    */
   
-  auto add_config_parammetadata(std::string param, std::string type, std::string access_mode, std::vector<ParamMetadata::allowed_values_t>& allowed_values)->void {
+  auto add_config_param_metadata(std::string param, std::string type, std::string access_mode, std::vector<ParamMetadata::allowed_values_t>& allowed_values)->void {
     config_metadata_bucket_.emplace(std::piecewise_construct,
                                     std::forward_as_tuple(std::move(param)),
                                     std::forward_as_tuple(type, access_mode, allowed_values, ParamMetadata::MIN_UNSET, ParamMetadata::MAX_UNSET)
     );
   }
 
-  auto add_config_parammetadata(std::string param, std::string type, std::string access_mode, std::vector<ParamMetadata::allowed_values_t>&& allowed_values)->void {
+  auto add_config_param_metadata(std::string param, std::string type, std::string access_mode, std::vector<ParamMetadata::allowed_values_t>&& allowed_values)->void {
     config_metadata_bucket_.emplace(std::piecewise_construct,
                                     std::forward_as_tuple(std::move(param)),
                                     std::forward_as_tuple(type, access_mode, allowed_values, ParamMetadata::MIN_UNSET, ParamMetadata::MAX_UNSET)
     );
   }
 
-  auto add_config_parammetadata(std::string param, std::string type, std::string access_mode, int32_t min, int32_t max)->void {
+  auto add_config_param_metadata(std::string param, std::string type, std::string access_mode, int32_t min, int32_t max)->void {
     std::vector<ParamMetadata::allowed_values_t>allowed_vals{}; // This allows us to forward the vector as an lvalue reference to the constructor
     config_metadata_bucket_.emplace(std::piecewise_construct,
                                     std::forward_as_tuple(std::move(param)),
@@ -148,21 +150,21 @@ protected:
     );
   }
 
-  auto add_status_parammetadata(std::string param, std::string type, std::string access_mode, std::vector<ParamMetadata::allowed_values_t>& allowed_values)->void {
+  auto add_status_param_metadata(std::string param, std::string type, std::string access_mode, std::vector<ParamMetadata::allowed_values_t>& allowed_values)->void {
     status_metadata_bucket_.emplace(std::piecewise_construct,
                                     std::forward_as_tuple(std::move(param)),
                                     std::forward_as_tuple(type, access_mode, allowed_values, ParamMetadata::MIN_UNSET, ParamMetadata::MAX_UNSET)
     );
   }
 
-  auto add_status_parammetadata(std::string param, std::string type, std::string access_mode, std::vector<ParamMetadata::allowed_values_t>&& allowed_values)->void {
+  auto add_status_param_metadata(std::string param, std::string type, std::string access_mode, std::vector<ParamMetadata::allowed_values_t>&& allowed_values)->void {
     status_metadata_bucket_.emplace(std::piecewise_construct,
                                     std::forward_as_tuple(std::move(param)),
                                     std::forward_as_tuple(type, access_mode, allowed_values, ParamMetadata::MIN_UNSET, ParamMetadata::MAX_UNSET)
     );
   }
 
-  auto add_status_parammetadata(std::string param, std::string type, std::string access_mode, int32_t min, int32_t max)->void {
+  auto add_status_param_metadata(std::string param, std::string type, std::string access_mode, int32_t min, int32_t max)->void {
     std::vector<ParamMetadata::allowed_values_t>allowed_vals{}; // This allows us to forward the vector as an lvalue reference to the constructor
     status_metadata_bucket_.emplace(std::piecewise_construct,
                                     std::forward_as_tuple(std::move(param)),
@@ -175,14 +177,13 @@ private:
   /** Pointer to logger */
   LoggerPtr logger_;
 
-  /** These are private member data which
-   *  MUST be initialized by every derived FrameProcessor 
-   *  plugin that can expect clients to request the
-   *  metadata of it's status or configuration.
-   * \returns a map of ParamMetadata's
+  /** These private member data are "parameter buckets,"
+   *  they are populated by calling add_status_param_metadata()
+   *  and add_config_param_metadata() methods respectively
    */
   ParameterBucket_t config_metadata_bucket_;
   ParameterBucket_t status_metadata_bucket_;
+
   /** Metadata helper function (implicitly inlined)
    *  \param [in]  metadata - metadata struct to be read from
    *  \param [out] message  - IpcMessage to be appended with metadata
