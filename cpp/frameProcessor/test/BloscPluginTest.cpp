@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE( BloscPlugin_request_metadata )
   // its own metadata.
   // TODO Famous: Update test case when BloscPlugin has "metadata" implemented
   OdinData::IpcMessage reply; // IpcMessage to be populated with metadata
-  blosc_plugin.requestConfigurationMetadata(reply);
+  blosc_plugin.request_configuration_metadata(reply);
   BOOST_CHECK(!reply.has_param("metadata")); // !false == true;
 }
 

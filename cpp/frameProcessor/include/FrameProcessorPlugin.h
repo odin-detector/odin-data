@@ -9,6 +9,7 @@
 #define TOOLS_FILEWRITER_FrameProcessorPlugin_H_
 
 #include <boost/thread.hpp>
+#include <unordered_map>
 
 #include "IFrameCallback.h"
 #include "IVersionedObject.h"
@@ -19,6 +20,7 @@
 #include "Frame.h"
 #include "EndOfAcquisitionFrame.h"
 #include "CallDuration.h"
+#include "ParamMetadata.h"
 
 namespace FrameProcessor
 {
@@ -36,7 +38,7 @@ public:
   FrameProcessorPlugin();
   virtual ~FrameProcessorPlugin();
   void set_name(const std::string& name);
-  std::string get_name();
+  std::string get_name() const;
   void set_error(const std::string& msg);
   void set_warning(const std::string& msg);
   void clear_errors();
@@ -45,8 +47,22 @@ public:
   std::vector<std::string> get_warnings();
   virtual void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   virtual void requestConfiguration(OdinData::IpcMessage& reply);
-  void requestConfigurationMetadata(OdinData::IpcMessage& reply);
-  void requestStatusMetadata(OdinData::IpcMessage& reply);
+
+  /** Request the plugin's configuration and status Metadata.
+   * \param[out] reply - Response IpcMessage with current config metadata.
+   */
+  __attribute__((always_inline)) void request_configuration_metadata(OdinData::IpcMessage& reply) const{
+    auto end = config_metadata_.end();
+    for(auto itr = config_metadata_.begin(); itr != end; ++itr) {
+      add_metadata(reply, *itr);
+    }
+  }
+  __attribute__((always_inline)) void request_status_metadata(OdinData::IpcMessage& reply) const{
+    auto end = status_metadata_.end();
+    for(auto itr = status_metadata_.begin(); itr != end; ++itr) {
+      add_metadata(reply, *itr);
+    }
+  }
   virtual void execute(const std::string& command, OdinData::IpcMessage& reply);
   virtual std::vector<std::string> requestCommands();
   virtual void status(OdinData::IpcMessage& status);
@@ -62,9 +78,101 @@ protected:
   void push(boost::shared_ptr<Frame> frame);
   void push(const std::string& plugin_name, boost::shared_ptr<Frame> frame);
 
+  using ParameterMetadataMap_t = std::unordered_map<std::string, ParamMetadata>;
+  /**
+   * Helper functions construct the hash_map's elements in-place
+   * \param[in] param: key for the ParamMetadata value-object. it is moved to trigger the move-semantics of the key-element in the pair
+   * \param[in] type, access_mode, allowed_values, min, max: arguments for ParamMetadata's constructor.They are not moved since the constructor
+   *                                                         of ParamMetadata accepts lvalues as references.
+   */
+  
+  auto add_config_param_metadata(std::string param, std::string type, std::string access_mode, std::vector<ParamMetadata::allowed_values_t>& allowed_values)->void {
+    config_metadata_.emplace(std::piecewise_construct,
+                             std::forward_as_tuple(std::move(param)),
+                             std::forward_as_tuple(type, access_mode, allowed_values, ParamMetadata::MIN_UNSET, ParamMetadata::MAX_UNSET)
+    );
+  }
+
+  auto add_config_param_metadata(std::string param, std::string type, std::string access_mode, std::vector<ParamMetadata::allowed_values_t>&& allowed_values)->void {
+    config_metadata_.emplace(std::piecewise_construct,
+                             std::forward_as_tuple(std::move(param)),
+                             std::forward_as_tuple(type, access_mode, allowed_values, ParamMetadata::MIN_UNSET, ParamMetadata::MAX_UNSET)
+    );
+  }
+
+  auto add_config_param_metadata(std::string param, std::string type, std::string access_mode, int32_t min, int32_t max)->void {
+    std::vector<ParamMetadata::allowed_values_t>allowed_vals{}; // This allows us to forward the vector as an lvalue reference to the constructor
+    config_metadata_.emplace(std::piecewise_construct,
+                             std::forward_as_tuple(std::move(param)),
+                             std::forward_as_tuple(type, access_mode, allowed_vals, min, max)
+    );
+  }
+
+  auto add_status_param_metadata(std::string param, std::string type, std::string access_mode, std::vector<ParamMetadata::allowed_values_t>& allowed_values)->void {
+    status_metadata_.emplace(std::piecewise_construct,
+                             std::forward_as_tuple(std::move(param)),
+                             std::forward_as_tuple(type, access_mode, allowed_values, ParamMetadata::MIN_UNSET, ParamMetadata::MAX_UNSET)
+    );
+  }
+
+  auto add_status_param_metadata(std::string param, std::string type, std::string access_mode, std::vector<ParamMetadata::allowed_values_t>&& allowed_values)->void {
+    status_metadata_.emplace(std::piecewise_construct,
+                             std::forward_as_tuple(std::move(param)),
+                             std::forward_as_tuple(type, access_mode, allowed_values, ParamMetadata::MIN_UNSET, ParamMetadata::MAX_UNSET)
+    );
+  }
+
+  auto add_status_param_metadata(std::string param, std::string type, std::string access_mode, int32_t min, int32_t max)->void {
+    std::vector<ParamMetadata::allowed_values_t>allowed_vals{}; // This allows us to forward the vector as an lvalue reference to the constructor
+    status_metadata_.emplace(std::piecewise_construct,
+                             std::forward_as_tuple(std::move(param)),
+                             std::forward_as_tuple(type, access_mode, allowed_vals, min, max)
+    );
+  }
+
+
 private:
   /** Pointer to logger */
   LoggerPtr logger_;
+
+  ParameterMetadataMap_t config_metadata_;
+  ParameterMetadataMap_t status_metadata_;
+
+  /** Metadata helper function (implicitly inlined)
+   *  \param [in]  metadata - metadata struct to be read from
+   *  \param [out] message  - IpcMessage to be appended with metadata
+   */
+  void add_metadata(OdinData::IpcMessage& message, const ParameterMetadataMap_t::value_type& metadata) const
+  {
+    std::string param_prefix;
+    param_prefix.reserve(128);
+    param_prefix = "metadata/" + this->get_name() + '/' + metadata.first + '/';
+    message.set_param(param_prefix +  "type", metadata.second.type_);
+    message.set_param(param_prefix +  "access_mode", metadata.second.access_mode_);
+    if(metadata.second.min_ == ParamMetadata::MIN_UNSET){
+      message.set_param(param_prefix +  "min", metadata.second.min_);
+    }
+    if(metadata.second.max_ == ParamMetadata::MAX_UNSET){
+      message.set_param(param_prefix +  "max", metadata.second.max_);
+    }
+
+    param_prefix +=  "allowed_values[]";
+
+    auto itr = metadata.second.allowed_values_.begin();
+    auto end = metadata.second.allowed_values_.end();
+    for (; itr != end; ++itr) {
+      switch (itr->which()) {
+        case 1:
+          message.set_param(param_prefix, boost::get<std::string>(*itr));
+          break;
+        case 2:
+          message.set_param(param_prefix, boost::get<int>(*itr));
+          break;
+        default:
+          return;
+      };
+    }
+  }
 
   void callback(boost::shared_ptr<Frame> frame);
 

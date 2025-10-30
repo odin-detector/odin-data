@@ -21,6 +21,7 @@
 
 namespace OdinData
 {
+
 //! IpcMessageException - custom exception class implementing "what" for error string
 class IpcMessageException : public std::exception
 {

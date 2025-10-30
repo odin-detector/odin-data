@@ -302,7 +302,7 @@ void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply, bool m
   if(metadata) {
     for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
       // Request status metadata for the plugin
-      iter->second->requestStatusMetadata(reply);
+      iter->second->request_status_metadata(reply);
     }
   }
 
@@ -530,11 +530,11 @@ void FrameProcessorController::requestConfiguration(OdinData::IpcMessage& reply,
     iter->second->requestConfiguration(reply);
   }
 
-    if(metadata) {  
-      for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
-        iter->second->requestConfigurationMetadata(reply);
-      }
+  if(metadata) {  
+    for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
+      iter->second->request_configuration_metadata(reply);
     }
+  }
 }
 
 /**

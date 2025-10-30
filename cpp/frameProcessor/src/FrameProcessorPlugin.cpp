@@ -47,7 +47,7 @@ void FrameProcessorPlugin::set_name(const std::string& name)
  *
  * \return The name.
  */
-std::string FrameProcessorPlugin::get_name()
+std::string FrameProcessorPlugin::get_name() const
 {
   // Return our name
   return name_;
@@ -166,24 +166,6 @@ void FrameProcessorPlugin::configure(OdinData::IpcMessage& config, OdinData::Ipc
 void FrameProcessorPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
   // Default method simply does nothing
-}
-
-/** Request the plugin's Metadata configuration.
- * \param[out] reply - Response IpcMessage with current config metadata.
- */
-void FrameProcessorPlugin::requestConfigurationMetadata(OdinData::IpcMessage& reply)
-{
-  // stub function
-  // Default method. Famous TODO: Implement
-}
-
-/** Request the plugin's Metadata configuration.
- * \param[out] reply - Response IpcMessage with current status metadata.
- */
-void FrameProcessorPlugin::requestStatusMetadata(OdinData::IpcMessage& reply)
-{
-  // stub function
-  // Default method. Famous TODO: Implement
 }
 
 /** Execute a command within the plugin.
