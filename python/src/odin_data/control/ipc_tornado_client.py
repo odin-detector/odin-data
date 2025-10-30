@@ -195,8 +195,15 @@ class IpcTornadoClient(object):
 
         :param commands_msg: Incoming commands message response
         """
-        params = commands_msg['params']
-        self._parameters['commands'] = params
+        params = commands_msg["params"]
+        if "error" in params:
+            logging.error(
+                "%s Message failure: %s",
+                self.ctrl_endpoint,
+                params["error"],
+            )
+        else:
+            self._parameters["commands"] = params
 
     def connected(self):
         """Returns the connected state of this client.
