@@ -13,5 +13,16 @@
                 "--log-level=DEBUG"
             ]
         },
+        {
+            "name": "Odin Server",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "odin.main",
+            "args": [
+                "--config=${workspaceFolder}/python/odin_server.cfg",
+                "--logging=DEBUG",
+                "--access-logging=ERROR"
+            ]
+        }
     ]
 }
