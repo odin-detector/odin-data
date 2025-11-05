@@ -92,6 +92,44 @@ FileWriterPlugin::FileWriterPlugin() :
         timeout_thread_running_(true),
         timeout_thread_(boost::bind(&FileWriterPlugin::run_close_file_timeout, this))
 {
+  std::string prefix = FileWriterPlugin::CONFIG_PROCESS + '/';
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_NUMBER, "uint", "rw", 1, ParamMetadata::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_RANK, "uint", "rw", 0, ParamMetadata::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_BLOCKSIZE, "uint", "rw", 1, ParamMetadata::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_BLOCKS_PER_FILE, "uint", "rw", 0, ParamMetadata::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_EARLIEST_VERSION, "bool", "rw", {0, 1});
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_THRESHOLD, "uint", "rw", 1, ParamMetadata::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_VALUE, "uint", "rw", 1, ParamMetadata::MAX_UNSET);
+
+  prefix = FileWriterPlugin::CONFIG_FILE + '/';
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_PREFIX, "string", "rw", {});
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_USE_NUMBERS,  "bool", "rw", {0, 1});
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_NUMBER_START,  "uint", "rw", 0, ParamMetadata::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_POSTFIX, "string", "rw", {});
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_PATH, "string", "r", {});
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_EXTENSION, "string", "rw", {});
+  add_config_param_metadata(prefix + FileWriterPlugin::CREATE_ERROR_DURATION,  "uint", "rw", 0, ParamMetadata::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::WRITE_ERROR_DURATION,  "uint", "rw", 0, ParamMetadata::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::FLUSH_ERROR_DURATION,  "uint", "rw", 0, ParamMetadata::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::CLOSE_ERROR_DURATION,  "uint", "rw", 0, ParamMetadata::MAX_UNSET);
+
+  add_config_param_metadata(FileWriterPlugin::CONFIG_FRAMES, "uint", "rw", 0, ParamMetadata::MAX_UNSET);
+  add_config_param_metadata(FileWriterPlugin::CONFIG_MASTER_DATASET, "string", "rw", {});
+  add_config_param_metadata(FileWriterPlugin::ACQUISITION_ID, "string", "rw", {});
+  add_config_param_metadata(FileWriterPlugin::CLOSE_TIMEOUT_PERIOD, "uint", "rw", 0, 5);
+  add_config_param_metadata(FileWriterPlugin::START_CLOSE_TIMEOUT, "uint", "rw", 0, ParamMetadata::MAX_UNSET);
+
+  add_status_param_metadata("writing", "bool", "rw", {0, 1});
+  add_status_param_metadata("frames_max", "uint", "rw", 0, ParamMetadata::MAX_UNSET);
+  add_status_param_metadata("frames_written", "uint", "r", 0, ParamMetadata::MAX_UNSET);
+  add_status_param_metadata("frames_processed", "uint", "r", 0, ParamMetadata::MAX_UNSET);
+  add_status_param_metadata("file_path", "string", "r", {});
+  add_status_param_metadata("file_name", "string", "r", {});
+  add_status_param_metadata(FileWriterPlugin::ACQUISITION_ID, "string", "r", {});
+  add_status_param_metadata("processes",  "uint", "rw", 1, ParamMetadata::MAX_UNSET);
+  add_status_param_metadata(FileWriterPlugin::CONFIG_PROCESS_RANK,"uint", "rw", 0, ParamMetadata::MAX_UNSET);
+  add_status_param_metadata("/timeout_active", "bool", "r", {0, 1});
+
   this->logger_ = Logger::getLogger("FP.FileWriterPlugin");
   LOG4CXX_INFO(logger_, "FileWriterPlugin version " << this->get_version_long() << " loaded");
   this->current_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
@@ -200,8 +238,7 @@ void FileWriterPlugin::start_writing()
     this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
 
     // Set up datasets within the current acquisition
-    std::map<std::string, DatasetDefinition>::iterator iter;
-    for (iter = this->dataset_defs_.begin(); iter != this->dataset_defs_.end(); ++iter){
+    for (auto iter = this->dataset_defs_.begin(); iter != this->dataset_defs_.end(); ++iter){
       this->current_acquisition_->dataset_defs_[iter->first] = iter->second;
     }
 
@@ -288,11 +325,10 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
         std::vector <std::string> dataset_names = dataset_config.get_param_names();
         for (std::vector<std::string>::iterator iter = dataset_names.begin();
              iter != dataset_names.end(); ++iter) {
-          std::string dataset_name = *iter;
-          LOG4CXX_INFO(logger_, "Dataset name " << dataset_name << " found, creating...");
-          create_new_dataset(dataset_name);
-          OdinData::IpcMessage dsetConfig(dataset_config.get_param<const rapidjson::Value &>(dataset_name));
-          this->configure_dataset(dataset_name, dsetConfig, reply);
+          LOG4CXX_INFO(logger_, "Dataset name " << *iter << " found, creating...");
+          create_new_dataset(*iter);
+          OdinData::IpcMessage dsetConfig(dataset_config.get_param<const rapidjson::Value &>(*iter));
+          this->configure_dataset(*iter, dsetConfig, reply);
         }
       }
     }
@@ -332,14 +368,12 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
     }
 
     // Check to see if the close file timeout is being started
-    if (config.has_param(FileWriterPlugin::START_CLOSE_TIMEOUT)) {
-      if (config.get_param<bool>(FileWriterPlugin::START_CLOSE_TIMEOUT) == true) {
-        LOG4CXX_INFO(logger_, "Configure call to start close file timeout");
-        if (writing_) {
-          start_close_file_timeout();
-        } else {
-          LOG4CXX_INFO(logger_, "Not starting timeout as not currently writing");
-        }
+    if (config.has_param(FileWriterPlugin::START_CLOSE_TIMEOUT) && config.get_param<bool>(FileWriterPlugin::START_CLOSE_TIMEOUT) == true) {
+      LOG4CXX_INFO(logger_, "Configure call to start close file timeout");
+      if (writing_) {
+        start_close_file_timeout();
+      } else {
+        LOG4CXX_INFO(logger_, "Not starting timeout as not currently writing");
       }
     }
   }
@@ -381,8 +415,7 @@ void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
   reply.set_param(get_name() + '/' + FileWriterPlugin::CLOSE_TIMEOUT_PERIOD, timeout_period_);
 
   // Check for datasets
-  std::map<std::string, DatasetDefinition>::iterator iter;
-  for (iter = this->dataset_defs_.begin(); iter != this->dataset_defs_.end(); ++iter) {
+  for (auto iter = this->dataset_defs_.begin(); iter != this->dataset_defs_.end(); ++iter) {
     // Add the dataset type
     reply.set_param(get_name() + "/dataset/" + iter->first + '/' + FileWriterPlugin::CONFIG_DATASET_TYPE, get_type_from_enum(iter->second.data_type));
 
@@ -628,8 +661,8 @@ void FileWriterPlugin::configure_dataset(const std::string& dataset_name, OdinDa
 {
   LOG4CXX_DEBUG_LEVEL(1, logger_, "Configuring dataset [" << dataset_name << "]");
 
-  DatasetDefinition dset = dataset_defs_[dataset_name];
-
+  // alias the dataset definition value with associated key - dataset_name
+  DatasetDefinition& dset = dataset_defs_[dataset_name];
   // If there is a type present then set it
   if (config.has_param(FileWriterPlugin::CONFIG_DATASET_TYPE)) {
     dset.data_type = get_type_from_string(config.get_param<std::string>(FileWriterPlugin::CONFIG_DATASET_TYPE));
@@ -639,39 +672,40 @@ void FileWriterPlugin::configure_dataset(const std::string& dataset_name, OdinDa
   if (config.has_param(FileWriterPlugin::CONFIG_DATASET_DIMS)) {
     const rapidjson::Value& val = config.get_param<const rapidjson::Value&>(FileWriterPlugin::CONFIG_DATASET_DIMS);
     // Loop over the dimension values
-    dimensions_t dims(val.Size());
+    dset.frame_dimensions.reserve(val.Size());
     for (rapidjson::SizeType i = 0; i < val.Size(); i++) {
-      const rapidjson::Value& dim = val[i];
-      dims[i] = dim.GetUint64();
+      dset.frame_dimensions[i] = val[i].GetUint64();
     }
-    dset.frame_dimensions = dims;
-    // Create default chunking for the dataset (to include n dimension)
-    dimensions_t chunks(dset.frame_dimensions.size()+1);
+    
+    // in-place modification
+    size_t size = dset.frame_dimensions.size();
+    dset.frame_dimensions.resize(++size);
+    dimsize_t prev, cache = dset.frame_dimensions[0];
     // Set first chunk dimension (n dimension) to a single frame or item
-    chunks[0] = 1;
+    dset.frame_dimensions[0] = 1;
     // Set the remaining chunk dimensions to the same as the dataset dimensions
-    for (int index = 0; index < dset.frame_dimensions.size(); index++){
-      chunks[index+1] = dset.frame_dimensions[index];
+    for(int i = 1; i < size; ++i) {
+      prev = dset.frame_dimensions[i];
+      dset.frame_dimensions[i] = cache;
+      cache = prev;
     }
-    dset.chunks = chunks;
   }
 
   // There might be chunking dimensions present for the dataset, this is not required
   if (config.has_param(FileWriterPlugin::CONFIG_DATASET_CHUNKS)) {
     const rapidjson::Value& val = config.get_param<const rapidjson::Value&>(FileWriterPlugin::CONFIG_DATASET_CHUNKS);
     // Loop over the dimension values
-    dimensions_t chunks(val.Size());
+    dset.chunks.reserve(val.Size());
     for (rapidjson::SizeType i = 0; i < val.Size(); i++) {
       const rapidjson::Value& dim = val[i];
-      chunks[i] = dim.GetUint64();
+      dset.chunks[i] = dim.GetUint64();
     }
-    dset.chunks = chunks;
   }
 
   // Check if compression has been specified for the raw data
   if (config.has_param(FileWriterPlugin::CONFIG_DATASET_COMPRESSION)) {
     dset.compression = get_compression_from_string(config.get_param<std::string>(FileWriterPlugin::CONFIG_DATASET_COMPRESSION));
-    LOG4CXX_INFO(logger_, "Enabling compression: " << dset.compression);
+    LOG4CXX_INFO(logger_, "Enabling compression: " << dset.compression);    
   }
   // Blosc compression require a set of parameters to be defined
   if (config.has_param(FileWriterPlugin::CONFIG_DATASET_BLOSC_COMPRESSOR)) {
@@ -701,9 +735,6 @@ void FileWriterPlugin::configure_dataset(const std::string& dataset_name, OdinDa
   if (config.has_param(FileWriterPlugin::CONFIG_DATASET_INDEXES)) {
     dset.create_low_high_indexes = config.get_param<bool>(FileWriterPlugin::CONFIG_DATASET_INDEXES);
   }
-
-  // Add the dataset definition to the store
-  dataset_defs_[dataset_name] = dset;
 }
 
 /**
@@ -715,22 +746,27 @@ void FileWriterPlugin::configure_dataset(const std::string& dataset_name, OdinDa
 void FileWriterPlugin::create_new_dataset(const std::string& dset_name)
 {
   if (dataset_defs_.count(dset_name) < 1){
-    DatasetDefinition dset_def;
     // Provide default values for the dataset
-    dset_def.name = dset_name;
-    dset_def.data_type = raw_8bit;
-    dset_def.compression = no_compression;
-    dset_def.blosc_compressor = 0;
-    dset_def.blosc_level = 0;
-    dset_def.blosc_shuffle = 0;
-    dset_def.num_frames = 1;
-    std::vector<long long unsigned int> dims(0);
-    dset_def.frame_dimensions = dims;
-    dset_def.chunks = dims;
-    dset_def.create_low_high_indexes = false;
-    // Record the dataset in the definitions
-    dataset_defs_[dset_def.name] = dset_def;
+    DatasetDefinition& def = dataset_defs_[dset_name];
+    def.name = dset_name;
+    def.data_type = raw_8bit;
+    def.compression = no_compression;
+    def.blosc_compressor = 0;
+    def.blosc_level = 0;
+    def.blosc_shuffle = 0;
+    def.num_frames = 1;
+    def.create_low_high_indexes = false;
   }
+
+  std::string prefix = FileWriterPlugin::CONFIG_DATASET + '/' + dset_name + '/';
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_TYPE, "string", "rw", {"h5"});
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_DIMS, "uint[]", "rw", {});
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_CHUNKS, "uint[]", "rw", {});
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_COMPRESSION, "int", "rw", {1, 2, 3, 4});
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_BLOSC_COMPRESSOR, "int", "rw", {0, 1, 2, 3, 4, 5});
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_BLOSC_LEVEL, "int", "rw", 1, 9);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_BLOSC_SHUFFLE, "int", "rw", {0, 1, 2});
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_INDEXES, "bool", "rw", {0, 1});
 }
 
 /**

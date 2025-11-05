@@ -165,7 +165,7 @@ private:
   /** Details of the next acquisition to be written */
   boost::shared_ptr<Acquisition> next_acquisition_;
   /** Map of dataset definitions */
-  std::map<std::string, DatasetDefinition> dataset_defs_;
+  std::unordered_map<std::string, DatasetDefinition> dataset_defs_;
   /** Number of frames to write consecutively in a file */
   size_t frames_per_block_;
   /** Number of blocks to write in a file  */

@@ -33,8 +33,8 @@ public:
   { };
 
   //! Creates IpcMessageExcetpion with informational message
-  IpcMessageException(const std::string what) throw() :
-      what_(what)
+  IpcMessageException(std::string what) throw() :
+      what_(std::move(what))
   {};
 
   //! Returns the content of the informational message
@@ -160,8 +160,7 @@ public:
       rapidjson::Value::ConstMemberIterator param_itr = itr->value.FindMember(param_name.c_str());
       if (param_itr == itr->value.MemberEnd())
       {
-        std::stringstream ss;
-        throw IpcMessageException(ss.str());
+        throw IpcMessageException("Param missing!");
       }
       return get_value<T>(param_itr);
     }
