@@ -661,8 +661,8 @@ void FileWriterPlugin::configure_dataset(const std::string& dataset_name, OdinDa
 {
   LOG4CXX_DEBUG_LEVEL(1, logger_, "Configuring dataset [" << dataset_name << "]");
 
-  // alias the dataset definition value with associated key - dataset_name
   DatasetDefinition& dset = dataset_defs_[dataset_name];
+
   // If there is a type present then set it
   if (config.has_param(FileWriterPlugin::CONFIG_DATASET_TYPE)) {
     dset.data_type = get_type_from_string(config.get_param<std::string>(FileWriterPlugin::CONFIG_DATASET_TYPE));
@@ -672,40 +672,33 @@ void FileWriterPlugin::configure_dataset(const std::string& dataset_name, OdinDa
   if (config.has_param(FileWriterPlugin::CONFIG_DATASET_DIMS)) {
     const rapidjson::Value& val = config.get_param<const rapidjson::Value&>(FileWriterPlugin::CONFIG_DATASET_DIMS);
     // Loop over the dimension values
-    dset.frame_dimensions.reserve(val.Size());
+    dset.frame_dimensions.resize(val.Size());
     for (rapidjson::SizeType i = 0; i < val.Size(); i++) {
       dset.frame_dimensions[i] = val[i].GetUint64();
     }
-    
-    // in-place modification
-    size_t size = dset.frame_dimensions.size();
-    dset.frame_dimensions.resize(++size);
-    dimsize_t prev, cache = dset.frame_dimensions[0];
+
+    // resize the chunks array to 1+frame_dimensions array size
+    dset.chunks.resize(dset.frame_dimensions.size()+1);
     // Set first chunk dimension (n dimension) to a single frame or item
-    dset.frame_dimensions[0] = 1;
+    dset.chunks[0] = 1;
     // Set the remaining chunk dimensions to the same as the dataset dimensions
-    for(int i = 1; i < size; ++i) {
-      prev = dset.frame_dimensions[i];
-      dset.frame_dimensions[i] = cache;
-      cache = prev;
-    }
+    std::copy(dset.frame_dimensions.begin(), dset.frame_dimensions.end(), ++dset.chunks.begin());
   }
 
   // There might be chunking dimensions present for the dataset, this is not required
   if (config.has_param(FileWriterPlugin::CONFIG_DATASET_CHUNKS)) {
     const rapidjson::Value& val = config.get_param<const rapidjson::Value&>(FileWriterPlugin::CONFIG_DATASET_CHUNKS);
     // Loop over the dimension values
-    dset.chunks.reserve(val.Size());
+    dset.chunks.resize(val.Size());
     for (rapidjson::SizeType i = 0; i < val.Size(); i++) {
-      const rapidjson::Value& dim = val[i];
-      dset.chunks[i] = dim.GetUint64();
+      dset.chunks[i] = val[i].GetUint64();
     }
   }
 
   // Check if compression has been specified for the raw data
   if (config.has_param(FileWriterPlugin::CONFIG_DATASET_COMPRESSION)) {
     dset.compression = get_compression_from_string(config.get_param<std::string>(FileWriterPlugin::CONFIG_DATASET_COMPRESSION));
-    LOG4CXX_INFO(logger_, "Enabling compression: " << dset.compression);    
+    LOG4CXX_INFO(logger_, "Enabling compression: " << dset.compression);
   }
   // Blosc compression require a set of parameters to be defined
   if (config.has_param(FileWriterPlugin::CONFIG_DATASET_BLOSC_COMPRESSOR)) {
