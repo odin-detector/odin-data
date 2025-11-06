@@ -99,24 +99,22 @@ void ParameterAdjustmentPlugin::configure(OdinData::IpcMessage& config, OdinData
 
       if (parameter_names.size() != 0)
       {
-        for (std::vector<std::string>::iterator iter = parameter_names.begin();
-             iter != parameter_names.end(); ++iter) {
-          std::string parameter_name = *iter;
-          OdinData::IpcMessage paramConfig(parameter_config.get_param<const rapidjson::Value &>(parameter_name));
+        for (auto iter = parameter_names.begin(); iter != parameter_names.end(); ++iter) {
+          OdinData::IpcMessage paramConfig(parameter_config.get_param<const rapidjson::Value &>(*iter));
+          add_config_param_metadata(PARAMETER_NAME_CONFIG + '/' + *iter, "int", "rw", ParamMetadata::MIN_UNSET, ParamMetadata::MAX_UNSET);
 
-          LOG4CXX_INFO(logger_, "Setting adjustment for parameter " << parameter_name << " to "
+          LOG4CXX_INFO(logger_, "Setting adjustment for parameter " << *iter << " to "
               << (int64_t) paramConfig.get_param<int64_t>(PARAMETER_ADJUSTMENT_CONFIG));
-          parameter_adjustments_[parameter_name] = (int64_t) paramConfig.get_param<int64_t>(PARAMETER_ADJUSTMENT_CONFIG);
+          parameter_adjustments_[*iter] = (int64_t) paramConfig.get_param<int64_t>(PARAMETER_ADJUSTMENT_CONFIG);
 
-          if (paramConfig.has_param(PARAMETER_INPUT_CONFIG))
-          {
-            LOG4CXX_INFO(logger_, "Setting input for parameter " << parameter_name << " to "
+          if (paramConfig.has_param(PARAMETER_INPUT_CONFIG)) {
+            LOG4CXX_INFO(logger_, "Setting input for parameter " << *iter << " to "
                 << paramConfig.get_param<std::string>(PARAMETER_INPUT_CONFIG));
-            parameter_inputs_[parameter_name] = paramConfig.get_param<std::string>(PARAMETER_INPUT_CONFIG);
+            parameter_inputs_[*iter] = paramConfig.get_param<std::string>(PARAMETER_INPUT_CONFIG);
+            add_config_param_metadata(PARAMETER_NAME_CONFIG + '/' + *iter, "string", "rw", {});
           }
-          else
-          {
-            parameter_inputs_[parameter_name] = "";
+          else {
+            parameter_inputs_[*iter] = "";
           }
         }
       } else {
@@ -126,8 +124,7 @@ void ParameterAdjustmentPlugin::configure(OdinData::IpcMessage& config, OdinData
       }
     }
   }
-  catch (std::runtime_error& e)
-  {
+  catch (std::runtime_error& e) {
     std::stringstream ss;
     ss << "Bad ctrl msg: " << e.what();
     this->set_error(ss.str());
