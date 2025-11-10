@@ -102,33 +102,33 @@ FileWriterPlugin::FileWriterPlugin() :
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_VALUE, "uint", "rw", 1, ParamMetadata::MAX_UNSET);
 
   prefix = FileWriterPlugin::CONFIG_FILE + '/';
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_PREFIX, "string", "rw", {});
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_PREFIX, "string", "rw");
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_USE_NUMBERS,  "bool", "rw", {0, 1});
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_NUMBER_START,  "uint", "rw", 0, ParamMetadata::MAX_UNSET);
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_POSTFIX, "string", "rw", {});
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_PATH, "string", "r", {});
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_EXTENSION, "string", "rw", {});
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_POSTFIX, "string", "rw");
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_PATH, "string", "r");
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_EXTENSION, "string", "rw");
   add_config_param_metadata(prefix + FileWriterPlugin::CREATE_ERROR_DURATION,  "uint", "rw", 0, ParamMetadata::MAX_UNSET);
   add_config_param_metadata(prefix + FileWriterPlugin::WRITE_ERROR_DURATION,  "uint", "rw", 0, ParamMetadata::MAX_UNSET);
   add_config_param_metadata(prefix + FileWriterPlugin::FLUSH_ERROR_DURATION,  "uint", "rw", 0, ParamMetadata::MAX_UNSET);
   add_config_param_metadata(prefix + FileWriterPlugin::CLOSE_ERROR_DURATION,  "uint", "rw", 0, ParamMetadata::MAX_UNSET);
 
   add_config_param_metadata(FileWriterPlugin::CONFIG_FRAMES, "uint", "rw", 0, ParamMetadata::MAX_UNSET);
-  add_config_param_metadata(FileWriterPlugin::CONFIG_MASTER_DATASET, "string", "rw", {});
-  add_config_param_metadata(FileWriterPlugin::ACQUISITION_ID, "string", "rw", {});
-  add_config_param_metadata(FileWriterPlugin::CLOSE_TIMEOUT_PERIOD, "uint", "rw", 0, 5);
+  add_config_param_metadata(FileWriterPlugin::CONFIG_MASTER_DATASET, "string", "rw");
+  add_config_param_metadata(FileWriterPlugin::ACQUISITION_ID, "string", "rw");
+  add_config_param_metadata(FileWriterPlugin::CLOSE_TIMEOUT_PERIOD, "uint", "rw", 0, ParamMetadata::MAX_UNSET);
   add_config_param_metadata(FileWriterPlugin::START_CLOSE_TIMEOUT, "uint", "rw", 0, ParamMetadata::MAX_UNSET);
 
-  add_status_param_metadata("writing", "bool", "rw", {0, 1});
-  add_status_param_metadata("frames_max", "uint", "rw", 0, ParamMetadata::MAX_UNSET);
+  add_status_param_metadata("writing", "bool", "r", {0, 1});
+  add_status_param_metadata("frames_max", "uint", "r", 0, ParamMetadata::MAX_UNSET);
   add_status_param_metadata("frames_written", "uint", "r", 0, ParamMetadata::MAX_UNSET);
   add_status_param_metadata("frames_processed", "uint", "r", 0, ParamMetadata::MAX_UNSET);
-  add_status_param_metadata("file_path", "string", "r", {});
-  add_status_param_metadata("file_name", "string", "r", {});
-  add_status_param_metadata(FileWriterPlugin::ACQUISITION_ID, "string", "r", {});
+  add_status_param_metadata("file_path", "string", "r");
+  add_status_param_metadata("file_name", "string", "r");
+  add_status_param_metadata("acquisition_id", "string", "r");
   add_status_param_metadata("processes",  "uint", "rw", 1, ParamMetadata::MAX_UNSET);
-  add_status_param_metadata(FileWriterPlugin::CONFIG_PROCESS_RANK,"uint", "rw", 0, ParamMetadata::MAX_UNSET);
-  add_status_param_metadata("/timeout_active", "bool", "r", {0, 1});
+  add_status_param_metadata("rank","uint", "rw", 0, ParamMetadata::MAX_UNSET);
+  add_status_param_metadata("timeout_active", "bool", "r", {0, 1});
 
   this->logger_ = Logger::getLogger("FP.FileWriterPlugin");
   LOG4CXX_INFO(logger_, "FileWriterPlugin version " << this->get_version_long() << " loaded");
@@ -661,7 +661,7 @@ void FileWriterPlugin::configure_dataset(const std::string& dataset_name, OdinDa
 {
   LOG4CXX_DEBUG_LEVEL(1, logger_, "Configuring dataset [" << dataset_name << "]");
 
-  DatasetDefinition& dset = dataset_defs_[dataset_name];
+  DatasetDefinition dset = dataset_defs_[dataset_name];
 
   // If there is a type present then set it
   if (config.has_param(FileWriterPlugin::CONFIG_DATASET_TYPE)) {
@@ -728,6 +728,7 @@ void FileWriterPlugin::configure_dataset(const std::string& dataset_name, OdinDa
   if (config.has_param(FileWriterPlugin::CONFIG_DATASET_INDEXES)) {
     dset.create_low_high_indexes = config.get_param<bool>(FileWriterPlugin::CONFIG_DATASET_INDEXES);
   }
+  dataset_defs_[dataset_name] = std::move(dset);
 }
 
 /**
@@ -753,8 +754,8 @@ void FileWriterPlugin::create_new_dataset(const std::string& dset_name)
 
   std::string prefix = FileWriterPlugin::CONFIG_DATASET + '/' + dset_name + '/';
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_TYPE, "string", "rw", {"h5"});
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_DIMS, "uint[]", "rw", {});
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_CHUNKS, "uint[]", "rw", {});
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_DIMS, "uint[]", "rw");
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_CHUNKS, "uint[]", "rw");
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_COMPRESSION, "int", "rw", {1, 2, 3, 4});
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_BLOSC_COMPRESSOR, "int", "rw", {0, 1, 2, 3, 4, 5});
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_BLOSC_LEVEL, "int", "rw", 1, 9);
