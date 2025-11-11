@@ -102,7 +102,7 @@ FileWriterPlugin::FileWriterPlugin() :
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_THRESHOLD, PMD::UINT_T, PMD::READ_WRITE, 1, PMD::MAX_UNSET);
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_VALUE, PMD::UINT_T, PMD::READ_WRITE, 1, PMD::MAX_UNSET);
 
-  prefix = FileWriterPlugin::CONFIG_FILE + '/';
+  (prefix = FileWriterPlugin::CONFIG_FILE).append("/");
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_PREFIX, PMD::STRING_T, PMD::READ_WRITE);
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_USE_NUMBERS, PMD::BOOL_T, PMD::READ_WRITE, {0, 1});
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_NUMBER_START,  PMD::UINT_T, PMD::READ_WRITE, 0, PMD::MAX_UNSET);
@@ -127,11 +127,11 @@ FileWriterPlugin::FileWriterPlugin() :
   add_status_param_metadata(STATUS_FILE_PATH, PMD::STRING_T, PMD::READ_ONLY);
   add_status_param_metadata(STATUS_FILE_NAME, PMD::STRING_T, PMD::READ_ONLY);
   add_status_param_metadata(STATUS_ACQUISITION_ID, PMD::STRING_T, PMD::READ_ONLY);
-  add_status_param_metadata(STATUS_PROCESSES,  PMD::UINT_T, PMD::READ_WRITE, 1, PMD::MAX_UNSET);
-  add_status_param_metadata(STATUS_RANK,PMD::UINT_T, PMD::READ_WRITE, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(STATUS_PROCESSES,  PMD::UINT_T, PMD::READ_ONLY, 1, PMD::MAX_UNSET);
+  add_status_param_metadata(STATUS_RANK,PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
   add_status_param_metadata(STATUS_TIMEOUT_ACTIVE, PMD::BOOL_T, PMD::READ_ONLY, {0, 1});
 
-  prefix = STATUS_TIMING + '/';
+  (prefix = STATUS_TIMING).append("/");
   add_status_param_metadata(prefix + STATUS_LAST_CHANCE, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
   add_status_param_metadata(prefix + STATUS_MAX_CREATE, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
   add_status_param_metadata(prefix + STATUS_MEAN_CREATE, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
@@ -402,7 +402,8 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
 void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
   // Return the configuration of the file writer plugin
-  std::string process_str = get_name() + '/' + FileWriterPlugin::CONFIG_PROCESS + '/';
+  std::string process_str = get_name();
+  process_str.append("/").append(FileWriterPlugin::CONFIG_PROCESS).append("/");
   reply.set_param(process_str + FileWriterPlugin::CONFIG_PROCESS_NUMBER, concurrent_processes_);
   reply.set_param(process_str + FileWriterPlugin::CONFIG_PROCESS_RANK, concurrent_rank_);
   reply.set_param(process_str + FileWriterPlugin::CONFIG_PROCESS_BLOCKSIZE, frames_per_block_);
@@ -411,7 +412,8 @@ void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
   reply.set_param(process_str + FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_THRESHOLD, alignment_threshold_);
   reply.set_param(process_str + FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_VALUE, alignment_value_);
 
-  std::string file_str = get_name() + '/' + FileWriterPlugin::CONFIG_FILE + '/';
+  std::string file_str = get_name();
+  file_str.append("/").append(FileWriterPlugin::CONFIG_FILE).append("/");
   reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_PATH, next_acquisition_->file_path_);
   reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_PREFIX, next_acquisition_->configured_filename_);
   reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_USE_NUMBERS, use_file_numbering_);
@@ -424,32 +426,36 @@ void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
   reply.set_param(file_str + FileWriterPlugin::FLUSH_ERROR_DURATION, hdf5_error_definition_.flush_duration);
   reply.set_param(file_str + FileWriterPlugin::CLOSE_ERROR_DURATION, hdf5_error_definition_.close_duration);
 
-  reply.set_param(get_name() + '/' + FileWriterPlugin::CONFIG_FRAMES, next_acquisition_->total_frames_);
-  reply.set_param(get_name() + '/' + FileWriterPlugin::CONFIG_MASTER_DATASET, master_frame_);
-  reply.set_param(get_name() + '/' + FileWriterPlugin::ACQUISITION_ID, next_acquisition_->acquisition_id_);
-  reply.set_param(get_name() + '/' + FileWriterPlugin::CLOSE_TIMEOUT_PERIOD, timeout_period_);
+  std::string prefix = get_name();
+  prefix.append("/");
+  reply.set_param(prefix + FileWriterPlugin::CONFIG_FRAMES, next_acquisition_->total_frames_);
+  reply.set_param(prefix + FileWriterPlugin::CONFIG_MASTER_DATASET, master_frame_);
+  reply.set_param(prefix + FileWriterPlugin::ACQUISITION_ID, next_acquisition_->acquisition_id_);
+  reply.set_param(prefix + FileWriterPlugin::CLOSE_TIMEOUT_PERIOD, timeout_period_);
 
   // Check for datasets
+  prefix.append(FileWriterPlugin::CONFIG_DATASET).append("/");
   for (auto iter = this->dataset_defs_.begin(); iter != this->dataset_defs_.end(); ++iter) {
     // Add the dataset type
-    reply.set_param(get_name() + "/dataset/" + iter->first + '/' + FileWriterPlugin::CONFIG_DATASET_TYPE, get_type_from_enum(iter->second.data_type));
+    prefix.append(iter->first).append("/");
+    reply.set_param(prefix + FileWriterPlugin::CONFIG_DATASET_TYPE, get_type_from_enum(iter->second.data_type));
 
     // Add the dataset compression
-    reply.set_param(get_name() + "/dataset/" + iter->first + '/' + FileWriterPlugin::CONFIG_DATASET_COMPRESSION, get_compress_from_enum(iter->second.compression));
-    reply.set_param(get_name() + "/dataset/" + iter->first + '/' + FileWriterPlugin::CONFIG_DATASET_BLOSC_COMPRESSOR, (int)iter->second.blosc_compressor);
-    reply.set_param(get_name() + "/dataset/" + iter->first + '/' + FileWriterPlugin::CONFIG_DATASET_BLOSC_LEVEL, (int)iter->second.blosc_level);
-    reply.set_param(get_name() + "/dataset/" + iter->first + '/' + FileWriterPlugin::CONFIG_DATASET_BLOSC_SHUFFLE, (int)iter->second.blosc_shuffle);
+    reply.set_param(prefix + FileWriterPlugin::CONFIG_DATASET_COMPRESSION, get_compress_from_enum(iter->second.compression));
+    reply.set_param(prefix + FileWriterPlugin::CONFIG_DATASET_BLOSC_COMPRESSOR, (int)iter->second.blosc_compressor);
+    reply.set_param(prefix + FileWriterPlugin::CONFIG_DATASET_BLOSC_LEVEL, (int)iter->second.blosc_level);
+    reply.set_param(prefix + FileWriterPlugin::CONFIG_DATASET_BLOSC_SHUFFLE, (int)iter->second.blosc_shuffle);
 
     // Check for and add dimensions
     if (iter->second.frame_dimensions.size() > 0) {
-      std::string dimParamName = get_name() + "/dataset/" + iter->first + '/' + FileWriterPlugin::CONFIG_DATASET_DIMS + "[]";
+      std::string dimParamName = prefix + FileWriterPlugin::CONFIG_DATASET_DIMS + "[]";
       for (int index = 0; index < iter->second.frame_dimensions.size(); index++) {
         reply.set_param(dimParamName, (int)iter->second.frame_dimensions[index]);
       }
     }
     // Check for and add chunking dimensions
     if (iter->second.chunks.size() > 0) {
-      std::string chunkParamName = get_name() + "/dataset/" + iter->first + '/' + FileWriterPlugin::CONFIG_DATASET_CHUNKS + "[]";
+      std::string chunkParamName = prefix + FileWriterPlugin::CONFIG_DATASET_CHUNKS + "[]";
       for (int index = 0; index < iter->second.chunks.size(); index++) {
         reply.set_param(chunkParamName, (int)iter->second.chunks[index]);
       }
