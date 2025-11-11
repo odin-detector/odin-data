@@ -73,7 +73,7 @@ private:
   void * data_buffer_ptr_;
   size_t data_buffer_size_;
 
-private:
+public:
   /** Configuration constants */
   static const std::string CONFIG_BLOSC_COMPRESSOR;
   static const std::string CONFIG_BLOSC_THREADS;
