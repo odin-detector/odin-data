@@ -92,43 +92,58 @@ FileWriterPlugin::FileWriterPlugin() :
         timeout_thread_running_(true),
         timeout_thread_(boost::bind(&FileWriterPlugin::run_close_file_timeout, this))
 {
+  using PMD = struct ParamMetadata;
   std::string prefix = FileWriterPlugin::CONFIG_PROCESS + '/';
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_NUMBER, "uint", "rw", 1, ParamMetadata::MAX_UNSET);
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_RANK, "uint", "rw", 0, ParamMetadata::MAX_UNSET);
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_BLOCKSIZE, "uint", "rw", 1, ParamMetadata::MAX_UNSET);
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_BLOCKS_PER_FILE, "uint", "rw", 0, ParamMetadata::MAX_UNSET);
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_EARLIEST_VERSION, "bool", "rw", {0, 1});
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_THRESHOLD, "uint", "rw", 1, ParamMetadata::MAX_UNSET);
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_VALUE, "uint", "rw", 1, ParamMetadata::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_NUMBER, PMD::READ_WRITE, PMD::READ_WRITE, 1, PMD::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_RANK, PMD::UINT_T, PMD::READ_WRITE, 0, PMD::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_BLOCKSIZE, PMD::UINT_T, PMD::READ_WRITE, 1, PMD::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_BLOCKS_PER_FILE, PMD::UINT_T, PMD::READ_WRITE, 0, PMD::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_EARLIEST_VERSION, PMD::BOOL_T, PMD::READ_WRITE, {0, 1});
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_THRESHOLD, PMD::UINT_T, PMD::READ_WRITE, 1, PMD::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_VALUE, PMD::UINT_T, PMD::READ_WRITE, 1, PMD::MAX_UNSET);
 
   prefix = FileWriterPlugin::CONFIG_FILE + '/';
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_PREFIX, "string", "rw");
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_USE_NUMBERS,  "bool", "rw", {0, 1});
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_NUMBER_START,  "uint", "rw", 0, ParamMetadata::MAX_UNSET);
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_POSTFIX, "string", "rw");
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_PATH, "string", "r");
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_EXTENSION, "string", "rw");
-  add_config_param_metadata(prefix + FileWriterPlugin::CREATE_ERROR_DURATION,  "uint", "rw", 0, ParamMetadata::MAX_UNSET);
-  add_config_param_metadata(prefix + FileWriterPlugin::WRITE_ERROR_DURATION,  "uint", "rw", 0, ParamMetadata::MAX_UNSET);
-  add_config_param_metadata(prefix + FileWriterPlugin::FLUSH_ERROR_DURATION,  "uint", "rw", 0, ParamMetadata::MAX_UNSET);
-  add_config_param_metadata(prefix + FileWriterPlugin::CLOSE_ERROR_DURATION,  "uint", "rw", 0, ParamMetadata::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_PREFIX, PMD::STRING_T, PMD::READ_WRITE);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_USE_NUMBERS, PMD::BOOL_T, PMD::READ_WRITE, {0, 1});
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_NUMBER_START,  PMD::UINT_T, PMD::READ_WRITE, 0, PMD::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_POSTFIX, PMD::STRING_T, PMD::READ_WRITE);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_PATH, PMD::STRING_T, PMD::READ_ONLY);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_EXTENSION, PMD::STRING_T, PMD::READ_WRITE);
+  add_config_param_metadata(prefix + FileWriterPlugin::CREATE_ERROR_DURATION,  PMD::UINT_T, PMD::READ_WRITE, 0, PMD::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::WRITE_ERROR_DURATION,  PMD::UINT_T, PMD::READ_WRITE, 0, PMD::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::FLUSH_ERROR_DURATION,  PMD::UINT_T, PMD::READ_WRITE, 0, PMD::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::CLOSE_ERROR_DURATION,  PMD::UINT_T, PMD::READ_WRITE, 0, PMD::MAX_UNSET);
 
-  add_config_param_metadata(FileWriterPlugin::CONFIG_FRAMES, "uint", "rw", 0, ParamMetadata::MAX_UNSET);
-  add_config_param_metadata(FileWriterPlugin::CONFIG_MASTER_DATASET, "string", "rw");
-  add_config_param_metadata(FileWriterPlugin::ACQUISITION_ID, "string", "rw");
-  add_config_param_metadata(FileWriterPlugin::CLOSE_TIMEOUT_PERIOD, "uint", "rw", 0, ParamMetadata::MAX_UNSET);
-  add_config_param_metadata(FileWriterPlugin::START_CLOSE_TIMEOUT, "uint", "rw", 0, ParamMetadata::MAX_UNSET);
+  add_config_param_metadata(FileWriterPlugin::CONFIG_FRAMES, PMD::UINT_T, PMD::READ_WRITE, 0, PMD::MAX_UNSET);
+  add_config_param_metadata(FileWriterPlugin::CONFIG_MASTER_DATASET, PMD::STRING_T, PMD::READ_WRITE);
+  add_config_param_metadata(FileWriterPlugin::ACQUISITION_ID, PMD::STRING_T, PMD::READ_WRITE);
+  add_config_param_metadata(FileWriterPlugin::CLOSE_TIMEOUT_PERIOD, PMD::UINT_T, PMD::READ_WRITE, 0, PMD::MAX_UNSET);
+  add_config_param_metadata(FileWriterPlugin::START_CLOSE_TIMEOUT, PMD::UINT_T, PMD::READ_WRITE, 0, PMD::MAX_UNSET);
 
-  add_status_param_metadata("writing", "bool", "r", {0, 1});
-  add_status_param_metadata("frames_max", "uint", "r", 0, ParamMetadata::MAX_UNSET);
-  add_status_param_metadata("frames_written", "uint", "r", 0, ParamMetadata::MAX_UNSET);
-  add_status_param_metadata("frames_processed", "uint", "r", 0, ParamMetadata::MAX_UNSET);
-  add_status_param_metadata("file_path", "string", "r");
-  add_status_param_metadata("file_name", "string", "r");
-  add_status_param_metadata("acquisition_id", "string", "r");
-  add_status_param_metadata("processes",  "uint", "rw", 1, ParamMetadata::MAX_UNSET);
-  add_status_param_metadata("rank","uint", "rw", 0, ParamMetadata::MAX_UNSET);
-  add_status_param_metadata("timeout_active", "bool", "r", {0, 1});
+  add_status_param_metadata(STATUS_WRITING, PMD::BOOL_T, PMD::READ_ONLY, {0, 1});
+  add_status_param_metadata(STATUS_FRAMES_MAX, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(STATUS_FRAMES_WRITTEN, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(STATUS_FRAMES_PROCESSED, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(STATUS_FILE_PATH, PMD::STRING_T, PMD::READ_ONLY);
+  add_status_param_metadata(STATUS_FILE_NAME, PMD::STRING_T, PMD::READ_ONLY);
+  add_status_param_metadata(STATUS_ACQUISITION_ID, PMD::STRING_T, PMD::READ_ONLY);
+  add_status_param_metadata(STATUS_PROCESSES,  PMD::UINT_T, PMD::READ_WRITE, 1, PMD::MAX_UNSET);
+  add_status_param_metadata(STATUS_RANK,PMD::UINT_T, PMD::READ_WRITE, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(STATUS_TIMEOUT_ACTIVE, PMD::BOOL_T, PMD::READ_ONLY, {0, 1});
+
+  prefix = STATUS_TIMING + '/';
+  add_status_param_metadata(prefix + STATUS_LAST_CHANCE, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(prefix + STATUS_MAX_CREATE, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(prefix + STATUS_MEAN_CREATE, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(prefix + STATUS_LAST_WRITE, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(prefix + STATUS_MAX_WRITE, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(prefix + STATUS_MEAN_WRITE, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(prefix + STATUS_LAST_FLUSH, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(prefix + STATUS_MAX_FLUSH, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(prefix + STATUS_MEAN_FLUSH, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(prefix + STATUS_LAST_CLOSE, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(prefix + STATUS_MAX_CLOSE, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(prefix + STATUS_MEAN_CLOSE, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
 
   this->logger_ = Logger::getLogger("FP.FileWriterPlugin");
   LOG4CXX_INFO(logger_, "FileWriterPlugin version " << this->get_version_long() << " loaded");
@@ -752,15 +767,16 @@ void FileWriterPlugin::create_new_dataset(const std::string& dset_name)
     def.create_low_high_indexes = false;
   }
 
+  using PMD = struct ParamMetadata;
   std::string prefix = FileWriterPlugin::CONFIG_DATASET + '/' + dset_name + '/';
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_TYPE, "string", "rw", {"h5"});
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_DIMS, "uint[]", "rw");
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_CHUNKS, "uint[]", "rw");
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_COMPRESSION, "int", "rw", {1, 2, 3, 4});
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_BLOSC_COMPRESSOR, "int", "rw", {0, 1, 2, 3, 4, 5});
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_BLOSC_LEVEL, "int", "rw", 1, 9);
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_BLOSC_SHUFFLE, "int", "rw", {0, 1, 2});
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_INDEXES, "bool", "rw", {0, 1});
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_TYPE, PMD::STRING_T, PMD::READ_WRITE, {"h5"});
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_DIMS, PMD::UINT2DARR_T, PMD::READ_WRITE);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_CHUNKS, PMD::UINT2DARR_T, PMD::READ_WRITE);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_COMPRESSION, PMD::INT_T, PMD::READ_WRITE, {1, 2, 3, 4});
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_BLOSC_COMPRESSOR, PMD::INT_T, PMD::READ_WRITE, {0, 1, 2, 3, 4, 5});
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_BLOSC_LEVEL, PMD::INT_T, PMD::READ_WRITE, 1, 9);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_BLOSC_SHUFFLE, PMD::INT_T, PMD::READ_WRITE, {0, 1, 2});
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_INDEXES, PMD::BOOL_T, PMD::READ_WRITE, {0, 1});
 }
 
 /**
@@ -780,16 +796,17 @@ void FileWriterPlugin::delete_datasets()
 void FileWriterPlugin::status(OdinData::IpcMessage& status)
 {
   // Record the plugin's status items
-  status.set_param(get_name() + "/writing", this->writing_);
-  status.set_param(get_name() + "/frames_max", (int)this->current_acquisition_->frames_to_write_);
-  status.set_param(get_name() + "/frames_written", (int)this->current_acquisition_->frames_written_);
-  status.set_param(get_name() + "/frames_processed", (int)this->current_acquisition_->frames_processed_);
-  status.set_param(get_name() + "/file_path", this->current_acquisition_->file_path_);
-  status.set_param(get_name() + "/file_name", this->current_acquisition_->filename_);
-  status.set_param(get_name() + "/acquisition_id", this->current_acquisition_->acquisition_id_);
-  status.set_param(get_name() + "/processes", (int)this->concurrent_processes_);
-  status.set_param(get_name() + "/rank", (int)this->concurrent_rank_);
-  status.set_param(get_name() + "/timeout_active", this->timeout_active_);
+  std::string prefix = get_name() + '/';
+  status.set_param(prefix + STATUS_TIMEOUT_ACTIVE, this->writing_);
+  status.set_param(prefix + STATUS_FRAMES_MAX, (int)this->current_acquisition_->frames_to_write_);
+  status.set_param(prefix + STATUS_FRAMES_WRITTEN, (int)this->current_acquisition_->frames_written_);
+  status.set_param(prefix + STATUS_FRAMES_PROCESSED, (int)this->current_acquisition_->frames_processed_);
+  status.set_param(prefix + STATUS_FILE_PATH, this->current_acquisition_->file_path_);
+  status.set_param(prefix + STATUS_FILE_NAME, this->current_acquisition_->filename_);
+  status.set_param(prefix + STATUS_ACQUISITION_ID, this->current_acquisition_->acquisition_id_);
+  status.set_param(prefix + STATUS_PROCESSES, (int)this->concurrent_processes_);
+  status.set_param(prefix + STATUS_RANK, (int)this->concurrent_rank_);
+  status.set_param(prefix + STATUS_TIMEOUT_ACTIVE, this->timeout_active_);
   add_file_writing_stats(status);
 }
 
@@ -802,18 +819,19 @@ void FileWriterPlugin::status(OdinData::IpcMessage& status)
  */
 void FileWriterPlugin::add_file_writing_stats(OdinData::IpcMessage& status)
 {
-  status.set_param(get_name() + "/timing/last_create", (int) hdf5_call_durations_.create.last_);
-  status.set_param(get_name() + "/timing/max_create", (int) hdf5_call_durations_.create.max_);
-  status.set_param(get_name() + "/timing/mean_create", (int) hdf5_call_durations_.create.mean_);
-  status.set_param(get_name() + "/timing/last_write", (int) hdf5_call_durations_.write.last_);
-  status.set_param(get_name() + "/timing/max_write", (int) hdf5_call_durations_.write.max_);
-  status.set_param(get_name() + "/timing/mean_write", (int) hdf5_call_durations_.write.mean_);
-  status.set_param(get_name() + "/timing/last_flush", (int) hdf5_call_durations_.flush.last_);
-  status.set_param(get_name() + "/timing/max_flush", (int) hdf5_call_durations_.flush.max_);
-  status.set_param(get_name() + "/timing/mean_flush", (int) hdf5_call_durations_.flush.mean_);
-  status.set_param(get_name() + "/timing/last_close", (int) hdf5_call_durations_.close.last_);
-  status.set_param(get_name() + "/timing/max_close", (int) hdf5_call_durations_.close.max_);
-  status.set_param(get_name() + "/timing/mean_close", (int) hdf5_call_durations_.close.mean_);
+  std::string prefix = get_name() + '/' + STATUS_TIMING + '/';
+  status.set_param(prefix + STATUS_LAST_CHANCE, (int) hdf5_call_durations_.create.last_);
+  status.set_param(prefix + STATUS_MAX_CREATE, (int) hdf5_call_durations_.create.max_);
+  status.set_param(prefix + STATUS_MEAN_CREATE, (int) hdf5_call_durations_.create.mean_);
+  status.set_param(prefix + STATUS_LAST_WRITE, (int) hdf5_call_durations_.write.last_);
+  status.set_param(prefix + STATUS_MAX_WRITE, (int) hdf5_call_durations_.write.max_);
+  status.set_param(prefix + STATUS_MEAN_WRITE, (int) hdf5_call_durations_.write.mean_);
+  status.set_param(prefix + STATUS_LAST_FLUSH, (int) hdf5_call_durations_.flush.last_);
+  status.set_param(prefix + STATUS_MAX_FLUSH, (int) hdf5_call_durations_.flush.max_);
+  status.set_param(prefix + STATUS_MEAN_FLUSH, (int) hdf5_call_durations_.flush.mean_);
+  status.set_param(prefix + STATUS_LAST_CLOSE, (int) hdf5_call_durations_.close.last_);
+  status.set_param(prefix + STATUS_MAX_CLOSE, (int) hdf5_call_durations_.close.max_);
+  status.set_param(prefix + STATUS_MEAN_CLOSE, (int) hdf5_call_durations_.close.mean_);
 }
 
 /**
