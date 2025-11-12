@@ -15,7 +15,6 @@ namespace FrameProcessor {
     // Setup logging for the class
     logger_ = Logger::getLogger("FP.SumPlugin");
     LOG4CXX_TRACE(logger_, "SumPlugin constructor.");
-    add_config_param_metadata(SUM_PARAM_NAME, "int", "r", 0, ParamMetadata::MAX_UNSET);
   }
 
 /**

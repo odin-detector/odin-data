@@ -92,26 +92,26 @@ void ParameterAdjustmentPlugin::configure(OdinData::IpcMessage& config, OdinData
 {
   try {
     // Check if we are setting the parameter adjustment values
+    using PMD = struct ParamMetadata;
     if (config.has_param(PARAMETER_NAME_CONFIG)) {
       OdinData::IpcMessage parameter_config(
               config.get_param<const rapidjson::Value &>(PARAMETER_NAME_CONFIG));
       std::vector <std::string> parameter_names = parameter_config.get_param_names();
+      add_config_param_metadata(PARAMETER_NAME_CONFIG, ParamMetadata::STRINGARR_T, PMD::READ_WRITE);
 
-      if (parameter_names.size() != 0)
-      {
+      if (parameter_names.size() != 0) {
         for (auto iter = parameter_names.begin(); iter != parameter_names.end(); ++iter) {
           OdinData::IpcMessage paramConfig(parameter_config.get_param<const rapidjson::Value &>(*iter));
-          add_config_param_metadata(PARAMETER_NAME_CONFIG + '/' + *iter, "int", "rw", ParamMetadata::MIN_UNSET, ParamMetadata::MAX_UNSET);
-
           LOG4CXX_INFO(logger_, "Setting adjustment for parameter " << *iter << " to "
               << (int64_t) paramConfig.get_param<int64_t>(PARAMETER_ADJUSTMENT_CONFIG));
           parameter_adjustments_[*iter] = (int64_t) paramConfig.get_param<int64_t>(PARAMETER_ADJUSTMENT_CONFIG);
+          add_config_param_metadata(PARAMETER_NAME_CONFIG + '/' + *iter + '/' + PARAMETER_ADJUSTMENT_CONFIG, PMD::INT_T, PMD::READ_WRITE);
 
           if (paramConfig.has_param(PARAMETER_INPUT_CONFIG)) {
             LOG4CXX_INFO(logger_, "Setting input for parameter " << *iter << " to "
                 << paramConfig.get_param<std::string>(PARAMETER_INPUT_CONFIG));
             parameter_inputs_[*iter] = paramConfig.get_param<std::string>(PARAMETER_INPUT_CONFIG);
-            add_config_param_metadata(PARAMETER_NAME_CONFIG + '/' + *iter, "string", "rw", {});
+            add_config_param_metadata(PARAMETER_NAME_CONFIG + '/' + *iter + '/' + PARAMETER_INPUT_CONFIG, PMD::STRING_T, PMD::READ_WRITE);
           }
           else {
             parameter_inputs_[*iter] = "";
