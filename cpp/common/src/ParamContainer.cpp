@@ -72,7 +72,7 @@ void ParamContainer::encode(ParamContainer::Document& doc_obj, std::string prefi
         // Ensure that the pointer prefix is correctly terminated with a trailing slash.
         if (*pointer_prefix.rbegin() != '/')
         {
-            pointer_prefix += "/";
+            pointer_prefix += '/';
         }
     }
 

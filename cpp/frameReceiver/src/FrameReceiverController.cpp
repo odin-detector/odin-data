@@ -454,7 +454,7 @@ void FrameReceiverController::configure_frame_decoder(OdinData::IpcMessage& conf
   // Check if the last character is '/', if not append it
   if (*decoder_path.rbegin() != '/')
   {
-    decoder_path += "/";
+    decoder_path += '/';
   }
 
   // Resolve the decoder type if specified in the config message
@@ -1199,7 +1199,7 @@ void FrameReceiverController::request_configuration(OdinData::IpcMessage& config
   // Add the decoder configuration parameter block to the reply parameters if the decoder has been
   // configured
   if (frame_decoder_) {
-    std::string decoder_prefix = CONFIG_DECODER_CONFIG + "/";
+    std::string decoder_prefix = CONFIG_DECODER_CONFIG + '/';
     frame_decoder_->request_configuration(decoder_prefix, config_reply);
   }
 

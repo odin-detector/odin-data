@@ -21,6 +21,7 @@
 
 namespace OdinData
 {
+
 //! IpcMessageException - custom exception class implementing "what" for error string
 class IpcMessageException : public std::exception
 {
@@ -147,9 +148,9 @@ public:
       throw IpcMessageException("Missing params block in message");
     }
 
-    if (param_name.find("/") != param_name.npos) {
-      std::string nodeName = param_name.substr(0, param_name.find("/"));
-      std::string subParam = param_name.substr(param_name.find("/") + 1, param_name.npos);
+    if (param_name.find('/') != param_name.npos) {
+      std::string nodeName = param_name.substr(0, param_name.find('/'));
+      std::string subParam = param_name.substr(param_name.find('/') + 1, param_name.npos);
 
       OdinData::IpcMessage node(this->get_param<const rapidjson::Value &>(nodeName));
       return node.get_param<T>(subParam);

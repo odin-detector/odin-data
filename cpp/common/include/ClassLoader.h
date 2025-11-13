@@ -15,7 +15,7 @@
 #include <stdexcept>
 #include <string>
 
-#define REGISTER(Base,Class,Name) OdinData::ClassLoader<Base> cl(Name, OdinData::maker<Base,Class>);
+#define REGISTER(Base,Class,Name) OdinData::ClassLoader<Base> cl{Name, OdinData::maker<Base,Class>};
 
 namespace OdinData
 {

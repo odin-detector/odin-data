@@ -41,10 +41,10 @@ public:
   virtual ~FrameProcessorController();
   void handleCtrlChannel();
   void handleMetaRxChannel();
-  void provideStatus(OdinData::IpcMessage& reply);
+  void provideStatus(OdinData::IpcMessage& reply, bool metadata);
   void provideVersion(OdinData::IpcMessage& reply);
   void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
-  void requestConfiguration(OdinData::IpcMessage& reply);
+  void requestConfiguration(OdinData::IpcMessage& reply, bool metadata);
   void execute(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   void requestCommands(OdinData::IpcMessage& reply);
   void resetStatistics(OdinData::IpcMessage& reply);

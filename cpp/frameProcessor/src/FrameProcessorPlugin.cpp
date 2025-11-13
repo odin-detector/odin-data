@@ -47,7 +47,7 @@ void FrameProcessorPlugin::set_name(const std::string& name)
  *
  * \return The name.
  */
-std::string FrameProcessorPlugin::get_name()
+std::string FrameProcessorPlugin::get_name() const
 {
   // Return our name
   return name_;
