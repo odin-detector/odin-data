@@ -1,6 +1,6 @@
 [
   {
-    "version": "Modify_ParamMetadata_With_definitions",
-    "url": "https://odin-detector.github.io/odin-data/Modify_ParamMetadata_With_definitions/"
+    "version": "Fix_CMake_Missing_ParamMetadata_Header",
+    "url": "https://odin-detector.github.io/odin-data/Fix_CMake_Missing_ParamMetadata_Header/"
   }
 ]
