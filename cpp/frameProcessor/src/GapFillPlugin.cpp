@@ -25,6 +25,13 @@ namespace FrameProcessor
     GapFillPlugin::GapFillPlugin()
     {
         logger_ = Logger::getLogger("FP.GapFillPlugin");
+
+        using PMD = struct ParamMetadata;
+        add_config_param_metadata(GapFillPlugin::CONFIG_GRID_SIZE, PMD::INTARR_T, PMD::READ_WRITE);
+        add_config_param_metadata(GapFillPlugin::CONFIG_CHIP_SIZE, PMD::INTARR_T, PMD::READ_WRITE);
+        add_config_param_metadata(GapFillPlugin::CONFIG_GRID_X_GAPS, PMD::INTARR_T, PMD::READ_WRITE);
+        add_config_param_metadata(GapFillPlugin::CONFIG_GRID_Y_GAPS, PMD::INTARR_T, PMD::READ_WRITE);
+
         LOG4CXX_INFO(logger_, "GapFillPlugin version " << this->get_version_long() << " loaded");
     }
 
