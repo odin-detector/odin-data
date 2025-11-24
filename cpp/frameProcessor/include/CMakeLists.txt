@@ -21,6 +21,7 @@ SET(HEADERS DataBlock.h
             BloscPlugin.h
             SumPlugin.h
             GapFillPlugin.h
-            KafkaProducerPlugin.h)
+            KafkaProducerPlugin.h
+            ParamMetadata.h)
 
 INSTALL(FILES ${HEADERS} DESTINATION include/frameProcessor)
