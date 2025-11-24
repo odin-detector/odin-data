@@ -65,7 +65,33 @@ public:
   std::string get_version_short();
   std::string get_version_long();
 
-private:
+  /** Configuration constant for status related items */
+  static constexpr char  STATUS_WRITING[8]              = "writing";
+  static constexpr char  STATUS_FRAMES_MAX[11]          = "frames_max";
+  static constexpr char  STATUS_FRAMES_WRITTEN[15]      = "frames_written";
+  static constexpr char  STATUS_FRAMES_PROCESSED[17]    = "frames_processed";
+  static constexpr char  STATUS_FILE_PATH[10]           = "file_path";
+  static constexpr char  STATUS_FILE_NAME[10]           = "file_name";
+  static constexpr char  STATUS_ACQUISITION_ID[15]      = "acquisition_id"; 
+  static constexpr char  STATUS_PROCESSES[10]           = "processes";
+  static constexpr char  STATUS_RANK[5]                 = "rank";
+  static constexpr char  STATUS_TIMEOUT_ACTIVE[15]      = "timeout_active";
+  
+  /** Configuration constant for status-timing related items */
+  static constexpr char  STATUS_TIMING[7]           =     "timing";
+  static constexpr char  STATUS_LAST_CHANCE[12]     =     "last_create";
+  static constexpr char  STATUS_MAX_CREATE[11]      =     "max_create";
+  static constexpr char  STATUS_MEAN_CREATE[12]     =     "mean_create";
+  static constexpr char  STATUS_LAST_WRITE[11]      =     "last_write";
+  static constexpr char  STATUS_MAX_WRITE[10]       =     "max_write"; 
+  static constexpr char  STATUS_MEAN_WRITE[11]      =     "mean_write";
+  static constexpr char  STATUS_LAST_FLUSH[11]      =     "last_flush";
+  static constexpr char  STATUS_MAX_FLUSH[10]       =     "max_flush"; 
+  static constexpr char  STATUS_MEAN_FLUSH[11]      =     "mean_flush";
+  static constexpr char  STATUS_LAST_CLOSE[11]      =     "last_close";
+  static constexpr char  STATUS_MAX_CLOSE[10]       =     "max_close"; 
+  static constexpr char  STATUS_MEAN_CLOSE[11]      =     "mean_close";
+
   /** Configuration constant for process related items */
   static const std::string CONFIG_PROCESS;
   /** Configuration constant for number of processes */
@@ -139,6 +165,7 @@ private:
   static const std::string START_WRITING;
   static const std::string STOP_WRITING;
 
+private:
   /**
    * Prevent a copy of the FileWriterPlugin plugin.
    *
@@ -165,7 +192,7 @@ private:
   /** Details of the next acquisition to be written */
   boost::shared_ptr<Acquisition> next_acquisition_;
   /** Map of dataset definitions */
-  std::map<std::string, DatasetDefinition> dataset_defs_;
+  std::unordered_map<std::string, DatasetDefinition> dataset_defs_;
   /** Number of frames to write consecutively in a file */
   size_t frames_per_block_;
   /** Number of blocks to write in a file  */
