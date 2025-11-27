@@ -187,3 +187,14 @@ class MetaListenerAdapter(OdinDataAdapter):
                 self._set_defaults()
         else:
             self._set_defaults()
+
+    @staticmethod
+    def traverse_parameters(param_set, uri_items):
+        try:
+            item_dict = param_set
+            for item in uri_items:
+                item_dict = item_dict[item]
+        except KeyError:
+            item_dict = None
+
+        return item_dict
