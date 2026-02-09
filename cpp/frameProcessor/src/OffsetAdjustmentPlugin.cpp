@@ -21,6 +21,8 @@ OffsetAdjustmentPlugin::OffsetAdjustmentPlugin() :
   logger_ = Logger::getLogger("FP.OffsetAdjustmentPlugin");
   LOG4CXX_INFO(logger_, "OffsetAdjustmentPlugin version " << this->get_version_long() << " loaded");
 
+  using PMD = struct ParamMetadata;
+  add_config_param_metadata(OFFSET_ADJUSTMENT_CONFIG, PMD::INT_T, PMD::READ_WRITE);
 }
 
 /**
