@@ -18,11 +18,11 @@ using namespace log4cxx;
 namespace FrameProcessor
 {
 
-class TmpFSPlugin : public FrameProcessorPlugin {
+class TmpfsPlugin : public FrameProcessorPlugin {
 public:
-  TmpFSPlugin();
+  TmpfsPlugin();
   void process_frame(boost::shared_ptr<Frame> frame);
-  void status(OdinData::IpcMessage& status);
+  // void status(OdinData::IpcMessage& status);
   void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   void requestConfiguration(OdinData::IpcMessage& reply);
   int get_version_major() override;
@@ -40,12 +40,8 @@ private:
   boost::recursive_mutex mutex_;
   /** Pointer to logger */
   LoggerPtr logger_;
-  /** Pointer to memory mapped file **/
-  // void* data_ptr_;
   /** The full file path of the underlying file */
   boost::filesystem::path full_file_path_;
-  /** Flag to define whether the underlying file should be removed when this object is destroyed */
-  // bool remove_file_;
 };
 
 };
