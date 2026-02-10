@@ -96,6 +96,11 @@ if (${KAFKA_FOUND})
     install(TARGETS KafkaProducerPlugin DESTINATION lib)
 endif()
 
+# Add library for TmpFS plugin
+add_library(TmpFSPlugin SHARED TmpFSPlugin.cpp TmpFSPluginLib.cpp)
+target_link_libraries(TmpFSPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${COMMON_LIBRARY})
+install(TARGETS TmpFSPlugin DESTINATION lib)
+
 # Add test and project source files to executable
 if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
   # librt required for timing functions
