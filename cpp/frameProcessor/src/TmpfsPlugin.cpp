@@ -30,7 +30,7 @@ void TmpfsPlugin::process_frame(boost::shared_ptr<Frame> frame) {
   }
   const std::string& acq_id = frame->get_meta_data().get_acquisition_ID();
   long long fr_num = frame->get_frame_number();
-  std::string f_path = this->full_file_path_.string() + '/' + acq_id + std::to_string(fr_num);
+  std::string f_path = this->full_file_path_.string() + '/' + acq_id + '/' + std::to_string(fr_num);
   int fd = open(f_path.c_str(), O_CREAT | O_RDWR, 0666);
   if (fd == -1) {
     throw std::runtime_error("Failed to open " + f_path);
