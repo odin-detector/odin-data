@@ -28,10 +28,12 @@ void TmpfsPlugin::process_frame(boost::shared_ptr<Frame> frame) {
     error << "Failed to create directory: " << e.what();
     throw std::runtime_error(error.str());
   }
-
-  int fd = open(this->full_file_path_.c_str(), O_CREAT | O_RDWR, 0666);
+  const std::string& acq_id = frame->get_meta_data().get_acquisition_ID();
+  long long fr_num = frame->get_frame_number();
+  std::string f_path = this->full_file_path_.string() + '/' + acq_id + std::to_string(fr_num);
+  int fd = open(f_path.c_str(), O_CREAT | O_RDWR, 0666);
   if (fd == -1) {
-    throw std::runtime_error("Failed to open " + this->full_file_path_.string());
+    throw std::runtime_error("Failed to open " + f_path);
   }
   size_t dsize = frame->get_data_size();
   int result = ftruncate(fd, dsize);
@@ -77,15 +79,6 @@ void TmpfsPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
   reply.set_param(this->get_name() + '/' + TmpfsPlugin::CONFIG_FILE_PATH, this->full_file_path_);
 }
-
-/** Collate status information for the plugin
- *
- * @param status - Reference to an IpcMessage value to store the status
- */
-// void TmpfsPlugin::status(OdinData::IpcMessage& status)
-// {
-//   status.set_param(this->get_name() + '/' + TmpfsPlugin::CONFIG_FILE_PATH, this->full_file_path_);
-// }
 
 
 int TmpfsPlugin::get_version_major() {
