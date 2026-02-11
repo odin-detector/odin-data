@@ -112,17 +112,20 @@ void FrameReceiverTCPRxThread::handle_receive_socket(int recv_socket_,
   size_t bytes_read = 0;
   size_t total_bytes_read = 0;
 
-  while(((bytes_read = read(recv_socket_, frame_buffer, message_size - total_bytes_read)) > 0) && total_bytes_read < message_size) {
+  unsigned char* fb_bytePtr = reinterpret_cast<unsigned char*>(frame_buffer); // reinterpret the void* address as an unsigned char pointer so we can do arithmetic
+  while(((bytes_read = read(recv_socket_, reinterpret_cast<void*>(fb_bytePtr), message_size - total_bytes_read)) > 0) && total_bytes_read < message_size) {
     total_bytes_read += bytes_read;
-    frame_buffer += bytes_read;
+    fb_bytePtr += bytes_read;
   }
 
   if (bytes_read < 0) {
-        LOG4CXX_ERROR(logger_, "Error reading from socket in TCP RX thread");
-        return;
+    std::array<char, 128> err_msg{};
+    strerror_r(errno, err_msg.data(), err_msg.max_size());
+    LOG4CXX_ERROR(logger_, err_msg.data());
+    return;
   }else if(total_bytes_read < message_size){
-        // We handle this case 
-        return;
+    // We handle this case 
+    return;
   }
   frame_decoder_->process_message(total_bytes_read);
 }
