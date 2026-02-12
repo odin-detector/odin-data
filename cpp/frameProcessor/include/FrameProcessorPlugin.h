@@ -79,28 +79,35 @@ protected:
   void push(const std::string& plugin_name, boost::shared_ptr<Frame> frame);
 
   using ParameterMetadataMap_t = std::unordered_map<std::string, ParamMetadata>;
+  using All_val_vec_t = std::vector<ParamMetadata::allowed_values_t>;
+
+  // template type traits alias to enforce the DataType passed into function 
+  template<typename TYPE>
+  using is_all_vals_vec = std::is_same<typename std::decay<TYPE>::type, All_val_vec_t>;
+  template<typename TYPE>
+  using is_datatype     = std::is_same<typename std::decay<TYPE>::type, ParamMetadata::Datatype>;
+  template<typename TYPE>
+  using is_str_conv     = std::is_convertible<TYPE, std::string>; // can convert TYPE o std::string
+  template <typename DataType_, typename Allowed_>
+  using enableif_str_or_datatype_t         = typename std::enable_if<(is_str_conv<DataType_>::value || is_datatype<DataType_>::value) && is_all_vals_vec<Allowed_>::value>::type;
+
+
   /**
    * Helper functions construct the hash_map's elements in-place
    * \param[in] param: key for the ParamMetadata value-object. it is moved to trigger the move-semantics of the key-element in the pair
    * \param[in] type, access_mode, allowed_values, min, max: arguments for ParamMetadata's constructor.They are not moved since the constructor
    *                                                         of ParamMetadata accepts lvalues as references.
    */
-
-  auto add_config_param_metadata(std::string param, ParamMetadata::Datatype type, ParamMetadata::AccessMode access_mode, std::vector<ParamMetadata::allowed_values_t>& allowed_values)->void {
+  template <typename DataType, typename Allowed_ = All_val_vec_t, typename = enableif_str_or_datatype_t<DataType, Allowed_>>
+  auto add_config_param_metadata(std::string param, DataType type, ParamMetadata::AccessMode access_mode, Allowed_&& allowed_values)->void {
     config_metadata_.emplace(std::piecewise_construct,
                              std::forward_as_tuple(std::move(param)),
                              std::forward_as_tuple(type, access_mode, allowed_values, ParamMetadata::MIN_UNSET, ParamMetadata::MAX_UNSET)
     );
   }
 
-  auto add_config_param_metadata(std::string param, ParamMetadata::Datatype type, ParamMetadata::AccessMode access_mode, std::vector<ParamMetadata::allowed_values_t>&& allowed_values)->void {
-    config_metadata_.emplace(std::piecewise_construct,
-                             std::forward_as_tuple(std::move(param)),
-                             std::forward_as_tuple(type, access_mode, allowed_values, ParamMetadata::MIN_UNSET, ParamMetadata::MAX_UNSET)
-    );
-  }
-
-  auto add_config_param_metadata(std::string param, ParamMetadata::Datatype type, ParamMetadata::AccessMode access_mode, int32_t min, int32_t max)->void {
+  template <typename DataType, typename Allowed_ = All_val_vec_t, typename = enableif_str_or_datatype_t<DataType, Allowed_>>
+  auto add_config_param_metadata(std::string param, DataType type, ParamMetadata::AccessMode access_mode, int32_t min = ParamMetadata::MIN_UNSET, int32_t max = ParamMetadata::MAX_UNSET)->void {
     std::vector<ParamMetadata::allowed_values_t>allowed_vals{}; // This allows us to forward the vector as an lvalue reference to the constructor
     config_metadata_.emplace(std::piecewise_construct,
                              std::forward_as_tuple(std::move(param)),
@@ -108,44 +115,22 @@ protected:
     );
   }
 
-  auto add_config_param_metadata(std::string param, ParamMetadata::Datatype type, ParamMetadata::AccessMode access_mode)->void {
-    std::vector<ParamMetadata::allowed_values_t>allowed_vals{}; // This allows us to forward the vector as an lvalue reference to the constructor
-    config_metadata_.emplace(std::piecewise_construct,
-                             std::forward_as_tuple(std::move(param)),
-                             std::forward_as_tuple(type, access_mode, allowed_vals, ParamMetadata::MIN_UNSET, ParamMetadata::MAX_UNSET)
-    );
-  }
-
-  auto add_status_param_metadata(std::string param, ParamMetadata::Datatype type, ParamMetadata::AccessMode access_mode, std::vector<ParamMetadata::allowed_values_t>& allowed_values)->void {
+  template <typename DataType, typename Allowed_ = All_val_vec_t, typename = enableif_str_or_datatype_t<DataType, Allowed_>>
+  auto add_status_param_metadata(std::string param, DataType type, ParamMetadata::AccessMode access_mode, Allowed_&& allowed_values)->void {
     status_metadata_.emplace(std::piecewise_construct,
                              std::forward_as_tuple(std::move(param)),
                              std::forward_as_tuple(type, access_mode, allowed_values, ParamMetadata::MIN_UNSET, ParamMetadata::MAX_UNSET)
     );
   }
 
-  auto add_status_param_metadata(std::string param, ParamMetadata::Datatype type, ParamMetadata::AccessMode access_mode, std::vector<ParamMetadata::allowed_values_t>&& allowed_values)->void {
-    status_metadata_.emplace(std::piecewise_construct,
-                             std::forward_as_tuple(std::move(param)),
-                             std::forward_as_tuple(type, access_mode, allowed_values, ParamMetadata::MIN_UNSET, ParamMetadata::MAX_UNSET)
-    );
-  }
-
-  auto add_status_param_metadata(std::string param, ParamMetadata::Datatype type, ParamMetadata::AccessMode access_mode, int32_t min, int32_t max)->void {
+  template <typename DataType, typename Allowed_ = All_val_vec_t, typename = enableif_str_or_datatype_t<DataType, Allowed_>>
+  auto add_status_param_metadata(std::string param, DataType type, ParamMetadata::AccessMode access_mode, int32_t min = ParamMetadata::MIN_UNSET, int32_t max = ParamMetadata::MAX_UNSET)->void {
     std::vector<ParamMetadata::allowed_values_t>allowed_vals{}; // This allows us to forward the vector as an lvalue reference to the constructor
     status_metadata_.emplace(std::piecewise_construct,
                              std::forward_as_tuple(std::move(param)),
                              std::forward_as_tuple(type, access_mode, allowed_vals, min, max)
     );
   }
-
-  auto add_status_param_metadata(std::string param, ParamMetadata::Datatype type, ParamMetadata::AccessMode access_mode)->void {
-    std::vector<ParamMetadata::allowed_values_t>allowed_vals{}; // This allows us to forward the vector as an lvalue reference to the constructor
-    status_metadata_.emplace(std::piecewise_construct,
-                             std::forward_as_tuple(std::move(param)),
-                             std::forward_as_tuple(type, access_mode, allowed_vals, ParamMetadata::MIN_UNSET, ParamMetadata::MAX_UNSET)
-    );
-  }
-
 
 private:
   /** Pointer to logger */

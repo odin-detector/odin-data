@@ -6,6 +6,7 @@
  */
 
 #include <string>
+#include <type_traits>
 #include <boost/variant.hpp>
 
 namespace FrameProcessor
@@ -38,18 +39,25 @@ struct ParamMetadata
         UINT_T,
         UINTARR_T,
         UINT2DARR_T,
-        UINT3DARR_T
+        UINT3DARR_T,
+        // -----------------
+        // internal use ONLY
+        CUSTOM_T,
     };
 
     std::string access_mode_as_string() const
     {
+        std::string ret;
         switch (this->access_mode_)
         {
         case AccessMode::READ_ONLY:
+            ret = READ_ONLY;
             return READ_ONLY;
         case AccessMode::READ_WRITE:
+            ret = READ_WRITE;
             return READ_WRITE;
         }
+        return ret;
     }
 
     std::string datatype_as_string() const
@@ -88,13 +96,26 @@ struct ParamMetadata
             return UINT2DARR_T;
         case Datatype::UINT3DARR_T:
             return UINT3DARR_T;
+        case Datatype::CUSTOM_T:
+            return custom_str_;
         }
+        return custom_str_;
     }
 
     ParamMetadata(
-        Datatype &type, AccessMode &access_mode, std::vector<allowed_values_t> &allowed_values, int32_t min, int32_t max
+      Datatype type, AccessMode access_mode, std::vector<allowed_values_t> &allowed_values, int32_t min, int32_t max
     ) :
         type_{type}, access_mode_{access_mode}, allowed_values_{std::move(allowed_values)}, min_{min}, max_{max}
+    {
+    }
+    template<typename TYPE>
+    using is_str_conv     = std::is_convertible<TYPE, std::string>; // can convert TYPE To std::string
+    // We want to allow ONLY RVALUES and LVALUES of std::string or types that convert to std::string
+    template<typename T, typename = typename std::enable_if<is_str_conv<T>::value>::type>
+    ParamMetadata(
+      T&& type, AccessMode access_mode, std::vector<allowed_values_t> &allowed_values, int32_t min, int32_t max
+    ) :
+      custom_str_{std::move(type)}, type_{Datatype::CUSTOM_T}, access_mode_{access_mode}, allowed_values_{std::move(allowed_values)}, min_{min}, max_{max}
     {
     }
     ParamMetadata(ParamMetadata&& rhs) = default; // Move constructor
@@ -112,6 +133,7 @@ struct ParamMetadata
         std::vector<allowed_values_t> allowed_values_;
         int32_t min_;
         int32_t max_;
+        std::string custom_str_;
 
         constexpr static char READ_ONLY[2] = "r";
         constexpr static char READ_WRITE[3] = "rw";
