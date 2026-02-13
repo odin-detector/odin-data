@@ -35,10 +35,12 @@ public:
 private:
   /** Mutex used to make this class thread safe */
   boost::recursive_mutex mutex_;
+  /** Flag to stop the frame from writing if file root path creation fails! */
+  bool is_writing;
   /** Pointer to logger */
   LoggerPtr logger_;
   /** Root path to write files to - files will be created in this directory or a nested directory, depending on Frame properties */
-  boost::filesystem::path full_file_path_;
+  boost::filesystem::path file_path_;
 };
 
 };

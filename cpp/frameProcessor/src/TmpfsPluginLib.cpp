@@ -16,4 +16,4 @@ namespace FrameProcessor
      */
 	REGISTER(FrameProcessorPlugin, TmpfsPlugin, "TmpfsPlugin");
 
-} // namespace FrameReceiver
+} // namespace FrameProcessor
