@@ -23,6 +23,6 @@ SET(HEADERS DataBlock.h
             GapFillPlugin.h
             KafkaProducerPlugin.h
             ParamMetadata.h
-            TmpfsPlugin.h)
+            RawFileWriterPlugin.h)
 
 INSTALL(FILES ${HEADERS} DESTINATION include/frameProcessor)

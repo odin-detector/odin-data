@@ -97,9 +97,9 @@ if (${KAFKA_FOUND})
 endif()
 
 # Add library for Tmpfs plugin
-add_library(TmpfsPlugin SHARED TmpfsPlugin.cpp TmpfsPluginLib.cpp)
-target_link_libraries(TmpfsPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${COMMON_LIBRARY})
-install(TARGETS TmpfsPlugin DESTINATION lib)
+add_library(RawFileWriterPlugin SHARED RawFileWriterPlugin.cpp RawFileWriterPluginLib.cpp)
+target_link_libraries(RawFileWriterPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${COMMON_LIBRARY})
+install(TARGETS RawFileWriterPlugin DESTINATION lib)
 
 # Add test and project source files to executable
 if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )

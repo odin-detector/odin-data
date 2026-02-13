@@ -1,12 +1,12 @@
 /*
- * TmpfsPlugin.h
+ * RawFileWriterPlugin.h
  *
  *  Created on: 10 Feb 2026
  *      Author: Famous Alele
  */
 
-#ifndef TMPFSPLUGIN_H_
-#define TMPFSPLUGIN_H_
+#ifndef RAWFILEWRITERPLUGIN_H_
+#define RAWFILEWRITERPLUGIN_H_
 #include <log4cxx/logger.h>
 using namespace log4cxx;
 
@@ -18,9 +18,9 @@ using namespace log4cxx;
 namespace FrameProcessor
 {
 
-class TmpfsPlugin : public FrameProcessorPlugin {
+class RawFileWriterPlugin : public FrameProcessorPlugin {
 public:
-  TmpfsPlugin();
+  RawFileWriterPlugin();
   void process_frame(boost::shared_ptr<Frame> frame);
   void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
   void requestConfiguration(OdinData::IpcMessage& reply);
