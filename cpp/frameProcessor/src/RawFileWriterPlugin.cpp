@@ -70,6 +70,7 @@ void RawFileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcM
     this->file_path_ = std::move(path_str);
     try {
       boost::filesystem::create_directories(this->file_path_.parent_path());
+      !this->is_writing && (this->is_writing = true);
     } catch (boost::filesystem::filesystem_error& e) {
       this->is_writing = false;
       file_path_.clear();
@@ -78,7 +79,6 @@ void RawFileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcM
       this->set_error(error.str());
       throw std::runtime_error(error.str());
     }
-    !this->is_writing && (this->is_writing = true);
   }
 }
 
