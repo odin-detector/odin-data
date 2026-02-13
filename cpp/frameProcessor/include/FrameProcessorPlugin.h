@@ -89,7 +89,9 @@ protected:
   template<typename TYPE>
   using is_str_conv     = std::is_convertible<TYPE, std::string>; // can convert TYPE o std::string
   template <typename DataType_, typename Allowed_>
-  using enableif_str_or_datatype_t         = typename std::enable_if<(is_str_conv<DataType_>::value || is_datatype<DataType_>::value) && is_all_vals_vec<Allowed_>::value>::type;
+  using enableif_t                  = typename std::enable_if<(is_str_conv<DataType_>::value || is_datatype<DataType_>::value) && is_all_vals_vec<Allowed_>::value>::type;
+  template <typename DataType_>
+  using enableif_str_or_datatype_t  = typename std::enable_if<is_str_conv<DataType_>::value || is_datatype<DataType_>::value>::type;
 
 
   /**
@@ -98,7 +100,7 @@ protected:
    * \param[in] type, access_mode, allowed_values, min, max: arguments for ParamMetadata's constructor.They are not moved since the constructor
    *                                                         of ParamMetadata accepts lvalues as references.
    */
-  template <typename DataType, typename Allowed_ = All_val_vec_t, typename = enableif_str_or_datatype_t<DataType, Allowed_>>
+  template <typename DataType, typename Allowed_ = All_val_vec_t, typename = enableif_t<DataType, Allowed_>>
   auto add_config_param_metadata(std::string param, DataType type, ParamMetadata::AccessMode access_mode, Allowed_&& allowed_values)->void {
     config_metadata_.emplace(std::piecewise_construct,
                              std::forward_as_tuple(std::move(param)),
@@ -106,7 +108,7 @@ protected:
     );
   }
 
-  template <typename DataType, typename Allowed_ = All_val_vec_t, typename = enableif_str_or_datatype_t<DataType, Allowed_>>
+  template <typename DataType, typename = enableif_str_or_datatype_t<DataType>>
   auto add_config_param_metadata(std::string param, DataType type, ParamMetadata::AccessMode access_mode, int32_t min = ParamMetadata::MIN_UNSET, int32_t max = ParamMetadata::MAX_UNSET)->void {
     std::vector<ParamMetadata::allowed_values_t>allowed_vals{}; // This allows us to forward the vector as an lvalue reference to the constructor
     config_metadata_.emplace(std::piecewise_construct,
@@ -115,7 +117,7 @@ protected:
     );
   }
 
-  template <typename DataType, typename Allowed_ = All_val_vec_t, typename = enableif_str_or_datatype_t<DataType, Allowed_>>
+  template <typename DataType, typename Allowed_ = All_val_vec_t, typename = enableif_t<DataType, Allowed_>>
   auto add_status_param_metadata(std::string param, DataType type, ParamMetadata::AccessMode access_mode, Allowed_&& allowed_values)->void {
     status_metadata_.emplace(std::piecewise_construct,
                              std::forward_as_tuple(std::move(param)),
@@ -123,7 +125,7 @@ protected:
     );
   }
 
-  template <typename DataType, typename Allowed_ = All_val_vec_t, typename = enableif_str_or_datatype_t<DataType, Allowed_>>
+  template <typename DataType, typename = enableif_str_or_datatype_t<DataType>>
   auto add_status_param_metadata(std::string param, DataType type, ParamMetadata::AccessMode access_mode, int32_t min = ParamMetadata::MIN_UNSET, int32_t max = ParamMetadata::MAX_UNSET)->void {
     std::vector<ParamMetadata::allowed_values_t>allowed_vals{}; // This allows us to forward the vector as an lvalue reference to the constructor
     status_metadata_.emplace(std::piecewise_construct,
