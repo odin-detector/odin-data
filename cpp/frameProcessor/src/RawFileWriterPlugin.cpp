@@ -11,8 +11,10 @@ namespace FrameProcessor
 {
 
 const std::string RawFileWriterPlugin::CONFIG_FILE_PATH = "file_path";
+const std::string RawFileWriterPlugin::CONFIG_ENABLED = "writing_enabled";
 
-RawFileWriterPlugin::RawFileWriterPlugin() : file_path_{""} {
+
+RawFileWriterPlugin::RawFileWriterPlugin() : file_path_{""}, dropped_frames_{0}, enabled_{false} {
   // Setup logging for the class
   logger_ = Logger::getLogger("FP.TempfsPlugin");
   LOG4CXX_TRACE(logger_, "RawFileWriterPlugin constructor.");
@@ -21,7 +23,9 @@ RawFileWriterPlugin::RawFileWriterPlugin() : file_path_{""} {
 void RawFileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame) {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
-  if(!this->is_writing){
+  std::array<char, 128> msg{};
+  if(!this->enabled_){
+    ++this->dropped_frames_;
     this->push(frame);
     return;
   }
@@ -31,23 +35,27 @@ void RawFileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame) {
   std::string f_path = this->file_path_.string() + '/' + acq_id + '/' + std::to_string(fr_num);
   int fd = open(f_path.c_str(), O_CREAT | O_RDWR, 0666);
   if (fd == -1) {
-    throw std::runtime_error("Failed to open " + f_path);
+    ++this->dropped_frames_;
+    strerror_r(errno, msg.data(), msg.max_size());
+    LOG4CXX_ERROR(logger_, "Failed to open: " << this->file_path_.string() << " errno: " << msg.data());
+    this->push(frame);
+    return;
   }
   size_t dsize = frame->get_data_size();
-  int result = ftruncate(fd, dsize);
-  if (result == -1) {
-    std::stringstream error;
-    error << "Failed to truncate " << this->file_path_.string() << " to size " << dsize;
-    throw std::runtime_error(error.str());
+  if (ftruncate(fd, dsize) == -1) {
+    ++this->dropped_frames_;
+    strerror_r(errno, msg.data(), msg.max_size());
+    LOG4CXX_ERROR(logger_, "Failed to truncate: " << this->file_path_.string() << " to size " << dsize << " errno: " << msg.data());
+    this->push(frame);
+    return;
   }
 
-  if(write(fd, frame->get_data_ptr(), dsize)  == -1){
-    std::stringstream error;
-    std::array<char, 128> msg{};
+  if(write(fd, frame->get_data_ptr(), dsize) == -1){
+    ++this->dropped_frames_;
     strerror_r(errno, msg.data(), msg.max_size());
-    error << "Failed to Write to file - " << this->file_path_.string() <<": " << msg.data();
-    this->set_error(error.str());
-    throw std::runtime_error(error.str());
+    LOG4CXX_ERROR(logger_, "Failed to Write to file - " << this->file_path_.string() << ": " << msg.data());
+    this->push(frame);
+    return;
   }
 
   close(fd);
@@ -63,20 +71,15 @@ void RawFileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcM
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
   if(config.has_param(RawFileWriterPlugin::CONFIG_FILE_PATH)){
     std::string path_str = config.get_param<std::string>(RawFileWriterPlugin::CONFIG_FILE_PATH);
-    if(path_str.empty()){
-      reply.set_param<std::string>("error", "File Path EMPTY!");
-      LOG4CXX_WARN(logger_, "Empty string for File Path");
-    }
     this->file_path_ = std::move(path_str);
     try {
       boost::filesystem::create_directories(this->file_path_.parent_path());
-      !this->is_writing && (this->is_writing = true);
     } catch (boost::filesystem::filesystem_error& e) {
-      this->is_writing = false;
-      file_path_.clear();
+      this->enabled_ = false;
       std::stringstream error;
-      error << "Failed to create directory: " << e.what();
+      error << "Failed to create directory: " << file_path_.c_str() << ", Error:" << e.what();
       this->set_error(error.str());
+      file_path_.clear();
       throw std::runtime_error(error.str());
     }
   }
@@ -89,6 +92,18 @@ void RawFileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcM
 void RawFileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
   reply.set_param(this->get_name() + '/' + RawFileWriterPlugin::CONFIG_FILE_PATH, this->file_path_);
+  reply.set_param(this->get_name() + '/' + RawFileWriterPlugin::CONFIG_ENABLED, this->enabled_);
+}
+
+/** Get status of the RawFileWriterPlugin
+ *
+ * @param reply - Response IpcMessage.
+ */
+void RawFileWriterPlugin::status(OdinData::IpcMessage& status)
+{
+  status.set_param(this->get_name() + '/' + RawFileWriterPlugin::CONFIG_FILE_PATH, this->file_path_);
+  status.set_param(this->get_name() + '/' + RawFileWriterPlugin::CONFIG_ENABLED, this->enabled_);
+  status.set_param(this->get_name() + '/' + "dropped_frames", this->dropped_frames_);
 }
 
 
