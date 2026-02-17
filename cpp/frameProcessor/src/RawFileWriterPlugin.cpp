@@ -33,32 +33,23 @@ void RawFileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame) {
   const std::string& acq_id = frame->get_meta_data().get_acquisition_ID();
   long long fr_num = frame->get_frame_number();
   std::string f_path = this->file_path_.string() + '/' + acq_id + '/' + std::to_string(fr_num);
+  size_t dsize = frame->get_data_size();
   int fd = open(f_path.c_str(), O_CREAT | O_RDWR, 0666);
   if (fd == -1) {
     ++this->dropped_frames_;
     strerror_r(errno, msg.data(), msg.max_size());
     LOG4CXX_ERROR(logger_, "Failed to open: " << this->file_path_.string() << " errno: " << msg.data());
-    this->push(frame);
-    return;
-  }
-  size_t dsize = frame->get_data_size();
-  if (ftruncate(fd, dsize) == -1) {
+  }else if (ftruncate(fd, dsize) == -1) {
     ++this->dropped_frames_;
     strerror_r(errno, msg.data(), msg.max_size());
     LOG4CXX_ERROR(logger_, "Failed to truncate: " << this->file_path_.string() << " to size " << dsize << " errno: " << msg.data());
-    this->push(frame);
-    return;
-  }
-
-  if(write(fd, frame->get_data_ptr(), dsize) == -1){
+  }else  if(write(fd, frame->get_data_ptr(), dsize) == -1){
     ++this->dropped_frames_;
     strerror_r(errno, msg.data(), msg.max_size());
     LOG4CXX_ERROR(logger_, "Failed to Write to file - " << this->file_path_.string() << ": " << msg.data());
-    this->push(frame);
-    return;
   }
 
-  close(fd);
+  fd != -1 && close(fd);
   this->push(frame);
 }
 
