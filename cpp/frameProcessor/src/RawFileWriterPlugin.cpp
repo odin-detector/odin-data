@@ -30,9 +30,8 @@ void RawFileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame) {
     return;
   }
   const std::string& acq_id = frame->get_meta_data().get_acquisition_ID();
-  long long fr_num = frame->get_frame_number();
-  const std::string& f_path = this->file_path_.string() + acq_id + '/';
-  size_t data_size = frame->get_data_size();
+  std::string&& f_path = this->file_path_.string() + acq_id + '/';
+  
   if(mkdir(f_path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IWOTH) == -1 && (errno != EEXIST)) {
     this->enabled_ = false;
     ++this->dropped_frames_;
@@ -40,19 +39,21 @@ void RawFileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame) {
     LOG4CXX_ERROR(logger_, "Failed to create directory: " << this->file_path_.string() << " errno: " << msg.data());
   }
 
-  int fd = open((f_path + std::to_string(fr_num)).c_str(), O_CREAT | O_RDWR, 0666);
+  long long fr_num = frame->get_frame_number();
+  size_t data_size = frame->get_data_size();
+  int fd = open((f_path += std::to_string(fr_num)).c_str(), O_CREAT | O_RDWR, 0666);
   if(fd == -1) {
     ++this->dropped_frames_;
     strerror_r(errno, msg.data(), msg.max_size());
-    LOG4CXX_ERROR(logger_, "Failed to open: " << this->file_path_.string() << " errno: " << msg.data());
+    LOG4CXX_ERROR(logger_, "Failed to open: " << f_path << " errno: " << msg.data());
   } else if(ftruncate(fd, data_size) == -1) {
     ++this->dropped_frames_;
     strerror_r(errno, msg.data(), msg.max_size());
-    LOG4CXX_ERROR(logger_, "Failed to truncate: " << this->file_path_.string() << " to size " << data_size << " errno: " << msg.data());
+    LOG4CXX_ERROR(logger_, "Failed to truncate: " << f_path << " to size " << data_size << " errno: " << msg.data());
   } else if(write(fd, frame->get_data_ptr(), data_size) == -1) {
     ++this->dropped_frames_;
     strerror_r(errno, msg.data(), msg.max_size());
-    LOG4CXX_ERROR(logger_, "Failed to Write to file - " << this->file_path_.string() << ": " << msg.data());
+    LOG4CXX_ERROR(logger_, "Failed to write to file - " << f_path << ": " << msg.data());
   }
 
   fd != -1 && close(fd);
