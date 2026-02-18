@@ -36,7 +36,7 @@ void RawFileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame) {
     this->enabled_ = false;
     ++this->dropped_frames_;
     strerror_r(errno, msg.data(), msg.max_size());
-    LOG4CXX_ERROR(logger_, "Failed to create directory: " << this->file_path_.string() << " errno: " << msg.data());
+    LOG4CXX_ERROR(logger_, "Failed to create directory: " << f_path << " errno: " << msg.data());
   }
 
   long long fr_num = frame->get_frame_number();
