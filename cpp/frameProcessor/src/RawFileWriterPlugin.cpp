@@ -29,14 +29,16 @@ void RawFileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame) {
     this->push(frame);
     return;
   }
+  
   const std::string& acq_id = frame->get_meta_data().get_acquisition_ID();
   std::string&& f_path = this->file_path_.string() + '/' + acq_id + '/';
-  
   if(mkdir(f_path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IWOTH) == -1 && (errno != EEXIST)) {
     this->enabled_ = false;
     ++this->dropped_frames_;
     strerror_r(errno, msg.data(), msg.max_size());
     LOG4CXX_ERROR(logger_, "Failed to create directory: " << f_path << " errno: " << msg.data());
+    this->push(frame);
+    return;
   }
 
   long long fr_num = frame->get_frame_number();
