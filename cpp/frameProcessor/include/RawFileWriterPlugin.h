@@ -37,7 +37,7 @@ public:
 private:
   /** Mutex used to make this class thread safe */
   boost::recursive_mutex mutex_;
-  /** Flag to stop the frame from writing if file root path creation fails! */
+  /** Flag to enable or disable file writing */
   bool enabled_;
   /** Number of dropped frames */
   std::size_t dropped_frames_;

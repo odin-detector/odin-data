@@ -1,5 +1,6 @@
 
 #include <sys/mman.h> // PROT_WRITE, MAP_SHARED
+#include <sys/stat.h> // mkdir
 #include <fcntl.h> // open, O_CREAT, O_RDWR
 
 #include <version.h>
@@ -24,26 +25,30 @@ void RawFileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame) {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
   std::array<char, 128> msg{};
-  if(!this->enabled_){
-    ++this->dropped_frames_;
+  if(!this->enabled_) {
     this->push(frame);
     return;
   }
-
   const std::string& acq_id = frame->get_meta_data().get_acquisition_ID();
   long long fr_num = frame->get_frame_number();
-  std::string f_path = this->file_path_.string() + '/' + acq_id + '/' + std::to_string(fr_num);
-  size_t dsize = frame->get_data_size();
-  int fd = open(f_path.c_str(), O_CREAT | O_RDWR, 0666);
-  if (fd == -1) {
+  std::string f_path = this->file_path_.string() + '/' + acq_id;
+  size_t data_size = frame->get_data_size();
+  if(mkdir(f_path.c_str(), S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH) == -1 && (errno != EEXIST)) {
+    this->enabled_ = false;
     ++this->dropped_frames_;
     strerror_r(errno, msg.data(), msg.max_size());
     LOG4CXX_ERROR(logger_, "Failed to open: " << this->file_path_.string() << " errno: " << msg.data());
-  }else if (ftruncate(fd, dsize) == -1) {
+  }
+  int fd = open(f_path.c_str(), O_CREAT | O_RDWR, 0666);
+  if(fd == -1) {
     ++this->dropped_frames_;
     strerror_r(errno, msg.data(), msg.max_size());
-    LOG4CXX_ERROR(logger_, "Failed to truncate: " << this->file_path_.string() << " to size " << dsize << " errno: " << msg.data());
-  }else  if(write(fd, frame->get_data_ptr(), dsize) == -1){
+    LOG4CXX_ERROR(logger_, "Failed to open: " << this->file_path_.string() << " errno: " << msg.data());
+  } else if(ftruncate(fd, data_size) == -1) {
+    ++this->dropped_frames_;
+    strerror_r(errno, msg.data(), msg.max_size());
+    LOG4CXX_ERROR(logger_, "Failed to truncate: " << this->file_path_.string() << " to size " << data_size << " errno: " << msg.data());
+  } else if(write(fd, frame->get_data_ptr(), data_size) == -1) {
     ++this->dropped_frames_;
     strerror_r(errno, msg.data(), msg.max_size());
     LOG4CXX_ERROR(logger_, "Failed to Write to file - " << this->file_path_.string() << ": " << msg.data());
@@ -60,10 +65,10 @@ void RawFileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame) {
 void RawFileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply) {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
-  if(config.has_param(RawFileWriterPlugin::CONFIG_ENABLED)){
+  if(config.has_param(RawFileWriterPlugin::CONFIG_ENABLED)) {
     this->enabled_ = config.get_param<bool>(RawFileWriterPlugin::CONFIG_ENABLED);
   }
-  if(config.has_param(RawFileWriterPlugin::CONFIG_FILE_PATH)){
+  if(config.has_param(RawFileWriterPlugin::CONFIG_FILE_PATH)) {
     std::string path_str = config.get_param<std::string>(RawFileWriterPlugin::CONFIG_FILE_PATH);
     this->file_path_ = std::move(path_str);
     try {
