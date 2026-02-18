@@ -60,6 +60,9 @@ void RawFileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame) {
 void RawFileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply) {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+  if(config.has_param(RawFileWriterPlugin::CONFIG_ENABLED)){
+    this->enabled_ = config.get_param<bool>(RawFileWriterPlugin::CONFIG_ENABLED);
+  }
   if(config.has_param(RawFileWriterPlugin::CONFIG_FILE_PATH)){
     std::string path_str = config.get_param<std::string>(RawFileWriterPlugin::CONFIG_FILE_PATH);
     this->file_path_ = std::move(path_str);
@@ -92,8 +95,6 @@ void RawFileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
  */
 void RawFileWriterPlugin::status(OdinData::IpcMessage& status)
 {
-  status.set_param(this->get_name() + '/' + RawFileWriterPlugin::CONFIG_FILE_PATH, this->file_path_);
-  status.set_param(this->get_name() + '/' + RawFileWriterPlugin::CONFIG_ENABLED, this->enabled_);
   status.set_param(this->get_name() + '/' + "dropped_frames", this->dropped_frames_);
 }
 
