@@ -31,15 +31,16 @@ void RawFileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame) {
   }
   const std::string& acq_id = frame->get_meta_data().get_acquisition_ID();
   long long fr_num = frame->get_frame_number();
-  std::string f_path = this->file_path_.string() + '/' + acq_id;
+  std::string f_path = this->file_path_.string() + '/';
   size_t data_size = frame->get_data_size();
   if(mkdir(f_path.c_str(), S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH) == -1 && (errno != EEXIST)) {
     this->enabled_ = false;
     ++this->dropped_frames_;
     strerror_r(errno, msg.data(), msg.max_size());
-    LOG4CXX_ERROR(logger_, "Failed to open: " << this->file_path_.string() << " errno: " << msg.data());
+    LOG4CXX_ERROR(logger_, "Failed to create directory: " << this->file_path_.string() << " errno: " << msg.data());
   }
-  int fd = open(f_path.c_str(), O_CREAT | O_RDWR, 0666);
+
+  int fd = open(f_path.append(acq_id).c_str(), O_CREAT | O_RDWR, 0666);
   if(fd == -1) {
     ++this->dropped_frames_;
     strerror_r(errno, msg.data(), msg.max_size());
