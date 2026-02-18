@@ -30,7 +30,7 @@ void RawFileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame) {
     return;
   }
   const std::string& acq_id = frame->get_meta_data().get_acquisition_ID();
-  std::string&& f_path = this->file_path_.string() + acq_id + '/';
+  std::string&& f_path = this->file_path_.string() + '/' + acq_id + '/';
   
   if(mkdir(f_path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IWOTH) == -1 && (errno != EEXIST)) {
     this->enabled_ = false;
