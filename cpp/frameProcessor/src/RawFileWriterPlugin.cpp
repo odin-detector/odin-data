@@ -36,7 +36,7 @@ void RawFileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame) {
   size_t dsize = frame->get_data_size();
   int fd = open(f_path.c_str(), O_CREAT | O_RDWR, 0666);
   if (fd == -1) {
-    ++this->dropped_fraxmes_;
+    ++this->dropped_frames_;
     strerror_r(errno, msg.data(), msg.max_size());
     LOG4CXX_ERROR(logger_, "Failed to open: " << this->file_path_.string() << " errno: " << msg.data());
   }else if (ftruncate(fd, dsize) == -1) {
