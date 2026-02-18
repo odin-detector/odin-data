@@ -36,7 +36,7 @@ void RawFileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame) {
   size_t dsize = frame->get_data_size();
   int fd = open(f_path.c_str(), O_CREAT | O_RDWR, 0666);
   if (fd == -1) {
-    ++this->dropped_frames_;
+    ++this->dropped_fraxmes_;
     strerror_r(errno, msg.data(), msg.max_size());
     LOG4CXX_ERROR(logger_, "Failed to open: " << this->file_path_.string() << " errno: " << msg.data());
   }else if (ftruncate(fd, dsize) == -1) {
@@ -71,9 +71,9 @@ void RawFileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcM
     } catch (boost::filesystem::filesystem_error& e) {
       this->enabled_ = false;
       std::stringstream error;
-      error << "Failed to create directory: " << file_path_.c_str() << ", Error:" << e.what();
+      error << "Failed to create directory: " << this->file_path_.c_str() << ", Error:" << e.what();
       this->set_error(error.str());
-      file_path_.clear();
+      this->file_path_.clear();
       throw std::runtime_error(error.str());
     }
   }
