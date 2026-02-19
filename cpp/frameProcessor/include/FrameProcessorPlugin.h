@@ -99,6 +99,20 @@ protected:
    * \param[in] param: key for the ParamMetadata value-object. it is moved to trigger the move-semantics of the key-element in the pair
    * \param[in] type, access_mode, allowed_values, min, max: arguments for ParamMetadata's constructor.They are not moved since the constructor
    *                                                         of ParamMetadata accepts lvalues as references.
+   * Illustrative Usecase in YourPlugin:
+   * 
+   *    using PMD  = struct ParamMetadata;
+   *    using PMDA = PMD::AccessMode; // Alias for the AccessMode enums scope
+   *    using PMDD = PMD::Datatype;   // Alias for the Datatype enums scope
+   * 
+   ***  // 2nd overload is instantiated 'min', 'max' and 'allowed_values' ALL UNSET state
+   *    add_config_param_metadata(YourPlugin::CONFIG_PARAM1, PMDD::STRING_T, PMDA::READ_WRITE);
+   * 
+   ***  // 1st overload is instantiated NOTE that a custom string was passed to Datatype argument
+   *    add_config_param_metadata(YourPlugin::CONFIG_PARAM2, "DOUBLE_ARRAY", PMDA::READ_ONLY, {"align1", "align2"});
+   * 
+   ***  // 2nd overload is instantiated only 'min' is set, 'max' and 'allowed_values' UNSET state
+   *    add_config_param_metadata(YourPlugin::CONFIG_PARAM3, PMDD::UINT_T, PMDA::READ_WRITE, 1); 
    */
   template <typename DataType, typename Allowed_ = All_val_vec_t, typename = enableif_t<DataType, Allowed_>>
   auto add_config_param_metadata(std::string param, DataType type, ParamMetadata::AccessMode access_mode, Allowed_&& allowed_values)->void {
