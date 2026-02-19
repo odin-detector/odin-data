@@ -5,6 +5,7 @@
 
 #include <version.h>
 #include <DebugLevelLogger.h>
+#include "logging.h"
 
 #include "RawFileWriterPlugin.h"
 
@@ -24,42 +25,38 @@ RawFileWriterPlugin::RawFileWriterPlugin() : file_path_{""}, dropped_frames_{0},
 void RawFileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame) {
   // Protect this method
   boost::lock_guard<boost::recursive_mutex> lock(mutex_);
-  std::array<char, 128> msg{};
+  this->push(frame);
   if(!this->enabled_) {
-    this->push(frame);
     return;
   }
   
   const std::string& acq_id = frame->get_meta_data().get_acquisition_ID();
-  std::string&& f_path = this->file_path_.string() + '/' + acq_id + '/';
-  if(mkdir(f_path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IWOTH) == -1 && (errno != EEXIST)) {
+  std::string&& full_file_path = this->file_path_.string() + '/' + acq_id + '/';
+  if(mkdir(full_file_path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IWOTH) == -1 && (errno != EEXIST)) {
     this->enabled_ = false;
     ++this->dropped_frames_;
-    strerror_r(errno, msg.data(), msg.max_size());
-    LOG4CXX_ERROR(logger_, "Failed to create directory: " << f_path << " errno: " << msg.data());
-    this->push(frame);
+    std::string&& error_str = "Failed to create directory: " + full_file_path;
+    LOG_WITH_ERRNO(logger_, error_str);
     return;
   }
 
-  long long fr_num = frame->get_frame_number();
+  long long frame_number = frame->get_frame_number();
   size_t data_size = frame->get_data_size();
-  int fd = open((f_path += std::to_string(fr_num)).c_str(), O_CREAT | O_RDWR, 0666);
+  int fd = open((full_file_path += std::to_string(frame_number)).c_str(), O_CREAT | O_RDWR, 0666);
   if(fd == -1) {
     ++this->dropped_frames_;
-    strerror_r(errno, msg.data(), msg.max_size());
-    LOG4CXX_ERROR(logger_, "Failed to open: " << f_path << " errno: " << msg.data());
+    std::string&& error_str = "Failed to open: " + full_file_path;
+    LOG_WITH_ERRNO(logger_, error_str);
   } else if(ftruncate(fd, data_size) == -1) {
     ++this->dropped_frames_;
-    strerror_r(errno, msg.data(), msg.max_size());
-    LOG4CXX_ERROR(logger_, "Failed to truncate: " << f_path << " to size " << data_size << " errno: " << msg.data());
+    std::string&& error_str = "Failed to truncate: " + full_file_path;
+    LOG_WITH_ERRNO(logger_, error_str);
   } else if(write(fd, frame->get_data_ptr(), data_size) == -1) {
     ++this->dropped_frames_;
-    strerror_r(errno, msg.data(), msg.max_size());
-    LOG4CXX_ERROR(logger_, "Failed to write to file - " << f_path << ": " << msg.data());
+    std::string&& error_str = "Failed to write: " + full_file_path;
+    LOG_WITH_ERRNO(logger_, error_str);
   }
-
   fd != -1 && close(fd);
-  this->push(frame);
 }
 
 /** Configure

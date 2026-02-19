@@ -37,14 +37,14 @@ public:
 private:
   /** Mutex used to make this class thread safe */
   boost::recursive_mutex mutex_;
-  /** Flag to enable or disable file writing */
-  bool enabled_;
-  /** Number of dropped frames */
-  std::size_t dropped_frames_;
   /** Pointer to logger */
   LoggerPtr logger_;
+  /** Flag to enable or disable file writing */
+  bool enabled_;
   /** Root path to write files to - files will be created in this directory or a nested directory, depending on Frame properties */
   boost::filesystem::path file_path_;
+  /** Number of dropped frames */
+  std::size_t dropped_frames_;
 };
 
 };
