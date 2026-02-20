@@ -97,9 +97,13 @@ protected:
   /**
    * Helper functions construct the hash_map's elements in-place
    * \param[in] param: key for the ParamMetadata value-object. it is moved to trigger the move-semantics of the key-element in the pair
-   * \param[in] type, access_mode, allowed_values, min, max: arguments for ParamMetadata's constructor.They are not moved since the constructor
+   * \param[in] access_mode, min, max: arguments for ParamMetadata's constructor.They are not moved since the constructor
    *                                                         of ParamMetadata accepts lvalues as references.
-   * Illustrative Usecase in YourPlugin:
+   * \param[in] type:           For this argument, the template function ONLY allows std::string convertible types OR ParamMetadata::Datatype enum values to be passed im!
+   * \param[in] allowed_values: For this argument, the template function ONLY allows std::vector<ParamMetadata::allowed_values_t> types to be passed in!
+   * 
+   * Illustrative Usecase in YourPlugin.
+   * Where YourPlugin::CONFIG_PARAM[N] is your parameter's string:
    * 
    *    using PMD  = struct ParamMetadata;
    *    using PMDA = PMD::AccessMode; // Alias for the AccessMode enums scope
@@ -108,10 +112,11 @@ protected:
    ***  // 2nd overload is instantiated 'min', 'max' and 'allowed_values' ALL UNSET state
    *    add_config_param_metadata(YourPlugin::CONFIG_PARAM1, PMDD::STRING_T, PMDA::READ_WRITE);
    * 
-   ***  // 1st overload is instantiated NOTE that a custom string was passed to Datatype argument
-   *    add_config_param_metadata(YourPlugin::CONFIG_PARAM2, "DOUBLE_ARRAY", PMDA::READ_ONLY, {"align1", "align2"});
+   ***  // 1st overload is instantiated NOTE that a custom string - ("DOUBLE_ARRAY"), was passed to DataType argument
+   *    // allowed_values argument is: {"align1", "align2"}.
+   *    add_config_param_metadata("MY_PLUGIN_PARAM_STRING", "DOUBLE_ARRAY", PMDA::READ_ONLY, {"align1", "align2"});
    * 
-   ***  // 2nd overload is instantiated only 'min' is set, 'max' and 'allowed_values' UNSET state
+   ***  // 2nd overload is instantiated only 'min' is set to 1, 'max' and 'allowed_values' UNSET state
    *    add_config_param_metadata(YourPlugin::CONFIG_PARAM3, PMDD::UINT_T, PMDA::READ_WRITE, 1); 
    */
   template <typename DataType, typename Allowed_ = All_val_vec_t, typename = enableif_t<DataType, Allowed_>>
