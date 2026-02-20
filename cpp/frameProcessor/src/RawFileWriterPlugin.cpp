@@ -35,8 +35,7 @@ void RawFileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame) {
   if(mkdir(full_file_path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IWOTH) == -1 && (errno != EEXIST)) {
     this->enabled_ = false;
     ++this->dropped_frames_;
-    std::string&& error_str = "Failed to create directory: " + full_file_path;
-    LOG_WITH_ERRNO(logger_, error_str);
+    LOG_WITH_ERRNO(logger_,  "Failed to create directory: " << full_file_path);
     return;
   }
 
@@ -45,16 +44,13 @@ void RawFileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame) {
   int fd = open((full_file_path += std::to_string(frame_number)).c_str(), O_CREAT | O_RDWR, 0666);
   if(fd == -1) {
     ++this->dropped_frames_;
-    std::string&& error_str = "Failed to open: " + full_file_path;
-    LOG_WITH_ERRNO(logger_, error_str);
+    LOG_WITH_ERRNO(logger_, "Failed to open: " << full_file_path);
   } else if(ftruncate(fd, data_size) == -1) {
     ++this->dropped_frames_;
-    std::string&& error_str = "Failed to truncate: " + full_file_path;
-    LOG_WITH_ERRNO(logger_, error_str);
+    LOG_WITH_ERRNO(logger_, "Failed to truncate: " << full_file_path);
   } else if(write(fd, frame->get_data_ptr(), data_size) == -1) {
     ++this->dropped_frames_;
-    std::string&& error_str = "Failed to write: " + full_file_path;
-    LOG_WITH_ERRNO(logger_, error_str);
+    LOG_WITH_ERRNO(logger_, "Failed to write: " << full_file_path);
   }
   fd != -1 && close(fd);
 }
