@@ -12,13 +12,14 @@
 namespace FrameProcessor
 {
 
-const std::string RawFileWriterPlugin::CONFIG_FILE_PATH = "file_path";
-const std::string RawFileWriterPlugin::CONFIG_ENABLED = "writing_enabled";
+const std::string RawFileWriterPlugin::CONFIG_FILE_PATH         = "file_path";
+const std::string RawFileWriterPlugin::CONFIG_ENABLED           = "writing_enabled";
+const std::string RawFileWriterPlugin::STATUS_DROPPED_FRAMES    = "dropped_frames";
 
 
 RawFileWriterPlugin::RawFileWriterPlugin() : file_path_{""}, dropped_frames_{0}, enabled_{false} {
   // Setup logging for the class
-  logger_ = Logger::getLogger("FP.TempfsPlugin");
+  logger_ = Logger::getLogger("FP.RawFileWriterPlugin");
   LOG4CXX_TRACE(logger_, "RawFileWriterPlugin constructor.");
 }
 
@@ -67,13 +68,14 @@ void RawFileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcM
   }
   if(config.has_param(RawFileWriterPlugin::CONFIG_FILE_PATH)) {
     std::string path_str = config.get_param<std::string>(RawFileWriterPlugin::CONFIG_FILE_PATH);
+    if(path_str.back() != '/') path_str += '/';
     this->file_path_ = std::move(path_str);
     try {
       boost::filesystem::create_directories(this->file_path_.parent_path());
     } catch (boost::filesystem::filesystem_error& e) {
       this->enabled_ = false;
       std::stringstream error;
-      error << "Failed to create directory: " << this->file_path_.c_str() << ", Error:" << e.what();
+      error << "Failed to create directory: " << this->file_path_.c_str() << ", Error: " << e.what();
       this->set_error(error.str());
       this->file_path_.clear();
       throw std::runtime_error(error.str());
@@ -87,7 +89,7 @@ void RawFileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcM
  */
 void RawFileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
-  reply.set_param(this->get_name() + '/' + RawFileWriterPlugin::CONFIG_FILE_PATH, this->file_path_);
+  reply.set_param(this->get_name() + '/' + RawFileWriterPlugin::CONFIG_FILE_PATH, this->file_path_.string());
   reply.set_param(this->get_name() + '/' + RawFileWriterPlugin::CONFIG_ENABLED, this->enabled_);
 }
 
@@ -97,9 +99,8 @@ void RawFileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
  */
 void RawFileWriterPlugin::status(OdinData::IpcMessage& status)
 {
-  status.set_param(this->get_name() + '/' + "dropped_frames", this->dropped_frames_);
+  status.set_param(this->get_name() + '/' + RawFileWriterPlugin::STATUS_DROPPED_FRAMES, this->dropped_frames_);
 }
-
 
 int RawFileWriterPlugin::get_version_major() {
   return ODIN_DATA_VERSION_MAJOR;

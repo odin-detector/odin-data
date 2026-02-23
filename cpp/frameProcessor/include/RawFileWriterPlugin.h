@@ -33,6 +33,7 @@ public:
 
   const static std::string CONFIG_FILE_PATH;
   const static std::string CONFIG_ENABLED;
+  const static std::string STATUS_DROPPED_FRAMES;
 
 private:
   /** Mutex used to make this class thread safe */
