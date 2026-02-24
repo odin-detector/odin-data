@@ -14,12 +14,12 @@
 
 class RawFileWriterPluginTestFixture {
   public:
-    RawFileWriterPluginTestFixture() :  img{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
-                                        frame{boost::make_shared<FrameProcessor::DataBlockFrame>(
-                                          FrameProcessor::FrameMetaData{7, "data", FrameProcessor::raw_16bit, "scan1"/*Acq_ID*/, {3, 4}}, 
-                                          static_cast<void*>(img),
-                                          24)
-                                        }
+    RawFileWriterPluginTestFixture() :  
+      img{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
+      frame{boost::make_shared<FrameProcessor::DataBlockFrame>(
+      FrameProcessor::FrameMetaData{7, "data", FrameProcessor::raw_16bit, "scan1"/*Acq_ID*/, {3, 4}}, 
+      static_cast<void*>(img),
+      24)}
     {
       set_debug_level(3);
       rfw_plugin.set_name("rfwplugin");
@@ -93,8 +93,8 @@ BOOST_AUTO_TEST_CASE( RawFileWriterPlugin_dropped_frames ) {
  
  BOOST_CHECK_NO_THROW(cfg_1.set_param(FrameProcessor::RawFileWriterPlugin::CONFIG_FILE_PATH, std::string("/opt/RFW_testdir")));
  BOOST_CHECK_NO_THROW(cfg_2.set_param(FrameProcessor::RawFileWriterPlugin::CONFIG_ENABLED, true));
- rfw_plugin.configure(cfg_1, reply_);
- frame->meta_data().set_acquisition_ID("dummy1/dummy2"); // mkdir will NOT create this directory and process_frame will increment the dropped_frames_ counter
+ BOOST_REQUIRE_NO_THROW(rfw_plugin.configure(cfg_1, reply_));
+ BOOST_REQUIRE_NO_THROW(frame->meta_data().set_acquisition_ID("dummy1/dummy2")); // mkdir will NOT create this directory and process_frame will increment the dropped_frames_ counter
  constexpr int process_times = 4;
  for(int i = 0; i < process_times; ++i){
    BOOST_REQUIRE_NO_THROW(rfw_plugin.configure(cfg_2, reply_)); // reset the plugin's parameter to be ENABLED before processing the frame

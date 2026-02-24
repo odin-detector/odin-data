@@ -43,7 +43,7 @@ public:
       img_16[i] = i+1;
     }
 
-    DATA_TYPES[0] = "unknown"
+    DATA_TYPES[0]  = "unknown";
     DATA_TYPES[1]  = "uint8";
     DATA_TYPES[2]  = "uint16";
     DATA_TYPES[3]  = "uint32";
@@ -56,31 +56,31 @@ public:
     dimensions_t img_dims(2); img_dims[0] = 3; img_dims[1] = 4;
 
     FrameProcessor::FrameMetaData frame_meta(
-            "data", FrameProcessor::raw_8bit, "test", img_dims, FrameProcessor::no_compression
+            1, "data", FrameProcessor::raw_8bit, "test", img_dims, FrameProcessor::no_compression
     );
 
     //create test frame
     frame = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
-            new FrameProcessor::DataBlockFrame(2, frame_meta, static_cast<void*>(img_8), 12));
+            new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(img_8), 12));
 
     FrameProcessor::FrameMetaData frame_16_meta(
-            "data", FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
+            2, "data", FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
     );
 
     //create test frame with uint16 data
     frame_16 = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
-            new FrameProcessor::DataBlockFrame(2, frame_16_meta, static_cast<void*>(img_16), 24));
+            new FrameProcessor::DataBlockFrame(frame_16_meta, static_cast<void*>(img_16), 24));
 
     //create multiple test frames
     for(int i = 0; i < 10; i++)
     {
       FrameProcessor::FrameMetaData tmp_frame_meta(
-              i % 4 ? "data" : "not_data", FrameProcessor::raw_8bit, "test", img_dims, FrameProcessor::no_compression
+              i, i % 4 ? "data" : "not_data", FrameProcessor::raw_8bit, "test", img_dims, FrameProcessor::no_compression
       );
       if (i % 4)
-        tmp_frame_meta.set_parameter><uint8_t>("test_tag", 0);
+        tmp_frame_meta.set_parameter<uint8_t>("test_tag", 0);
       boost::shared_ptr<FrameProcessor::DataBlockFrame> tmp_frame(
-              new FrameProcessor::DataBlockFrame(i, tmp_frame_meta, static_cast<void*>(img_8), 12));
+              new FrameProcessor::DataBlockFrame(tmp_frame_meta, static_cast<void*>(img_8), 12));
       frames.push_back(tmp_frame);
     }
 
