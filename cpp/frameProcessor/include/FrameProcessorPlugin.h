@@ -96,11 +96,14 @@ protected:
 
   /**
    * Helper functions construct the hash_map's elements in-place
-   * \param[in] param: key for the ParamMetadata value-object. it is moved to trigger the move-semantics of the key-element in the pair
-   * \param[in] access_mode, min, max: arguments for ParamMetadata's constructor.They are not moved since the constructor
-   *                                                         of ParamMetadata accepts lvalues as references.
-   * \param[in] type:           For this argument, the template function ONLY allows std::string convertible types OR ParamMetadata::Datatype enum values to be passed im!
-   * \param[in] allowed_values: For this argument, the template function ONLY allows std::vector<ParamMetadata::allowed_values_t> types to be passed in!
+   * \param[in] param: key for the ParamMetadata value-object. it is moved to trigger the move-semantics 
+   *                                    of the key-element in the pair
+   * \param[in] access_mode, min, max: arguments for ParamMetadata's constructor. They are not moved 
+   *                                    since the constructor of ParamMetadata accepts lvalues as references.
+   * \param[in] type:           For this argument, the template function ONLY allows std::string 
+   *                                    convertible types OR ParamMetadata::Datatype enum values to be passed im!
+   * \param[in] allowed_values: For this argument, the template function ONLY allows 
+   *                                    std::vector<ParamMetadata::allowed_values_t> types to be passed in!
    * 
    * Illustrative Usecase in YourPlugin.
    * Where YourPlugin::CONFIG_PARAM[N] is your parameter's string:
@@ -128,7 +131,11 @@ protected:
   }
 
   template <typename DataType, typename = enableif_str_or_datatype_t<DataType>>
-  auto add_config_param_metadata(std::string param, DataType type, ParamMetadata::AccessMode access_mode, int32_t min = ParamMetadata::MIN_UNSET, int32_t max = ParamMetadata::MAX_UNSET)->void {
+  auto add_config_param_metadata(std::string param, 
+                                  DataType type, 
+                                  ParamMetadata::AccessMode access_mode, 
+                                  int32_t min = ParamMetadata::MIN_UNSET, 
+                                  int32_t max = ParamMetadata::MAX_UNSET)->void {
     std::vector<ParamMetadata::allowed_values_t>allowed_vals{}; // This allows us to forward the vector as an lvalue reference to the constructor
     config_metadata_.emplace(std::piecewise_construct,
                              std::forward_as_tuple(std::move(param)),
@@ -145,7 +152,11 @@ protected:
   }
 
   template <typename DataType, typename = enableif_str_or_datatype_t<DataType>>
-  auto add_status_param_metadata(std::string param, DataType type, ParamMetadata::AccessMode access_mode, int32_t min = ParamMetadata::MIN_UNSET, int32_t max = ParamMetadata::MAX_UNSET)->void {
+  auto add_status_param_metadata(std::string param, 
+                                  DataType type, 
+                                  ParamMetadata::AccessMode access_mode, 
+                                  int32_t min = ParamMetadata::MIN_UNSET, 
+                                  int32_t max = ParamMetadata::MAX_UNSET)->void {
     std::vector<ParamMetadata::allowed_values_t>allowed_vals{}; // This allows us to forward the vector as an lvalue reference to the constructor
     status_metadata_.emplace(std::piecewise_construct,
                              std::forward_as_tuple(std::move(param)),
