@@ -35,7 +35,7 @@ void RawFileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame) {
   std::string&& full_file_path = this->file_path_.string() + acq_id + '/';
   boost::system::error_code ec;
   boost::filesystem::create_directory(full_file_path, ec);
-  if(ec && ec.value() != ec.value() != boost::system::errc::errc_t::file_exists){
+  if(ec && (ec.value() != boost::system::errc::errc_t::file_exists)){
     this->enabled_ = false;
     ++this->dropped_frames_;
     LOG_WITH_ERRNO(logger_,  "Failed to create directory: " << full_file_path);
