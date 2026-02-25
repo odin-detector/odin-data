@@ -92,58 +92,60 @@ FileWriterPlugin::FileWriterPlugin() :
         timeout_thread_running_(true),
         timeout_thread_(boost::bind(&FileWriterPlugin::run_close_file_timeout, this))
 {
-  using PMD = struct ParamMetadata;
+  using PMD   = struct ParamMetadata;
+  using PMDA  = PMD::AccessMode;
+  using PMDD  = PMD::Datatype;
   std::string prefix = FileWriterPlugin::CONFIG_PROCESS + '/';
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_NUMBER, PMD::UINT_T, PMD::READ_WRITE, 1, PMD::MAX_UNSET);
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_RANK, PMD::UINT_T, PMD::READ_WRITE, 0, PMD::MAX_UNSET);
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_BLOCKSIZE, PMD::UINT_T, PMD::READ_WRITE, 1, PMD::MAX_UNSET);
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_BLOCKS_PER_FILE, PMD::UINT_T, PMD::READ_WRITE, 0, PMD::MAX_UNSET);
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_EARLIEST_VERSION, PMD::BOOL_T, PMD::READ_WRITE, {0, 1});
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_THRESHOLD, PMD::UINT_T, PMD::READ_WRITE, 1, PMD::MAX_UNSET);
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_VALUE, PMD::UINT_T, PMD::READ_WRITE, 1, PMD::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_NUMBER, PMDD::UINT_T, PMDA::READ_WRITE, 1, PMD::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_RANK, PMDD::UINT_T, PMDA::READ_WRITE, 0, PMD::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_BLOCKSIZE, PMDD::UINT_T, PMDA::READ_WRITE, 1, PMD::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_BLOCKS_PER_FILE, PMDD::UINT_T, PMDA::READ_WRITE, 0, PMD::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_EARLIEST_VERSION, PMDD::BOOL_T, PMDA::READ_WRITE, {0, 1});
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_THRESHOLD, PMDD::UINT_T, PMDA::READ_WRITE, 1, PMD::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_VALUE, PMDD::UINT_T, PMDA::READ_WRITE, 1, PMD::MAX_UNSET);
 
   (prefix = FileWriterPlugin::CONFIG_FILE).append("/");
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_PREFIX, PMD::STRING_T, PMD::READ_WRITE);
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_USE_NUMBERS, PMD::BOOL_T, PMD::READ_WRITE, {0, 1});
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_NUMBER_START, PMD::UINT_T, PMD::READ_WRITE, 0, PMD::MAX_UNSET);
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_POSTFIX, PMD::STRING_T, PMD::READ_WRITE);
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_PATH, PMD::STRING_T, PMD::READ_ONLY);
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_EXTENSION, PMD::STRING_T, PMD::READ_WRITE);
-  add_config_param_metadata(prefix + FileWriterPlugin::CREATE_ERROR_DURATION, PMD::UINT_T, PMD::READ_WRITE, 0, PMD::MAX_UNSET);
-  add_config_param_metadata(prefix + FileWriterPlugin::WRITE_ERROR_DURATION, PMD::UINT_T, PMD::READ_WRITE, 0, PMD::MAX_UNSET);
-  add_config_param_metadata(prefix + FileWriterPlugin::FLUSH_ERROR_DURATION, PMD::UINT_T, PMD::READ_WRITE, 0, PMD::MAX_UNSET);
-  add_config_param_metadata(prefix + FileWriterPlugin::CLOSE_ERROR_DURATION, PMD::UINT_T, PMD::READ_WRITE, 0, PMD::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_PREFIX, PMDD::STRING_T, PMDA::READ_WRITE);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_USE_NUMBERS, PMDD::BOOL_T, PMDA::READ_WRITE, {0, 1});
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_NUMBER_START, PMDD::UINT_T, PMDA::READ_WRITE, 0, PMD::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_POSTFIX, PMDD::STRING_T, PMDA::READ_WRITE);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_PATH, PMDD::STRING_T, PMDA::READ_ONLY);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_EXTENSION, PMDD::STRING_T, PMDA::READ_WRITE);
+  add_config_param_metadata(prefix + FileWriterPlugin::CREATE_ERROR_DURATION, PMDD::UINT_T, PMDA::READ_WRITE, 0, PMD::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::WRITE_ERROR_DURATION, PMDD::UINT_T, PMDA::READ_WRITE, 0, PMD::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::FLUSH_ERROR_DURATION, PMDD::UINT_T, PMDA::READ_WRITE, 0, PMD::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::CLOSE_ERROR_DURATION, PMDD::UINT_T, PMDA::READ_WRITE, 0, PMD::MAX_UNSET);
 
-  add_config_param_metadata(FileWriterPlugin::CONFIG_FRAMES, PMD::UINT_T, PMD::READ_WRITE, 0, PMD::MAX_UNSET);
-  add_config_param_metadata(FileWriterPlugin::CONFIG_MASTER_DATASET, PMD::STRING_T, PMD::READ_WRITE);
-  add_config_param_metadata(FileWriterPlugin::ACQUISITION_ID, PMD::STRING_T, PMD::READ_WRITE);
-  add_config_param_metadata(FileWriterPlugin::CLOSE_TIMEOUT_PERIOD, PMD::UINT_T, PMD::READ_WRITE, 0, PMD::MAX_UNSET);
-  add_config_param_metadata(FileWriterPlugin::START_CLOSE_TIMEOUT, PMD::UINT_T, PMD::READ_WRITE, 0, PMD::MAX_UNSET);
+  add_config_param_metadata(FileWriterPlugin::CONFIG_FRAMES, PMDD::UINT_T, PMDA::READ_WRITE, 0, PMD::MAX_UNSET);
+  add_config_param_metadata(FileWriterPlugin::CONFIG_MASTER_DATASET, PMDD::STRING_T, PMDA::READ_WRITE);
+  add_config_param_metadata(FileWriterPlugin::ACQUISITION_ID, PMDD::STRING_T, PMDA::READ_WRITE);
+  add_config_param_metadata(FileWriterPlugin::CLOSE_TIMEOUT_PERIOD, PMDD::UINT_T, PMDA::READ_WRITE, 0, PMD::MAX_UNSET);
+  add_config_param_metadata(FileWriterPlugin::START_CLOSE_TIMEOUT, PMDD::UINT_T, PMDA::READ_WRITE, 0, PMD::MAX_UNSET);
 
-  add_status_param_metadata(STATUS_WRITING, PMD::BOOL_T, PMD::READ_ONLY, {0, 1});
-  add_status_param_metadata(STATUS_FRAMES_MAX, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
-  add_status_param_metadata(STATUS_FRAMES_WRITTEN, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
-  add_status_param_metadata(STATUS_FRAMES_PROCESSED, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
-  add_status_param_metadata(STATUS_FILE_PATH, PMD::STRING_T, PMD::READ_ONLY);
-  add_status_param_metadata(STATUS_FILE_NAME, PMD::STRING_T, PMD::READ_ONLY);
-  add_status_param_metadata(STATUS_ACQUISITION_ID, PMD::STRING_T, PMD::READ_ONLY);
-  add_status_param_metadata(STATUS_PROCESSES, PMD::UINT_T, PMD::READ_ONLY, 1, PMD::MAX_UNSET);
-  add_status_param_metadata(STATUS_RANK, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
-  add_status_param_metadata(STATUS_TIMEOUT_ACTIVE, PMD::BOOL_T, PMD::READ_ONLY, {0, 1});
+  add_status_param_metadata(STATUS_WRITING, PMDD::BOOL_T, PMDA::READ_ONLY, {0, 1});
+  add_status_param_metadata(STATUS_FRAMES_MAX, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(STATUS_FRAMES_WRITTEN, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(STATUS_FRAMES_PROCESSED, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(STATUS_FILE_PATH, PMDD::STRING_T, PMDA::READ_ONLY);
+  add_status_param_metadata(STATUS_FILE_NAME, PMDD::STRING_T, PMDA::READ_ONLY);
+  add_status_param_metadata(STATUS_ACQUISITION_ID, PMDD::STRING_T, PMDA::READ_ONLY);
+  add_status_param_metadata(STATUS_PROCESSES, PMDD::UINT_T, PMDA::READ_ONLY, 1, PMD::MAX_UNSET);
+  add_status_param_metadata(STATUS_RANK, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(STATUS_TIMEOUT_ACTIVE, PMDD::BOOL_T, PMDA::READ_ONLY, {0, 1});
 
   (prefix = STATUS_TIMING).append("/");
-  add_status_param_metadata(prefix + STATUS_LAST_CHANCE, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
-  add_status_param_metadata(prefix + STATUS_MAX_CREATE, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
-  add_status_param_metadata(prefix + STATUS_MEAN_CREATE, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
-  add_status_param_metadata(prefix + STATUS_LAST_WRITE, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
-  add_status_param_metadata(prefix + STATUS_MAX_WRITE, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
-  add_status_param_metadata(prefix + STATUS_MEAN_WRITE, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
-  add_status_param_metadata(prefix + STATUS_LAST_FLUSH, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
-  add_status_param_metadata(prefix + STATUS_MAX_FLUSH, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
-  add_status_param_metadata(prefix + STATUS_MEAN_FLUSH, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
-  add_status_param_metadata(prefix + STATUS_LAST_CLOSE, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
-  add_status_param_metadata(prefix + STATUS_MAX_CLOSE, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
-  add_status_param_metadata(prefix + STATUS_MEAN_CLOSE, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(prefix + STATUS_LAST_CHANCE, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(prefix + STATUS_MAX_CREATE, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(prefix + STATUS_MEAN_CREATE, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(prefix + STATUS_LAST_WRITE, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(prefix + STATUS_MAX_WRITE, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(prefix + STATUS_MEAN_WRITE, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(prefix + STATUS_LAST_FLUSH, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(prefix + STATUS_MAX_FLUSH, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(prefix + STATUS_MEAN_FLUSH, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(prefix + STATUS_LAST_CLOSE, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(prefix + STATUS_MAX_CLOSE, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(prefix + STATUS_MEAN_CLOSE, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
 
   this->logger_ = Logger::getLogger("FP.FileWriterPlugin");
   LOG4CXX_INFO(logger_, "FileWriterPlugin version " << this->get_version_long() << " loaded");
@@ -786,15 +788,17 @@ void FileWriterPlugin::create_new_dataset(const std::string& dset_name)
   }
 
   using PMD = struct ParamMetadata;
+  using PMDA  = PMD::AccessMode;
+  using PMDD  = PMD::Datatype; 
   std::string prefix = FileWriterPlugin::CONFIG_DATASET + '/' + dset_name + '/';
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_TYPE, PMD::STRING_T, PMD::READ_WRITE, {"h5"});
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_DIMS, PMD::UINT2DARR_T, PMD::READ_WRITE);
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_CHUNKS, PMD::UINT2DARR_T, PMD::READ_WRITE);
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_COMPRESSION, PMD::INT_T, PMD::READ_WRITE, {1, 2, 3, 4});
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_BLOSC_COMPRESSOR, PMD::INT_T, PMD::READ_WRITE, {0, 1, 2, 3, 4, 5});
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_BLOSC_LEVEL, PMD::INT_T, PMD::READ_WRITE, 1, 9);
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_BLOSC_SHUFFLE, PMD::INT_T, PMD::READ_WRITE, {0, 1, 2});
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_INDEXES, PMD::BOOL_T, PMD::READ_WRITE, {0, 1});
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_TYPE, PMDD::STRING_T, PMDA::READ_WRITE, {"h5"});
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_DIMS, PMDD::UINT2DARR_T, PMDA::READ_WRITE);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_CHUNKS, PMDD::UINT2DARR_T, PMDA::READ_WRITE);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_COMPRESSION, PMDD::INT_T, PMDA::READ_WRITE, {1, 2, 3, 4});
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_BLOSC_COMPRESSOR, PMDD::INT_T, PMDA::READ_WRITE, {0, 1, 2, 3, 4, 5});
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_BLOSC_LEVEL, PMDD::INT_T, PMDA::READ_WRITE, 1, 9);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_BLOSC_SHUFFLE, PMDD::INT_T, PMDA::READ_WRITE, {0, 1, 2});
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_INDEXES, PMDD::BOOL_T, PMDA::READ_WRITE, {0, 1});
 }
 
 /**
