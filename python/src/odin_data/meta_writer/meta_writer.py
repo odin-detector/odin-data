@@ -5,9 +5,9 @@ Will need to be subclassed by detector specific implementation.
 
 Matt Taylor, Diamond Light Source
 """
+import logging
 import os
 from time import time
-import logging
 
 import h5py
 
@@ -87,6 +87,8 @@ class MetaWriter(object):
         FLUSH_FRAME_FREQUENCY,
         FLUSH_TIMEOUT,
     ]
+    # Meta datasets to write for each data dataset
+    WRITE_FRAME_PARAMETERS = [FRAME, OFFSET, WRITE_DURATION, FLUSH_DURATION]
     # Detector-specific parameters received on per-frame meta message
     DETECTOR_WRITE_FRAME_PARAMETERS = []
 
@@ -115,33 +117,41 @@ class MetaWriter(object):
         self.write_timeout_count = 0
 
         # Internal parameters
-        self._name = name
+        self._name = name if name else "Writer"
         self._processes_running = [False] * len(endpoints)
         self._endpoints = endpoints
         self._config = config
         self._last_flushed = time()  # Seconds since epoch
         self._frames_since_flush = 0
         self._hdf5_file = None
-        self._datasets = dict(
-            (dataset.name, dataset)
-            for dataset in self._define_datasets() + self._define_detector_datasets()
-        )
+
         # Child class parameters
         self._frame_data_map = dict()  # Map of frame number to detector data
         self._frame_offset_map = dict()  # Map of frame number to offset in dataset
         self._writers_finished = False
         self._detector_finished = True  # See stop_when_detector_finished
 
-    @staticmethod
-    def _define_datasets():
-        return [
-            Int64HDF5Dataset(FRAME),
-            Int64HDF5Dataset(OFFSET),
+        self._datasets = dict(
+            (dataset.name, dataset)
+            for dataset in self._define_datasets() + self._define_detector_datasets()
+        )
+
+    def _define_datasets(cls):
+        meta_datasets = [
             Int64HDF5Dataset(CREATE_DURATION, cache=False),
-            Int64HDF5Dataset(WRITE_DURATION),
-            Int64HDF5Dataset(FLUSH_DURATION),
             Int64HDF5Dataset(CLOSE_DURATION, cache=False),
         ]
+        meta_datasets += [
+            Int64HDF5Dataset(f"{data_dataset}/{dataset_suffix}", cache=False)
+            for data_dataset in cls._data_datasets
+            for dataset_suffix in cls.WRITE_FRAME_PARAMETERS
+        ]
+
+        return meta_datasets
+
+    @property
+    def _data_datasets(self):
+        return ["data"]
 
     def _define_detector_datasets(self):
         return []
@@ -210,7 +220,8 @@ class MetaWriter(object):
                 chunks = (chunks,)
             if None in chunks:
                 chunks = None
-            self._logger.debug("Dataset {} chunking: {}".format(dataset.name, chunks))
+            self._logger.debug(
+                "Dataset {} chunking: {}".format(dataset.name, chunks))
 
             dataset_handle = self._hdf5_file.create_dataset(
                 name=dataset.name,
@@ -243,8 +254,10 @@ class MetaWriter(object):
         self._logger.debug(
             "%s | Creating dataset %s with data:\n%s", self._name, dataset_name, data
         )
-        dataset = HDF5Dataset(dataset_name, dtype=None, fillvalue=None, cache=False)
-        dataset_handle = self._hdf5_file.create_dataset(name=dataset_name, data=data)
+        dataset = HDF5Dataset(dataset_name, dtype=None,
+                              fillvalue=None, cache=False)
+        dataset_handle = self._hdf5_file.create_dataset(
+            name=dataset_name, data=data)
         dataset.initialise(dataset_handle, dataset_size)
 
         self._datasets[dataset_name] = dataset
@@ -262,7 +275,8 @@ class MetaWriter(object):
         self._logger.debug("%s | Adding value to %s", self._name, dataset_name)
 
         if dataset_name not in self._datasets:
-            self._logger.error("%s | No such dataset %s", self._name, dataset_name)
+            self._logger.error("%s | No such dataset %s",
+                               self._name, dataset_name)
             return
 
         self._datasets[dataset_name].add_value(value, offset)
@@ -300,10 +314,12 @@ class MetaWriter(object):
             data(np.ndarray): Data to set HDF5 dataset with
 
         """
-        self._logger.debug("%s | Writing entire dataset %s", self._name, dataset_name)
+        self._logger.debug("%s | Writing entire dataset %s",
+                           self._name, dataset_name)
 
         if dataset_name not in self._datasets:
-            self._logger.error("%s | No such dataset %s", self._name, dataset_name)
+            self._logger.error("%s | No such dataset %s",
+                               self._name, dataset_name)
             return
 
         self._datasets[dataset_name].write(data)
@@ -474,7 +490,8 @@ class MetaWriter(object):
 
     def handle_start_acquisition(self, header, _data):
         """Prepare the data file with the number of frames to write"""
-        self._logger.debug("%s | Handling start acquisition message", self._name)
+        self._logger.debug(
+            "%s | Handling start acquisition message", self._name)
 
         if self._processes_running[self._endpoints.index(header[ENDPOINT])]:
             self._logger.error(
@@ -494,42 +511,55 @@ class MetaWriter(object):
         )
 
         if not self.file_open:
-            self._create_file(self._generate_full_file_path(), header["totalFrames"])
+            self._create_file(self._generate_full_file_path(),
+                              header["totalFrames"])
 
-    def handle_create_file(self, _header, data):
+    def handle_create_file(self, header, data):
         self._logger.debug("%s | Handling create file message", self._name)
 
         self._add_value(CREATE_DURATION, data[CREATE_DURATION])
 
-    def handle_write_frame(self, _header, data):
+    def handle_write_frame(self, header, data):
         self._logger.debug("%s | Handling write frame message", self._name)
 
         # TODO: Handle getting more frames than expected because of rewinding?
-        write_frame_parameters = [FRAME, OFFSET, WRITE_DURATION, FLUSH_DURATION]
-        self._add_values(write_frame_parameters, data, data[OFFSET])
 
-        # Here we keep track of whether we need to write to disk based on:
-        #   - Time since last write
-        #   - Number of write frame messages since last write
+        def add_dataset_prefix(dataset):
+            return f'{header["dataset"]}/{dataset}'
 
-        # Reset timeout count to 0
-        self.write_timeout_count = 0
-
-        self.write_count += 1
-        self._frames_since_flush += 1
-
-        # Write detector meta data for this frame, now that we know the offset
-        self.write_detector_frame_data(data[FRAME], data[OFFSET])
-
-        flush_required = (
-            time() - self._last_flushed >= self.flush_timeout
-            or self._frames_since_flush >= self.flush_frame_frequency
+        self._add_values(
+            # Add data dataset prefix to dataset names and keys of data dictionary
+            [add_dataset_prefix(suffix)
+             for suffix in self.WRITE_FRAME_PARAMETERS],
+            dict((add_dataset_prefix(key), value)
+                 for key, value in data.items()),
+            data[OFFSET],
         )
 
-        if flush_required:
-            self._flush_datasets()
-            self._last_flushed = time()
-            self._frames_since_flush = 0
+        # Only run once per frame for multi-dataset frames
+        if header["dataset"] == self._data_datasets[0]:
+            # Here we keep track of whether we need to write to disk based on:
+            # - Time since last write
+            # - Number of write frame messages since last write
+
+            # Reset timeout count to 0
+            self.write_timeout_count = 0
+
+            self.write_count += 1
+            self._frames_since_flush += 1
+
+            # Write detector meta data for this frame, now that we know the offset
+            self.write_detector_frame_data(data[FRAME], data[OFFSET])
+
+            flush_required = (
+                time() - self._last_flushed >= self.flush_timeout
+                or self._frames_since_flush >= self.flush_frame_frequency
+            )
+
+            if flush_required:
+                self._flush_datasets()
+                self._last_flushed = time()
+                self._frames_since_flush = 0
 
     def write_detector_frame_data(self, frame, offset):
         """Write the frame data to at the given offset
@@ -543,7 +573,8 @@ class MetaWriter(object):
             # No detector specific data to write
             return
 
-        self._logger.debug("%s | Writing detector data for frame %d", self._name, frame)
+        self._logger.debug(
+            "%s | Writing detector data for frame %d", self._name, frame)
 
         if frame not in self._frame_data_map:
             self._logger.warning(
@@ -573,7 +604,8 @@ class MetaWriter(object):
         self._logger.debug(
             "%s | Received stopacquisition from endpoint %s", self._name, header[ENDPOINT]
         )
-        self._processes_running[self._endpoints.index(header[ENDPOINT])] = False
+        self._processes_running[self._endpoints.index(
+            header[ENDPOINT])] = False
 
         if not any(self._processes_running):
             self._logger.info("%s | Last processor stopped", self._name)
