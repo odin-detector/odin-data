@@ -80,6 +80,14 @@ SharedMemoryController::SharedMemoryController(boost::shared_ptr<OdinData::IpcRe
 SharedMemoryController::~SharedMemoryController()
 {
   LOG4CXX_TRACE(logger_, "Shutting down SharedMemoryController");
+
+  auto it = callbacks_.begin();
+  while (it != callbacks_.end()) {
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Shutting down callback for " << it->first);
+    it->second->stop();
+    it = callbacks_.erase(it);
+  }
+
   // Close the IPC Channels
   reactor_->remove_channel(txChannel_);
   reactor_->remove_channel(rxChannel_);
