@@ -17,6 +17,7 @@ namespace FrameProcessor
  */
 IFrameCallback::IFrameCallback() :
     thread_(0),
+    run_(false),
     working_(false)
 {
   // Create the work queue for message offload
@@ -47,8 +48,8 @@ boost::shared_ptr<WorkQueue<boost::shared_ptr<Frame> > > IFrameCallback::getWork
 void IFrameCallback::start()
 {
   if (!working_) {
-    // Set the working flag to true
-    working_ = true;
+    // Set the run condition to true
+    run_ = true;
     // Now start the worker thread to monitor the queue
     thread_ = new boost::thread(&IFrameCallback::workerTask, this);
   }
@@ -63,8 +64,8 @@ void IFrameCallback::start()
 void IFrameCallback::stop()
 {
   if (working_) {
-    // Set the working flag to false
-    working_ = false;
+    // Set the run condition flag to false
+    run_ = false;
     // Now notify the work queue we have finished by adding a null ptr
     boost::shared_ptr<Frame> nullMsg;
     queue_->add(nullMsg);
@@ -117,14 +118,20 @@ void IFrameCallback::workerTask()
   OdinData::configure_logging_mdc(OdinData::app_path.c_str());
 
   // Main worker task of this callback
+
+  // Set the working flag to true
+  working_ = true;
+
   // Check the queue for messages
-  while (working_) {
+  while (run_) {
     boost::shared_ptr<Frame> msg = queue_->remove();
     if (msg) {
       // Once we have a message, call the callback
       this->callback(msg);
     }
   }
+  // Clear the working flag
+  working_ = false;
 }
 
 } /* namespace FrameProcessor */
