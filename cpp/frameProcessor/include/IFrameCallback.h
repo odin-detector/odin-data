@@ -58,6 +58,8 @@ private:
   boost::thread *thread_;
   /** Pointer to WorkQueue for Frame object pointers */
   boost::shared_ptr<WorkQueue<boost::shared_ptr<Frame> > > queue_;
+  /** IFrameCallback run flag */
+  bool run_;
   /** Is this IFrameCallback working */
   bool working_;
   /** Map of confirmed registrations to this worker queue */
