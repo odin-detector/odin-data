@@ -19,8 +19,11 @@
 #include <log4cxx/logger.h>
 using namespace log4cxx;
 
+// clang-format off
+// These headers must be included in this order
 #include <hdf5.h>
 #include "H5Zpublic.h"
+// clang-format on
 
 #include "Frame.h"
 #include "FrameProcessorDefinitions.h"
