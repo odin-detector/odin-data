@@ -1,6 +1,7 @@
 #ifndef INCLUDE_DUMMYFRAMEDECODERTCP_H_
 #define INCLUDE_DUMMYFRAMEDECODERTCP_H_
 
+#include <boost/shared_ptr.hpp>
 #include <iostream>
 #include <stdint.h>
 #include <time.h>

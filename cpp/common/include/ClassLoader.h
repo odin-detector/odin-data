@@ -8,6 +8,7 @@
 #ifndef ODIN_DATA_CLASSLOADER_H_
 #define ODIN_DATA_CLASSLOADER_H_
 
+#include <boost/shared_ptr.hpp>
 #include <dlfcn.h>
 #include <stdio.h>
 #include <unistd.h>
