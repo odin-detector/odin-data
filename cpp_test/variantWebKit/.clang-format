@@ -1,0 +1,3 @@
+# This has line length (ColumnLimit) set to 0 i.e. not limit. Just here to show the enormous
+# length lines it produces!
+BasedOnStyle: WebKit

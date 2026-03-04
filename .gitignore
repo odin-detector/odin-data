@@ -29,3 +29,7 @@ tools/python/build/
 tools/python/dist/
 
 docs/build/
+
+# Emacs backup files
+*~
+

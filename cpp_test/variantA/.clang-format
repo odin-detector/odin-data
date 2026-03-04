@@ -1,0 +1,13 @@
+# Basically where we got to with the following changes:
+# - 120 char lines
+# - without the namespace indent
+# - macro continuation lines not at extreme right (use Left as LeftWithLastLine only in v19+, not 18.1.3)
+BasedOnStyle: WebKit
+ColumnLimit: 120
+AlignAfterOpenBracket: BlockIndent
+AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: true
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortFunctionsOnASingleLine: InlineOnly
+BinPackParameters: false
+AlignEscapedNewlines: Left
