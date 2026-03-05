@@ -27,7 +27,9 @@ RUN add-apt-repository -y ppa:deadsnakes/ppa && \
     # odin-data C++ dependencies
     libblosc-dev libboost-all-dev libhdf5-dev liblog4cxx-dev libpcap-dev libczmq-dev \
     # python
-    python3.11-dev python3.11-venv && \
+    python3.11-dev python3.11-venv \
+    # clang tools
+    clang-format-20 clang-tidy-20 && \
     # tidy up
     apt-get -y clean all
 
