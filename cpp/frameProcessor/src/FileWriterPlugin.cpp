@@ -92,9 +92,6 @@ FileWriterPlugin::FileWriterPlugin() :
         timeout_thread_running_(true),
         timeout_thread_(boost::bind(&FileWriterPlugin::run_close_file_timeout, this))
 {
-  using PMD   = struct ParamMetadata;
-  using PMDA  = PMD::AccessMode;
-  using PMDD  = PMD::Datatype;
   std::string prefix = FileWriterPlugin::CONFIG_PROCESS + '/';
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_NUMBER, PMDD::UINT_T, PMDA::READ_WRITE, 1, PMD::MAX_UNSET);
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_RANK, PMDD::UINT_T, PMDA::READ_WRITE, 0, PMD::MAX_UNSET);
@@ -786,10 +783,6 @@ void FileWriterPlugin::create_new_dataset(const std::string& dset_name)
     // Record the dataset in the definitions
     dataset_defs_[dset_def.name] = dset_def;
   }
-
-  using PMD = struct ParamMetadata;
-  using PMDA  = PMD::AccessMode;
-  using PMDD  = PMD::Datatype; 
   std::string prefix = FileWriterPlugin::CONFIG_DATASET + '/' + dset_name + '/';
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_TYPE, PMDD::STRING_T, PMDA::READ_WRITE, {"h5"});
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_DIMS, PMDD::UINT2DARR_T, PMDA::READ_WRITE);
