@@ -10,6 +10,7 @@ file(GLOB TEST_SOURCES
     FrameProcessorTest.cpp
     GapFillPluginTest.cpp
     RawFileWriterPluginTest.cpp
+    LiveViewPluginUnitTest.cpp
     MetaMessageTest.cpp
     DummyUDPProcessPluginTest.cpp
 )
