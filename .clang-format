@@ -1,10 +1,18 @@
+# VariantA with changes
+# - Changed constructor initialisation from BeforeComma -> AfterColon,
+#   This needed PackConstructorInitializers Never, as produces a nasty mix of
+#   one per line, and multiple per line without it.
+# - Removed alignment of consecutive assignments/declarations
+# - Changed enum formatting to split one per line
 BasedOnStyle: WebKit
-IndentWidth: 4
-ColumnLimit: 100
+ColumnLimit: 120
 AlignAfterOpenBracket: BlockIndent
-AlignConsecutiveAssignments: true
-AlignConsecutiveDeclarations: true
 AllowAllParametersOfDeclarationOnNextLine: false
-AllowShortFunctionsOnASingleLine: InlineOnly
-BinPackParameters: false
-NamespaceIndentation: All
+AllowShortFunctionsOnASingleLine: None
+BinPackParameters: OnePerLine
+AlignEscapedNewlines: LeftWithLastLine
+BreakConstructorInitializers: AfterColon
+PackConstructorInitializers: Never
+RemoveEmptyLinesInUnwrappedLines: true
+MaxEmptyLinesToKeep: 1
+AllowShortEnumsOnASingleLine: false
