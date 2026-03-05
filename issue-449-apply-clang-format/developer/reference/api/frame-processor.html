@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>FrameProcessor API Reference &#8212; odin-data 0.1.dev1+gf679a102f documentation</title>
+    <title>FrameProcessor API Reference &#8212; odin-data 0.1.dev1+gc5e9fd3c0 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=e5abdb59"></script>
+    <script src="../../../_static/documentation_options.js?v=e17ad28e"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -1097,7 +1097,7 @@
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>reactor</strong> – <strong>[in]</strong> - pointer to the IpcReactor object. </p></li>
-<li><p><strong>rxEndPoint</strong> – <strong>[in]</strong> - string name of the subscribing endpoint for frame ready notifications.</p></li>
+<li><p><strong>rxEndPoint</strong> – <strong>[in]</strong> - string name of the subscribing endpoint for frame ready notifications. </p></li>
 <li><p><strong>txEndPoint</strong> – <strong>[in]</strong> - string name of the publishing endpoint for frame release notifications. </p></li>
 </ul>
 </dd>
@@ -1504,7 +1504,7 @@
 
 <dl class="cpp type">
 <dt class="sig sig-object cpp" id="_CPPv4I0EN14FrameProcessor20FrameProcessorPlugin26enableif_str_or_datatype_tE">
-<span id="_CPPv3I0EN14FrameProcessor20FrameProcessorPlugin26enableif_str_or_datatype_tE"></span><span id="_CPPv2I0EN14FrameProcessor20FrameProcessorPlugin26enableif_str_or_datatype_tE"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">DataType_</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="classFrameProcessor_1_1FrameProcessorPlugin_1a3fec61e75adbc7a19e8548981961be8b"></span><span class="k"><span class="pre">using</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">enableif_str_or_datatype_t</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">enable_if</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0EN14FrameProcessor20FrameProcessorPlugin11is_str_convE" title="FrameProcessor::FrameProcessorPlugin::is_str_conv"><span class="n"><span class="pre">is_str_conv</span></span></a><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0EN14FrameProcessor20FrameProcessorPlugin26enableif_str_or_datatype_tE" title="FrameProcessor::FrameProcessorPlugin::enableif_str_or_datatype_t::DataType_"><span class="n"><span class="pre">DataType_</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">value</span></span><span class="w"> </span><span class="o"><span class="pre">||</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I0EN14FrameProcessor20FrameProcessorPlugin11is_datatypeE" title="FrameProcessor::FrameProcessorPlugin::is_datatype"><span class="n"><span class="pre">is_datatype</span></span></a><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0EN14FrameProcessor20FrameProcessorPlugin26enableif_str_or_datatype_tE" title="FrameProcessor::FrameProcessorPlugin::enableif_str_or_datatype_t::DataType_"><span class="n"><span class="pre">DataType_</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">type</span></span><a class="headerlink" href="#_CPPv4I0EN14FrameProcessor20FrameProcessorPlugin26enableif_str_or_datatype_tE" title="Link to this definition">#</a><br /></dt>
+<span id="_CPPv3I0EN14FrameProcessor20FrameProcessorPlugin26enableif_str_or_datatype_tE"></span><span id="_CPPv2I0EN14FrameProcessor20FrameProcessorPlugin26enableif_str_or_datatype_tE"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">DataType_</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="classFrameProcessor_1_1FrameProcessorPlugin_1aa77774344d5685f16e5e48eb120ba085"></span><span class="k"><span class="pre">using</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">enableif_str_or_datatype_t</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">enable_if</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0EN14FrameProcessor20FrameProcessorPlugin11is_str_convE" title="FrameProcessor::FrameProcessorPlugin::is_str_conv"><span class="n"><span class="pre">is_str_conv</span></span></a><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0EN14FrameProcessor20FrameProcessorPlugin26enableif_str_or_datatype_tE" title="FrameProcessor::FrameProcessorPlugin::enableif_str_or_datatype_t::DataType_"><span class="n"><span class="pre">DataType_</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">value</span></span><span class="w"> </span><span class="o"><span class="pre">||</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I0EN14FrameProcessor20FrameProcessorPlugin11is_datatypeE" title="FrameProcessor::FrameProcessorPlugin::is_datatype"><span class="n"><span class="pre">is_datatype</span></span></a><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0EN14FrameProcessor20FrameProcessorPlugin26enableif_str_or_datatype_tE" title="FrameProcessor::FrameProcessorPlugin::enableif_str_or_datatype_t::DataType_"><span class="n"><span class="pre">DataType_</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">type</span></span><a class="headerlink" href="#_CPPv4I0EN14FrameProcessor20FrameProcessorPlugin26enableif_str_or_datatype_tE" title="Link to this definition">#</a><br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -1544,23 +1544,15 @@
 <p>Illustrative Usecase in YourPlugin. Where YourPlugin::CONFIG_PARAM[N] is your parameter’s string:</p>
 </p>
 <p>using PMD = struct ParamMetadata; using PMDA = PMD::AccessMode; // Alias for the AccessMode enums scope using PMDD = PMD::Datatype; // Alias for the Datatype enums scope</p>
-<p><p>// 2nd overload is instantiated ‘min’, ‘max’ and ‘allowed_values’ ALL UNSET state add_config_param_metadata(YourPlugin::CONFIG_PARAM1, PMDD::STRING_T,</p>
-<p>PMDA::READ_WRITE);</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="mi">1</span><span class="n">st</span> <span class="n">overload</span> <span class="ow">is</span> <span class="n">instantiated</span> <span class="n">NOTE</span> <span class="n">that</span> <span class="n">a</span> <span class="n">custom</span> <span class="n">string</span> <span class="o">-</span> <span class="p">(</span><span class="s2">&quot;DOUBLE_ARRAY&quot;</span><span class="p">),</span> <span class="n">was</span>
-</pre></div>
-</div>
- passed to DataType argument // allowed_values argument is: {“align1”, “align2”}. add_config_param_metadata(“MY_PLUGIN_PARAM_STRING”, “DOUBLE_ARRAY”, PMDA::READ_ONLY, {“align1”, “align2”}); <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="mi">2</span><span class="n">nd</span> <span class="n">overload</span> <span class="ow">is</span> <span class="n">instantiated</span> <span class="n">only</span> <span class="s1">&#39;min&#39;</span> <span class="ow">is</span> <span class="nb">set</span> <span class="n">to</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span> <span class="ow">and</span> <span class="s1">&#39;allowed_values&#39;</span>
-</pre></div>
-</div>
-<p>UNSET state add_config_param_metadata(YourPlugin::CONFIG_PARAM3, PMDD::UINT_T,</p>
-<p>PMDA::READ_WRITE, 1);</p>
-</p>
+<p>// 2nd overload is instantiated ‘min’, ‘max’ and ‘allowed_values’ ALL UNSET state add_config_param_metadata(YourPlugin::CONFIG_PARAM1, PMDD::STRING_T, PMDA::READ_WRITE);</p>
+<p>// 1st overload is instantiated NOTE that a custom string - (“DOUBLE_ARRAY”), was passed to DataType argument // allowed_values argument is: {“align1”, “align2”}. add_config_param_metadata(“MY_PLUGIN_PARAM_STRING”, “DOUBLE_ARRAY”, PMDA::READ_ONLY, {“align1”, “align2”});</p>
+<p>// 2nd overload is instantiated only ‘min’ is set to 1, ‘max’ and ‘allowed_values’ UNSET state add_config_param_metadata(YourPlugin::CONFIG_PARAM3, PMDD::UINT_T, PMDA::READ_WRITE, 1); </p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>param</strong> – <strong>[in]</strong> key for the ParamMetadata value-object. it is moved to trigger the move-semantics of the key-element in the pair</p></li>
-<li><p><strong>access_mode, min, max</strong> – <strong>[in]</strong> arguments for ParamMetadata’s constructor. They are not moved since the constructor of ParamMetadata accepts lvalues as references.</p></li>
-<li><p><strong>type</strong> – <strong>[in]</strong> For this argument, the template function ONLY allows std::string convertible types OR ParamMetadata::Datatype enum values to be passed im!</p></li>
+<li><p><strong>param</strong> – <strong>[in]</strong> key for the ParamMetadata value-object. it is moved to trigger the move-semantics of the key-element in the pair </p></li>
+<li><p><strong>access_mode, min, max</strong> – <strong>[in]</strong> arguments for ParamMetadata’s constructor. They are not moved since the constructor of ParamMetadata accepts lvalues as references. </p></li>
+<li><p><strong>type</strong> – <strong>[in]</strong> For this argument, the template function ONLY allows std::string convertible types OR ParamMetadata::Datatype enum values to be passed im! </p></li>
 <li><p><strong>allowed_values</strong> – <strong>[in]</strong> For this argument, the template function ONLY allows std::vector&lt;ParamMetadata::allowed_values_t&gt; types to be passed in!</p></li>
 </ul>
 </dd>
@@ -4193,7 +4185,7 @@
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor14LiveViewPlugin21set_per_second_configE7int32_t">
 <span id="_CPPv3N14FrameProcessor14LiveViewPlugin21set_per_second_configE7int32_t"></span><span id="_CPPv2N14FrameProcessor14LiveViewPlugin21set_per_second_configE7int32_t"></span><span id="FrameProcessor::LiveViewPlugin::set_per_second_config__int32_t"></span><span class="target" id="classFrameProcessor_1_1LiveViewPlugin_1afca4216f52c36aaa7ed27ea2c9930828"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">set_per_second_config</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">int32_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">value</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor14LiveViewPlugin21set_per_second_configE7int32_t" title="Link to this definition">#</a><br /></dt>
-<dd><p>Sets the config value “per_second” which tells the plugin the number of frames to show each second Setting this value to 0 disables the “frames per second” checking</p>
+<dd><p>Sets the config value “per_second” which tells the plugin the number of frames to show each second Setting this value to 0 disables the “frames per second” checking </p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>value</strong> – <strong>[in]</strong> - the value to assign to per_second </p>
@@ -4215,7 +4207,7 @@
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor14LiveViewPlugin22set_socket_addr_configENSt6stringE">
 <span id="_CPPv3N14FrameProcessor14LiveViewPlugin22set_socket_addr_configENSt6stringE"></span><span id="_CPPv2N14FrameProcessor14LiveViewPlugin22set_socket_addr_configENSt6stringE"></span><span id="FrameProcessor::LiveViewPlugin::set_socket_addr_config__ss"></span><span class="target" id="classFrameProcessor_1_1LiveViewPlugin_1a44255c59c3da6325ddfd825cb2df97ca"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">set_socket_addr_config</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">value</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor14LiveViewPlugin22set_socket_addr_configENSt6stringE" title="Link to this definition">#</a><br /></dt>
-<dd><p>Sets the address of the publisher socket that live view data is sent to. When setting this address, it also binds the socket to the address, unbinding it from any previous address given</p>
+<dd><p>Sets the address of the publisher socket that live view data is sent to. When setting this address, it also binds the socket to the address, unbinding it from any previous address given </p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>value</strong> – <strong>[in]</strong> - the address to bind the socket to. </p>
@@ -4226,7 +4218,7 @@
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor14LiveViewPlugin23set_dataset_name_configENSt6stringE">
 <span id="_CPPv3N14FrameProcessor14LiveViewPlugin23set_dataset_name_configENSt6stringE"></span><span id="_CPPv2N14FrameProcessor14LiveViewPlugin23set_dataset_name_configENSt6stringE"></span><span id="FrameProcessor::LiveViewPlugin::set_dataset_name_config__ss"></span><span class="target" id="classFrameProcessor_1_1LiveViewPlugin_1aa55c8de1a792dcb510583ece750e2ecf"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">set_dataset_name_config</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">value</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor14LiveViewPlugin23set_dataset_name_configENSt6stringE" title="Link to this definition">#</a><br /></dt>
-<dd><p>Sets the dataset filter configuration. The live view output can be filtered by the dataset variable on the frame based off a list of desired datasets.</p>
+<dd><p>Sets the dataset filter configuration. The live view output can be filtered by the dataset variable on the frame based off a list of desired datasets. </p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>value</strong> – <strong>[in]</strong> - A comma deliminated list of dataset names, or an empty string to ignore this filtering. </p>
