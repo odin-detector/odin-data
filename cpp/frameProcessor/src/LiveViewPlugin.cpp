@@ -36,12 +36,11 @@ LiveViewPlugin::LiveViewPlugin() :
   logger_ = Logger::getLogger("FP.LiveViewPlugin");
   LOG4CXX_INFO(logger_, "LiveViewPlugin version " << this->get_version_long() << " loaded");
 
-  using PMD = struct ParamMetadata;
-  add_config_param_metadata(CONFIG_FRAME_FREQ, PMD::INT_T, PMD::READ_WRITE, 0, PMD::MAX_UNSET);
-  add_config_param_metadata(CONFIG_PER_SECOND, PMD::INT_T, PMD::READ_WRITE, 0, PMD::MAX_UNSET);
-  add_config_param_metadata(CONFIG_SOCKET_ADDR, PMD::STRING_T, PMD::READ_WRITE);
-  add_config_param_metadata(CONFIG_DATASET_NAME, PMD::STRINGARR_T, PMD::READ_WRITE);
-  add_config_param_metadata(CONFIG_TAGGED_FILTER_NAME, PMD::STRINGARR_T, PMD::READ_WRITE);
+  add_config_param_metadata(CONFIG_FRAME_FREQ, PMDD::INT_T, PMDA::READ_WRITE, 0);
+  add_config_param_metadata(CONFIG_PER_SECOND, PMDD::INT_T, PMDA::READ_WRITE, 0);
+  add_config_param_metadata(CONFIG_SOCKET_ADDR, PMDD::STRING_T, PMDA::READ_WRITE);
+  add_config_param_metadata(CONFIG_DATASET_NAME, PMDD::STRINGARR_T, PMDA::READ_WRITE);
+  add_config_param_metadata(CONFIG_TAGGED_FILTER_NAME, PMDD::STRINGARR_T, PMDA::READ_WRITE);
 
   set_frame_freq_config(DEFAULT_FRAME_FREQ);
   set_per_second_config(DEFAULT_PER_SECOND);
