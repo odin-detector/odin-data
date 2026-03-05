@@ -143,11 +143,11 @@ private:
   /** Condition for exiting this file writing process */
   boost::condition_variable                                       exitCondition_;
   /** Frames to write before shutting down - 0 to disable shutdown */
-  int                                                             shutdownFrameCount;
+  unsigned int                                                    shutdownFrameCount_;
   /** Total frames processed */
-  int                                                             totalFrames;
+  unsigned int                                                    totalFrames_;
   /** Master frame specifier - Frame to include in count of total frames processed */
-  std::string                                                     masterFrame;
+  std::string                                                     masterFrame_;
   /** Mutex used for locking the exitCondition */
   boost::mutex                                                    exitMutex_;
   /** Used to check for Ipc tick timer termination */

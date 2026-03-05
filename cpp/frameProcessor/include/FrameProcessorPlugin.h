@@ -80,6 +80,9 @@ protected:
 
   using ParameterMetadataMap_t = std::unordered_map<std::string, ParamMetadata>;
   using All_val_vec_t = std::vector<ParamMetadata::allowed_values_t>;
+  using PMD   = struct ParamMetadata;
+  using PMDA  = PMD::AccessMode;
+  using PMDD  = PMD::Datatype;
 
   // template type traits alias to enforce the DataType passed into function 
   template<typename TYPE>
