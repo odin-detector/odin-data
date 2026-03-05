@@ -55,9 +55,6 @@ void create_cd_values(const BloscCompressionSettings& settings, std::vector<unsi
 BloscPlugin::BloscPlugin() :
 current_acquisition_(""), data_buffer_ptr_(NULL), data_buffer_size_(0)
 {
-  using PMD   = struct ParamMetadata;
-  using PMDA  = PMD::AccessMode;
-  using PMDD  = PMD::Datatype; 
   add_config_param_metadata(CONFIG_BLOSC_COMPRESSOR, PMDD::UINT_T, PMDA::READ_WRITE, {BLOSC_BLOSCLZ, BLOSC_LZ4, BLOSC_LZ4HC, BLOSC_SNAPPY, BLOSC_ZLIB, BLOSC_ZSTD});
   add_config_param_metadata(CONFIG_BLOSC_THREADS, PMDD::UINT_T, PMDA::READ_WRITE, 1, ParamMetadata::MAX_UNSET);
   add_config_param_metadata(CONFIG_BLOSC_LEVEL, PMDD::INT_T, PMDA::READ_WRITE, 0, 9);
