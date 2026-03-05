@@ -58,16 +58,15 @@ namespace FrameProcessor {
     logger_ = Logger::getLogger("FP.KafkaProducer");
     LOG4CXX_TRACE(logger_, "KafkaProducer constructor.");
 
-    using PMD = struct ParamMetadata;
-    add_config_param_metadata(CONFIG_SERVERS, PMD::STRING_T, PMD::READ_WRITE);
-    add_config_param_metadata(CONFIG_TOPIC, PMD::STRING_T, PMD::READ_WRITE);
-    add_config_param_metadata(CONFIG_PARTITION, PMD::INT_T, PMD::READ_WRITE, -1, PMD::MAX_UNSET);
-    add_config_param_metadata(CONFIG_DATASET, PMD::STRING_T, PMD::READ_WRITE);
-    add_config_param_metadata(CONFIG_INCLUDE_PARAMETERS, PMD::BOOL_T, PMD::READ_WRITE);
+    add_config_param_metadata(CONFIG_SERVERS, PMDD::STRING_T, PMDA::READ_WRITE);
+    add_config_param_metadata(CONFIG_TOPIC, PMDD::STRING_T, PMDA::READ_WRITE);
+    add_config_param_metadata(CONFIG_PARTITION, PMDD::INT_T, PMDA::READ_WRITE, -1);
+    add_config_param_metadata(CONFIG_DATASET, PMDD::STRING_T, PMDA::READ_WRITE);
+    add_config_param_metadata(CONFIG_INCLUDE_PARAMETERS, PMDD::BOOL_T, PMDA::READ_WRITE);
 
-    add_status_param_metadata(STATUS_FRAMES_SENT, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
-    add_status_param_metadata(STATUS_FRAMES_LOST, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
-    add_status_param_metadata(STATUS_FRAMES_ACK, PMD::UINT_T, PMD::READ_ONLY, 0, PMD::MAX_UNSET);
+    add_status_param_metadata(STATUS_FRAMES_SENT, PMDD::UINT_T, PMDA::READ_ONLY, 0);
+    add_status_param_metadata(STATUS_FRAMES_LOST, PMDD::UINT_T, PMDA::READ_ONLY, 0);
+    add_status_param_metadata(STATUS_FRAMES_ACK, PMDD::UINT_T, PMDA::READ_ONLY, 0);
 
     this->reset_statistics();
   }
