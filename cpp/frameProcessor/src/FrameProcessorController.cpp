@@ -67,12 +67,12 @@ FrameProcessorController::FrameProcessorController(unsigned int num_io_threads) 
     metaTxChannelEndpoint_(""),
     metaTxChannel_(ZMQ_PUB),
     frReadyEndpoint_(OdinData::Defaults::default_frame_ready_endpoint),
-    frReleaseEndpoint_(OdinData::Defaults::default_frame_release_endpoint)
+    frReleaseEndpoint_(OdinData::Defaults::default_frame_release_endpoint),
+    shutdownFrameCount_(0),
+    totalFrames_(0)
 {
   OdinData::configure_logging_mdc(OdinData::app_path.c_str());
   LOG4CXX_DEBUG_LEVEL(1, logger_, "Constructing FrameProcessorController");
-
-  totalFrames = 0;
 
   // Wait for the thread service to initialise and be running properly, so that
   // this constructor only returns once the object is fully initialised (RAII).
@@ -264,12 +264,12 @@ void FrameProcessorController::handleMetaRxChannel()
 void FrameProcessorController::callback(boost::shared_ptr<Frame> frame) {
 
   // If frame is a master frame, or all frames are included (no master frames), increment frame count
-  if (masterFrame == "" || frame->get_meta_data().get_dataset_name() == masterFrame) {
-    totalFrames++;
-    LOG4CXX_DEBUG_LEVEL(2, logger_, "Frame " << totalFrames << " complete.");
+  if (masterFrame_ == "" || frame->get_meta_data().get_dataset_name() == masterFrame_) {
+    totalFrames_++;
+    LOG4CXX_DEBUG_LEVEL(2, logger_, "Frame " << totalFrames_ << " complete.");
   }
 
-  if (totalFrames == shutdownFrameCount) {
+  if ((shutdownFrameCount_ > 0) && (totalFrames_ == shutdownFrameCount_)) {
     LOG4CXX_DEBUG_LEVEL(2, logger_, "Shutdown frame count reached");
     // Set exit condition so main thread can continue and shutdown
     exitCondition_.notify_all();
@@ -382,8 +382,8 @@ void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData:
 
   // Check if we are being given the master frame specifier
   if (config.has_param("hdf/master")) {
-    masterFrame = config.get_param<std::string>("hdf/master");
-    LOG4CXX_DEBUG_LEVEL(1, logger_, "Master frame specifier set to: " << masterFrame);
+    masterFrame_ = config.get_param<std::string>("hdf/master");
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Master frame specifier set to: " << masterFrame_);
   }
 
   // Check if we have been asked to reset any errors
@@ -396,8 +396,8 @@ void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData:
 
   // If frames given then we are running for defined number and then shutting down
   if (config.has_param("frames") && config.get_param<unsigned int>("frames") != 0) {
-    shutdownFrameCount = config.get_param<unsigned int>("frames");
-    LOG4CXX_DEBUG_LEVEL(1, logger_, "Shutdown frame count set to: " << shutdownFrameCount);
+    shutdownFrameCount_ = config.get_param<unsigned int>("frames");
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Shutdown frame count set to: " << shutdownFrameCount_);
   }
 
   // Check for a request to inject an End Of Acquisition object
