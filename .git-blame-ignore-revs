@@ -1,0 +1,7 @@
+# A file to hold the git hashes of commits that should be ignored when using git-blame.
+# For each commit that is added it is suggested that a comment also be added about the
+# purpose of the comment i.e. why it should be ignored.
+# Each user needs to set this up locally in their copy of the repository using the
+# command
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+# This only needs to be done once.
