@@ -49,7 +49,7 @@ for bin in ${bin_names[@]}; do
         clang_major_version=$(${clang_format} --version | grep -Po "(?<=version )[^ ]+" | cut -d "." -f 1)
         echo ${clang_major_version}
         if [ ${clang_major_version} -ge $required ]; then
-            echo "${clang_format} version ${clang_major_version}, require $required"
+            echo "${clang_format} version ${clang_major_version}, required $required"
             break
         fi
         clang_format="notset"
