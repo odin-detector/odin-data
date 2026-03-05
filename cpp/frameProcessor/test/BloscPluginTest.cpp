@@ -63,16 +63,27 @@ BOOST_AUTO_TEST_CASE( BloscPlugin_process_frame )
 
 }
 
-BOOST_AUTO_TEST_CASE( BloscPlugin_request_metadata )
+BOOST_AUTO_TEST_CASE( BloscPlugin_check_config )
 {
-  // In a plugin which implements "metadata," the metadata hashmap
-  // is already constructed as of here.
-  // This "Test" is a placeholder for when BloscPlugin implements 
-  // its own metadata.
-  // TODO Famous: Update test case when BloscPlugin has "metadata" implemented
-  OdinData::IpcMessage reply; // IpcMessage to be populated with metadata
-  blosc_plugin.request_configuration_metadata(reply);
-  BOOST_CHECK(!reply.has_param("metadata")); // !false == true;
+  OdinData::IpcMessage reply;
+  OdinData::IpcMessage cfg;
+  blosc_plugin.set_name("BloscPlugin_check_config");
+  cfg.set_param<std::string>(FrameProcessor::BloscPlugin::CONFIG_BLOSC_COMPRESSOR, "snappy");
+  cfg.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_THREADS, 3);
+  cfg.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_LEVEL, 1);
+  cfg.set_param<std::string>(FrameProcessor::BloscPlugin::CONFIG_BLOSC_SHUFFLE, "shuffle");
+
+  OdinData::IpcMessage request;
+  blosc_plugin.configure(cfg, reply);
+  blosc_plugin.requestConfiguration(request);
+  BOOST_CHECK_EQUAL(cfg.get_param<std::string>(FrameProcessor::BloscPlugin::CONFIG_BLOSC_COMPRESSOR), \
+                    request.get_param<std::string>(blosc_plugin.get_name() + "/" + FrameProcessor::BloscPlugin::CONFIG_BLOSC_COMPRESSOR));
+  BOOST_CHECK_EQUAL(cfg.get_param<unsigned int>(FrameProcessor::BloscPlugin::CONFIG_BLOSC_THREADS), \
+                    request.get_param<unsigned int>(blosc_plugin.get_name() + "/" + FrameProcessor::BloscPlugin::CONFIG_BLOSC_THREADS));
+  BOOST_CHECK_EQUAL(cfg.get_param<int>(FrameProcessor::BloscPlugin::CONFIG_BLOSC_LEVEL), 
+                    request.get_param<int>(blosc_plugin.get_name() + "/" + FrameProcessor::BloscPlugin::CONFIG_BLOSC_LEVEL));
+  BOOST_CHECK_EQUAL(cfg.get_param<std::string>(FrameProcessor::BloscPlugin::CONFIG_BLOSC_SHUFFLE), \
+                    request.get_param<std::string>(blosc_plugin.get_name() + "/" + FrameProcessor::BloscPlugin::CONFIG_BLOSC_SHUFFLE));
 }
 
 BOOST_AUTO_TEST_SUITE_END(); //BloscPluginUnitTest
