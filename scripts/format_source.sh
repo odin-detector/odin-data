@@ -7,14 +7,28 @@ set -e
 # repository or ignored files. Will work on untracked files so they can be
 # formatted before commit.
 
+normal='\e[0;30m'
+red='\e[0;31m'
+green='\e[0;32m'
+
+function report() {
+    echo -e "[$scriptname] ${green}$@${normal}"
+}
+
+function report_err() {
+    echo >&2 -e "[$scriptname] ${red}$@${normal}"
+}
+
 function usage() {
-    echo >&2 "Usage: $0 <clang-format options> [files] [directories] ..."
-    echo >&2 "  Any clang-format options can be added."
-    echo >&2 "  To give a check that formatting is not required use both of the following:"
-    echo >&2 "   --dry-run makes no changes to the files"
-    echo >&2 "   --Werror gives exit code error if changes are required"
+    report "Usage: $0 <clang-format options> [files] [directories] ..."
+    report "  Any clang-format options can be added."
+    report "  To give a check that formatting is not required use both of the following:"
+    report "   --dry-run makes no changes to the files"
+    report "   --Werror gives exit code error if changes are required"
     exit 2
 }
+
+scriptname=$(basename $0)
 
 if [ "$#" -eq 0 ]; then
     usage
@@ -27,7 +41,7 @@ verbose=0
 while [[ $# -gt 0 ]]; do
     case $1 in
         --help|-h) usage;;
-        --dry-run) dryrun=1; args="$args $1"; shift;;
+        --dry-run|-n) dryrun=1; args="$args --dry-run"; shift;;
         --verbose) verbose=1; shift;;
         --*) args="$args $1"; shift;;
         *) pathlist+=($1); shift;;
@@ -35,7 +49,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [ ${#pathlist[@]} -eq 0 ]; then
-    echo >&2 "No files or directories given"
+    report_err "No files or directories given"
     exit 2
 fi
 
@@ -47,20 +61,18 @@ for bin in ${bin_names[@]}; do
     if which $bin &> /dev/null; then
         clang_format=$bin
         clang_major_version=$(${clang_format} --version | grep -Po "(?<=version )[^ ]+" | cut -d "." -f 1)
-        echo ${clang_major_version}
         if [ ${clang_major_version} -ge $required ]; then
-            echo "${clang_format} version ${clang_major_version}, required $required"
             break
         fi
         clang_format="notset"
     fi
 done
 if [ "$clang_format" == "notset" ]; then
-    echo >&2 "clang-format version $required not found in \"${bin_names[@]}\""
+    report_err "clang-format version $required not found in \"${bin_names[@]}\""
     exit 3
 fi
 
-echo "Using $(${clang_format} --version)"
+report "Using $(${clang_format} --version)"
 
 # Get the prefix and run from the top level
 prefix=`git rev-parse --show-prefix`
@@ -68,50 +80,56 @@ cd `git rev-parse --show-toplevel`
 
 for path in "${pathlist[@]}"; do
     if [ ! -e $prefix$path ]; then
-        echo "$prefix$path does not exist"
+        report_err "$prefix$path does not exist"
         exit 2
     fi
     flist=$(find $prefix$path -name "*.cpp" -o -name "*.h")
     if [ "$flist" == "" ]; then
-        echo "Path $path contains no files to process."
+        report_err "Path $path contains no files to process."
         exit 1
     fi
 
     if [ $verbose -eq 1 ]; then
         for f in $flist; do
-            echo "Processing $f"
+            report "Processing $f"
         done
     fi
     if ! echo $flist | xargs -n 20 -P 20 git ls-files -c -m -o --error-unmatch >/dev/null ; then
-        echo "Giving up. I don't format files outside of this repository."
+        report_err "Giving up. I don't format files outside of this repository."
         exit 1
     fi
 done
 
 rc=0
 for path in "${pathlist[@]}"; do
-    if [ $dryrun -eq 0 ]; then
-        if find $prefix$path -name "*.cpp" -o -name "*.h" | xargs -n 20 -P 20 ${clang_format} -i $args; then
-            echo "Format \"$prefix$path\" succeeded"
-        else
-            rc=$?
-            echo "Format \"$prefix$path\" failed $rc"
-        fi
+    # Use dry-run to determine how many changes are required, if any. This should be fast enough
+    # to always run clang-format twice.
+    if find $prefix$path -name "*.cpp" -o -name "*.h" | xargs -n 20 -P 20 ${clang_format} --dry-run --Werror >& /tmp/format_source_dryrun.log; then
+        report "\"$prefix$path\": Passed clang-format check. No formatting changes required"
     else
-        if find $prefix$path -name "*.cpp" -o -name "*.h" | xargs -n 20 -P 20 ${clang_format} -i $args >& /tmp/format_source_dryrun.log; then
-            echo "Format \"$prefix$path\" succeeded"
-        else
-            rc=$?
-            echo "Format \"$prefix$path\" failed $rc"
-        fi
-        cat /tmp/format_source_dryrun.log
-
+        check_rc=$?
         # Record the approximate number of changes required
         changes=$(grep "Wclang-format-violations" /tmp/format_source_dryrun.log | wc -l)
-        if [ $changes -eq 0 ]; then
-            echo "No changes required"
+        if [ $dryrun -eq 1 ]; then
+            rc=${check_rc}
+            if [ $changes -le 30 ]; then
+                cat /tmp/format_source_dryrun.log
+            fi
+
+            report_err "\"$prefix$path\": Failed clang-format check. Approximately $changes changes required"
+            if [ $changes -gt 30 ]; then
+                mv /tmp/format_source_dryrun.log /tmp/format_source_dryrun_${path}.log
+                report_err "    Required changes shown in \"/tmp/format_source_dryrun_${path}.log\""
+            fi
         else
-            echo "Approximate number of changes required $changes"
+            report "\"$prefix$path\": Approximately $changes clang-format changes required"
+            # Formatting is required, so actually run the formatter
+            if find $prefix$path -name "*.cpp" -o -name "*.h" | xargs -n 20 -P 20 ${clang_format} -i $args; then
+                report "   Formatting succeeded"
+            else
+                rc=$?
+                report_err "   Error: Formatting failed with status $rc"
+            fi
         fi
     fi
 done
