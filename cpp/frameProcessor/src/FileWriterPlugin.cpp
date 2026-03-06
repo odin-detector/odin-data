@@ -117,7 +117,7 @@ FileWriterPlugin::FileWriterPlugin() :
   add_config_param_metadata(FileWriterPlugin::CONFIG_MASTER_DATASET, PMDD::STRING_T, PMDA::READ_WRITE);
   add_config_param_metadata(FileWriterPlugin::ACQUISITION_ID, PMDD::STRING_T, PMDA::READ_WRITE);
   add_config_param_metadata(FileWriterPlugin::CLOSE_TIMEOUT_PERIOD, PMDD::UINT_T, PMDA::READ_WRITE, 0, PMD::MAX_UNSET);
-  add_config_param_metadata(FileWriterPlugin::START_CLOSE_TIMEOUT, PMDD::UINT_T, PMDA::READ_WRITE, 0, PMD::MAX_UNSET);
+  add_config_param_metadata(FileWriterPlugin::START_CLOSE_TIMEOUT, PMDD::BOOL_T, PMDA::READ_WRITE);
 
   add_status_param_metadata(STATUS_WRITING, PMDD::BOOL_T, PMDA::READ_ONLY);
   add_status_param_metadata(STATUS_FRAMES_MAX, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
