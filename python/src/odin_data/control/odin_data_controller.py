@@ -96,10 +96,28 @@ class OdinDataController(object):
         return self._params.get(path, meta)
 
     def put(self, path, value):
-        self._params.set(path, value)
-        self.process_config_changes()
         # After all config processing has completed, execute queued commands
-        self.execute_queued()
+        index,msg_val,path = path.split("/",2)
+        index = int(index)
+        if msg_val == "command":
+            plugin,command_request = path.split("/",1)
+            if command_request != "execute":
+                logging.error(f"Invalid command request {command_request}")
+                return
+            logging.info(
+                f"Execute: index[{index}] plugin [{plugin}] command [{value}]"
+            )
+            # Call the execution check method prior to sending to a client
+            if self.can_execute(index, plugin, value):
+                self._clients[index].execute_command(plugin, value)
+        elif msg_val == "config":
+            config = {}
+            sub_config = config
+            for node in path.split("/")[:-1]:
+                sub_config[node] = {}
+                sub_config = sub_config[node]
+            sub_config[path.split("/")[-1]] = value
+            self._clients[index].send_configuration(config)
 
     def update_loop(self):
         """Handle background update loop tasks.
@@ -201,34 +219,6 @@ class OdinDataController(object):
             )
             self._supported_commands[index] = client.parameters["commands"]
 
-    def queue_command(self, index, plugin, value):
-        """Called for each command PUT that is received by the adapter
-        PUT URI is of the form index/command/plugin/execute and the 
-        value is the name of the command to execute.
-        This method simply queues commands for execution after any configuration
-        changes have been applied.
-        """
-        logging.info(
-            f"Queue command: index [{index}] plugin [{plugin}] command [{value}]"
-        )
-        self._queued_command[index] = (plugin, value)
-
-    def execute_queued(self):
-        """ After configuration changes have been applied this method is called.  It
-        checks to see if any commands have been queued, and if any are found then 
-        they are executed.
-        """
-        for index, _ in enumerate(self._queued_command):
-            if self._queued_command[index] is not None:
-                plugin, command = self._queued_command[index]
-                self._queued_command[index] = None
-                logging.info(
-                    f"Execute: index[{index}] plugin [{plugin}] command [{command}]"
-                )
-                # Call the execution check method prior to sending to a client
-                if self.can_execute(index, plugin, command):
-                    self._clients[index].execute_command(plugin, command)
-
     def can_execute(self, index, plugin, command):
         """Called for each command that is about to be sent to a client
         application.  If this method returns false then the command is not
@@ -243,54 +233,6 @@ class OdinDataController(object):
         subclasses to implement controller specific logic.
         """
         pass
-
-    def process_config_changes(self):
-        """Search through the application config trees and compare with the
-        latest cached version.  Any changes should be built into a new config
-        message and sent down to the applications.
-        This method must be called after the set method is called and needs to
-        be executed in its own thread to avoid blocking the tornado loop.
-        """
-        new_config = [
-            self._params.get(f"{idx}/config") for idx, _ in enumerate(self._clients)
-        ]
-        diff = DeepDiff(self._config_cache, new_config)
-
-        if "values_changed" in diff:
-            logging.debug("Config deltas: %s", diff)
-            # Build an array of configurations from any differences.
-            # There will be 1 configuration object for each client (if differences
-            # are present)
-            configs = [None] * len(self._clients)
-            for root in diff["values_changed"]:
-                # Clean up the root string removing start and end constants
-                path = (
-                    root.replace("root[", "").rstrip("]").replace("'", "").split("][")
-                )
-                logging.debug("Path: {}".format(path))
-                # First element of the path is the index of the client
-                # Second element of the path is the key 'config'
-                index = int(path[0])
-                # Build the config for this root
-                if configs[index] is None:
-                    configs[index] = {}
-                client_cfg = configs[index]
-                logging.debug("Client config [%s]: %s", index, client_cfg)
-                cfg = client_cfg
-                for item in path[2:-1]:
-                    if item not in cfg:
-                        cfg[item] = {}
-                    cfg = cfg[item]
-                cfg[path[-1]] = diff["values_changed"][root]["new_value"]
-
-            logging.info("Sending configs: %s", configs)
-
-            # Loop through the new params
-            index = 0
-            for config in configs:
-                if config is not None:
-                    self._clients[index].send_configuration(config)
-                index += 1
 
     def create_demand_config(self, new_params, old_params):
         config = None
