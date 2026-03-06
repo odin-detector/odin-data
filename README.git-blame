@@ -11,4 +11,10 @@ To actually set this up so that it is used by git-blame you need to the run the 
 command (it only needs to be run once as the information is then stored in .git/config
 for this repository)
 
+Either:
+
+   scripts/setup-git.sh
+
+Or:
+
    git config blame.ignoreRevsFile .git-blame-ignore-revs
