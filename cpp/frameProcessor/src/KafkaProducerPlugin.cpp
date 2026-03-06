@@ -57,6 +57,17 @@ namespace FrameProcessor {
     // Setup logging for the class
     logger_ = Logger::getLogger("FP.KafkaProducer");
     LOG4CXX_TRACE(logger_, "KafkaProducer constructor.");
+
+    add_config_param_metadata(CONFIG_SERVERS, PMDD::STRING_T, PMDA::READ_WRITE);
+    add_config_param_metadata(CONFIG_TOPIC, PMDD::STRING_T, PMDA::READ_WRITE);
+    add_config_param_metadata(CONFIG_PARTITION, PMDD::INT_T, PMDA::READ_WRITE, -1);
+    add_config_param_metadata(CONFIG_DATASET, PMDD::STRING_T, PMDA::READ_WRITE);
+    add_config_param_metadata(CONFIG_INCLUDE_PARAMETERS, PMDD::BOOL_T, PMDA::READ_WRITE);
+
+    add_status_param_metadata(STATUS_FRAMES_SENT, PMDD::UINT_T, PMDA::READ_ONLY, 0);
+    add_status_param_metadata(STATUS_FRAMES_LOST, PMDD::UINT_T, PMDA::READ_ONLY, 0);
+    add_status_param_metadata(STATUS_FRAMES_ACK, PMDD::UINT_T, PMDA::READ_ONLY, 0);
+
     this->reset_statistics();
   }
 
@@ -134,11 +145,11 @@ namespace FrameProcessor {
     // Make sure statistics are updated
     poll_delivery_message_report_queue();
     /* Number of sent frames */
-    status.set_param(get_name() + '/' + "sent", frames_sent_);
+    status.set_param(get_name() + '/' + STATUS_FRAMES_SENT, frames_sent_);
     /* Number of lost frames */
-    status.set_param(get_name() + '/' + "lost", frames_lost_);
+    status.set_param(get_name() + '/' + STATUS_FRAMES_LOST, frames_lost_);
     /* Number of acknowledged frames */
-    status.set_param(get_name() + '/' + "ack", frames_ack_);
+    status.set_param(get_name() + '/' + STATUS_FRAMES_ACK, frames_ack_);
   }
 
   /**
