@@ -94,7 +94,6 @@ FileWriterPlugin::FileWriterPlugin() :
 {
   std::string prefix = FileWriterPlugin::CONFIG_PROCESS + '/';
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_NUMBER, PMDD::UINT_T, PMDA::READ_WRITE, 1, PMD::MAX_UNSET);
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_NUMBER, PMDD::UINT_T, PMDA::READ_WRITE, 1, PMD::MAX_UNSET);
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_RANK, PMDD::UINT_T, PMDA::READ_WRITE, 0, PMD::MAX_UNSET);
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_BLOCKSIZE, PMDD::UINT_T, PMDA::READ_WRITE, 1, PMD::MAX_UNSET);
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_BLOCKS_PER_FILE, PMDD::UINT_T, PMDA::READ_WRITE, 0, PMD::MAX_UNSET);
