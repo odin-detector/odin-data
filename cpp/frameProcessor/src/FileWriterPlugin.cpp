@@ -94,16 +94,17 @@ FileWriterPlugin::FileWriterPlugin() :
 {
   std::string prefix = FileWriterPlugin::CONFIG_PROCESS + '/';
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_NUMBER, PMDD::UINT_T, PMDA::READ_WRITE, 1, PMD::MAX_UNSET);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_NUMBER, PMDD::UINT_T, PMDA::READ_WRITE, 1, PMD::MAX_UNSET);
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_RANK, PMDD::UINT_T, PMDA::READ_WRITE, 0, PMD::MAX_UNSET);
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_BLOCKSIZE, PMDD::UINT_T, PMDA::READ_WRITE, 1, PMD::MAX_UNSET);
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_BLOCKS_PER_FILE, PMDD::UINT_T, PMDA::READ_WRITE, 0, PMD::MAX_UNSET);
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_EARLIEST_VERSION, PMDD::BOOL_T, PMDA::READ_WRITE, {0, 1});
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_EARLIEST_VERSION, PMDD::BOOL_T, PMDA::READ_WRITE);
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_THRESHOLD, PMDD::UINT_T, PMDA::READ_WRITE, 1, PMD::MAX_UNSET);
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_VALUE, PMDD::UINT_T, PMDA::READ_WRITE, 1, PMD::MAX_UNSET);
 
   (prefix = FileWriterPlugin::CONFIG_FILE).append("/");
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_PREFIX, PMDD::STRING_T, PMDA::READ_WRITE);
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_USE_NUMBERS, PMDD::BOOL_T, PMDA::READ_WRITE, {0, 1});
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_USE_NUMBERS, PMDD::BOOL_T, PMDA::READ_WRITE);
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_NUMBER_START, PMDD::UINT_T, PMDA::READ_WRITE, 0, PMD::MAX_UNSET);
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_POSTFIX, PMDD::STRING_T, PMDA::READ_WRITE);
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_FILE_PATH, PMDD::STRING_T, PMDA::READ_ONLY);
@@ -119,7 +120,7 @@ FileWriterPlugin::FileWriterPlugin() :
   add_config_param_metadata(FileWriterPlugin::CLOSE_TIMEOUT_PERIOD, PMDD::UINT_T, PMDA::READ_WRITE, 0, PMD::MAX_UNSET);
   add_config_param_metadata(FileWriterPlugin::START_CLOSE_TIMEOUT, PMDD::UINT_T, PMDA::READ_WRITE, 0, PMD::MAX_UNSET);
 
-  add_status_param_metadata(STATUS_WRITING, PMDD::BOOL_T, PMDA::READ_ONLY, {0, 1});
+  add_status_param_metadata(STATUS_WRITING, PMDD::BOOL_T, PMDA::READ_ONLY);
   add_status_param_metadata(STATUS_FRAMES_MAX, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
   add_status_param_metadata(STATUS_FRAMES_WRITTEN, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
   add_status_param_metadata(STATUS_FRAMES_PROCESSED, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
@@ -128,10 +129,10 @@ FileWriterPlugin::FileWriterPlugin() :
   add_status_param_metadata(STATUS_ACQUISITION_ID, PMDD::STRING_T, PMDA::READ_ONLY);
   add_status_param_metadata(STATUS_PROCESSES, PMDD::UINT_T, PMDA::READ_ONLY, 1, PMD::MAX_UNSET);
   add_status_param_metadata(STATUS_RANK, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
-  add_status_param_metadata(STATUS_TIMEOUT_ACTIVE, PMDD::BOOL_T, PMDA::READ_ONLY, {0, 1});
+  add_status_param_metadata(STATUS_TIMEOUT_ACTIVE, PMDD::BOOL_T, PMDA::READ_ONLY);
 
   (prefix = STATUS_TIMING).append("/");
-  add_status_param_metadata(prefix + STATUS_LAST_CHANCE, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
+  add_status_param_metadata(prefix + STATUS_LAST_CREATE, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
   add_status_param_metadata(prefix + STATUS_MAX_CREATE, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
   add_status_param_metadata(prefix + STATUS_MEAN_CREATE, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
   add_status_param_metadata(prefix + STATUS_LAST_WRITE, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
@@ -785,13 +786,13 @@ void FileWriterPlugin::create_new_dataset(const std::string& dset_name)
   }
   std::string prefix = FileWriterPlugin::CONFIG_DATASET + '/' + dset_name + '/';
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_TYPE, PMDD::STRING_T, PMDA::READ_WRITE, {"h5"});
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_DIMS, PMDD::UINT2DARR_T, PMDA::READ_WRITE);
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_CHUNKS, PMDD::UINT2DARR_T, PMDA::READ_WRITE);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_DIMS, PMDD::UINTARR_T, PMDA::READ_WRITE);
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_CHUNKS, PMDD::UINTARR_T, PMDA::READ_WRITE);
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_COMPRESSION, PMDD::INT_T, PMDA::READ_WRITE, {1, 2, 3, 4});
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_BLOSC_COMPRESSOR, PMDD::INT_T, PMDA::READ_WRITE, {0, 1, 2, 3, 4, 5});
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_BLOSC_LEVEL, PMDD::INT_T, PMDA::READ_WRITE, 1, 9);
   add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_BLOSC_SHUFFLE, PMDD::INT_T, PMDA::READ_WRITE, {0, 1, 2});
-  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_INDEXES, PMDD::BOOL_T, PMDA::READ_WRITE, {0, 1});
+  add_config_param_metadata(prefix + FileWriterPlugin::CONFIG_DATASET_INDEXES, PMDD::BOOL_T, PMDA::READ_WRITE);
 }
 
 /**
@@ -835,7 +836,7 @@ void FileWriterPlugin::status(OdinData::IpcMessage& status)
 void FileWriterPlugin::add_file_writing_stats(OdinData::IpcMessage& status)
 {
   std::string prefix = get_name() + '/' + STATUS_TIMING + '/';
-  status.set_param(prefix + STATUS_LAST_CHANCE, (int)hdf5_call_durations_.create.last_);
+  status.set_param(prefix + STATUS_LAST_CREATE, (int)hdf5_call_durations_.create.last_);
   status.set_param(prefix + STATUS_MAX_CREATE, (int)hdf5_call_durations_.create.max_);
   status.set_param(prefix + STATUS_MEAN_CREATE, (int)hdf5_call_durations_.create.mean_);
   status.set_param(prefix + STATUS_LAST_WRITE, (int)hdf5_call_durations_.write.last_);

@@ -79,7 +79,7 @@ public:
 
   /** Configuration constant for status-timing related items */
   static constexpr char STATUS_TIMING[7] = "timing";
-  static constexpr char STATUS_LAST_CHANCE[12] = "last_create";
+  static constexpr char STATUS_LAST_CREATE[12] = "last_create";
   static constexpr char STATUS_MAX_CREATE[11] = "max_create";
   static constexpr char STATUS_MEAN_CREATE[12] = "mean_create";
   static constexpr char STATUS_LAST_WRITE[11] = "last_write";
