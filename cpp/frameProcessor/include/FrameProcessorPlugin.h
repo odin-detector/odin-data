@@ -185,10 +185,10 @@ private:
     param_prefix = "metadata/" + this->get_name() + '/' + metadata.first + '/';
     message.set_param(param_prefix +  "type", metadata.second.datatype_as_string());
     message.set_param(param_prefix +  "access_mode", metadata.second.access_mode_as_string());
-    if(metadata.second.min_ == ParamMetadata::MIN_UNSET){
+    if(metadata.second.min_ != ParamMetadata::MIN_UNSET){
       message.set_param(param_prefix +  "min", metadata.second.min_);
     }
-    if(metadata.second.max_ == ParamMetadata::MAX_UNSET){
+    if(metadata.second.max_ != ParamMetadata::MAX_UNSET){
       message.set_param(param_prefix +  "max", metadata.second.max_);
     }
 
