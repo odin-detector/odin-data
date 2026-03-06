@@ -1,0 +1,3 @@
+# Standard WebKit with 100 character line length
+BasedOnStyle: WebKit
+ColumnLimit: 100
