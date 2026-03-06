@@ -127,7 +127,7 @@ protected:
    */
   template <typename DataType, typename Allowed_ = All_val_vec_t, typename = enableif_t<DataType, Allowed_>>
   auto add_config_param_metadata(std::string param, DataType type, ParamMetadata::AccessMode access_mode, Allowed_&& allowed_values)->void {
-    config_metadata_[param]  = ParamMetadata{type, access_mode, allowed_values, PMD::MIN_UNSET, PMD::MIN_UNSET};
+    config_metadata_[param]  = ParamMetadata{type, access_mode, allowed_values, PMD::MIN_UNSET, PMD::MAX_UNSET};
   }
 
   template <typename DataType, typename = enableif_str_or_datatype_t<DataType>>
@@ -142,7 +142,7 @@ protected:
 
   template <typename DataType, typename Allowed_ = All_val_vec_t, typename = enableif_t<DataType, Allowed_>>
   auto add_status_param_metadata(std::string param, DataType type, ParamMetadata::AccessMode access_mode, Allowed_&& allowed_values)->void {
-    status_metadata_[param]  = ParamMetadata{type, access_mode, allowed_values, PMD::MIN_UNSET, PMD::MIN_UNSET};
+    status_metadata_[param]  = ParamMetadata{type, access_mode, allowed_values, PMD::MIN_UNSET, PMD::MAX_UNSET};
   }
 
   template <typename DataType, typename = enableif_str_or_datatype_t<DataType>>
