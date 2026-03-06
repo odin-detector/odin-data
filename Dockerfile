@@ -1,7 +1,7 @@
 # Shared setup stage ###########################################################
 FROM ubuntu:24.04 AS common
 
-ENV PATH=/odin/bin:/venv/bin:$PATH
+ENV PATH=/odin/bin:/odin/scripts:/venv/bin:$PATH
 
 # Get fundamental packages
 RUN apt-get update -y && \
