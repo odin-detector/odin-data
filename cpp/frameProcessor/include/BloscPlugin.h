@@ -48,7 +48,6 @@ public:
   static const std::string CONFIG_BLOSC_LEVEL;
   static const std::string CONFIG_BLOSC_SHUFFLE;
 
-private:
   // Baseclass API to implement:
   void process_frame(boost::shared_ptr<Frame> frame);
   void status(OdinData::IpcMessage& status);
@@ -59,7 +58,8 @@ private:
   int get_version_patch();
   std::string get_version_short();
   std::string get_version_long();
-
+  
+private:
   // Methods unique to this class
   void update_compression_settings();
   void * get_buffer(size_t nbytes);

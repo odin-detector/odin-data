@@ -60,11 +60,6 @@ current_acquisition_(""), data_buffer_ptr_(NULL), data_buffer_size_(0)
   add_config_param_metadata(CONFIG_BLOSC_LEVEL, PMDD::INT_T, PMDA::READ_WRITE, 0, 9);
   add_config_param_metadata(CONFIG_BLOSC_SHUFFLE, PMDD::UINT_T, PMDA::READ_WRITE, {BLOSC_NOSHUFFLE, BLOSC_SHUFFLE, BLOSC_BITSHUFFLE});
 
-  add_status_param_metadata(CONFIG_BLOSC_COMPRESSOR, PMDD::UINT_T, PMDA::READ_ONLY, {BLOSC_BLOSCLZ, BLOSC_LZ4, BLOSC_LZ4HC, BLOSC_SNAPPY, BLOSC_ZLIB, BLOSC_ZSTD});
-  add_status_param_metadata(CONFIG_BLOSC_THREADS, PMDD::UINT_T, PMDA::READ_ONLY, 1, ParamMetadata::MAX_UNSET);
-  add_status_param_metadata(CONFIG_BLOSC_LEVEL, PMDD::INT_T, PMDA::READ_ONLY, 0, 9);
-  add_status_param_metadata(CONFIG_BLOSC_SHUFFLE, PMDD::UINT_T, PMDA::READ_ONLY, {BLOSC_NOSHUFFLE, BLOSC_SHUFFLE, BLOSC_BITSHUFFLE});
-
   this->commanded_compression_settings_.blosc_compressor = BLOSC_LZ4;
   this->commanded_compression_settings_.shuffle = BLOSC_BITSHUFFLE;
   this->commanded_compression_settings_.compression_level = 1;

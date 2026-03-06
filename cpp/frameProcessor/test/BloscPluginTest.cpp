@@ -80,13 +80,5 @@ BOOST_AUTO_TEST_CASE(BloscPlugin_request_metadata)
   BOOST_CHECK(reply.has_param("metadata/" + blosc_plugin.get_name() + '/' + FrameProcessor::BloscPlugin::CONFIG_BLOSC_THREADS));
   BOOST_CHECK(reply.has_param("metadata/" + blosc_plugin.get_name() + '/' + FrameProcessor::BloscPlugin::CONFIG_BLOSC_LEVEL));
   BOOST_CHECK(reply.has_param("metadata/" + blosc_plugin.get_name() + '/' + FrameProcessor::BloscPlugin::CONFIG_BLOSC_SHUFFLE));
-  OdinData::IpcMessage status_reply;
-  blosc_plugin.request_status_metadata(status_reply);
-  BOOST_CHECK(status_reply.has_param("metadata")); // !false == true;
-  BOOST_CHECK(status_reply.has_param("metadata/" + blosc_plugin.get_name() + '/' + FrameProcessor::BloscPlugin::CONFIG_BLOSC_COMPRESSOR));
-  BOOST_CHECK(status_reply.has_param("metadata/" + blosc_plugin.get_name() + '/' + FrameProcessor::BloscPlugin::CONFIG_BLOSC_THREADS));
-  BOOST_CHECK(status_reply.has_param("metadata/" + blosc_plugin.get_name() + '/' + FrameProcessor::BloscPlugin::CONFIG_BLOSC_LEVEL));
-  BOOST_CHECK(status_reply.has_param("metadata/" + blosc_plugin.get_name() + '/' + FrameProcessor::BloscPlugin::CONFIG_BLOSC_SHUFFLE));
 }
-
-BOOST_AUTO_TEST_SUITE_END(); //BloscPluginUnitTest
+  BOOST_AUTO_TEST_SUITE_END(); //BloscPluginUnitTest
