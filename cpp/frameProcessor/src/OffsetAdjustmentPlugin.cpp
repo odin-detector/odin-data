@@ -8,8 +8,7 @@
 #include "OffsetAdjustmentPlugin.h"
 #include "version.h"
 
-namespace FrameProcessor
-{
+namespace FrameProcessor {
 
 /**
  * The constructor sets up logging used within the class.
@@ -17,10 +16,9 @@ namespace FrameProcessor
 OffsetAdjustmentPlugin::OffsetAdjustmentPlugin() :
     offset_adjustment_(DEFAULT_OFFSET_ADJUSTMENT)
 {
-  // Setup logging for the class
-  logger_ = Logger::getLogger("FP.OffsetAdjustmentPlugin");
-  LOG4CXX_INFO(logger_, "OffsetAdjustmentPlugin version " << this->get_version_long() << " loaded");
-
+    // Setup logging for the class
+    logger_ = Logger::getLogger("FP.OffsetAdjustmentPlugin");
+    LOG4CXX_INFO(logger_, "OffsetAdjustmentPlugin version " << this->get_version_long() << " loaded");
 }
 
 /**
@@ -28,7 +26,7 @@ OffsetAdjustmentPlugin::OffsetAdjustmentPlugin() :
  */
 OffsetAdjustmentPlugin::~OffsetAdjustmentPlugin()
 {
-  LOG4CXX_TRACE(logger_, "OffsetAdjustmentPlugin destructor.");
+    LOG4CXX_TRACE(logger_, "OffsetAdjustmentPlugin destructor.");
 }
 
 /**
@@ -39,8 +37,8 @@ OffsetAdjustmentPlugin::~OffsetAdjustmentPlugin()
  */
 void OffsetAdjustmentPlugin::process_frame(boost::shared_ptr<Frame> frame)
 {
-  frame->meta_data().adjust_frame_offset(offset_adjustment_);
-  this->push(frame);
+    frame->meta_data().adjust_frame_offset(offset_adjustment_);
+    this->push(frame);
 }
 
 /**
@@ -54,20 +52,18 @@ void OffsetAdjustmentPlugin::process_frame(boost::shared_ptr<Frame> frame)
  */
 void OffsetAdjustmentPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
-  try {
-    // Check if we are setting the offset adjustment
-    if (config.has_param(OFFSET_ADJUSTMENT_CONFIG)) {
-      offset_adjustment_ = (int64_t) config.get_param<int64_t>(OFFSET_ADJUSTMENT_CONFIG);
-      LOG4CXX_INFO(logger_, "Setting offset adjustment to " << offset_adjustment_);
+    try {
+        // Check if we are setting the offset adjustment
+        if (config.has_param(OFFSET_ADJUSTMENT_CONFIG)) {
+            offset_adjustment_ = (int64_t)config.get_param<int64_t>(OFFSET_ADJUSTMENT_CONFIG);
+            LOG4CXX_INFO(logger_, "Setting offset adjustment to " << offset_adjustment_);
+        }
+    } catch (std::runtime_error& e) {
+        std::stringstream ss;
+        ss << "Bad ctrl msg: " << e.what();
+        this->set_error(ss.str());
+        throw;
     }
-  }
-  catch (std::runtime_error& e)
-  {
-    std::stringstream ss;
-    ss << "Bad ctrl msg: " << e.what();
-    this->set_error(ss.str());
-    throw;
-  }
 }
 
 /**
@@ -77,32 +73,32 @@ void OffsetAdjustmentPlugin::configure(OdinData::IpcMessage& config, OdinData::I
  */
 void OffsetAdjustmentPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
-  reply.set_param(get_name() + '/' + OFFSET_ADJUSTMENT_CONFIG, offset_adjustment_);
+    reply.set_param(get_name() + '/' + OFFSET_ADJUSTMENT_CONFIG, offset_adjustment_);
 }
 
 int OffsetAdjustmentPlugin::get_version_major()
 {
-  return ODIN_DATA_VERSION_MAJOR;
+    return ODIN_DATA_VERSION_MAJOR;
 }
 
 int OffsetAdjustmentPlugin::get_version_minor()
 {
-  return ODIN_DATA_VERSION_MINOR;
+    return ODIN_DATA_VERSION_MINOR;
 }
 
 int OffsetAdjustmentPlugin::get_version_patch()
 {
-  return ODIN_DATA_VERSION_PATCH;
+    return ODIN_DATA_VERSION_PATCH;
 }
 
 std::string OffsetAdjustmentPlugin::get_version_short()
 {
-  return ODIN_DATA_VERSION_STR_SHORT;
+    return ODIN_DATA_VERSION_STR_SHORT;
 }
 
 std::string OffsetAdjustmentPlugin::get_version_long()
 {
-  return ODIN_DATA_VERSION_STR;
+    return ODIN_DATA_VERSION_STR;
 }
 
 } /* namespace FrameProcessor */

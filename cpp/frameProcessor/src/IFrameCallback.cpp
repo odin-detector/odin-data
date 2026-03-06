@@ -8,8 +8,7 @@
 #include "logging.h"
 #include <IFrameCallback.h>
 
-namespace FrameProcessor
-{
+namespace FrameProcessor {
 
 /** Construct a new IFrameCallback object.
  *
@@ -20,8 +19,8 @@ IFrameCallback::IFrameCallback() :
     run_(false),
     working_(false)
 {
-  // Create the work queue for message offload
-  queue_ = boost::shared_ptr<WorkQueue<boost::shared_ptr<Frame> > >(new WorkQueue<boost::shared_ptr<Frame> >);
+    // Create the work queue for message offload
+    queue_ = boost::shared_ptr<WorkQueue<boost::shared_ptr<Frame>>>(new WorkQueue<boost::shared_ptr<Frame>>);
 }
 
 /**
@@ -35,9 +34,9 @@ IFrameCallback::~IFrameCallback()
  *
  * \return a pointer to the WorkQueue owned by this IFrameCallback class.
  */
-boost::shared_ptr<WorkQueue<boost::shared_ptr<Frame> > > IFrameCallback::getWorkQueue()
+boost::shared_ptr<WorkQueue<boost::shared_ptr<Frame>>> IFrameCallback::getWorkQueue()
 {
-  return queue_;
+    return queue_;
 }
 
 /** Start the worker thread.
@@ -47,12 +46,12 @@ boost::shared_ptr<WorkQueue<boost::shared_ptr<Frame> > > IFrameCallback::getWork
  */
 void IFrameCallback::start()
 {
-  if (!working_) {
-    // Set the run condition to true
-    run_ = true;
-    // Now start the worker thread to monitor the queue
-    thread_ = new boost::thread(&IFrameCallback::workerTask, this);
-  }
+    if (!working_) {
+        // Set the run condition to true
+        run_ = true;
+        // Now start the worker thread to monitor the queue
+        thread_ = new boost::thread(&IFrameCallback::workerTask, this);
+    }
 }
 
 /** Stop the worker thread.
@@ -63,13 +62,13 @@ void IFrameCallback::start()
  */
 void IFrameCallback::stop()
 {
-  if (working_) {
-    // Set the run condition flag to false
-    run_ = false;
-    // Now notify the work queue we have finished by adding a null ptr
-    boost::shared_ptr<Frame> nullMsg;
-    queue_->add(nullMsg);
-  }
+    if (working_) {
+        // Set the run condition flag to false
+        run_ = false;
+        // Now notify the work queue we have finished by adding a null ptr
+        boost::shared_ptr<Frame> nullMsg;
+        queue_->add(nullMsg);
+    }
 }
 
 /** Return whether our main thread is running.
@@ -77,7 +76,7 @@ void IFrameCallback::stop()
  */
 bool IFrameCallback::isWorking() const
 {
-  return working_;
+    return working_;
 }
 
 /** Record the name of an object that this IFrameCallback has registered with.
@@ -88,8 +87,8 @@ bool IFrameCallback::isWorking() const
  */
 void IFrameCallback::confirmRegistration(const std::string& name)
 {
-  // Add the name of the frame source to our container
-  registrations_[name] = "valid";
+    // Add the name of the frame source to our container
+    registrations_[name] = "valid";
 }
 
 /** Remove the name from the confirmed registrations map.
@@ -100,8 +99,8 @@ void IFrameCallback::confirmRegistration(const std::string& name)
  */
 void IFrameCallback::confirmRemoval(const std::string& name)
 {
-  // Remove the name of the frame source from our container
-  registrations_.erase(name);
+    // Remove the name of the frame source from our container
+    registrations_.erase(name);
 }
 
 /** Main thread of execution for this class.
@@ -114,24 +113,24 @@ void IFrameCallback::confirmRemoval(const std::string& name)
  */
 void IFrameCallback::workerTask()
 {
-  // Configure logging for this thread
-  OdinData::configure_logging_mdc(OdinData::app_path.c_str());
+    // Configure logging for this thread
+    OdinData::configure_logging_mdc(OdinData::app_path.c_str());
 
-  // Main worker task of this callback
+    // Main worker task of this callback
 
-  // Set the working flag to true
-  working_ = true;
+    // Set the working flag to true
+    working_ = true;
 
-  // Check the queue for messages
-  while (run_) {
-    boost::shared_ptr<Frame> msg = queue_->remove();
-    if (msg) {
-      // Once we have a message, call the callback
-      this->callback(msg);
+    // Check the queue for messages
+    while (run_) {
+        boost::shared_ptr<Frame> msg = queue_->remove();
+        if (msg) {
+            // Once we have a message, call the callback
+            this->callback(msg);
+        }
     }
-  }
-  // Clear the working flag
-  working_ = false;
+    // Clear the working flag
+    working_ = false;
 }
 
 } /* namespace FrameProcessor */

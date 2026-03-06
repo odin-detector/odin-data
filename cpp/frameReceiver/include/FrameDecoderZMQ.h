@@ -8,15 +8,15 @@
 #ifndef INCLUDE_FRAMEDECODER_ZMQ_H_
 #define INCLUDE_FRAMEDECODER_ZMQ_H_
 
-#include <queue>
 #include <map>
+#include <queue>
 
+#include <netinet/in.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <netinet/in.h>
 
-#include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
+#include <boost/shared_ptr.hpp>
 
 #include <log4cxx/logger.h>
 using namespace log4cxx;
@@ -25,26 +25,20 @@ using namespace log4cxx::helpers;
 
 #include "FrameDecoder.h"
 
-namespace FrameReceiver
-{
-class FrameDecoderZMQ : public FrameDecoder
-{
+namespace FrameReceiver {
+class FrameDecoderZMQ : public FrameDecoder {
 public:
+    FrameDecoderZMQ() :
+        FrameDecoder() { };
 
-  FrameDecoderZMQ() :
-      FrameDecoder()
-  {
-  };
+    virtual ~FrameDecoderZMQ() = 0;
 
-  virtual ~FrameDecoderZMQ() = 0;
-
-  virtual void* get_next_message_buffer(void) = 0;
-  virtual FrameReceiveState process_message(size_t bytes_received) = 0;
-  virtual void frame_meta_data(int meta) = 0;
-
+    virtual void* get_next_message_buffer(void) = 0;
+    virtual FrameReceiveState process_message(size_t bytes_received) = 0;
+    virtual void frame_meta_data(int meta) = 0;
 };
 
-inline FrameDecoderZMQ::~FrameDecoderZMQ() {};
+inline FrameDecoderZMQ::~FrameDecoderZMQ() { };
 
 typedef boost::shared_ptr<FrameDecoderZMQ> FrameDecoderZMQPtr;
 

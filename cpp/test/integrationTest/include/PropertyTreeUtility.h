@@ -6,22 +6,21 @@
 
 namespace FrameSimulatorTest {
 
-    /**
-     * Helper class for manipulating boost::property_tree::ptree
-     *
-     */
-    class PropertyTreeUtility {
+/**
+ * Helper class for manipulating boost::property_tree::ptree
+ *
+ */
+class PropertyTreeUtility {
 
-    public:
+public:
+    /** Replace environment variables ${EXAMPLE} in a string; not recursive */
+    static void expandEnvVars(std::string& original);
 
-        /** Replace environment variables ${EXAMPLE} in a string; not recursive */
-        static void expandEnvVars(std::string& original);
-
-        /** Convert ini file derived ptree contents from section to std::vector<std::string> */
-        static void ini_to_command_args(boost::property_tree::ptree &ptree, const std::string &section, std::vector<std::string>& args);
-
-    };
+    /** Convert ini file derived ptree contents from section to std::vector<std::string> */
+    static void
+    ini_to_command_args(boost::property_tree::ptree& ptree, const std::string& section, std::vector<std::string>& args);
+};
 
 }
 
-#endif //ODINDATA_PROPERTYTREEUTILITY_H
+#endif // ODINDATA_PROPERTYTREEUTILITY_H

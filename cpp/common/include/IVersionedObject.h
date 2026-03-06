@@ -7,8 +7,7 @@
 
 #include <string>
 
-namespace OdinData
-{
+namespace OdinData {
 /** Interface to provide version information for any odin-data object.
  *
  * All FrameReceiver and FrameProcessor plugins will subclass this interface
@@ -16,18 +15,17 @@ namespace OdinData
  * to be implemented.  This information will be available through the odin-control
  * interface.
  */
-    class IVersionedObject
-    {
-    public:
-        IVersionedObject(){};
-        virtual ~IVersionedObject(){};
-        virtual int get_version_major() = 0;
-        virtual int get_version_minor() = 0;
-        virtual int get_version_patch() = 0;
-        virtual std::string get_version_short() = 0;
-        virtual std::string get_version_long() = 0;
-    };
+class IVersionedObject {
+public:
+    IVersionedObject() { };
+    virtual ~IVersionedObject() { };
+    virtual int get_version_major() = 0;
+    virtual int get_version_minor() = 0;
+    virtual int get_version_patch() = 0;
+    virtual std::string get_version_short() = 0;
+    virtual std::string get_version_long() = 0;
+};
 
 } /* namespace FrameProcessor */
 
-#endif //ODINDATA_IVERSIONEDOBJECT_H
+#endif // ODINDATA_IVERSIONEDOBJECT_H

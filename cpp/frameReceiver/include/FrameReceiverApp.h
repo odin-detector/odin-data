@@ -13,37 +13,32 @@
 
 using namespace OdinData;
 
-namespace FrameReceiver
-{
+namespace FrameReceiver {
 
 //! Frame receiver application class
 //!
 //! This class implements the main functionality of the FrameReceiver application, parsing command line
 //! and configuraiton file options before creating, configuring and running the controller.
 
-class FrameReceiverApp
-{
+class FrameReceiverApp {
 
 public:
+    FrameReceiverApp();
+    ~FrameReceiverApp();
 
-  FrameReceiverApp();
-  ~FrameReceiverApp();
+    int parse_arguments(int argc, char** argv);
 
-  int parse_arguments(int argc, char** argv);
-
-  int run(void);
-  static void stop(void);
+    int run(void);
+    static void stop(void);
 
 private:
+    LoggerPtr logger_; //!< Log4CXX logger instance pointer
+    static boost::shared_ptr<FrameReceiverController> controller_; //!< FrameReceiver controller object
 
-  LoggerPtr logger_;  //!< Log4CXX logger instance pointer
-  static boost::shared_ptr<FrameReceiverController> controller_;  //!< FrameReceiver controller object
-
-  // Command line options
-  unsigned int io_threads_;  //!< Number of IO threads for IPC channels
-  std::string ctrl_channel_endpoint_;  //!< IPC channel endpoint for control communication with other processes
-  std::string config_file_;  //!< Full path to JSON configuration file
-
+    // Command line options
+    unsigned int io_threads_; //!< Number of IO threads for IPC channels
+    std::string ctrl_channel_endpoint_; //!< IPC channel endpoint for control communication with other processes
+    std::string config_file_; //!< Full path to JSON configuration file
 };
 
 } // namespace FrameReceiver
