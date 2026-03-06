@@ -1,0 +1,21 @@
+name: Code check CI
+on: [push, pull_request]
+
+env:
+  INSTALL_PREFIX: ${{ github.workspace }}/prefix
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install dependencies
+        run: |
+          sudo apt -y update
+          sudo apt install clang-format-20 clang-tidy-20
+      - name: Check code formatting
+        run: |
+          scripts/format_source.sh cpp --dry-run --Werror
