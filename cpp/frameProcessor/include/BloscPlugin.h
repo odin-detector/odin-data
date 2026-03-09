@@ -19,11 +19,11 @@ namespace FrameProcessor
 
 typedef struct{
   int compression_level;
-  unsigned int shuffle;
+  std::string shuffle;
   size_t type_size;
   size_t uncompressed_size;
   unsigned int threads;
-  unsigned int blosc_compressor;
+  std::string blosc_compressor;
 } BloscCompressionSettings;
 void create_cd_values(const BloscCompressionSettings& settings, std::vector<unsigned int> cd_values);
 
