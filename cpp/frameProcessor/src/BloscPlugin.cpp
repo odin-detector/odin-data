@@ -333,6 +333,7 @@ void BloscPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& 
     if (this->current_acquisition_ == "") {
       this->update_compression_settings();
     }
+  }
 }
 
 /** Get configuration settings for the BloscPlugin
