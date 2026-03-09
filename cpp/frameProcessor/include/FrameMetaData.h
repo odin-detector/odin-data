@@ -1,10 +1,10 @@
 #ifndef FRAMEPROCESSOR_FRAMEMETADATA_H
 #define FRAMEPROCESSOR_FRAMEMETADATA_H
 
-#include <string>
 #include <map>
-#include <vector>
 #include <stdint.h>
+#include <string>
+#include <vector>
 
 #include <boost/any.hpp>
 #include <log4cxx/logger.h>
@@ -19,143 +19,138 @@ namespace FrameProcessor {
 class FrameMetaData {
 
 public:
+    FrameMetaData(
+        const long long& frame_number,
+        const std::string& dataset_name,
+        const DataType& data_type,
+        const std::string& acquisition_ID,
+        const std::vector<unsigned long long>& dimensions,
+        const CompressionType& compression_type = no_compression
+    );
 
-  FrameMetaData(const long long& frame_number,
-                 const std::string& dataset_name,
-                 const DataType& data_type,
-                 const std::string& acquisition_ID,
-                 const std::vector<unsigned long long>& dimensions,
-                 const CompressionType& compression_type = no_compression);
+    FrameMetaData();
 
-  FrameMetaData();
+    FrameMetaData(const FrameMetaData& frame);
 
-  FrameMetaData(const FrameMetaData& frame);
+    /** Return frame parameters */
+    const std::map<std::string, boost::any>& get_parameters() const;
 
-  /** Return frame parameters */
-  const std::map <std::string, boost::any> &get_parameters() const;
-
-  /** Get frame parameter
-   *
-   * @tparam T
-   * @param parameter_name
-   * @return
-   */
-  template<class T>
-  T get_parameter(const std::string &parameter_name) const {
-    std::map<std::string, boost::any>::const_iterator iter = parameters_.find(parameter_name);
-    if (iter == parameters_.end())
+    /** Get frame parameter
+     *
+     * @tparam T
+     * @param parameter_name
+     * @return
+     */
+    template <class T> T get_parameter(const std::string& parameter_name) const
     {
-      LOG4CXX_ERROR(logger, "Unable to find parameter: " + parameter_name);
-      throw std::runtime_error("Unable to find parameter");
+        std::map<std::string, boost::any>::const_iterator iter = parameters_.find(parameter_name);
+        if (iter == parameters_.end()) {
+            LOG4CXX_ERROR(logger, "Unable to find parameter: " + parameter_name);
+            throw std::runtime_error("Unable to find parameter");
+        }
+        try {
+            return boost::any_cast<T>(iter->second);
+        } catch (boost::bad_any_cast& e) {
+            LOG4CXX_ERROR(logger, "Parameter has wrong type: " + parameter_name);
+            throw std::runtime_error("Parameter has wrong type");
+        } catch (std::exception& e) {
+            throw std::runtime_error("Unknown exception fetching parameter");
+        }
     }
-    try
+
+    /** Set frame parameter
+     *
+     * @tparam T
+     * @param parameter_name
+     * @param value
+     */
+    template <class T> void set_parameter(const std::string& parameter_name, T value)
     {
-      return boost::any_cast<T>(iter->second);
+        parameters_[parameter_name] = value;
     }
-    catch (boost::bad_any_cast &e)
+
+    /** Check if frame has parameter
+     *
+     * @param index
+     * @return
+     */
+    bool has_parameter(const std::string& index) const
     {
-      LOG4CXX_ERROR(logger, "Parameter has wrong type: " + parameter_name);
-      throw std::runtime_error("Parameter has wrong type");
+        return (parameters_.count(index) == 1);
     }
-    catch (std::exception &e) {
-      throw std::runtime_error("Unknown exception fetching parameter");
-    }
-  }
 
-  /** Set frame parameter
-   *
-   * @tparam T
-   * @param parameter_name
-   * @param value
-   */
-  template<class T>
-  void set_parameter(const std::string &parameter_name, T value) {
-    parameters_[parameter_name] = value;
-  }
+    /** Return frame number */
+    long long get_frame_number() const;
 
-  /** Check if frame has parameter
-   *
-   * @param index
-   * @return
-   */
-  bool has_parameter(const std::string& index) const {
-    return (parameters_.count(index) == 1);
-  }
+    /** Set frame number */
+    void set_frame_number(const long long& frame_number);
 
-  /** Return frame number */
-  long long get_frame_number() const;
+    /** Return dataset_name */
+    const std::string& get_dataset_name() const;
 
-  /** Set frame number */
-  void set_frame_number(const long long& frame_number);
+    /** Set dataset name */
+    void set_dataset_name(const std::string& dataset_name);
 
-  /** Return dataset_name */
-  const std::string &get_dataset_name() const;
+    /** Return data type */
+    DataType get_data_type() const;
 
-  /** Set dataset name */
-  void set_dataset_name(const std::string &dataset_name);
+    /** Set data type */
+    void set_data_type(DataType data_type);
 
-  /** Return data type */
-  DataType get_data_type() const;
+    /** Return acquisition ID */
+    const std::string& get_acquisition_ID() const;
 
-  /** Set data type */
-  void set_data_type(DataType data_type);
+    /** Set acquisition ID */
+    void set_acquisition_ID(const std::string& acquisition_ID);
 
-  /** Return acquisition ID */
-  const std::string &get_acquisition_ID() const;
+    /** Return dimensions */
+    const dimensions_t& get_dimensions() const;
 
-  /** Set acquisition ID */
-  void set_acquisition_ID(const std::string &acquisition_ID);
+    /** Set dimensions */
+    void set_dimensions(const dimensions_t& dimensions);
 
-  /** Return dimensions */
-  const dimensions_t &get_dimensions() const;
+    /** Return compression type */
+    CompressionType get_compression_type() const;
 
-  /** Set dimensions */
-  void set_dimensions(const dimensions_t &dimensions);
+    /** Set compression type */
+    void set_compression_type(CompressionType compression_type);
 
-  /** Return compression type */
-  CompressionType get_compression_type() const;
+    /** Return frame offset */
+    int64_t get_frame_offset() const;
 
-  /** Set compression type */
-  void set_compression_type(CompressionType compression_type);
+    /** Set frame offset */
+    void set_frame_offset(const int64_t& offset);
 
-  /** Return frame offset */
-  int64_t get_frame_offset() const;
-
-  /** Set frame offset */
-  void set_frame_offset(const int64_t &offset);
-
-  /** Adjust frame offset by increment */
-  void adjust_frame_offset(const int64_t &increment);
+    /** Adjust frame offset by increment */
+    void adjust_frame_offset(const int64_t& increment);
 
 private:
+    /** Frame number */
+    long long frame_number_;
 
-  /** Frame number */
-  long long frame_number_;
+    /** Pointer to logger */
+    log4cxx::LoggerPtr logger;
 
-  /** Pointer to logger */
-  log4cxx::LoggerPtr logger;
+    /** Name of this dataset */
+    std::string dataset_name_;
 
-  /** Name of this dataset */
-  std::string dataset_name_;
+    /** Data type of raw data */
+    DataType data_type_;
 
-  /** Data type of raw data */
-  DataType data_type_;
+    /** Acquisition ID of the acquisition of this frame **/
+    std::string acquisition_ID_;
 
-  /** Acquisition ID of the acquisition of this frame **/
-  std::string acquisition_ID_;
+    /** Vector of dimensions */
+    dimensions_t dimensions_;
 
-  /** Vector of dimensions */
-  dimensions_t dimensions_;
+    /** Compression type of raw data */
+    CompressionType compression_type_;
 
-  /** Compression type of raw data */
-  CompressionType compression_type_;
+    /** Map of parameters */
+    std::map<std::string, boost::any> parameters_;
 
-  /** Map of parameters */
-  std::map <std::string, boost::any> parameters_;
-
-  /** Frame offset */
-  int64_t frame_offset_;
-
+    /** Frame offset */
+    int64_t frame_offset_;
 };
 
 }

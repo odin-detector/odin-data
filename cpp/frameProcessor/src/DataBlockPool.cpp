@@ -5,11 +5,10 @@
  *      Author: gnx91527
  */
 
-#include <DataBlockPool.h>
 #include "DebugLevelLogger.h"
+#include <DataBlockPool.h>
 
-namespace FrameProcessor
-{
+namespace FrameProcessor {
 
 /**
  * Container of DataBlockPool instances which can be indexed by name
@@ -29,7 +28,7 @@ DataBlockPool::~DataBlockPool()
  */
 void DataBlockPool::allocate(size_t block_count, size_t block_size)
 {
-  DataBlockPool::instance(block_size)->internal_allocate(block_count, block_size);
+    DataBlockPool::instance(block_size)->internal_allocate(block_count, block_size);
 }
 
 /**
@@ -41,7 +40,7 @@ void DataBlockPool::allocate(size_t block_count, size_t block_size)
  */
 boost::shared_ptr<DataBlock> DataBlockPool::take(size_t block_size)
 {
-  return DataBlockPool::instance(block_size)->internal_take(block_size);
+    return DataBlockPool::instance(block_size)->internal_take(block_size);
 }
 
 /**
@@ -53,7 +52,7 @@ boost::shared_ptr<DataBlock> DataBlockPool::take(size_t block_size)
  */
 void DataBlockPool::release(boost::shared_ptr<DataBlock> block)
 {
-  DataBlockPool::instance(block->get_size())->internal_release(block);
+    DataBlockPool::instance(block->get_size())->internal_release(block);
 }
 
 /**
@@ -65,7 +64,7 @@ void DataBlockPool::release(boost::shared_ptr<DataBlock> block)
  */
 size_t DataBlockPool::get_free_blocks(size_t block_size)
 {
-  return DataBlockPool::instance(block_size)->internal_get_free_blocks();
+    return DataBlockPool::instance(block_size)->internal_get_free_blocks();
 }
 
 /**
@@ -77,7 +76,7 @@ size_t DataBlockPool::get_free_blocks(size_t block_size)
  */
 size_t DataBlockPool::get_used_blocks(size_t block_size)
 {
-  return DataBlockPool::instance(block_size)->internal_get_used_blocks();
+    return DataBlockPool::instance(block_size)->internal_get_used_blocks();
 }
 
 /**
@@ -89,7 +88,7 @@ size_t DataBlockPool::get_used_blocks(size_t block_size)
  */
 size_t DataBlockPool::get_total_blocks(size_t block_size)
 {
-  return DataBlockPool::instance(block_size)->internal_get_total_blocks();
+    return DataBlockPool::instance(block_size)->internal_get_total_blocks();
 }
 
 /**
@@ -101,7 +100,7 @@ size_t DataBlockPool::get_total_blocks(size_t block_size)
  */
 size_t DataBlockPool::get_memory_allocated(size_t block_size)
 {
-  return DataBlockPool::instance(block_size)->internal_get_memory_allocated();
+    return DataBlockPool::instance(block_size)->internal_get_memory_allocated();
 }
 
 /**
@@ -115,10 +114,10 @@ size_t DataBlockPool::get_memory_allocated(size_t block_size)
  */
 DataBlockPool* DataBlockPool::instance(size_t block_size)
 {
-  if (DataBlockPool::instance_map_.count(block_size) == 0) {
-    DataBlockPool::instance_map_[block_size] = new DataBlockPool();
-  }
-  return DataBlockPool::instance_map_[block_size];
+    if (DataBlockPool::instance_map_.count(block_size) == 0) {
+        DataBlockPool::instance_map_[block_size] = new DataBlockPool();
+    }
+    return DataBlockPool::instance_map_[block_size];
 }
 
 /**
@@ -144,22 +143,23 @@ DataBlockPool::DataBlockPool() :
  */
 void DataBlockPool::internal_allocate(size_t block_count, size_t block_size)
 {
-  LOG4CXX_DEBUG_LEVEL(2, logger_, "Allocating " << block_count <<
-                                  " additional DataBlocks of " << block_size << " bytes");
+    LOG4CXX_DEBUG_LEVEL(
+        2, logger_, "Allocating " << block_count << " additional DataBlocks of " << block_size << " bytes"
+    );
 
-  // Protect this method
-  boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    // Protect this method
+    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
 
-  // Allocate the number of data blocks, each of size block_size
-  boost::shared_ptr<DataBlock> block;
-  for (size_t count = 0; count < block_count; count++) {
-    block = boost::shared_ptr<DataBlock>(new DataBlock(block_size));
-    free_list_.push_front(block);
-    // Record the newly allocated block
-    free_blocks_++;
-    total_blocks_++;
-    memory_allocated_ += block_size;
-  }
+    // Allocate the number of data blocks, each of size block_size
+    boost::shared_ptr<DataBlock> block;
+    for (size_t count = 0; count < block_count; count++) {
+        block = boost::shared_ptr<DataBlock>(new DataBlock(block_size));
+        free_list_.push_front(block);
+        // Record the newly allocated block
+        free_blocks_++;
+        total_blocks_++;
+        memory_allocated_ += block_size;
+    }
 }
 
 /**
@@ -171,33 +171,33 @@ void DataBlockPool::internal_allocate(size_t block_count, size_t block_size)
  */
 boost::shared_ptr<DataBlock> DataBlockPool::internal_take(size_t block_size)
 {
-  LOG4CXX_DEBUG_LEVEL(2, logger_, "Requesting DataBlock of " << block_size << " bytes");
+    LOG4CXX_DEBUG_LEVEL(2, logger_, "Requesting DataBlock of " << block_size << " bytes");
 
-  // Protect this method
-  boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    // Protect this method
+    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
 
-  boost::shared_ptr<DataBlock> block;
-  if (free_blocks_ == 0) {
-    if (total_blocks_ == 0) {
-      this->internal_allocate(2, block_size);
-    } else {
-      this->internal_allocate(total_blocks_, block_size);
+    boost::shared_ptr<DataBlock> block;
+    if (free_blocks_ == 0) {
+        if (total_blocks_ == 0) {
+            this->internal_allocate(2, block_size);
+        } else {
+            this->internal_allocate(total_blocks_, block_size);
+        }
     }
-  }
-  if (free_blocks_ > 0) {
-    block = free_list_.front();
-    if (block->get_size() != block_size) {
-      memory_allocated_ -= block->get_size();
-      block->resize(block_size);
-      memory_allocated_ += block_size;
+    if (free_blocks_ > 0) {
+        block = free_list_.front();
+        if (block->get_size() != block_size) {
+            memory_allocated_ -= block->get_size();
+            block->resize(block_size);
+            memory_allocated_ += block_size;
+        }
+        free_list_.pop_front();
+        used_map_[block->get_index()] = block;
+        free_blocks_--;
+        used_blocks_++;
+        LOG4CXX_DEBUG_LEVEL(2, logger_, "Providing DataBlock [id=" << block->get_index() << "]");
     }
-    free_list_.pop_front();
-    used_map_[block->get_index()] = block;
-    free_blocks_--;
-    used_blocks_++;
-    LOG4CXX_DEBUG_LEVEL(2, logger_, "Providing DataBlock [id=" << block->get_index() << "]");
-  }
-  return block;
+    return block;
 }
 
 /**
@@ -208,17 +208,17 @@ boost::shared_ptr<DataBlock> DataBlockPool::internal_take(size_t block_size)
  */
 void DataBlockPool::internal_release(boost::shared_ptr<DataBlock> block)
 {
-  LOG4CXX_DEBUG_LEVEL(2, logger_, "Releasing DataBlock [id=" << block->get_index() << "]");
+    LOG4CXX_DEBUG_LEVEL(2, logger_, "Releasing DataBlock [id=" << block->get_index() << "]");
 
-  // Protect this method
-  boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    // Protect this method
+    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
 
-  if (used_map_.count(block->get_index()) > 0) {
-    used_map_.erase(block->get_index());
-  }
-  free_list_.push_front(block);
-  used_blocks_--;
-  free_blocks_++;
+    if (used_map_.count(block->get_index()) > 0) {
+        used_map_.erase(block->get_index());
+    }
+    free_list_.push_front(block);
+    used_blocks_--;
+    free_blocks_++;
 }
 
 /**
@@ -228,7 +228,7 @@ void DataBlockPool::internal_release(boost::shared_ptr<DataBlock> block)
  */
 size_t DataBlockPool::internal_get_free_blocks()
 {
-  return free_blocks_;
+    return free_blocks_;
 }
 
 /**
@@ -238,7 +238,7 @@ size_t DataBlockPool::internal_get_free_blocks()
  */
 size_t DataBlockPool::internal_get_used_blocks()
 {
-  return used_blocks_;
+    return used_blocks_;
 }
 
 /**
@@ -248,7 +248,7 @@ size_t DataBlockPool::internal_get_used_blocks()
  */
 size_t DataBlockPool::internal_get_total_blocks()
 {
-  return total_blocks_;
+    return total_blocks_;
 }
 
 /**
@@ -258,7 +258,7 @@ size_t DataBlockPool::internal_get_total_blocks()
  */
 size_t DataBlockPool::internal_get_memory_allocated()
 {
-  return memory_allocated_;
+    return memory_allocated_;
 }
 
 /**
@@ -266,11 +266,11 @@ size_t DataBlockPool::internal_get_memory_allocated()
  */
 void DataBlockPool::tearDownClass()
 {
-  std::map<size_t , DataBlockPool*>::iterator it;
-  for (it = instance_map_.begin(); it != instance_map_.end(); it++) {
-    delete it->second;
-  }
-  instance_map_.clear();
+    std::map<size_t, DataBlockPool*>::iterator it;
+    for (it = instance_map_.begin(); it != instance_map_.end(); it++) {
+        delete it->second;
+    }
+    instance_map_.clear();
 }
 
 } /* namespace FrameProcessor */

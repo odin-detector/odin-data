@@ -9,11 +9,10 @@
  *     Author: Tim Nicholls, STFC Detector Systems Software Group
  */
 
-#include <sstream>
 #include "ParamContainer.h"
+#include <sstream>
 
-namespace OdinData
-{
+namespace OdinData {
 
 //! Copy constructor
 //!
@@ -44,7 +43,7 @@ std::string ParamContainer::encode(void)
     encode(doc_);
 
     rapidjson::StringBuffer sb;
-    rapidjson::Writer<rapidjson::StringBuffer, rapidjson::UTF8<> > writer(sb);
+    rapidjson::Writer<rapidjson::StringBuffer, rapidjson::UTF8<>> writer(sb);
 
     doc_.Accept(writer);
 
@@ -65,13 +64,11 @@ void ParamContainer::encode(ParamContainer::Document& doc_obj, std::string prefi
 {
     // Construct the JSON pointer prefix based on the prefix path
     std::string pointer_prefix = pointer_path("");
-    if (!prefix_path.empty())
-    {
+    if (!prefix_path.empty()) {
         pointer_prefix += prefix_path;
 
         // Ensure that the pointer prefix is correctly terminated with a trailing slash.
-        if (*pointer_prefix.rbegin() != '/')
-        {
+        if (*pointer_prefix.rbegin() != '/') {
             pointer_prefix += '/';
         }
     }
@@ -79,8 +76,7 @@ void ParamContainer::encode(ParamContainer::Document& doc_obj, std::string prefi
     // Iterate through all the bound parameters in the getter map, retreiving their current
     // values and setting in the JSON document. The first element of each map entry returned
     // by the iterator is the path of the parameter and the second is the bound getter method.
-    for (GetterFuncMap::const_iterator it = getter_map_.begin(); it != getter_map_.end(); ++it)
-    {
+    for (GetterFuncMap::const_iterator it = getter_map_.begin(); it != getter_map_.end(); ++it) {
         rapidjson::Value value_obj;
         (*it).second(value_obj);
         std::string path = pointer_prefix + (*it).first;
@@ -115,11 +111,9 @@ void ParamContainer::update(const char* json)
     doc_.Parse(json);
 
     // Throw an informative exception of parse errors were encountered
-    if (doc_.HasParseError())
-    {
+    if (doc_.HasParseError()) {
         std::stringstream ss;
-        ss << "JSON parse error updating configuration from string at offset "
-            << doc_.GetErrorOffset() ;
+        ss << "JSON parse error updating configuration from string at offset " << doc_.GetErrorOffset();
         ss << " : " << rapidjson::GetParseError_En(doc_.GetParseError());
         throw ParamContainerException(ss.str());
     }
@@ -135,7 +129,7 @@ void ParamContainer::update(const char* json)
 //!
 //! \param container - reference to a ParamContainer object to update parameters from
 
-void  ParamContainer::update(const ParamContainer& container)
+void ParamContainer::update(const ParamContainer& container)
 {
     // Create a new param container document and encode the new container into it
     ParamContainer::Document doc;
@@ -175,14 +169,10 @@ void ParamContainer::update(ParamContainer::Document& doc_obj)
     // Iterate through all bound parameters in the setter function map. The first element of each
     // map entry returned by the iterator is the path of the parameter and the second is the bound
     // getter method.
-    for (SetterFuncMap::iterator it = setter_map_.begin(); it != setter_map_.end(); ++it)
-    {
+    for (SetterFuncMap::iterator it = setter_map_.begin(); it != setter_map_.end(); ++it) {
         // If the path of the bound parameter is found in the JSON document, call the setter
         // function to update the value of the parameter
-        if (rapidjson::Value* value_ptr = rapidjson::Pointer(
-            pointer_path((*it).first).c_str()).Get(doc_obj)
-        )
-        {
+        if (rapidjson::Value* value_ptr = rapidjson::Pointer(pointer_path((*it).first).c_str()).Get(doc_obj)) {
             (*it).second(*value_ptr);
         }
     }
@@ -191,32 +181,32 @@ void ParamContainer::update(ParamContainer::Document& doc_obj)
 // Explicit specialisations of the set_value and get_value methods, mapping native attribute types
 // to the appropriate RapidJSON storage type.
 
-template<> void ParamContainer::set_value(int& param, rapidjson::Value& value_obj) const
+template <> void ParamContainer::set_value(int& param, rapidjson::Value& value_obj) const
 {
     param = value_obj.GetInt();
 }
 
-template<> void ParamContainer::get_value(int& param, rapidjson::Value& value_obj) const
+template <> void ParamContainer::get_value(int& param, rapidjson::Value& value_obj) const
 {
     value_obj.SetInt(param);
 }
 
-template<> void ParamContainer::set_value(unsigned int& param, rapidjson::Value& value_obj) const
+template <> void ParamContainer::set_value(unsigned int& param, rapidjson::Value& value_obj) const
 {
     param = value_obj.GetUint();
 }
 
-template<> void ParamContainer::get_value(unsigned int& param, rapidjson::Value& value_obj) const
+template <> void ParamContainer::get_value(unsigned int& param, rapidjson::Value& value_obj) const
 {
     value_obj.SetUint(param);
 }
 
-template<> void ParamContainer::set_value(uint16_t& param, rapidjson::Value& value_obj) const
+template <> void ParamContainer::set_value(uint16_t& param, rapidjson::Value& value_obj) const
 {
     param = value_obj.GetUint();
 }
 
-template<> void ParamContainer::get_value(uint16_t& param, rapidjson::Value& value_obj) const
+template <> void ParamContainer::get_value(uint16_t& param, rapidjson::Value& value_obj) const
 {
     value_obj.SetUint(param);
 }
@@ -224,73 +214,73 @@ template<> void ParamContainer::get_value(uint16_t& param, rapidjson::Value& val
 #ifdef __APPLE__
 // The MacOS clang compiler seems to base uint64 on a different base type than gcc on Linux, causing
 // linker errors with templated specialisations of get_value and set_value for unsigned long.
-template<> void ParamContainer::set_value(unsigned long& param rapidjson::Value& value_obj) const
+template <> void ParamContainer::set_value(unsigned long& param rapidjson::Value& value_obj) const
 {
-  param = value_obj.GetUint64();
+    param = value_obj.GetUint64();
 }
 
-template<> void ParamContainer::get_value(unsigned long& param, rapidjson::Value& value_obj) const
+template <> void ParamContainer::get_value(unsigned long& param, rapidjson::Value& value_obj) const
 {
     value_obj.SetUint64(param);
 }
 #endif
 
-template<> void ParamContainer::set_value(int64_t& param, rapidjson::Value& value_obj) const
+template <> void ParamContainer::set_value(int64_t& param, rapidjson::Value& value_obj) const
 {
-  param = value_obj.GetInt64();
+    param = value_obj.GetInt64();
 }
 
-template<> void ParamContainer::get_value(int64_t& param, rapidjson::Value& value_obj) const
+template <> void ParamContainer::get_value(int64_t& param, rapidjson::Value& value_obj) const
 {
     value_obj.SetInt64(param);
 }
 
-template<> void ParamContainer::set_value(uint64_t& param, rapidjson::Value& value_obj) const
+template <> void ParamContainer::set_value(uint64_t& param, rapidjson::Value& value_obj) const
 {
-  param = value_obj.GetUint64();
+    param = value_obj.GetUint64();
 }
 
-template<> void ParamContainer::get_value(uint64_t& param, rapidjson::Value& value_obj) const
+template <> void ParamContainer::get_value(uint64_t& param, rapidjson::Value& value_obj) const
 {
     value_obj.SetUint64(param);
 }
 
-template<> void ParamContainer::set_value(double& param, rapidjson::Value& value_obj) const
+template <> void ParamContainer::set_value(double& param, rapidjson::Value& value_obj) const
 {
-  param = value_obj.GetDouble();
+    param = value_obj.GetDouble();
 }
 
-template<> void ParamContainer::get_value(double& param, rapidjson::Value& value_obj) const
+template <> void ParamContainer::get_value(double& param, rapidjson::Value& value_obj) const
 {
     value_obj.SetDouble(param);
 }
 
-template<> void ParamContainer::set_value(std::string& param, rapidjson::Value& value_obj) const
+template <> void ParamContainer::set_value(std::string& param, rapidjson::Value& value_obj) const
 {
-  param = value_obj.GetString();
+    param = value_obj.GetString();
 }
 
-template<> void ParamContainer::get_value(std::string& param, rapidjson::Value& value_obj) const
+template <> void ParamContainer::get_value(std::string& param, rapidjson::Value& value_obj) const
 {
     value_obj.SetString(rapidjson::StringRef(param.c_str()));
 }
 
-template<> void ParamContainer::set_value(bool& param, rapidjson::Value& value_obj) const
+template <> void ParamContainer::set_value(bool& param, rapidjson::Value& value_obj) const
 {
-  param = value_obj.GetBool();
+    param = value_obj.GetBool();
 }
 
-template<> void ParamContainer::get_value(bool& param, rapidjson::Value& value_obj) const
+template <> void ParamContainer::get_value(bool& param, rapidjson::Value& value_obj) const
 {
     value_obj.SetBool(param);
 }
 
-template<> void ParamContainer::set_value(ParamContainer::Document& param, rapidjson::Value& value_obj) const
+template <> void ParamContainer::set_value(ParamContainer::Document& param, rapidjson::Value& value_obj) const
 {
     param.CopyFrom(value_obj, param.GetAllocator());
 }
 
-template<> void ParamContainer::get_value(ParamContainer::Document& param, rapidjson::Value& value_obj) const
+template <> void ParamContainer::get_value(ParamContainer::Document& param, rapidjson::Value& value_obj) const
 {
     value_obj.CopyFrom(param, param.GetAllocator());
 }
