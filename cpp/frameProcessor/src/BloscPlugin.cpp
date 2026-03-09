@@ -22,18 +22,21 @@ const std::string BloscPlugin::CONFIG_BLOSC_THREADS = "threads";
 const std::string BloscPlugin::CONFIG_BLOSC_LEVEL = "level";
 const std::string BloscPlugin::CONFIG_BLOSC_SHUFFLE = "shuffle";
 
-const char BLOSC_NOSHUFFLE_STR[]    = "noshuffle";
-const char BLOSC_SHUFFLE_STR []     = "shuffle";  
-const char BLOSC_BITSHUFFLE_STR []  = "bitshuffle";
+const char BLOSC_NOSHUFFLE_STR[] = "noshuffle";
+const char BLOSC_SHUFFLE_STR[] = "shuffle";
+const char BLOSC_BITSHUFFLE_STR[] = "bitshuffle";
 
+// hashmap alias
 using string2int = std::unordered_map<std::string, unsigned int>;
-static std::unordered_map<std::string, const unsigned int> shuffle_str2i {{BLOSC_NOSHUFFLE_STR, 0}, {BLOSC_SHUFFLE_STR, 1}, {BLOSC_BITSHUFFLE_STR, 2}};
-static std::unordered_map<std::string, const unsigned int> compressor_str2i {{BLOSC_BLOSCLZ_COMPNAME, 0}, {BLOSC_LZ4_COMPNAME,    1}, 
-                                                                             {BLOSC_LZ4HC_COMPNAME,   2}, {BLOSC_SNAPPY_COMPNAME, 3}, 
-                                                                             {BLOSC_ZLIB_COMPNAME,    4}, {BLOSC_ZSTD_COMPNAME,   5}
+static std::unordered_map<std::string, const unsigned int> shuffle_str2i { { BLOSC_NOSHUFFLE_STR, 0 },
+                                                                           { BLOSC_SHUFFLE_STR, 1 },
+                                                                           { BLOSC_BITSHUFFLE_STR, 2 } };
+static std::unordered_map<std::string, const unsigned int> compressor_str2i {
+    { BLOSC_BLOSCLZ_COMPNAME, 0 }, { BLOSC_LZ4_COMPNAME, 1 },  { BLOSC_LZ4HC_COMPNAME, 2 },
+    { BLOSC_SNAPPY_COMPNAME, 3 },  { BLOSC_ZLIB_COMPNAME, 4 }, { BLOSC_ZSTD_COMPNAME, 5 }
 };
 
-  /**
+/**
  * cd_values[7] meaning (see blosc.h):
  *   0: reserved
  *   1: reserved
@@ -48,14 +51,15 @@ static std::unordered_map<std::string, const unsigned int> compressor_str2i {{BL
  */
 void create_cd_values(const BloscCompressionSettings& settings, std::vector<unsigned int>& cd_values)
 {
-  if (cd_values.size() < 7) cd_values.resize(7);
-  cd_values[0] = 0;
-  cd_values[1] = 0;
-  cd_values[2] = static_cast<unsigned int>(settings.type_size);
-  cd_values[3] = static_cast<unsigned int>(settings.uncompressed_size);
-  cd_values[4] = settings.compression_level;
-  cd_values[5] = shuffle_str2i[settings.shuffle];
-  cd_values[6] = compressor_str2i[settings.blosc_compressor];
+    if (cd_values.size() < 7)
+        cd_values.resize(7);
+    cd_values[0] = 0;
+    cd_values[1] = 0;
+    cd_values[2] = static_cast<unsigned int>(settings.type_size);
+    cd_values[3] = static_cast<unsigned int>(settings.uncompressed_size);
+    cd_values[4] = settings.compression_level;
+    cd_values[5] = shuffle_str2i[settings.shuffle];
+    cd_values[6] = compressor_str2i[settings.blosc_compressor];
 }
 
 /**
@@ -66,35 +70,39 @@ BloscPlugin::BloscPlugin() :
     data_buffer_ptr_(NULL),
     data_buffer_size_(0)
 {
-  add_config_param_metadata(CONFIG_BLOSC_COMPRESSOR, PMDD::STRING_T, PMDA::READ_WRITE, {BLOSC_BLOSCLZ_COMPNAME, BLOSC_LZ4_COMPNAME,
-                                                                                        BLOSC_LZ4HC_COMPNAME, BLOSC_SNAPPY_COMPNAME, 
-                                                                                        BLOSC_ZLIB_COMPNAME, BLOSC_ZSTD_COMPNAME}
-  );
-  add_config_param_metadata(CONFIG_BLOSC_THREADS, PMDD::UINT_T, PMDA::READ_WRITE, 1);
-  add_config_param_metadata(CONFIG_BLOSC_LEVEL, PMDD::UINT_T, PMDA::READ_WRITE, 0, 9);
-  add_config_param_metadata(CONFIG_BLOSC_SHUFFLE, PMDD::STRING_T, PMDA::READ_WRITE, {BLOSC_NOSHUFFLE_STR, BLOSC_SHUFFLE_STR, BLOSC_BITSHUFFLE_STR});
+    add_config_param_metadata(
+        CONFIG_BLOSC_COMPRESSOR, PMDD::STRING_T, PMDA::READ_WRITE,
+        { BLOSC_BLOSCLZ_COMPNAME, BLOSC_LZ4_COMPNAME, BLOSC_LZ4HC_COMPNAME, BLOSC_SNAPPY_COMPNAME, BLOSC_ZLIB_COMPNAME,
+          BLOSC_ZSTD_COMPNAME }
+    );
+    add_config_param_metadata(CONFIG_BLOSC_THREADS, PMDD::UINT_T, PMDA::READ_WRITE, 1);
+    add_config_param_metadata(CONFIG_BLOSC_LEVEL, PMDD::UINT_T, PMDA::READ_WRITE, 0, 9);
+    add_config_param_metadata(
+        CONFIG_BLOSC_SHUFFLE, PMDD::STRING_T, PMDA::READ_WRITE,
+        { BLOSC_NOSHUFFLE_STR, BLOSC_SHUFFLE_STR, BLOSC_BITSHUFFLE_STR }
+    );
 
-  this->commanded_compression_settings_.blosc_compressor = BLOSC_LZ4_COMPNAME;
-  this->commanded_compression_settings_.shuffle = BLOSC_BITSHUFFLE_STR;
-  this->commanded_compression_settings_.compression_level = 1;
-  this->commanded_compression_settings_.type_size = 0;
-  this->commanded_compression_settings_.uncompressed_size = 0;
-  this->commanded_compression_settings_.threads = 1;
-  this->compression_settings_ = this->commanded_compression_settings_;
+    this->commanded_compression_settings_.blosc_compressor = BLOSC_LZ4_COMPNAME;
+    this->commanded_compression_settings_.shuffle = BLOSC_BITSHUFFLE_STR;
+    this->commanded_compression_settings_.compression_level = 1;
+    this->commanded_compression_settings_.type_size = 0;
+    this->commanded_compression_settings_.uncompressed_size = 0;
+    this->commanded_compression_settings_.threads = 1;
+    this->compression_settings_ = this->commanded_compression_settings_;
 
-  // Setup logging for the class
-  logger_ = Logger::getLogger("FP.BloscPlugin");
-  LOG4CXX_TRACE(logger_, "BloscPlugin constructor. Version: " << this->get_version_long());
+    // Setup logging for the class
+    logger_ = Logger::getLogger("FP.BloscPlugin");
+    LOG4CXX_TRACE(logger_, "BloscPlugin constructor. Version: " << this->get_version_long());
 
-  int ret = 0;
-  ret = blosc_set_compressor(BLOSC_LZ4_COMPNAME);
-  if (ret < 0) {
-    LOG4CXX_ERROR(logger_, "Blosc unable to set compressor: " << BLOSC_LZ4_COMPNAME);
-  }
-  blosc_set_nthreads(this->compression_settings_.threads);
-  LOG4CXX_TRACE(logger_, "Blosc Version: " << blosc_get_version_string());
-  LOG4CXX_TRACE(logger_, "Blosc list available compressors: " << blosc_list_compressors());
-  LOG4CXX_TRACE(logger_, "Blosc current compressor: " << blosc_get_compressor());
+    int ret = 0;
+    ret = blosc_set_compressor(BLOSC_LZ4_COMPNAME);
+    if (ret < 0) {
+        LOG4CXX_ERROR(logger_, "Blosc unable to set compressor: " << BLOSC_LZ4_COMPNAME);
+    }
+    blosc_set_nthreads(this->compression_settings_.threads);
+    LOG4CXX_TRACE(logger_, "Blosc Version: " << blosc_get_version_string());
+    LOG4CXX_TRACE(logger_, "Blosc list available compressors: " << blosc_list_compressors());
+    LOG4CXX_TRACE(logger_, "Blosc current compressor: " << blosc_get_compressor());
 }
 
 /**
@@ -116,64 +124,61 @@ BloscPlugin::~BloscPlugin()
 boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> src_frame)
 {
 
-  int compressed_size = 0;
-  BloscCompressionSettings c_settings;
+    int compressed_size = 0;
+    BloscCompressionSettings c_settings;
 
-  FrameMetaData dest_meta_data = src_frame->get_meta_data_copy();
-  dest_meta_data.set_compression_type(blosc);
+    FrameMetaData dest_meta_data = src_frame->get_meta_data_copy();
+    dest_meta_data.set_compression_type(blosc);
 
-  const void* src_data_ptr = static_cast<const void*>(
-      static_cast<const char*>(src_frame->get_image_ptr())
-  );
+    const void* src_data_ptr = static_cast<const void*>(static_cast<const char*>(src_frame->get_image_ptr()));
 
-  c_settings = this->compression_settings_;
+    c_settings = this->compression_settings_;
 
-  c_settings.type_size = get_size_from_enum(src_frame->get_meta_data().get_data_type());
-  c_settings.uncompressed_size = src_frame->get_image_size();
+    c_settings.type_size = get_size_from_enum(src_frame->get_meta_data().get_data_type());
+    c_settings.uncompressed_size = src_frame->get_image_size();
 
-  size_t dest_data_size = c_settings.uncompressed_size + BLOSC_MAX_OVERHEAD;
+    size_t dest_data_size = c_settings.uncompressed_size + BLOSC_MAX_OVERHEAD;
 
-  boost::shared_ptr<Frame> dest_frame = boost::shared_ptr<DataBlockFrame>(
-          new DataBlockFrame(dest_meta_data, dest_data_size));
+    boost::shared_ptr<Frame> dest_frame
+        = boost::shared_ptr<DataBlockFrame>(new DataBlockFrame(dest_meta_data, dest_data_size));
 
-  std::stringstream ss_blosc_settings;
-  ss_blosc_settings << " compressor=" << blosc_get_compressor()
-                    << " threads=" << blosc_get_nthreads()
-                    << " clevel=" << c_settings.compression_level
-                    << " doshuffle=" << c_settings.shuffle
-                    << " typesize=" << c_settings.type_size
-                    << " nbytes=" << c_settings.uncompressed_size
-                    << " destsize=" << dest_data_size;
+    std::stringstream ss_blosc_settings;
+    ss_blosc_settings << " compressor=" << blosc_get_compressor() << " threads=" << blosc_get_nthreads()
+                      << " clevel=" << c_settings.compression_level << " doshuffle=" << c_settings.shuffle
+                      << " typesize=" << c_settings.type_size << " nbytes=" << c_settings.uncompressed_size
+                      << " destsize=" << dest_data_size;
 
-  LOG4CXX_DEBUG_LEVEL(2, logger_, "Blosc compression: frame=" << src_frame->get_frame_number()
-                          << " acquisition=\"" << src_frame->get_meta_data().get_acquisition_ID() << "\""
-                          << ss_blosc_settings.str()
-                          << " src=" << src_data_ptr
-                          << " dest=" << dest_frame->get_image_ptr());
-  compressed_size = blosc_compress(c_settings.compression_level,
-                                   shuffle_str2i[c_settings.shuffle],
-                                   c_settings.type_size,
-                                   c_settings.uncompressed_size, src_data_ptr,
-                                   dest_frame->get_image_ptr(), dest_data_size);
-  if (compressed_size < 0) {
-    std::stringstream ss;
-    ss << "blosc_compress failed. error=" << compressed_size << ss_blosc_settings.str();
-    LOG4CXX_ERROR(logger_, ss.str());
-    throw std::runtime_error(ss.str());
-  }
-  double factor = 0.;
-  if (compressed_size > 0) {
-    factor = (double)src_frame->get_image_size() / (double)compressed_size;
-  }
-  LOG4CXX_DEBUG_LEVEL(2, logger_, "Blosc compression complete: frame=" << src_frame->get_frame_number()
-                                  << " compressed_size=" << compressed_size
-                                  << " factor=" << factor);
+    LOG4CXX_DEBUG_LEVEL(
+        2, logger_,
+        "Blosc compression: frame=" << src_frame->get_frame_number() << " acquisition=\""
+                                    << src_frame->get_meta_data().get_acquisition_ID() << "\""
+                                    << ss_blosc_settings.str() << " src=" << src_data_ptr
+                                    << " dest=" << dest_frame->get_image_ptr()
+    );
+    compressed_size = blosc_compress(
+        c_settings.compression_level, shuffle_str2i[c_settings.shuffle], c_settings.type_size,
+        c_settings.uncompressed_size, src_data_ptr, dest_frame->get_image_ptr(), dest_data_size
+    );
+    if (compressed_size < 0) {
+        std::stringstream ss;
+        ss << "blosc_compress failed. error=" << compressed_size << ss_blosc_settings.str();
+        LOG4CXX_ERROR(logger_, ss.str());
+        throw std::runtime_error(ss.str());
+    }
+    double factor = 0.;
+    if (compressed_size > 0) {
+        factor = (double)src_frame->get_image_size() / (double)compressed_size;
+    }
+    LOG4CXX_DEBUG_LEVEL(
+        2, logger_,
+        "Blosc compression complete: frame=" << src_frame->get_frame_number() << " compressed_size=" << compressed_size
+                                             << " factor=" << factor
+    );
 
+    dest_frame->set_image_size(compressed_size);
+    dest_frame->set_outer_chunk_size(src_frame->get_outer_chunk_size());
 
-  dest_frame->set_image_size(compressed_size);
-  dest_frame->set_outer_chunk_size(src_frame->get_outer_chunk_size());
-
-  return dest_frame;
+    return dest_frame;
 }
 
 /**
@@ -181,27 +186,32 @@ boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> sr
  */
 void BloscPlugin::update_compression_settings()
 {
-  this->compression_settings_ = this->commanded_compression_settings_;
+    this->compression_settings_ = this->commanded_compression_settings_;
 
-  int ret = 0;
-  const char * p_compressor_name;
-  ret = blosc_compcode_to_compname(compressor_str2i[this->compression_settings_.blosc_compressor], &p_compressor_name);
-  LOG4CXX_DEBUG_LEVEL(1, logger_, "Blosc compression settings: "
-                                  << " acquisition=\"" << this->current_acquisition_ << "\""
-                                  << " compressor=" << p_compressor_name
-                                  << " threads=" << blosc_get_nthreads()
-                                  << " clevel=" << this->compression_settings_.compression_level
-                                  << " doshuffle=" << this->compression_settings_.shuffle
-                                  << " typesize=" << this->compression_settings_.type_size
-                                  << " nbytes=" << this->compression_settings_.uncompressed_size);
-  ret = blosc_set_compressor(p_compressor_name);
-  if (ret < 0) {
-    LOG4CXX_ERROR(logger_, "Blosc failed to set compressor: "
-        << " " << this->compression_settings_.blosc_compressor
-        << " " << *p_compressor_name);
-    throw std::runtime_error("Blosc failed to set compressor");
-  }
-  blosc_set_nthreads(this->compression_settings_.threads);
+    int ret = 0;
+    const char* p_compressor_name;
+    ret = blosc_compcode_to_compname(
+        compressor_str2i[this->compression_settings_.blosc_compressor], &p_compressor_name
+    );
+    LOG4CXX_DEBUG_LEVEL(
+        1, logger_,
+        "Blosc compression settings: " << " acquisition=\"" << this->current_acquisition_ << "\""
+                                       << " compressor=" << p_compressor_name << " threads=" << blosc_get_nthreads()
+                                       << " clevel=" << this->compression_settings_.compression_level
+                                       << " doshuffle=" << this->compression_settings_.shuffle
+                                       << " typesize=" << this->compression_settings_.type_size
+                                       << " nbytes=" << this->compression_settings_.uncompressed_size
+    );
+    ret = blosc_set_compressor(p_compressor_name);
+    if (ret < 0) {
+        LOG4CXX_ERROR(
+            logger_,
+            "Blosc failed to set compressor: " << " " << this->compression_settings_.blosc_compressor << " "
+                                               << *p_compressor_name
+        );
+        throw std::runtime_error("Blosc failed to set compressor");
+    }
+    blosc_set_nthreads(this->compression_settings_.threads);
 }
 
 /** Return data buffer
@@ -264,76 +274,80 @@ void BloscPlugin::process_frame(boost::shared_ptr<Frame> src_frame)
  */
 void BloscPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
-  // Protect this method
-  boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    // Protect this method
+    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
 
-  LOG4CXX_INFO(logger_, config.encode());
+    LOG4CXX_INFO(logger_, config.encode());
 
-  if (config.has_param(BloscPlugin::CONFIG_BLOSC_LEVEL)) {
-    // NOTE: we don't catch exceptions here because the get_param basically only throws IpcMessagException
-    //       if the parameter isn't found - and we've just checked for that in the previous line...
-    int blosc_level = config.get_param<int>(BloscPlugin::CONFIG_BLOSC_LEVEL);
-    // Range checking: check and cap at upper and lower bounds
-    if (blosc_level < 1) {
-      LOG4CXX_WARN(logger_, "Commanded blosc level: " << blosc_level << "Capped at lower range: 1");
-      blosc_level = 1;
-      reply.set_param<std::string>("warning: level", "Capped at lower range: 1");
-    } else if (blosc_level > 9) {
-      LOG4CXX_WARN(logger_, "Commanded blosc level: " << blosc_level << "Capped at upper range: 9");
-      blosc_level = 9;
-      reply.set_param<std::string>("warning: level", "Capped at upper range: 9");
-    }
-    this->commanded_compression_settings_.compression_level = blosc_level;
-    if (this->current_acquisition_ == "") {
-      this->update_compression_settings();
-    }
-  }
-
-  if (config.has_param(BloscPlugin::CONFIG_BLOSC_SHUFFLE)) {
-    std::string&& blosc_shuffle = config.get_param<std::string>(BloscPlugin::CONFIG_BLOSC_SHUFFLE);
-    // Range checking: 0, 1, 2 are valid values. Anything else result in setting value 0 (no shuffle)
-    if (!shuffle_str2i.count(blosc_shuffle)) {
-      LOG4CXX_WARN(logger_, "Commanded blosc shuffle: " << blosc_shuffle << " is invalid. Disabling SHUFFLE filter");
-      blosc_shuffle = BLOSC_NOSHUFFLE_STR;
-      reply.set_param<std::string>("warning: shuffle filter", "Disabled");
-    }
-    this->commanded_compression_settings_.shuffle = std::move(blosc_shuffle);
-    if (this->current_acquisition_ == "") {
-      this->update_compression_settings();
-    }
-
-    if (config.has_param(BloscPlugin::CONFIG_BLOSC_SHUFFLE)) {
-        unsigned int blosc_shuffle = config.get_param<unsigned int>(BloscPlugin::CONFIG_BLOSC_SHUFFLE);
-        // Range checking: 0, 1, 2 are valid values. Anything else result in setting value 0 (no shuffle)
-        if (blosc_shuffle > BLOSC_BITSHUFFLE) {
-            LOG4CXX_WARN(
-                logger_, "Commanded blosc shuffle: " << blosc_shuffle << " is invalid. Disabling SHUFFLE filter"
-            );
-            blosc_shuffle = 0;
-            reply.set_param<std::string>("warning: shuffle filter", "Disabled");
+    if (config.has_param(BloscPlugin::CONFIG_BLOSC_LEVEL)) {
+        // NOTE: we don't catch exceptions here because the get_param basically only throws IpcMessagException
+        //       if the parameter isn't found - and we've just checked for that in the previous line...
+        int blosc_level = config.get_param<int>(BloscPlugin::CONFIG_BLOSC_LEVEL);
+        // Range checking: check and cap at upper and lower bounds
+        if (blosc_level < 1) {
+            LOG4CXX_WARN(logger_, "Commanded blosc level: " << blosc_level << "Capped at lower range: 1");
+            blosc_level = 1;
+            reply.set_param<std::string>("warning: level", "Capped at lower range: 1");
+        } else if (blosc_level > 9) {
+            LOG4CXX_WARN(logger_, "Commanded blosc level: " << blosc_level << "Capped at upper range: 9");
+            blosc_level = 9;
+            reply.set_param<std::string>("warning: level", "Capped at upper range: 9");
         }
-        this->commanded_compression_settings_.shuffle = blosc_shuffle;
+        this->commanded_compression_settings_.compression_level = blosc_level;
         if (this->current_acquisition_ == "") {
             this->update_compression_settings();
         }
     }
-  }
 
-  if (config.has_param(BloscPlugin::CONFIG_BLOSC_COMPRESSOR)) {
-    std::string&& blosc_compressor = config.get_param<std::string>(BloscPlugin::CONFIG_BLOSC_COMPRESSOR);
-    // Range checking: 0, 1, 2, 3, 4, 5 are valid values. Anything else result in setting value  (no shuffle)
-    if (!compressor_str2i.count(blosc_compressor)) {
-      LOG4CXX_WARN(logger_, "Commanded blosc compressor: "
-                            << blosc_compressor << " is invalid. Setting compressor: "
-                            << BLOSC_LZ4 << "(" << BLOSC_LZ4_COMPNAME << ")");
-      blosc_compressor = BLOSC_LZ4_COMPNAME;
-      reply.set_param<int>("warning: compressor", BLOSC_LZ4);
+    if (config.has_param(BloscPlugin::CONFIG_BLOSC_SHUFFLE)) {
+        std::string&& blosc_shuffle = config.get_param<std::string>(BloscPlugin::CONFIG_BLOSC_SHUFFLE);
+        // Range checking: 0, 1, 2 are valid values. Anything else result in setting value 0 (no shuffle)
+        if (!shuffle_str2i.count(blosc_shuffle)) {
+            LOG4CXX_WARN(
+                logger_, "Commanded blosc shuffle: " << blosc_shuffle << " is invalid. Disabling SHUFFLE filter"
+            );
+            blosc_shuffle = BLOSC_NOSHUFFLE_STR;
+            reply.set_param<std::string>("warning: shuffle filter", "Disabled");
+        }
+        this->commanded_compression_settings_.shuffle = std::move(blosc_shuffle);
+        if (this->current_acquisition_ == "") {
+            this->update_compression_settings();
+        }
+
+        if (config.has_param(BloscPlugin::CONFIG_BLOSC_SHUFFLE)) {
+            unsigned int blosc_shuffle = config.get_param<unsigned int>(BloscPlugin::CONFIG_BLOSC_SHUFFLE);
+            // Range checking: 0, 1, 2 are valid values. Anything else result in setting value 0 (no shuffle)
+            if (blosc_shuffle > BLOSC_BITSHUFFLE) {
+                LOG4CXX_WARN(
+                    logger_, "Commanded blosc shuffle: " << blosc_shuffle << " is invalid. Disabling SHUFFLE filter"
+                );
+                blosc_shuffle = 0;
+                reply.set_param<std::string>("warning: shuffle filter", "Disabled");
+            }
+            this->commanded_compression_settings_.shuffle = blosc_shuffle;
+            if (this->current_acquisition_ == "") {
+                this->update_compression_settings();
+            }
+        }
     }
-    this->commanded_compression_settings_.blosc_compressor = std::move(blosc_compressor);
-    if (this->current_acquisition_ == "") {
-      this->update_compression_settings();
+
+    if (config.has_param(BloscPlugin::CONFIG_BLOSC_COMPRESSOR)) {
+        std::string&& blosc_compressor = config.get_param<std::string>(BloscPlugin::CONFIG_BLOSC_COMPRESSOR);
+        // Range checking: 0, 1, 2, 3, 4, 5 are valid values. Anything else result in setting value  (no shuffle)
+        if (!compressor_str2i.count(blosc_compressor)) {
+            LOG4CXX_WARN(
+                logger_,
+                "Commanded blosc compressor: " << blosc_compressor << " is invalid. Setting compressor: " << BLOSC_LZ4
+                                               << "(" << BLOSC_LZ4_COMPNAME << ")"
+            );
+            blosc_compressor = BLOSC_LZ4_COMPNAME;
+            reply.set_param<int>("warning: compressor", BLOSC_LZ4);
+        }
+        this->commanded_compression_settings_.blosc_compressor = std::move(blosc_compressor);
+        if (this->current_acquisition_ == "") {
+            this->update_compression_settings();
+        }
     }
-  }
 }
 
 /** Get configuration settings for the BloscPlugin

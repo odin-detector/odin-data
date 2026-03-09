@@ -16,13 +16,13 @@ using namespace log4cxx;
 
 namespace FrameProcessor {
 
-typedef struct{
-  int compression_level;
-  std::string shuffle;
-  size_t type_size;
-  size_t uncompressed_size;
-  unsigned int threads;
-  std::string blosc_compressor;
+typedef struct {
+    int compression_level;
+    std::string shuffle;
+    size_t type_size;
+    size_t uncompressed_size;
+    unsigned int threads;
+    std::string blosc_compressor;
 } BloscCompressionSettings;
 void create_cd_values(const BloscCompressionSettings& settings, std::vector<unsigned int> cd_values);
 
