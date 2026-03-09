@@ -27,15 +27,15 @@ RUN add-apt-repository -y ppa:deadsnakes/ppa && \
     # odin-data C++ dependencies
     libblosc-dev libboost-all-dev libhdf5-dev liblog4cxx-dev libpcap-dev libczmq-dev \
     # python
-    python3.11-dev python3.11-venv \
+    python3.14-dev python3.14-venv \
     # clang tools
     clang-format-20 clang-tidy-20 && \
     # tidy up
     apt-get -y clean all
 
 # Python dependencies
-RUN python3.11 -m ensurepip && \
-    python3.11 -m venv /venv && \
+RUN python3.14 -m ensurepip && \
+    python3.14 -m venv /venv && \
     python -m pip install --upgrade pip && \
     python -m pip install git+https://github.com/odin-detector/odin-control
 
@@ -71,7 +71,7 @@ RUN add-apt-repository -y ppa:deadsnakes/ppa && \
     # C++ dependencies
     libblosc-dev libboost-all-dev libhdf5-dev liblog4cxx-dev libpcap-dev libczmq-dev \
     # Python dependencies
-    python3.11 && \
+    python3.14 && \
     # Tidy up
     apt-get -y clean all
 
