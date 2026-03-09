@@ -5,17 +5,14 @@
  *      Author: Matt Taylor
  */
 
-#include "ParameterAdjustmentPlugin.h"
 #include "ClassLoader.h"
+#include "ParameterAdjustmentPlugin.h"
 
-namespace FrameProcessor
-{
-  /**
-   * Registration of this plugin through the ClassLoader.  This macro
-   * registers the class without needing to worry about name mangling
-   */
-  REGISTER(FrameProcessorPlugin, ParameterAdjustmentPlugin, "ParameterAdjustmentPlugin");
+namespace FrameProcessor {
+/**
+ * Registration of this plugin through the ClassLoader.  This macro
+ * registers the class without needing to worry about name mangling
+ */
+REGISTER(FrameProcessorPlugin, ParameterAdjustmentPlugin, "ParameterAdjustmentPlugin");
 
 } // namespace FrameReceiver
-
-

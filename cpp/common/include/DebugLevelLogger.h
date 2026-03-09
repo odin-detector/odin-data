@@ -17,8 +17,11 @@ typedef unsigned int DebugLevel;
 extern DebugLevel debug_level;
 void set_debug_level(DebugLevel level);
 
-#define LOG4CXX_DEBUG_LEVEL(level, logger, message) { \
-  if (LOG4CXX_UNLIKELY(level <= debug_level)) {\
-    LOG4CXX_DEBUG(logger, message); }}
+#define LOG4CXX_DEBUG_LEVEL(level, logger, message)   \
+    {                                                 \
+        if (LOG4CXX_UNLIKELY(level <= debug_level)) { \
+            LOG4CXX_DEBUG(logger, message);           \
+        }                                             \
+    }
 
 #endif /* INCLUDE_DEBUGLEVELLOGGER_H_ */

@@ -1,0 +1,20 @@
+5th March 2026
+
+In order to allow formatting changes (and possibly other things) to be made to the codebase,
+without too much disruption to the efficacy of the git-blame the following procedure can
+be used.
+
+There is a file called .git-blame-ignore-revs in the root of the repository that can be
+updated to record each commit that should be ignored for git-blame purposes.
+
+To actually set this up so that it is used by git-blame you need to the run the following
+command (it only needs to be run once as the information is then stored in .git/config
+for this repository)
+
+Either:
+
+   scripts/setup-git.sh
+
+Or:
+
+   git config blame.ignoreRevsFile .git-blame-ignore-revs

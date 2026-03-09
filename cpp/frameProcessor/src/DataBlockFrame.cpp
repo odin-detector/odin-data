@@ -10,14 +10,16 @@ namespace FrameProcessor {
  * @param block_size - size of data in bytes
  * @param image_offset - between start of data memory and image
  */
-DataBlockFrame::DataBlockFrame(const FrameMetaData &meta_data,
-                               const void* data_src,
-                               size_t block_size,
-                               const int& image_offset) :
+DataBlockFrame::DataBlockFrame(
+    const FrameMetaData& meta_data,
+    const void* data_src,
+    size_t block_size,
+    const int& image_offset
+) :
     Frame(meta_data, block_size, image_offset)
 {
-  raw_data_block_ptr_ = DataBlockPool::take(block_size);
-  raw_data_block_ptr_->copy_data(data_src, block_size);
+    raw_data_block_ptr_ = DataBlockPool::take(block_size);
+    raw_data_block_ptr_->copy_data(data_src, block_size);
 }
 
 /** DataBlockFrame constructor
@@ -26,19 +28,20 @@ DataBlockFrame::DataBlockFrame(const FrameMetaData &meta_data,
  * @param block_size - size of data in bytes
  * @param image_offset - between start of data memory and image
  */
-DataBlockFrame::DataBlockFrame(const FrameMetaData &meta_data,
-                               size_t block_size,
-                               const int &image_offset) : Frame(meta_data, block_size, image_offset)
+DataBlockFrame::DataBlockFrame(const FrameMetaData& meta_data, size_t block_size, const int& image_offset) :
+    Frame(meta_data, block_size, image_offset)
 {
-  raw_data_block_ptr_ = DataBlockPool::take(block_size);
+    raw_data_block_ptr_ = DataBlockPool::take(block_size);
 }
 
 /** Copy constructor;
  * implement as shallow copy
  * @param frame
  */
-DataBlockFrame::DataBlockFrame(const DataBlockFrame &frame) : Frame(frame) {
-  raw_data_block_ptr_ = frame.raw_data_block_ptr_;
+DataBlockFrame::DataBlockFrame(const DataBlockFrame& frame) :
+    Frame(frame)
+{
+    raw_data_block_ptr_ = frame.raw_data_block_ptr_;
 };
 
 /** Assignment operator;
@@ -46,29 +49,32 @@ DataBlockFrame::DataBlockFrame(const DataBlockFrame &frame) : Frame(frame) {
  * @param frame
  * @return Frame
  */
-DataBlockFrame &DataBlockFrame::operator=(DataBlockFrame &frame) {
-  Frame::operator=(frame);
-  if (raw_data_block_ptr_) {
-    DataBlockPool::release(raw_data_block_ptr_);
-    raw_data_block_ptr_ = DataBlockPool::take(frame.get_data_size());
-  }
-  raw_data_block_ptr_->copy_data(frame.get_data_ptr(), frame.get_data_size());
-  return *this;
+DataBlockFrame& DataBlockFrame::operator=(DataBlockFrame& frame)
+{
+    Frame::operator=(frame);
+    if (raw_data_block_ptr_) {
+        DataBlockPool::release(raw_data_block_ptr_);
+        raw_data_block_ptr_ = DataBlockPool::take(frame.get_data_size());
+    }
+    raw_data_block_ptr_->copy_data(frame.get_data_ptr(), frame.get_data_size());
+    return *this;
 }
 
 /** Destroy frame
  *
  */
-DataBlockFrame::~DataBlockFrame() {
-  DataBlockPool::release(raw_data_block_ptr_);
+DataBlockFrame::~DataBlockFrame()
+{
+    DataBlockPool::release(raw_data_block_ptr_);
 }
 
 /** Return a void pointer to the raw data.
  *
  * \return pointer to the raw data.
  */
-void *DataBlockFrame::get_data_ptr() const {
-  return raw_data_block_ptr_->get_writeable_data();
+void* DataBlockFrame::get_data_ptr() const
+{
+    return raw_data_block_ptr_->get_writeable_data();
 }
 
 }

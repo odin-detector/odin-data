@@ -7,7 +7,6 @@
 
 #include "IpcMessage.h"
 
-
 namespace OdinData {
 
 //! Default constructor - initialises all attributes.
@@ -28,13 +27,13 @@ IpcMessage::IpcMessage(MsgType msg_type, MsgVal msg_val, bool strict_validation)
     msg_id_(0),
     msg_timestamp_(boost::posix_time::microsec_clock::local_time())
 {
-  // Intialise empty JSON document
-  doc_.SetObject();
+    // Intialise empty JSON document
+    doc_.SetObject();
 
-  // Create the required params block
-  rapidjson::Value params;
-  params.SetObject();
-  doc_.AddMember("params", params, doc_.GetAllocator());
+    // Create the required params block
+    rapidjson::Value params;
+    params.SetObject();
+    doc_.AddMember("params", params, doc_.GetAllocator());
 };
 
 //! Constructor taking JSON-formatted text message as argument.
@@ -52,63 +51,51 @@ IpcMessage::IpcMessage(const char* json_msg, bool strict_validation) :
     strict_validation_(strict_validation)
 {
 
-  // Parse the message, catching any unexpected exceptions from rapidjson
-  try {
-    doc_.Parse(json_msg);
-  }
-  catch (...)
-  {
-    throw OdinData::IpcMessageException("Unknown exception caught during parsing message");
-  }
-
-  // Test if the message parsed correctly, otherwise throw an exception
-  if (doc_.HasParseError())
-  {
-    std::stringstream ss;
-    ss << "JSON parse error creating message from string at offset " << doc_.GetErrorOffset() ;
-    ss << " : " << rapidjson::GetParseError_En(doc_.GetParseError());
-    throw OdinData::IpcMessageException(ss.str());
-  }
-
-  // Extract required valid attributes from message. If strict validation is enabled, throw an
-  // exception if any are illegal
-  msg_type_ = valid_msg_type(get_attribute<std::string>("msg_type", "none"));
-  if (strict_validation_ && (msg_type_ == MsgTypeIllegal))
-  {
-    throw OdinData::IpcMessageException("Illegal or missing msg_type attribute in message");
-  }
-
-  msg_val_  = valid_msg_val(get_attribute<std::string>("msg_val", "none"));
-  if (strict_validation_ && (msg_val_ == MsgValIllegal))
-  {
-    throw OdinData::IpcMessageException("Illegal or missing msg_val attribute in message");
-  }
-
-  msg_timestamp_ = valid_msg_timestamp(get_attribute<std::string>("timestamp", "none"));
-  if (strict_validation_ && (msg_timestamp_ == boost::posix_time::not_a_date_time))
-  {
-    throw OdinData::IpcMessageException("Illegal or missing timestamp attribute in message");
-  }
-
-  try
-  {
-    msg_id_ = get_attribute<unsigned int>("id", 0);
-  }
-  catch (...)
-  {
-    if (strict_validation_)
-    {
-      throw OdinData::IpcMessageException("Illegal or missing id attribute in message");
+    // Parse the message, catching any unexpected exceptions from rapidjson
+    try {
+        doc_.Parse(json_msg);
+    } catch (...) {
+        throw OdinData::IpcMessageException("Unknown exception caught during parsing message");
     }
-  }
 
-  // Check if a params block is present. If strict validation is enabled, thrown an exception if
-  // absent.
-  if (strict_validation && !has_params())
-  {
-    throw OdinData::IpcMessageException("Missing params block in message");
-  }
+    // Test if the message parsed correctly, otherwise throw an exception
+    if (doc_.HasParseError()) {
+        std::stringstream ss;
+        ss << "JSON parse error creating message from string at offset " << doc_.GetErrorOffset();
+        ss << " : " << rapidjson::GetParseError_En(doc_.GetParseError());
+        throw OdinData::IpcMessageException(ss.str());
+    }
 
+    // Extract required valid attributes from message. If strict validation is enabled, throw an
+    // exception if any are illegal
+    msg_type_ = valid_msg_type(get_attribute<std::string>("msg_type", "none"));
+    if (strict_validation_ && (msg_type_ == MsgTypeIllegal)) {
+        throw OdinData::IpcMessageException("Illegal or missing msg_type attribute in message");
+    }
+
+    msg_val_ = valid_msg_val(get_attribute<std::string>("msg_val", "none"));
+    if (strict_validation_ && (msg_val_ == MsgValIllegal)) {
+        throw OdinData::IpcMessageException("Illegal or missing msg_val attribute in message");
+    }
+
+    msg_timestamp_ = valid_msg_timestamp(get_attribute<std::string>("timestamp", "none"));
+    if (strict_validation_ && (msg_timestamp_ == boost::posix_time::not_a_date_time)) {
+        throw OdinData::IpcMessageException("Illegal or missing timestamp attribute in message");
+    }
+
+    try {
+        msg_id_ = get_attribute<unsigned int>("id", 0);
+    } catch (...) {
+        if (strict_validation_) {
+            throw OdinData::IpcMessageException("Illegal or missing id attribute in message");
+        }
+    }
+
+    // Check if a params block is present. If strict validation is enabled, thrown an exception if
+    // absent.
+    if (strict_validation && !has_params()) {
+        throw OdinData::IpcMessageException("Missing params block in message");
+    }
 }
 
 //! Constructor taking rapidJSON value as argument.
@@ -122,23 +109,20 @@ IpcMessage::IpcMessage(const char* json_msg, bool strict_validation) :
 //! \param strict_validation - Enforces strict validation of the message contents during subsequent
 //!                            setter calls (default: True)
 
-IpcMessage::IpcMessage(const rapidjson::Value& value,
-                       MsgType msg_type,
-                       MsgVal msg_val,
-                       bool strict_validation) :
+IpcMessage::IpcMessage(const rapidjson::Value& value, MsgType msg_type, MsgVal msg_val, bool strict_validation) :
     strict_validation_(strict_validation),
     msg_type_(msg_type),
     msg_val_(msg_val),
     msg_id_(0),
     msg_timestamp_(boost::posix_time::microsec_clock::local_time())
 {
-  // Intialise empty JSON document
-  doc_.SetObject();
+    // Intialise empty JSON document
+    doc_.SetObject();
 
-  // Make a deep copy of the value
-  rapidjson::Value newValue(value, doc_.GetAllocator());
-  // Create the required params block
-  doc_.AddMember("params", newValue, doc_.GetAllocator());
+    // Make a deep copy of the value
+    rapidjson::Value newValue(value, doc_.GetAllocator());
+    // Create the required params block
+    doc_.AddMember("params", newValue, doc_.GetAllocator());
 }
 
 //! Updates parameters from another IPCMessage.
@@ -149,10 +133,10 @@ IpcMessage::IpcMessage(const rapidjson::Value& value,
 
 void IpcMessage::update(const IpcMessage& other)
 {
-  std::vector<std::string> params = other.get_param_names();
-  for (std::vector<std::string>::const_iterator itr = params.begin(); itr != params.end(); ++itr) {
-    this->set_param<const rapidjson::Value&>(*itr, other.get_param<const rapidjson::Value&>(*itr));
-  }
+    std::vector<std::string> params = other.get_param_names();
+    for (std::vector<std::string>::const_iterator itr = params.begin(); itr != params.end(); ++itr) {
+        this->set_param<const rapidjson::Value&>(*itr, other.get_param<const rapidjson::Value&>(*itr));
+    }
 }
 
 //! Updates parameters from a rapidJSON object.
@@ -165,23 +149,17 @@ void IpcMessage::update(const IpcMessage& other)
 
 void IpcMessage::update(const rapidjson::Value& param_val, std::string param_prefix)
 {
-    if (param_val.IsObject())
-    {
-      for (rapidjson::Value::ConstMemberIterator itr = param_val.MemberBegin();
-          itr != param_val.MemberEnd(); ++itr)
-      {
+    if (param_val.IsObject()) {
+        for (rapidjson::Value::ConstMemberIterator itr = param_val.MemberBegin(); itr != param_val.MemberEnd(); ++itr) {
 
-          std::string param_path = itr->name.GetString();
-          if (!param_prefix.empty())
-          {
-            param_path = param_prefix + '/' + param_path;
-          }
-          this->update(itr->value, param_path);
-      }
-    }
-    else
-    {
-      this->set_param<const rapidjson::Value&>(param_prefix, param_val);
+            std::string param_path = itr->name.GetString();
+            if (!param_prefix.empty()) {
+                param_path = param_prefix + '/' + param_path;
+            }
+            this->update(itr->value, param_path);
+        }
+    } else {
+        this->set_param<const rapidjson::Value&>(param_prefix, param_val);
     }
 }
 
@@ -191,14 +169,14 @@ void IpcMessage::update(const rapidjson::Value& param_val, std::string param_pre
 
 std::vector<std::string> IpcMessage::get_param_names() const
 {
-  std::vector<std::string> names;
-  rapidjson::Value::ConstMemberIterator itr = doc_.FindMember("params");
-  for (rapidjson::Value::ConstMemberIterator param_itr = itr->value.MemberBegin();
-      param_itr != itr->value.MemberEnd(); ++param_itr){
-    std::string param_name(param_itr->name.GetString());
-    names.push_back(param_name);
-  }
-  return names;
+    std::vector<std::string> names;
+    rapidjson::Value::ConstMemberIterator itr = doc_.FindMember("params");
+    for (rapidjson::Value::ConstMemberIterator param_itr = itr->value.MemberBegin();
+         param_itr != itr->value.MemberEnd(); ++param_itr) {
+        std::string param_name(param_itr->name.GetString());
+        names.push_back(param_name);
+    }
+    return names;
 }
 
 //! Searches for the named parameter in the message.
@@ -211,44 +189,34 @@ std::vector<std::string> IpcMessage::get_param_names() const
 
 bool IpcMessage::has_param(const std::string& param_name) const
 {
-  bool param_found = true;
+    bool param_found = true;
 
-  // Locate the params block
-  rapidjson::Value::ConstMemberIterator itr = doc_.FindMember("params");
-  if (itr == doc_.MemberEnd())
-  {
-    // No params block so we will not find the parameter
-    param_found = false;
-  }
-  else
-  {
-    if (param_name.find('/') != param_name.npos)
-    {
-      std::string nodeName = param_name.substr(0, param_name.find('/'));
-      std::string subParam = param_name.substr(param_name.find('/') + 1, param_name.npos);
-      if (this->has_param(nodeName))
-      {
-        OdinData::IpcMessage node(this->get_param<const rapidjson::Value &>(nodeName));
-        param_found = node.has_param(subParam);
-      }
-      else
-      {
+    // Locate the params block
+    rapidjson::Value::ConstMemberIterator itr = doc_.FindMember("params");
+    if (itr == doc_.MemberEnd()) {
+        // No params block so we will not find the parameter
         param_found = false;
-      }
-    } else
-    {
-      // Attempt to locate parameter within block
-      rapidjson::Value::ConstMemberIterator param_itr = itr->value.FindMember(param_name.c_str());
-      if (param_itr == itr->value.MemberEnd())
-      {
-        // Couldn't find the parameter
-        param_found = false;
-      }
+    } else {
+        if (param_name.find('/') != param_name.npos) {
+            std::string nodeName = param_name.substr(0, param_name.find('/'));
+            std::string subParam = param_name.substr(param_name.find('/') + 1, param_name.npos);
+            if (this->has_param(nodeName)) {
+                OdinData::IpcMessage node(this->get_param<const rapidjson::Value&>(nodeName));
+                param_found = node.has_param(subParam);
+            } else {
+                param_found = false;
+            }
+        } else {
+            // Attempt to locate parameter within block
+            rapidjson::Value::ConstMemberIterator param_itr = itr->value.FindMember(param_name.c_str());
+            if (param_itr == itr->value.MemberEnd()) {
+                // Couldn't find the parameter
+                param_found = false;
+            }
+        }
     }
-  }
-  return param_found;
+    return param_found;
 }
-
 
 //! Sets the message type to not acknowledged and sets an appropriate rejection message
 //!
@@ -259,8 +227,8 @@ bool IpcMessage::has_param(const std::string& param_name) const
 
 void IpcMessage::set_nack(const std::string& reason)
 {
-  this->set_msg_type(MsgTypeNack);
-  this->set_param("error", reason);
+    this->set_msg_type(MsgTypeNack);
+    this->set_param("error", reason);
 }
 
 //! Indicates if message has necessary attributes with legal values.
@@ -272,10 +240,10 @@ void IpcMessage::set_nack(const std::string& reason)
 
 bool IpcMessage::is_valid(void)
 {
-  return ((msg_type_ != MsgTypeIllegal) &
-      (msg_val_ != MsgValIllegal) &
-      (msg_timestamp_ != boost::posix_time::not_a_date_time) &
-      has_params());
+    return (
+        (msg_type_ != MsgTypeIllegal) & (msg_val_ != MsgValIllegal)
+        & (msg_timestamp_ != boost::posix_time::not_a_date_time) & has_params()
+    );
 }
 
 //! Returns type attribute of message.
@@ -286,7 +254,7 @@ bool IpcMessage::is_valid(void)
 
 const IpcMessage::MsgType IpcMessage::get_msg_type(void) const
 {
-  return msg_type_;
+    return msg_type_;
 }
 
 //! Returns value attribute of message.
@@ -297,7 +265,7 @@ const IpcMessage::MsgType IpcMessage::get_msg_type(void) const
 
 const IpcMessage::MsgVal IpcMessage::get_msg_val(void) const
 {
-  return msg_val_;
+    return msg_val_;
 }
 
 //! Returns message timestamp as a string in ISO8601 extended format.
@@ -310,7 +278,7 @@ const IpcMessage::MsgVal IpcMessage::get_msg_val(void) const
 
 const std::string IpcMessage::get_msg_timestamp(void) const
 {
-  return boost::posix_time::to_iso_extended_string(msg_timestamp_);
+    return boost::posix_time::to_iso_extended_string(msg_timestamp_);
 }
 
 //! Returns message timstamp as tm structure.
@@ -320,7 +288,7 @@ const std::string IpcMessage::get_msg_timestamp(void) const
 //! \return tm struct containing the message timestamp
 const struct tm IpcMessage::get_msg_datetime(void) const
 {
-  return boost::posix_time::to_tm(msg_timestamp_);
+    return boost::posix_time::to_tm(msg_timestamp_);
 }
 
 //! Returns id attribute of message.
@@ -330,7 +298,7 @@ const struct tm IpcMessage::get_msg_datetime(void) const
 //! \return unsigned int message id
 const unsigned int IpcMessage::get_msg_id(void) const
 {
-  return msg_id_;
+    return msg_id_;
 }
 
 //! Sets the message type attribute.
@@ -342,8 +310,8 @@ const unsigned int IpcMessage::get_msg_id(void) const
 
 void IpcMessage::set_msg_type(IpcMessage::MsgType const msg_type)
 {
-  // TODO validation check
-  msg_type_ = msg_type;
+    // TODO validation check
+    msg_type_ = msg_type;
 }
 
 //! Sets the message type attribute.
@@ -355,9 +323,8 @@ void IpcMessage::set_msg_type(IpcMessage::MsgType const msg_type)
 
 void IpcMessage::set_msg_val(IpcMessage::MsgVal const msg_val)
 {
-  // TODO validation check
-  msg_val_ = msg_val;
-
+    // TODO validation check
+    msg_val_ = msg_val;
 }
 
 //! Sets the message id attribute.
@@ -367,7 +334,7 @@ void IpcMessage::set_msg_val(IpcMessage::MsgVal const msg_val)
 //! \param msg_id - Message id
 void IpcMessage::set_msg_id(unsigned int msg_id)
 {
-  msg_id_ = msg_id;
+    msg_id_ = msg_id;
 }
 
 //! Returns a JSON-encoded string of the message.
@@ -380,22 +347,22 @@ void IpcMessage::set_msg_id(unsigned int msg_id)
 const char* IpcMessage::encode(void)
 {
 
-  // Copy the validated attributes into the JSON document ready for encoding
-  set_attribute("msg_type", valid_msg_type(msg_type_));
-  set_attribute("msg_val", valid_msg_val(msg_val_));
-  set_attribute("id", msg_id_);
-  set_attribute("timestamp", valid_msg_timestamp(msg_timestamp_));
+    // Copy the validated attributes into the JSON document ready for encoding
+    set_attribute("msg_type", valid_msg_type(msg_type_));
+    set_attribute("msg_val", valid_msg_val(msg_val_));
+    set_attribute("id", msg_id_);
+    set_attribute("timestamp", valid_msg_timestamp(msg_timestamp_));
 
-  // Clear the encoded output buffer otherwise successive encode() calls append
-  // the message to the buffer
-  encode_buffer_.Clear();
+    // Clear the encoded output buffer otherwise successive encode() calls append
+    // the message to the buffer
+    encode_buffer_.Clear();
 
-  // Create a writer and associate with the document
-  rapidjson::Writer<rapidjson::StringBuffer, rapidjson::UTF8<> > writer(encode_buffer_);
-  doc_.Accept(writer);
+    // Create a writer and associate with the document
+    rapidjson::Writer<rapidjson::StringBuffer, rapidjson::UTF8<>> writer(encode_buffer_);
+    doc_.Accept(writer);
 
-  // Return the encoded buffer string
-  return encode_buffer_.GetString();
+    // Return the encoded buffer string
+    return encode_buffer_.GetString();
 }
 
 //! Returns a JSON-encoded string of the message parameters at a specified path
@@ -409,24 +376,23 @@ const char* IpcMessage::encode(void)
 const char* IpcMessage::encode_params(const std::string& param_path)
 {
 
-  // Construct a JSON pointer string to the message parameters. If a path argument was specified
-  // append that accordingly.
-  std::string path = "/params";
-  if (!param_path.empty())
-  {
-    path = path + '/' + param_path;
-  }
+    // Construct a JSON pointer string to the message parameters. If a path argument was specified
+    // append that accordingly.
+    std::string path = "/params";
+    if (!param_path.empty()) {
+        path = path + '/' + param_path;
+    }
 
-  // Resolve the pointer to the appropriate location in the parameters
-  const rapidjson::Value* param_ptr = rapidjson::Pointer(path.c_str()).Get(doc_);
+    // Resolve the pointer to the appropriate location in the parameters
+    const rapidjson::Value* param_ptr = rapidjson::Pointer(path.c_str()).Get(doc_);
 
-  // Clear the encode buffer, create a writer and associate with the parameter pointer
-  encode_buffer_.Clear();
-  rapidjson::Writer<rapidjson::StringBuffer, rapidjson::UTF8<> > writer(encode_buffer_);
-  param_ptr->Accept(writer);
+    // Clear the encode buffer, create a writer and associate with the parameter pointer
+    encode_buffer_.Clear();
+    rapidjson::Writer<rapidjson::StringBuffer, rapidjson::UTF8<>> writer(encode_buffer_);
+    param_ptr->Accept(writer);
 
-  // Return the string encoding of the requested parameters
-  return encode_buffer_.GetString();
+    // Return the string encoding of the requested parameters
+    return encode_buffer_.GetString();
 }
 
 //! Copies parameters at a specified into the specified JSON value object
@@ -438,15 +404,14 @@ const char* IpcMessage::encode_params(const std::string& param_path)
 
 void IpcMessage::copy_params(rapidjson::Value& param_obj, const std::string& param_path)
 {
-  std::string path = "/params";
-  if (!param_path.empty())
-  {
-    path = path + '/' + param_path;
-  }
+    std::string path = "/params";
+    if (!param_path.empty()) {
+        path = path + '/' + param_path;
+    }
 
-  const rapidjson::Value* param_ptr = rapidjson::Pointer(path.c_str()).Get(doc_);
+    const rapidjson::Value* param_ptr = rapidjson::Pointer(path.c_str()).Get(doc_);
 
-  param_obj.CopyFrom(*param_ptr, doc_.GetAllocator());
+    param_obj.CopyFrom(*param_ptr, doc_.GetAllocator());
 }
 
 //! Overloaded equality relational operator.
@@ -459,44 +424,38 @@ void IpcMessage::copy_params(rapidjson::Value& param_obj, const std::string& par
 //! \param rhs_msg - right-hand side message for comparison
 //! \return boolean indicating equality
 
-bool operator ==(IpcMessage const& lhs_msg, IpcMessage const& rhs_msg)
+bool operator==(IpcMessage const& lhs_msg, IpcMessage const& rhs_msg)
 {
-  bool areEqual = true;
+    bool areEqual = true;
 
-  // Test equality of message attributes
-  areEqual &= (lhs_msg.msg_type_ == rhs_msg.msg_type_);
-  areEqual &= (lhs_msg.msg_val_  == rhs_msg.msg_val_);
+    // Test equality of message attributes
+    areEqual &= (lhs_msg.msg_type_ == rhs_msg.msg_type_);
+    areEqual &= (lhs_msg.msg_val_ == rhs_msg.msg_val_);
 
-  // Check both messages have a params block
-  areEqual &= (lhs_msg.has_params() == rhs_msg.has_params());
+    // Check both messages have a params block
+    areEqual &= (lhs_msg.has_params() == rhs_msg.has_params());
 
-  // Only continue to test equality if true at this point
-  if (areEqual)
-  {
-    // Iterate over params block if present and test equality of all members
-    if (lhs_msg.has_params() && rhs_msg.has_params())
-    {
-      rapidjson::Value const& lhs_params = lhs_msg.doc_["params"];
-      rapidjson::Value const& rhs_params = rhs_msg.doc_["params"];
+    // Only continue to test equality if true at this point
+    if (areEqual) {
+        // Iterate over params block if present and test equality of all members
+        if (lhs_msg.has_params() && rhs_msg.has_params()) {
+            rapidjson::Value const& lhs_params = lhs_msg.doc_["params"];
+            rapidjson::Value const& rhs_params = rhs_msg.doc_["params"];
 
-      areEqual &= (lhs_params.MemberCount() == rhs_params.MemberCount());
+            areEqual &= (lhs_params.MemberCount() == rhs_params.MemberCount());
 
-      for (rapidjson::Value::ConstMemberIterator lhs_itr = lhs_params.MemberBegin();
-           areEqual && (lhs_itr != lhs_params.MemberEnd()); lhs_itr++)
-      {
-        rapidjson::Value::ConstMemberIterator rhs_itr = rhs_params.FindMember(lhs_itr->name.GetString());
-        if (rhs_itr != rhs_params.MemberEnd())
-        {
-          areEqual &= (lhs_itr->value == rhs_itr->value);
+            for (rapidjson::Value::ConstMemberIterator lhs_itr = lhs_params.MemberBegin();
+                 areEqual && (lhs_itr != lhs_params.MemberEnd()); lhs_itr++) {
+                rapidjson::Value::ConstMemberIterator rhs_itr = rhs_params.FindMember(lhs_itr->name.GetString());
+                if (rhs_itr != rhs_params.MemberEnd()) {
+                    areEqual &= (lhs_itr->value == rhs_itr->value);
+                } else {
+                    areEqual = false;
+                }
+            }
         }
-        else
-        {
-          areEqual = false;
-        }
-      }
     }
-  }
-  return areEqual;
+    return areEqual;
 }
 
 //! Overloaded inequality relational operator.
@@ -509,9 +468,9 @@ bool operator ==(IpcMessage const& lhs_msg, IpcMessage const& rhs_msg)
 //! \param rhs_msg - righ-hand side message for comparison
 //! \return boolean indicating inequality
 
-bool operator !=(IpcMessage const& lhs_msg, IpcMessage const& rhs_msg)
+bool operator!=(IpcMessage const& lhs_msg, IpcMessage const& rhs_msg)
 {
-  return !(lhs_msg == rhs_msg);
+    return !(lhs_msg == rhs_msg);
 }
 
 //! Overloaded stream insertion operator.
@@ -522,9 +481,10 @@ bool operator !=(IpcMessage const& lhs_msg, IpcMessage const& rhs_msg)
 //! \param os      - std::ostream to insert string into
 //! \param the_msg - reference to the IpcMessage object to insert
 
-std::ostream& operator <<(std::ostream& os, IpcMessage& the_msg)    {
-  os << the_msg.encode();
-  return os;
+std::ostream& operator<<(std::ostream& os, IpcMessage& the_msg)
+{
+    os << the_msg.encode();
+    return os;
 }
 
 //! \privatesection
@@ -536,10 +496,10 @@ std::ostream& operator <<(std::ostream& os, IpcMessage& the_msg)    {
 
 void IpcMessage::msg_type_map_init()
 {
-  msg_type_map_.insert(MsgTypeMapEntry("cmd",    MsgTypeCmd));
-  msg_type_map_.insert(MsgTypeMapEntry("ack",    MsgTypeAck));
-  msg_type_map_.insert(MsgTypeMapEntry("nack",   MsgTypeNack));
-  msg_type_map_.insert(MsgTypeMapEntry("notify", MsgTypeNotify));
+    msg_type_map_.insert(MsgTypeMapEntry("cmd", MsgTypeCmd));
+    msg_type_map_.insert(MsgTypeMapEntry("ack", MsgTypeAck));
+    msg_type_map_.insert(MsgTypeMapEntry("nack", MsgTypeNack));
+    msg_type_map_.insert(MsgTypeMapEntry("notify", MsgTypeNotify));
 }
 
 //! Maps a message type string to a valid enumerated MsgType.
@@ -553,18 +513,16 @@ void IpcMessage::msg_type_map_init()
 IpcMessage::MsgType IpcMessage::valid_msg_type(std::string msg_type_name)
 {
 
-  MsgType msg_type = MsgTypeIllegal;
-  if (msg_type_map_.size() == 0)
-  {
-    msg_type_map_init();
-  }
+    MsgType msg_type = MsgTypeIllegal;
+    if (msg_type_map_.size() == 0) {
+        msg_type_map_init();
+    }
 
-  if (msg_type_map_.left.count(msg_type_name))
-  {
-    msg_type = msg_type_map_.left.at(msg_type_name);
-  }
+    if (msg_type_map_.left.count(msg_type_name)) {
+        msg_type = msg_type_map_.left.at(msg_type_name);
+    }
 
-  return msg_type;
+    return msg_type;
 }
 
 //! Maps an enumerated MsgType message type to the equivalent string.
@@ -577,18 +535,16 @@ IpcMessage::MsgType IpcMessage::valid_msg_type(std::string msg_type_name)
 
 std::string IpcMessage::valid_msg_type(IpcMessage::MsgType msg_type)
 {
-  std::string msg_type_name = "illegal";
-  if (msg_type_map_.size() == 0)
-  {
-    msg_type_map_init();
-  }
+    std::string msg_type_name = "illegal";
+    if (msg_type_map_.size() == 0) {
+        msg_type_map_init();
+    }
 
-  if (msg_type_map_.right.count(msg_type))
-  {
-    msg_type_name = msg_type_map_.right.at(msg_type);
-  }
+    if (msg_type_map_.right.count(msg_type)) {
+        msg_type_name = msg_type_map_.right.at(msg_type);
+    }
 
-  return msg_type_name;
+    return msg_type_name;
 }
 
 //! Initialise the internal message value bidirectional map.
@@ -598,23 +554,23 @@ std::string IpcMessage::valid_msg_type(IpcMessage::MsgType msg_type)
 
 void IpcMessage::msg_val_map_init()
 {
-  msg_val_map_.insert(MsgValMapEntry("reset",                    MsgValCmdReset));
-  msg_val_map_.insert(MsgValMapEntry("status",                   MsgValCmdStatus));
-  msg_val_map_.insert(MsgValMapEntry("configure",                MsgValCmdConfigure));
-  msg_val_map_.insert(MsgValMapEntry("request_configuration",    MsgValCmdRequestConfiguration));
-  msg_val_map_.insert(MsgValMapEntry("execute",                  MsgValCmdExecute));
-  msg_val_map_.insert(MsgValMapEntry("request_commands",         MsgValCmdRequestCommands));
-  msg_val_map_.insert(MsgValMapEntry("request_version",          MsgValCmdRequestVersion));
-  msg_val_map_.insert(MsgValMapEntry("request_buffer_config",    MsgValCmdBufferConfigRequest));
-  msg_val_map_.insert(MsgValMapEntry("request_buffer_precharge", MsgValCmdBufferPrechargeRequest));
-  msg_val_map_.insert(MsgValMapEntry("reset_statistics",         MsgValCmdResetStatistics));
-  msg_val_map_.insert(MsgValMapEntry("shutdown",                 MsgValCmdShutdown));
-  msg_val_map_.insert(MsgValMapEntry("identity",                 MsgValNotifyIdentity));
-  msg_val_map_.insert(MsgValMapEntry("frame_ready",              MsgValNotifyFrameReady));
-  msg_val_map_.insert(MsgValMapEntry("frame_release",            MsgValNotifyFrameRelease));
-  msg_val_map_.insert(MsgValMapEntry("buffer_config",            MsgValNotifyBufferConfig));
-  msg_val_map_.insert(MsgValMapEntry("buffer_precharge",         MsgValNotifyBufferPrecharge));
-  msg_val_map_.insert(MsgValMapEntry("notify_status",            MsgValNotifyStatus));
+    msg_val_map_.insert(MsgValMapEntry("reset", MsgValCmdReset));
+    msg_val_map_.insert(MsgValMapEntry("status", MsgValCmdStatus));
+    msg_val_map_.insert(MsgValMapEntry("configure", MsgValCmdConfigure));
+    msg_val_map_.insert(MsgValMapEntry("request_configuration", MsgValCmdRequestConfiguration));
+    msg_val_map_.insert(MsgValMapEntry("execute", MsgValCmdExecute));
+    msg_val_map_.insert(MsgValMapEntry("request_commands", MsgValCmdRequestCommands));
+    msg_val_map_.insert(MsgValMapEntry("request_version", MsgValCmdRequestVersion));
+    msg_val_map_.insert(MsgValMapEntry("request_buffer_config", MsgValCmdBufferConfigRequest));
+    msg_val_map_.insert(MsgValMapEntry("request_buffer_precharge", MsgValCmdBufferPrechargeRequest));
+    msg_val_map_.insert(MsgValMapEntry("reset_statistics", MsgValCmdResetStatistics));
+    msg_val_map_.insert(MsgValMapEntry("shutdown", MsgValCmdShutdown));
+    msg_val_map_.insert(MsgValMapEntry("identity", MsgValNotifyIdentity));
+    msg_val_map_.insert(MsgValMapEntry("frame_ready", MsgValNotifyFrameReady));
+    msg_val_map_.insert(MsgValMapEntry("frame_release", MsgValNotifyFrameRelease));
+    msg_val_map_.insert(MsgValMapEntry("buffer_config", MsgValNotifyBufferConfig));
+    msg_val_map_.insert(MsgValMapEntry("buffer_precharge", MsgValNotifyBufferPrecharge));
+    msg_val_map_.insert(MsgValMapEntry("notify_status", MsgValNotifyStatus));
 }
 
 //! Maps a message value string to a valid enumerated MsgVal.
@@ -627,18 +583,16 @@ void IpcMessage::msg_val_map_init()
 
 IpcMessage::MsgVal IpcMessage::valid_msg_val(std::string msg_val_name)
 {
-  MsgVal msg_val = MsgValIllegal;
+    MsgVal msg_val = MsgValIllegal;
 
-  if (msg_val_map_.size() == 0)
-  {
-    msg_val_map_init();
-  }
+    if (msg_val_map_.size() == 0) {
+        msg_val_map_init();
+    }
 
-  if (msg_val_map_.left.count(msg_val_name))
-  {
-    msg_val = msg_val_map_.left.at(msg_val_name);
-  }
-  return msg_val;
+    if (msg_val_map_.left.count(msg_val_name)) {
+        msg_val = msg_val_map_.left.at(msg_val_name);
+    }
+    return msg_val;
 }
 
 //! Maps an enumerated MsgVal message value to the equivalent string.
@@ -651,18 +605,16 @@ IpcMessage::MsgVal IpcMessage::valid_msg_val(std::string msg_val_name)
 
 std::string IpcMessage::valid_msg_val(IpcMessage::MsgVal msg_val)
 {
-  std::string msg_val_name = "illegal";
-  if (msg_val_map_.size() == 0)
-  {
-    msg_val_map_init();
-  }
+    std::string msg_val_name = "illegal";
+    if (msg_val_map_.size() == 0) {
+        msg_val_map_init();
+    }
 
-  if (msg_val_map_.right.count(msg_val))
-  {
-    msg_val_name = msg_val_map_.right.at(msg_val);
-  }
+    if (msg_val_map_.right.count(msg_val)) {
+        msg_val_name = msg_val_map_.right.at(msg_val);
+    }
 
-  return msg_val_name;
+    return msg_val_name;
 }
 
 //! Maps a message timestamp onto a the internal timestamp representation.
@@ -677,16 +629,14 @@ std::string IpcMessage::valid_msg_val(IpcMessage::MsgVal msg_val)
 boost::posix_time::ptime IpcMessage::valid_msg_timestamp(std::string msg_timestamp_text)
 {
 
-  boost::posix_time::ptime pt(boost::posix_time::not_a_date_time);
+    boost::posix_time::ptime pt(boost::posix_time::not_a_date_time);
 
-  try {
-    pt = boost::date_time::parse_delimited_time<boost::posix_time::ptime>(msg_timestamp_text, 'T');
-  }
-  catch (...)
-  {
-    // Do nothing if parse exception occurred - return value of not_a_date_time indicates error
-  }
-  return pt;
+    try {
+        pt = boost::date_time::parse_delimited_time<boost::posix_time::ptime>(msg_timestamp_text, 'T');
+    } catch (...) {
+        // Do nothing if parse exception occurred - return value of not_a_date_time indicates error
+    }
+    return pt;
 }
 
 //! Maps an internal message timestamp representation to an ISO8601 extended format string.
@@ -699,8 +649,8 @@ boost::posix_time::ptime IpcMessage::valid_msg_timestamp(std::string msg_timesta
 
 std::string IpcMessage::valid_msg_timestamp(boost::posix_time::ptime msg_timestamp)
 {
-  // Return message timestamp as string in ISO8601 extended format
-  return boost::posix_time::to_iso_extended_string(msg_timestamp_);
+    // Return message timestamp as string in ISO8601 extended format
+    return boost::posix_time::to_iso_extended_string(msg_timestamp_);
 }
 
 //! Indicates if the message has a params block.
@@ -712,67 +662,66 @@ std::string IpcMessage::valid_msg_timestamp(boost::posix_time::ptime msg_timesta
 
 bool IpcMessage::has_params(void) const
 {
-  bool has_params = false;
-  rapidjson::Value::ConstMemberIterator itr = doc_.FindMember("params");
-  if (itr != doc_.MemberEnd())
-  {
-    has_params = itr->value.IsObject();
-  }
-  return has_params;
+    bool has_params = false;
+    rapidjson::Value::ConstMemberIterator itr = doc_.FindMember("params");
+    if (itr != doc_.MemberEnd()) {
+        has_params = itr->value.IsObject();
+    }
+    return has_params;
 }
 
 // Explicit specialisations of the the get_value method, mapping native attribute types to the
 // appropriate RapidJSON storage type.
 
-template<> int IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
+template <> int IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
 {
-  return itr->value.GetInt();
+    return itr->value.GetInt();
 }
 
-template<> unsigned int IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
+template <> unsigned int IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
 {
-  return itr->value.GetUint();
+    return itr->value.GetUint();
 }
 
 #ifdef __APPLE__
 
 // OS X clang compiler seems to base uint64 on a different base type than gcc on Linux, causing
 // linker errors with templated specialisations of get_value and set_value for unsigned long.
-template<> unsigned long IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
+template <> unsigned long IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
 {
-  return itr->value.GetUint64();
+    return itr->value.GetUint64();
 }
 #endif
 
-template<> int64_t IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
+template <> int64_t IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
 {
-  return itr->value.GetInt64();
+    return itr->value.GetInt64();
 }
 
-template<> uint64_t IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
+template <> uint64_t IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
 {
-  return itr->value.GetUint64();
+    return itr->value.GetUint64();
 }
 
-template<> double IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
+template <> double IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
 {
-  return itr->value.GetDouble();
+    return itr->value.GetDouble();
 }
 
-template<> std::string IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
+template <> std::string IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
 {
-  return itr->value.GetString();
+    return itr->value.GetString();
 }
 
-template<> bool IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
+template <> bool IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
 {
-  return itr->value.GetBool();
+    return itr->value.GetBool();
 }
 
-template<> const rapidjson::Value& IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
+template <> const rapidjson::Value& IpcMessage::get_value(rapidjson::Value::ConstMemberIterator& itr) const
 {
-  const rapidjson::Value& val = itr->value;
-  return val;
+    const rapidjson::Value& val = itr->value;
+    return val;
 }
 
 // Explicit specialisations of the the set_value method, mapping  RapidJSON storage types
@@ -786,9 +735,9 @@ template<> const rapidjson::Value& IpcMessage::get_value(rapidjson::Value::Const
 //! \param value_obj - RapidJSON value object to set value of
 //! \param value - integer value to set
 
-template<> void IpcMessage::set_value(rapidjson::Value& value_obj, int const& value)
+template <> void IpcMessage::set_value(rapidjson::Value& value_obj, int const& value)
 {
-  value_obj.SetInt(value);
+    value_obj.SetInt(value);
 }
 
 // Explicit specialisations of the the set_value method, mapping  RapidJSON storage types
@@ -802,9 +751,9 @@ template<> void IpcMessage::set_value(rapidjson::Value& value_obj, int const& va
 //! \param value_obj - RapidJSON value object to set value of
 //! \param value - boolean value to set
 
-template<> void IpcMessage::set_value(rapidjson::Value& value_obj, bool const& value)
+template <> void IpcMessage::set_value(rapidjson::Value& value_obj, bool const& value)
 {
-  value_obj.SetBool(value);
+    value_obj.SetBool(value);
 }
 
 //! Sets the value of a message attribute.
@@ -815,18 +764,18 @@ template<> void IpcMessage::set_value(rapidjson::Value& value_obj, bool const& v
 //! \param value_obj - RapidJSON value object to set value of
 //! \param value - unsigned integer value to set
 
-template<> void IpcMessage::set_value(rapidjson::Value& value_obj, unsigned int const& value)
+template <> void IpcMessage::set_value(rapidjson::Value& value_obj, unsigned int const& value)
 {
-  value_obj.SetUint(value);
+    value_obj.SetUint(value);
 }
 
 #ifdef __APPLE__
 
 // OS X clang compiler seems to base uint64 on a different base type than gcc on Linux, causing
 // linker errors with templated specialisations of get_value and set_value for unsigned long.
-template<> void IpcMessage::set_value(rapidjson::Value& value_obj, unsigned long const& value)
+template <> void IpcMessage::set_value(rapidjson::Value& value_obj, unsigned long const& value)
 {
-  value_obj.SetUint64(value);
+    value_obj.SetUint64(value);
 }
 #endif
 
@@ -838,10 +787,9 @@ template<> void IpcMessage::set_value(rapidjson::Value& value_obj, unsigned long
 //! \param value_obj - RapidJSON value object to set value of
 //! \param value - int64_t value to set
 
-
-template<> void IpcMessage::set_value(rapidjson::Value& value_obj, int64_t const& value)
+template <> void IpcMessage::set_value(rapidjson::Value& value_obj, int64_t const& value)
 {
-  value_obj.SetInt64(value);
+    value_obj.SetInt64(value);
 }
 
 //! Sets the value of a message attribute.
@@ -852,9 +800,9 @@ template<> void IpcMessage::set_value(rapidjson::Value& value_obj, int64_t const
 //! \param value_obj - RapidJSON value object to set value of
 //! \param value - uint64_t value to set
 
-template<> void IpcMessage::set_value(rapidjson::Value& value_obj, uint64_t const& value)
+template <> void IpcMessage::set_value(rapidjson::Value& value_obj, uint64_t const& value)
 {
-  value_obj.SetUint64(value);
+    value_obj.SetUint64(value);
 }
 
 //! Sets the value of a message attribute.
@@ -865,9 +813,9 @@ template<> void IpcMessage::set_value(rapidjson::Value& value_obj, uint64_t cons
 //! \param value_obj - RapidJSON value object to set value of
 //! \param value - double value to set
 
-template<> void IpcMessage::set_value(rapidjson::Value& value_obj, double const& value)
+template <> void IpcMessage::set_value(rapidjson::Value& value_obj, double const& value)
 {
-  value_obj.SetDouble(value);
+    value_obj.SetDouble(value);
 }
 
 //! Sets the value of a message attribute.
@@ -878,9 +826,9 @@ template<> void IpcMessage::set_value(rapidjson::Value& value_obj, double const&
 //! \param value_obj - RapidJSON value object to set value of
 //! \param value - string value to set
 
-template<> void IpcMessage::set_value(rapidjson::Value& value_obj, std::string const& value)
+template <> void IpcMessage::set_value(rapidjson::Value& value_obj, std::string const& value)
 {
-  value_obj.SetString(value.c_str(), doc_.GetAllocator());
+    value_obj.SetString(value.c_str(), doc_.GetAllocator());
 }
 
 //! Sets the value of a message attribute.
@@ -891,9 +839,9 @@ template<> void IpcMessage::set_value(rapidjson::Value& value_obj, std::string c
 //! \param value_obj - RapidJSON value object to set value of
 //! \param value - RapidJSON value to set
 
-template<> void IpcMessage::set_value(rapidjson::Value& value_obj, rapidjson::Value const& value)
+template <> void IpcMessage::set_value(rapidjson::Value& value_obj, rapidjson::Value const& value)
 {
-  value_obj.CopyFrom(value, doc_.GetAllocator());
+    value_obj.CopyFrom(value, doc_.GetAllocator());
 }
 
 // Definition of static member variables used for type and value mapping

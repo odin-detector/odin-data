@@ -8,7 +8,7 @@
 #include "IpcChannel.h"
 #include <stdio.h>
 
-#define within(num) (int) ((float) (num) * random () / (RAND_MAX + 1.0))
+#define within(num) (int)((float)(num) * random() / (RAND_MAX + 1.0))
 
 using namespace OdinData;
 
@@ -19,9 +19,9 @@ using namespace OdinData;
 //!
 IpcContext& IpcContext::Instance(unsigned int io_threads)
 {
-  static IpcContext ipc_context(io_threads);
+    static IpcContext ipc_context(io_threads);
 
-  return ipc_context;
+    return ipc_context;
 }
 
 //! Retrieve the underlying ZeroMQ context from the IpcContext instance
@@ -31,7 +31,7 @@ IpcContext& IpcContext::Instance(unsigned int io_threads)
 //!
 zmq::context_t& IpcContext::get(void)
 {
-  return zmq_context_;
+    return zmq_context_;
 }
 
 //! Constructor for the IpcContext class
@@ -61,13 +61,12 @@ IpcChannel::IpcChannel(int type) :
     socket_(context_.get(), type),
     socket_type_(type)
 {
-  // Set the socket identity for DEALER sockets
-  if (type == ZMQ_DEALER)
-  {
-    char identity[10] = {};
-    sprintf(identity, "%04x-%04x", within(0x10000), within(0x10000));
-    socket_.setsockopt(ZMQ_IDENTITY, identity, strlen(identity));
-  }
+    // Set the socket identity for DEALER sockets
+    if (type == ZMQ_DEALER) {
+        char identity[10] = {};
+        sprintf(identity, "%04x-%04x", within(0x10000), within(0x10000));
+        socket_.setsockopt(ZMQ_IDENTITY, identity, strlen(identity));
+    }
 }
 
 //! Construct an IpcChannel object
@@ -80,14 +79,14 @@ IpcChannel::IpcChannel(int type) :
 //! \param[in] identity - identity string to use for DEALER sockets
 //!
 IpcChannel::IpcChannel(int type, const std::string identity) :
-  context_(IpcContext::Instance()),
-  socket_(context_.get(), type),
-  socket_type_(type)
+    context_(IpcContext::Instance()),
+    socket_(context_.get(), type),
+    socket_type_(type)
 {
-  // Set the socket identity for DEALER sockets to the specified value
-  if (type == ZMQ_DEALER) {
-    socket_.setsockopt(ZMQ_IDENTITY, identity.c_str(), identity.length());
-  }
+    // Set the socket identity for DEALER sockets to the specified value
+    if (type == ZMQ_DEALER) {
+        socket_.setsockopt(ZMQ_IDENTITY, identity.c_str(), identity.length());
+    }
 }
 
 //! IpcChannel destructor
@@ -107,18 +106,18 @@ IpcChannel::~IpcChannel()
 void IpcChannel::bind(const char* endpoint)
 {
 
-  // Bind the socket to the specified endpoint
-  socket_.bind(endpoint);
+    // Bind the socket to the specified endpoint
+    socket_.bind(endpoint);
 
-  // ZeroMQ resolves wildcarded endpoints to a complete address. This address
-  // MUST be used in any unbind call, so use ZMQ_LAST_ENDPOINT to determine
-  // the resolved endpoint and store both in the map.
+    // ZeroMQ resolves wildcarded endpoints to a complete address. This address
+    // MUST be used in any unbind call, so use ZMQ_LAST_ENDPOINT to determine
+    // the resolved endpoint and store both in the map.
 
-  char resolved_endpoint[256];
-  std::size_t endpoint_size = sizeof(resolved_endpoint);
+    char resolved_endpoint[256];
+    std::size_t endpoint_size = sizeof(resolved_endpoint);
 
-  socket_.getsockopt(ZMQ_LAST_ENDPOINT, resolved_endpoint, &endpoint_size);
-  bound_endpoints_[std::string(endpoint)] = std::string(resolved_endpoint);
+    socket_.getsockopt(ZMQ_LAST_ENDPOINT, resolved_endpoint, &endpoint_size);
+    bound_endpoints_[std::string(endpoint)] = std::string(resolved_endpoint);
 }
 
 //! Bind the IpcChannel to an endpoint
@@ -131,7 +130,7 @@ void IpcChannel::bind(const char* endpoint)
 //!
 void IpcChannel::bind(std::string& endpoint)
 {
-  this->bind(endpoint.c_str());
+    this->bind(endpoint.c_str());
 }
 
 //! Unbind the IpcChannel from an endpoint
@@ -141,14 +140,13 @@ void IpcChannel::bind(std::string& endpoint)
 //!
 //! \param[in] endpoint - endpoint URI
 //!
-void IpcChannel::unbind(const char *endpoint)
+void IpcChannel::unbind(const char* endpoint)
 {
-  std::string endpoint_str(endpoint);
-  if (bound_endpoints_.count(endpoint_str))
-  {
-    socket_.unbind(bound_endpoints_[endpoint_str].c_str());
-    bound_endpoints_.erase(endpoint_str);
-  }
+    std::string endpoint_str(endpoint);
+    if (bound_endpoints_.count(endpoint_str)) {
+        socket_.unbind(bound_endpoints_[endpoint_str].c_str());
+        bound_endpoints_.erase(endpoint_str);
+    }
 }
 
 //! Unbind the IpcChannel from an endpoint
@@ -160,7 +158,7 @@ void IpcChannel::unbind(const char *endpoint)
 //!
 void IpcChannel::unbind(const std::string& endpoint)
 {
-  this->unbind(endpoint.c_str());
+    this->unbind(endpoint.c_str());
 }
 
 //! Check if the IpcChannel is bound to an endpoint
@@ -173,7 +171,7 @@ void IpcChannel::unbind(const std::string& endpoint)
 //!
 bool IpcChannel::has_bound_endpoint(const std::string& endpoint)
 {
-  return (bound_endpoints_.count(endpoint) > 0);
+    return (bound_endpoints_.count(endpoint) > 0);
 }
 
 //! Connect the IpcChannel to an endpoint
@@ -185,7 +183,7 @@ bool IpcChannel::has_bound_endpoint(const std::string& endpoint)
 //!
 void IpcChannel::connect(const char* endpoint)
 {
-  socket_.connect(endpoint);
+    socket_.connect(endpoint);
 }
 
 //! Connect the IpcChannel to an endpoint
@@ -197,7 +195,7 @@ void IpcChannel::connect(const char* endpoint)
 //!
 void IpcChannel::connect(std::string& endpoint)
 {
-  this->connect(endpoint.c_str());
+    this->connect(endpoint.c_str());
 }
 
 //! Subscribe the IpcChannel to a topic
@@ -210,7 +208,7 @@ void IpcChannel::connect(std::string& endpoint)
 //!
 void IpcChannel::subscribe(const char* topic)
 {
-  socket_.setsockopt(ZMQ_SUBSCRIBE, topic, strlen(topic));
+    socket_.setsockopt(ZMQ_SUBSCRIBE, topic, strlen(topic));
 }
 
 //! Send a message on the IpcChannel
@@ -227,18 +225,18 @@ void IpcChannel::subscribe(const char* topic)
 //!
 void IpcChannel::send(std::string& message_str, int flags, const std::string& identity_str)
 {
-  // Set and send the destination identity for ROUTER type channels
-  if (socket_type_ == ZMQ_ROUTER) {
-    router_send_identity(identity_str);
-  }
+    // Set and send the destination identity for ROUTER type channels
+    if (socket_type_ == ZMQ_ROUTER) {
+        router_send_identity(identity_str);
+    }
 
-  // Determine the message size and copy into ZeroMQ message
-  size_t msg_size = message_str.size();
-  zmq::message_t msg(msg_size);
-  memcpy(msg.data(), message_str.data(), msg_size);
+    // Determine the message size and copy into ZeroMQ message
+    size_t msg_size = message_str.size();
+    zmq::message_t msg(msg_size);
+    memcpy(msg.data(), message_str.data(), msg_size);
 
-  // Send the message on the underlying socket with the requested flags
-  socket_.send(msg, flags);
+    // Send the message on the underlying socket with the requested flags
+    socket_.send(msg, flags);
 }
 
 //! Send a message on the IpcChannel
@@ -255,18 +253,18 @@ void IpcChannel::send(std::string& message_str, int flags, const std::string& id
 //!
 void IpcChannel::send(const char* message, int flags, const std::string& identity_str)
 {
-  // Set and send the destination identity for ROUTER type channels
-  if (socket_type_ == ZMQ_ROUTER) {
-    router_send_identity(identity_str);
-  }
+    // Set and send the destination identity for ROUTER type channels
+    if (socket_type_ == ZMQ_ROUTER) {
+        router_send_identity(identity_str);
+    }
 
-  // Determine the message size and copy into ZeroMQ message
-  size_t msg_size = strlen(message);
-  zmq::message_t msg(msg_size);
-  memcpy(msg.data(), message, msg_size);
+    // Determine the message size and copy into ZeroMQ message
+    size_t msg_size = strlen(message);
+    zmq::message_t msg(msg_size);
+    memcpy(msg.data(), message, msg_size);
 
-  // Send the message on the underlying socket with the requested flags
-  socket_.send(msg, flags);
+    // Send the message on the underlying socket with the requested flags
+    socket_.send(msg, flags);
 }
 
 //! Send a message on the IpcChannel
@@ -282,20 +280,20 @@ void IpcChannel::send(const char* message, int flags, const std::string& identit
 //! \param[in] flags - ZeroMQ message send flags (default value 0)
 //! \param[in] identity_str - identity of the destination endpoint to use for ROUTER sockets
 //!
-void IpcChannel::send(size_t msg_size, void *message, int flags, const std::string& identity_str)
+void IpcChannel::send(size_t msg_size, void* message, int flags, const std::string& identity_str)
 {
 
-  // Set and send the destination identity for ROUTER type channels
-  if (socket_type_ == ZMQ_ROUTER) {
-    router_send_identity(identity_str);
-  }
+    // Set and send the destination identity for ROUTER type channels
+    if (socket_type_ == ZMQ_ROUTER) {
+        router_send_identity(identity_str);
+    }
 
-  // Determine the message size and copy into ZeroMQ message
-  zmq::message_t msg(msg_size);
-  memcpy(msg.data(), message, msg_size);
+    // Determine the message size and copy into ZeroMQ message
+    zmq::message_t msg(msg_size);
+    memcpy(msg.data(), message, msg_size);
 
-  // Send the message on the underlying socket with the requested flags
-  socket_.send(msg, flags);
+    // Send the message on the underlying socket with the requested flags
+    socket_.send(msg, flags);
 }
 
 //! Send an identity message part on ROUTER channels
@@ -309,10 +307,10 @@ void IpcChannel::send(size_t msg_size, void *message, int flags, const std::stri
 //!
 void IpcChannel::router_send_identity(const std::string& identity_str)
 {
-  size_t identity_size = identity_str.size();
-  zmq::message_t identity_msg(identity_size);
-  memcpy(identity_msg.data(), identity_str.data(), identity_size);
-  socket_.send(identity_msg, ZMQ_SNDMORE);
+    size_t identity_size = identity_str.size();
+    zmq::message_t identity_msg(identity_size);
+    memcpy(identity_msg.data(), identity_str.data(), identity_size);
+    socket_.send(identity_msg, ZMQ_SNDMORE);
 }
 
 //! Receive a message on the channel
@@ -327,22 +325,22 @@ void IpcChannel::router_send_identity(const std::string& identity_str)
 //!
 const std::string IpcChannel::recv(std::string* identity_str)
 {
-  // For ROUTER channels, receive the required identity message part first and copy
-  // into the specified string location if not NULL.
-  if (socket_type_ == ZMQ_ROUTER) {
-    zmq::message_t identity_msg;
-    socket_.recv(&identity_msg);
-    if (identity_str != NULL) {
-      *identity_str = std::string(static_cast<char*>(identity_msg.data()), identity_msg.size());
+    // For ROUTER channels, receive the required identity message part first and copy
+    // into the specified string location if not NULL.
+    if (socket_type_ == ZMQ_ROUTER) {
+        zmq::message_t identity_msg;
+        socket_.recv(&identity_msg);
+        if (identity_str != NULL) {
+            *identity_str = std::string(static_cast<char*>(identity_msg.data()), identity_msg.size());
+        }
     }
-  }
 
-  // Receive the message payload
-  zmq::message_t msg;
-  socket_.recv(&msg);
+    // Receive the message payload
+    zmq::message_t msg;
+    socket_.recv(&msg);
 
-  // Return the message as a string
-  return std::string(static_cast<char*>(msg.data()), msg.size());
+    // Return the message as a string
+    return std::string(static_cast<char*>(msg.data()), msg.size());
 }
 
 //! Receive a raw message on the channel
@@ -357,29 +355,29 @@ const std::string IpcChannel::recv(std::string* identity_str)
 //! \param[out] identity_str - pointer to string to receive identity on ROUTER sockets
 //! \return size of the received message
 //!
-const std::size_t IpcChannel::recv_raw(void *msg_buf, std::string* identity_str)
+const std::size_t IpcChannel::recv_raw(void* msg_buf, std::string* identity_str)
 {
 
-  // For ROUTER channels, receive the required identity message part first and copy
-  // into the specified string location if not NULL.
-  if (socket_type_ == ZMQ_ROUTER) {
-    zmq::message_t identity_msg;
-    socket_.recv(&identity_msg);
-    if (identity_str != NULL) {
-      *identity_str = std::string(static_cast<char*>(identity_msg.data()), identity_msg.size());
+    // For ROUTER channels, receive the required identity message part first and copy
+    // into the specified string location if not NULL.
+    if (socket_type_ == ZMQ_ROUTER) {
+        zmq::message_t identity_msg;
+        socket_.recv(&identity_msg);
+        if (identity_str != NULL) {
+            *identity_str = std::string(static_cast<char*>(identity_msg.data()), identity_msg.size());
+        }
     }
-  }
 
-  // Receive the message payload
-  std::size_t msg_size;
-  zmq::message_t msg;
-  socket_.recv(&msg);
+    // Receive the message payload
+    std::size_t msg_size;
+    zmq::message_t msg;
+    socket_.recv(&msg);
 
-  // Copy the message into the specified buffer and return the size
-  msg_size = msg.size();
-  memcpy(msg_buf, msg.data(), msg_size);
+    // Copy the message into the specified buffer and return the size
+    msg_size = msg.size();
+    memcpy(msg_buf, msg.data(), msg_size);
 
-  return msg_size;
+    return msg_size;
 }
 
 //! Set an option on the channel socket
@@ -390,9 +388,9 @@ const std::size_t IpcChannel::recv_raw(void *msg_buf, std::string* identity_str)
 //! \param[in] option_value - pointer to option value to use
 //! \param[in] option_len - length of option value to use in bytes
 //!
-void IpcChannel::setsockopt(int option, const void *option_value, std::size_t option_len)
+void IpcChannel::setsockopt(int option, const void* option_value, std::size_t option_len)
 {
-  socket_.setsockopt(option, option_value, option_len);
+    socket_.setsockopt(option, option_value, option_len);
 }
 
 //! Get an option from the channel socket
@@ -403,9 +401,9 @@ void IpcChannel::setsockopt(int option, const void *option_value, std::size_t op
 //! \param[out] option_value - pointer to option value to use
 //! \param[in,out] option_len - length of option value to use in bytes
 //!
-void IpcChannel::getsockopt(int option, void *option_value, std::size_t *option_len)
+void IpcChannel::getsockopt(int option, void* option_value, std::size_t* option_len)
 {
-  socket_.getsockopt(option, option_value, option_len);
+    socket_.getsockopt(option, option_value, option_len);
 }
 
 //! Determine if the end-of-message has been reached on a channel.
@@ -417,18 +415,18 @@ void IpcChannel::getsockopt(int option, void *option_value, std::size_t *option_
 //!
 bool IpcChannel::eom(void)
 {
-  bool eom = true;
+    bool eom = true;
 
-  // GET the ZMQ_RCVMORE option value from the socket
-  int more;
-  std::size_t more_size = sizeof(more);
-  socket_.getsockopt(ZMQ_RCVMORE, &more, &more_size);
+    // GET the ZMQ_RCVMORE option value from the socket
+    int more;
+    std::size_t more_size = sizeof(more);
+    socket_.getsockopt(ZMQ_RCVMORE, &more, &more_size);
 
-  // If more data available, set EOM false
-  if (more){
-    eom = false;
-  }
-  return eom;
+    // If more data available, set EOM false
+    if (more) {
+        eom = false;
+    }
+    return eom;
 }
 
 //! Poll the channel for incoming messages
@@ -442,11 +440,11 @@ bool IpcChannel::eom(void)
 //!
 bool IpcChannel::poll(long timeout_ms)
 {
-  zmq::pollitem_t pollitems[] = {{socket_, 0, ZMQ_POLLIN, 0}};
+    zmq::pollitem_t pollitems[] = { { socket_, 0, ZMQ_POLLIN, 0 } };
 
-  zmq::poll(pollitems, 1, timeout_ms);
+    zmq::poll(pollitems, 1, timeout_ms);
 
-  return (pollitems[0].revents & ZMQ_POLLIN);
+    return (pollitems[0].revents & ZMQ_POLLIN);
 }
 
 //! Close the IpcChannel socket
@@ -456,5 +454,5 @@ bool IpcChannel::poll(long timeout_ms)
 //!
 void IpcChannel::close(void)
 {
-  socket_.close();
+    socket_.close();
 }

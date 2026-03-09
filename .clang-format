@@ -1,0 +1,12 @@
+BasedOnStyle: WebKit
+ColumnLimit: 120
+AlignAfterOpenBracket: BlockIndent
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortFunctionsOnASingleLine: None
+BinPackParameters: OnePerLine
+AlignEscapedNewlines: LeftWithLastLine
+BreakConstructorInitializers: AfterColon
+PackConstructorInitializers: Never
+RemoveEmptyLinesInUnwrappedLines: true
+MaxEmptyLinesToKeep: 1
+AllowShortEnumsOnASingleLine: false
