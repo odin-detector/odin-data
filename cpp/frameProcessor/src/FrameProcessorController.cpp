@@ -126,14 +126,14 @@ void FrameProcessorController::handleCtrlChannel()
 
     if(ctrlMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeCmd) {
     OdinData::IpcMessage::MsgVal mval = ctrlMsg.get_msg_val();
-      switch (mval) { 
+      switch (mval) {
         case OdinData::IpcMessage::MsgValCmdConfigure: {
           this->configure(ctrlMsg, replyMsg);
           LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (configure): "
                                  << replyMsg.encode());
           break;
         }
-          
+
         case OdinData::IpcMessage::MsgValCmdRequestConfiguration: {
           bool metadata = ctrlMsg.has_param("metadata") && (ctrlMsg.get_param<bool>("metadata") == true);
           this->requestConfiguration(replyMsg, metadata);
@@ -178,7 +178,7 @@ void FrameProcessorController::handleCtrlChannel()
                                  << replyMsg.encode());
           break;
         }
-      };    
+      };
     }
     else {
       LOG4CXX_ERROR(logger_, "Control thread got unexpected message: " << ctrlMsgEncoded);
@@ -275,7 +275,8 @@ void FrameProcessorController::callback(boost::shared_ptr<Frame> frame) {
     exitCondition_.notify_all();
     // Wait until the main thread has sent stop commands to the plugins
     LOG4CXX_DEBUG_LEVEL(2, logger_, "Exit condition set. Waiting for main thread to stop plugins.");
-    while(!pluginShutdownSent_);
+    while(!pluginShutdownSent_) {
+    }
     // Return so they can shutdown
   }
 }
@@ -530,7 +531,7 @@ void FrameProcessorController::requestConfiguration(OdinData::IpcMessage& reply,
     iter->second->requestConfiguration(reply);
   }
 
-  if(metadata) {  
+  if(metadata) {
     for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
       iter->second->request_configuration_metadata(reply);
     }
