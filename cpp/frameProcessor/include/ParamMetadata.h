@@ -102,6 +102,7 @@ struct ParamMetadata
         return custom_str_;
     }
 
+    ParamMetadata() = default;
     ParamMetadata(
       Datatype type, AccessMode access_mode, std::vector<allowed_values_t> &allowed_values, int32_t min, int32_t max
     ) :

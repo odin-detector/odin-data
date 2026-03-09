@@ -107,6 +107,10 @@ namespace FrameProcessor {
 
     std::string get_version_long();
 
+    static constexpr char STATUS_FRAMES_SENT[5] = "sent";
+    static constexpr char STATUS_FRAMES_LOST[5] = "lost";
+    static constexpr char STATUS_FRAMES_ACK[4]  = "ack";
+
   private:
     /** Pointer to logger */
     LoggerPtr logger_;
