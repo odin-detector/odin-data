@@ -9,6 +9,8 @@ file(GLOB TEST_SOURCES
     FrameProcessorUnitTestMain.cpp
     FrameProcessorTest.cpp
     GapFillPluginTest.cpp
+    RawFileWriterPluginTest.cpp
+    LiveViewPluginUnitTest.cpp
     MetaMessageTest.cpp
     DummyUDPProcessPluginTest.cpp
 )
@@ -41,6 +43,7 @@ target_link_libraries(frameProcessorTest
         SumPlugin
         GapFillPlugin
         DummyUDPProcessPlugin
+        RawFileWriterPlugin
         ${COMMON_LIBRARY})
 
 # Link for BloscPlugin if Blosc is present

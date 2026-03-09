@@ -43,7 +43,7 @@ public:
       img_16[i] = i+1;
     }
 
-    DATA_TYPES[0] = "unknown"
+    DATA_TYPES[0]  = "unknown";
     DATA_TYPES[1]  = "uint8";
     DATA_TYPES[2]  = "uint16";
     DATA_TYPES[3]  = "uint32";
@@ -56,31 +56,31 @@ public:
     dimensions_t img_dims(2); img_dims[0] = 3; img_dims[1] = 4;
 
     FrameProcessor::FrameMetaData frame_meta(
-            "data", FrameProcessor::raw_8bit, "test", img_dims, FrameProcessor::no_compression
+            1, "data", FrameProcessor::raw_8bit, "test", img_dims, FrameProcessor::no_compression
     );
 
     //create test frame
     frame = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
-            new FrameProcessor::DataBlockFrame(2, frame_meta, static_cast<void*>(img_8), 12));
+            new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(img_8), 12));
 
     FrameProcessor::FrameMetaData frame_16_meta(
-            "data", FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
+            2, "data", FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
     );
 
     //create test frame with uint16 data
     frame_16 = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
-            new FrameProcessor::DataBlockFrame(2, frame_16_meta, static_cast<void*>(img_16), 24));
+            new FrameProcessor::DataBlockFrame(frame_16_meta, static_cast<void*>(img_16), 24));
 
     //create multiple test frames
     for(int i = 0; i < 10; i++)
     {
       FrameProcessor::FrameMetaData tmp_frame_meta(
-              i % 4 ? "data" : "not_data", FrameProcessor::raw_8bit, "test", img_dims, FrameProcessor::no_compression
+              i, i % 4 ? "data" : "not_data", FrameProcessor::raw_8bit, "test", img_dims, FrameProcessor::no_compression
       );
       if (i % 4)
-        tmp_frame_meta.set_parameter><uint8_t>("test_tag", 0);
+        tmp_frame_meta.set_parameter<uint8_t>("test_tag", 0);
       boost::shared_ptr<FrameProcessor::DataBlockFrame> tmp_frame(
-              new FrameProcessor::DataBlockFrame(i, tmp_frame_meta, static_cast<void*>(img_8), 12));
+              new FrameProcessor::DataBlockFrame(tmp_frame_meta, static_cast<void*>(img_8), 12));
       frames.push_back(tmp_frame);
     }
 
@@ -143,9 +143,9 @@ BOOST_FIXTURE_TEST_SUITE(LiveViewPluginUnitTest, LiveViewPluginTestFixture);
 BOOST_AUTO_TEST_CASE(LiveViewConfigTest)
 {
   //TEST CONFIGURATION
-  cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_FRAME_FREQ, 1);
-  cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_DATASET_NAME, std::string("data"));
-  cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_SOCKET_ADDR, std::string("tcp://127.0.0.1:5050"));
+  BOOST_CHECK_NO_THROW(cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_FRAME_FREQ, 1));
+  BOOST_CHECK_NO_THROW(cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_DATASET_NAME, std::string("data")));
+  BOOST_CHECK_NO_THROW(cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_SOCKET_ADDR, std::string("tcp://127.0.0.1:5050")));
 
   BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
   //send frame again to check its going to a different socket
@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE(LiveViewConfigTest)
   }
   for(int i = 0; i < 10; i ++)
   {
-    plugin.process_frame(frame);
+    BOOST_CHECK_NO_THROW(plugin.process_frame(frame));
     if(recv_socket.poll(100)){
       BOOST_TEST_MESSAGE("Original socket received data");
     }
@@ -177,14 +177,14 @@ BOOST_AUTO_TEST_CASE(LiveViewConfigTest)
 BOOST_AUTO_TEST_CASE(LiveViewBasicSendTest)
 {
   //setting the frame number here guarantees that it'll be passed to the live view socket
-  frame->set_frame_number(FrameProcessor::LiveViewPlugin::DEFAULT_FRAME_FREQ);
+  BOOST_CHECK_NO_THROW(frame->set_frame_number(FrameProcessor::LiveViewPlugin::DEFAULT_FRAME_FREQ));
   //test we can output frame
 
   uint32_t attempts_left = 10;
   while(!recv_socket.poll(100) && attempts_left > 0) //to avoid issue with slow subscribers, keep sending the frame until the subscriber has received it
   {
     //send the frame to the plugin
-    plugin.process_frame(frame);
+    BOOST_REQUIRE_NO_THROW(plugin.process_frame(frame));
     attempts_left --;
   }
   if(attempts_left){
@@ -193,15 +193,16 @@ BOOST_AUTO_TEST_CASE(LiveViewBasicSendTest)
   }
   doc.Parse(message.c_str());
 
+  const FrameProcessor::FrameMetaData& frame_meta_data = frame->get_meta_data();
   //TEST HEADER CONTENTS
   BOOST_CHECK_EQUAL(doc["frame_num"].GetInt(), frame->get_frame_number());
-  BOOST_CHECK_EQUAL(doc["acquisition_id"].GetString(), frame->get_acquisition_id());
-  BOOST_CHECK_EQUAL(doc["dtype"].GetString(), DATA_TYPES[frame->get_data_type()]);
+  BOOST_CHECK_EQUAL(doc["acquisition_id"].GetString(), frame_meta_data.get_acquisition_ID());
+  BOOST_CHECK_EQUAL(doc["dtype"].GetString(), DATA_TYPES[frame_meta_data.get_data_type()]);
   BOOST_CHECK_EQUAL(doc["dsize"].GetInt() , frame->get_data_size());
-  BOOST_CHECK_EQUAL(doc["compression"].GetString(), COMPRESS_TYPES[frame->get_compression()]);
+  BOOST_CHECK_EQUAL(doc["compression"].GetString(), COMPRESS_TYPES[frame_meta_data.get_compression_type()]);
   char *end;
-  BOOST_CHECK_EQUAL(strtol(doc["shape"][0].GetString(), &end, 10), frame->get_dimensions()[0]);
-  BOOST_CHECK_EQUAL(strtol(doc["shape"][1].GetString(), &end, 10), frame->get_dimensions()[1]);
+  BOOST_CHECK_EQUAL(strtol(doc["shape"][0].GetString(), &end, 10), frame_meta_data.get_dimensions()[0]);
+  BOOST_CHECK_EQUAL(strtol(doc["shape"][1].GetString(), &end, 10), frame_meta_data.get_dimensions()[1]);
 
 
   //TEST DATA CONTENTS
@@ -220,20 +221,20 @@ BOOST_AUTO_TEST_CASE(LiveViewDownscaleTest)
 {
 
   //TEST DOWNSCALE OPTION
-  cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_FRAME_FREQ, 2);
-  plugin.configure(cfg, reply);
+  BOOST_CHECK_NO_THROW(cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_FRAME_FREQ, 2));
+  BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
   //process all frames. with a downscale factor of 2, this should return all the even numbered frames.
   for(int i = 0; i < frames.size(); i++)
   {
-    plugin.process_frame(frames[i]);
+    BOOST_REQUIRE_NO_THROW(plugin.process_frame(frames[i]));
   }
 
   std::vector<std::string> processed_frames;
   while(recv_socket.poll(10))
   {
     std::string tmp_string = recv_socket.recv();
-    processed_frames.push_back(tmp_string);
-    recv_socket.recv_raw(pbuf); //we dont need the data for this test but still need to read from the socket to clear it
+    BOOST_REQUIRE_NO_THROW(processed_frames.push_back(tmp_string));
+    BOOST_REQUIRE_NO_THROW(recv_socket.recv_raw(pbuf)); //we dont need the data for this test but still need to read from the socket to clear it
 
   }
   BOOST_CHECK_EQUAL(processed_frames.size(), 5);
@@ -246,19 +247,19 @@ BOOST_AUTO_TEST_CASE(LiveViewDownscaleTest)
 BOOST_AUTO_TEST_CASE(LiveViewDatasetFilterTest)
 {
   //TEST DATASET FILTERING
-  cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_FRAME_FREQ, 1);
-  cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_DATASET_NAME, std::string("data"));
+  BOOST_CHECK_NO_THROW(cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_FRAME_FREQ, 1));
+  BOOST_CHECK_NO_THROW(cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_DATASET_NAME, std::string("data")));
 
-  plugin.configure(cfg, reply); //configure the plugin to push any frame with the "data" dataset to the live view socket
+  BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply)); //configure the plugin to push any frame with the "data" dataset to the live view socket
 
   while(recv_socket.poll(10))
   {
-    recv_socket.recv(); //clear any extra data from the above while loop
+    BOOST_CHECK_NO_THROW(recv_socket.recv()); //clear any extra data from the above while loop
   }
 
   for(int i = 0; i < frames.size(); i++)
   {
-    plugin.process_frame(frames[i]);
+    BOOST_CHECK_NO_THROW(plugin.process_frame(frames[i]));
   }
 
   std::vector<std::string> dataset_processed_frames;
@@ -266,12 +267,12 @@ BOOST_AUTO_TEST_CASE(LiveViewDatasetFilterTest)
   {
     std::string tmp_string = recv_socket.recv();
     BOOST_TEST_MESSAGE( "Received Header: " << tmp_string);
-    dataset_processed_frames.push_back(tmp_string);
-    recv_socket.recv_raw(pbuf); //we dont need the data for this test but still need to read from the socket to clear it from the queue
+    BOOST_CHECK_NO_THROW(dataset_processed_frames.push_back(tmp_string));
+    BOOST_CHECK_NO_THROW(recv_socket.recv_raw(pbuf)); //we dont need the data for this test but still need to read from the socket to clear it from the queue
   }
   for(int i = 0; i < dataset_processed_frames.size(); i++)
   {
-    doc.Parse(dataset_processed_frames[i].c_str());
+    BOOST_REQUIRE_NO_THROW(doc.Parse(dataset_processed_frames[i].c_str()));
     BOOST_CHECK_EQUAL(doc["dataset"].GetString(), "data"); //check to make sure only "data" frames were passed through
   }
   BOOST_CHECK_EQUAL(dataset_processed_frames.size(), 7); // check to make sure all the frames expected were passed through
@@ -287,7 +288,7 @@ BOOST_AUTO_TEST_CASE(LiveViewOtherDatatypeTest)
   uint32_t attempts_left = 10;
   while(!recv_socket.poll(10) && attempts_left > 0)
   {
-    plugin.process_frame(frame_16);
+    BOOST_REQUIRE_NO_THROW(plugin.process_frame(frame_16));
     attempts_left --;
   }
   if(attempts_left)
@@ -303,17 +304,17 @@ BOOST_AUTO_TEST_CASE(LiveViewOtherDatatypeTest)
 
   doc.Parse(message.c_str());
   BOOST_CHECK_EQUAL(doc["dsize"].GetInt() , frame_16->get_data_size()); //test that the plugin got the correct size for the frame
-  BOOST_CHECK_EQUAL(doc["dtype"].GetString(), DATA_TYPES[frame_16->get_data_type()]); //test that the plugin got the correct data type for the frame
+  BOOST_CHECK_EQUAL(doc["dtype"].GetString(), DATA_TYPES[frame_16->get_meta_data().get_data_type()]); //test that the plugin got the correct data type for the frame
 
 }
 
 BOOST_AUTO_TEST_CASE(LiveViewTagFilterTest)
 {
-  cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_FRAME_FREQ, 1);
-  cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_TAGGED_FILTER_NAME, std::string("test_tag"));
+  BOOST_CHECK_NO_THROW(cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_FRAME_FREQ, 1));
+  BOOST_CHECK_NO_THROW(cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_TAGGED_FILTER_NAME, std::string("test_tag")));
   BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
 
-  plugin.configure(cfg, reply); //configure the plugin to push any frame with the "data" dataset to the live view socket
+  BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply)); //configure the plugin to push any frame with the "data" dataset to the live view socket
 
   while(recv_socket.poll(10))
   {
@@ -322,7 +323,7 @@ BOOST_AUTO_TEST_CASE(LiveViewTagFilterTest)
 
   for(int i = 0; i < frames.size(); i++)
   {
-    plugin.process_frame(frames[i]);
+    BOOST_CHECK_NO_THROW(plugin.process_frame(frames[i]));
   }
 
   std::vector<std::string> tagged_processed_frames;
@@ -330,12 +331,12 @@ BOOST_AUTO_TEST_CASE(LiveViewTagFilterTest)
   {
     std::string tmp_string = recv_socket.recv();
     BOOST_TEST_MESSAGE( "Received Header: " << tmp_string);
-    tagged_processed_frames.push_back(tmp_string);
-    recv_socket.recv_raw(pbuf); //we dont need the data for this test but still need to read from the socket to clear it from the queue
+    tagged_processed_frames.push_back(std::move(tmp_string));
+    BOOST_CHECK_NO_THROW(recv_socket.recv_raw(pbuf)); //we dont need the data for this test but still need to read from the socket to clear it from the queue
   }
   for(int i = 0; i < tagged_processed_frames.size(); i++)
   {
-    doc.Parse(tagged_processed_frames[i].c_str());
+    BOOST_CHECK_NO_THROW(doc.Parse(tagged_processed_frames[i].c_str()));
     BOOST_CHECK_EQUAL(doc["tags"][0].GetString(), "test_tag"); //check to make sure only tagged frames were passed through
   }
   BOOST_CHECK_EQUAL(tagged_processed_frames.size(), 7); // check to make sure all the frames expected were passed through

@@ -30,6 +30,8 @@ public:
     dset_def.frame_dimensions[1] = 4;
     dset_def.chunks = chunk_dims;
 
+    blosc_plugin.set_name("BloscPluginTest");
+
     FrameProcessor::FrameMetaData frame_meta(7, "data", FrameProcessor::raw_16bit, "scan1", img_dims, FrameProcessor::no_compression);
     frame = boost::shared_ptr<FrameProcessor::DataBlockFrame>(new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(img), 24));
 
@@ -63,27 +65,20 @@ BOOST_AUTO_TEST_CASE( BloscPlugin_process_frame )
 
 }
 
-BOOST_AUTO_TEST_CASE( BloscPlugin_check_config )
+BOOST_AUTO_TEST_CASE(BloscPlugin_request_metadata)
 {
-  OdinData::IpcMessage reply;
-  OdinData::IpcMessage cfg;
-  blosc_plugin.set_name("BloscPlugin_check_config");
-  cfg.set_param<std::string>(FrameProcessor::BloscPlugin::CONFIG_BLOSC_COMPRESSOR, "snappy");
-  cfg.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_THREADS, 3);
-  cfg.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_LEVEL, 1);
-  cfg.set_param<std::string>(FrameProcessor::BloscPlugin::CONFIG_BLOSC_SHUFFLE, "shuffle");
-
-  OdinData::IpcMessage request;
-  blosc_plugin.configure(cfg, reply);
-  blosc_plugin.requestConfiguration(request);
-  BOOST_CHECK_EQUAL(cfg.get_param<std::string>(FrameProcessor::BloscPlugin::CONFIG_BLOSC_COMPRESSOR), \
-                    request.get_param<std::string>(blosc_plugin.get_name() + "/" + FrameProcessor::BloscPlugin::CONFIG_BLOSC_COMPRESSOR));
-  BOOST_CHECK_EQUAL(cfg.get_param<unsigned int>(FrameProcessor::BloscPlugin::CONFIG_BLOSC_THREADS), \
-                    request.get_param<unsigned int>(blosc_plugin.get_name() + "/" + FrameProcessor::BloscPlugin::CONFIG_BLOSC_THREADS));
-  BOOST_CHECK_EQUAL(cfg.get_param<int>(FrameProcessor::BloscPlugin::CONFIG_BLOSC_LEVEL), 
-                    request.get_param<int>(blosc_plugin.get_name() + "/" + FrameProcessor::BloscPlugin::CONFIG_BLOSC_LEVEL));
-  BOOST_CHECK_EQUAL(cfg.get_param<std::string>(FrameProcessor::BloscPlugin::CONFIG_BLOSC_SHUFFLE), \
-                    request.get_param<std::string>(blosc_plugin.get_name() + "/" + FrameProcessor::BloscPlugin::CONFIG_BLOSC_SHUFFLE));
+  /** To-do: change raw strings of "/compressor" ==to==> '/' +
+   * FrameProcessor::BloscPlugin::CONFIG_BLOSC_COMPRESSOR
+   *  As well as the other config settings!
+   *  This should be possible once PR 401:
+   *  "Update BLOSC Setting As String" is merged!
+   */
+  OdinData::IpcMessage reply; // IpcMessage to be populated with metadata
+  blosc_plugin.request_configuration_metadata(reply);
+  BOOST_CHECK(reply.has_param("metadata")); // !false == true;
+  BOOST_CHECK(reply.has_param("metadata/" + blosc_plugin.get_name() + '/' + FrameProcessor::BloscPlugin::CONFIG_BLOSC_COMPRESSOR));
+  BOOST_CHECK(reply.has_param("metadata/" + blosc_plugin.get_name() + '/' + FrameProcessor::BloscPlugin::CONFIG_BLOSC_THREADS));
+  BOOST_CHECK(reply.has_param("metadata/" + blosc_plugin.get_name() + '/' + FrameProcessor::BloscPlugin::CONFIG_BLOSC_LEVEL));
+  BOOST_CHECK(reply.has_param("metadata/" + blosc_plugin.get_name() + '/' + FrameProcessor::BloscPlugin::CONFIG_BLOSC_SHUFFLE));
 }
-
-BOOST_AUTO_TEST_SUITE_END(); //BloscPluginUnitTest
+  BOOST_AUTO_TEST_SUITE_END(); //BloscPluginUnitTest

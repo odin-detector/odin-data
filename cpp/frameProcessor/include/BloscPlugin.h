@@ -47,6 +47,12 @@ public:
   static const std::string CONFIG_BLOSC_LEVEL;
   static const std::string CONFIG_BLOSC_SHUFFLE;
 
+  /** Configuration constants */
+  static const std::string CONFIG_BLOSC_COMPRESSOR;
+  static const std::string CONFIG_BLOSC_THREADS;
+  static const std::string CONFIG_BLOSC_LEVEL;
+  static const std::string CONFIG_BLOSC_SHUFFLE;
+
   // Baseclass API to implement:
   void process_frame(boost::shared_ptr<Frame> frame);
   void status(OdinData::IpcMessage& status);
@@ -57,7 +63,7 @@ public:
   int get_version_patch();
   std::string get_version_short();
   std::string get_version_long();
-
+  
 private:
   // Methods unique to this class
   void update_compression_settings();
