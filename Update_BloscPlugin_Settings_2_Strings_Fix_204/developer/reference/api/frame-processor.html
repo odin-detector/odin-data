@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>FrameProcessor API Reference &#8212; odin-data 0.1.dev1+g5f27731cb documentation</title>
+    <title>FrameProcessor API Reference &#8212; odin-data 0.1.dev1+gb2f9c0a7f documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=a4845a0f"></script>
+    <script src="../../../_static/documentation_options.js?v=e1db7c7e"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -1712,25 +1712,36 @@
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin11BloscPluginEv">
 <span id="_CPPv3N14FrameProcessor11BloscPlugin11BloscPluginEv"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin11BloscPluginEv"></span><span id="FrameProcessor::BloscPlugin::BloscPlugin"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a3df2df83b6fcb4aff2e12fb4a2431ec2"></span><span class="sig-name descname"><span class="n"><span class="pre">BloscPlugin</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin11BloscPluginEv" title="Link to this definition">#</a><br /></dt>
-<dd></dd></dl>
+<dd><p>The constructor sets up logging used within the class. </p>
+</dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPluginD0Ev">
-<span id="_CPPv3N14FrameProcessor11BloscPluginD0Ev"></span><span id="_CPPv2N14FrameProcessor11BloscPluginD0Ev"></span><span id="FrameProcessor::BloscPlugin::~BloscPlugin"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a900afeafef8f96e28ce24cbc79d1e2b2"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">~BloscPlugin</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPluginD0Ev" title="Link to this definition">#</a><br /></dt>
-<dd></dd></dl>
+<span id="_CPPv3N14FrameProcessor11BloscPluginD0Ev"></span><span id="_CPPv2N14FrameProcessor11BloscPluginD0Ev"></span><span id="FrameProcessor::BloscPlugin::~BloscPlugin"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a47d7ad5e83ccb23b02c93f0f76e338bb"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">~BloscPlugin</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPluginD0Ev" title="Link to this definition">#</a><br /></dt>
+<dd><p>Destructor. </p>
+</dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin14compress_frameEN5boost10shared_ptrI5FrameEE">
 <span id="_CPPv3N14FrameProcessor11BloscPlugin14compress_frameEN5boost10shared_ptrI5FrameEE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin14compress_frameEN5boost10shared_ptrI5FrameEE"></span><span id="FrameProcessor::BloscPlugin::compress_frame__boost::shared_ptr:Frame:"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1aa135811e914457f9479e31472a392db6"></span><span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4N14FrameProcessor5FrameE" title="FrameProcessor::Frame"><span class="n"><span class="pre">Frame</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">compress_frame</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4N14FrameProcessor5FrameE" title="FrameProcessor::Frame"><span class="n"><span class="pre">Frame</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">frame</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin14compress_frameEN5boost10shared_ptrI5FrameEE" title="Link to this definition">#</a><br /></dt>
-<dd></dd></dl>
+<dd><p>Compress one frame, return compressed frame. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>src_frame</strong> – - source frame to compress </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>compressed frame </p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin13process_frameEN5boost10shared_ptrI5FrameEE">
 <span id="_CPPv3N14FrameProcessor11BloscPlugin13process_frameEN5boost10shared_ptrI5FrameEE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin13process_frameEN5boost10shared_ptrI5FrameEE"></span><span id="FrameProcessor::BloscPlugin::process_frame__boost::shared_ptr:Frame:"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a5f0a5791d1ab49a0e449038e34fe5c43"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">process_frame</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4N14FrameProcessor5FrameE" title="FrameProcessor::Frame"><span class="n"><span class="pre">Frame</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">frame</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin13process_frameEN5boost10shared_ptrI5FrameEE" title="Link to this definition">#</a><br /></dt>
-<dd><p>This is called by the callback method when any new frames have arrived and must be overridden by child classes.</p>
+<dd><p>Perform compression on the frame and output a new, compressed <a class="reference internal" href="#classFrameProcessor_1_1Frame"><span class="std std-ref">Frame</span></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>frame</strong> – <strong>[in]</strong> - Pointer to the frame. </p>
+<dd class="field-odd"><p><strong>frame</strong> – <strong>[in]</strong> - Pointer to a <a class="reference internal" href="#classFrameProcessor_1_1Frame"><span class="std std-ref">Frame</span></a> object. </p>
 </dd>
 </dl>
 </dd></dl>
@@ -1738,11 +1749,10 @@
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin6statusERN8OdinData10IpcMessageE">
 <span id="_CPPv3N14FrameProcessor11BloscPlugin6statusERN8OdinData10IpcMessageE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin6statusERN8OdinData10IpcMessageE"></span><span id="FrameProcessor::BloscPlugin::status__OdinData::IpcMessageR"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a5afa25a591515793e8ef6f7971d0d16c"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">status</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">status</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin6statusERN8OdinData10IpcMessageE" title="Link to this definition">#</a><br /></dt>
-<dd><p>Collate status information for the plugin.</p>
-<p>The status is added to the status IpcMessage object. In this abstract class the status method doesn’t perform any actions, this should be overridden by subclasses.</p>
+<dd><p>Collate status information for the plugin</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>status</strong> – <strong>[out]</strong> - Reference to an IpcMessage value to store the status. </p>
+<dd class="field-odd"><p><strong>status</strong> – - Reference to an IpcMessage value to store the status </p>
 </dd>
 </dl>
 </dd></dl>
@@ -1750,13 +1760,12 @@
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin9configureERN8OdinData10IpcMessageERN8OdinData10IpcMessageE">
 <span id="_CPPv3N14FrameProcessor11BloscPlugin9configureERN8OdinData10IpcMessageERN8OdinData10IpcMessageE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin9configureERN8OdinData10IpcMessageERN8OdinData10IpcMessageE"></span><span id="FrameProcessor::BloscPlugin::configure__OdinData::IpcMessageR.OdinData::IpcMessageR"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a1eb24bd012f6967f402be581539f2813"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">configure</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">config</span></span>, <span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">reply</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin9configureERN8OdinData10IpcMessageERN8OdinData10IpcMessageE" title="Link to this definition">#</a><br /></dt>
-<dd><p>Configure the plugin.</p>
-<p>In this abstract class the configure method doesn’t perform any actions, this should be overridden by subclasses.</p>
+<dd><p>Configure </p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>config</strong> – <strong>[in]</strong> - IpcMessage containing configuration data. </p></li>
-<li><p><strong>reply</strong> – <strong>[out]</strong> - Response IpcMessage. </p></li>
+<li><p><strong>config</strong> – </p></li>
+<li><p><strong>reply</strong> – </p></li>
 </ul>
 </dd>
 </dl>
@@ -1765,11 +1774,10 @@
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin20requestConfigurationERN8OdinData10IpcMessageE">
 <span id="_CPPv3N14FrameProcessor11BloscPlugin20requestConfigurationERN8OdinData10IpcMessageE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin20requestConfigurationERN8OdinData10IpcMessageE"></span><span id="FrameProcessor::BloscPlugin::requestConfiguration__OdinData::IpcMessageR"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1ad3847c9a1b398509d7a77e0925b92e63"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">requestConfiguration</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">OdinData</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="common.html#_CPPv4N8OdinData10IpcMessageE" title="OdinData::IpcMessage"><span class="n"><span class="pre">IpcMessage</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">reply</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin20requestConfigurationERN8OdinData10IpcMessageE" title="Link to this definition">#</a><br /></dt>
-<dd><p>Request the plugin’s current configuration.</p>
-<p>In this abstract class the request method doesn’t perform any actions, this should be overridden by subclasses.</p>
+<dd><p>Get configuration settings for the <a class="reference internal" href="#classFrameProcessor_1_1BloscPlugin"><span class="std std-ref">BloscPlugin</span></a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>reply</strong> – <strong>[out]</strong> - Response IpcMessage with current configuration. </p>
+<dd class="field-odd"><p><strong>reply</strong> – - Response IpcMessage. </p>
 </dd>
 </dl>
 </dd></dl>
@@ -1804,23 +1812,23 @@
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-static-attributes">Public Static Attributes</p>
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin23CONFIG_BLOSC_COMPRESSORE">
-<span id="_CPPv3N14FrameProcessor11BloscPlugin23CONFIG_BLOSC_COMPRESSORE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin23CONFIG_BLOSC_COMPRESSORE"></span><span id="FrameProcessor::BloscPlugin::CONFIG_BLOSC_COMPRESSOR__ssC"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a9e1259048445e161d01edd20df8b5e37"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CONFIG_BLOSC_COMPRESSOR</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin23CONFIG_BLOSC_COMPRESSORE" title="Link to this definition">#</a><br /></dt>
+<span id="_CPPv3N14FrameProcessor11BloscPlugin23CONFIG_BLOSC_COMPRESSORE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin23CONFIG_BLOSC_COMPRESSORE"></span><span id="FrameProcessor::BloscPlugin::CONFIG_BLOSC_COMPRESSOR__ssC"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a9e1259048445e161d01edd20df8b5e37"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CONFIG_BLOSC_COMPRESSOR</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;compressor&quot;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin23CONFIG_BLOSC_COMPRESSORE" title="Link to this definition">#</a><br /></dt>
 <dd><p>Configuration constants </p>
 </dd></dl>
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin20CONFIG_BLOSC_THREADSE">
-<span id="_CPPv3N14FrameProcessor11BloscPlugin20CONFIG_BLOSC_THREADSE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin20CONFIG_BLOSC_THREADSE"></span><span id="FrameProcessor::BloscPlugin::CONFIG_BLOSC_THREADS__ssC"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a004233e11f5b3d344b2490e21cebb70e"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CONFIG_BLOSC_THREADS</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin20CONFIG_BLOSC_THREADSE" title="Link to this definition">#</a><br /></dt>
+<span id="_CPPv3N14FrameProcessor11BloscPlugin20CONFIG_BLOSC_THREADSE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin20CONFIG_BLOSC_THREADSE"></span><span id="FrameProcessor::BloscPlugin::CONFIG_BLOSC_THREADS__ssC"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a004233e11f5b3d344b2490e21cebb70e"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CONFIG_BLOSC_THREADS</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;threads&quot;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin20CONFIG_BLOSC_THREADSE" title="Link to this definition">#</a><br /></dt>
 <dd></dd></dl>
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin18CONFIG_BLOSC_LEVELE">
-<span id="_CPPv3N14FrameProcessor11BloscPlugin18CONFIG_BLOSC_LEVELE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin18CONFIG_BLOSC_LEVELE"></span><span id="FrameProcessor::BloscPlugin::CONFIG_BLOSC_LEVEL__ssC"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a335793b608c0e179cd824f6495763227"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CONFIG_BLOSC_LEVEL</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin18CONFIG_BLOSC_LEVELE" title="Link to this definition">#</a><br /></dt>
+<span id="_CPPv3N14FrameProcessor11BloscPlugin18CONFIG_BLOSC_LEVELE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin18CONFIG_BLOSC_LEVELE"></span><span id="FrameProcessor::BloscPlugin::CONFIG_BLOSC_LEVEL__ssC"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a335793b608c0e179cd824f6495763227"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CONFIG_BLOSC_LEVEL</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;level&quot;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin18CONFIG_BLOSC_LEVELE" title="Link to this definition">#</a><br /></dt>
 <dd></dd></dl>
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin20CONFIG_BLOSC_SHUFFLEE">
-<span id="_CPPv3N14FrameProcessor11BloscPlugin20CONFIG_BLOSC_SHUFFLEE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin20CONFIG_BLOSC_SHUFFLEE"></span><span id="FrameProcessor::BloscPlugin::CONFIG_BLOSC_SHUFFLE__ssC"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a4eca9a6b76ebbcc6183b717bde0d364a"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CONFIG_BLOSC_SHUFFLE</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin20CONFIG_BLOSC_SHUFFLEE" title="Link to this definition">#</a><br /></dt>
+<span id="_CPPv3N14FrameProcessor11BloscPlugin20CONFIG_BLOSC_SHUFFLEE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin20CONFIG_BLOSC_SHUFFLEE"></span><span id="FrameProcessor::BloscPlugin::CONFIG_BLOSC_SHUFFLE__ssC"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a4eca9a6b76ebbcc6183b717bde0d364a"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CONFIG_BLOSC_SHUFFLE</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;shuffle&quot;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin20CONFIG_BLOSC_SHUFFLEE" title="Link to this definition">#</a><br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -1829,12 +1837,22 @@
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin27update_compression_settingsEv">
 <span id="_CPPv3N14FrameProcessor11BloscPlugin27update_compression_settingsEv"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin27update_compression_settingsEv"></span><span id="FrameProcessor::BloscPlugin::update_compression_settings"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1ace70c9387172e20dc6f245c4cd819e29"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">update_compression_settings</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin27update_compression_settingsEv" title="Link to this definition">#</a><br /></dt>
-<dd></dd></dl>
+<dd><p>Update the compression settings </p>
+</dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin10get_bufferE6size_t">
 <span id="_CPPv3N14FrameProcessor11BloscPlugin10get_bufferE6size_t"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin10get_bufferE6size_t"></span><span id="FrameProcessor::BloscPlugin::get_buffer__s"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a2e195a32c560877544e219bcdb8a5992"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">get_buffer</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">nbytes</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin10get_bufferE6size_t" title="Link to this definition">#</a><br /></dt>
-<dd></dd></dl>
+<dd><p>Return data buffer</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>nbytes</strong> – </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
 
 </div>
 <div class="breathe-sectiondef docutils container">
