@@ -16,13 +16,11 @@ using namespace FrameReceiver;
 //! for base configuration parameters and variables.
 //!
 FrameDecoder::FrameDecoder() :
-     logger_(Logger::getLogger("FR.FrameDecoder")),
-     enable_packet_logging_(FrameReceiver::Defaults::default_enable_packet_logging),
-     frame_timeout_ms_(FrameReceiver::Defaults::default_frame_timeout_ms),
-     frames_timedout_(0),
-     frames_dropped_(0)
-{
-};
+    logger_(Logger::getLogger("FR.FrameDecoder")),
+    enable_packet_logging_(FrameReceiver::Defaults::default_enable_packet_logging),
+    frame_timeout_ms_(FrameReceiver::Defaults::default_frame_timeout_ms),
+    frames_timedout_(0),
+    frames_dropped_(0) { };
 
 //! This overload is scheduled for deletion; logger is unused.
 void FrameDecoder::init(LoggerPtr& logger, OdinData::IpcMessage& config_msg)
@@ -39,13 +37,11 @@ void FrameDecoder::init(LoggerPtr& logger, OdinData::IpcMessage& config_msg)
 //!
 void FrameDecoder::init(OdinData::IpcMessage& config_msg)
 {
-   enable_packet_logging_ = config_msg.get_param<bool>(
-       CONFIG_DECODER_ENABLE_PACKET_LOGGING, enable_packet_logging_);
-   frame_timeout_ms_ = config_msg.get_param<unsigned int>(
-       CONFIG_DECODER_FRAME_TIMEOUT_MS, frame_timeout_ms_);
+    enable_packet_logging_ = config_msg.get_param<bool>(CONFIG_DECODER_ENABLE_PACKET_LOGGING, enable_packet_logging_);
+    frame_timeout_ms_ = config_msg.get_param<unsigned int>(CONFIG_DECODER_FRAME_TIMEOUT_MS, frame_timeout_ms_);
 
-   // Retrieve the packet logger instance
-   packet_logger_ = Logger::getLogger("FR.PacketLogger");
+    // Retrieve the packet logger instance
+    packet_logger_ = Logger::getLogger("FR.PacketLogger");
 }
 
 //
@@ -59,8 +55,7 @@ void FrameDecoder::init(OdinData::IpcMessage& config_msg)
 //! \param[in] param_prefix - parameter prefix to use on all parameter names
 //! \param[in,out] config_reply - reply IpcMessage to populate with parameters
 //!
-void FrameDecoder::request_configuration(const std::string param_prefix,
-    OdinData::IpcMessage& config_reply)
+void FrameDecoder::request_configuration(const std::string param_prefix, OdinData::IpcMessage& config_reply)
 {
     config_reply.set_param(param_prefix + CONFIG_DECODER_ENABLE_PACKET_LOGGING, enable_packet_logging_);
     config_reply.set_param(param_prefix + CONFIG_DECODER_FRAME_TIMEOUT_MS, frame_timeout_ms_);
@@ -75,9 +70,9 @@ void FrameDecoder::request_configuration(const std::string param_prefix,
  */
 std::vector<std::string> FrameDecoder::request_commands()
 {
-  // Default returns an empty vector.
-  std::vector<std::string> reply;
-  return reply;
+    // Default returns an empty vector.
+    std::vector<std::string> reply;
+    return reply;
 }
 
 /** Execute a command within the decoder.
@@ -90,12 +85,12 @@ std::vector<std::string> FrameDecoder::request_commands()
  */
 void FrameDecoder::execute(const std::string& command, OdinData::IpcMessage& reply)
 {
-  // A command has been submitted and this decoder has no execute implementation defined,
-  // throw a runtime error to report this.
-  std::stringstream ss;
-  ss << "Submitted command not supported: " << command;
-  LOG4CXX_ERROR(logger_, ss.str());
-  reply.set_nack(ss.str());
+    // A command has been submitted and this decoder has no execute implementation defined,
+    // throw a runtime error to report this.
+    std::stringstream ss;
+    ss << "Submitted command not supported: " << command;
+    LOG4CXX_ERROR(logger_, ss.str());
+    reply.set_nack(ss.str());
 }
 
 //! Register a buffer manager with the decoder.
@@ -119,9 +114,9 @@ void FrameDecoder::register_buffer_manager(OdinData::SharedBufferManagerPtr buff
 //! \param[in] callback - callback function with the appropriate signature
 //!
 void FrameDecoder::register_frame_ready_callback(FrameReadyCallback callback)
-  {
-      ready_callback_ = callback;
-  }
+{
+    ready_callback_ = callback;
+}
 
 //! Push an buffer onto the empty buffer queue.
 //!
@@ -204,36 +199,34 @@ const unsigned int FrameDecoder::get_num_frames_dropped(void) const
 //!
 void FrameDecoder::drop_all_buffers(void)
 {
-  if (!empty_buffer_queue_.empty())
-  {
-    LOG4CXX_INFO(logger_, "Dropping " << empty_buffer_queue_.size() 
-        << " buffers from empty buffer queue");
-    EmptyBufferQueue new_queue;
-    std::swap(empty_buffer_queue_, new_queue);
-  }
+    if (!empty_buffer_queue_.empty()) {
+        LOG4CXX_INFO(logger_, "Dropping " << empty_buffer_queue_.size() << " buffers from empty buffer queue");
+        EmptyBufferQueue new_queue;
+        std::swap(empty_buffer_queue_, new_queue);
+    }
 
-  if (!frame_buffer_map_.empty())
-  {
-    LOG4CXX_WARN(logger_, "Dropping " << frame_buffer_map_.size() <<
-                 " unreleased buffers from decoder - possible data loss");
-    FrameBufferMap new_map;
-    std::swap(frame_buffer_map_, new_map);
-  }
+    if (!frame_buffer_map_.empty()) {
+        LOG4CXX_WARN(
+            logger_, "Dropping " << frame_buffer_map_.size() << " unreleased buffers from decoder - possible data loss"
+        );
+        FrameBufferMap new_map;
+        std::swap(frame_buffer_map_, new_map);
+    }
 }
 
 //! Collate version information for the decoder.
 //!
 //! The version information is added to the status IpcMessage object.
-//! 
+//!
 //! \param[in,out] status - Reference to an IpcMessage value to store the version.
 //!
 void FrameDecoder::version(const std::string param_prefix, OdinData::IpcMessage& status)
 {
-  status.set_param(param_prefix + "major", get_version_major());
-  status.set_param(param_prefix + "minor", get_version_minor());
-  status.set_param(param_prefix + "patch", get_version_patch());
-  status.set_param(param_prefix + "short", get_version_short());
-  status.set_param(param_prefix + "full", get_version_long());
+    status.set_param(param_prefix + "major", get_version_major());
+    status.set_param(param_prefix + "minor", get_version_minor());
+    status.set_param(param_prefix + "patch", get_version_patch());
+    status.set_param(param_prefix + "short", get_version_short());
+    status.set_param(param_prefix + "full", get_version_long());
 }
 
 //! Reset frame decoder statistics.

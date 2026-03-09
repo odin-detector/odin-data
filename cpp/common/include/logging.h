@@ -1,14 +1,14 @@
 #ifndef ODINDATA_LOGGING_H
 #define ODINDATA_LOGGING_H
 
-#include <string>
 #include <string.h>
-namespace OdinData
-{
- #define LOG_WITH_ERRNO(logger, message) { \
-  char msg[128]; \
-  LOG4CXX_ERROR(logger, message << " [errno: " << errno << " - " << strerror_r(errno, msg, sizeof(msg)) << ']'); \
- }
+#include <string>
+namespace OdinData {
+#define LOG_WITH_ERRNO(logger, message)                                                                                \
+    {                                                                                                                  \
+        char msg[128];                                                                                                 \
+        LOG4CXX_ERROR(logger, message << " [errno: " << errno << " - " << strerror_r(errno, msg, sizeof(msg)) << ']'); \
+    }
 
 extern std::string app_path;
 
@@ -21,4 +21,4 @@ extern std::string app_path;
 void configure_logging_mdc(const char* app_path);
 
 }
-#endif //ODINDATA_LOGGING_H
+#endif // ODINDATA_LOGGING_H

@@ -15,18 +15,17 @@ namespace FrameProcessor {
  *
  * Durations in microseconds.
  */
-class CallDuration
-{
+class CallDuration {
 public:
-  void update(unsigned int duration);
-  void reset();
+    void update(unsigned int duration);
+    void reset();
 
-  /** Last call duration **/
-  unsigned int last_;
-  /** Maximum call duration **/
-  unsigned int max_;
-  /** Mean call duration (exponential average) **/
-  unsigned int mean_;
+    /** Last call duration **/
+    unsigned int last_;
+    /** Maximum call duration **/
+    unsigned int max_;
+    /** Mean call duration (exponential average) **/
+    unsigned int mean_;
 };
 
 } /* namespace FrameProcessor */

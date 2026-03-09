@@ -7,10 +7,10 @@
 #ifndef KAFKAPRODUCERPLUGIN_H
 #define KAFKAPRODUCERPLUGIN_H
 
-#include <log4cxx/logger.h>
 #include <log4cxx/basicconfigurator.h>
-#include <log4cxx/propertyconfigurator.h>
 #include <log4cxx/helpers/exception.h>
+#include <log4cxx/logger.h>
+#include <log4cxx/propertyconfigurator.h>
 
 #include <librdkafka/rdkafka.h>
 
@@ -23,7 +23,7 @@ using namespace log4cxx::helpers;
 #define KAFKA_MAX_MSG_LEN 512
 #define KAFKA_LINGER_MS 1000
 #define KAFKA_DEFAULT_DATASET "data"
-#define KAFKA_DEFAULT_TOPIC   "data"
+#define KAFKA_DEFAULT_TOPIC "data"
 #define KAFKA_POLLING_MS 5000
 #define KAFKA_MESSAGE_MAX_BYTES "134217728"
 #define MSG_HEADER_FRAME_SIZE_KEY "data_size"
@@ -37,41 +37,40 @@ using namespace log4cxx::helpers;
 
 namespace FrameProcessor {
 
-  /**
-   * KafkaProducerPlugin integrates Odin with Kafka.
-   *
-   * It creates and send messages that contains frame data and metadata
-   * to one or more Kafka servers.
-   *
-   * Plugin parameters:
-   *  servers: Kafka broker list using format IP:PORT[,IP2:PORT2,...]
-   *           Once this is set, the plugin starts delivering to the specified server/s.
-   *  dataset: Dataset name of frame that will be delivered. Defaults to "data".
-   *  topic: Topic name of the queue to send the message to. Defaults to "data".
-   *  partition: Partition number. Defaults to RD_KAFKA_PARTITION_UA (automatic partitioning)
-   *  include_parameters: Boolean indicating if frame parameters should be included in the message.
-   *                      Defaults to true.
-   *
-   * Status variables:
-   *  sent: Number of sent frames.
-   *  lost: Number of lost frames.
-   *  ack:  Number of acknowledged frames.
-   */
-  class KafkaProducerPlugin : public FrameProcessorPlugin {
-  public:
-
+/**
+ * KafkaProducerPlugin integrates Odin with Kafka.
+ *
+ * It creates and send messages that contains frame data and metadata
+ * to one or more Kafka servers.
+ *
+ * Plugin parameters:
+ *  servers: Kafka broker list using format IP:PORT[,IP2:PORT2,...]
+ *           Once this is set, the plugin starts delivering to the specified server/s.
+ *  dataset: Dataset name of frame that will be delivered. Defaults to "data".
+ *  topic: Topic name of the queue to send the message to. Defaults to "data".
+ *  partition: Partition number. Defaults to RD_KAFKA_PARTITION_UA (automatic partitioning)
+ *  include_parameters: Boolean indicating if frame parameters should be included in the message.
+ *                      Defaults to true.
+ *
+ * Status variables:
+ *  sent: Number of sent frames.
+ *  lost: Number of lost frames.
+ *  ack:  Number of acknowledged frames.
+ */
+class KafkaProducerPlugin : public FrameProcessorPlugin {
+public:
     KafkaProducerPlugin();
 
     ~KafkaProducerPlugin();
 
     /* FrameProcessor interface methods */
-    void configure(OdinData::IpcMessage &config, OdinData::IpcMessage &reply);
+    void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
 
-    void requestConfiguration(OdinData::IpcMessage &reply);
+    void requestConfiguration(OdinData::IpcMessage& reply);
 
-    void status(OdinData::IpcMessage &status);
+    void status(OdinData::IpcMessage& status);
 
-    void process_frame(boost::shared_ptr <Frame> frame);
+    void process_frame(boost::shared_ptr<Frame> frame);
 
     bool reset_statistics();
 
@@ -82,7 +81,7 @@ namespace FrameProcessor {
 
     void on_message_ack();
 
-    void on_message_error(const char *error);
+    void on_message_error(const char* error);
 
     void configure_kafka_servers(std::string servers);
 
@@ -92,8 +91,7 @@ namespace FrameProcessor {
 
     void configure_dataset(std::string dataset);
 
-    void *create_message(boost::shared_ptr<Frame> frame,
-                         size_t &nbytes);
+    void* create_message(boost::shared_ptr<Frame> frame, size_t& nbytes);
 
     void enqueue_frame(boost::shared_ptr<Frame> frame);
 
@@ -109,9 +107,9 @@ namespace FrameProcessor {
 
     static constexpr char STATUS_FRAMES_SENT[5] = "sent";
     static constexpr char STATUS_FRAMES_LOST[5] = "lost";
-    static constexpr char STATUS_FRAMES_ACK[4]  = "ack";
+    static constexpr char STATUS_FRAMES_ACK[4] = "ack";
 
-  private:
+private:
     /** Pointer to logger */
     LoggerPtr logger_;
     /** Name of the dataset that will be delivered */
@@ -123,9 +121,9 @@ namespace FrameProcessor {
     /** Partition number */
     int32_t partition_;
     /** Pointer to a Kafka producer handler */
-    rd_kafka_t *kafka_producer_;
+    rd_kafka_t* kafka_producer_;
     /** Pointer to a Kafka topic handler */
-    rd_kafka_topic_t *kafka_topic_;
+    rd_kafka_topic_t* kafka_topic_;
     /** Number of sent frames */
     uint32_t frames_sent_;
     /** Number of lost frames */
@@ -152,9 +150,8 @@ namespace FrameProcessor {
     static const std::string CONFIG_DATASET;
     /** Configuration constant for include_parameters */
     static const std::string CONFIG_INCLUDE_PARAMETERS;
-
-  };
+};
 
 } /* namespace FrameProcessor */
 
-#endif //KAFKAPRODUCERPLUGIN_H
+#endif // KAFKAPRODUCERPLUGIN_H

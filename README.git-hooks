@@ -1,0 +1,12 @@
+6th March 2026
+
+To allow sharing of git hooks they have been stored in the directory .githooks
+For them to be used you MUST run the following command (only needs to be run once)
+
+Either:
+
+   scripts/setup-git.sh
+
+Or:
+
+   git config core.hooksPath .githooks

@@ -11,39 +11,33 @@
 #include <exception>
 #include <string>
 
-namespace FrameReceiver
-{
+namespace FrameReceiver {
 
-  //! FrameReceiverException - custom exception class implementing "what" for error string
-  class FrameReceiverException : public std::exception
-  {
-  public:
-
+//! FrameReceiverException - custom exception class implementing "what" for error string
+class FrameReceiverException : public std::exception {
+public:
     //! Create FrameReceiverException with no message
     FrameReceiverException(void) throw() :
-        what_("")
-    { };
+        what_("") { };
 
     //! Creates FrameReceiverExcetpion with informational message
     FrameReceiverException(const std::string what) throw() :
-        what_(what)
-    {};
+        what_(what) { };
 
     //! Returns the content of the informational message
     virtual const char* what(void) const throw()
     {
-      return what_.c_str();
+        return what_.c_str();
     };
 
     //! Destructor
-    ~FrameReceiverException(void) throw() {};
+    ~FrameReceiverException(void) throw() { };
 
-  private:
-
+private:
     // Member variables
-    const std::string what_;  //!< Informational message about the exception
+    const std::string what_; //!< Informational message about the exception
 
-  }; // FrameReceiverException
+}; // FrameReceiverException
 }
 
 #endif /* FRAMERECEIVER_INCLUDE_FRAMERECEIVEREXCEPTION_H_ */
