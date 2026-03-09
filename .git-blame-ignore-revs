@@ -14,3 +14,6 @@ e0e03e2f9ae61ce6aa08c77ac44535cf4a6894d0
 
 # 19th June 2017 Reformatting of common code
 65b6cb97e003b14024e70c9e093b520b7700963d
+
+# 9th March 2026 Reformatting of all non-3rd party code using clang-format
+0f53ceb934453f883a009e941a00a22b12277ff1
