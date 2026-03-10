@@ -1,8 +1,8 @@
+# Require CMake version >=3.22 (default in Ubuntu 22.04)
+cmake_minimum_required(VERSION 3.22)
+
 # Project name
 project(OdinData)
-
-# Require CMake version >=2.8
-cmake_minimum_required(VERSION 2.8)
 
 # Set output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
