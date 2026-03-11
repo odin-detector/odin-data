@@ -38,13 +38,13 @@ class BloscPlugin : public FrameProcessorPlugin {
 public:
     BloscPlugin();
     virtual ~BloscPlugin();
-    boost::shared_ptr<Frame> compress_frame(boost::shared_ptr<Frame> frame);
 
     /** Configuration constants */
     static const std::string CONFIG_BLOSC_COMPRESSOR;
     static const std::string CONFIG_BLOSC_THREADS;
     static const std::string CONFIG_BLOSC_LEVEL;
     static const std::string CONFIG_BLOSC_SHUFFLE;
+    static const std::string CONFIG_BLOSC_MODE;
 
     // Baseclass API to implement:
     void process_frame(boost::shared_ptr<Frame> frame);
@@ -59,9 +59,22 @@ public:
 
 private:
     // Methods unique to this class
+    std::pair<std::unique_ptr<Frame>, bool> compress_frame(boost::shared_ptr<Frame> frame);
+    std::pair<std::unique_ptr<Frame>, bool> decompress_frame(boost::shared_ptr<Frame>& frame);
     void update_compression_settings();
     void* get_buffer(size_t nbytes);
-
+    friend struct Mode_map;
+    enum class Mode {
+        COMPRESS,
+        DECOMPRESS,
+        OFF
+    };
+    typedef struct {
+        size_t type_size;
+        size_t uncompressed_size;
+        unsigned int threads;
+        unsigned int blosc_compressor;
+    } BloscDecompressionSettings;
     // private data
     /** Pointer to logger */
     LoggerPtr logger_;
@@ -73,9 +86,11 @@ private:
     BloscCompressionSettings compression_settings_;
     /** Compression settings for the next acquisition */
     BloscCompressionSettings commanded_compression_settings_;
-    /** Temporary buffer for compressed data */
+    /** Temporary buffer for compressed/decompressed data */
     void* data_buffer_ptr_;
     size_t data_buffer_size_;
+    /** Mode the plugin is configured to */
+    Mode plugin_mode_;
 };
 
 } /* namespace FrameProcessor */

@@ -64,13 +64,24 @@ public:
 
 BOOST_FIXTURE_TEST_SUITE(BloscPluginUnitTest, BloscPluginTestFixture);
 
-BOOST_AUTO_TEST_CASE(BloscPlugin_process_frame)
+BOOST_AUTO_TEST_CASE(BloscPlugin_process_frame_compress)
 {
     // TODO: simply push a frame through the BloscPlugin to trigger the process_frame call and test the compression
     // Unfortunately process_frame is private and can't be called like this. So how?
-    BOOST_REQUIRE_NO_THROW(blosc_plugin.compress_frame(frame));
-    BOOST_REQUIRE_NO_THROW(blosc_plugin.compress_frame(frame));
-    BOOST_REQUIRE_NO_THROW(blosc_plugin.compress_frame(frames[0]));
+    BOOST_REQUIRE_NO_THROW(blosc_plugin.process_frame(frame));
+    BOOST_REQUIRE_NO_THROW(blosc_plugin.process_frame(frame));
+    BOOST_REQUIRE_NO_THROW(blosc_plugin.process_frame(frames[0]));
+}
+//
+BOOST_AUTO_TEST_CASE(BloscPlugin_process_frame_decompress)
+{
+    OdinData::IpcMessage cfg_;
+    OdinData::IpcMessage reply;
+    BOOST_CHECK_NO_THROW(cfg_.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_MODE, std::string("decompress")));
+    BOOST_REQUIRE_NO_THROW(blosc_plugin.configure(cfg_, reply));
+    BOOST_REQUIRE_NO_THROW(blosc_plugin.process_frame(frame));
+    BOOST_REQUIRE_NO_THROW(blosc_plugin.process_frame(frame));
+    BOOST_REQUIRE_NO_THROW(blosc_plugin.process_frame(frames[0]));
 }
 
 BOOST_AUTO_TEST_CASE(BloscPlugin_request_metadata)
