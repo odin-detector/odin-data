@@ -318,9 +318,10 @@ void BloscPlugin::process_frame(boost::shared_ptr<Frame> src_frame)
         break;
     };
 
-    LOG4CXX_DEBUG_LEVEL(3, logger_, "Pushing frame");
-    if (ouput_frame.second)
+    if (ouput_frame.second){
+        LOG4CXX_DEBUG_LEVEL(3, logger_, "Pushing frame");
         this->push(ouput_frame.first);
+    }
 }
 
 /** Configure
