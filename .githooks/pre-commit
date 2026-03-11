@@ -46,7 +46,9 @@ fi
 
 # Check that source code formatting is not required. No changes are made by this call it
 # simply reports if changes are required
-scripts/format_source.sh --dry-run --Werror cpp
+if ! scripts/format_source.sh --dry-run --Werror cpp; then
+    exit 1
+fi
 
 # If there are whitespace errors, print the offending file names and fail.
 exec git diff-index --check --cached $against --
