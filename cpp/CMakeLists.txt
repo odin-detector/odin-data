@@ -42,10 +42,17 @@ endif(NOT APPLE)
 # directories of additional CMake modules (ie. MacroOutOfSourceBuild.cmake):
 set(CMAKE_MODULE_PATH ${OdinData_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
+# Newer versions of cmake don't include this flag by default and seems to be needed for
+# use of dlopen so that symbols are not pruned from the symbol table
+# TODO is this required for APPLE as well?
+if(NOT APPLE)
+  add_link_options("-rdynamic")
+endif(NOT APPLE)
+
 # Allow macOS shared (dynamic) libraries to link with undefined symbols
 if (APPLE)
-	message("Allowing undefined symbols in macOS shared library linking")
-    set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -undefined dynamic_lookup")
+  message("Allowing undefined symbols in macOS shared library linking")
+  set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -undefined dynamic_lookup")
 endif(APPLE)
 
 # Set up RPATH handling correctly so that both built and installed targets have the appropriate
