@@ -1,3 +1,5 @@
+include(${CMAKE_SOURCE_DIR}/cmake/CodeCoverage.cmake)
+
 set(CMAKE_INCLUDE_CURRENT_DIR on)
 ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK)
 ADD_DEFINITIONS(-DBUILD_DIR="${CMAKE_BINARY_DIR}")
@@ -35,4 +37,5 @@ if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
     target_link_libraries(frameReceiverTest ${PTHREAD_LIBRARY} ${REALTIME_LIBRARY})
 endif()
 
+add_code_coverage(frameReceiverTest)
 install(TARGETS frameReceiverTest RUNTIME DESTINATION bin)
