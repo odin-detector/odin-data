@@ -44,10 +44,7 @@ set(CMAKE_MODULE_PATH ${OdinData_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
 # Newer versions of cmake don't include this flag by default and seems to be needed for
 # use of dlopen so that symbols are not pruned from the symbol table
-# TODO is this required for APPLE as well?
-if(NOT APPLE)
-  add_link_options("-rdynamic")
-endif(NOT APPLE)
+add_link_options("-rdynamic")
 
 # Allow macOS shared (dynamic) libraries to link with undefined symbols
 if (APPLE)
