@@ -28,7 +28,7 @@ jobs:
           echo "INSTALL_PREFIX is ${INSTALL_PREFIX}"
           mkdir -p $INSTALL_PREFIX
           mkdir build && cd build
-          cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX ../cpp
+          cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX -DCODE_COVERAGE=1 ../cpp
           make -j8 VERBOSE=1 && make install VERBOSE=1
           ls -la $INSTALL_PREFIX
       - name: Run frame receiver unit tests
@@ -46,6 +46,15 @@ jobs:
           INSTALL_PREFIX: ${{ env.INSTALL_PREFIX }}
         run: |
           $INSTALL_PREFIX/bin/odinDataTest --json=$INSTALL_PREFIX/test_config/dummyUDP.json
+      - name: Upload coverage to Codecov
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        uses: codecov/codecov-action@v5
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        with:
+          name: ${{ matrix.os }}
+          files: ./coverage.xml
+          fail_ci_if_error: false
       - name: Slack Notification
         uses: rtCamp/action-slack-notify@v2
         env:

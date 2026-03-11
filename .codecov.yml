@@ -1,0 +1,2 @@
+ignore:
+  - "cpp/common/include/rapidjson"
