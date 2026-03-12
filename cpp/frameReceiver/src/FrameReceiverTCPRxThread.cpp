@@ -106,29 +106,31 @@ void FrameReceiverTCPRxThread::cleanup_specific_service(void)
     close(recv_socket_);
 }
 
-void FrameReceiverTCPRxThread::handle_receive_socket(int recv_socket_,
-                                                     int recv_port) {
-  // Receive a message from the main thread channel and place it directly into
-  // the provided memory buffer
-  void *frame_buffer = frame_decoder_->get_next_message_buffer();
-  size_t message_size = frame_decoder_->get_next_message_size();
-  size_t bytes_read = 0;
-  size_t total_bytes_read = 0;
+void FrameReceiverTCPRxThread::handle_receive_socket(int recv_socket_, int recv_port)
+{
+    // Receive a message from the main thread channel and place it directly into
+    // the provided memory buffer
+    void* frame_buffer = frame_decoder_->get_next_message_buffer();
+    size_t message_size = frame_decoder_->get_next_message_size();
+    ssize_t bytes_read = 0;
+    size_t total_bytes_read = 0;
 
-  unsigned char* fb_bytePtr = reinterpret_cast<unsigned char*>(frame_buffer); // reinterpret the void* address as an unsigned char pointer so we can do arithmetic
-  while(((bytes_read = read(recv_socket_, reinterpret_cast<void*>(fb_bytePtr), message_size - total_bytes_read)) > 0) && total_bytes_read < message_size) {
-    total_bytes_read += bytes_read;
-    fb_bytePtr += bytes_read;
-  }
+    unsigned char* fb_bytePtr = reinterpret_cast<unsigned char*>(frame_buffer
+    ); // reinterpret the void* address as an unsigned char pointer so we can do arithmetic
+    while (((bytes_read = read(recv_socket_, reinterpret_cast<void*>(fb_bytePtr), message_size - total_bytes_read)) > 0)
+           && total_bytes_read < message_size) {
+        total_bytes_read += bytes_read;
+        fb_bytePtr += bytes_read;
+    }
 
-  if (bytes_read < 0) {
-    std::array<char, 128> err_msg{};
-    strerror_r(errno, err_msg.data(), err_msg.max_size());
-    LOG4CXX_ERROR(logger_, err_msg.data());
-    return;
-  }else if(total_bytes_read < message_size){
-    // We handle this case 
-    return;
-  }
-  frame_decoder_->process_message(total_bytes_read);
+    if (bytes_read < 0) {
+        std::array<char, 128> err_msg {};
+        strerror_r(errno, err_msg.data(), err_msg.max_size());
+        LOG4CXX_ERROR(logger_, err_msg.data());
+        return;
+    } else if (total_bytes_read < message_size) {
+        // We handle this case
+        return;
+    }
+    frame_decoder_->process_message(total_bytes_read);
 }
