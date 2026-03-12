@@ -13,8 +13,7 @@
 
 #include <log4cxx/logger.h>
 
-namespace FrameProcessor
-{
+namespace FrameProcessor {
 
 /**
  * The DataBlock and DataBlockPool classes provide memory management for
@@ -28,12 +27,11 @@ namespace FrameProcessor
  * Data block memory should NOT be freed outside of the block, when a data block
  * is destroyed it frees its own memory.
  */
-  class DataBlock {
+class DataBlock {
 
     friend class DataBlockPool;
 
-  public:
-
+public:
     /** Construct a data block */
     DataBlock(size_t block_size);
 
@@ -58,8 +56,7 @@ namespace FrameProcessor
     /** Return the current unique index counter */
     static int get_current_index_count();
 
-  private:
-
+private:
     /** Resize the data block */
     void resize(size_t block_size);
 
@@ -77,8 +74,7 @@ namespace FrameProcessor
 
     /** Static counter for the unique index */
     static int index_counter_;
-
-  };
+};
 
 } /* namespace FrameProcessor */
 

@@ -3,13 +3,12 @@
 
 namespace FrameSimulator {
 
-    struct Packet {
+struct Packet {
 
-        const unsigned char* data;
-        int size;
-
-    };
+    const unsigned char* data;
+    int size;
+};
 
 }
 
-#endif //FRAMESIMULATOR_PACKET_H
+#endif // FRAMESIMULATOR_PACKET_H

@@ -97,6 +97,8 @@ struct GenericMember {
 
     \see GenericMember, GenericValue::MemberIterator, GenericValue::ConstMemberIterator
  */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 template <bool Const, typename Encoding, typename Allocator>
 class GenericMemberIterator
     : public std::iterator<std::random_access_iterator_tag
@@ -108,7 +110,7 @@ class GenericMemberIterator
     typedef GenericMember<Encoding,Allocator> PlainType;
     typedef typename internal::MaybeAddConst<Const,PlainType>::Type ValueType;
     typedef std::iterator<std::random_access_iterator_tag,ValueType> BaseType;
-
+#pragma GCC diagnostic pop
 public:
     //! Iterator type itself
     typedef GenericMemberIterator Iterator;

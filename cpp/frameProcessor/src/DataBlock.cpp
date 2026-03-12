@@ -5,12 +5,11 @@
  *      Author: gnx91527
  */
 
-#include <DataBlock.h>
 #include "DebugLevelLogger.h"
+#include <DataBlock.h>
 #include <malloc.h>
 
-namespace FrameProcessor
-{
+namespace FrameProcessor {
 int DataBlock::index_counter_ = 0;
 
 static const int alignment = 64;
@@ -24,15 +23,14 @@ DataBlock::DataBlock(size_t block_size) :
     logger_(log4cxx::Logger::getLogger("FP.DataBlock")),
     allocated_bytes_(block_size)
 {
-  LOG4CXX_DEBUG_LEVEL(2, logger_, "Constructing DataBlock, allocating " << block_size << " bytes");
-  // Create this DataBlock's unique index
-  index_ = DataBlock::index_counter_++;
-  // Allocate the memory required for this data block
-  int rc = posix_memalign(&block_ptr_, alignment, block_size);
-  if(rc)
-  {
-    LOG4CXX_ERROR(logger_, "Exhausted memory (" << rc << "): could not allocate " << block_size << " bytes");
-  }
+    LOG4CXX_DEBUG_LEVEL(2, logger_, "Constructing DataBlock, allocating " << block_size << " bytes");
+    // Create this DataBlock's unique index
+    index_ = DataBlock::index_counter_++;
+    // Allocate the memory required for this data block
+    int rc = posix_memalign(&block_ptr_, alignment, block_size);
+    if (rc) {
+        LOG4CXX_ERROR(logger_, "Exhausted memory (" << rc << "): could not allocate " << block_size << " bytes");
+    }
 }
 
 /**
@@ -40,8 +38,8 @@ DataBlock::DataBlock(size_t block_size) :
  */
 DataBlock::~DataBlock()
 {
-  // Free the memory
-  free(block_ptr_);
+    // Free the memory
+    free(block_ptr_);
 }
 
 /**
@@ -51,7 +49,7 @@ DataBlock::~DataBlock()
  */
 int DataBlock::get_index()
 {
-  return index_;
+    return index_;
 }
 
 /**
@@ -61,7 +59,7 @@ int DataBlock::get_index()
  */
 size_t DataBlock::get_size()
 {
-  return allocated_bytes_;
+    return allocated_bytes_;
 }
 
 /**
@@ -75,19 +73,18 @@ size_t DataBlock::get_size()
 void DataBlock::resize(size_t block_size)
 {
     LOG4CXX_DEBUG_LEVEL(2, logger_, "Resizing DataBlock " << index_ << " to " << block_size << " bytes");
-  // If the new size requested is the different
-  // to our current size then re-allocate
+    // If the new size requested is the different
+    // to our current size then re-allocate
     if (block_size != allocated_bytes_) {
-    // Free the current allocation first
-    free(block_ptr_);
-    // Allocate the new number of bytes
-    int rc = posix_memalign(&block_ptr_, alignment, block_size);
-    if(rc)
-    {
-        LOG4CXX_ERROR(logger_, "Exhausted memory (" << rc << "): could not reallocate " << block_size << " bytes");
-    }
-    // Record our new size
-    allocated_bytes_ = block_size;
+        // Free the current allocation first
+        free(block_ptr_);
+        // Allocate the new number of bytes
+        int rc = posix_memalign(&block_ptr_, alignment, block_size);
+        if (rc) {
+            LOG4CXX_ERROR(logger_, "Exhausted memory (" << rc << "): could not reallocate " << block_size << " bytes");
+        }
+        // Record our new size
+        allocated_bytes_ = block_size;
     }
 }
 
@@ -101,13 +98,15 @@ void DataBlock::resize(size_t block_size)
  */
 void DataBlock::copy_data(const void* data_src, size_t block_size)
 {
-  if (block_size > allocated_bytes_) {
-    LOG4CXX_WARN(logger_, "Trying to copy: " << block_size <<
-                          " but allocated buffer only: " << allocated_bytes_ <<
-                          " bytes. Truncating copy.");
-    block_size = allocated_bytes_;
-  }
-  memcpy(block_ptr_, data_src, block_size);
+    if (block_size > allocated_bytes_) {
+        LOG4CXX_WARN(
+            logger_,
+            "Trying to copy: " << block_size << " but allocated buffer only: " << allocated_bytes_
+                               << " bytes. Truncating copy."
+        );
+        block_size = allocated_bytes_;
+    }
+    memcpy(block_ptr_, data_src, block_size);
 }
 
 /**
@@ -117,7 +116,7 @@ void DataBlock::copy_data(const void* data_src, size_t block_size)
  */
 const void* DataBlock::get_data()
 {
-  return block_ptr_;
+    return block_ptr_;
 }
 
 /**
@@ -127,7 +126,7 @@ const void* DataBlock::get_data()
  */
 void* DataBlock::get_writeable_data()
 {
-  return block_ptr_;
+    return block_ptr_;
 }
 
 /**
@@ -135,9 +134,9 @@ void* DataBlock::get_writeable_data()
  *
  * \return - int current index count
  */
-int DataBlock::get_current_index_count() {
-  return DataBlock::index_counter_;
+int DataBlock::get_current_index_count()
+{
+    return DataBlock::index_counter_;
 }
-
 
 } /* namespace FrameProcessor */

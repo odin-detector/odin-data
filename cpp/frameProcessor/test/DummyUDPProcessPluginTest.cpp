@@ -5,28 +5,31 @@
  *      Author: Alan Greer
  */
 
-#include <boost/test/unit_test.hpp>
-#include <DebugLevelLogger.h>
-#include "FrameProcessorDefinitions.h"
 #include "DummyUDPProcessPlugin.h"
+#include "FrameProcessorDefinitions.h"
 #include "IpcMessage.h"
+#include <DebugLevelLogger.h>
+#include <boost/test/unit_test.hpp>
 
 class DummyUDPProcessPluginTestFixture {
 public:
-    DummyUDPProcessPluginTestFixture() {
+    DummyUDPProcessPluginTestFixture()
+    {
         set_debug_level(3);
 
         dummy_plugin.set_name("dummy");
     }
 
-    ~DummyUDPProcessPluginTestFixture() {}
+    ~DummyUDPProcessPluginTestFixture()
+    {
+    }
 
     FrameProcessor::DummyUDPProcessPlugin dummy_plugin;
 };
 
 BOOST_FIXTURE_TEST_SUITE(DummyUDPProcessPluginUnitTest, DummyUDPProcessPluginTestFixture);
 
-BOOST_AUTO_TEST_CASE( DummyUDPProcessPlugin_commands )
+BOOST_AUTO_TEST_CASE(DummyUDPProcessPlugin_commands)
 {
     std::vector<std::string> commands_reply;
     OdinData::IpcMessage command_reply;
@@ -44,4 +47,4 @@ BOOST_AUTO_TEST_CASE( DummyUDPProcessPlugin_commands )
     BOOST_REQUIRE_NO_THROW(dummy_plugin.execute("print", command_reply));
 };
 
-BOOST_AUTO_TEST_SUITE_END(); //DummyUDPProcessPluginUnitTest
+BOOST_AUTO_TEST_SUITE_END(); // DummyUDPProcessPluginUnitTest
