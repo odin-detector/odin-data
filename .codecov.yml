@@ -1,2 +1,5 @@
 ignore:
-  - "cpp/common/include/rapidjson", "cpp/test", "cpp/frameProcessor/test", "cpp/frameReceiver/test"
+  - "cpp/common/include/rapidjson"
+  - "cpp/test"
+  - "cpp/frameProcessor/test"
+  - "cpp/frameReceiver/test"
