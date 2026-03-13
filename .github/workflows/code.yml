@@ -28,7 +28,7 @@ jobs:
           echo "INSTALL_PREFIX is ${INSTALL_PREFIX}"
           mkdir -p $INSTALL_PREFIX
           mkdir build && cd build
-          cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX -DCODE_COVERAGE=1 ../cpp
+          cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX -DCODE_COVERAGE_ALL=1 ../cpp
           make -j8 VERBOSE=1 && make install VERBOSE=1
           ls -la $INSTALL_PREFIX
       - name: Run frame receiver unit tests
