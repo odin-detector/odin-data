@@ -48,7 +48,6 @@ public:
 
     // Baseclass API to implement:
     void process_frame(boost::shared_ptr<Frame> frame);
-    void status(OdinData::IpcMessage& status);
     void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
     void requestConfiguration(OdinData::IpcMessage& reply);
     int get_version_major();
