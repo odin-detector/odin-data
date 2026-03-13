@@ -26,9 +26,15 @@ jobs:
           INSTALL_PREFIX: ${{ env.INSTALL_PREFIX }}
         run: |
           echo "INSTALL_PREFIX is ${INSTALL_PREFIX}"
+          # Only run coverage on one OS version, a Release build on the other
+          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+              export BUILD_ARGS="-DCODE_COVERAGE_ALL=1"
+          else
+              export BUILD_ARGS="-DCMAKE_BUILD_TYPE=Release"
+          fi
           mkdir -p $INSTALL_PREFIX
           mkdir build && cd build
-          cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX -DCODE_COVERAGE_ALL=1 ../cpp
+          cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX ${BUILD_ARGS} ../cpp
           make -j8 VERBOSE=1 && make install VERBOSE=1
           ls -la $INSTALL_PREFIX
       - name: Run frame receiver unit tests
