@@ -32,3 +32,12 @@ jobs:
       - name: Run tests
         run:
           pytest -vs --cov=odin_data --cov-report=term-missing
+
+      - name: Upload coverage to Codecov
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.14' }}
+        uses: codecov/codecov-action@v5
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        with:
+          name: ${{ matrix.python-version }}
+          fail_ci_if_error: false
