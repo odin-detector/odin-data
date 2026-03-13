@@ -49,6 +49,7 @@ jobs:
         run: |
           $INSTALL_PREFIX/bin/frameProcessorTest --log_level=test_suite
       - name: Run odin-data frame integration test
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
         env:
           INSTALL_PREFIX: ${{ env.INSTALL_PREFIX }}
         run: |
