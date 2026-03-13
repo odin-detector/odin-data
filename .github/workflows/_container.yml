@@ -1,9 +1,5 @@
-name: Container CI
-
-# Only tags are pushed to the registry because of rules in the steps
 on:
-  push:
-  pull_request:
+  workflow_call:
 
 jobs:
   build:
