@@ -1,8 +1,8 @@
-name: Python CI
-on: [push, pull_request]
+on:
+  workflow_call:
 
 jobs:
-  test:
+  python_test:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:

@@ -1,6 +1,7 @@
 name: Cpp test CI
 
 on:
+  workflow_call:
   push:
     branches:
       - master
@@ -12,7 +13,7 @@ env:
   INSTALL_PREFIX: ${{ github.workspace }}/prefix
 
 jobs:
-  test:
+  cpp_test:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
