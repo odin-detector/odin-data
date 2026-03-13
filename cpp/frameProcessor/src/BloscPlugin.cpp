@@ -22,6 +22,20 @@ const std::string BloscPlugin::CONFIG_BLOSC_THREADS = "threads";
 const std::string BloscPlugin::CONFIG_BLOSC_LEVEL = "level";
 const std::string BloscPlugin::CONFIG_BLOSC_SHUFFLE = "shuffle";
 
+const char BLOSC_NOSHUFFLE_STR[] = "noshuffle";
+const char BLOSC_SHUFFLE_STR[] = "shuffle";
+const char BLOSC_BITSHUFFLE_STR[] = "bitshuffle";
+
+// hashmap alias
+using string2int = std::unordered_map<std::string, unsigned int>;
+static std::unordered_map<std::string, const unsigned int> shuffle_str2i { { BLOSC_NOSHUFFLE_STR, 0 },
+                                                                           { BLOSC_SHUFFLE_STR, 1 },
+                                                                           { BLOSC_BITSHUFFLE_STR, 2 } };
+static std::unordered_map<std::string, const unsigned int> compressor_str2i {
+    { BLOSC_BLOSCLZ_COMPNAME, 0 }, { BLOSC_LZ4_COMPNAME, 1 },  { BLOSC_LZ4HC_COMPNAME, 2 },
+    { BLOSC_SNAPPY_COMPNAME, 3 },  { BLOSC_ZLIB_COMPNAME, 4 }, { BLOSC_ZSTD_COMPNAME, 5 }
+};
+
 /**
  * cd_values[7] meaning (see blosc.h):
  *   0: reserved
@@ -44,8 +58,8 @@ void create_cd_values(const BloscCompressionSettings& settings, std::vector<unsi
     cd_values[2] = static_cast<unsigned int>(settings.type_size);
     cd_values[3] = static_cast<unsigned int>(settings.uncompressed_size);
     cd_values[4] = settings.compression_level;
-    cd_values[5] = settings.shuffle;
-    cd_values[6] = settings.blosc_compressor;
+    cd_values[5] = shuffle_str2i[settings.shuffle];
+    cd_values[6] = compressor_str2i[settings.blosc_compressor];
 }
 
 /**
@@ -57,17 +71,19 @@ BloscPlugin::BloscPlugin() :
     data_buffer_size_(0)
 {
     add_config_param_metadata(
-        CONFIG_BLOSC_COMPRESSOR, PMDD::UINT_T, PMDA::READ_WRITE,
-        { BLOSC_BLOSCLZ, BLOSC_LZ4, BLOSC_LZ4HC, BLOSC_SNAPPY, BLOSC_ZLIB, BLOSC_ZSTD }
+        CONFIG_BLOSC_COMPRESSOR, PMDD::STRING_T, PMDA::READ_WRITE,
+        { BLOSC_BLOSCLZ_COMPNAME, BLOSC_LZ4_COMPNAME, BLOSC_LZ4HC_COMPNAME, BLOSC_SNAPPY_COMPNAME, BLOSC_ZLIB_COMPNAME,
+          BLOSC_ZSTD_COMPNAME }
     );
     add_config_param_metadata(CONFIG_BLOSC_THREADS, PMDD::UINT_T, PMDA::READ_WRITE, 1);
     add_config_param_metadata(CONFIG_BLOSC_LEVEL, PMDD::UINT_T, PMDA::READ_WRITE, 0, 9);
     add_config_param_metadata(
-        CONFIG_BLOSC_SHUFFLE, PMDD::UINT_T, PMDA::READ_WRITE, { BLOSC_NOSHUFFLE, BLOSC_SHUFFLE, BLOSC_BITSHUFFLE }
+        CONFIG_BLOSC_SHUFFLE, PMDD::STRING_T, PMDA::READ_WRITE,
+        { BLOSC_NOSHUFFLE_STR, BLOSC_SHUFFLE_STR, BLOSC_BITSHUFFLE_STR }
     );
 
-    this->commanded_compression_settings_.blosc_compressor = BLOSC_LZ4;
-    this->commanded_compression_settings_.shuffle = BLOSC_BITSHUFFLE;
+    this->commanded_compression_settings_.blosc_compressor = BLOSC_LZ4_COMPNAME;
+    this->commanded_compression_settings_.shuffle = BLOSC_BITSHUFFLE_STR;
     this->commanded_compression_settings_.compression_level = 1;
     this->commanded_compression_settings_.type_size = 0;
     this->commanded_compression_settings_.uncompressed_size = 0;
@@ -140,8 +156,8 @@ boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> sr
                                     << " dest=" << dest_frame->get_image_ptr()
     );
     compressed_size = blosc_compress(
-        c_settings.compression_level, c_settings.shuffle, c_settings.type_size, c_settings.uncompressed_size,
-        src_data_ptr, dest_frame->get_image_ptr(), dest_data_size
+        c_settings.compression_level, shuffle_str2i[c_settings.shuffle], c_settings.type_size,
+        c_settings.uncompressed_size, src_data_ptr, dest_frame->get_image_ptr(), dest_data_size
     );
     if (compressed_size < 0) {
         std::stringstream ss;
@@ -174,7 +190,9 @@ void BloscPlugin::update_compression_settings()
 
     int ret = 0;
     const char* p_compressor_name;
-    ret = blosc_compcode_to_compname(this->compression_settings_.blosc_compressor, &p_compressor_name);
+    ret = blosc_compcode_to_compname(
+        compressor_str2i[this->compression_settings_.blosc_compressor], &p_compressor_name
+    );
     LOG4CXX_DEBUG_LEVEL(
         1, logger_,
         "Blosc compression settings: " << " acquisition=\"" << this->current_acquisition_ << "\""
@@ -282,46 +300,50 @@ void BloscPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& 
     }
 
     if (config.has_param(BloscPlugin::CONFIG_BLOSC_SHUFFLE)) {
-        unsigned int blosc_shuffle = config.get_param<unsigned int>(BloscPlugin::CONFIG_BLOSC_SHUFFLE);
+        std::string&& blosc_shuffle = config.get_param<std::string>(BloscPlugin::CONFIG_BLOSC_SHUFFLE);
         // Range checking: 0, 1, 2 are valid values. Anything else result in setting value 0 (no shuffle)
-        if (blosc_shuffle > BLOSC_BITSHUFFLE) {
+        if (!shuffle_str2i.count(blosc_shuffle)) {
             LOG4CXX_WARN(
                 logger_, "Commanded blosc shuffle: " << blosc_shuffle << " is invalid. Disabling SHUFFLE filter"
             );
-            blosc_shuffle = 0;
+            blosc_shuffle = BLOSC_NOSHUFFLE_STR;
             reply.set_param<std::string>("warning: shuffle filter", "Disabled");
         }
-        this->commanded_compression_settings_.shuffle = blosc_shuffle;
+        this->commanded_compression_settings_.shuffle = std::move(blosc_shuffle);
         if (this->current_acquisition_ == "") {
             this->update_compression_settings();
         }
-    }
 
-    if (config.has_param(BloscPlugin::CONFIG_BLOSC_THREADS)) {
-        unsigned int blosc_threads = config.get_param<unsigned int>(BloscPlugin::CONFIG_BLOSC_THREADS);
-        if (blosc_threads > BLOSC_MAX_THREADS) {
-            LOG4CXX_WARN(logger_, "Commanded blosc threads: " << blosc_threads << " is too large. Setting 8 threads.");
-            blosc_threads = 8;
-            reply.set_param<int>("warning: threads", blosc_threads);
-        }
-        this->commanded_compression_settings_.threads = blosc_threads;
-        if (this->current_acquisition_ == "") {
-            this->update_compression_settings();
+        if (config.has_param(BloscPlugin::CONFIG_BLOSC_SHUFFLE)) {
+            unsigned int blosc_shuffle = config.get_param<unsigned int>(BloscPlugin::CONFIG_BLOSC_SHUFFLE);
+            // Range checking: 0, 1, 2 are valid values. Anything else result in setting value 0 (no shuffle)
+            if (blosc_shuffle > BLOSC_BITSHUFFLE) {
+                LOG4CXX_WARN(
+                    logger_, "Commanded blosc shuffle: " << blosc_shuffle << " is invalid. Disabling SHUFFLE filter"
+                );
+                blosc_shuffle = 0;
+                reply.set_param<std::string>("warning: shuffle filter", "Disabled");
+            }
+            this->commanded_compression_settings_.shuffle = blosc_shuffle;
+            if (this->current_acquisition_ == "") {
+                this->update_compression_settings();
+            }
         }
     }
 
     if (config.has_param(BloscPlugin::CONFIG_BLOSC_COMPRESSOR)) {
-        unsigned int blosc_compressor = config.get_param<unsigned int>(BloscPlugin::CONFIG_BLOSC_COMPRESSOR);
-        if (blosc_compressor > BLOSC_ZSTD) {
+        std::string&& blosc_compressor = config.get_param<std::string>(BloscPlugin::CONFIG_BLOSC_COMPRESSOR);
+        // Range checking: 0, 1, 2, 3, 4, 5 are valid values. Anything else result in setting value  (no shuffle)
+        if (!compressor_str2i.count(blosc_compressor)) {
             LOG4CXX_WARN(
                 logger_,
                 "Commanded blosc compressor: " << blosc_compressor << " is invalid. Setting compressor: " << BLOSC_LZ4
                                                << "(" << BLOSC_LZ4_COMPNAME << ")"
             );
-            blosc_compressor = BLOSC_LZ4;
+            blosc_compressor = BLOSC_LZ4_COMPNAME;
             reply.set_param<int>("warning: compressor", BLOSC_LZ4);
         }
-        this->commanded_compression_settings_.blosc_compressor = blosc_compressor;
+        this->commanded_compression_settings_.blosc_compressor = std::move(blosc_compressor);
         if (this->current_acquisition_ == "") {
             this->update_compression_settings();
         }
