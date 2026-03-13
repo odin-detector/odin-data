@@ -54,7 +54,7 @@ jobs:
         run: |
           $INSTALL_PREFIX/bin/odinDataTest --json=$INSTALL_PREFIX/test_config/dummyUDP.json
       - name: Upload coverage to Codecov
-        if: ${{ matrix.os == 'ubuntu-latest' }}
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
         uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
