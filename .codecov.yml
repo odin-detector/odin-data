@@ -4,3 +4,4 @@ ignore:
   - "cpp/test"
   - "cpp/frameProcessor/test"
   - "cpp/frameReceiver/test"
+  - "cpp/frameSimulator"
