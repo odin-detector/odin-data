@@ -39,6 +39,8 @@ jobs:
       matrix:
         os: [ubuntu-22.04, ubuntu-latest]
     uses: ./.github/workflows/_code.yml
+    with:
+      os: ${{ matrix.os }}
 
   container:
     needs: [cpp_test, python_test]
