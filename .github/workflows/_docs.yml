@@ -1,12 +1,21 @@
 on:
   workflow_call:
+    inputs:
+      os:
+        type: string
+        description: The OS type for this job
+        required: true
+      python-version:
+        type: string
+        description: The version of python to install
+        required: true
 
 jobs:
   docs:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.os }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
         with:
           submodules: "true"
 
@@ -19,9 +28,9 @@ jobs:
         shell: bash
 
       - name: Set up python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
-          python-version: 3.11
+          python-version: ${{ inputs.python_version }}
 
       - name: Build Docs
         run: pip install ./python[dev] && sphinx-build -ET docs/ docs/build/html/

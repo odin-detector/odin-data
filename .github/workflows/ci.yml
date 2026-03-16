@@ -12,6 +12,8 @@ jobs:
 
   code_check:
     uses: ./.github/workflows/_code_check.yml
+    with:
+      os: ubuntu-latest
 
   python_test:
     strategy:
@@ -22,3 +24,26 @@ jobs:
     with:
       os: ${{ matrix.os }}
       python-version: ${{ matrix.python-version }}
+
+  docs:
+    uses: ./.github/workflows/_docs.yml
+    with:
+      os: ubuntu-latest
+    permissions:
+      contents: write
+
+  cpp_test:
+    needs: code_check
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-latest]
+    uses ./.github/workflows/_code.yml
+
+  container:
+    needs: [cpp_test, python_test]
+    uses ./.github/workflows/_container.yml
+    with:
+      os: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
