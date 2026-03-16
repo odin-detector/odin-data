@@ -9,6 +9,7 @@ on:
         required: true
 
 env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   INSTALL_PREFIX: ${{ github.workspace }}/prefix
 
 jobs:
