@@ -1,4 +1,4 @@
-name: Cpp test CI
+name: Cpp coverage CI
 
 on:
   push:
@@ -12,11 +12,8 @@ env:
   INSTALL_PREFIX: ${{ github.workspace }}/prefix
 
 jobs:
-  test:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-22.04, ubuntu-latest]
+  coverage:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -32,16 +29,9 @@ jobs:
         env:
           INSTALL_PREFIX: ${{ env.INSTALL_PREFIX }}
         run: |
-          echo "INSTALL_PREFIX is ${INSTALL_PREFIX}"
-          # Release build currently fails on Uuntu 22.04
-          if [[ "${{ matrix.os }}" == "ubuntu-22.04" ]]; then
-              export BUILD_ARGS="-DCMAKE_BUILD_TYPE=Debug"
-          else
-              export BUILD_ARGS="-DCMAKE_BUILD_TYPE=Release"
-          fi
           mkdir -p $INSTALL_PREFIX
           mkdir build && cd build
-          cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX ${BUILD_ARGS} ../cpp
+          cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX -DCODE_COVERAGE_ALL=1 ../cpp
           make -j8 VERBOSE=1 && make install VERBOSE=1
           ls -la $INSTALL_PREFIX
       - name: Run frame receiver unit tests
@@ -54,17 +44,12 @@ jobs:
           INSTALL_PREFIX: ${{ env.INSTALL_PREFIX }}
         run: |
           $INSTALL_PREFIX/bin/frameProcessorTest --log_level=test_suite
-      - name: Run odin-data frame integration test
+      - name: Upload coverage to Codecov
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
+        uses: codecov/codecov-action@v5
         env:
-          INSTALL_PREFIX: ${{ env.INSTALL_PREFIX }}
-        run: |
-          $INSTALL_PREFIX/bin/odinDataTest --json=$INSTALL_PREFIX/test_config/dummyUDP.json
-      - name: Slack Notification
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_CHANNEL: odin-data-notify
-          SLACK_COLOR: ${{ job.status }}
-          SLACK_ICON: https://avatars.githubusercontent.com/odin-detector?size=48
-          SLACK_TITLE: "odin-data CI tests completed: ${{ job.status }}"
-          SLACK_USERNAME: odin-detector
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        with:
+          name: ${{ matrix.os }}
+          files: ./coverage.xml
+          fail_ci_if_error: false
