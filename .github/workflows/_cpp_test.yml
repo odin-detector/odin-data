@@ -56,12 +56,3 @@ jobs:
           INSTALL_PREFIX: ${{ env.INSTALL_PREFIX }}
         run: |
           $INSTALL_PREFIX/bin/odinDataTest --json=$INSTALL_PREFIX/test_config/dummyUDP.json
-      - name: Slack Notification
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_CHANNEL: odin-data-notify
-          SLACK_COLOR: ${{ job.status }}
-          SLACK_ICON: https://avatars.githubusercontent.com/odin-detector?size=48
-          SLACK_TITLE: "odin-data CI tests completed: ${{ job.status }}"
-          SLACK_USERNAME: odin-detector
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
