@@ -30,7 +30,7 @@ jobs:
       - name: Set up python
         uses: actions/setup-python@v6
         with:
-          python-version: ${{ inputs.python_version }}
+          python-version: ${{ inputs.python-version }}
 
       - name: Build Docs
         run: pip install ./python[dev] && sphinx-build -ET docs/ docs/build/html/
