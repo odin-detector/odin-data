@@ -31,7 +31,7 @@ jobs:
         run: |
           echo "INSTALL_PREFIX is ${INSTALL_PREFIX}"
           # Release build currently fails on Uuntu 22.04
-          if [[ "${{ matrix.os }}" == "ubuntu-22.04" ]]; then
+          if [[ "${{ inputs.os }}" == "ubuntu-22.04" ]]; then
               export BUILD_ARGS="-DCMAKE_BUILD_TYPE=Debug"
           else
               export BUILD_ARGS="-DCMAKE_BUILD_TYPE=Release"

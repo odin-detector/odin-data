@@ -25,22 +25,29 @@ jobs:
       os: ${{ matrix.os }}
       python-version: ${{ matrix.python-version }}
 
+  cpp_test:
+    needs: code_check
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-latest]
+    uses: ./.github/workflows/_cpp_test.yml
+    with:
+      os: ${{ matrix.os }}
+
+  cpp_coverage:
+    needs: cpp_test
+    uses: ./.github/workflows/_cpp_coverage.yml
+    with:
+      os: ubuntu-latest
+
   docs:
+    needs: [cpp_test, python_test]
     uses: ./.github/workflows/_docs.yml
     with:
       os: ubuntu-latest
       python-version: '3.11'
     permissions:
       contents: write
-
-  cpp_test:
-    needs: code_check
-    strategy:
-      matrix:
-        os: [ubuntu-22.04, ubuntu-latest]
-    uses: ./.github/workflows/_code.yml
-    with:
-      os: ${{ matrix.os }}
 
   container:
     needs: [cpp_test, python_test]
