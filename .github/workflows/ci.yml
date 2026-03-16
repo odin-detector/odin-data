@@ -29,6 +29,7 @@ jobs:
     uses: ./.github/workflows/_docs.yml
     with:
       os: ubuntu-latest
+      python-version: '3.11'
     permissions:
       contents: write
 
