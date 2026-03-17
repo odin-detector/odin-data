@@ -1,27 +1,33 @@
-name: Python CI
-on: [push, pull_request]
+on:
+  workflow_call:
+    inputs:
+      os:
+        type: string
+        description: The OS type for this job
+        required: true
+      python-version:
+        type: string
+        description: The version of python to install
+        required: true
 
 jobs:
-  test:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-22.04, ubuntu-latest]
-        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
+  python_test:
+    runs-on: ${{ inputs.os }}
+
     defaults:
       run:
         working-directory: python
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
-      - name: Set up python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+      - name: Set up python ${{ inputs.python-version }}
+        uses: actions/setup-python@v6
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: ${{ inputs.python-version }}
 
       - name: Install odin-data python pacakge
         run: |
@@ -34,10 +40,9 @@ jobs:
           pytest -vs --cov=odin_data --cov-report=term-missing
 
       - name: Upload coverage to Codecov
-        if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.14' }}
         uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
-          name: ${{ matrix.python-version }}
+          name: ${{ inputs.python-version }}
           fail_ci_if_error: false
