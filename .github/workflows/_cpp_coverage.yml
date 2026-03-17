@@ -9,7 +9,6 @@ on:
         required: true
 
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   INSTALL_PREFIX: ${{ github.workspace }}/prefix
 
 jobs:
@@ -46,7 +45,7 @@ jobs:
         run: |
           $INSTALL_PREFIX/bin/frameProcessorTest --log_level=test_suite
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v4
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
