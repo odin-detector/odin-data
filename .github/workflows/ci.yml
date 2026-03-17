@@ -24,16 +24,9 @@ jobs:
     with:
       os: ${{ matrix.os }}
       python-version: ${{ matrix.python-version }}
-
-  python_coverage:
-    needs: python_test
-    uses: ./.github/workflows/_python_coverage.yml
-    with:
-      os: ubuntu-latest
-      python-version: '3.11'
+    secrets: inherit
 
   cpp_test:
-    needs: code_check
     strategy:
       matrix:
         os: [ubuntu-22.04, ubuntu-latest]
@@ -42,13 +35,12 @@ jobs:
       os: ${{ matrix.os }}
 
   cpp_coverage:
-    needs: cpp_test
     uses: ./.github/workflows/_cpp_coverage.yml
     with:
       os: ubuntu-latest
+    secrets: inherit
 
   docs:
-    needs: [cpp_test, python_test]
     uses: ./.github/workflows/_docs.yml
     with:
       os: ubuntu-latest
