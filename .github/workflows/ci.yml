@@ -20,10 +20,17 @@ jobs:
       matrix:
         os: [ubuntu-22.04, ubuntu-latest]
         python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
-    uses: ./.github/workflows/_python.yml
+    uses: ./.github/workflows/_python_test.yml
     with:
       os: ${{ matrix.os }}
       python-version: ${{ matrix.python-version }}
+
+  python_coverage:
+    needs: python_test
+    uses: ./.github/workflows/_python_coverage.yml
+    with:
+      os: ubuntu-latest
+      python-version: '3.11'
 
   cpp_test:
     needs: code_check
