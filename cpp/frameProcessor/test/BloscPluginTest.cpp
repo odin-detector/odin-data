@@ -1,14 +1,10 @@
-/*
- * BloscPluginTest.cpp
- *
- */
+#define BOOST_TEST_MODULE "BloscPluginTests"
+#define BOOST_TEST_MAIN
 
 #include "BloscPlugin.h"
-#include "DataBlockFrame.h"
-#include "Frame.h"
-#include "FrameProcessorDefinitions.h"
-#include <DebugLevelLogger.h>
-#include <boost/test/unit_test.hpp>
+#include "Fixtures.h"
+
+BOOST_GLOBAL_FIXTURE(GlobalConfig);
 
 class BloscPluginTestFixture {
 public:

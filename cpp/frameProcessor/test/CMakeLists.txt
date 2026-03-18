@@ -1,5 +1,50 @@
 include(${CMAKE_SOURCE_DIR}/cmake/CodeCoverage.cmake)
 
+# Function to add a FrameProcessor unit test. The source must be of the form
+#  <target_name>Test.cpp
+# The target name will be prefixed with unit_fp_ to differentiate from any other type of
+# unit test executables.
+function(add_unit_test _target)
+  set(_source ${_target}Test.cpp)
+  set(_target "unit_fp_${_target}")
+  add_executable(${_target} ${_source})
+
+  target_link_libraries(${_target}
+    ${LIB_PROCESSOR}
+    DummyUDPProcessPlugin
+    Hdf5Plugin
+    ParameterAdjustmentPlugin
+    OffsetAdjustmentPlugin
+    LiveViewPlugin
+    SumPlugin
+    GapFillPlugin
+    RawFileWriterPlugin
+    ${Boost_LIBRARIES}
+    ${LOG4CXX_LIBRARIES}
+    ${ZEROMQ_LIBRARIES}
+    ${HDF5_LIBRARIES}
+    ${HDF5_HL_LIBRARIES}
+  )
+
+  # Link for BloscPlugin if Blosc is present
+  if (${BLOSC_FOUND})
+    target_link_libraries(${_target} ${BLOSC_LIBRARIES} BloscPlugin)
+  endif()
+
+  if (${KAFKA_FOUND})
+    target_link_libraries(${_target} ${KAFKA_LIBRARIES} KafkaProducerPlugin)
+  endif()
+
+  if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
+    # librt required for timing functions
+    find_library(REALTIME_LIBRARY NAMES rt)
+    find_library(PTHREAD_LIBRARY NAMES pthread)
+    target_link_libraries(${_target} ${REALTIME_LIBRARY} ${PTHREAD_LIBRARY})
+  endif()
+
+  install(TARGETS ${_target} RUNTIME DESTINATION bin)
+endfunction()
+
 set(CMAKE_INCLUDE_CURRENT_DIR on)
 add_definitions(-DBOOST_TEST_DYN_LINK)
 add_definitions(-DBUILD_DIR="${CMAKE_BINARY_DIR}")
@@ -13,71 +58,25 @@ include_directories(
 )
 add_definitions(${HDF5_DEFINITIONS})
 
-# Build list of test source files from current dir
-file(GLOB TEST_SOURCES *.cpp)
+add_unit_test(Acquisition)
+add_unit_test(DataBlock)
+add_unit_test(DummyUDPProcessPlugin)
+add_unit_test(FileWriterPlugin)
+add_unit_test(GapFillPlugin)
+add_unit_test(HDF5File)
+add_unit_test(LiveViewPlugin)
+add_unit_test(MetaMessage)
+add_unit_test(OffsetAdjustmentPlugin)
+add_unit_test(ParameterAdjustmentPlugin)
+add_unit_test(RawFileWriterPlugin)
+add_unit_test(SumPlugin)
 
-# In order to obtain coverage stats for these tests the main source files need to be built
-# here, rather than using the prebuilt libraries.
-# This is required for the common code and the frameProcessor code
-file(GLOB APP_SOURCES
-  ${FRAMEPROCESSOR_DIR}/src/*.cpp
-  ${COMMON_DIR}/src/*.cpp
-)
-# Exclude the application main and the registering of the libraries
-file(GLOB APP_MAIN_SOURCE ${FRAMEPROCESSOR_DIR}/src/FrameProcessorApp.cpp)
-file(GLOB LIB_SOURCES ${FRAMEPROCESSOR_DIR}/src/*Lib.cpp)
-list(REMOVE_ITEM APP_SOURCES ${APP_MAIN_SOURCE})
-list(REMOVE_ITEM APP_SOURCES ${LIB_SOURCES})
-
-# If the Blosc or Kafka libraries are not available then their app code and test code
-# must be removed from the source file lists.
 if (${BLOSC_FOUND})
   include_directories(${BLOSC_INCLUDE_DIR})
-else()
-  list(REMOVE_ITEM APP_SOURCES ${FRAMEPROCESSOR_DIR}/src/BloscPlugin.cpp)
-  list(REMOVE_ITEM TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/BloscPluginTest.cpp)
+  add_unit_test(BloscPlugin)
 endif()
 
 if (${KAFKA_FOUND})
   include_directories(${KAFKA_INCLUDE_DIR})
-else()
-  list(REMOVE_ITEM APP_SOURCES ${FRAMEPROCESSOR_DIR}/src/KafkaProducerPlugin.cpp)
-  list(REMOVE_ITEM TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/KafkaProducerPluginTest.cpp)
+  add_unit_test(KafkaProducerPlugin)
 endif()
-
-# Add test source files to executable
-add_executable(frameProcessorTest
-  ${TEST_SOURCES}
-  ${APP_SOURCES}
-)
-
-# Define libraries to link against, this is only the libraries for which no coverage is required
-target_link_libraries(frameProcessorTest
-  ${Boost_LIBRARIES}
-  ${LOG4CXX_LIBRARIES}
-  ${ZEROMQ_LIBRARIES}
-  ${HDF5_LIBRARIES}
-  ${HDF5_HL_LIBRARIES}
-)
-
-# Link for BloscPlugin if Blosc is present
-if (${BLOSC_FOUND})
-  target_link_libraries(frameProcessorTest ${BLOSC_LIBRARIES} BloscPlugin)
-endif()
-
-if (${KAFKA_FOUND})
-  target_link_libraries(frameProcessorTest ${KAFKA_LIBRARIES} KafkaProducerPlugin)
-endif()
-
-if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
-  # librt required for timing functions
-  find_library(REALTIME_LIBRARY NAMES rt)
-  find_library(PTHREAD_LIBRARY NAMES pthread)
-  target_link_libraries(frameProcessorTest
-    ${REALTIME_LIBRARY}
-    ${PTHREAD_LIBRARY}
-  )
-endif()
-
-add_code_coverage(frameProcessorTest)
-install(TARGETS frameProcessorTest RUNTIME DESTINATION bin)

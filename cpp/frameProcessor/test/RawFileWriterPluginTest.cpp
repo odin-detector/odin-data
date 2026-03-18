@@ -5,12 +5,13 @@
  *      Author: Famous Alele
  */
 
+#define BOOST_TEST_MODULE "RawFileWritePluginTests"
+#define BOOST_TEST_MAIN
+
 #include "RawFileWriterPlugin.h"
-#include "DataBlockFrame.h"
-#include "FrameProcessorDefinitions.h"
-#include "IpcMessage.h"
-#include <DebugLevelLogger.h>
-#include <boost/test/unit_test.hpp>
+#include "Fixtures.h"
+
+BOOST_GLOBAL_FIXTURE(GlobalConfig);
 
 class RawFileWriterPluginTestFixture {
 public:
@@ -144,4 +145,4 @@ BOOST_AUTO_TEST_CASE(RawFileWriterPlugin_dropped_frames)
     BOOST_REQUIRE_NO_THROW(boost::filesystem::remove_all("/opt/RFW_testdir"));
 }
 
-BOOST_AUTO_TEST_SUITE_END(); // GapFillPluginUnitTest
+BOOST_AUTO_TEST_SUITE_END();
