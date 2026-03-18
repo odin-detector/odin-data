@@ -5,6 +5,9 @@
  *      Author: Tim Nicholls, STFC Application Engineering Group
  */
 
+#define BOOST_TEST_MODULE "SharedBufferManagerTests"
+#define BOOST_TEST_MAIN
+
 #include <boost/test/unit_test.hpp>
 #include <sys/wait.h>
 

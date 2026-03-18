@@ -5,6 +5,9 @@
  *      Author: tcn45
  */
 
+#define BOOST_TEST_MODULE "IpcReactorTests"
+#define BOOST_TEST_MAIN
+
 #include <boost/test/unit_test.hpp>
 
 #include "IpcChannel.h"

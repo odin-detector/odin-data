@@ -1,5 +1,3 @@
-include(${CMAKE_SOURCE_DIR}/cmake/CodeCoverage.cmake)
-
 set(CMAKE_INCLUDE_CURRENT_DIR on)
 ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK -DBOOST_BIND_GLOBAL_PLACEHOLDERS)
 
@@ -29,7 +27,5 @@ add_executable(frameTests ${FRAMETEST_SOURCES})
 target_link_libraries(odinDataTest ${Boost_LIBRARIES} ${HDF5_LIBRARIES} ${LOG4CXX_LIBRARIES} ${COMMON_LIBRARY})
 target_link_libraries(frameTests ${Boost_LIBRARIES} ${HDF5_LIBRARIES} ${LOG4CXX_LIBRARIES} ${COMMON_LIBRARY})
 
-add_code_coverage(odinDataTest)
-add_code_coverage(frameTests)
 install(TARGETS odinDataTest RUNTIME DESTINATION bin)
 install(TARGETS frameTests RUNTIME DESTINATION bin)

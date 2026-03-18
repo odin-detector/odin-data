@@ -1,5 +1,3 @@
-include(${CMAKE_SOURCE_DIR}/cmake/CodeCoverage.cmake)
-
 # Function to add a FrameProcessor unit test. The source must be of the form
 #  <target_name>Test.cpp
 # The target name will be prefixed with unit_fp_ to differentiate from any other type of

@@ -1,5 +1,3 @@
-include(${CMAKE_SOURCE_DIR}/cmake/CodeCoverage.cmake)
-
 set(CMAKE_INCLUDE_CURRENT_DIR on)
 ADD_DEFINITIONS(-DBUILD_DIR="${CMAKE_BINARY_DIR}")
 
@@ -31,7 +29,6 @@ if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
     target_link_libraries(frameReceiver ${PTHREAD_LIBRARY} ${REALTIME_LIBRARY})
 endif()
 
-add_code_coverage(frameReceiver)
 install(TARGETS frameReceiver RUNTIME DESTINATION bin)
 
 add_library(DummyUDPFrameDecoder SHARED DummyUDPFrameDecoder.cpp DummyUDPFrameDecoderLib.cpp)

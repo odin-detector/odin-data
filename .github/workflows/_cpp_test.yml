@@ -45,7 +45,9 @@ jobs:
         env:
           INSTALL_PREFIX: ${{ env.INSTALL_PREFIX }}
         run: |
-          $INSTALL_PREFIX/bin/frameReceiverTest --log_level=test_suite
+          for unittest in $(find $INSTALL_PREFIX/bin -name "unit_fr_*"); do
+              $unittest --log_level=test_suite
+          done
       - name: Run frame processor unit tests
         env:
           INSTALL_PREFIX: ${{ env.INSTALL_PREFIX }}
