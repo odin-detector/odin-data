@@ -29,7 +29,9 @@ RUN add-apt-repository -y ppa:deadsnakes/ppa && \
     # python
     python3.11-dev python3.11-venv \
     # clang tools
-    clang-format-20 clang-tidy-20 && \
+    clang-format-20 clang-tidy-20 \
+    # debugging
+    gdb valgrind && \
     # tidy up
     apt-get -y clean all
 

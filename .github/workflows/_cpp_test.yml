@@ -1,18 +1,22 @@
-name: Code CI
-on: [push, pull_request]
+name: Cpp test CI
+
+on:
+  workflow_call:
+    inputs:
+      os:
+        type: string
+        description: The OS type for this job
+        required: true
 
 env:
   INSTALL_PREFIX: ${{ github.workspace }}/prefix
 
 jobs:
-  test:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-22.04, ubuntu-latest]
+  cpp_test:
+    runs-on: ${{ inputs.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Install dependencies
@@ -26,9 +30,15 @@ jobs:
           INSTALL_PREFIX: ${{ env.INSTALL_PREFIX }}
         run: |
           echo "INSTALL_PREFIX is ${INSTALL_PREFIX}"
+          # Release build currently fails on Uuntu 22.04
+          if [[ "${{ inputs.os }}" == "ubuntu-22.04" ]]; then
+              export BUILD_ARGS="-DCMAKE_BUILD_TYPE=Debug"
+          else
+              export BUILD_ARGS="-DCMAKE_BUILD_TYPE=Release"
+          fi
           mkdir -p $INSTALL_PREFIX
           mkdir build && cd build
-          cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX ../cpp
+          cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX ${BUILD_ARGS} ../cpp
           make -j8 VERBOSE=1 && make install VERBOSE=1
           ls -la $INSTALL_PREFIX
       - name: Run frame receiver unit tests
@@ -46,12 +56,3 @@ jobs:
           INSTALL_PREFIX: ${{ env.INSTALL_PREFIX }}
         run: |
           $INSTALL_PREFIX/bin/odinDataTest --json=$INSTALL_PREFIX/test_config/dummyUDP.json
-      - name: Slack Notification
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_CHANNEL: odin-data-notify
-          SLACK_COLOR: ${{ job.status }}
-          SLACK_ICON: https://avatars.githubusercontent.com/odin-detector?size=48
-          SLACK_TITLE: "odin-data CI tests completed: ${{ job.status }}"
-          SLACK_USERNAME: odin-detector
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}

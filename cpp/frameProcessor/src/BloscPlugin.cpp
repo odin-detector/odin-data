@@ -435,18 +435,6 @@ void BloscPlugin::requestConfiguration(OdinData::IpcMessage& reply)
     reply.set_param(this->get_name() + '/' + BloscPlugin::CONFIG_BLOSC_MODE, Mode_map::mode_to_str(this->plugin_mode_));
 }
 
-/** Collate status information for the plugin
- *
- * @param status - Reference to an IpcMessage value to store the status
- */
-void BloscPlugin::status(OdinData::IpcMessage& status)
-{
-    status.set_param(this->get_name() + "/compressor", this->compression_settings_.blosc_compressor);
-    status.set_param(this->get_name() + "/threads", this->compression_settings_.threads);
-    status.set_param(this->get_name() + "/shuffle", this->compression_settings_.shuffle);
-    status.set_param(this->get_name() + "/level", this->compression_settings_.compression_level);
-}
-
 int BloscPlugin::get_version_major()
 {
     return ODIN_DATA_VERSION_MAJOR;

@@ -1,0 +1,54 @@
+name: Cpp coverage CI
+
+on:
+  workflow_call:
+    inputs:
+      os:
+        type: string
+        description: The OS type for this job
+        required: true
+
+env:
+  INSTALL_PREFIX: ${{ github.workspace }}/prefix
+
+jobs:
+  coverage:
+    runs-on: ${{ inputs.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Install dependencies
+        run: |
+          sudo apt -y update
+          sudo apt install cmake
+          sudo apt install libboost-program-options-dev libboost-filesystem-dev libboost-date-time-dev libboost-dev  libboost-system-dev libboost-test-dev libboost-thread-dev libboost-regex-dev
+          sudo apt install libzmq3-dev libpcap-dev liblog4cxx-dev libblosc-dev libhdf5-dev librdkafka-dev
+      - name: Build odin-data
+        env:
+          INSTALL_PREFIX: ${{ env.INSTALL_PREFIX }}
+        run: |
+          mkdir -p $INSTALL_PREFIX
+          mkdir build && cd build
+          cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX -DCODE_COVERAGE_ALL=1 ../cpp
+          make -j8 VERBOSE=1 && make install VERBOSE=1
+          ls -la $INSTALL_PREFIX
+      - name: Run frame receiver unit tests
+        env:
+          INSTALL_PREFIX: ${{ env.INSTALL_PREFIX }}
+        run: |
+          $INSTALL_PREFIX/bin/frameReceiverTest --log_level=test_suite
+      - name: Run frame processor unit tests
+        env:
+          INSTALL_PREFIX: ${{ env.INSTALL_PREFIX }}
+        run: |
+          $INSTALL_PREFIX/bin/frameProcessorTest --log_level=test_suite
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        with:
+          name: ubuntu-latest
+          files: ./coverage.xml
+          fail_ci_if_error: false

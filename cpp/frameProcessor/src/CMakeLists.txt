@@ -1,3 +1,4 @@
+include(${CMAKE_SOURCE_DIR}/cmake/CodeCoverage.cmake)
 
 set(CMAKE_INCLUDE_CURRENT_DIR on)
 ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK)
@@ -40,6 +41,7 @@ if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
     target_link_libraries(frameProcessor ${PTHREAD_LIBRARY} ${REALTIME_LIBRARY})
 endif()
 
+add_code_coverage(frameProcessor)
 install(TARGETS frameProcessor RUNTIME DESTINATION bin)
 
 # Add library for dummy plugin
@@ -108,4 +110,3 @@ if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
                NAMES rt)
   target_link_libraries( frameProcessor ${REALTIME_LIBRARY} )
 endif()
-
