@@ -26,7 +26,7 @@
 #include <boost/bind/bind.hpp>
 #include <boost/function.hpp>
 #include <boost/ref.hpp>
-#include <boost/shared_ptr.hpp>
+
 #include <boost/thread.hpp>
 
 #include "IpcChannel.h"
@@ -97,7 +97,7 @@ typedef std::map<SocketPtr, ReactorCallback> ChannelMap;
 typedef std::map<int, ReactorCallback> SocketMap;
 
 //! Internal map to associate timer ID with a timer
-typedef std::map<int, boost::shared_ptr<IpcReactorTimer>> TimerMap;
+typedef std::map<int, std::shared_ptr<IpcReactorTimer>> TimerMap;
 
 class IpcReactor {
 public:

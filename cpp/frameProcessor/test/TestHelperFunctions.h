@@ -1,9 +1,9 @@
 #ifndef FRAMEPROCESSOR_TESTHELPERFUNCTIONS_H
 #define FRAMEPROCESSOR_TESTHELPERFUNCTIONS_H
 
-#include <boost/shared_ptr.hpp>
 
-static boost::shared_ptr<FrameProcessor::DataBlockFrame> get_dummy_frame()
+
+static std::shared_ptr<FrameProcessor::DataBlockFrame> get_dummy_frame()
 {
 
     dimensions_t dims(2, 0);
@@ -13,7 +13,7 @@ static boost::shared_ptr<FrameProcessor::DataBlockFrame> get_dummy_frame()
 
     char dummy_data[2] = { 0, 0 };
 
-    boost::shared_ptr<FrameProcessor::DataBlockFrame> frame(
+    std::shared_ptr<FrameProcessor::DataBlockFrame> frame(
         new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(dummy_data), 2)
     );
 

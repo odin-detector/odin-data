@@ -266,7 +266,7 @@ void FrameProcessorPlugin::version(OdinData::IpcMessage& status)
  */
 void FrameProcessorPlugin::register_callback(
     const std::string& name,
-    boost::shared_ptr<IFrameCallback> cb,
+    std::shared_ptr<IFrameCallback> cb,
     bool blocking
 )
 {
@@ -312,7 +312,7 @@ void FrameProcessorPlugin::register_callback(
  */
 void FrameProcessorPlugin::remove_callback(const std::string& name)
 {
-    boost::shared_ptr<IFrameCallback> cb;
+    std::shared_ptr<IFrameCallback> cb;
     if (callbacks_.count(name) > 0) {
         // Get the pointer
         cb = callbacks_[name];
@@ -336,13 +336,13 @@ void FrameProcessorPlugin::remove_callback(const std::string& name)
 void FrameProcessorPlugin::remove_all_callbacks()
 {
     // Loop over blocking callbacks, removing each one
-    std::map<std::string, boost::shared_ptr<IFrameCallback>>::iterator bcbIter;
+    std::map<std::string, std::shared_ptr<IFrameCallback>>::iterator bcbIter;
     for (bcbIter = blocking_callbacks_.begin(); bcbIter != blocking_callbacks_.end(); ++bcbIter) {
         LOG4CXX_DEBUG_LEVEL(1, logger_, "Removing callback " << bcbIter->first << " from " << name_);
         bcbIter->second->confirmRemoval(name_);
     }
     // Loop over non-blocking callbacks, removing each one
-    std::map<std::string, boost::shared_ptr<IFrameCallback>>::iterator cbIter;
+    std::map<std::string, std::shared_ptr<IFrameCallback>>::iterator cbIter;
     for (cbIter = callbacks_.begin(); cbIter != callbacks_.end(); ++cbIter) {
         LOG4CXX_DEBUG_LEVEL(1, logger_, "Removing callback " << cbIter->first << " from " << name_);
         cbIter->second->confirmRemoval(name_);
@@ -359,7 +359,7 @@ void FrameProcessorPlugin::remove_all_callbacks()
  *
  * \param[in] frame - Pointer to the frame.
  */
-void FrameProcessorPlugin::callback(boost::shared_ptr<Frame> frame)
+void FrameProcessorPlugin::callback(std::shared_ptr<Frame> frame)
 {
     // Calls process frame and times how long the process takes
     struct timespec start_time;
@@ -384,8 +384,8 @@ void FrameProcessorPlugin::callback(boost::shared_ptr<Frame> frame)
 void FrameProcessorPlugin::notify_end_of_acquisition()
 {
     // Create an EndOfAcquisitionFrame object and push it through the processing chain
-    boost::shared_ptr<EndOfAcquisitionFrame> eoa
-        = boost::shared_ptr<EndOfAcquisitionFrame>(new EndOfAcquisitionFrame());
+    std::shared_ptr<EndOfAcquisitionFrame> eoa
+        = std::shared_ptr<EndOfAcquisitionFrame>(new EndOfAcquisitionFrame());
     this->push(eoa);
 }
 
@@ -397,18 +397,18 @@ void FrameProcessorPlugin::notify_end_of_acquisition()
  *
  * \param[in] frame - Pointer to the frame.
  */
-void FrameProcessorPlugin::push(boost::shared_ptr<Frame> frame)
+void FrameProcessorPlugin::push(std::shared_ptr<Frame> frame)
 {
     if (!frame->get_end_of_acquisition() && !frame->is_valid()) {
         throw std::runtime_error("FrameProcessorPlugin::push Invalid frame pushed onto plugin chain");
     }
     // Loop over blocking callbacks, calling each function and waiting for return
-    std::map<std::string, boost::shared_ptr<IFrameCallback>>::iterator bcbIter;
+    std::map<std::string, std::shared_ptr<IFrameCallback>>::iterator bcbIter;
     for (bcbIter = blocking_callbacks_.begin(); bcbIter != blocking_callbacks_.end(); ++bcbIter) {
         bcbIter->second->callback(frame);
     }
     // Loop over non-blocking callbacks, placing frame onto each queue
-    std::map<std::string, boost::shared_ptr<IFrameCallback>>::iterator cbIter;
+    std::map<std::string, std::shared_ptr<IFrameCallback>>::iterator cbIter;
     for (cbIter = callbacks_.begin(); cbIter != callbacks_.end(); ++cbIter) {
         cbIter->second->getWorkQueue()->add(frame);
     }
@@ -422,7 +422,7 @@ void FrameProcessorPlugin::push(boost::shared_ptr<Frame> frame)
  * \param[in] plugin_name - Name of the plugin to send the frame to.
  * \param[in] frame - Pointer to the frame.
  */
-void FrameProcessorPlugin::push(const std::string& plugin_name, boost::shared_ptr<Frame> frame)
+void FrameProcessorPlugin::push(const std::string& plugin_name, std::shared_ptr<Frame> frame)
 {
     if (!frame->get_end_of_acquisition() && !frame->is_valid()) {
         throw std::runtime_error("FrameProcessorPlugin::push Invalid frame pushed onto plugin chain");

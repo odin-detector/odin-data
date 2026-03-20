@@ -17,7 +17,7 @@
 #include "zmq/zmq.hpp"
 
 #include <boost/scoped_ptr.hpp>
-#include <boost/shared_ptr.hpp>
+
 
 #include "ClassLoader.h"
 #include "FrameDecoder.h"

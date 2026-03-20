@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include <boost/shared_ptr.hpp>
+
 #include <boost/thread.hpp>
 
 #include <log4cxx/logger.h>
@@ -170,9 +170,9 @@ private:
      */
     FileWriterPlugin(const FileWriterPlugin& src); // prevent copying one of these
 
-    void process_frame(boost::shared_ptr<Frame> frame);
+    void process_frame(std::shared_ptr<Frame> frame);
     void process_end_of_acquisition();
-    bool frame_in_acquisition(boost::shared_ptr<Frame> frame);
+    bool frame_in_acquisition(std::shared_ptr<Frame> frame);
 
     /** Pointer to logger */
     LoggerPtr logger_;
@@ -185,9 +185,9 @@ private:
     /** Rank of this file writer */
     size_t concurrent_rank_;
     /** Details of the acquisition currently being written */
-    boost::shared_ptr<Acquisition> current_acquisition_;
+    std::shared_ptr<Acquisition> current_acquisition_;
     /** Details of the next acquisition to be written */
-    boost::shared_ptr<Acquisition> next_acquisition_;
+    std::shared_ptr<Acquisition> next_acquisition_;
     /** Map of dataset definitions */
     std::map<std::string, DatasetDefinition> dataset_defs_;
     /** Number of frames to write consecutively in a file */

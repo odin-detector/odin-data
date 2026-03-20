@@ -64,13 +64,13 @@ BOOST_AUTO_TEST_CASE(DataBlockTest)
 {
     char data1[1024];
     char data2[2048];
-    boost::shared_ptr<FrameProcessor::DataBlock> block1;
-    boost::shared_ptr<FrameProcessor::DataBlock> block2;
+    std::shared_ptr<FrameProcessor::DataBlock> block1;
+    std::shared_ptr<FrameProcessor::DataBlock> block2;
     int initial_block_index_count = FrameProcessor::DataBlock::get_current_index_count();
-    BOOST_CHECK_NO_THROW(block1 = boost::shared_ptr<FrameProcessor::DataBlock>(new FrameProcessor::DataBlock(1024)));
+    BOOST_CHECK_NO_THROW(block1 = std::shared_ptr<FrameProcessor::DataBlock>(new FrameProcessor::DataBlock(1024)));
     BOOST_CHECK_EQUAL(block1->get_index(), initial_block_index_count);
     BOOST_CHECK_EQUAL(block1->get_size(), 1024);
-    BOOST_CHECK_NO_THROW(block2 = boost::shared_ptr<FrameProcessor::DataBlock>(new FrameProcessor::DataBlock(2048)));
+    BOOST_CHECK_NO_THROW(block2 = std::shared_ptr<FrameProcessor::DataBlock>(new FrameProcessor::DataBlock(2048)));
     BOOST_CHECK_EQUAL(block2->get_index(), initial_block_index_count + 1);
     BOOST_CHECK_EQUAL(block2->get_size(), 2048);
     memset(data1, 1, 1024);
@@ -90,8 +90,8 @@ BOOST_AUTO_TEST_CASE(DataBlockTest)
 
 BOOST_AUTO_TEST_CASE(DataBlockPoolTest)
 {
-    boost::shared_ptr<FrameProcessor::DataBlock> block1;
-    boost::shared_ptr<FrameProcessor::DataBlock> block2;
+    std::shared_ptr<FrameProcessor::DataBlock> block1;
+    std::shared_ptr<FrameProcessor::DataBlock> block2;
     // Allocate 100 blocks
     BOOST_CHECK_NO_THROW(FrameProcessor::DataBlockPool::allocate(100, 1024));
     // Check pool statistics
@@ -191,7 +191,7 @@ public:
         FrameProcessor::FrameMetaData frame_meta(
             7, "data", FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
         );
-        frame = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
+        frame = std::shared_ptr<FrameProcessor::DataBlockFrame>(
             new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(img), 24)
         );
 
@@ -199,7 +199,7 @@ public:
             FrameProcessor::FrameMetaData loop_frame_meta(
                 i, "data", FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
             );
-            boost::shared_ptr<FrameProcessor::DataBlockFrame> tmp_frame(
+            std::shared_ptr<FrameProcessor::DataBlockFrame> tmp_frame(
                 new FrameProcessor::DataBlockFrame(loop_frame_meta, static_cast<void*>(img), 24)
             );
             img[0] = i;
@@ -215,8 +215,8 @@ public:
     ~FileWriterPluginTestFixture()
     {
     }
-    boost::shared_ptr<FrameProcessor::DataBlockFrame> frame;
-    std::vector<boost::shared_ptr<FrameProcessor::DataBlockFrame>> frames;
+    std::shared_ptr<FrameProcessor::DataBlockFrame> frame;
+    std::vector<std::shared_ptr<FrameProcessor::DataBlockFrame>> frames;
     FrameProcessor::HDF5ErrorDefinition_t hdf5_error_definition;
     FrameProcessor::FileWriterPlugin fw;
     FrameProcessor::DatasetDefinition dset_def;
@@ -326,7 +326,7 @@ BOOST_AUTO_TEST_CASE(FileWriterPluginMultipleFramesTest)
     BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/blah_multiple.h5", 0, false, 1, 1));
     BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def, -1, -1));
 
-    std::vector<boost::shared_ptr<FrameProcessor::DataBlockFrame>>::iterator it;
+    std::vector<std::shared_ptr<FrameProcessor::DataBlockFrame>>::iterator it;
     for (it = frames.begin(); it != frames.end(); ++it) {
         BOOST_TEST_MESSAGE("Writing frame: " << (*it)->get_frame_number());
         BOOST_REQUIRE_NO_THROW(hdf5f.write_frame(*(*it), (*it)->get_frame_number(), 1, durations));
@@ -349,7 +349,7 @@ BOOST_AUTO_TEST_CASE(HDF5FileMultipleReverseTest)
     BOOST_TEST_MESSAGE("Writing frame: " << frame->get_frame_number());
     BOOST_REQUIRE_NO_THROW(hdf5f.write_frame(*frame, frame->get_frame_number(), 1, durations));
 
-    std::vector<boost::shared_ptr<FrameProcessor::DataBlockFrame>>::reverse_iterator rit;
+    std::vector<std::shared_ptr<FrameProcessor::DataBlockFrame>>::reverse_iterator rit;
     for (rit = frames.rbegin(); rit != frames.rend(); ++rit) {
         BOOST_TEST_MESSAGE("Writing frame: " << (*rit)->get_frame_number());
         BOOST_REQUIRE_NO_THROW(hdf5f.write_frame(*(*rit), (*rit)->get_frame_number(), 1, durations));
@@ -368,7 +368,7 @@ BOOST_AUTO_TEST_CASE(HDF5FileAdjustHugeOffset)
 
     hsize_t huge_offset = 100000;
 
-    std::vector<boost::shared_ptr<FrameProcessor::DataBlockFrame>>::iterator it;
+    std::vector<std::shared_ptr<FrameProcessor::DataBlockFrame>>::iterator it;
     for (it = frames.begin(); it != frames.end(); ++it) {
         size_t frame_no = (*it)->get_frame_number();
         // PercivalEmulator::FrameHeader img_header = *((*it)->get_header());
@@ -397,7 +397,7 @@ BOOST_AUTO_TEST_CASE(FileWriterPluginWriteParamTest)
 
     BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(param_dset_def, -1, -1));
 
-    std::vector<boost::shared_ptr<FrameProcessor::DataBlockFrame>>::iterator it;
+    std::vector<std::shared_ptr<FrameProcessor::DataBlockFrame>>::iterator it;
     uint64_t val = 0;
     for (it = frames.begin(); it != frames.end(); ++it) {
         (*it)->meta_data().set_parameter("p1", val);
@@ -424,7 +424,7 @@ BOOST_AUTO_TEST_CASE(FileWriterPluginWriteParamWrongTypeTest)
 
     BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(param_dset_def, -1, -1));
 
-    std::vector<boost::shared_ptr<FrameProcessor::DataBlockFrame>>::iterator it;
+    std::vector<std::shared_ptr<FrameProcessor::DataBlockFrame>>::iterator it;
     for (it = frames.begin(); it != frames.end(); ++it) {
         uint64_t val = 123;
         (*it)->meta_data().set_parameter("p1", val);
@@ -450,7 +450,7 @@ BOOST_AUTO_TEST_CASE(FileWriterPluginWriteParamNoParamTest)
 
     BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(param_dset_def, -1, -1));
 
-    std::vector<boost::shared_ptr<FrameProcessor::DataBlockFrame>>::iterator it;
+    std::vector<std::shared_ptr<FrameProcessor::DataBlockFrame>>::iterator it;
     for (it = frames.begin(); it != frames.end(); ++it) {
         uint64_t val = 123;
         (*it)->meta_data().set_parameter("p2", val);
@@ -665,7 +665,7 @@ BOOST_AUTO_TEST_CASE(AcquisitionGetOffsetInFile)
 BOOST_AUTO_TEST_CASE(AcquisitionAdjustFrameOffset)
 {
     FrameProcessor::Acquisition acquisition(hdf5_error_definition);
-    boost::shared_ptr<FrameProcessor::DataBlockFrame> frame = get_dummy_frame();
+    std::shared_ptr<FrameProcessor::DataBlockFrame> frame = get_dummy_frame();
     frame->meta_data().set_frame_offset(0);
 
     size_t adjusted_offset = acquisition.adjust_frame_offset(frame);
@@ -714,7 +714,7 @@ BOOST_AUTO_TEST_CASE(AcquisitionFrameVerification)
 
     acquisition.dataset_defs_["raw"] = dset_def;
 
-    boost::shared_ptr<FrameProcessor::DataBlockFrame> frame = get_dummy_frame();
+    std::shared_ptr<FrameProcessor::DataBlockFrame> frame = get_dummy_frame();
     frame->meta_data().set_compression_type(FrameProcessor::unknown_compression);
 
     bool verified = acquisition.check_frame_valid(frame);
@@ -734,7 +734,7 @@ BOOST_FIXTURE_TEST_SUITE(ParameterAdjustmentPluginUnitTest, FileWriterPluginTest
 BOOST_AUTO_TEST_CASE(AddParameter)
 {
     FrameProcessor::ParameterAdjustmentPlugin plugin;
-    boost::shared_ptr<FrameProcessor::DataBlockFrame> frame = get_dummy_frame();
+    std::shared_ptr<FrameProcessor::DataBlockFrame> frame = get_dummy_frame();
 
     // Check 0 goes to 0 when no config has been sent, and frame doesn't have parameter
     frame->set_frame_number(0);
@@ -789,7 +789,7 @@ BOOST_AUTO_TEST_CASE(AddParameter)
 BOOST_AUTO_TEST_CASE(AdjustExistingParameter)
 {
     FrameProcessor::ParameterAdjustmentPlugin plugin;
-    boost::shared_ptr<FrameProcessor::DataBlockFrame> frame = get_dummy_frame();
+    std::shared_ptr<FrameProcessor::DataBlockFrame> frame = get_dummy_frame();
 
     uint64_t uid = 0;
 
@@ -841,7 +841,7 @@ BOOST_AUTO_TEST_CASE(AdjustOffset)
     );
     char dummy_data[2] = { 0, 0 };
 
-    boost::shared_ptr<FrameProcessor::DataBlockFrame> frame(
+    std::shared_ptr<FrameProcessor::DataBlockFrame> frame(
         new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(dummy_data), 2)
     );
     uint64_t offset = 0;
@@ -1050,7 +1050,7 @@ BOOST_AUTO_TEST_CASE(SumFrame)
         1, "raw", FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
     );
 
-    boost::shared_ptr<FrameProcessor::DataBlockFrame> frame(
+    std::shared_ptr<FrameProcessor::DataBlockFrame> frame(
         new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(img), 24)
     );
 
@@ -1071,7 +1071,7 @@ BOOST_AUTO_TEST_CASE(SumEmptyFrame)
         0, "raw", FrameProcessor::raw_16bit, "test", dims, FrameProcessor::no_compression
     );
     char dummy_data[2] = { 0, 0 };
-    boost::shared_ptr<FrameProcessor::DataBlockFrame> frame(
+    std::shared_ptr<FrameProcessor::DataBlockFrame> frame(
         new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(dummy_data), 2)
     );
 
@@ -1085,7 +1085,7 @@ BOOST_AUTO_TEST_CASE(SumNotSupportedDataType)
 {
     FrameProcessor::SumPlugin plugin;
     // check that sum parameter is not set in unsupported data types
-    boost::shared_ptr<FrameProcessor::DataBlockFrame> frame = get_dummy_frame();
+    std::shared_ptr<FrameProcessor::DataBlockFrame> frame = get_dummy_frame();
     frame->meta_data().set_data_type(FrameProcessor::raw_float);
     plugin.process_frame(frame);
     BOOST_CHECK(!frame->get_meta_data().has_parameter(FrameProcessor::SUM_PARAM_NAME));

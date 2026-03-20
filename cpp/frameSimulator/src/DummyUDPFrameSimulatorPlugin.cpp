@@ -186,7 +186,7 @@ void DummyUDPFrameSimulatorPlugin::extract_frames(const u_char* data, const int&
     }
 
     // Allocate a new packet, copy packet data and push into frame
-    boost::shared_ptr<Packet> pkt(new Packet());
+    std::shared_ptr<Packet> pkt(new Packet());
     unsigned char* datacp = new unsigned char[size];
     memcpy(datacp, data, size);
     pkt->data = datacp;

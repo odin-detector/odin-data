@@ -60,7 +60,7 @@ public:
         );
 
         // create test frame
-        frame = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
+        frame = std::shared_ptr<FrameProcessor::DataBlockFrame>(
             new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(img_8), 12)
         );
 
@@ -69,7 +69,7 @@ public:
         );
 
         // create test frame with uint16 data
-        frame_16 = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
+        frame_16 = std::shared_ptr<FrameProcessor::DataBlockFrame>(
             new FrameProcessor::DataBlockFrame(frame_16_meta, static_cast<void*>(img_16), 24)
         );
 
@@ -81,7 +81,7 @@ public:
             );
             if (i % 4)
                 tmp_frame_meta.set_parameter<uint8_t>("test_tag", 0);
-            boost::shared_ptr<FrameProcessor::DataBlockFrame> tmp_frame(
+            std::shared_ptr<FrameProcessor::DataBlockFrame> tmp_frame(
                 new FrameProcessor::DataBlockFrame(tmp_frame_meta, static_cast<void*>(img_8), 12)
             );
             frames.push_back(tmp_frame);
@@ -113,9 +113,9 @@ public:
         global_socket_port++;
     }
 
-    boost::shared_ptr<FrameProcessor::Frame> frame;
-    boost::shared_ptr<FrameProcessor::Frame> frame_16;
-    std::vector<boost::shared_ptr<FrameProcessor::Frame>> frames;
+    std::shared_ptr<FrameProcessor::Frame> frame;
+    std::shared_ptr<FrameProcessor::Frame> frame_16;
+    std::vector<std::shared_ptr<FrameProcessor::Frame>> frames;
 
     uint8_t img_8[12];
     uint16_t img_16[12];

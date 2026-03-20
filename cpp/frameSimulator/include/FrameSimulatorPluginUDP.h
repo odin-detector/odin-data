@@ -9,7 +9,7 @@
 using namespace log4cxx;
 using namespace log4cxx::helpers;
 
-#include <boost/shared_ptr.hpp>
+
 
 #include "FrameSimulatorPlugin.h"
 #include "Packet.h"
@@ -45,7 +45,7 @@ public:
 
 protected:
     static void pkt_callback(u_char* user, const pcap_pkthdr* hdr, const u_char* buffer);
-    int send_packet(const boost::shared_ptr<Packet>& packet, const int& frame) const;
+    int send_packet(const std::shared_ptr<Packet>& packet, const int& frame) const;
 
     /** Extract frames from pcap read data **/
     virtual void extract_frames(const u_char* data, const int& size) = 0;

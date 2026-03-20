@@ -105,7 +105,7 @@ BloscPlugin::~BloscPlugin()
  * @param src_frame - source frame to compress
  * @return compressed frame
  */
-boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> src_frame)
+std::shared_ptr<Frame> BloscPlugin::compress_frame(std::shared_ptr<Frame> src_frame)
 {
 
     int compressed_size = 0;
@@ -123,8 +123,8 @@ boost::shared_ptr<Frame> BloscPlugin::compress_frame(boost::shared_ptr<Frame> sr
 
     size_t dest_data_size = c_settings.uncompressed_size + BLOSC_MAX_OVERHEAD;
 
-    boost::shared_ptr<Frame> dest_frame
-        = boost::shared_ptr<DataBlockFrame>(new DataBlockFrame(dest_meta_data, dest_data_size));
+    std::shared_ptr<Frame> dest_frame
+        = std::shared_ptr<DataBlockFrame>(new DataBlockFrame(dest_meta_data, dest_data_size));
 
     std::stringstream ss_blosc_settings;
     ss_blosc_settings << " compressor=" << blosc_get_compressor() << " threads=" << blosc_get_nthreads()
@@ -230,7 +230,7 @@ void* BloscPlugin::get_buffer(size_t nbytes)
  *
  * \param[in] frame - Pointer to a Frame object.
  */
-void BloscPlugin::process_frame(boost::shared_ptr<Frame> src_frame)
+void BloscPlugin::process_frame(std::shared_ptr<Frame> src_frame)
 {
     // Protect this method
     boost::lock_guard<boost::recursive_mutex> lock(mutex_);
@@ -245,7 +245,7 @@ void BloscPlugin::process_frame(boost::shared_ptr<Frame> src_frame)
         this->update_compression_settings();
     }
 
-    boost::shared_ptr<Frame> compressed_frame = this->compress_frame(src_frame);
+    std::shared_ptr<Frame> compressed_frame = this->compress_frame(src_frame);
     LOG4CXX_DEBUG_LEVEL(3, logger_, "Pushing compressed frame");
     this->push(compressed_frame);
 }

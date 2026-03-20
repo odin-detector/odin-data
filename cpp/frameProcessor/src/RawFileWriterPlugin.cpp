@@ -25,7 +25,7 @@ RawFileWriterPlugin::RawFileWriterPlugin() :
     LOG4CXX_TRACE(logger_, "RawFileWriterPlugin constructor.");
 }
 
-void RawFileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame)
+void RawFileWriterPlugin::process_frame(std::shared_ptr<Frame> frame)
 {
     // Protect this method
     boost::lock_guard<boost::recursive_mutex> lock(mutex_);

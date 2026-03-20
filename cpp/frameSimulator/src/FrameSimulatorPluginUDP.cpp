@@ -255,7 +255,7 @@ void FrameSimulatorPluginUDP::replay_frames()
  * /param[in] frame to which packet belongs
  * this ensures each frame is sent to the appropriate destination port
  */
-int FrameSimulatorPluginUDP::send_packet(const boost::shared_ptr<Packet>& packet, const int& frame) const
+int FrameSimulatorPluginUDP::send_packet(const std::shared_ptr<Packet>& packet, const int& frame) const
 {
     if (frame != curr_frame) {
         curr_port_index = (curr_port_index + 1 < m_addrs.size()) ? curr_port_index + 1 : 0;

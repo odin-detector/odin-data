@@ -38,7 +38,7 @@ class BloscPlugin : public FrameProcessorPlugin {
 public:
     BloscPlugin();
     virtual ~BloscPlugin();
-    boost::shared_ptr<Frame> compress_frame(boost::shared_ptr<Frame> frame);
+    std::shared_ptr<Frame> compress_frame(std::shared_ptr<Frame> frame);
 
     /** Configuration constants */
     static const std::string CONFIG_BLOSC_COMPRESSOR;
@@ -47,7 +47,7 @@ public:
     static const std::string CONFIG_BLOSC_SHUFFLE;
 
     // Baseclass API to implement:
-    void process_frame(boost::shared_ptr<Frame> frame);
+    void process_frame(std::shared_ptr<Frame> frame);
     void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
     void requestConfiguration(OdinData::IpcMessage& reply);
     int get_version_major();

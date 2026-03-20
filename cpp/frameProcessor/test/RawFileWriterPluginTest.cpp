@@ -16,7 +16,7 @@ class RawFileWriterPluginTestFixture {
 public:
     RawFileWriterPluginTestFixture() :
         img { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 },
-        frame { boost::make_shared<FrameProcessor::DataBlockFrame>(
+        frame { std::make_shared<FrameProcessor::DataBlockFrame>(
             FrameProcessor::FrameMetaData { 7, "data", FrameProcessor::raw_16bit, "scan1" /*Acq_ID*/, { 3, 4 } },
             static_cast<void*>(img),
             24
@@ -32,7 +32,7 @@ public:
     }
 
     unsigned short img[12];
-    boost::shared_ptr<FrameProcessor::Frame> frame;
+    std::shared_ptr<FrameProcessor::Frame> frame;
     FrameProcessor::RawFileWriterPlugin rfw_plugin;
 };
 

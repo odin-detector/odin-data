@@ -7,7 +7,7 @@
 #include "FrameSimulatorPlugin.h"
 
 #include <boost/filesystem.hpp>
-#include <boost/shared_ptr.hpp>
+
 
 #include <log4cxx/basicconfigurator.h>
 #include <log4cxx/helpers/exception.h>
@@ -45,7 +45,7 @@ static const FrameSimulatorOption<std::string>
  * /return shared pointer to an instance of the requested FrameSimulatorPlugin  class
  * the 'detector' argument must match the library name prefix i.e. 'lib<detector>FrameSimulatorPlugin.so'
  */
-boost::shared_ptr<FrameSimulator::FrameSimulatorPlugin>
+std::shared_ptr<FrameSimulator::FrameSimulatorPlugin>
 get_requested_plugin(const po::variables_map& vm, LoggerPtr& logger)
 {
 
@@ -54,7 +54,7 @@ get_requested_plugin(const po::variables_map& vm, LoggerPtr& logger)
     boost::filesystem::path libraryPathAndName
         = boost::filesystem::path(opt_libpath.get_val(vm)) / boost::filesystem::path("lib" + pluginClass + ".so");
 
-    boost::shared_ptr<FrameSimulator::FrameSimulatorPlugin> plugin;
+    std::shared_ptr<FrameSimulator::FrameSimulatorPlugin> plugin;
 
     try {
         plugin = OdinData::ClassLoader<FrameSimulator::FrameSimulatorPlugin>::load_class(
@@ -88,7 +88,7 @@ int parse_arguments(
     char** argv,
     po::variables_map& vm,
     LoggerPtr& logger,
-    boost::shared_ptr<FrameSimulator::FrameSimulatorPlugin>& plugin
+    std::shared_ptr<FrameSimulator::FrameSimulatorPlugin>& plugin
 )
 {
 
@@ -224,7 +224,7 @@ int main(int argc, char* argv[])
 
     {
 
-        boost::shared_ptr<FrameSimulator::FrameSimulatorPlugin> plugin;
+        std::shared_ptr<FrameSimulator::FrameSimulatorPlugin> plugin;
 
         po::variables_map vm;
         parse_arguments(argc, argv, vm, logger, plugin);

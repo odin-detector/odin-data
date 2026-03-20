@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-#include <boost/shared_ptr.hpp>
+
 #include <boost/thread.hpp>
 
 #include <log4cxx/logger.h>

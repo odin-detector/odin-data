@@ -211,7 +211,7 @@ int IpcReactor::register_timer(size_t delay_ms, size_t times, TimerCallback call
     boost::lock_guard<boost::mutex> lock(mutex_);
 
     // Create a smart pointer to a new timer object
-    boost::shared_ptr<IpcReactorTimer> timer(new IpcReactorTimer(delay_ms, times, callback));
+    std::shared_ptr<IpcReactorTimer> timer(new IpcReactorTimer(delay_ms, times, callback));
 
     // Add the timer to the timer map
     timers_[timer->get_id()] = timer;

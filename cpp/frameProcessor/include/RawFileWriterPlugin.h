@@ -20,7 +20,7 @@ namespace FrameProcessor {
 class RawFileWriterPlugin : public FrameProcessorPlugin {
 public:
     RawFileWriterPlugin();
-    void process_frame(boost::shared_ptr<Frame> frame);
+    void process_frame(std::shared_ptr<Frame> frame);
     void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
     void requestConfiguration(OdinData::IpcMessage& reply);
     void status(OdinData::IpcMessage& reply);

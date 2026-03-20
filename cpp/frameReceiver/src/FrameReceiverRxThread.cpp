@@ -56,7 +56,7 @@ bool FrameReceiverRxThread::start()
     bool init_ok = true;
 
     rx_thread_
-        = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&FrameReceiverRxThread::run_service, this)));
+        = std::shared_ptr<boost::thread>(new boost::thread(boost::bind(&FrameReceiverRxThread::run_service, this)));
 
     // Wait for the thread service to initialise and be running properly, logging an error
     // an returning false if the thread fails to start within a reasonable time. Also

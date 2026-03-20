@@ -30,7 +30,7 @@ public:
             7, "data", FrameProcessor::raw_16bit, "scan1", img_dims, FrameProcessor::no_compression
         );
 
-        frame = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
+        frame = std::shared_ptr<FrameProcessor::DataBlockFrame>(
             new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(img), 24)
         );
 
@@ -45,7 +45,7 @@ public:
             7, "data", FrameProcessor::raw_16bit, "scan1", img_dims, FrameProcessor::no_compression
         );
 
-        frame_2 = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
+        frame_2 = std::shared_ptr<FrameProcessor::DataBlockFrame>(
             new FrameProcessor::DataBlockFrame(frame_2_meta, static_cast<void*>(img_2), 32)
         );
     }
@@ -54,8 +54,8 @@ public:
     {
     }
 
-    boost::shared_ptr<FrameProcessor::Frame> frame;
-    boost::shared_ptr<FrameProcessor::Frame> frame_2;
+    std::shared_ptr<FrameProcessor::Frame> frame;
+    std::shared_ptr<FrameProcessor::Frame> frame_2;
     FrameProcessor::GapFillPlugin gap_fill_plugin;
 };
 
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE(GapFillPlugin_process_frame)
     gap_fill_plugin.configure(cfg, reply);
 
     // Push the frame through the plugin to force the gap fill
-    boost::shared_ptr<FrameProcessor::Frame> gap_frame = gap_fill_plugin.insert_gaps(frame);
+    std::shared_ptr<FrameProcessor::Frame> gap_frame = gap_fill_plugin.insert_gaps(frame);
 
     unsigned short gap_img[117]
         = { 0, 0, 0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0,  0, 1, 0, 0, 2, 0, 0, 0, 3, 0, 0, 4, 0, 0, 0, 0, 0,
@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE(GapFillPlugin_process_frame)
     gap_fill_plugin.configure(cfg_2, reply_2);
 
     // Push the frame through the plugin to force the gap fill
-    boost::shared_ptr<FrameProcessor::Frame> gap_frame_2 = gap_fill_plugin.insert_gaps(frame_2);
+    std::shared_ptr<FrameProcessor::Frame> gap_frame_2 = gap_fill_plugin.insert_gaps(frame_2);
 
     unsigned short gap_img_2[49] = { 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 2, 2, 0, 0, 1, 1, 0, 2, 2, 0, 0, 0, 0, 0,
                                      0, 0, 0, 0, 3, 3, 0, 4, 4, 0, 0, 3, 3, 0, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0 };

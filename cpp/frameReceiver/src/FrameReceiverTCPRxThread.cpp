@@ -22,7 +22,7 @@ FrameReceiverTCPRxThread::FrameReceiverTCPRxThread(
     LOG4CXX_DEBUG_LEVEL(1, logger_, "FrameReceiverTCPRxThread constructor entered....");
 
     // Store the frame decoder as a TCP type frame decoder
-    frame_decoder_ = boost::dynamic_pointer_cast<FrameDecoderTCP>(frame_decoder);
+    frame_decoder_ = std::dynamic_pointer_cast<FrameDecoderTCP>(frame_decoder);
 }
 
 FrameReceiverTCPRxThread::~FrameReceiverTCPRxThread()

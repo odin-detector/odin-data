@@ -171,8 +171,8 @@ FileWriterPlugin::FileWriterPlugin() :
 
     this->logger_ = Logger::getLogger("FP.FileWriterPlugin");
     LOG4CXX_INFO(logger_, "FileWriterPlugin version " << this->get_version_long() << " loaded");
-    this->current_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
-    this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
+    this->current_acquisition_ = std::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
+    this->next_acquisition_ = std::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
     hdf5_error_definition_.create_duration = 0;
     hdf5_error_definition_.write_duration = 0;
     hdf5_error_definition_.flush_duration = 0;
@@ -213,7 +213,7 @@ FileWriterPlugin::~FileWriterPlugin()
  *
  * \param[in] frame - Pointer to the Frame object.
  */
-void FileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame)
+void FileWriterPlugin::process_frame(std::shared_ptr<Frame> frame)
 {
     // Protect this method
     boost::mutex::scoped_lock cflock(close_file_mutex_);
@@ -274,7 +274,7 @@ void FileWriterPlugin::start_writing()
         // rank has been changed since the frame count was set
         next_acquisition_->frames_to_write_ = calc_num_frames(this->next_acquisition_->total_frames_);
         this->current_acquisition_ = next_acquisition_;
-        this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
+        this->next_acquisition_ = std::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
 
         // Set up datasets within the current acquisition
         std::map<std::string, DatasetDefinition>::iterator iter;
@@ -937,7 +937,7 @@ bool FileWriterPlugin::reset_statistics()
  *  The function will set an error if the frame does not match a writing acquisition.
  * \param[in] frame - Pointer to the Frame object.
  */
-bool FileWriterPlugin::frame_in_acquisition(boost::shared_ptr<Frame> frame)
+bool FileWriterPlugin::frame_in_acquisition(std::shared_ptr<Frame> frame)
 {
 
     std::string frame_acquisition_ID = frame->get_meta_data().get_acquisition_ID();
@@ -1018,7 +1018,7 @@ void FileWriterPlugin::stop_acquisition()
             if (next_acquisition_->total_frames_ > 0 && next_acquisition_->frames_to_write_ == 0) {
                 // We're not expecting any frames, so just clear out the nextAcquisition for the next one and don't
                 // start writing
-                this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
+                this->next_acquisition_ = std::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
                 LOG4CXX_INFO(
                     logger_,
                     "FrameProcessor will not receive any frames from this acquisition and so no output file will be "
@@ -1123,9 +1123,9 @@ void FileWriterPlugin::execute(const std::string& command, OdinData::IpcMessage&
         if (next_acquisition_->total_frames_ > 0 && next_acquisition_->frames_to_write_ == 0) {
             // We're not expecting any frames, so just clear out the nextAcquisition for the next one and don't start
             // writing
-            this->next_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
+            this->next_acquisition_ = std::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
             if (!writing_) {
-                this->current_acquisition_ = boost::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
+                this->current_acquisition_ = std::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
             }
             LOG4CXX_INFO(
                 logger_,

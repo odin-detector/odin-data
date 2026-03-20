@@ -22,7 +22,7 @@ FrameReceiverZMQRxThread::FrameReceiverZMQRxThread(
     LOG4CXX_DEBUG_LEVEL(1, logger_, "FrameReceiverZMQRxThread constructor entered....");
 
     // Store the frame decoder as a UDP type frame decoder
-    frame_decoder_ = boost::dynamic_pointer_cast<FrameDecoderZMQ>(frame_decoder);
+    frame_decoder_ = std::dynamic_pointer_cast<FrameDecoderZMQ>(frame_decoder);
 }
 
 FrameReceiverZMQRxThread::~FrameReceiverZMQRxThread()

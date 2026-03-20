@@ -41,7 +41,7 @@ using namespace rapidjson;
 
 using namespace FrameProcessor;
 
-boost::shared_ptr<FrameProcessorController> FrameProcessorApp::controller_;
+std::shared_ptr<FrameProcessorController> FrameProcessorApp::controller_;
 
 static bool has_suffix(const std::string& str, const std::string& suffix)
 {
@@ -165,7 +165,7 @@ int FrameProcessorApp::run(void)
     LOG4CXX_INFO(logger_, "frameProcessor version " << ODIN_DATA_VERSION_STR << " starting up");
 
     // Instantiate a controller
-    controller_ = boost::shared_ptr<FrameProcessorController>(new FrameProcessorController(io_threads_));
+    controller_ = std::shared_ptr<FrameProcessorController>(new FrameProcessorController(io_threads_));
 
     try {
 

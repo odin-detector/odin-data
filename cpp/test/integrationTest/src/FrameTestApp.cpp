@@ -9,7 +9,7 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
-#include <boost/shared_ptr.hpp>
+
 
 #include <boost/foreach.hpp>
 #include <boost/property_tree/json_parser.hpp>

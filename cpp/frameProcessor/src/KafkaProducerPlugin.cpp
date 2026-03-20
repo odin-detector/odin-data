@@ -285,7 +285,7 @@ void KafkaProducerPlugin::configure_partition(int32_t partition)
  * \param[in] frame - Pointer to a Frame object.
  * \param[out] nbytes - Reference to the message size in bytes.
  */
-void* KafkaProducerPlugin::create_message(boost::shared_ptr<Frame> frame, size_t& nbytes)
+void* KafkaProducerPlugin::create_message(std::shared_ptr<Frame> frame, size_t& nbytes)
 {
     // creates header information
     rapidjson::StringBuffer string_buffer;
@@ -353,7 +353,7 @@ void* KafkaProducerPlugin::create_message(boost::shared_ptr<Frame> frame, size_t
  *
  * \param[in] frame - Pointer to a Frame object.
  */
-void KafkaProducerPlugin::enqueue_frame(boost::shared_ptr<Frame> frame)
+void KafkaProducerPlugin::enqueue_frame(std::shared_ptr<Frame> frame)
 {
     LOG4CXX_TRACE(logger_, "Sending frame to message queue ...");
     if (!this->kafka_topic_) {
@@ -414,7 +414,7 @@ void KafkaProducerPlugin::on_message_error(const char* error)
  *
  * \param[in] frame - Pointer to a Frame object.
  */
-void KafkaProducerPlugin::process_frame(boost::shared_ptr<Frame> frame)
+void KafkaProducerPlugin::process_frame(std::shared_ptr<Frame> frame)
 {
     LOG4CXX_TRACE(logger_, "Received a new frame...");
     if (frame->get_meta_data().get_dataset_name() == this->dataset_name_) {

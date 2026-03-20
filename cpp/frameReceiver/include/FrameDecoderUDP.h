@@ -16,7 +16,7 @@
 #include <stdint.h>
 
 #include <boost/function.hpp>
-#include <boost/shared_ptr.hpp>
+
 
 #include <log4cxx/logger.h>
 using namespace log4cxx;
@@ -46,7 +46,7 @@ public:
 
 inline FrameDecoderUDP::~FrameDecoderUDP() { };
 
-typedef boost::shared_ptr<FrameDecoderUDP> FrameDecoderUDPPtr;
+typedef std::shared_ptr<FrameDecoderUDP> FrameDecoderUDPPtr;
 
 } // namespace FrameReceiver
 #endif /* INCLUDE_FRAMEDECODER_UDP_H_ */
