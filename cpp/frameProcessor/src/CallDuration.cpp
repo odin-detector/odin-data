@@ -9,6 +9,13 @@
 
 namespace FrameProcessor {
 
+CallDuration::CallDuration() :
+    last_(0),
+    max_(0),
+    mean_(0)
+{
+}
+
 /**
  * Replace last, replace max if higher and recalculate mean
  *
