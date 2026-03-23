@@ -148,7 +148,7 @@ void DataBlockPool::internal_allocate(size_t block_count, size_t block_size)
     );
 
     // Protect this method
-    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
 
     // Allocate the number of data blocks, each of size block_size
     std::shared_ptr<DataBlock> block;
@@ -174,7 +174,7 @@ std::shared_ptr<DataBlock> DataBlockPool::internal_take(size_t block_size)
     LOG4CXX_DEBUG_LEVEL(2, logger_, "Requesting DataBlock of " << block_size << " bytes");
 
     // Protect this method
-    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
 
     std::shared_ptr<DataBlock> block;
     if (free_blocks_ == 0) {
@@ -211,7 +211,7 @@ void DataBlockPool::internal_release(std::shared_ptr<DataBlock> block)
     LOG4CXX_DEBUG_LEVEL(2, logger_, "Releasing DataBlock [id=" << block->get_index() << "]");
 
     // Protect this method
-    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
 
     if (used_map_.count(block->get_index()) > 0) {
         used_map_.erase(block->get_index());

@@ -65,7 +65,7 @@ private:
     /** Pointer to logger */
     LoggerPtr logger_;
     /** Mutex used to make this class thread safe */
-    boost::recursive_mutex mutex_;
+    std::recursive_mutex mutex_;
     /** Current acquisition ID */
     std::string current_acquisition_;
     /** Compression settings */

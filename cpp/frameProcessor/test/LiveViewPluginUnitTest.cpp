@@ -27,7 +27,7 @@ public:
         // set up the recieve sockets so we can read data from the plugin's live output.
         recv_socket.subscribe("");
         recv_socket_other.subscribe("");
-        std::string addr = global_socket_addr + boost::to_string(global_socket_port);
+        std::string addr = global_socket_addr + std::to_string(global_socket_port);
         BOOST_TEST_MESSAGE("Address: " + addr);
         recv_socket.connect(addr);
         recv_socket_other.connect("tcp://127.0.0.1:5050");

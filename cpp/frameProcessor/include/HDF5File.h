@@ -12,9 +12,6 @@
 #include <string>
 #include <vector>
 
-
-#include <boost/thread.hpp>
-
 #include <log4cxx/logger.h>
 using namespace log4cxx;
 
@@ -134,7 +131,7 @@ private:
     /** Whether datasets use H5S_UNLIMITED as the outermost dimension extent */
     bool unlimited_;
     /** Mutex used to make this class thread safe */
-    boost::recursive_mutex mutex_;
+    std::recursive_mutex mutex_;
     /* Parameters memspace */
     hid_t param_memspace_;
     /* Map containing time each dataset was last flushed*/

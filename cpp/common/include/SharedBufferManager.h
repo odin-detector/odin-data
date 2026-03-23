@@ -8,13 +8,12 @@
 #ifndef SHAREDBUFFERMANAGER_H_
 #define SHAREDBUFFERMANAGER_H_
 
+#include <memory>
 #include <stddef.h>
 #include <string>
-#include <memory>
 
 #include <boost/interprocess/mapped_region.hpp>
 #include <boost/interprocess/shared_memory_object.hpp>
-
 
 #include "OdinDataException.h"
 

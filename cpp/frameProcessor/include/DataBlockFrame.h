@@ -4,8 +4,6 @@
 #include "DataBlock.h"
 #include "Frame.h"
 
-
-
 namespace FrameProcessor {
 
 class DataBlockFrame : public Frame {

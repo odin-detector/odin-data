@@ -8,7 +8,6 @@
 
 #include <boost/filesystem.hpp>
 
-
 #include <log4cxx/basicconfigurator.h>
 #include <log4cxx/helpers/exception.h>
 #include <log4cxx/logger.h>

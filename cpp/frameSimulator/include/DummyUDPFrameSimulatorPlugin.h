@@ -8,7 +8,6 @@
 using namespace log4cxx;
 using namespace log4cxx::helpers;
 
-
 #include <map>
 #include <stdexcept>
 #include <string>

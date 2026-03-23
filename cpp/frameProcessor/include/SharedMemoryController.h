@@ -15,8 +15,6 @@
 using namespace log4cxx;
 using namespace log4cxx::helpers;
 
-#include "boost/date_time/posix_time/posix_time.hpp"
-
 #include "IFrameCallback.h"
 #include "IpcChannel.h"
 #include "IpcMessage.h"

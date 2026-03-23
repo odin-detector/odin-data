@@ -1,8 +1,6 @@
 #ifndef FRAMEPROCESSOR_TESTHELPERFUNCTIONS_H
 #define FRAMEPROCESSOR_TESTHELPERFUNCTIONS_H
 
-
-
 static std::shared_ptr<FrameProcessor::DataBlockFrame> get_dummy_frame()
 {
 

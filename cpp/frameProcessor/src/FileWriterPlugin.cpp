@@ -189,11 +189,11 @@ FileWriterPlugin::~FileWriterPlugin()
     timeout_active_ = false;
     // Notify the close timeout thread to clean up resources
     {
-        boost::mutex::scoped_lock lock2(close_file_mutex_);
+        std::scoped_lock lock2(close_file_mutex_);
         timeout_condition_.notify_all();
     }
     {
-        boost::mutex::scoped_lock lock(start_timeout_mutex_);
+        std::scoped_lock lock(start_timeout_mutex_);
         start_condition_.notify_all();
     }
     timeout_thread_.join();
@@ -216,8 +216,8 @@ FileWriterPlugin::~FileWriterPlugin()
 void FileWriterPlugin::process_frame(std::shared_ptr<Frame> frame)
 {
     // Protect this method
-    boost::mutex::scoped_lock cflock(close_file_mutex_);
-    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    std::scoped_lock cflock(close_file_mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
 
     // check it matches the current (or next) acquisition.
     // frames that don't match are dropped / ignored.
@@ -322,7 +322,7 @@ void FileWriterPlugin::stop_writing()
 void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
     // Protect this method
-    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
 
     LOG4CXX_INFO(logger_, config.encode());
 
@@ -1041,7 +1041,7 @@ void FileWriterPlugin::start_close_file_timeout()
 {
     if (timeout_active_ == false) {
         LOG4CXX_INFO(logger_, "Starting close file timeout");
-        boost::mutex::scoped_lock lock(start_timeout_mutex_);
+        std::scoped_lock lock(start_timeout_mutex_);
         start_condition_.notify_all();
     } else {
         LOG4CXX_INFO(logger_, "Close file timeout already active");
@@ -1060,17 +1060,19 @@ void FileWriterPlugin::start_close_file_timeout()
 void FileWriterPlugin::run_close_file_timeout()
 {
     OdinData::configure_logging_mdc(OdinData::app_path.c_str());
-    boost::mutex::scoped_lock startLock(start_timeout_mutex_);
+    std::unique_lock startLock(start_timeout_mutex_);
     while (timeout_thread_running_) {
         start_condition_.wait(startLock);
         if (timeout_thread_running_) {
             timeout_active_ = true;
-            boost::mutex::scoped_lock lock(close_file_mutex_);
+            std::unique_lock lock(close_file_mutex_);
             while (timeout_active_) {
-                if (!timeout_condition_.timed_wait(lock, boost::posix_time::milliseconds(timeout_period_))) {
+                if (!timeout_condition_.wait_for(lock, std::chrono::milliseconds(timeout_period_), [this] {
+                        return timeout_active_ == false;
+                    })) {
                     // Timeout
                     LOG4CXX_DEBUG_LEVEL(1, logger_, "Close file Timeout timed out");
-                    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+                    std::lock_guard<std::recursive_mutex> lock(mutex_);
                     if (writing_ && timeout_active_) {
                         set_error("Timed out waiting for frames, stopping writing");
                         stop_acquisition();

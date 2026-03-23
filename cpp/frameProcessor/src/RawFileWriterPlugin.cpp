@@ -28,7 +28,7 @@ RawFileWriterPlugin::RawFileWriterPlugin() :
 void RawFileWriterPlugin::process_frame(std::shared_ptr<Frame> frame)
 {
     // Protect this method
-    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     this->push(frame);
     if (!this->enabled_) {
         return;
@@ -68,7 +68,7 @@ void RawFileWriterPlugin::process_frame(std::shared_ptr<Frame> frame)
 void RawFileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
     // Protect this method
-    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     if (config.has_param(RawFileWriterPlugin::CONFIG_ENABLED)) {
         this->enabled_ = config.get_param<bool>(RawFileWriterPlugin::CONFIG_ENABLED);
     }

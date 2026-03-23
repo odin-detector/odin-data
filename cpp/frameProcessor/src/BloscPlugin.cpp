@@ -233,7 +233,7 @@ void* BloscPlugin::get_buffer(size_t nbytes)
 void BloscPlugin::process_frame(std::shared_ptr<Frame> src_frame)
 {
     // Protect this method
-    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
 
     LOG4CXX_DEBUG_LEVEL(3, logger_, "Received a new frame...");
 
@@ -257,7 +257,7 @@ void BloscPlugin::process_frame(std::shared_ptr<Frame> src_frame)
 void BloscPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
     // Protect this method
-    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
 
     LOG4CXX_INFO(logger_, config.encode());
 

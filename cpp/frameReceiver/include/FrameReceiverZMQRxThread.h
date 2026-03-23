@@ -9,7 +9,6 @@
 #define FRAMERECEIVERZMQRXTHREAD_H_
 
 #include <boost/asio.hpp>
-#include <boost/thread.hpp>
 
 #include <log4cxx/logger.h>
 using namespace log4cxx;

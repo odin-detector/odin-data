@@ -424,7 +424,7 @@ void FrameReceiverController::configure_frame_decoder(OdinData::IpcMessage& conf
     // IpcMessage to pass to the decoder initialisation. Test if this differs from the current
     // decoder configuration; update and force a reconfig if so
     if (config_msg.has_param(CONFIG_DECODER_CONFIG)) {
-        boost::scoped_ptr<IpcMessage> new_decoder_config(
+        std::unique_ptr<IpcMessage> new_decoder_config(
             new IpcMessage(config_msg.get_param<const rapidjson::Value&>(CONFIG_DECODER_CONFIG))
         );
         if (*new_decoder_config != *(config_.decoder_config_)) {

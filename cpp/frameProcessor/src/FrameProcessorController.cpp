@@ -885,7 +885,7 @@ void FrameProcessorController::shutdown()
  */
 void FrameProcessorController::waitForShutdown()
 {
-    boost::unique_lock<boost::mutex> lock(exitMutex_);
+    std::unique_lock<std::mutex> lock(exitMutex_);
     exitCondition_.wait(lock);
 }
 

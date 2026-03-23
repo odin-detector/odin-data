@@ -19,6 +19,7 @@
 
 #include <iostream>
 #include <map>
+#include <mutex>
 #include <sstream>
 #include <time.h>
 
@@ -26,8 +27,6 @@
 #include <boost/bind/bind.hpp>
 #include <boost/function.hpp>
 #include <boost/ref.hpp>
-
-#include <boost/thread.hpp>
 
 #include "IpcChannel.h"
 #include "OdinDataException.h"
@@ -143,7 +142,7 @@ private:
     ReactorCallback* callbacks_; //!< Ptr to matched array of callbacks
     std::size_t pollsize_; //!< Number if active items to poll
     bool needs_rebuild_; //!< Indicates that the poll item list needs rebuilding
-    boost::mutex mutex_; //!< Mutex used to make some calls in this class thread safe
+    std::mutex mutex_; //!< Mutex used to make some calls in this class thread safe
 };
 
 } // namespace OdinData

@@ -8,7 +8,6 @@
 #ifndef INCLUDE_DUMMYFRAMEDECODERUDP_H_
 #define INCLUDE_DUMMYFRAMEDECODERUDP_H_
 
-
 #include <iostream>
 #include <stdint.h>
 #include <time.h>

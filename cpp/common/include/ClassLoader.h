@@ -8,13 +8,12 @@
 #ifndef ODIN_DATA_CLASSLOADER_H_
 #define ODIN_DATA_CLASSLOADER_H_
 
-
 #include <dlfcn.h>
 #include <map>
+#include <memory>
 #include <stdexcept>
 #include <stdio.h>
 #include <string>
-#include <memory>
 #include <unistd.h>
 
 #define REGISTER(Base, Class, Name) OdinData::ClassLoader<Base> cl { Name, OdinData::maker<Base, Class> };

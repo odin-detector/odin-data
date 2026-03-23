@@ -104,7 +104,7 @@ void HDF5File::handle_h5_error(
 void HDF5File::hdf_error_handler(unsigned n, const H5E_error2_t* err_desc)
 {
     // Protect this method
-    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     hdf5_error_flag_ = true;
     hdf5_errors_.push_back(*err_desc);
 }
@@ -112,7 +112,7 @@ void HDF5File::hdf_error_handler(unsigned n, const H5E_error2_t* err_desc)
 void HDF5File::clear_hdf_errors()
 {
     // Protect this method
-    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
 
     // Empty the error array
     hdf5_errors_.clear();
@@ -140,7 +140,7 @@ size_t HDF5File::create_file(
 )
 {
     // Protect this method
-    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     hid_t fapl; // File access property list
     hid_t fcpl;
     filename_ = filename;
@@ -209,7 +209,7 @@ size_t HDF5File::create_file(
 size_t HDF5File::close_file()
 {
     // Protect this method
-    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
 
     size_t close_duration = 0;
     if (this->hdf5_file_id_ >= 0) {
@@ -248,7 +248,7 @@ void HDF5File::write_frame(
 )
 {
     // Protect this method
-    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
 
     LOG4CXX_TRACE(
         logger_,
@@ -314,7 +314,7 @@ void HDF5File::write_frame(
 void HDF5File::write_parameter(const Frame& frame, DatasetDefinition dataset_definition, hsize_t frame_offset)
 {
     // Protect this method
-    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
 
     void* data_ptr;
     size_t size = 0;
@@ -426,7 +426,7 @@ void HDF5File::write_parameter(const Frame& frame, DatasetDefinition dataset_def
 void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index, int high_index)
 {
     // Protect this method
-    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     // Handles all at the top so we can remember to close them
     hid_t dataspace = 0;
     hid_t prop = 0;
@@ -626,7 +626,7 @@ void HDF5File::extend_dataset(HDF5Dataset_t& dset, size_t frame_no)
 size_t HDF5File::get_dataset_frames(const std::string& dset_name)
 {
     // Protect this method
-    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     return this->get_hdf5_dataset(dset_name).actual_dataset_size_;
 }
 
@@ -638,7 +638,7 @@ size_t HDF5File::get_dataset_frames(const std::string& dset_name)
 size_t HDF5File::get_dataset_max_size(const std::string& dset_name)
 {
     // Protect this method
-    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     if (unlimited_) {
         return 0;
     } else {
@@ -689,7 +689,7 @@ hid_t HDF5File::datatype_to_hdf_type(DataType data_type) const
 void HDF5File::start_swmr()
 {
     // Protect this method
-    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
 #if H5_VERSION_GE(1, 9, 178)
     if (!use_earliest_version_) {
         ensure_h5_result(H5Fstart_swmr_write(this->hdf5_file_id_), "Failed to enable SWMR writing");

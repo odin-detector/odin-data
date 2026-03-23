@@ -3,8 +3,8 @@
 
 #include "Packet.h"
 
-#include <vector>
 #include <memory>
+#include <vector>
 
 namespace FrameSimulator {
 

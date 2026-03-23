@@ -7,7 +7,6 @@
 
 #include <iostream>
 
-
 #include <boost/test/unit_test.hpp>
 
 #include <log4cxx/basicconfigurator.h>

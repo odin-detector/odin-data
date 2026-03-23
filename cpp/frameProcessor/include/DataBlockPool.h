@@ -10,9 +10,6 @@
 
 #include <list>
 
-
-#include <boost/thread.hpp>
-
 #include "DataBlock.h"
 
 namespace FrameProcessor {
@@ -55,7 +52,7 @@ private:
     /** Pointer to logger */
     log4cxx::LoggerPtr logger_;
     /** Mutex used to make this class thread safe */
-    boost::recursive_mutex mutex_;
+    std::recursive_mutex mutex_;
     /** List of currently available DataBlock objects */
     std::list<std::shared_ptr<DataBlock>> free_list_;
     /** Map of currently used DataBlock objects, indexed by their unique IDs */

@@ -9,9 +9,7 @@
 #define FRAMEPROCESSOR_SRC_WATCHDOGTIMER_H_
 
 #include <string>
-
-
-#include <boost/thread.hpp>
+#include <thread>
 
 #include <IpcReactor.h>
 #include <gettime.h>
@@ -39,7 +37,7 @@ private:
     /* Store for start time of watchdog */
     struct timespec start_time_;
     /* Timer watchdog thread */
-    boost::thread worker_thread_;
+    std::thread worker_thread_;
     /** Flag to control start up timings of main thread and worker thread */
     volatile bool worker_thread_running_;
     /** IpcReactor to use as a simple timer controller */

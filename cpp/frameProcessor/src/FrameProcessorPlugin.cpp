@@ -61,7 +61,7 @@ std::string FrameProcessorPlugin::get_name() const
 void FrameProcessorPlugin::set_error(const std::string& msg)
 {
     // Take lock to access error_messages_
-    boost::lock_guard<boost::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
 
     // Loop over error messages, if this is a new message then add it
     std::vector<std::string>::iterator iter;
@@ -86,7 +86,7 @@ void FrameProcessorPlugin::set_error(const std::string& msg)
 void FrameProcessorPlugin::set_warning(const std::string& msg)
 {
     // Take lock to access warning_messages_
-    boost::lock_guard<boost::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
 
     // Loop over warning messages, if this is a new message then add it
     std::vector<std::string>::iterator iter;
@@ -107,7 +107,7 @@ void FrameProcessorPlugin::set_warning(const std::string& msg)
 void FrameProcessorPlugin::clear_errors()
 {
     // Take lock to access error_messages_
-    boost::lock_guard<boost::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     error_messages_.clear();
     warning_messages_.clear();
 }
@@ -128,7 +128,7 @@ bool FrameProcessorPlugin::reset_statistics()
 std::vector<std::string> FrameProcessorPlugin::get_errors()
 {
     // Take lock to access error_messages_
-    boost::lock_guard<boost::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     return error_messages_;
 }
 
@@ -138,7 +138,7 @@ std::vector<std::string> FrameProcessorPlugin::get_errors()
 std::vector<std::string> FrameProcessorPlugin::get_warnings()
 {
     // Take lock to access warning_messages_
-    boost::lock_guard<boost::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     return warning_messages_;
 }
 
@@ -264,11 +264,7 @@ void FrameProcessorPlugin::version(OdinData::IpcMessage& status)
  * \param[in] cb - Pointer to an IFrameCallback interface (plugin).
  * \param[in] blocking - Whether call should block.
  */
-void FrameProcessorPlugin::register_callback(
-    const std::string& name,
-    std::shared_ptr<IFrameCallback> cb,
-    bool blocking
-)
+void FrameProcessorPlugin::register_callback(const std::string& name, std::shared_ptr<IFrameCallback> cb, bool blocking)
 {
     if (blocking) {
         if (callbacks_.count(name) != 0) {
@@ -384,8 +380,7 @@ void FrameProcessorPlugin::callback(std::shared_ptr<Frame> frame)
 void FrameProcessorPlugin::notify_end_of_acquisition()
 {
     // Create an EndOfAcquisitionFrame object and push it through the processing chain
-    std::shared_ptr<EndOfAcquisitionFrame> eoa
-        = std::shared_ptr<EndOfAcquisitionFrame>(new EndOfAcquisitionFrame());
+    std::shared_ptr<EndOfAcquisitionFrame> eoa = std::shared_ptr<EndOfAcquisitionFrame>(new EndOfAcquisitionFrame());
     this->push(eoa);
 }
 

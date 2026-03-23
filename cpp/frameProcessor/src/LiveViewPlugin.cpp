@@ -256,7 +256,7 @@ void LiveViewPlugin::pass_live_frame(std::shared_ptr<Frame> frame)
 
     size_t dim_size = dim.size();
     for (size_t i = 0; i < dim_size; i++) {
-        std::string dimString = boost::to_string(dim[i]);
+        std::string dimString = std::to_string(dim[i]);
         rapidjson::Value dimStringVal(dimString.c_str(), document.GetAllocator());
         valueDims.PushBack(dimStringVal, document.GetAllocator());
     }

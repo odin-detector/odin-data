@@ -8,7 +8,6 @@
 #ifndef TOOLS_FILEWRITER_FrameProcessorController_H_
 #define TOOLS_FILEWRITER_FrameProcessorController_H_
 
-
 #include <log4cxx/logger.h>
 
 #include "ClassLoader.h"
@@ -19,6 +18,8 @@
 #include "SharedBufferManager.h"
 #include "SharedMemoryController.h"
 #include "logging.h"
+
+#include <condition_variable>
 
 namespace FrameProcessor {
 
@@ -32,8 +33,7 @@ namespace FrameProcessor {
  *
  * The class uses an IpcReactor to manage connections and status updates.
  */
-class FrameProcessorController : public IFrameCallback,
-                                 public std::enable_shared_from_this<FrameProcessorController> {
+class FrameProcessorController : public IFrameCallback, public std::enable_shared_from_this<FrameProcessorController> {
 public:
     FrameProcessorController(unsigned int num_io_threads = OdinData::Defaults::default_io_threads);
     virtual ~FrameProcessorController();
@@ -139,7 +139,7 @@ private:
     /** Map of stored configuration objects */
     std::map<std::string, std::string> stored_configs_;
     /** Condition for exiting this file writing process */
-    boost::condition_variable exitCondition_;
+    std::condition_variable exitCondition_;
     /** Frames to write before shutting down - 0 to disable shutdown */
     unsigned int shutdownFrameCount_;
     /** Total frames processed */
@@ -147,7 +147,7 @@ private:
     /** Master frame specifier - Frame to include in count of total frames processed */
     std::string masterFrame_;
     /** Mutex used for locking the exitCondition */
-    boost::mutex exitMutex_;
+    std::mutex exitMutex_;
     /** Used to check for Ipc tick timer termination */
     bool runThread_;
     /** Is the main thread running */
@@ -159,7 +159,7 @@ private:
     /** Have we successfully shutdown */
     bool shutdown_;
     /** Main thread used for control message handling */
-    boost::thread ctrlThread_;
+    std::thread ctrlThread_;
     /** Store for any messages occurring during thread initialisation */
     std::string threadInitMsg_;
     /** Pointer to the IpcReactor for incoming frame handling */

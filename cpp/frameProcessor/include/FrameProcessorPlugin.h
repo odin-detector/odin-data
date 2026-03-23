@@ -8,7 +8,6 @@
 #ifndef TOOLS_FILEWRITER_FrameProcessorPlugin_H_
 #define TOOLS_FILEWRITER_FrameProcessorPlugin_H_
 
-#include <boost/thread.hpp>
 #include <unordered_map>
 
 #include "CallDuration.h"
@@ -239,7 +238,7 @@ private:
     /** Warning message array */
     std::vector<std::string> warning_messages_;
     /** Mutex to make accessing error_messages_ threadsafe */
-    boost::mutex mutex_;
+    std::mutex mutex_;
     /** process_frame performance stats */
     CallDuration process_duration_;
 };

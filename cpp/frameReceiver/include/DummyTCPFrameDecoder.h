@@ -1,7 +1,6 @@
 #ifndef INCLUDE_DUMMYFRAMEDECODERTCP_H_
 #define INCLUDE_DUMMYFRAMEDECODERTCP_H_
 
-
 #include <iostream>
 #include <stdint.h>
 #include <time.h>

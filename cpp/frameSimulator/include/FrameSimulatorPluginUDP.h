@@ -9,8 +9,6 @@
 using namespace log4cxx;
 using namespace log4cxx::helpers;
 
-
-
 #include "FrameSimulatorPlugin.h"
 #include "Packet.h"
 #include "UDPFrame.h"

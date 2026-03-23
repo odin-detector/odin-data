@@ -50,7 +50,7 @@ void IFrameCallback::start()
         // Set the run condition to true
         run_ = true;
         // Now start the worker thread to monitor the queue
-        thread_ = new boost::thread(&IFrameCallback::workerTask, this);
+        thread_ = new std::thread(&IFrameCallback::workerTask, this);
     }
 }
 

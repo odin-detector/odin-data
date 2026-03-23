@@ -12,8 +12,6 @@
 #include <string>
 #include <vector>
 
-
-
 #include <log4cxx/logger.h>
 using namespace log4cxx;
 

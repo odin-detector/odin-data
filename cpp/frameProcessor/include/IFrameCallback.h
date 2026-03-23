@@ -8,15 +8,14 @@
 #ifndef TOOLS_FILEWRITER_IFRAMECALLBACK_H_
 #define TOOLS_FILEWRITER_IFRAMECALLBACK_H_
 
-
-#include <boost/thread.hpp>
-
 #include <log4cxx/basicconfigurator.h>
 #include <log4cxx/helpers/exception.h>
 #include <log4cxx/logger.h>
 #include <log4cxx/propertyconfigurator.h>
 using namespace log4cxx;
 using namespace log4cxx::helpers;
+
+#include <thread>
 
 #include "Frame.h"
 #include "WorkQueue.h"
@@ -53,7 +52,7 @@ private:
     /** Pointer to logger */
     LoggerPtr logger_;
     /** Pointer to worker queue thread */
-    boost::thread* thread_;
+    std::thread* thread_;
     /** Pointer to WorkQueue for Frame object pointers */
     std::shared_ptr<WorkQueue<std::shared_ptr<Frame>>> queue_;
     /** IFrameCallback run flag */
