@@ -68,6 +68,7 @@ public:
         dset_def.frame_dimensions[1] = 4;
         dset_def.chunks = chunk_dims;
         dset_def.create_low_high_indexes = false;
+        dset_def.compression = FrameProcessor::no_compression;
 
         FrameProcessor::FrameMetaData frame_meta(
             7, "data", FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
