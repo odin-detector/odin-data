@@ -176,6 +176,7 @@ BOOST_AUTO_TEST_CASE(FileWriterPluginWriteParamTest)
     dimensions_t chunk_dims(1);
     chunk_dims[0] = 1;
     param_dset_def.chunks = chunk_dims;
+    param_dset_def.compression = FrameProcessor::no_compression;
 
     BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(param_dset_def, -1, -1));
 
@@ -203,6 +204,7 @@ BOOST_AUTO_TEST_CASE(FileWriterPluginWriteParamWrongTypeTest)
     dimensions_t chunk_dims(1);
     chunk_dims[0] = 1;
     param_dset_def.chunks = chunk_dims;
+    param_dset_def.compression = FrameProcessor::no_compression;
 
     BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(param_dset_def, -1, -1));
 
@@ -229,6 +231,7 @@ BOOST_AUTO_TEST_CASE(FileWriterPluginWriteParamNoParamTest)
     dimensions_t chunk_dims(1);
     chunk_dims[0] = 1;
     param_dset_def.chunks = chunk_dims;
+    param_dset_def.compression = FrameProcessor::no_compression;
 
     BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(param_dset_def, -1, -1));
 
