@@ -4,13 +4,14 @@
  *  Created on: 22 Jan 2018
  *      Author: Ulrik Pedersen
  */
-#include "DataBlockFrame.h"
 #include <BloscPlugin.h>
+#include <DataBlockFrame.h>
 #include <DebugLevelLogger.h>
 #include <blosc.h>
 #include <cstdlib>
 #include <version.h>
 
+#include <boost/make_shared.hpp>
 #include <boost/static_assert.hpp>
 
 namespace FrameProcessor {
@@ -133,7 +134,7 @@ BloscPlugin::~BloscPlugin()
  * @param src_frame - source frame to compress
  * @return compressed frame
  */
-std::pair<std::unique_ptr<Frame>, bool> BloscPlugin::compress_frame(boost::shared_ptr<Frame> src_frame)
+std::pair<boost::shared_ptr<Frame>, bool> BloscPlugin::compress_frame(boost::shared_ptr<Frame> src_frame)
 {
 
     int compressed_size = 0;
@@ -152,9 +153,9 @@ std::pair<std::unique_ptr<Frame>, bool> BloscPlugin::compress_frame(boost::share
 
     size_t dest_data_size = c_settings.uncompressed_size + BLOSC_MAX_OVERHEAD;
 
-    std::unique_ptr<Frame> dest_frame;
+    boost::shared_ptr<Frame> dest_frame;
     try {
-        dest_frame = std::unique_ptr<Frame>(new DataBlockFrame(dest_meta_data, dest_data_size));
+        dest_frame = boost::make_shared<DataBlockFrame>(dest_meta_data, dest_data_size);
         std::stringstream ss_blosc_settings;
         ss_blosc_settings << " compressor=" << blosc_get_compressor() << " threads=" << blosc_get_nthreads()
                           << " clevel=" << c_settings.compression_level << " doshuffle=" << c_settings.shuffle
@@ -197,7 +198,7 @@ std::pair<std::unique_ptr<Frame>, bool> BloscPlugin::compress_frame(boost::share
  * @param src_frame - source frame to decompress
  * @return decompressed frame
  */
-std::pair<std::unique_ptr<Frame>, bool> BloscPlugin::decompress_frame(boost::shared_ptr<Frame>& src_frame)
+std::pair<boost::shared_ptr<Frame>, bool> BloscPlugin::decompress_frame(boost::shared_ptr<Frame>& src_frame)
 {
     int decompressed_size = 0;
     bool decomp_res = true;
@@ -205,9 +206,9 @@ std::pair<std::unique_ptr<Frame>, bool> BloscPlugin::decompress_frame(boost::sha
     // dest_meta_data.set_compression_type(blosc);
     // c_settings = this->compression_settings_;
     size_t dest_size = src_frame->get_image_size() + BLOSC_MAX_OVERHEAD;
-    std::unique_ptr<Frame> dest_frame;
+    boost::shared_ptr<Frame> dest_frame;
     try {
-        dest_frame = std::unique_ptr<Frame>(new DataBlockFrame(dest_meta_data, dest_size));
+        dest_frame = boost::make_shared<DataBlockFrame>(dest_meta_data, dest_size);
         LOG4CXX_DEBUG_LEVEL(
             2, logger_,
             "Blosc decompression: frame=" << src_frame->get_frame_number() << " acquisition=\""

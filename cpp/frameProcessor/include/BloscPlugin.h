@@ -58,8 +58,8 @@ public:
 
 private:
     // Methods unique to this class
-    std::pair<std::unique_ptr<Frame>, bool> compress_frame(boost::shared_ptr<Frame> frame);
-    std::pair<std::unique_ptr<Frame>, bool> decompress_frame(boost::shared_ptr<Frame>& frame);
+    std::pair<boost::shared_ptr<Frame>, bool> compress_frame(boost::shared_ptr<Frame> frame);
+    std::pair<boost::shared_ptr<Frame>, bool> decompress_frame(boost::shared_ptr<Frame>& frame);
     void update_compression_settings();
     void* get_buffer(size_t nbytes);
     friend struct Mode_map;
