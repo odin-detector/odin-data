@@ -88,10 +88,11 @@ public:
             frames.push_back(tmp_frame);
         }
 
+        // Force zero and non-zero values for the timeout duration
         hdf5_error_definition.create_duration = 0;
-        hdf5_error_definition.write_duration = 0;
-        hdf5_error_definition.flush_duration = 0;
-        hdf5_error_definition.close_duration = 0;
+        hdf5_error_definition.write_duration = 1;
+        hdf5_error_definition.flush_duration = 2;
+        hdf5_error_definition.close_duration = 3;
         hdf5_error_definition.callback = boost::bind(&dummy_callback, _1);
     }
     ~FileWriterPluginTestFixture()
