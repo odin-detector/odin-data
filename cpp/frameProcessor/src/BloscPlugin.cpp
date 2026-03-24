@@ -152,42 +152,43 @@ std::pair<std::unique_ptr<Frame>, bool> BloscPlugin::compress_frame(boost::share
 
     size_t dest_data_size = c_settings.uncompressed_size + BLOSC_MAX_OVERHEAD;
 
-    std::unique_ptr<Frame> dest_frame {
-        new DataBlockFrame(dest_meta_data, dest_data_size)
-    }; // BUG: new CAN THROW! DataBlockFrame also calls 'new' internally from DataBlockPool::allocate()
-
-    std::stringstream ss_blosc_settings;
-    ss_blosc_settings << " compressor=" << blosc_get_compressor() << " threads=" << blosc_get_nthreads()
-                      << " clevel=" << c_settings.compression_level << " doshuffle=" << c_settings.shuffle
-                      << " typesize=" << c_settings.type_size << " nbytes=" << c_settings.uncompressed_size
-                      << " destsize=" << dest_data_size;
-
-    LOG4CXX_DEBUG_LEVEL(
-        2, logger_,
-        "Blosc compression: frame=" << src_frame->get_frame_number() << " acquisition=\""
-                                    << src_frame->get_meta_data().get_acquisition_ID() << "\""
-                                    << ss_blosc_settings.str() << " src=" << src_data_ptr
-                                    << " dest=" << dest_frame->get_image_ptr()
-    );
-    compressed_size = blosc_compress_ctx(
-        c_settings.compression_level, c_settings.shuffle, c_settings.type_size, c_settings.uncompressed_size,
-        src_data_ptr, dest_frame->get_image_ptr(), dest_data_size, blosc_get_compressor(), 0, c_settings.threads
-    );
-    double factor = 0.;
-    if (compressed_size < 0) {
-        comp_res = false;
-        LOG4CXX_ERROR(logger_, "blosc_compress failed. error=" << compressed_size << ss_blosc_settings.str());
-    } else if (compressed_size > 0) {
-        dest_frame->set_image_size(compressed_size);
-        dest_frame->set_outer_chunk_size(src_frame->get_outer_chunk_size());
+    std::unique_ptr<Frame> dest_frame;
+    try {
+        dest_frame = std::unique_ptr<Frame>(new DataBlockFrame(dest_meta_data, dest_data_size));
+        std::stringstream ss_blosc_settings;
+        ss_blosc_settings << " compressor=" << blosc_get_compressor() << " threads=" << blosc_get_nthreads()
+                          << " clevel=" << c_settings.compression_level << " doshuffle=" << c_settings.shuffle
+                          << " typesize=" << c_settings.type_size << " nbytes=" << c_settings.uncompressed_size
+                          << " destsize=" << dest_data_size;
         LOG4CXX_DEBUG_LEVEL(
             2, logger_,
-            "Blosc compression complete: frame=" << src_frame->get_frame_number()
-                                                 << " compressed_size=" << compressed_size << " factor="
-                                                 << (double)src_frame->get_image_size() / (double)compressed_size
+            "Blosc compression: frame=" << src_frame->get_frame_number() << " acquisition=\""
+                                        << src_frame->get_meta_data().get_acquisition_ID() << "\""
+                                        << ss_blosc_settings.str() << " src=" << src_data_ptr
+                                        << " dest=" << dest_frame->get_image_ptr()
         );
+        compressed_size = blosc_compress_ctx(
+            c_settings.compression_level, c_settings.shuffle, c_settings.type_size, c_settings.uncompressed_size,
+            src_data_ptr, dest_frame->get_image_ptr(), dest_data_size, blosc_get_compressor(), 0, c_settings.threads
+        );
+        double factor = 0.;
+        if (compressed_size < 0) {
+            comp_res = false;
+            LOG4CXX_ERROR(logger_, "blosc_compress failed. error=" << compressed_size << ss_blosc_settings.str());
+        } else if (compressed_size > 0) {
+            dest_frame->set_image_size(compressed_size);
+            dest_frame->set_outer_chunk_size(src_frame->get_outer_chunk_size());
+            LOG4CXX_DEBUG_LEVEL(
+                2, logger_,
+                "Blosc compression complete: frame=" << src_frame->get_frame_number()
+                                                     << " compressed_size=" << compressed_size << " factor="
+                                                     << (double)src_frame->get_image_size() / (double)compressed_size
+            );
+        }
+    } catch (std::bad_alloc) {
+        comp_res = false;
+        LOG4CXX_ERROR(logger_, "Failed to allocate memory for compressed frame");
     }
-
     return { std::move(dest_frame), comp_res };
 }
 
@@ -204,27 +205,30 @@ std::pair<std::unique_ptr<Frame>, bool> BloscPlugin::decompress_frame(boost::sha
     // dest_meta_data.set_compression_type(blosc);
     // c_settings = this->compression_settings_;
     size_t dest_size = src_frame->get_image_size() + BLOSC_MAX_OVERHEAD;
-    std::unique_ptr<Frame> dest_frame {
-        new DataBlockFrame(dest_meta_data, dest_size)
-    }; // BUG: 'new' CAN THROW! DataBlockFrame also calls 'new' internally from DataBlockPool::allocate()
-    LOG4CXX_DEBUG_LEVEL(
-        2, logger_,
-        "Blosc decompression: frame=" << src_frame->get_frame_number() << " acquisition=\""
-                                      << src_frame->get_meta_data().get_acquisition_ID() << "\""
-                                      << " decompression=" << " threads=" << blosc_get_nthreads() << " src="
-                                      << src_frame->get_image_ptr() << " dest=" << dest_frame->get_image_ptr()
-    );
-    decompressed_size = blosc_decompress_ctx(
-        src_frame->get_image_ptr(), dest_frame->get_image_ptr(), dest_size, this->compression_settings_.threads
-    );
-
-    if (decompressed_size < 0) {
-        decomp_res = false;
-        LOG4CXX_ERROR(
-            logger_,
-            "blosc_decompress failed. error=" << decompressed_size
-                                              << " decompression=" << " threads=" << blosc_get_nthreads()
+    std::unique_ptr<Frame> dest_frame;
+    try {
+        dest_frame = std::unique_ptr<Frame>(new DataBlockFrame(dest_meta_data, dest_size));
+        LOG4CXX_DEBUG_LEVEL(
+            2, logger_,
+            "Blosc decompression: frame=" << src_frame->get_frame_number() << " acquisition=\""
+                                          << src_frame->get_meta_data().get_acquisition_ID() << "\""
+                                          << " decompression=" << " threads=" << blosc_get_nthreads() << " src="
+                                          << src_frame->get_image_ptr() << " dest=" << dest_frame->get_image_ptr()
         );
+        decompressed_size = blosc_decompress_ctx(
+            src_frame->get_image_ptr(), dest_frame->get_image_ptr(), dest_size, this->compression_settings_.threads
+        );
+        if (decompressed_size < 0) {
+            decomp_res = false;
+            LOG4CXX_ERROR(
+                logger_,
+                "blosc_decompress failed. error=" << decompressed_size
+                                                  << " decompression=" << " threads=" << blosc_get_nthreads()
+            );
+        }
+    } catch (std::bad_alloc) {
+        decomp_res = false;
+        LOG4CXX_ERROR(logger_, "Failed to allocate memory for decompressed frame");
     }
     return { std::move(dest_frame), decomp_res };
 }
