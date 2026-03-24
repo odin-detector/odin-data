@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>FrameProcessor API Reference &#8212; odin-data 0.1.dev1+g13c77ed34 documentation</title>
+    <title>FrameProcessor API Reference &#8212; odin-data 0.1.dev1+g8ad59aa33 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=2ef71c7c"></script>
+    <script src="../../../_static/documentation_options.js?v=22331161"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -3969,6 +3969,16 @@
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
 <dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor12CallDuration12CallDurationEv">
+<span id="_CPPv3N14FrameProcessor12CallDuration12CallDurationEv"></span><span id="_CPPv2N14FrameProcessor12CallDuration12CallDurationEv"></span><span id="FrameProcessor::CallDuration::CallDuration"></span><span class="target" id="classFrameProcessor_1_1CallDuration_1ad1125ec1042adc3dfc34007872393b38"></span><span class="sig-name descname"><span class="n"><span class="pre">CallDuration</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor12CallDuration12CallDurationEv" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor12CallDurationD0Ev">
+<span id="_CPPv3N14FrameProcessor12CallDurationD0Ev"></span><span id="_CPPv2N14FrameProcessor12CallDurationD0Ev"></span><span id="FrameProcessor::CallDuration::~CallDuration"></span><span class="target" id="classFrameProcessor_1_1CallDuration_1ab8efd07bb6025b587126cf1d284003af"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">~CallDuration</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor12CallDurationD0Ev" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor12CallDuration6updateEj">
 <span id="_CPPv3N14FrameProcessor12CallDuration6updateEj"></span><span id="_CPPv2N14FrameProcessor12CallDuration6updateEj"></span><span id="FrameProcessor::CallDuration::update__unsigned-i"></span><span class="target" id="classFrameProcessor_1_1CallDuration_1a72daafa1b2b2b6b959ee51a27a91c85d"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">update</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">duration</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor12CallDuration6updateEj" title="Link to this definition">#</a><br /></dt>
 <dd><p>Replace last, replace max if higher and recalculate mean</p>
@@ -4123,6 +4133,12 @@
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor13WatchdogTimer9timer_id_E">
 <span id="_CPPv3N14FrameProcessor13WatchdogTimer9timer_id_E"></span><span id="_CPPv2N14FrameProcessor13WatchdogTimer9timer_id_E"></span><span id="FrameProcessor::WatchdogTimer::timer_id___i"></span><span class="target" id="classFrameProcessor_1_1WatchdogTimer_1a212c3cbcbc7f96374f582e2aa158c5f3"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">timer_id_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor13WatchdogTimer9timer_id_E" title="Link to this definition">#</a><br /></dt>
 <dd><p>ID of current timer to cancel callback </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor13WatchdogTimer12is_valid_id_E">
+<span id="_CPPv3N14FrameProcessor13WatchdogTimer12is_valid_id_E"></span><span id="_CPPv2N14FrameProcessor13WatchdogTimer12is_valid_id_E"></span><span id="FrameProcessor::WatchdogTimer::is_valid_id___b"></span><span class="target" id="classFrameProcessor_1_1WatchdogTimer_1a7c67847065e104f337a92ef4fa07b75b"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">is_valid_id_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor13WatchdogTimer12is_valid_id_E" title="Link to this definition">#</a><br /></dt>
+<dd><p>Whether timer_id_ is valid </p>
 </dd></dl>
 
 <dl class="cpp var">
@@ -7131,6 +7147,8 @@
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#callduration">CallDuration</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor12CallDurationE"><code class="docutils literal notranslate"><span class="pre">FrameProcessor::CallDuration</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor12CallDuration12CallDurationEv"><code class="docutils literal notranslate"><span class="pre">CallDuration()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor12CallDurationD0Ev"><code class="docutils literal notranslate"><span class="pre">~CallDuration()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor12CallDuration6updateEj"><code class="docutils literal notranslate"><span class="pre">update()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor12CallDuration5resetEv"><code class="docutils literal notranslate"><span class="pre">reset()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor12CallDuration5last_E"><code class="docutils literal notranslate"><span class="pre">last_</span></code></a></li>
@@ -7157,6 +7175,7 @@
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor13WatchdogTimer8timeout_E"><code class="docutils literal notranslate"><span class="pre">timeout_</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor13WatchdogTimer14function_name_E"><code class="docutils literal notranslate"><span class="pre">function_name_</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor13WatchdogTimer9timer_id_E"><code class="docutils literal notranslate"><span class="pre">timer_id_</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor13WatchdogTimer12is_valid_id_E"><code class="docutils literal notranslate"><span class="pre">is_valid_id_</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor13WatchdogTimer6ticks_E"><code class="docutils literal notranslate"><span class="pre">ticks_</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor13WatchdogTimer17timeout_callback_E"><code class="docutils literal notranslate"><span class="pre">timeout_callback_</span></code></a></li>
 </ul>
