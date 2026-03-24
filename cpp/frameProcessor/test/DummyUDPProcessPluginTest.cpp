@@ -5,11 +5,14 @@
  *      Author: Alan Greer
  */
 
+#define BOOST_TEST_MODULE "DummyUDPProcessPluginTests"
+#define BOOST_TEST_MAIN
+
+#include "Fixtures.h"
+
+BOOST_GLOBAL_FIXTURE(GlobalConfig);
+
 #include "DummyUDPProcessPlugin.h"
-#include "FrameProcessorDefinitions.h"
-#include "IpcMessage.h"
-#include <DebugLevelLogger.h>
-#include <boost/test/unit_test.hpp>
 
 class DummyUDPProcessPluginTestFixture {
 public:

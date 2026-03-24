@@ -5,12 +5,14 @@
  *      Author: Alan Greer
  */
 
+#define BOOST_TEST_MODULE "GapFillPluginTests"
+#define BOOST_TEST_MAIN
+
+#include "Fixtures.h"
+
 #include "GapFillPlugin.h"
-#include "DataBlockFrame.h"
-#include "FrameProcessorDefinitions.h"
-#include "IpcMessage.h"
-#include <DebugLevelLogger.h>
-#include <boost/test/unit_test.hpp>
+
+BOOST_GLOBAL_FIXTURE(GlobalConfig);
 
 class GapFillPluginTestFixture {
 public:
