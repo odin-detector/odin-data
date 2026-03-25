@@ -164,3 +164,5 @@ class TestMetaWriter:
 
         # Remove the temporary file
         os.remove("/tmp/test_file_2_meta.h5")
+
+        self.process.wait()
