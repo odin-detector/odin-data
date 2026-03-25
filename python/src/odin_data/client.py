@@ -26,20 +26,26 @@ class OdinDataClient(object):
     This class implements the odin-data command-line client.
     """
 
-    def __init__(self):
+    def __init__(self, is_cli=False, ctrl_endpoint=None, log_level=logging.WARNING):
         """Initialise the odin-data client."""
+        self.is_cli = is_cli
+
         prog_name = os.path.basename(sys.argv[0])
 
-        # Parse command line arguments
-        self.args = self._parse_arguments(prog_name)
+        if is_cli:
+            # Parse command line arguments
+            self.args = self._parse_arguments(prog_name)
+            log_level = logging.DEBUG
+        else:
+            self.args = None
 
         # create logger
         self.logger = logging.getLogger(prog_name)
-        self.logger.setLevel(logging.DEBUG)
+        self.logger.setLevel(log_level)
 
-        # create console handler and set level to debug
+        # create console handler
         ch = logging.StreamHandler(sys.stdout)
-        ch.setLevel(logging.DEBUG)
+        ch.setLevel(log_level)
 
         # create formatter
         formatter = logging.Formatter('%(asctime)s %(levelname)s %(name)s - %(message)s')
@@ -50,12 +56,20 @@ class OdinDataClient(object):
         # add ch to logger
         self.logger.addHandler(ch)
 
+        # When not in CLI mode the ctrl_endpoint must be given
+        if is_cli:
+            self.ctrl_endpoint = self.args.ctrl_endpoint
+        else:
+            assert ctrl_endpoint, "The ctrl_endpoint must be given"
+            self.ctrl_endpoint = ctrl_endpoint
+
         # Create the appropriate IPC channels
         self.ctrl_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_DEALER)
-        self.ctrl_channel.connect(self.args.ctrl_endpoint)
+        self.ctrl_channel.connect(self.ctrl_endpoint)
 
         self._msg_id = 0
         self._run = True
+        self._response = None
 
     def _parse_arguments(self, prog_name=sys.argv[0]):
         """Parse arguments from the command line."""
@@ -118,16 +132,19 @@ class OdinDataClient(object):
             )
             self.ctrl_channel.send(config_msg.encode())
             self.await_response()
+            return self._response
 
         except JSONDecodeError as e:
             self.logger.error("Failed to parse configuration file: {}".format(e))
 
     def do_status_cmd(self):
         """Send a status command to odin-data."""
-        status_msg = IpcMessage('cmd', 'status', id=self._next_msg_id())
-        self.logger.info("Sending status request to the odin-data application")
+        id = self._next_msg_id()
+        status_msg = IpcMessage('cmd', 'status', id=id)
+        self.logger.info(f"Sending status request to the odin-data application {id}")
         self.ctrl_channel.send(status_msg.encode())
         self.await_response()
+        return self._response
 
     def do_request_config_cmd(self):
         """Send a request configuration command to odin-data."""
@@ -135,6 +152,7 @@ class OdinDataClient(object):
         self.logger.info("Sending configuration request to the odin-data application")
         self.ctrl_channel.send(status_msg.encode())
         self.await_response()
+        return self._response
 
     def do_request_command_cmd(self):
         """Send a request commands command to odin-data"""
@@ -142,6 +160,7 @@ class OdinDataClient(object):
         self.logger.info("Sending command request to the odin-data application")
         self.ctrl_channel.send(status_msg.encode())
         self.await_response()
+        return self._response
 
     def do_shutdown_cmd(self):
         """Send a shutdown command to odin-data."""
@@ -149,18 +168,25 @@ class OdinDataClient(object):
         self.logger.info("Sending shutdown command to the odin-data application")
         self.ctrl_channel.send(shutdown_msg.encode())
         self.await_response()
+        return self._response
 
     def await_response(self, timeout_ms=1000):
         """Await a response to a client command."""
         pollevts = self.ctrl_channel.poll(1000)
         if pollevts == IpcChannel.POLLIN:
-            reply = IpcMessage(from_str=self.ctrl_channel.recv())
-            self.logger.info("Got response: {}".format(reply))
-
+            self._response = IpcMessage(from_str=self.ctrl_channel.recv())
+            if self.is_cli:
+                self.logger.info("Got response: {}".format(self._response))
+            else:
+                # For non CLI return the dict of attributes from the response message
+                assert isinstance(self._response, IpcMessage), self._response
+                self._response = self._response.attrs
+        else:
+            self._response = None
 
 def main():
     """Run the odin-data client."""
-    app = OdinDataClient()
+    app = OdinDataClient(is_cli=True)
     app.run()
 
 
