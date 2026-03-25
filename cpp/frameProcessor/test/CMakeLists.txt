@@ -17,6 +17,7 @@ function(add_unit_test _target)
     SumPlugin
     GapFillPlugin
     RawFileWriterPlugin
+    ParameterPublishPlugin
     ${Boost_LIBRARIES}
     ${LOG4CXX_LIBRARIES}
     ${ZEROMQ_LIBRARIES}
