@@ -17,9 +17,10 @@ class TestMetaWriter:
             Path(__file__).parent.parent
             / "src/odin_data/meta_writer/meta_writer_app.py"
         )
-        self.process = subprocess.Popen(
-            [sys.executable, "-m", "coverage", "run", subprocess_path]
-        )
+        #        self.process = subprocess.Popen(
+        #            [sys.executable, "-m", "coverage", "run", subprocess_path]
+        #        )
+        self.process = subprocess.Popen(["coverage", "run", subprocess_path])
 
         # Create the control socket and data socket
         context = zmq.Context()
