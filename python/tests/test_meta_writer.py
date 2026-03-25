@@ -149,6 +149,8 @@ class TestMetaWriter:
         msg = IpcMessage(IpcMessage.ACK, "shutdown", id=msg_id)
         ctrl_socket.send_string(msg.encode())
 
+        time.sleep(5.0)
+
         data_socket.close()
 
         # Once the application has closed down, open the HDF5 file and verify contents
