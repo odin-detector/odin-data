@@ -6,6 +6,7 @@ from pathlib import Path
 from time import sleep
 
 from odin_data.client import OdinDataClient
+from system_under_test import SystemUnderTest
 
 @pytest.fixture
 def install_prefix():
@@ -16,6 +17,9 @@ def install_prefix():
    assert Path(iprefix).exists(), f"INSTALL_PREFIX: {iprefix} not found"
    return iprefix
 
+################################################################################
+# Separate fixtures for each of frameReciver, frameProcessor and frameSimulator
+################################################################################
 def app_startup(install_path, app, param, msg_prefix):
    app_path = install_path / "bin" / app
    cmd = [app_path.as_posix()]
@@ -130,3 +134,116 @@ def frame_simulator(request, install_prefix):
    proc, client = app_startup(install_path, "frameSimulator", request.param, msg_prefix)
    yield proc, client, request.param
    app_teardown(proc, client)
+
+#######################################################################################
+# END OF Separate fixtures for each of frameReciver, frameProcessor and frameSimulator
+#######################################################################################
+
+#######################################################################################
+# System Under Test fixture, combining frameReciver, frameProcessor and frameSimulator
+#######################################################################################
+
+def launch_app(app, sut):
+   cfg = sut.cfg(app)
+   if cfg is None:
+      print(f"No {app} required")
+      return
+   msg_prefix = f"{app}:"
+   assert isinstance(cfg, dict), f"{msg_prefix} cfg must be a dict"
+   app_path = sut.install_path / "bin" / app
+   cmd = [app_path.as_posix()]
+   ctrl_endpoint = None
+   for k, v in cfg.items():
+      assert k in ["ctrl", "config", "debug-level"], k
+      if k == "ctrl":
+         assert isinstance(v, int), f"{msg_prefix} {k} argument must be type int"
+         ctrl_endpoint = f"tcp://127.0.0.1:{v}"
+         cmd.append(f"--{k} {ctrl_endpoint}")
+      elif k == "config":
+         assert isinstance(v, str), f"{msg_prefix} {k} argument must be type str"
+         cpath = sut.install_path / "test_config" / v
+         assert cpath.exists(), f"{msg_prefix} {k} path {cpath} not found"
+         cmd.append(f"--{k} {cpath.as_posix()}")
+
+   assert ctrl_endpoint is not None, f"{msg_prefix} ctrl has not been specified"
+   cmdstring = " ".join(cmd)
+   print(f"Launching: {cmdstring}")
+   proc = subprocess.Popen(shlex.split(cmdstring), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+   sut.set_proc(app, proc)
+   sut.set_client(app, OdinDataClient(ctrl_endpoint=ctrl_endpoint))
+   # Poll for app being up by checking that status is not None
+   retries = 5
+   is_up = False
+   while retries != 0:
+      if sut.client(app).do_status_cmd() is not None:
+         is_up = True
+         break
+      print(f"Waiting for {app_path.name} to start up")
+      retries -= 1
+      sleep(1)
+
+def launch_simulator(app, sut):
+   cfg = sut.cfg(app)
+   if cfg is None:
+      print(f"No {app} required")
+      return
+   msg_prefix = f"{app}:"
+   assert isinstance(cfg, dict), f"{msg_prefix} cfg must be a dict"
+   app_path = sut.install_path / "bin" / app
+   cmd = [app_path.as_posix()]
+
+   # This must have a decoder, this is a positional arg
+   assert "decoder" in cfg, f"{msg_prefix} requires decoder to be set"
+   # This must set the number of frames, otherwise the app will not terminate
+   assert "frames" in cfg, f"{msg_prefix} requires frames to be set"
+   assert "lib-path" not in cfg
+   cfg["lib-path"] = "lib"
+
+   for k, v in cfg.items():
+      assert k in ["debug-level", "decoder", "lib-path", "frames", "dest-ip", "ports", "packet-gap", "packet-len", "width", "height", "drop-fraction", "drop-packets", "interval", "pcap-file"], k
+      if k == "lib-path":
+         assert isinstance(v, str), f"{msg_prefix} {k} argument must be type str"
+         lpath = sut.install_path / v
+         assert lpath.exists(), f"{msg_prefix} {k} path {lpath} not found"
+         cmd.append(f"--{k} {lpath.as_posix()}")
+      elif k == "decoder":
+         assert isinstance(v, str), f"{msg_prefix} {k} argument must be type str"
+         # Insert a positional arg
+         cmd.insert(1, v)
+      elif k in ["debug-level", "frames", "packet-gap", "packet-len", "width", "height"]: # Generic int parameter
+         assert isinstance(v, int), f"{msg_prefix} {k} argument must be type int"
+         cmd.append(f"--{k} {v}")
+      elif k in ["dest-ip", "drop-packets", "pcap-file", "ports"]: # Generic str parameter
+         assert isinstance(v, str), f"{msg_prefix} {k} argument must be type str"
+         cmd.append(f"--{k} {v}")
+      elif k in ["drop-fraction", "interval"]: # Generic float parameter
+         assert isinstance(v, str), f"{msg_prefix} {k} argument must be type str"
+         cmd.append(f"--{k} {v}")
+      else:
+         assert False, f"{msg_prefix} Unknown parameter name {k}"
+
+   cmdstring = " ".join(cmd)
+   print(f"Launching: {cmdstring}")
+   proc = subprocess.Popen(shlex.split(cmdstring), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+   sut.set_proc(app, proc)
+
+@pytest.fixture
+def sut_launch(request, install_prefix):
+
+   def _sut_launch(sut):
+      assert isinstance(sut, SystemUnderTest)
+      sut.install_path = Path(install_prefix)
+      # Launch the parts of the system
+      launch_app("frameProcessor", sut)
+      launch_app("frameReceiver", sut)
+      launch_simulator("frameSimulator", sut)
+
+      # Register function which will clean up the launched apps as appropriate
+      request.addfinalizer(sut.cleanup)
+      return
+
+   return _sut_launch
+
+##############################################################################################
+# END OF System Under Test fixture, combining frameReciver, frameProcessor and frameSimulator
+##############################################################################################
