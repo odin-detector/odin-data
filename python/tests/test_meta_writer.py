@@ -6,6 +6,7 @@ import time
 from pathlib import Path
 
 import h5py as h5
+import odin_data.meta_writer.meta_writer_app
 import zmq
 from odin_data.control.ipc_message import IpcMessage
 
@@ -13,14 +14,29 @@ from odin_data.control.ipc_message import IpcMessage
 class TestMetaWriter:
     def test_full_stack_meta_writer(self):
         # Spawn the meta_writer application into a subprocess
-        subprocess_path = str(
-            Path(__file__).parent.parent
-            / "src/odin_data/meta_writer/meta_writer_app.py"
-        )
-        #        self.process = subprocess.Popen(
-        #            [sys.executable, "-m", "coverage", "run", subprocess_path]
+        #        subprocess_path = str(
+        #            Path(__file__).parent.parent
+        #            / "src/odin_data/meta_writer/meta_writer_app.py"
         #        )
-        self.process = subprocess.Popen(["coverage", "run", subprocess_path])
+        subprocess_path = Path(odin_data.meta_writer.meta_writer_app.__file__)
+        src_path = subprocess_path.parent
+        # print(src_path)
+        #        self.process = subprocess.Popen(["coverage", "run", subprocess_path])
+
+        # subprocess_path = Path(
+        #    "/venv/lib/python3.11/site-packages/odin_data/meta_writer/meta_writer_app.py"
+        # )
+        self.process = subprocess.Popen(
+            [
+                sys.executable,
+                "-m",
+                "coverage",
+                "run",
+                # "--debug=trace",
+                "--source={}".format(src_path),
+                subprocess_path,
+            ]
+        )
 
         # Create the control socket and data socket
         context = zmq.Context()
@@ -149,8 +165,6 @@ class TestMetaWriter:
         msg_id += 1
         msg = IpcMessage(IpcMessage.ACK, "shutdown", id=msg_id)
         ctrl_socket.send_string(msg.encode())
-
-        time.sleep(5.0)
 
         data_socket.close()
 
