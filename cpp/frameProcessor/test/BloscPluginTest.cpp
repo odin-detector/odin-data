@@ -9,20 +9,24 @@
 #include "FrameProcessorDefinitions.h"
 #include <DebugLevelLogger.h>
 #include <boost/test/unit_test.hpp>
-
+#include <random>
 class BloscPluginTestFixture {
 public:
     BloscPluginTestFixture()
     {
         set_debug_level(3);
-        unsigned short img[12] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
-        dimensions_t img_dims(2);
-        img_dims[0] = 3;
-        img_dims[1] = 4;
-        dimensions_t chunk_dims(3);
-        chunk_dims[0] = 1;
-        chunk_dims[1] = 3;
-        chunk_dims[2] = 4;
+        // First create an instance of an engine.
+        std::random_device rnd_device;
+        // Specify the engine and distribution.
+        std::mt19937 mersenne_engine { rnd_device() }; // Generates random integers
+        std::uniform_int_distribution<int> dist { 1, 28650 };
+
+        auto gen = [&]() { return dist(mersenne_engine); };
+
+        std::array<int, 64000> vec {}; // 64 kb data size
+        std::generate(vec.begin(), vec.end(), gen);
+        dimensions_t img_dims { 3200, 20 };
+        dimensions_t chunk_dims { 1, 3, 4 };
 
         dset_def.name = "data";
         dset_def.num_frames = 2; // unused?
@@ -38,20 +42,8 @@ public:
             7, "data", FrameProcessor::raw_16bit, "scan1", img_dims, FrameProcessor::no_compression
         );
         frame = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
-            new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(img), 24)
+            new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(vec.data()), 256000)
         );
-
-        for (int i = 1; i < 6; i++) {
-            img[0] = i;
-            FrameProcessor::FrameMetaData tmp_frame_meta = frame->get_meta_data_copy();
-            tmp_frame_meta.set_frame_number(i);
-            tmp_frame_meta.set_acquisition_ID("scan2");
-            tmp_frame_meta.set_data_type(FrameProcessor::raw_32bit);
-            boost::shared_ptr<FrameProcessor::DataBlockFrame> tmp_frame(
-                new FrameProcessor::DataBlockFrame(tmp_frame_meta, static_cast<void*>(img), 24)
-            );
-            frames.push_back(tmp_frame);
-        }
     }
     ~BloscPluginTestFixture()
     {
@@ -64,34 +56,37 @@ public:
 
 BOOST_FIXTURE_TEST_SUITE(BloscPluginUnitTest, BloscPluginTestFixture);
 
-BOOST_AUTO_TEST_CASE(BloscPlugin_process_frame_compress)
+BOOST_AUTO_TEST_CASE(BloscPlugin_compress_decompress)
 {
-    // TODO: simply push a frame through the BloscPlugin to trigger the process_frame call and test the compression
-    // Unfortunately process_frame is private and can't be called like this. So how?
-    BOOST_REQUIRE_NO_THROW(blosc_plugin.process_frame(frame));
-    BOOST_REQUIRE_NO_THROW(blosc_plugin.process_frame(frame));
-    BOOST_REQUIRE_NO_THROW(blosc_plugin.process_frame(frames[0]));
-}
-//
-BOOST_AUTO_TEST_CASE(BloscPlugin_process_frame_decompress)
-{
+    // process_frame() ought to be a virtual private member method
+    // from it's base class FrameProcessorPlugin. This needs to be consolidated!
     OdinData::IpcMessage cfg_;
     OdinData::IpcMessage reply;
+    BOOST_CHECK_NO_THROW(cfg_.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_LEVEL, 9));
+    BOOST_CHECK_NO_THROW(cfg_.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_SHUFFLE, 2));
+    BOOST_CHECK_NO_THROW(cfg_.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_COMPRESSOR, 4));
+
+    BOOST_REQUIRE_NO_THROW(blosc_plugin.configure(cfg_, reply));
+    BOOST_REQUIRE_NO_THROW(blosc_plugin.register_callback(
+        "BloscPluginTest",
+        boost::shared_ptr<FrameProcessor::IFrameCallback>(&blosc_plugin, [](FrameProcessor::IFrameCallback*) { })
+    ));
+    BOOST_REQUIRE_NO_THROW(blosc_plugin.process_frame(frame));
+    boost::shared_ptr<FrameProcessor::Frame> compressed_frame = blosc_plugin.getWorkQueue()->remove();
+    int compressed_frame_sz = compressed_frame->get_image_size();
+    BOOST_CHECK(compressed_frame_sz < frame->get_image_size());
+
+    // Decompress Test
     BOOST_CHECK_NO_THROW(cfg_.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_MODE, std::string("decompress")));
     BOOST_REQUIRE_NO_THROW(blosc_plugin.configure(cfg_, reply));
-    BOOST_REQUIRE_NO_THROW(blosc_plugin.process_frame(frame));
-    BOOST_REQUIRE_NO_THROW(blosc_plugin.process_frame(frame));
-    BOOST_REQUIRE_NO_THROW(blosc_plugin.process_frame(frames[0]));
+    BOOST_REQUIRE_NO_THROW(blosc_plugin.process_frame(compressed_frame));
+    boost::shared_ptr<FrameProcessor::Frame> decompressed_frame = blosc_plugin.getWorkQueue()->remove();
+    int decompressed_frame_sz = decompressed_frame->get_image_size();
+    BOOST_CHECK(decompressed_frame_sz > compressed_frame->get_image_size());
 }
 
 BOOST_AUTO_TEST_CASE(BloscPlugin_request_metadata)
 {
-    /** To-do: change raw strings of "/compressor" ==to==> '/' +
-     * FrameProcessor::BloscPlugin::CONFIG_BLOSC_COMPRESSOR
-     *  As well as the other config settings!
-     *  This should be possible once PR 401:
-     *  "Update BLOSC Setting As String" is merged!
-     */
     OdinData::IpcMessage reply; // IpcMessage to be populated with metadata
     blosc_plugin.request_configuration_metadata(reply);
     BOOST_CHECK(reply.has_param("metadata")); // !false == true;
