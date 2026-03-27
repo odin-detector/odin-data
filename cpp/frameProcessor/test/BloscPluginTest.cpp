@@ -2,13 +2,8 @@
 #define BOOST_TEST_MAIN
 
 #include "BloscPlugin.h"
-#include "DataBlockFrame.h"
-#include "Frame.h"
-#include "FrameProcessorDefinitions.h"
-#include <DebugLevelLogger.h>
-#include <boost/test/unit_test.hpp>
-#include <random>
 #include "Fixtures.h"
+#include <random>
 
 BOOST_GLOBAL_FIXTURE(GlobalConfig);
 
@@ -27,33 +22,23 @@ public:
 
         std::array<int, 64000> vec {}; // 64 kb data size
         std::generate(vec.begin(), vec.end(), gen);
-        dimensions_t img_dims { 3200, 20 };
-        dimensions_t chunk_dims { 1, 3, 4 };
-
-        dset_def.name = "data";
-        dset_def.num_frames = 2; // unused?
-        dset_def.data_type = FrameProcessor::raw_16bit;
-        dset_def.frame_dimensions = dimensions_t(2);
-        dset_def.frame_dimensions[0] = 3;
-        dset_def.frame_dimensions[1] = 4;
-        dset_def.chunks = chunk_dims;
 
         blosc_plugin.set_name("BloscPluginTest");
-
-        FrameProcessor::FrameMetaData frame_meta(
-            7, "data", FrameProcessor::raw_16bit, "scan1", img_dims, FrameProcessor::no_compression
-        );
-        frame = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
-            new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(vec.data()), 256000)
+        frame = boost::make_shared<FrameProcessor::DataBlockFrame>(
+            FrameProcessor::FrameMetaData { 7,
+                                            "data",
+                                            FrameProcessor::raw_32bit,
+                                            "scan1",
+                                            { vec.size() / 20, 20 },
+                                            FrameProcessor::no_compression },
+            static_cast<void*>(vec.data()), sizeof(vec[0]) * vec.size()
         );
     }
     ~BloscPluginTestFixture()
     {
     }
     boost::shared_ptr<FrameProcessor::Frame> frame;
-    std::vector<boost::shared_ptr<FrameProcessor::Frame>> frames;
     FrameProcessor::BloscPlugin blosc_plugin;
-    FrameProcessor::DatasetDefinition dset_def;
 };
 
 BOOST_FIXTURE_TEST_SUITE(BloscPluginUnitTest, BloscPluginTestFixture);
@@ -70,7 +55,7 @@ BOOST_AUTO_TEST_CASE(BloscPlugin_compress_decompress)
 
     BOOST_REQUIRE_NO_THROW(blosc_plugin.configure(cfg_, reply));
     BOOST_REQUIRE_NO_THROW(blosc_plugin.register_callback(
-        "BloscPluginTest",
+        blosc_plugin.get_name(),
         boost::shared_ptr<FrameProcessor::IFrameCallback>(&blosc_plugin, [](FrameProcessor::IFrameCallback*) { })
     ));
     BOOST_REQUIRE_NO_THROW(blosc_plugin.process_frame(frame));

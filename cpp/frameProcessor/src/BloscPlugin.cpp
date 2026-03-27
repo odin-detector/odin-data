@@ -136,7 +136,6 @@ BloscPlugin::~BloscPlugin()
  */
 std::pair<boost::shared_ptr<Frame>, bool> BloscPlugin::compress_frame(boost::shared_ptr<Frame> src_frame)
 {
-
     int compressed_size = 0;
     bool comp_res = false;
     BloscCompressionSettings c_settings;
@@ -212,10 +211,9 @@ std::pair<boost::shared_ptr<Frame>, bool> BloscPlugin::decompress_frame(boost::s
     size_t block_size;
     blosc_cbuffer_sizes(src_frame->get_data_ptr(), &dest_size, &compressed_size, &block_size);
     bool decomp_res = false;
-    FrameMetaData dest_meta_data = src_frame->get_meta_data_copy();
     boost::shared_ptr<Frame> dest_frame;
     try {
-        dest_frame = boost::make_shared<DataBlockFrame>(dest_meta_data, dest_size);
+        dest_frame = boost::make_shared<DataBlockFrame>(src_frame->get_meta_data(), dest_size);
         std::stringstream ss_blosc_settings;
         ss_blosc_settings << "Blosc decompression: frame="
                           << " threads=" << blosc_get_nthreads() << src_frame->get_frame_number() << " acquisition=\""
