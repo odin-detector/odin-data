@@ -5,6 +5,8 @@
 function(add_unit_test _target)
   set(_source ${_target}UnitTest.cpp)
   set(_target "unit_fr_${_target}")
+  add_test(NAME ${_target} COMMAND ${_target} --log_level=test_suite)
+  set_tests_properties(${_target} PROPERTIES LABELS "frameReceiver")
 
   # For some reason the receiver lib doesn't contain many of the FrameReceiver classes so they
   # have to be built here.
