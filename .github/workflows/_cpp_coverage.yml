@@ -1,4 +1,4 @@
-name: Cpp coverage CI
+name: cpp-coverage
 
 on:
   workflow_call:
