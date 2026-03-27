@@ -32,6 +32,7 @@ ParameterPublishPlugin::ParameterPublishPlugin() :
  */
 ParameterPublishPlugin::~ParameterPublishPlugin()
 {
+    this->publish_channel_.close();
     LOG4CXX_TRACE(logger_, "ParameterPublishPlugin destructor.");
 }
 
@@ -54,17 +55,17 @@ void ParameterPublishPlugin::process_frame(boost::shared_ptr<Frame> frame)
         std::string&& str = parameters_json.str();
         json.add(DATA_PARAMETERS, str);
         this->publish_channel_.send(json.str().c_str());
-    } catch (std::bad_alloc) {
+    } catch (std::bad_alloc& e) {
         LOG4CXX_ERROR(
             logger_,
-            "Error: RapidJSON object allocation failed of frame - " << frame->get_frame_number() << " acquisitionID - "
-                                                                    << frame->get_meta_data().get_acquisition_ID()
+            "Error: RapidJSON - " << e.what() << " frame - " << frame->get_frame_number() << " acquisitionID - "
+                                  << frame->get_meta_data().get_acquisition_ID()
         );
-    } catch (error_t) {
+    } catch (zmq::error_t& e) {
         LOG4CXX_ERROR(
             logger_,
-            "Error: IPC Channel failed to publish JSON of frame - " << frame->get_frame_number() << " acquisitionID - "
-                                                                    << frame->get_meta_data().get_acquisition_ID()
+            "Error: ZMQ error: " << e.what() << " frame - " << frame->get_frame_number() << " acquisitionID - "
+                                 << frame->get_meta_data().get_acquisition_ID()
         );
     }
     this->push(frame);
@@ -102,7 +103,6 @@ void ParameterPublishPlugin::configure(OdinData::IpcMessage& config, OdinData::I
 void ParameterPublishPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
     reply.set_param(get_name() + "/" + CONFIG_ENDPOINT, this->channel_endpoint_);
-
     // Create use a key with a `[]` suffix so that it appends to an array as we set it repeatedly
     std::string parameters_key = get_name() + "/" + DATA_PARAMETERS + "[]";
     for (auto& it : this->parameters_) {
@@ -114,15 +114,15 @@ void ParameterPublishPlugin::requestConfiguration(OdinData::IpcMessage& reply)
  *
  * \param[in] endpoint - The endpoint to bind to
  */
-void ParameterPublishPlugin::setup_publish_channel(const std::string& endpoint)
+void ParameterPublishPlugin::setup_publish_channel(std::string&& endpoint)
 {
     if (!this->channel_endpoint_.empty()) {
-        throw std::runtime_error("Endpoint already bound");
+        publish_channel_.unbind(this->channel_endpoint_.c_str());
     }
 
     try {
         LOG4CXX_DEBUG_LEVEL(1, logger_, "Connecting channel to endpoint: " << endpoint);
-        this->channel_endpoint_ = endpoint;
+        this->channel_endpoint_ = std::move(endpoint);
         this->publish_channel_.bind(this->channel_endpoint_.c_str());
     } catch (zmq::error_t& e) {
         throw std::runtime_error(e.what());

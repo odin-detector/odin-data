@@ -26,6 +26,7 @@ public:
     ~ParameterPublishPlugin();
     void process_frame(boost::shared_ptr<Frame> frame);
     void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
+    void requestConfiguration(OdinData::IpcMessage& reply);
     int get_version_major();
     int get_version_minor();
     int get_version_patch();
@@ -48,8 +49,7 @@ private:
     std::string channel_endpoint_;
     /** IpcChannel for publishing messages */
     OdinData::IpcChannel publish_channel_;
-    void setup_publish_channel(const std::string& endpoint);
-    void requestConfiguration(OdinData::IpcMessage& reply);
+    void setup_publish_channel(std::string&& endpoint);
 };
 } /* namespace FrameProcessor */
 #endif // PARAMETERPUBLISHPLUGIN_H
