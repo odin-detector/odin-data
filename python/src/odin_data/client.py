@@ -118,7 +118,7 @@ class OdinDataClient(object):
         if self.args.shutdown:
             self.do_shutdown_cmd()
 
-    def do_config_cmd(self, config_file):
+    def do_config_cmd(self, config_file, timeout_ms=1000):
         """Send a configure command to odin-data with the specified JSON configuration file."""
         try:
             config_params = json.load(config_file)
@@ -131,48 +131,48 @@ class OdinDataClient(object):
                 "Sending configure command to the odin-data application with specified parameters"
             )
             self.ctrl_channel.send(config_msg.encode())
-            self.await_response()
+            self.await_response(timeout_ms)
             return self._response
 
         except JSONDecodeError as e:
             self.logger.error("Failed to parse configuration file: {}".format(e))
 
-    def do_status_cmd(self):
+    def do_status_cmd(self, timeout_ms=1000):
         """Send a status command to odin-data."""
         id = self._next_msg_id()
         status_msg = IpcMessage('cmd', 'status', id=id)
         self.logger.info(f"Sending status request to the odin-data application {id}")
         self.ctrl_channel.send(status_msg.encode())
-        self.await_response()
+        self.await_response(timeout_ms)
         return self._response
 
-    def do_request_config_cmd(self):
+    def do_request_config_cmd(self, timeout_ms=1000):
         """Send a request configuration command to odin-data."""
         status_msg = IpcMessage('cmd', 'request_configuration', id=self._next_msg_id())
         self.logger.info("Sending configuration request to the odin-data application")
         self.ctrl_channel.send(status_msg.encode())
-        self.await_response()
+        self.await_response(timeout_ms)
         return self._response
 
-    def do_request_command_cmd(self):
+    def do_request_command_cmd(self, timeout_ms=1000):
         """Send a request commands command to odin-data"""
         status_msg = IpcMessage('cmd', 'request_commands', id=self._next_msg_id())
         self.logger.info("Sending command request to the odin-data application")
         self.ctrl_channel.send(status_msg.encode())
-        self.await_response()
+        self.await_response(timeout_ms)
         return self._response
 
-    def do_shutdown_cmd(self):
+    def do_shutdown_cmd(self, timeout_ms=1000):
         """Send a shutdown command to odin-data."""
         shutdown_msg = IpcMessage('cmd', 'shutdown', id=self._next_msg_id())
         self.logger.info("Sending shutdown command to the odin-data application")
         self.ctrl_channel.send(shutdown_msg.encode())
-        self.await_response()
+        self.await_response(timeout_ms)
         return self._response
 
-    def await_response(self, timeout_ms=1000):
+    def await_response(self, timeout_ms):
         """Await a response to a client command."""
-        pollevts = self.ctrl_channel.poll(1000)
+        pollevts = self.ctrl_channel.poll(timeout_ms)
         if pollevts == IpcChannel.POLLIN:
             self._response = IpcMessage(from_str=self.ctrl_channel.recv())
             if self.is_cli:

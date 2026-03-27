@@ -164,6 +164,11 @@ def launch_app(app, sut):
          cpath = sut.install_path / "test_config" / v
          assert cpath.exists(), f"{msg_prefix} {k} path {cpath} not found"
          cmd.append(f"--{k} {cpath.as_posix()}")
+      elif k == "debug-level":
+         assert isinstance(v, int), f"{msg_prefix} {k} argument must be type int"
+         cmd.append(f"--{k} {v}")
+      else:
+         assert False, f"{msg_prefix} Unknown parameter name {k}"
 
    assert ctrl_endpoint is not None, f"{msg_prefix} ctrl has not been specified"
    cmdstring = " ".join(cmd)
@@ -172,15 +177,9 @@ def launch_app(app, sut):
    sut.set_proc(app, proc)
    sut.set_client(app, OdinDataClient(ctrl_endpoint=ctrl_endpoint))
    # Poll for app being up by checking that status is not None
-   retries = 5
-   is_up = False
-   while retries != 0:
-      if sut.client(app).do_status_cmd() is not None:
-         is_up = True
-         break
-      print(f"Waiting for {app_path.name} to start up")
-      retries -= 1
-      sleep(1)
+   # The polling is done by the client as sending multiple status requests meant that the
+   # response messages got out of sync
+   assert sut.client(app).do_status_cmd(timeout_ms=5000) is not None, f"{msg_prefix}: cannot contact the app"
 
 def launch_simulator(app, sut):
    cfg = sut.cfg(app)
@@ -233,10 +232,14 @@ def sut_launch(request, install_prefix):
    def _sut_launch(sut):
       assert isinstance(sut, SystemUnderTest)
       sut.install_path = Path(install_prefix)
-      # Launch the parts of the system
-      launch_app("frameProcessor", sut)
-      launch_app("frameReceiver", sut)
-      launch_simulator("frameSimulator", sut)
+      # Launch the parts of the system, any problems in the launch must run the cleanup
+      try:
+         launch_app("frameProcessor", sut)
+         launch_app("frameReceiver", sut)
+         launch_simulator("frameSimulator", sut)
+      except AssertionError as e:
+         sut.cleanup()
+         raise e
 
       # Register function which will clean up the launched apps as appropriate
       request.addfinalizer(sut.cleanup)
