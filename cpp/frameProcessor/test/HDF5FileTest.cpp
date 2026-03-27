@@ -19,7 +19,10 @@ BOOST_AUTO_TEST_CASE(HDF5FileTest)
 
     FrameProcessor::HDF5File hdf5f(hdf5_error_definition);
 
-    BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/blah.h5", 0, false, 1, 1));
+    // Use the PID to ensure file created has a unique name
+    std::stringstream ss;
+    ss << "/tmp/blah_pid" << getpid() << ".h5";
+    BOOST_REQUIRE_NO_THROW(hdf5f.create_file(ss.str(), 0, false, 1, 1));
     BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def, -1, -1));
     BOOST_REQUIRE_EQUAL(dset_def.name, frame->get_meta_data().get_dataset_name());
 
@@ -31,7 +34,10 @@ BOOST_AUTO_TEST_CASE(HDF5FileMultiDatasetTest)
 {
     FrameProcessor::HDF5File hdf5f(hdf5_error_definition);
 
-    BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/blah_multidataset.h5", 0, false, 1, 1));
+    // Use the PID to ensure file created has a unique name
+    std::stringstream ss;
+    ss << "/tmp/blah_multidataset_pid" << getpid() << ".h5";
+    BOOST_REQUIRE_NO_THROW(hdf5f.create_file(ss.str(), 0, false, 1, 1));
 
     // Create the first dataset "data"
     BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def, -1, -1));
@@ -80,7 +86,10 @@ BOOST_AUTO_TEST_CASE(HDF5FileNoDatasetDefinitionsTest)
     FrameProcessor::HDF5File hdf5f(hdf5_error_definition);
 
     // Create a file ready for writing
-    BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/blah_throw.h5", 0, false, 1, 1));
+    // Use the PID to ensure file created has a unique name
+    std::stringstream ss;
+    ss << "/tmp/blah_throw_pid" << getpid() << ".h5";
+    BOOST_REQUIRE_NO_THROW(hdf5f.create_file(ss.str(), 0, false, 1, 1));
 
     // Write a frame without first creating the dataset
     BOOST_CHECK_THROW(hdf5f.write_frame(*frame, frame->get_frame_number(), 1, durations), std::runtime_error);
@@ -93,7 +102,10 @@ BOOST_AUTO_TEST_CASE(HDF5FileInvalidDatasetTest)
 {
     FrameProcessor::HDF5File hdf5f(hdf5_error_definition);
 
-    BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/blah_throw.h5", 0, false, 1, 1));
+    // Use the PID to ensure file created has a unique name
+    std::stringstream ss;
+    ss << "/tmp/blah_throw_pid" << getpid() << ".h5";
+    BOOST_REQUIRE_NO_THROW(hdf5f.create_file(ss.str(), 0, false, 1, 1));
     BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def, -1, -1));
     BOOST_REQUIRE_NO_THROW(frame->meta_data().set_dataset_name("non_existing_dataset_name"));
 
@@ -105,7 +117,10 @@ BOOST_AUTO_TEST_CASE(FileWriterPluginMultipleFramesTest)
 {
     FrameProcessor::HDF5File hdf5f(hdf5_error_definition);
 
-    BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/blah_multiple.h5", 0, false, 1, 1));
+    // Use the PID to ensure file created has a unique name
+    std::stringstream ss;
+    ss << "/tmp/blah_multiple_pid" << getpid() << ".h5";
+    BOOST_REQUIRE_NO_THROW(hdf5f.create_file(ss.str(), 0, false, 1, 1));
     BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def, -1, -1));
 
     std::vector<boost::shared_ptr<FrameProcessor::DataBlockFrame>>::iterator it;
@@ -122,7 +137,10 @@ BOOST_AUTO_TEST_CASE(HDF5FileMultipleReverseTest)
 
     // Just reverse through the list of frames and write them out.
     // The frames should still appear in the file in the original order...
-    BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/blah_multiple_reverse.h5", 0, false, 1, 1));
+    // Use the PID to ensure file created has a unique name
+    std::stringstream ss;
+    ss << "/tmp/blah_multiple_reverse_pid" << getpid() << ".h5";
+    BOOST_REQUIRE_NO_THROW(hdf5f.create_file(ss.str(), 0, false, 1, 1));
     BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def, -1, -1));
 
     // The first frame to write is used as an offset - so must be the lowest
@@ -143,7 +161,10 @@ BOOST_AUTO_TEST_CASE(HDF5FileAdjustHugeOffset)
 {
     FrameProcessor::HDF5File hdf5f(hdf5_error_definition);
 
-    BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/test_huge_offset.h5", 0, false, 1, 1));
+    // Use the PID to ensure file created has a unique name
+    std::stringstream ss;
+    ss << "/tmp/blah_huge_offset_pid" << getpid() << ".h5";
+    BOOST_REQUIRE_NO_THROW(hdf5f.create_file(ss.str(), 0, false, 1, 1));
     BOOST_REQUIRE_NO_THROW(hdf5f.set_unlimited());
     BOOST_REQUIRE_NO_THROW(dset_def.num_frames = 0);
     BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def, -1, -1));
@@ -167,7 +188,10 @@ BOOST_AUTO_TEST_CASE(FileWriterPluginWriteParamTest)
 {
     FrameProcessor::HDF5File hdf5f(hdf5_error_definition);
 
-    BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/test_write_params.h5", 0, false, 1, 1));
+    // Use the PID to ensure file created has a unique name
+    std::stringstream ss;
+    ss << "/tmp/test_write_params_pid" << getpid() << ".h5";
+    BOOST_REQUIRE_NO_THROW(hdf5f.create_file(ss.str(), 0, false, 1, 1));
 
     FrameProcessor::DatasetDefinition param_dset_def;
     param_dset_def.name = "p1";
@@ -195,7 +219,10 @@ BOOST_AUTO_TEST_CASE(FileWriterPluginWriteParamWrongTypeTest)
 {
     FrameProcessor::HDF5File hdf5f(hdf5_error_definition);
 
-    BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/test_wrong_params.h5", 0, false, 1, 1));
+    // Use the PID to ensure file created has a unique name
+    std::stringstream ss;
+    ss << "/tmp/test_wrong_params_pid" << getpid() << ".h5";
+    BOOST_REQUIRE_NO_THROW(hdf5f.create_file(ss.str(), 0, false, 1, 1));
 
     FrameProcessor::DatasetDefinition param_dset_def;
     param_dset_def.name = "p1";
@@ -222,7 +249,10 @@ BOOST_AUTO_TEST_CASE(FileWriterPluginWriteParamNoParamTest)
 {
     FrameProcessor::HDF5File hdf5f(hdf5_error_definition);
 
-    BOOST_REQUIRE_NO_THROW(hdf5f.create_file("/tmp/test_no_params.h5", 0, false, 1, 1));
+    // Use the PID to ensure file created has a unique name
+    std::stringstream ss;
+    ss << "/tmp/test_no_params_pid" << getpid() << ".h5";
+    BOOST_REQUIRE_NO_THROW(hdf5f.create_file(ss.str(), 0, false, 1, 1));
 
     FrameProcessor::DatasetDefinition param_dset_def;
     param_dset_def.name = "p1";
