@@ -21,7 +21,7 @@ authors = [
     {name = "Tim Nicholls", email = "tim.nicholls@stfc.ac.uk"},
 ]
 dependencies = [
-    "odin-control@git+https://git@github.com/odin-detector/odin-control",
+    "odin-control@git+https://github.com/odin-detector/odin-control@1cf475b60abf66666d31c7e74b9d19540c2ea6c3",
     "posix_ipc>=1.0.4",
     "pysnmp>=4.4.4",
     "numpy>=1.14.0",
