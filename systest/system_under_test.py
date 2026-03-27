@@ -46,6 +46,24 @@ class SystemUnderTest:
         self._client[app] = client
 
     def cleanup(self):
+        def check_proc_status(app, proc):
+            if proc.returncode != 0:
+                for line in proc.stderr:
+                    linestr = line.decode("utf-8").rstrip()
+                    print(f"{app}:stderr:{linestr}")
+                return False
+            # Need to check the stdout for ERROR as at least frameSimulator
+            # produces errors but still exits with status 0.
+            # DIAMOND_TODO #490: frameSimulator should be changed so this is not
+            # required as this is horrible.
+            error_lines = []
+            for line in proc.stdout:
+                linestr = line.decode("utf-8").rstrip()
+                print(linestr)
+                if " ERROR " in linestr:
+                    error_lines.append(linestr)
+            return len(error_lines) == 0
+
         print("Test complete, cleaning up")
         cleanup_ok = True
         for app, client in self._client.items():
@@ -59,4 +77,12 @@ class SystemUnderTest:
             if proc is not None:
                 print(f"Waiting for {app} to complete")
                 proc.wait()
+
+        procs_ok = True
+        for app, proc in self._proc.items():
+            if proc is not None:
+                if not check_proc_status(app, proc):
+                    procs_ok = False
+        assert procs_ok, "Test processes failed"
+
         assert cleanup_ok, "Test cleanup failed"
