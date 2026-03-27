@@ -1,16 +1,18 @@
 name: Container CI
 
 on:
-  workflow_call:
-    inputs:
-      os:
-        type: string
-        description: The OS type for this job
-        required: true
+  push:
+    branches:
+      - master
+    tags:
+      - '*'
 
 jobs:
   build:
-    runs-on: ${{ inputs.os }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
     env:
       TAG: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}
