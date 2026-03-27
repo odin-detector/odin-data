@@ -8,13 +8,13 @@
 #ifndef TOOLS_FILEWRITER_WORKQUEUE_H_
 #define TOOLS_FILEWRITER_WORKQUEUE_H_
 
+#include <boost/circular_buffer.hpp>
 #include <cstddef>
-#include <list>
+#include <type_traits>
 
 namespace FrameProcessor {
 
 /** Maximum queue size - to prevent unlimited use of memory **/
-const int max_queue_size = 8;
 
 /** Thread safe producer consumer work queue.
  *
@@ -25,8 +25,9 @@ const int max_queue_size = 8;
  * Frame objects, and not the Frame objects themselves.
  */
 template <typename T> class WorkQueue {
+    static constexpr int max_queue_size = 8;
     /** Queue (list) of worker items queued for processing */
-    std::list<T> m_queue;
+    boost::circular_buffer<T> m_queue;
     /** Mutex for locking the queue */
     pthread_mutex_t m_mutex;
     /** Condition for waking up blocked threads when a new item is added to the queue */
@@ -37,7 +38,8 @@ public:
      *
      * The constructor initialises the mutex and condition required for the class.
      */
-    WorkQueue()
+    WorkQueue() :
+        m_queue(max_queue_size)
     {
         pthread_mutex_init(&m_mutex, NULL);
         pthread_cond_init(&m_condv, NULL);
@@ -83,6 +85,7 @@ public:
      */
     T remove()
     {
+        static_assert(std::is_nothrow_copy_constructible<T>::value && std::is_nothrow_move_constructible<T>::value);
         pthread_mutex_lock(&m_mutex);
         while (m_queue.size() == 0) {
             pthread_cond_wait(&m_condv, &m_mutex);
@@ -92,6 +95,18 @@ public:
         pthread_cond_signal(&m_condv);
         pthread_mutex_unlock(&m_mutex);
         return item;
+    }
+
+    void remove(T& src)
+    {
+        pthread_mutex_lock(&m_mutex);
+        while (m_queue.size() == 0) {
+            pthread_cond_wait(&m_condv, &m_mutex);
+        }
+        src = m_queue.front();
+        m_queue.pop_front();
+        pthread_cond_signal(&m_condv);
+        pthread_mutex_unlock(&m_mutex);
     }
 
     /** Return the size of the queue.
