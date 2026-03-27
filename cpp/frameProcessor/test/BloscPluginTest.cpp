@@ -20,7 +20,7 @@ public:
 
         auto gen = [&]() { return dist(mersenne_engine); };
 
-        std::array<int, 64000> vec {}; // 64 kb data size
+        std::array<int, 64000> vec {}; // 256kb data size
         std::generate(vec.begin(), vec.end(), gen);
 
         blosc_plugin.set_name("BloscPluginTest");
@@ -70,6 +70,26 @@ BOOST_AUTO_TEST_CASE(BloscPlugin_compress_decompress)
     boost::shared_ptr<FrameProcessor::Frame> decompressed_frame = blosc_plugin.getWorkQueue()->remove();
     int decompressed_frame_sz = decompressed_frame->get_image_size();
     BOOST_CHECK(decompressed_frame_sz > compressed_frame->get_image_size());
+}
+
+BOOST_AUTO_TEST_CASE(BloscPlugin_off)
+{
+    // OFF Mode Test
+    OdinData::IpcMessage cfg_;
+    OdinData::IpcMessage reply;
+    BOOST_CHECK_NO_THROW(cfg_.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_LEVEL, 9));
+    BOOST_CHECK_NO_THROW(cfg_.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_SHUFFLE, 2));
+    BOOST_CHECK_NO_THROW(cfg_.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_COMPRESSOR, 4));
+    BOOST_CHECK_NO_THROW(cfg_.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_MODE, std::string("off")));
+    BOOST_REQUIRE_NO_THROW(blosc_plugin.configure(cfg_, reply));
+    BOOST_REQUIRE_NO_THROW(blosc_plugin.register_callback(
+        blosc_plugin.get_name(),
+        boost::shared_ptr<FrameProcessor::IFrameCallback>(&blosc_plugin, [](FrameProcessor::IFrameCallback*) { })
+    ));
+    BOOST_REQUIRE_NO_THROW(blosc_plugin.process_frame(frame));
+    boost::shared_ptr<FrameProcessor::Frame> same_frame = blosc_plugin.getWorkQueue()->remove();
+    int compressed_frame_sz = same_frame->get_image_size();
+    BOOST_CHECK(compressed_frame_sz == frame->get_image_size() && frame->get_data_ptr() == same_frame->get_data_ptr());
 }
 
 BOOST_AUTO_TEST_CASE(BloscPlugin_request_metadata)

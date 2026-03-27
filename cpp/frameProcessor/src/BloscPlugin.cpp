@@ -132,7 +132,7 @@ BloscPlugin::~BloscPlugin()
 /**
  * Compress one frame, return compressed frame.
  * @param src_frame - source frame to compress
- * @return compressed frame
+ * @return pair<shared_ptr<Frame>, bool> - shared_ptr to compressed frame and boolean indicating success/fail
  */
 std::pair<boost::shared_ptr<Frame>, bool> BloscPlugin::compress_frame(boost::shared_ptr<Frame> src_frame)
 {
@@ -158,12 +158,12 @@ std::pair<boost::shared_ptr<Frame>, bool> BloscPlugin::compress_frame(boost::sha
         std::stringstream ss_blosc_settings;
         ss_blosc_settings << " compressor=" << blosc_get_compressor() << " threads=" << blosc_get_nthreads()
                           << " clevel=" << c_settings.compression_level << " doshuffle=" << c_settings.shuffle
-                          << " typesize=" << c_settings.type_size << " nbytes=" << c_settings.uncompressed_size
+                          << " typesize=" << c_settings.type_size << " comp_bytes=" << c_settings.uncompressed_size
                           << " destsize=" << dest_data_size;
         LOG4CXX_DEBUG_LEVEL(
             2, logger_,
             "Blosc compression: frame=" << src_frame->get_frame_number() << " acquisition=\""
-                                        << src_frame->get_meta_data().get_acquisition_ID() << "\""
+                                        << src_frame->get_meta_data().get_acquisition_ID() << '\"'
                                         << ss_blosc_settings.str() << " src=" << src_data_ptr
                                         << " dest=" << dest_frame->get_image_ptr()
         );
@@ -202,50 +202,48 @@ std::pair<boost::shared_ptr<Frame>, bool> BloscPlugin::compress_frame(boost::sha
 /**
  * Decompress one frame, return decompressed frame.
  * @param src_frame - source frame to decompress
- * @return decompressed frame
+ * @return pair<shared_ptr<Frame>, bool> - shared_ptr to decompressed frame and boolean indicating success/fail
  */
 std::pair<boost::shared_ptr<Frame>, bool> BloscPlugin::decompress_frame(boost::shared_ptr<Frame> src_frame)
 {
     size_t dest_size = 0;
     size_t compressed_size;
     size_t block_size;
+    // get destination buffer size - dest_size
     blosc_cbuffer_sizes(src_frame->get_data_ptr(), &dest_size, &compressed_size, &block_size);
     bool decomp_res = false;
     boost::shared_ptr<Frame> dest_frame;
     try {
         dest_frame = boost::make_shared<DataBlockFrame>(src_frame->get_meta_data(), dest_size);
         std::stringstream ss_blosc_settings;
-        ss_blosc_settings << "Blosc decompression: frame="
-                          << " threads=" << blosc_get_nthreads() << src_frame->get_frame_number() << " acquisition=\""
-                          << src_frame->get_meta_data().get_acquisition_ID() << "\""
-                          << " src=" << static_cast<void*>(src_frame->get_image_ptr()) << " destsize=" << dest_size;
-        LOG4CXX_DEBUG_LEVEL(2, logger_, ss_blosc_settings.str());
+        ss_blosc_settings << src_frame->get_frame_number() << " threads=" << blosc_get_nthreads() << " acquisition=\""
+                          << src_frame->get_meta_data().get_acquisition_ID() << '\"'
+                          << " compressed bytes=" << src_frame->get_data_size() << " destsize=" << dest_size;
+        LOG4CXX_DEBUG_LEVEL(
+            2, logger_,
+            "Blosc decompression: frame="
+                << ss_blosc_settings.str() << " src=" << static_cast<void*>(src_frame->get_image_ptr())
+                << " typesize=" << this->compression_settings_.type_size << " dest=" << dest_frame->get_image_ptr()
+        );
         int decompressed_size = blosc_decompress_ctx(
             src_frame->get_image_ptr(), dest_frame->get_image_ptr(), dest_size, this->compression_settings_.threads
         );
         if (decompressed_size > 0) {
             decomp_res = true;
+            dest_frame->set_image_size(decompressed_size);
+            dest_frame->set_outer_chunk_size(src_frame->get_outer_chunk_size());
             LOG4CXX_DEBUG_LEVEL(
                 2, logger_,
                 "Blosc decompression complete: frame=" << src_frame->get_frame_number()
                                                        << " decompressed_size=" << decompressed_size << " factor="
                                                        << (double)src_frame->get_image_size() / decompressed_size
             );
-        } else if (decompressed_size < 0) {
+        } else {
             LOG4CXX_ERROR(
                 logger_, "blosc_decompress failed. error=" << decompressed_size << ' ' << ss_blosc_settings.str()
             );
-        } else {
-            dest_frame.reset();
-            LOG4CXX_ERROR(
-                logger_,
-                "blosc_decompress failed, destination buffer not large enough! error=0 "
-                    << "frame=" << src_frame->get_frame_number() << " acquisition=\""
-                    << src_frame->get_meta_data().get_acquisition_ID() << "\""
-            );
         }
     } catch (std::bad_alloc) {
-        decomp_res = false;
         LOG4CXX_ERROR(logger_, "Failed to allocate memory for decompressed frame");
     }
     return { std::move(dest_frame), decomp_res };
@@ -311,7 +309,7 @@ void BloscPlugin::process_frame(boost::shared_ptr<Frame> src_frame)
         output_frame = this->decompress_frame(src_frame);
         break;
     case Mode::OFF:
-        this->push(src_frame);
+        output_frame = { std::move(src_frame), true };
         break;
     };
 
