@@ -246,7 +246,7 @@ std::pair<boost::shared_ptr<Frame>, bool> BloscPlugin::decompress_frame(boost::s
     } catch (std::bad_alloc) {
         LOG4CXX_ERROR(logger_, "Failed to allocate memory for decompressed frame");
     }
-    return { std::move(dest_frame), decomp_res };
+    return { dest_frame, decomp_res };
 }
 
 /**
