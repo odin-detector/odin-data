@@ -1,4 +1,4 @@
-name: Cpp test CI
+name: cpp-test
 
 on:
   workflow_call:
