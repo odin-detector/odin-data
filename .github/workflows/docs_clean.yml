@@ -1,4 +1,4 @@
-name: Docs Cleanup CI
+name: docs-cleanup
 
 # delete branch documentation when a branch is deleted
 # also allow manually deleting a documentation version

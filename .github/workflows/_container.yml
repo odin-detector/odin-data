@@ -1,4 +1,4 @@
-name: Container CI
+name: container-build
 
 on:
   workflow_call:
