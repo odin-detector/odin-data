@@ -244,7 +244,7 @@ class LiveViewer(object):
             dtype = 'float32'
 
         # create a np array of the image data, of type specified in the frame header
-        img_data = np.fromstring(msg[1], dtype=np.dtype(dtype))
+        img_data = np.frombuffer(msg[1], dtype=np.dtype(dtype))
 
         self.img_data = img_data.reshape([int(header["shape"][0]), int(header["shape"][1])])
         self.header = header
@@ -289,7 +289,7 @@ class LiveViewer(object):
         # Most time consuming step, depending on image size and the type of image
         img_encode = cv2.imencode(
             '.png', img_colormapped, params=[cv2.IMWRITE_PNG_COMPRESSION, 0])[1]
-        return img_encode.tostring()
+        return img_encode.tobytes()
 
     @staticmethod
     def scale_array(src, tmin, tmax):

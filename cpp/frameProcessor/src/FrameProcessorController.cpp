@@ -118,6 +118,7 @@ void FrameProcessorController::handleCtrlChannel()
     try {
         OdinData::IpcMessage ctrlMsg(ctrlMsgEncoded.c_str());
         OdinData::IpcMessage replyMsg; // Instantiate default IpmMessage
+        replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeAck);
         replyMsg.set_msg_val(ctrlMsg.get_msg_val());
         msg_id = ctrlMsg.get_msg_id();
         replyMsg.set_msg_id(msg_id);
