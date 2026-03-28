@@ -116,11 +116,10 @@ void ParameterPublishPlugin::requestConfiguration(OdinData::IpcMessage& reply)
  */
 void ParameterPublishPlugin::setup_publish_channel(std::string&& endpoint)
 {
-    if (!this->channel_endpoint_.empty()) {
-        publish_channel_.unbind(this->channel_endpoint_.c_str());
-    }
-
     try {
+        if (!this->channel_endpoint_.empty()) {
+            publish_channel_.unbind(this->channel_endpoint_.c_str());
+        }
         LOG4CXX_DEBUG_LEVEL(1, logger_, "Connecting channel to endpoint: " << endpoint);
         this->channel_endpoint_ = std::move(endpoint);
         this->publish_channel_.bind(this->channel_endpoint_.c_str());
