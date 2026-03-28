@@ -1,4 +1,4 @@
-name: Cpp code check CI
+name: cpp-code-check
 
 on:
   workflow_call:

@@ -1,4 +1,4 @@
-name: Python test CI
+name: python-test
 
 on:
   workflow_call:
