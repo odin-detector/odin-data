@@ -151,4 +151,40 @@ BOOST_AUTO_TEST_CASE(FileWriterPluginZeroFrames)
     }
 }
 
+BOOST_AUTO_TEST_CASE(FileWriterPluginStatusSanityCheck)
+{
+    OdinData::IpcMessage reply;
+    FrameProcessor::FileWriterPlugin fwp;
+    using FPFW = FrameProcessor::FileWriterPlugin;
+    fwp.set_name("hdf_status");
+    fwp.status(reply);
+    std::string&& prefix = fwp.get_name() + '/';
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_WRITING));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_FRAMES_MAX));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_FRAMES_WRITTEN));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_FRAMES_WRITTEN));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_FRAMES_PROCESSED));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_FILE_PATH));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_FILE_NAME));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_ACQUISITION_ID));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_PROCESSES));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_RANK));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_TIMEOUT_ACTIVE));
+
+    prefix += FPFW::STATUS_TIMING;
+    BOOST_CHECK(reply.has_param(prefix));
+    prefix += '/';
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_LAST_CREATE));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_MAX_CREATE));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_MEAN_CREATE));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_LAST_WRITE));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_MEAN_WRITE));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_LAST_FLUSH));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_MAX_FLUSH));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_MEAN_FLUSH));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_LAST_CLOSE));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_MAX_CLOSE));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_MEAN_CLOSE));
+}
+
 BOOST_AUTO_TEST_SUITE_END();
