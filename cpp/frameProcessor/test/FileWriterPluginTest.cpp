@@ -157,7 +157,7 @@ BOOST_AUTO_TEST_CASE(FileWriterPluginStatusSanityCheck)
     FrameProcessor::FileWriterPlugin fwp;
     using FPFW = FrameProcessor::FileWriterPlugin;
     fwp.set_name("hdf_status");
-    fwp.status(reply);
+    BOOST_REQUIRE_NO_THROW(fwp.status(reply));
     std::string&& prefix = fwp.get_name() + '/';
     BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_WRITING));
     BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_FRAMES_MAX));
