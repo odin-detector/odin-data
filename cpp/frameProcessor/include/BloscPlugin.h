@@ -58,8 +58,8 @@ public:
 
 private:
     // Methods unique to this class
-    std::pair<boost::shared_ptr<Frame>, bool> compress_frame(boost::shared_ptr<Frame> frame);
-    std::pair<boost::shared_ptr<Frame>, bool> decompress_frame(boost::shared_ptr<Frame> frame);
+    std::pair<boost::shared_ptr<Frame>, bool> compress_frame(const boost::shared_ptr<Frame>& frame);
+    std::pair<boost::shared_ptr<Frame>, bool> decompress_frame(const boost::shared_ptr<Frame>& frame);
     void update_compression_settings();
     friend struct Mode_map;
     enum class Mode {

@@ -134,7 +134,7 @@ BloscPlugin::~BloscPlugin()
  * @param src_frame - source frame to compress
  * @return pair<shared_ptr<Frame>, bool> - shared_ptr to compressed frame and boolean indicating success/fail
  */
-std::pair<boost::shared_ptr<Frame>, bool> BloscPlugin::compress_frame(boost::shared_ptr<Frame> src_frame)
+std::pair<boost::shared_ptr<Frame>, bool> BloscPlugin::compress_frame(const boost::shared_ptr<Frame>& src_frame)
 {
     int compressed_size = 0;
     bool comp_res = false;
@@ -196,7 +196,7 @@ std::pair<boost::shared_ptr<Frame>, bool> BloscPlugin::compress_frame(boost::sha
     } catch (std::bad_alloc) {
         LOG4CXX_ERROR(logger_, "Failed to allocate memory for compressed frame");
     }
-    return { dest_frame, comp_res };
+    return { std::move(dest_frame), comp_res };
 }
 
 /**
@@ -204,7 +204,7 @@ std::pair<boost::shared_ptr<Frame>, bool> BloscPlugin::compress_frame(boost::sha
  * @param src_frame - source frame to decompress
  * @return pair<shared_ptr<Frame>, bool> - shared_ptr to decompressed frame and boolean indicating success/fail
  */
-std::pair<boost::shared_ptr<Frame>, bool> BloscPlugin::decompress_frame(boost::shared_ptr<Frame> src_frame)
+std::pair<boost::shared_ptr<Frame>, bool> BloscPlugin::decompress_frame(const boost::shared_ptr<Frame>& src_frame)
 {
     size_t dest_size = 0;
     size_t compressed_size;
@@ -246,7 +246,7 @@ std::pair<boost::shared_ptr<Frame>, bool> BloscPlugin::decompress_frame(boost::s
     } catch (std::bad_alloc) {
         LOG4CXX_ERROR(logger_, "Failed to allocate memory for decompressed frame");
     }
-    return { dest_frame, decomp_res };
+    return { std::move(dest_frame), decomp_res };
 }
 
 /**
