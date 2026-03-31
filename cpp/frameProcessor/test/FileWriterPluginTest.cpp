@@ -159,6 +159,7 @@ BOOST_AUTO_TEST_CASE(FileWriterPluginStatusSanityCheck)
     fwp.set_name("hdf");
     BOOST_REQUIRE_NO_THROW(fwp.status(reply));
 
+    BOOST_TEST_MESSAGE(reply.encode());
     std::vector<std::string> names = reply.get_param_names();
     for (auto iter = names.begin(); iter != names.end(); ++iter){
         std::cout << *iter << std::endl;
