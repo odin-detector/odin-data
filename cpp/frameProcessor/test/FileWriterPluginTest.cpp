@@ -159,7 +159,13 @@ BOOST_AUTO_TEST_CASE(FileWriterPluginStatusSanityCheck)
     fwp.set_name("hdf_status");
     BOOST_REQUIRE_NO_THROW(fwp.status(reply));
 
-    std::string&& prefix = fwp.get_name();
+    std::vector<std::string> names = reply.get_param_names();
+    for (auto iter = names.begin(); iter != names.end(); ++iter){
+        std::cout << *iter << std::endl;
+        BOOST_TEST_MESSAGE(*iter);
+    }
+
+    std::string prefix = fwp.get_name();
     OdinData::IpcMessage status(reply.get_param<const rapidjson::Value&>(prefix));
     BOOST_CHECK(status.has_param(FPFW::STATUS_WRITING));
 
