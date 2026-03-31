@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE(FileWriterPluginStatusSanityCheck)
     OdinData::IpcMessage reply;
     FrameProcessor::FileWriterPlugin fwp;
     using FPFW = FrameProcessor::FileWriterPlugin;
-    fwp.set_name("hdf_status");
+    fwp.set_name("hdf");
     BOOST_REQUIRE_NO_THROW(fwp.status(reply));
 
     std::vector<std::string> names = reply.get_param_names();
