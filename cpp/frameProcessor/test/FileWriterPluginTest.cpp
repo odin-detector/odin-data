@@ -158,9 +158,12 @@ BOOST_AUTO_TEST_CASE(FileWriterPluginStatusSanityCheck)
     using FPFW = FrameProcessor::FileWriterPlugin;
     fwp.set_name("hdf_status");
     BOOST_REQUIRE_NO_THROW(fwp.status(reply));
-    std::string prefix = fwp.get_name() + '/';
-    BOOST_CHECK(reply.has_param("hdf_status/writing"));
-/*    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_FRAMES_MAX));
+
+    std::string&& prefix = fwp.get_name();
+    OdinData::IpcMessage status(reply.get_param<const rapidjson::Value&>(prefix));
+    BOOST_CHECK(status.has_param(FPFW::STATUS_WRITING));
+
+    /*    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_FRAMES_MAX));
     BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_FRAMES_WRITTEN));
     BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_FRAMES_WRITTEN));
     BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_FRAMES_PROCESSED));
