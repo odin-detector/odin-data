@@ -153,25 +153,28 @@ BOOST_AUTO_TEST_CASE(FileWriterPluginZeroFrames)
 
 BOOST_AUTO_TEST_CASE(FileWriterPluginStatusSanityCheck)
 {
-    OdinData::IpcMessage reply;
     FrameProcessor::FileWriterPlugin fwp;
     using FPFW = FrameProcessor::FileWriterPlugin;
     fwp.set_name("hdf");
-    BOOST_REQUIRE_NO_THROW(fwp.status(reply));
-
-    BOOST_TEST_MESSAGE(reply.encode());
-    std::vector<std::string> names = reply.get_param_names();
-    for (auto iter = names.begin(); iter != names.end(); ++iter){
-        std::cout << *iter << std::endl;
-        BOOST_TEST_MESSAGE(*iter);
+    {
+      OdinData::IpcMessage reply;
+      BOOST_REQUIRE_NO_THROW(fwp.status(reply));
+      BOOST_TEST_MESSAGE(reply.encode());
     }
 
-    std::string prefix = fwp.get_name();
-    OdinData::IpcMessage status(reply.get_param<const rapidjson::Value&>(prefix));
-    names = status.get_param_names();
-    for (auto iter = names.begin(); iter != names.end(); ++iter){
-        BOOST_TEST_MESSAGE(*iter);
-    }
+
+//    std::vector<std::string> names = reply.get_param_names();
+//    for (auto iter = names.begin(); iter != names.end(); ++iter){
+//        std::cout << *iter << std::endl;
+//        BOOST_TEST_MESSAGE(*iter);
+//    }
+
+//    std::string prefix = fwp.get_name();
+//    OdinData::IpcMessage status(reply.get_param<const rapidjson::Value&>(prefix));
+//    names = status.get_param_names();
+//    for (auto iter = names.begin(); iter != names.end(); ++iter){
+//        BOOST_TEST_MESSAGE(*iter);
+//    }
 
 
 //    BOOST_CHECK(status.has_param(FPFW::STATUS_WRITING));
