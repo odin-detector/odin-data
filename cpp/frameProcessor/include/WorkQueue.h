@@ -75,8 +75,10 @@ public:
                 pthread_cond_wait(&m_condv, &m_mutex);
             }
         }
+        bool is_empty = m_queue.empty();
         m_queue.push_back(std::move(item));
-        pthread_cond_signal(&m_condv);
+        if (is_empty)
+            pthread_cond_signal(&m_condv);
         pthread_mutex_unlock(&m_mutex);
     }
 
@@ -95,9 +97,11 @@ public:
         while (m_queue.empty()) {
             pthread_cond_wait(&m_condv, &m_mutex);
         }
+        bool is_full = m_queue.size() == max_queue_size;
         T item = m_queue.front();
         m_queue.pop_front();
-        pthread_cond_signal(&m_condv);
+        if (is_full)
+            pthread_cond_signal(&m_condv);
         pthread_mutex_unlock(&m_mutex);
         return item;
     }
@@ -108,9 +112,11 @@ public:
         while (m_queue.size() == 0) {
             pthread_cond_wait(&m_condv, &m_mutex);
         }
+        bool is_full = m_queue.size() == max_queue_size;
         src = m_queue.front();
         m_queue.pop_front();
-        pthread_cond_signal(&m_condv);
+        if (is_full)
+            pthread_cond_signal(&m_condv);
         pthread_mutex_unlock(&m_mutex);
     }
 

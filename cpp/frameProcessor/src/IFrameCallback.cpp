@@ -25,6 +25,8 @@ IFrameCallback::IFrameCallback() :
  */
 IFrameCallback::~IFrameCallback()
 {
+    if (working_) stop();
+    if(thread_.joinable()) thread_.join();
 }
 
 /** Return the pointer to the WorkQueue.
@@ -48,7 +50,6 @@ void IFrameCallback::start()
         run_ = true;
         // Now start the worker thread to monitor the queue
         thread_ = boost::thread(&IFrameCallback::workerTask, this);
-        thread_.detach();
     }
 }
 
