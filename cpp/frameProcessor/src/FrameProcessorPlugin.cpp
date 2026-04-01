@@ -410,7 +410,7 @@ void FrameProcessorPlugin::push(boost::shared_ptr<Frame> frame)
     // Loop over non-blocking callbacks, placing frame onto each queue
     std::map<std::string, boost::shared_ptr<IFrameCallback>>::iterator cbIter;
     for (cbIter = callbacks_.begin(); cbIter != callbacks_.end(); ++cbIter) {
-        cbIter->second->getWorkQueue()->add(frame);
+        cbIter->second->getWorkQueue().add(frame);
     }
 }
 
@@ -431,7 +431,7 @@ void FrameProcessorPlugin::push(const std::string& plugin_name, boost::shared_pt
         blocking_callbacks_[plugin_name]->callback(frame);
     }
     if (callbacks_.find(plugin_name) != callbacks_.end()) {
-        callbacks_[plugin_name]->getWorkQueue()->add(frame);
+        callbacks_[plugin_name]->getWorkQueue().add(frame);
     }
 }
 

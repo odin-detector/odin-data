@@ -15,12 +15,9 @@ namespace FrameProcessor {
  * The constructor creates the new WorkQueue object.
  */
 IFrameCallback::IFrameCallback() :
-    thread_(0),
     run_(false),
     working_(false)
 {
-    // Create the work queue for message offload
-    queue_ = boost::shared_ptr<WorkQueue<boost::shared_ptr<Frame>>>(new WorkQueue<boost::shared_ptr<Frame>>);
 }
 
 /**
@@ -34,7 +31,7 @@ IFrameCallback::~IFrameCallback()
  *
  * \return a pointer to the WorkQueue owned by this IFrameCallback class.
  */
-boost::shared_ptr<WorkQueue<boost::shared_ptr<Frame>>> IFrameCallback::getWorkQueue()
+WorkQueue<boost::shared_ptr<Frame>>& IFrameCallback::getWorkQueue()
 {
     return queue_;
 }
@@ -50,7 +47,8 @@ void IFrameCallback::start()
         // Set the run condition to true
         run_ = true;
         // Now start the worker thread to monitor the queue
-        thread_ = new boost::thread(&IFrameCallback::workerTask, this);
+        thread_ = boost::thread(&IFrameCallback::workerTask, this);
+        thread_.detach();
     }
 }
 
@@ -67,7 +65,7 @@ void IFrameCallback::stop()
         run_ = false;
         // Now notify the work queue we have finished by adding a null ptr
         boost::shared_ptr<Frame> nullMsg;
-        queue_->add(nullMsg);
+        queue_.add(nullMsg);
     }
 }
 
@@ -123,7 +121,7 @@ void IFrameCallback::workerTask()
 
     // Check the queue for messages
     while (run_) {
-        boost::shared_ptr<Frame> msg = queue_->remove();
+        boost::shared_ptr<Frame> msg = queue_.remove();
         if (msg) {
             // Once we have a message, call the callback
             this->callback(msg);

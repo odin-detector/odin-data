@@ -25,7 +25,7 @@ namespace FrameProcessor {
  * Frame objects, and not the Frame objects themselves.
  */
 template <typename T> class WorkQueue {
-    static constexpr int max_queue_size = 8;
+    static constexpr typename boost::circular_buffer<T>::size_type max_queue_size = 8;
     /** Queue (list) of worker items queued for processing */
     boost::circular_buffer<T> m_queue;
     /** Mutex for locking the queue */
@@ -45,11 +45,16 @@ public:
         pthread_cond_init(&m_condv, NULL);
     }
 
+    /**
+     * Delete copy assignment operator
+     */
+    WorkQueue& operator=(const WorkQueue&) = delete;
+
     /** Destructor.
      *
      * The destructor frees resources (mutex and condition).
      */
-    virtual ~WorkQueue()
+    ~WorkQueue()
     {
         pthread_mutex_destroy(&m_mutex);
         pthread_cond_destroy(&m_condv);
@@ -70,7 +75,7 @@ public:
                 pthread_cond_wait(&m_condv, &m_mutex);
             }
         }
-        m_queue.push_back(item);
+        m_queue.push_back(std::move(item));
         pthread_cond_signal(&m_condv);
         pthread_mutex_unlock(&m_mutex);
     }
@@ -87,7 +92,7 @@ public:
     {
         static_assert(std::is_nothrow_copy_constructible<T>::value && std::is_nothrow_move_constructible<T>::value);
         pthread_mutex_lock(&m_mutex);
-        while (m_queue.size() == 0) {
+        while (m_queue.empty()) {
             pthread_cond_wait(&m_condv, &m_mutex);
         }
         T item = m_queue.front();
@@ -119,6 +124,14 @@ public:
         int size = m_queue.size();
         pthread_mutex_unlock(&m_mutex);
         return size;
+    }
+
+    /**
+     * Return the max Queue size
+     */
+    constexpr typename boost::circular_buffer<T>::size_type max_size()
+    {
+        return max_queue_size;
     }
 };
 

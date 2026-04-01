@@ -68,6 +68,7 @@ add_unit_test(OffsetAdjustmentPlugin)
 add_unit_test(ParameterAdjustmentPlugin)
 add_unit_test(RawFileWriterPlugin)
 add_unit_test(SumPlugin)
+add_unit_test(WorkQueue)
 
 if (${BLOSC_FOUND})
   include_directories(${BLOSC_INCLUDE_DIR})

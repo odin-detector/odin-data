@@ -33,7 +33,7 @@ class IFrameCallback {
 public:
     IFrameCallback();
     virtual ~IFrameCallback();
-    boost::shared_ptr<WorkQueue<boost::shared_ptr<Frame>>> getWorkQueue();
+    WorkQueue<boost::shared_ptr<Frame>>& getWorkQueue();
     void start();
     void stop();
     bool isWorking() const;
@@ -53,9 +53,9 @@ private:
     /** Pointer to logger */
     LoggerPtr logger_;
     /** Pointer to worker queue thread */
-    boost::thread* thread_;
-    /** Pointer to WorkQueue for Frame object pointers */
-    boost::shared_ptr<WorkQueue<boost::shared_ptr<Frame>>> queue_;
+    boost::thread thread_;
+    /** WorkQueue for Frame object pointers */
+    WorkQueue<boost::shared_ptr<Frame>> queue_;
     /** IFrameCallback run flag */
     bool run_;
     /** Is this IFrameCallback working */
