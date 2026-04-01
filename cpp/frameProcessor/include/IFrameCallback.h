@@ -52,7 +52,7 @@ public:
 private:
     /** Pointer to logger */
     LoggerPtr logger_;
-    /** Pointer to worker queue thread */
+    /** worker queue thread */
     boost::thread thread_;
     /** WorkQueue for Frame object pointers */
     WorkQueue<boost::shared_ptr<Frame>> queue_;
