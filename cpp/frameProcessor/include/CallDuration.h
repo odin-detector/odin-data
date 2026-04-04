@@ -17,6 +17,9 @@ namespace FrameProcessor {
  */
 class CallDuration {
 public:
+    CallDuration();
+    ~CallDuration() { };
+
     void update(unsigned int duration);
     void reset();
 

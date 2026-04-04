@@ -1,14 +1,18 @@
 /*
- * LiveViewUnitTest.cpp
+ * LiveViewPluginTest.cpp
  *
  *  Created on: 28 Sep 2018
  *      Author: Ashley Neaves
  */
 
-#include <boost/test/unit_test.hpp>
+#define BOOST_TEST_MODULE "LiveViewPluginTests"
+#define BOOST_TEST_MAIN
 
-#include "DataBlockFrame.h"
+#include "Fixtures.h"
+
 #include "LiveViewPlugin.h"
+
+BOOST_TEST_GLOBAL_FIXTURE(GlobalConfig);
 
 std::string global_socket_addr = "tcp://127.0.0.1:";
 uint32_t global_socket_port = 5020;

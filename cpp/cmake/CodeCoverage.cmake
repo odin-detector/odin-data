@@ -10,7 +10,9 @@ function(setup_coverage)
 
   if(DEFINED CODE_COVERAGE_ALL AND CODE_COVERAGE_ALL)
     add_compile_options(-O0 -g3 --coverage)
-    add_link_options(-O0 -g3 --coverage)
+    # The -Wl,--dynamic-list-data is required if dlopen is to be used in the coverage
+    # See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83879
+    add_link_options(-O0 -g3 --coverage -Wl,--dynamic-list-data)
     message(STATUS "CODE_COVERAGE_ALL: Global code coverage switch on")
   endif()
 endfunction()
@@ -19,7 +21,9 @@ function(add_code_coverage _target)
   # Both CODE_COVERAGE being defined and set to 1 is required
   if(DEFINED CODE_COVERAGE_TARGET AND CODE_COVERAGE_TARGET)
     target_compile_options(${_target} PRIVATE -O0 -g3 --coverage)
-    target_link_options(${_target} PRIVATE -O0 -g3 --coverage)
+    # The -Wl,--dynamic-list-data is required if dlopen is to be used in the coverage
+    # See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83879
+    target_link_options(${_target} PRIVATE -O0 -g3 --coverage -Wl,--dynamic-list-data)
     message(STATUS "CODE_COVERAGE_TARGET: Added code coverage for target ${_target}")
   endif(DEFINED CODE_COVERAGE_TARGET AND CODE_COVERAGE_TARGET)
 endfunction()

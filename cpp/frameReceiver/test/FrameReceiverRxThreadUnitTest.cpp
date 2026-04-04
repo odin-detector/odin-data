@@ -5,7 +5,12 @@
  *      Author: Tim Nicholls, STFC Application Engineering Group
  */
 
+#define BOOST_TEST_MODULE "FrameReceiverRxThreadTests"
+#define BOOST_TEST_MAIN
+
 #include <boost/test/unit_test.hpp>
+
+#include "DebugLevelLogger.h"
 
 #include "DummyTCPFrameDecoder.h"
 #include "DummyUDPFrameDecoder.h"
@@ -148,7 +153,6 @@ void testRxChannel(OdinData::IpcChannel& rx_channel)
 
     encoded_msg = rx_channel.recv(&rx_thread_identity);
     BOOST_TEST_MESSAGE("RX thread identity: " << rx_thread_identity);
-    ;
 
     IpcMessage identity_msg(encoded_msg.c_str());
     BOOST_CHECK_EQUAL(identity_msg.get_msg_type(), OdinData::IpcMessage::MsgTypeNotify);

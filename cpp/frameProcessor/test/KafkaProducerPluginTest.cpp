@@ -1,3 +1,6 @@
+#define BOOST_TEST_MODULE "FileWriterPluginTests"
+#define BOOST_TEST_MAIN
+
 #include "KafkaProducerPlugin.h"
 #include "DataBlockFrame.h"
 #include "rapidjson/document.h"
