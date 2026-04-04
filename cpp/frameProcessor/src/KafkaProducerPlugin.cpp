@@ -306,15 +306,15 @@ void* KafkaProducerPlugin::create_message(std::shared_ptr<Frame> frame, size_t& 
     writer.String(MSG_HEADER_FRAME_DIMENSIONS_KEY);
     writer.StartArray();
     dimensions_t dims = frame->get_meta_data().get_dimensions();
-    for (dimensions_t::iterator it = dims.begin(); it != dims.end(); it++) {
+    for (auto it = dims.begin(); it != dims.end(); ++it) {
         writer.Uint64(*it);
     }
     writer.EndArray();
     if (this->include_parameters_) {
-        const std::map<std::string, boost::any>& parameters = frame->get_meta_data().get_parameters();
+        const auto& parameters = frame->get_meta_data().get_parameters();
         writer.String(MSG_HEADER_FRAME_PARAMETERS_KEY);
         writer.StartObject();
-        for (std::map<std::string, boost::any>::const_iterator it = parameters.begin(); it != parameters.end(); it++) {
+        for (auto it = parameters.begin(); it != parameters.end(); ++it) {
             writer.String(it->first.c_str());
             const std::type_info& ti = it->second.type();
             if (it->second.type() == typeid(unsigned long)) {
