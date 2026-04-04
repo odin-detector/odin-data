@@ -58,11 +58,11 @@ protected:
     void replay_frames();
 
     // Packet gap: pause between packet_gap packets; must be >0
-    boost::optional<int> packet_gap_;
+    std::optional<int> packet_gap_;
     // proportion in [0.0,1.0] of packets to randomly drop
-    boost::optional<float> drop_frac_;
+    std::optional<float> drop_frac_;
     // List of packets to drop, these are simple ints held as strings. 0=first packet etc.
-    boost::optional<std::vector<std::string>> drop_packets_;
+    std::optional<std::vector<std::string>> drop_packets_;
 
     /** Frames **/
     UDPFrames frames_;

@@ -15,8 +15,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <boost/function.hpp>
-
 #include <log4cxx/logger.h>
 using namespace log4cxx;
 using namespace log4cxx::helpers;
@@ -38,7 +36,7 @@ public:
         OdinData::OdinDataException(what) { };
 };
 
-typedef boost::function<void(int, int)> FrameReadyCallback;
+typedef std::function<void(int, int)> FrameReadyCallback;
 typedef std::queue<int> EmptyBufferQueue;
 typedef std::map<int, int> FrameBufferMap;
 

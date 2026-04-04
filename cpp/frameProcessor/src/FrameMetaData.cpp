@@ -47,7 +47,7 @@ FrameMetaData::FrameMetaData(const FrameMetaData& frame)
 /** Get frame parameters
  * @return std::map <std::string, boost::any>  map
  */
-const std::map<std::string, boost::any>& FrameMetaData::get_parameters() const
+const std::map<std::string, std::any>& FrameMetaData::get_parameters() const
 {
     return this->parameters_;
 };

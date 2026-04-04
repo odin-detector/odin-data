@@ -203,12 +203,12 @@ private:
         auto itr = metadata.second.allowed_values_.begin();
         auto end = metadata.second.allowed_values_.end();
         for (; itr != end; ++itr) {
-            switch (itr->which()) {
+            switch (itr->index()) {
             case 1:
-                message.set_param(param_prefix, boost::get<std::string>(*itr));
+                message.set_param(param_prefix, std::get<std::string>(*itr));
                 break;
             case 2:
-                message.set_param(param_prefix, boost::get<int>(*itr));
+                message.set_param(param_prefix, std::get<int>(*itr));
                 break;
             default:
                 return;

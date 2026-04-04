@@ -43,7 +43,7 @@ void FrameReceiverZMQRxThread::run_specific_service(void)
         skt_channel_.connect(ss.str().c_str());
 
         // Register the IPC channel with the reactor
-        reactor_.register_channel(skt_channel_, boost::bind(&FrameReceiverZMQRxThread::handle_receive_socket, this));
+        reactor_.register_channel(skt_channel_, std::bind(&FrameReceiverZMQRxThread::handle_receive_socket, this));
     }
 }
 

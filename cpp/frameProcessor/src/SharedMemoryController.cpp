@@ -55,7 +55,7 @@ SharedMemoryController::SharedMemoryController(
     }
 
     // Add the Frame Ready channel to the reactor
-    reactor_->register_channel(rxChannel_, boost::bind(&SharedMemoryController::handleRxChannel, this));
+    reactor_->register_channel(rxChannel_, std::bind(&SharedMemoryController::handleRxChannel, this));
 
     // Now connect the frame release response channel
     try {
@@ -132,7 +132,7 @@ void SharedMemoryController::requestSharedBufferConfig(const bool deferred)
 {
     if (deferred) {
         LOG4CXX_DEBUG_LEVEL(1, logger_, "Registering timer for deferred shared buffer configuration request");
-        reactor_->register_timer(1000, 1, boost::bind(&SharedMemoryController::requestSharedBufferConfig, this, false));
+        reactor_->register_timer(1000, 1, std::bind(&SharedMemoryController::requestSharedBufferConfig, this, false));
         sharedBufferConfigRequestDeferred_ = true;
     } else {
         // If this is being called by a deferred request timer but the shared buffer has been configured in the

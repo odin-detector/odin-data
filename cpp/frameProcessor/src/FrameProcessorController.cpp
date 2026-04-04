@@ -59,7 +59,7 @@ FrameProcessorController::FrameProcessorController(unsigned int num_io_threads) 
     pluginShutdownSent_(false),
     shutdown_(false),
     ipc_context_(OdinData::IpcContext::Instance(num_io_threads)),
-    ctrlThread_(boost::bind(&FrameProcessorController::runIpcService, this)),
+    ctrlThread_(std::bind(&FrameProcessorController::runIpcService, this)),
     ctrlChannelEndpoint_(""),
     ctrlChannel_(ZMQ_ROUTER),
     metaRxChannel_(ZMQ_PULL),
@@ -969,7 +969,7 @@ void FrameProcessorController::setupControlInterface(const std::string& ctrlEndp
     }
 
     // Add the control channel to the reactor
-    reactor_->register_channel(ctrlChannel_, boost::bind(&FrameProcessorController::handleCtrlChannel, this));
+    reactor_->register_channel(ctrlChannel_, std::bind(&FrameProcessorController::handleCtrlChannel, this));
 }
 
 /** Close the control interface.
@@ -997,7 +997,7 @@ void FrameProcessorController::setupMetaRxInterface()
     }
 
     // Add the control channel to the reactor
-    reactor_->register_channel(metaRxChannel_, boost::bind(&FrameProcessorController::handleMetaRxChannel, this));
+    reactor_->register_channel(metaRxChannel_, std::bind(&FrameProcessorController::handleMetaRxChannel, this));
 }
 
 void FrameProcessorController::closeMetaRxInterface()
@@ -1050,7 +1050,7 @@ void FrameProcessorController::runIpcService(void)
     reactor_ = std::shared_ptr<OdinData::IpcReactor>(new OdinData::IpcReactor());
 
     // Add the tick timer to the reactor
-    int tick_timer_id = reactor_->register_timer(1000, 0, boost::bind(&FrameProcessorController::tickTimer, this));
+    int tick_timer_id = reactor_->register_timer(1000, 0, std::bind(&FrameProcessorController::tickTimer, this));
 
     // Set thread state to running, allows constructor to return
     threadRunning_ = true;

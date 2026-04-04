@@ -5,15 +5,15 @@
  *      Author: Famous Alele, sgr21863
  */
 
-#include <boost/variant.hpp>
 #include <string>
 #include <type_traits>
+#include <variant>
 
 namespace FrameProcessor {
 /** This struct is a representation of the metadata
  */
 struct ParamMetadata {
-    using allowed_values_t = boost::variant<boost::blank, std::string, int>;
+    using allowed_values_t = std::variant<std::monostate, std::string, int>;
 
     enum class AccessMode {
         READ_ONLY,

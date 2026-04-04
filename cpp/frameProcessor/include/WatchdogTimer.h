@@ -21,7 +21,7 @@ namespace FrameProcessor {
 
 class WatchdogTimer {
 public:
-    WatchdogTimer(const boost::function<void(const std::string&)>& timeout_callback);
+    WatchdogTimer(const std::function<void(const std::string&)>& timeout_callback);
     ~WatchdogTimer();
 
     void start_timer(const std::string& function_name, unsigned int watchdog_timeout_ms);
@@ -51,7 +51,7 @@ private:
     /** Counter to monitor number of ticks that have passed */
     int ticks_;
     /** Callback function to call when the timer expires */
-    const boost::function<void(const std::string&)>& timeout_callback_;
+    const std::function<void(const std::string&)>& timeout_callback_;
 };
 
 } /* namespace FrameProcessor */

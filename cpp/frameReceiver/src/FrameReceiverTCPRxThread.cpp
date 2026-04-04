@@ -91,8 +91,7 @@ void FrameReceiverTCPRxThread::run_specific_service(void)
 
         // Register this socket
         this->register_socket(
-            recv_socket_,
-            boost::bind(&FrameReceiverTCPRxThread::handle_receive_socket, this, recv_socket_, (int)rx_port)
+            recv_socket_, std::bind(&FrameReceiverTCPRxThread::handle_receive_socket, this, recv_socket_, (int)rx_port)
         );
     }
 }

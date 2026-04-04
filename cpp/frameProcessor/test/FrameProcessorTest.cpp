@@ -4,11 +4,7 @@
  */
 #include "DebugLevelLogger.h"
 
-#include <boost/bind/bind.hpp>
 #include <boost/test/unit_test.hpp>
-#ifdef BOOST_HAS_PLACEHOLDERS
-using namespace boost::placeholders;
-#endif
 
 #include <log4cxx/basicconfigurator.h>
 #include <log4cxx/consoleappender.h>
@@ -29,6 +25,8 @@ using namespace log4cxx::xml;
 #include "ParameterAdjustmentPlugin.h"
 #include "SumPlugin.h"
 #include "TestHelperFunctions.h"
+
+using namespace std::placeholders;
 
 void dummy_callback(const std::string& msg)
 {
@@ -210,7 +208,7 @@ public:
         hdf5_error_definition.write_duration = 0;
         hdf5_error_definition.flush_duration = 0;
         hdf5_error_definition.close_duration = 0;
-        hdf5_error_definition.callback = boost::bind(&dummy_callback, _1);
+        hdf5_error_definition.callback = std::bind(&dummy_callback, _1);
     }
     ~FileWriterPluginTestFixture()
     {

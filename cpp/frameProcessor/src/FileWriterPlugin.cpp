@@ -16,10 +16,7 @@
 #include "logging.h"
 #include "version.h"
 
-#ifdef BOOST_HAS_PLACEHOLDERS
-using namespace boost::placeholders;
-#endif
-
+using namespace std::placeholders;
 namespace FrameProcessor {
 
 const std::string FileWriterPlugin::CONFIG_PROCESS = "process";
@@ -89,7 +86,7 @@ FileWriterPlugin::FileWriterPlugin() :
     alignment_value_(1),
     timeout_period_(0),
     timeout_thread_running_(true),
-    timeout_thread_(boost::bind(&FileWriterPlugin::run_close_file_timeout, this))
+    timeout_thread_(std::bind(&FileWriterPlugin::run_close_file_timeout, this))
 {
     std::string prefix = FileWriterPlugin::CONFIG_PROCESS + '/';
     add_config_param_metadata(
@@ -177,7 +174,7 @@ FileWriterPlugin::FileWriterPlugin() :
     hdf5_error_definition_.write_duration = 0;
     hdf5_error_definition_.flush_duration = 0;
     hdf5_error_definition_.close_duration = 0;
-    hdf5_error_definition_.callback = boost::bind(&FileWriterPlugin::set_warning, this, _1);
+    hdf5_error_definition_.callback = std::bind(&FileWriterPlugin::set_warning, this, _1);
 }
 
 /**

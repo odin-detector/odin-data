@@ -17,16 +17,15 @@
 #ifndef IPCREACTOR_H_
 #define IPCREACTOR_H_
 
+#include <functional>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <mutex>
 #include <sstream>
 #include <time.h>
 
 #include "zmq/zmq.hpp"
-#include <boost/bind/bind.hpp>
-#include <boost/function.hpp>
-#include <boost/ref.hpp>
 
 #include "IpcChannel.h"
 #include "OdinDataException.h"
@@ -43,7 +42,7 @@ public:
 };
 
 //! Function signature for timer callback methods
-typedef boost::function<void()> TimerCallback;
+typedef std::function<void()> TimerCallback;
 
 //! Reactor millisecond time type
 typedef int64_t TimeMs;
@@ -85,7 +84,7 @@ private:
 };
 
 //! Function signature for reactor callback methods
-typedef boost::function<void()> ReactorCallback;
+typedef std::function<void()> ReactorCallback;
 
 //! Pointer to underlying ZMQ socket of a channel
 typedef zmq::socket_t* SocketPtr;

@@ -51,21 +51,21 @@ bool DummyUDPFrameSimulatorPlugin::setup(const po::variables_map& vm)
     LOG4CXX_DEBUG(logger_, "Setting up DummyUDP simulator plugin");
 
     // Extract optional arguments for this plugin
-    boost::optional<int> image_width;
-    boost::optional<int> image_height;
-    boost::optional<int> packet_len;
+    std::optional<int> image_width;
+    std::optional<int> image_height;
+    std::optional<int> packet_len;
 
     opt_image_width.get_val(vm, image_width);
     if (image_width) {
-        image_width_ = image_width.get();
+        image_width_ = image_width.value();
     }
     opt_image_height.get_val(vm, image_height);
     if (image_height) {
-        image_height_ = image_height.get();
+        image_height_ = image_height.value();
     }
     opt_packet_len.get_val(vm, packet_len);
     if (packet_len) {
-        packet_len_ = packet_len.get();
+        packet_len_ = packet_len.value();
     }
 
     LOG4CXX_DEBUG(

@@ -94,7 +94,7 @@ void FrameReceiverUDPRxThread::run_specific_service(void)
 
         // Register this socket
         this->register_socket(
-            recv_socket, boost::bind(&FrameReceiverUDPRxThread::handle_receive_socket, this, recv_socket, (int)rx_port)
+            recv_socket, std::bind(&FrameReceiverUDPRxThread::handle_receive_socket, this, recv_socket, (int)rx_port)
         );
     }
 }
