@@ -11,6 +11,8 @@
 #include "ParameterPublishPlugin.h"
 #include "Fixtures.h"
 
+BOOST_GLOBAL_FIXTURE(GlobalConfig);
+
 class ParameterPublishPluginTestFixture {
 public:
     ParameterPublishPluginTestFixture() :
@@ -21,9 +23,10 @@ public:
             24
         ) }
     {
-        dimensions_t img_dims(2);
-        img_dims[0] = 3;
-        img_dims[1] = 4;
+        /**
+         * create dummy frame with nominal value data.
+         * Add some parameter values to be published
+         */
         FrameProcessor::FrameMetaData frame_meta(
             1, "raw", FrameProcessor::raw_16bit, "test", { 3, 4 }, FrameProcessor::no_compression
         );
@@ -40,7 +43,6 @@ public:
     FrameProcessor::ParameterPublishPlugin plugin;
 };
 
-// BOOST_AUTO_TEST_SUITE(ParameterPublishPluginTest);
 BOOST_FIXTURE_TEST_SUITE(ParameterPublishPluginUnitTest, ParameterPublishPluginTestFixture);
 
 BOOST_AUTO_TEST_CASE(ParameterPublishPlugin_Publish)
