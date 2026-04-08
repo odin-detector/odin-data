@@ -17,7 +17,10 @@ namespace FrameProcessor {
 WatchdogTimer::WatchdogTimer(const boost::function<void(const std::string&)>& timeout_callback) :
     worker_thread_running_(false),
     worker_thread_(boost::bind(&WatchdogTimer::run, this)),
-    timeout_callback_(timeout_callback)
+    timeout_callback_(timeout_callback),
+    timer_id_(0),
+    is_valid_id_(false),
+    ticks_(0)
 {
     this->logger_ = Logger::getLogger("FP.WatchdogTimer");
 
@@ -57,6 +60,7 @@ void WatchdogTimer::start_timer(const std::string& function_name, unsigned int w
             // Bind member function to this instance with function_name argument
             boost::bind(&WatchdogTimer::call_timeout_callback, this, function_name)
         );
+        is_valid_id_ = true;
     }
 }
 
@@ -69,7 +73,10 @@ void WatchdogTimer::start_timer(const std::string& function_name, unsigned int w
  */
 unsigned int WatchdogTimer::finish_timer()
 {
-    reactor_.remove_timer(timer_id_);
+    if (is_valid_id_) {
+        reactor_.remove_timer(timer_id_);
+    }
+    is_valid_id_ = false;
 
     struct timespec now;
     gettime(&now, true);

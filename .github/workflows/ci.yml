@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - '*'
+  pull_request:
+
+jobs:
+
+  code_check:
+    uses: ./.github/workflows/_code_check.yml
+    with:
+      os: ubuntu-latest
+
+  python_test:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-latest]
+        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
+    uses: ./.github/workflows/_python_test.yml
+    with:
+      os: ${{ matrix.os }}
+      python-version: ${{ matrix.python-version }}
+    secrets: inherit
+
+  cpp_test:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-latest]
+    uses: ./.github/workflows/_cpp_test.yml
+    with:
+      os: ${{ matrix.os }}
+
+  cpp_coverage:
+    uses: ./.github/workflows/_cpp_coverage.yml
+    with:
+      os: ubuntu-latest
+    secrets: inherit
+
+  docs:
+    uses: ./.github/workflows/_docs.yml
+    with:
+      os: ubuntu-latest
+      python-version: '3.11'
+    permissions:
+      contents: write
+
+  container:
+    needs: [cpp_test, python_test]
+    uses: ./.github/workflows/_container.yml
+    with:
+      os: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write

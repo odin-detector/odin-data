@@ -5,17 +5,11 @@
  *      Author: gnx91527
  */
 
-#include <iostream>
-
-#include <boost/shared_ptr.hpp>
-#include <boost/test/unit_test.hpp>
-
-#include <log4cxx/basicconfigurator.h>
-#include <log4cxx/consoleappender.h>
-#include <log4cxx/logger.h>
-#include <log4cxx/simplelayout.h>
+#define BOOST_TEST_MODULE "MetaMessageTests"
+#define BOOST_TEST_MAIN
 
 #include "MetaMessage.h"
+#include "Fixtures.h"
 
 class MetaMessageUnitTestFixture {
 public:
