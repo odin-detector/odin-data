@@ -2,8 +2,9 @@
 #include "PropertyTreeUtility.h"
 
 #include "zmq/zmq.hpp"
-#include <boost/filesystem.hpp>
+
 #include <boost/lexical_cast.hpp>
+#include <filesystem>
 #include <sys/wait.h>
 
 namespace FrameSimulatorTest {
@@ -37,7 +38,7 @@ ControlUtility::ControlUtility(
     process_path_ = ptree.get<std::string>(process_entry);
     PropertyTreeUtility::expandEnvVars(process_path_);
 
-    boost::filesystem::path path(process_path_);
+    std::filesystem::path path(process_path_);
 
     // Prepend list of process (command) arguments with (<process> (deduced from path) and) (optionally)
     // <positional_arg>

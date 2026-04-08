@@ -58,16 +58,17 @@ BOOST_AUTO_TEST_CASE(RawFileWriterPlugin_invalid_path)
 
 BOOST_AUTO_TEST_CASE(RawFileWriterPlugin_existing_path)
 {
-    using RFWP = RawFileWriterPluginTestFixture;
+    // std::filesystem does not treat an attempt to create an existing path as error.
     OdinData::IpcMessage reply_bad_;
     OdinData::IpcMessage bad_cfg_2;
     BOOST_CHECK_NO_THROW(bad_cfg_2.set_param(FrameProcessor::RawFileWriterPlugin::CONFIG_ENABLED, true));
-    BOOST_CHECK_NO_THROW(bad_cfg_2.set_param(FrameProcessor::RawFileWriterPlugin::CONFIG_FILE_PATH, std::string("/")));
-    BOOST_REQUIRE_EXCEPTION(rfw_plugin.configure(bad_cfg_2, reply_bad_), std::runtime_error, RFWP::is_not_critical);
+    BOOST_CHECK_NO_THROW(bad_cfg_2.set_param(FrameProcessor::RawFileWriterPlugin::CONFIG_FILE_PATH, std::string("/tmp"))
+    );
+    BOOST_REQUIRE_NO_THROW(rfw_plugin.configure(bad_cfg_2, reply_bad_));
     BOOST_REQUIRE_NO_THROW(rfw_plugin.requestConfiguration(reply_bad_));
     BOOST_CHECK_EQUAL(
         reply_bad_.get_param<bool>(rfw_plugin.get_name() + '/' + FrameProcessor::RawFileWriterPlugin::CONFIG_ENABLED),
-        false
+        true
     );
 }
 
@@ -90,7 +91,7 @@ BOOST_AUTO_TEST_CASE(RawFileWriterPlugin_with_acq_id)
         ),
         0
     );
-    BOOST_REQUIRE_NO_THROW(boost::filesystem::remove_all("/opt/RFW_valid_dir"));
+    BOOST_REQUIRE_NO_THROW(std::filesystem::remove_all("/opt/RFW_valid_dir"));
 }
 
 BOOST_AUTO_TEST_CASE(RawFileWriterPlugin_no_acq_id)
@@ -112,7 +113,7 @@ BOOST_AUTO_TEST_CASE(RawFileWriterPlugin_no_acq_id)
         ),
         0
     );
-    BOOST_REQUIRE_NO_THROW(boost::filesystem::remove_all("/opt/RFW_valid_dir_2"));
+    BOOST_REQUIRE_NO_THROW(std::filesystem::remove_all("/opt/RFW_valid_dir_2"));
 }
 
 BOOST_AUTO_TEST_CASE(RawFileWriterPlugin_dropped_frames)
@@ -142,7 +143,7 @@ BOOST_AUTO_TEST_CASE(RawFileWriterPlugin_dropped_frames)
         ),
         process_times
     );
-    BOOST_REQUIRE_NO_THROW(boost::filesystem::remove_all("/opt/RFW_testdir"));
+    BOOST_REQUIRE_NO_THROW(std::filesystem::remove_all("/opt/RFW_testdir"));
 }
 
 BOOST_AUTO_TEST_SUITE_END();

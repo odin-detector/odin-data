@@ -10,10 +10,10 @@
 #include <log4cxx/logger.h>
 using namespace log4cxx;
 
-#include <boost/filesystem.hpp> // boost::filesystem::path
-
 #include "ClassLoader.h"
 #include "FrameProcessorPlugin.h"
+
+#include <filesystem>
 
 namespace FrameProcessor {
 
@@ -43,7 +43,7 @@ private:
     bool enabled_;
     /** Root path to write files to - files will be created in this directory or a nested directory, depending on Frame
      * properties */
-    boost::filesystem::path file_path_;
+    std::filesystem::path file_path_;
     /** Number of dropped frames */
     std::size_t dropped_frames_;
 };

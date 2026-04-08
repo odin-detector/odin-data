@@ -2,6 +2,7 @@
 #include <fcntl.h> // open, O_CREAT, O_RDWR
 #include <sys/mman.h> // PROT_WRITE, MAP_SHARED
 #include <sys/stat.h> // mkdir
+#include <system_error>
 
 #include "logging.h"
 #include <DebugLevelLogger.h>
@@ -36,9 +37,9 @@ void RawFileWriterPlugin::process_frame(std::shared_ptr<Frame> frame)
 
     const std::string& acq_id = frame->get_meta_data().get_acquisition_ID();
     std::string&& full_file_path = this->file_path_.string() + acq_id + '/';
-    boost::system::error_code ec;
-    boost::filesystem::create_directory(full_file_path, ec);
-    if (ec && (ec.value() != boost::system::errc::errc_t::file_exists)) {
+    std::error_code ec;
+    std::filesystem::create_directory(full_file_path, ec);
+    if (ec && (ec != make_error_code(std::errc::file_exists))) {
         this->enabled_ = false;
         ++this->dropped_frames_;
         LOG_WITH_ERRNO(logger_, "Failed to create directory: " << full_file_path);
@@ -78,8 +79,8 @@ void RawFileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcM
             path_str += '/';
         this->file_path_ = std::move(path_str);
         try {
-            boost::filesystem::create_directories(this->file_path_.parent_path());
-        } catch (boost::filesystem::filesystem_error& e) {
+            std::filesystem::create_directories(this->file_path_.parent_path());
+        } catch (std::filesystem::filesystem_error& e) {
             this->enabled_ = false;
             std::stringstream error;
             error << "Failed to create directory: " << this->file_path_.c_str() << ", Error: " << e.what();

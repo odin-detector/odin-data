@@ -4,8 +4,7 @@
  *  Created on: 31 Oct 2017
  *      Author: vtu42223
  */
-
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include "Acquisition.h"
 #include "DebugLevelLogger.h"
@@ -217,7 +216,7 @@ void Acquisition::create_file(size_t file_number, HDF5CallDurations_t& call_dura
     current_file_ = std::shared_ptr<HDF5File>(new HDF5File(hdf5_error_definition_));
 
     // Create the file
-    boost::filesystem::path full_path = boost::filesystem::path(file_path_) / boost::filesystem::path(filename_);
+    std::filesystem::path full_path = std::filesystem::path(file_path_) / std::filesystem::path(filename_);
     size_t create_duration = current_file_->create_file(
         full_path.string(), file_number, use_earliest_hdf5_, alignment_threshold_, alignment_value_
     );

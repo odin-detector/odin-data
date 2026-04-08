@@ -21,7 +21,6 @@ using namespace std;
 using namespace log4cxx;
 using namespace log4cxx::helpers;
 
-#include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;

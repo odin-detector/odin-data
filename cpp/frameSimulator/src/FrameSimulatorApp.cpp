@@ -1,12 +1,11 @@
 #include <boost/program_options.hpp>
+#include <filesystem>
 #include <iostream>
 #include <map>
 #include <string>
 #include <vector>
 
 #include "FrameSimulatorPlugin.h"
-
-#include <boost/filesystem.hpp>
 
 #include <log4cxx/basicconfigurator.h>
 #include <log4cxx/helpers/exception.h>
@@ -50,8 +49,8 @@ get_requested_plugin(const po::variables_map& vm, LoggerPtr& logger)
 
     std::string pluginClass = opt_detector.get_val(vm) + librarySuffix;
 
-    boost::filesystem::path libraryPathAndName
-        = boost::filesystem::path(opt_libpath.get_val(vm)) / boost::filesystem::path("lib" + pluginClass + ".so");
+    std::filesystem::path libraryPathAndName
+        = std::filesystem::path(opt_libpath.get_val(vm)) / std::filesystem::path("lib" + pluginClass + ".so");
 
     std::shared_ptr<FrameSimulator::FrameSimulatorPlugin> plugin;
 
@@ -146,8 +145,8 @@ int parse_arguments(
 
             po::options_description config("Detector options");
 
-            boost::filesystem::path libraryPathAndName = boost::filesystem::path(opt_libpath.get_val(vm))
-                / boost::filesystem::path("lib" + detector + librarySuffix + ".so");
+            std::filesystem::path libraryPathAndName = std::filesystem::path(opt_libpath.get_val(vm))
+                / std::filesystem::path("lib" + detector + librarySuffix + ".so");
 
             std::string pluginClass = detector + librarySuffix;
 

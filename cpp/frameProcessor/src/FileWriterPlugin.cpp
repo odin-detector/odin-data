@@ -4,8 +4,8 @@
  */
 
 #include <assert.h>
+#include <filesystem>
 
-#include <boost/filesystem.hpp>
 #include <hdf5_hl.h>
 
 #include "FileWriterPlugin.h"
@@ -618,12 +618,12 @@ void FileWriterPlugin::configure_file(OdinData::IpcMessage& config, OdinData::Ip
     // Check for file path and file name
     if (config.has_param(FileWriterPlugin::CONFIG_FILE_PATH)) {
         std::string file_path = config.get_param<std::string>(FileWriterPlugin::CONFIG_FILE_PATH);
-        boost::filesystem::path p(file_path);
+        std::filesystem::path p(file_path);
         // Check path exists
-        boost::system::error_code ec;
-        if (boost::filesystem::exists(p, ec)) {
+        std::error_code ec;
+        if (std::filesystem::exists(p, ec)) {
             // Check path is a directory
-            if (boost::filesystem::is_directory(p, ec)) {
+            if (std::filesystem::is_directory(p, ec)) {
                 // Check directory has write permission
                 if (eaccess(file_path.c_str(), W_OK)) {
                     // Return code other then zero is a failure
