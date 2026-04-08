@@ -117,19 +117,18 @@ void FrameReceiverTCPRxThread::handle_receive_socket(int recv_socket_, int recv_
 
     unsigned char* fb_bytePtr = reinterpret_cast<unsigned char*>(frame_buffer
     ); // reinterpret the void* address as an unsigned char pointer so we can do arithmetic
-    while (((bytes_read = read(recv_socket_, reinterpret_cast<void*>(fb_bytePtr), message_size - total_bytes_read)) > 0)
-           && total_bytes_read < message_size) {
+    while (total_bytes_read < message_size
+           && ((bytes_read = read(recv_socket_, reinterpret_cast<void*>(fb_bytePtr), message_size - total_bytes_read))
+               > 0)) {
         total_bytes_read += bytes_read;
         fb_bytePtr += bytes_read;
     }
 
     if (bytes_read < 0) {
-        std::array<char, 128> err_msg {};
-        strerror_r(errno, err_msg.data(), err_msg.max_size());
-        LOG4CXX_ERROR(logger_, err_msg.data());
+        LOG_WITH_ERRNO(logger_, "read() Failed");
         return;
     } else if (total_bytes_read < message_size) {
-        // We handle this case
+        LOG4CXX_ERROR(logger_, "read() returned 0 bytes (incomplete data)");
         return;
     }
     frame_decoder_->process_message(total_bytes_read);
