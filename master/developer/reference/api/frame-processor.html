@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>FrameProcessor API Reference &#8212; odin-data 0.1.dev1+g283eeab6c documentation</title>
+    <title>FrameProcessor API Reference &#8212; odin-data 0.1.dev1+gbb2be943b documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=7f76b32a3354e82990f2" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=7f76b32a3354e82990f2" />
 
-    <script src="../../../_static/documentation_options.js?v=d0a52077"></script>
+    <script src="../../../_static/documentation_options.js?v=600e8e70"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -1734,20 +1734,6 @@
 </dd></dl>
 
 <dl class="cpp function">
-<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin14compress_frameEN5boost10shared_ptrI5FrameEE">
-<span id="_CPPv3N14FrameProcessor11BloscPlugin14compress_frameEN5boost10shared_ptrI5FrameEE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin14compress_frameEN5boost10shared_ptrI5FrameEE"></span><span id="FrameProcessor::BloscPlugin::compress_frame__boost::shared_ptr:Frame:"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1aa135811e914457f9479e31472a392db6"></span><span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4N14FrameProcessor5FrameE" title="FrameProcessor::Frame"><span class="n"><span class="pre">Frame</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">compress_frame</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4N14FrameProcessor5FrameE" title="FrameProcessor::Frame"><span class="n"><span class="pre">Frame</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">frame</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin14compress_frameEN5boost10shared_ptrI5FrameEE" title="Link to this definition">#</a><br /></dt>
-<dd><p>Compress one frame, return compressed frame. </p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>src_frame</strong> – - source frame to compress </p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>compressed frame </p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin13process_frameEN5boost10shared_ptrI5FrameEE">
 <span id="_CPPv3N14FrameProcessor11BloscPlugin13process_frameEN5boost10shared_ptrI5FrameEE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin13process_frameEN5boost10shared_ptrI5FrameEE"></span><span id="FrameProcessor::BloscPlugin::process_frame__boost::shared_ptr:Frame:"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a5f0a5791d1ab49a0e449038e34fe5c43"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">process_frame</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4N14FrameProcessor5FrameE" title="FrameProcessor::Frame"><span class="n"><span class="pre">Frame</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">frame</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin13process_frameEN5boost10shared_ptrI5FrameEE" title="Link to this definition">#</a><br /></dt>
 <dd><p>Perform compression on the frame and output a new, compressed <a class="reference internal" href="#classFrameProcessor_1_1Frame"><span class="std std-ref">Frame</span></a>.</p>
@@ -1832,27 +1818,70 @@
 <span id="_CPPv3N14FrameProcessor11BloscPlugin20CONFIG_BLOSC_SHUFFLEE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin20CONFIG_BLOSC_SHUFFLEE"></span><span id="FrameProcessor::BloscPlugin::CONFIG_BLOSC_SHUFFLE__ssC"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a4eca9a6b76ebbcc6183b717bde0d364a"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CONFIG_BLOSC_SHUFFLE</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;shuffle&quot;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin20CONFIG_BLOSC_SHUFFLEE" title="Link to this definition">#</a><br /></dt>
 <dd></dd></dl>
 
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin17CONFIG_BLOSC_MODEE">
+<span id="_CPPv3N14FrameProcessor11BloscPlugin17CONFIG_BLOSC_MODEE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin17CONFIG_BLOSC_MODEE"></span><span id="FrameProcessor::BloscPlugin::CONFIG_BLOSC_MODE__ssC"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a6787ad8e7153d608e30123e58a01ec6d"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CONFIG_BLOSC_MODE</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;mode&quot;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin17CONFIG_BLOSC_MODEE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-types">Private Types</p>
+<dl class="cpp enum-class">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin4ModeE">
+<span id="_CPPv3N14FrameProcessor11BloscPlugin4ModeE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin4ModeE"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a33abda044cf149847d2d86b8a7147ace"></span><span class="k"><span class="pre">enum</span></span><span class="w"> </span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Mode</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin4ModeE" title="Link to this definition">#</a><br /></dt>
+<dd><p><em>Values:</em></p>
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin4Mode8COMPRESSE">
+<span id="_CPPv3N14FrameProcessor11BloscPlugin4Mode8COMPRESSE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin4Mode8COMPRESSE"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a33abda044cf149847d2d86b8a7147acea08c078f425b1925fb4be9d7d0ee118b1"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">COMPRESS</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin4Mode8COMPRESSE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin4Mode10DECOMPRESSE">
+<span id="_CPPv3N14FrameProcessor11BloscPlugin4Mode10DECOMPRESSE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin4Mode10DECOMPRESSE"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a33abda044cf149847d2d86b8a7147acead99a99e787339258bd63bebb2445ffd5"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">DECOMPRESS</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin4Mode10DECOMPRESSE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin4Mode3OFFE">
+<span id="_CPPv3N14FrameProcessor11BloscPlugin4Mode3OFFE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin4Mode3OFFE"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a33abda044cf149847d2d86b8a7147acea88559a0cfd8250c9d65970cc145c92d4"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">OFF</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin4Mode3OFFE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </div>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-functions">Private Functions</p>
 <dl class="cpp function">
-<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin27update_compression_settingsEv">
-<span id="_CPPv3N14FrameProcessor11BloscPlugin27update_compression_settingsEv"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin27update_compression_settingsEv"></span><span id="FrameProcessor::BloscPlugin::update_compression_settings"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1ace70c9387172e20dc6f245c4cd819e29"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">update_compression_settings</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin27update_compression_settingsEv" title="Link to this definition">#</a><br /></dt>
-<dd><p>Update the compression settings </p>
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin14compress_frameERKN5boost10shared_ptrI5FrameEE">
+<span id="_CPPv3N14FrameProcessor11BloscPlugin14compress_frameERKN5boost10shared_ptrI5FrameEE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin14compress_frameERKN5boost10shared_ptrI5FrameEE"></span><span id="FrameProcessor::BloscPlugin::compress_frame__boost::shared_ptr:Frame:CR"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1aa114cadcd90fee972265d66ff29ae7bb"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">pair</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4N14FrameProcessor5FrameE" title="FrameProcessor::Frame"><span class="n"><span class="pre">Frame</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">compress_frame</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4N14FrameProcessor5FrameE" title="FrameProcessor::Frame"><span class="n"><span class="pre">Frame</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">frame</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin14compress_frameERKN5boost10shared_ptrI5FrameEE" title="Link to this definition">#</a><br /></dt>
+<dd><p>Compress one frame, return compressed frame. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>src_frame</strong> – - source frame to compress </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>pair&lt;shared_ptr&lt;Frame&gt;, bool&gt; - shared_ptr to compressed frame and boolean indicating success/fail </p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="cpp function">
-<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin10get_bufferE6size_t">
-<span id="_CPPv3N14FrameProcessor11BloscPlugin10get_bufferE6size_t"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin10get_bufferE6size_t"></span><span id="FrameProcessor::BloscPlugin::get_buffer__s"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a2e195a32c560877544e219bcdb8a5992"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">get_buffer</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">nbytes</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin10get_bufferE6size_t" title="Link to this definition">#</a><br /></dt>
-<dd><p>Return data buffer</p>
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin16decompress_frameERKN5boost10shared_ptrI5FrameEE">
+<span id="_CPPv3N14FrameProcessor11BloscPlugin16decompress_frameERKN5boost10shared_ptrI5FrameEE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin16decompress_frameERKN5boost10shared_ptrI5FrameEE"></span><span id="FrameProcessor::BloscPlugin::decompress_frame__boost::shared_ptr:Frame:CR"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1aa2cc329256abc49e1c85d3bbf8296108"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">pair</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4N14FrameProcessor5FrameE" title="FrameProcessor::Frame"><span class="n"><span class="pre">Frame</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">decompress_frame</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4N14FrameProcessor5FrameE" title="FrameProcessor::Frame"><span class="n"><span class="pre">Frame</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">frame</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin16decompress_frameERKN5boost10shared_ptrI5FrameEE" title="Link to this definition">#</a><br /></dt>
+<dd><p>Decompress one frame, return decompressed frame. </p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>nbytes</strong> – </p>
+<dd class="field-odd"><p><strong>src_frame</strong> – - source frame to decompress </p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>pair&lt;shared_ptr&lt;Frame&gt;, bool&gt; - shared_ptr to decompressed frame and boolean indicating success/fail </p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin27update_compression_settingsEv">
+<span id="_CPPv3N14FrameProcessor11BloscPlugin27update_compression_settingsEv"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin27update_compression_settingsEv"></span><span id="FrameProcessor::BloscPlugin::update_compression_settings"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1ace70c9387172e20dc6f245c4cd819e29"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">update_compression_settings</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin27update_compression_settingsEv" title="Link to this definition">#</a><br /></dt>
+<dd><p>Update the compression settings </p>
 </dd></dl>
 
 </div>
@@ -1891,7 +1920,7 @@
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin16data_buffer_ptr_E">
 <span id="_CPPv3N14FrameProcessor11BloscPlugin16data_buffer_ptr_E"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin16data_buffer_ptr_E"></span><span id="FrameProcessor::BloscPlugin::data_buffer_ptr___voidP"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1aa1bacad9feb5de63690c54685ee9fcb5"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">data_buffer_ptr_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin16data_buffer_ptr_E" title="Link to this definition">#</a><br /></dt>
-<dd><p>Temporary buffer for compressed data </p>
+<dd><p>Temporary buffer for compressed/decompressed data </p>
 </dd></dl>
 
 <dl class="cpp var">
@@ -1899,7 +1928,49 @@
 <span id="_CPPv3N14FrameProcessor11BloscPlugin17data_buffer_size_E"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin17data_buffer_size_E"></span><span id="FrameProcessor::BloscPlugin::data_buffer_size___s"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1ab188c36c8588bdf47257f9c3351d314f"></span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">data_buffer_size_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin17data_buffer_size_E" title="Link to this definition">#</a><br /></dt>
 <dd></dd></dl>
 
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin12plugin_mode_E">
+<span id="_CPPv3N14FrameProcessor11BloscPlugin12plugin_mode_E"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin12plugin_mode_E"></span><span id="FrameProcessor::BloscPlugin::plugin_mode___Mode"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a3b1d7b2b34e6cc3be91aeadda201d136"></span><a class="reference internal" href="#_CPPv4N14FrameProcessor11BloscPlugin4ModeE" title="FrameProcessor::BloscPlugin::Mode"><span class="n"><span class="pre">Mode</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">plugin_mode_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin12plugin_mode_E" title="Link to this definition">#</a><br /></dt>
+<dd><p>Mode the plugin is configured to </p>
+</dd></dl>
+
 </div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-friends">Friends</p>
+<dl>
+<dt class="sig sig-object cpp">
+<span class="property"><span class="pre">friend</span> <span class="pre">struct</span></span> <span class="pre">Mode_map</span></dt>
+</dl>
+
+</div>
+<dl class="cpp struct">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin26BloscDecompressionSettingsE">
+<span id="_CPPv3N14FrameProcessor11BloscPlugin26BloscDecompressionSettingsE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin26BloscDecompressionSettingsE"></span><span id="FrameProcessor::BloscPlugin::BloscDecompressionSettings"></span><span class="target" id="structFrameProcessor_1_1BloscPlugin_1_1BloscDecompressionSettings"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">BloscDecompressionSettings</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin26BloscDecompressionSettingsE" title="Link to this definition">#</a><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-members">Public Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin26BloscDecompressionSettings9type_sizeE">
+<span id="_CPPv3N14FrameProcessor11BloscPlugin26BloscDecompressionSettings9type_sizeE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin26BloscDecompressionSettings9type_sizeE"></span><span id="FrameProcessor::BloscPlugin::BloscDecompressionSettings::type_size__s"></span><span class="target" id="structFrameProcessor_1_1BloscPlugin_1_1BloscDecompressionSettings_1a994b060c5d8a4481c812842e74b7d763"></span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">type_size</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin26BloscDecompressionSettings9type_sizeE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin26BloscDecompressionSettings17uncompressed_sizeE">
+<span id="_CPPv3N14FrameProcessor11BloscPlugin26BloscDecompressionSettings17uncompressed_sizeE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin26BloscDecompressionSettings17uncompressed_sizeE"></span><span id="FrameProcessor::BloscPlugin::BloscDecompressionSettings::uncompressed_size__s"></span><span class="target" id="structFrameProcessor_1_1BloscPlugin_1_1BloscDecompressionSettings_1a8fa99a7059bbd69eaf0206934eea9516"></span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">uncompressed_size</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin26BloscDecompressionSettings17uncompressed_sizeE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin26BloscDecompressionSettings7threadsE">
+<span id="_CPPv3N14FrameProcessor11BloscPlugin26BloscDecompressionSettings7threadsE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin26BloscDecompressionSettings7threadsE"></span><span id="FrameProcessor::BloscPlugin::BloscDecompressionSettings::threads__unsigned-i"></span><span class="target" id="structFrameProcessor_1_1BloscPlugin_1_1BloscDecompressionSettings_1aa94aeeec0976e6676e0b1085fdbe45fe"></span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">threads</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin26BloscDecompressionSettings7threadsE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin26BloscDecompressionSettings16blosc_compressorE">
+<span id="_CPPv3N14FrameProcessor11BloscPlugin26BloscDecompressionSettings16blosc_compressorE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin26BloscDecompressionSettings16blosc_compressorE"></span><span id="FrameProcessor::BloscPlugin::BloscDecompressionSettings::blosc_compressor__unsigned-i"></span><span class="target" id="structFrameProcessor_1_1BloscPlugin_1_1BloscDecompressionSettings_1a35fed591d84ef95d2aea6ebc82b0aaa5"></span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">blosc_compressor</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin26BloscDecompressionSettings16blosc_compressorE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -6832,7 +6903,6 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPluginE"><code class="docutils literal notranslate"><span class="pre">FrameProcessor::BloscPlugin</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin11BloscPluginEv"><code class="docutils literal notranslate"><span class="pre">BloscPlugin()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPluginD0Ev"><code class="docutils literal notranslate"><span class="pre">~BloscPlugin()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin14compress_frameEN5boost10shared_ptrI5FrameEE"><code class="docutils literal notranslate"><span class="pre">compress_frame()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin13process_frameEN5boost10shared_ptrI5FrameEE"><code class="docutils literal notranslate"><span class="pre">process_frame()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin9configureERN8OdinData10IpcMessageERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">configure()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin20requestConfigurationERN8OdinData10IpcMessageE"><code class="docutils literal notranslate"><span class="pre">requestConfiguration()</span></code></a></li>
@@ -6845,8 +6915,16 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin20CONFIG_BLOSC_THREADSE"><code class="docutils literal notranslate"><span class="pre">CONFIG_BLOSC_THREADS</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin18CONFIG_BLOSC_LEVELE"><code class="docutils literal notranslate"><span class="pre">CONFIG_BLOSC_LEVEL</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin20CONFIG_BLOSC_SHUFFLEE"><code class="docutils literal notranslate"><span class="pre">CONFIG_BLOSC_SHUFFLE</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin17CONFIG_BLOSC_MODEE"><code class="docutils literal notranslate"><span class="pre">CONFIG_BLOSC_MODE</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin4ModeE"><code class="docutils literal notranslate"><span class="pre">Mode</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin4Mode8COMPRESSE"><code class="docutils literal notranslate"><span class="pre">COMPRESS</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin4Mode10DECOMPRESSE"><code class="docutils literal notranslate"><span class="pre">DECOMPRESS</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin4Mode3OFFE"><code class="docutils literal notranslate"><span class="pre">OFF</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin14compress_frameERKN5boost10shared_ptrI5FrameEE"><code class="docutils literal notranslate"><span class="pre">compress_frame()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin16decompress_frameERKN5boost10shared_ptrI5FrameEE"><code class="docutils literal notranslate"><span class="pre">decompress_frame()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin27update_compression_settingsEv"><code class="docutils literal notranslate"><span class="pre">update_compression_settings()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin10get_bufferE6size_t"><code class="docutils literal notranslate"><span class="pre">get_buffer()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin7logger_E"><code class="docutils literal notranslate"><span class="pre">logger_</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin6mutex_E"><code class="docutils literal notranslate"><span class="pre">mutex_</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin20current_acquisition_E"><code class="docutils literal notranslate"><span class="pre">current_acquisition_</span></code></a></li>
@@ -6854,6 +6932,14 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin31commanded_compression_settings_E"><code class="docutils literal notranslate"><span class="pre">commanded_compression_settings_</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin16data_buffer_ptr_E"><code class="docutils literal notranslate"><span class="pre">data_buffer_ptr_</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin17data_buffer_size_E"><code class="docutils literal notranslate"><span class="pre">data_buffer_size_</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin12plugin_mode_E"><code class="docutils literal notranslate"><span class="pre">plugin_mode_</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin26BloscDecompressionSettingsE"><code class="docutils literal notranslate"><span class="pre">FrameProcessor::BloscPlugin::BloscDecompressionSettings</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin26BloscDecompressionSettings9type_sizeE"><code class="docutils literal notranslate"><span class="pre">type_size</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin26BloscDecompressionSettings17uncompressed_sizeE"><code class="docutils literal notranslate"><span class="pre">uncompressed_size</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin26BloscDecompressionSettings7threadsE"><code class="docutils literal notranslate"><span class="pre">threads</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin26BloscDecompressionSettings16blosc_compressorE"><code class="docutils literal notranslate"><span class="pre">blosc_compressor</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
