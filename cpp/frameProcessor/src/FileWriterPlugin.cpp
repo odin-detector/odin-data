@@ -876,7 +876,7 @@ void FileWriterPlugin::status(OdinData::IpcMessage& status)
 {
     // Record the plugin's status items
     std::string prefix = get_name() + '/';
-    status.set_param(prefix + STATUS_TIMEOUT_ACTIVE, this->writing_);
+    status.set_param(prefix + STATUS_WRITING, this->writing_);
     status.set_param(prefix + STATUS_FRAMES_MAX, (int)this->current_acquisition_->frames_to_write_);
     status.set_param(prefix + STATUS_FRAMES_WRITTEN, (int)this->current_acquisition_->frames_written_);
     status.set_param(prefix + STATUS_FRAMES_PROCESSED, (int)this->current_acquisition_->frames_processed_);
