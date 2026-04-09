@@ -23,6 +23,9 @@ RawFileWriterPlugin::RawFileWriterPlugin() :
     // Setup logging for the class
     logger_ = Logger::getLogger("FP.RawFileWriterPlugin");
     LOG4CXX_TRACE(logger_, "RawFileWriterPlugin constructor.");
+    add_config_param_metadata(CONFIG_FILE_PATH, PMDD::STRING_T, PMDA::READ_WRITE);
+    add_config_param_metadata(CONFIG_ENABLED, PMDD::BOOL_T, PMDA::READ_WRITE);
+    add_status_param_metadata(STATUS_DROPPED_FRAMES, PMDD::UINT_T, PMDA::READ_ONLY, 0);
 }
 
 void RawFileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame)
