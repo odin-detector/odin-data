@@ -47,31 +47,52 @@ BOOST_FIXTURE_TEST_SUITE(ParameterPublishPluginUnitTest, ParameterPublishPluginT
 
 BOOST_AUTO_TEST_CASE(ParameterPublishPlugin_Publish)
 {
-
+    using FPPP = FrameProcessor::ParameterPublishPlugin;
     // Configure thresholds
     OdinData::IpcMessage reply;
     OdinData::IpcMessage cfg;
+    OdinData::IpcChannel listen_ch(ZMQ_SUB);
+    constexpr const char* inproc_endpoint = "inproc://testcase1";
+    listen_ch.subscribe("");
+    listen_ch.connect(inproc_endpoint);
     BOOST_CHECK_NO_THROW(
-        cfg.set_param(FrameProcessor::ParameterPublishPlugin::CONFIG_ADD_PARAMETER, std::string("low1"))
-    );
-    BOOST_CHECK_NO_THROW(
-        cfg.set_param(FrameProcessor::ParameterPublishPlugin::CONFIG_ADD_PARAMETER, std::string("low2"))
-    );
-    BOOST_CHECK_NO_THROW(
-        cfg.set_param(FrameProcessor::ParameterPublishPlugin::CONFIG_ADD_PARAMETER, std::string("high1"))
-    );
-    BOOST_CHECK_NO_THROW(
-        cfg.set_param(FrameProcessor::ParameterPublishPlugin::CONFIG_ENDPOINT, std::string("tcp://*:10000"))
-    );
-    BOOST_CHECK_NO_THROW(
-        cfg.set_param(FrameProcessor::ParameterPublishPlugin::CONFIG_ADD_PARAMETER, std::string("high2"))
+        cfg.set_param(FPPP::CONFIG_ADD_PARAMETER, std::string("low2"))
     );
     BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
-    usleep(200000); // Give the listener a chance to connect
+    BOOST_CHECK_NO_THROW(
+        cfg.set_param(FPPP::CONFIG_ADD_PARAMETER, std::string("low1"))
+    );
+    BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
+    BOOST_CHECK_NO_THROW(
+        cfg.set_param(FPPP::CONFIG_ADD_PARAMETER, std::string("high1"))
+    );
+    BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
+    BOOST_CHECK_NO_THROW(
+        cfg.set_param(FPPP::CONFIG_ADD_PARAMETER, std::string("high2"))
+    );
+    BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
+    BOOST_CHECK_NO_THROW(
+        cfg.set_param(FPPP::CONFIG_ENDPOINT, std::string(inproc_endpoint))
+    );
+    BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
     plugin.process_frame(frame);
+
+    rapidjson::Document d;
+    BOOST_REQUIRE_NO_THROW(d.Parse(listen_ch.recv().c_str()));
+    BOOST_CHECK(d.HasMember(FPPP::DATA_PARAMETERS.c_str()) && d[FPPP::DATA_PARAMETERS.c_str()].IsString());
+    rapidjson::Document nested_params;
+    BOOST_REQUIRE_NO_THROW(nested_params.Parse(d[FPPP::DATA_PARAMETERS.c_str()].GetString()));
+    BOOST_CHECK(nested_params.HasMember("low2") && nested_params["low2"].IsInt());
+    BOOST_CHECK_EQUAL(nested_params["low2"].GetInt(), 1);
+    BOOST_CHECK(nested_params.HasMember("low1") && nested_params["low1"].IsInt());
+    BOOST_CHECK_EQUAL(nested_params["low1"].GetInt(), 4);
+    BOOST_CHECK(nested_params.HasMember("high1") && nested_params["high1"].IsInt());
+    BOOST_CHECK_EQUAL(nested_params["high1"].GetInt(), 2);
+    BOOST_CHECK(nested_params.HasMember("high2") && nested_params["high2"].IsInt());
+    BOOST_CHECK_EQUAL(nested_params["high2"].GetInt(), 3);
 }
 
-BOOST_AUTO_TEST_CASE(ParameterPublishPlugin_endpoint_change)
+BOOST_AUTO_TEST_CASE(ParameterPublishPlugin_endpointConfigure)
 {
     OdinData::IpcMessage reply;
     OdinData::IpcMessage cfg;

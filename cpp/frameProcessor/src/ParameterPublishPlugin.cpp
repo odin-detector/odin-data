@@ -23,7 +23,6 @@ ParameterPublishPlugin::ParameterPublishPlugin() :
     logger_ = Logger::getLogger("FP.ParameterPublishPlugin");
     LOG4CXX_INFO(logger_, "ParameterPublishPlugin version " << this->get_version_long() << " loaded");
     add_config_param_metadata(CONFIG_ENDPOINT, PMDD::STRING_T, PMDA::READ_WRITE);
-    add_config_param_metadata(DATA_FRAME_NUMBER, PMDD::INT_T, PMDA::READ_ONLY, 0);
     add_config_param_metadata(DATA_PARAMETERS, PMDD::STRINGARR_T, PMDA::READ_WRITE);
 }
 
@@ -32,7 +31,6 @@ ParameterPublishPlugin::ParameterPublishPlugin() :
  */
 ParameterPublishPlugin::~ParameterPublishPlugin()
 {
-    this->publish_channel_.close();
     LOG4CXX_TRACE(logger_, "ParameterPublishPlugin destructor.");
 }
 
@@ -55,17 +53,17 @@ void ParameterPublishPlugin::process_frame(boost::shared_ptr<Frame> frame)
         std::string&& str = parameters_json.str();
         json.add(DATA_PARAMETERS, str);
         this->publish_channel_.send(json.str().c_str());
-    } catch (std::bad_alloc& e) {
+    } catch (const std::bad_alloc& e) {
         LOG4CXX_ERROR(
             logger_,
-            "Error: RapidJSON - " << e.what() << " frame - " << frame->get_frame_number() << " acquisitionID - "
-                                  << frame->get_meta_data().get_acquisition_ID()
+            "RapidJSON - " << e.what() << " frame - " << frame->get_frame_number() << " acq_ID - "
+                           << frame->get_meta_data().get_acquisition_ID()
         );
-    } catch (zmq::error_t& e) {
+    } catch (const zmq::error_t& e) {
         LOG4CXX_ERROR(
             logger_,
-            "Error: ZMQ error: " << e.what() << " frame - " << frame->get_frame_number() << " acquisitionID - "
-                                 << frame->get_meta_data().get_acquisition_ID()
+            "ZMQ error: " << e.what() << " frame - " << frame->get_frame_number() << " acq_ID - "
+                          << frame->get_meta_data().get_acquisition_ID()
         );
     }
     this->push(frame);
