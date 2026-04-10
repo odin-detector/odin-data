@@ -84,9 +84,6 @@ private:
     BloscCompressionSettings compression_settings_;
     /** Compression settings for the next acquisition */
     BloscCompressionSettings commanded_compression_settings_;
-    /** Temporary buffer for compressed/decompressed data */
-    void* data_buffer_ptr_;
-    size_t data_buffer_size_;
     /** Mode the plugin is configured to */
     Mode plugin_mode_;
 };

@@ -55,25 +55,15 @@ BOOST_AUTO_TEST_CASE(ParameterPublishPlugin_Publish)
     constexpr const char* inproc_endpoint = "inproc://testcase1";
     listen_ch.subscribe("");
     listen_ch.connect(inproc_endpoint);
-    BOOST_CHECK_NO_THROW(
-        cfg.set_param(FPPP::CONFIG_ADD_PARAMETER, std::string("low2"))
-    );
+    BOOST_CHECK_NO_THROW(cfg.set_param(FPPP::CONFIG_ADD_PARAMETER, std::string("low2")));
     BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
-    BOOST_CHECK_NO_THROW(
-        cfg.set_param(FPPP::CONFIG_ADD_PARAMETER, std::string("low1"))
-    );
+    BOOST_CHECK_NO_THROW(cfg.set_param(FPPP::CONFIG_ADD_PARAMETER, std::string("low1")));
     BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
-    BOOST_CHECK_NO_THROW(
-        cfg.set_param(FPPP::CONFIG_ADD_PARAMETER, std::string("high1"))
-    );
+    BOOST_CHECK_NO_THROW(cfg.set_param(FPPP::CONFIG_ADD_PARAMETER, std::string("high1")));
     BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
-    BOOST_CHECK_NO_THROW(
-        cfg.set_param(FPPP::CONFIG_ADD_PARAMETER, std::string("high2"))
-    );
+    BOOST_CHECK_NO_THROW(cfg.set_param(FPPP::CONFIG_ADD_PARAMETER, std::string("high2")));
     BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
-    BOOST_CHECK_NO_THROW(
-        cfg.set_param(FPPP::CONFIG_ENDPOINT, std::string(inproc_endpoint))
-    );
+    BOOST_CHECK_NO_THROW(cfg.set_param(FPPP::CONFIG_ENDPOINT, std::string(inproc_endpoint)));
     BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
     plugin.process_frame(frame);
 
