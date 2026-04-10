@@ -14,14 +14,12 @@
 BOOST_GLOBAL_FIXTURE(GlobalConfig);
 
 class ParameterPublishPluginTestFixture {
+#define SZ_ 4
 public:
     ParameterPublishPluginTestFixture() :
-        img { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 },
-        frame { boost::make_shared<FrameProcessor::DataBlockFrame>(
-            FrameProcessor::FrameMetaData { 7, "data", FrameProcessor::raw_16bit, "scan1" /*Acq_ID*/, { 3, 4 } },
-            static_cast<void*>(img),
-            24
-        ) }
+        params { "low2", "low1", "high1", "high2" },
+        params_vals { 1, 4, 2, 3 },
+        img { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 }
     {
         /**
          * create dummy frame with nominal value data.
@@ -30,14 +28,17 @@ public:
         FrameProcessor::FrameMetaData frame_meta(
             1, "raw", FrameProcessor::raw_16bit, "test", { 3, 4 }, FrameProcessor::no_compression
         );
-        frame_meta.set_parameter<uint64_t>("low2", 1);
-        frame_meta.set_parameter<uint64_t>("low1", 4);
-        frame_meta.set_parameter<uint64_t>("high1", 2);
-        frame_meta.set_parameter<uint64_t>("high2", 3);
+        for (int i = 0; i < SZ_; ++i) {
+            frame_meta.set_parameter<uint64_t>(params[i], params_vals[i]);
+        }
         frame = boost::make_shared<FrameProcessor::DataBlockFrame>(frame_meta, static_cast<void*>(img), 24);
         set_debug_level(3);
         plugin.set_name("paramPubPlugin");
     }
+
+    //
+    const char* params[SZ_];
+    const uint64_t params_vals[SZ_];
     unsigned short img[12];
     boost::shared_ptr<FrameProcessor::Frame> frame;
     FrameProcessor::ParameterPublishPlugin plugin;
@@ -48,6 +49,7 @@ BOOST_FIXTURE_TEST_SUITE(ParameterPublishPluginUnitTest, ParameterPublishPluginT
 BOOST_AUTO_TEST_CASE(ParameterPublishPlugin_Publish)
 {
     using FPPP = FrameProcessor::ParameterPublishPlugin;
+    using PPPT = ParameterPublishPluginTestFixture;
     // Configure thresholds
     OdinData::IpcMessage reply;
     OdinData::IpcMessage cfg;
@@ -55,14 +57,10 @@ BOOST_AUTO_TEST_CASE(ParameterPublishPlugin_Publish)
     constexpr const char* inproc_endpoint = "inproc://testcase1";
     listen_ch.subscribe("");
     listen_ch.connect(inproc_endpoint);
-    BOOST_CHECK_NO_THROW(cfg.set_param(FPPP::CONFIG_ADD_PARAMETER, std::string("low2")));
-    BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
-    BOOST_CHECK_NO_THROW(cfg.set_param(FPPP::CONFIG_ADD_PARAMETER, std::string("low1")));
-    BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
-    BOOST_CHECK_NO_THROW(cfg.set_param(FPPP::CONFIG_ADD_PARAMETER, std::string("high1")));
-    BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
-    BOOST_CHECK_NO_THROW(cfg.set_param(FPPP::CONFIG_ADD_PARAMETER, std::string("high2")));
-    BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
+    for (int i = 0; i < SZ_; ++i) {
+        BOOST_CHECK_NO_THROW(cfg.set_param(FPPP::CONFIG_ADD_PARAMETER, std::string(PPPT::params[i])));
+        BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
+    }
     BOOST_CHECK_NO_THROW(cfg.set_param(FPPP::CONFIG_ENDPOINT, std::string(inproc_endpoint)));
     BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
     plugin.process_frame(frame);
@@ -72,14 +70,10 @@ BOOST_AUTO_TEST_CASE(ParameterPublishPlugin_Publish)
     BOOST_CHECK(d.HasMember(FPPP::DATA_PARAMETERS.c_str()) && d[FPPP::DATA_PARAMETERS.c_str()].IsString());
     rapidjson::Document nested_params;
     BOOST_REQUIRE_NO_THROW(nested_params.Parse(d[FPPP::DATA_PARAMETERS.c_str()].GetString()));
-    BOOST_CHECK(nested_params.HasMember("low2") && nested_params["low2"].IsInt());
-    BOOST_CHECK_EQUAL(nested_params["low2"].GetInt(), 1);
-    BOOST_CHECK(nested_params.HasMember("low1") && nested_params["low1"].IsInt());
-    BOOST_CHECK_EQUAL(nested_params["low1"].GetInt(), 4);
-    BOOST_CHECK(nested_params.HasMember("high1") && nested_params["high1"].IsInt());
-    BOOST_CHECK_EQUAL(nested_params["high1"].GetInt(), 2);
-    BOOST_CHECK(nested_params.HasMember("high2") && nested_params["high2"].IsInt());
-    BOOST_CHECK_EQUAL(nested_params["high2"].GetInt(), 3);
+    for (int i = 0; i < SZ_; ++i) {
+        BOOST_CHECK(nested_params.HasMember(PPPT::params[i]) && nested_params[PPPT::params[i]].IsInt());
+        BOOST_CHECK_EQUAL(nested_params[PPPT::params[i]].GetInt(), PPPT::params_vals[i]);
+    }
 }
 
 BOOST_AUTO_TEST_CASE(ParameterPublishPlugin_endpointConfigure)
