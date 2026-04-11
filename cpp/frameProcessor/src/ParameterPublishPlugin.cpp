@@ -42,6 +42,7 @@ ParameterPublishPlugin::~ParameterPublishPlugin()
 void ParameterPublishPlugin::process_frame(boost::shared_ptr<Frame> frame)
 {
     try {
+        std::lock_guard<std::recursive_mutex> lock(mutex_);
         OdinData::JsonDict json;
         OdinData::JsonDict parameters_json;
         for (auto& parameter : this->parameters_) {
@@ -78,6 +79,7 @@ void ParameterPublishPlugin::process_frame(boost::shared_ptr<Frame> frame)
 void ParameterPublishPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
     try {
+        std::lock_guard<std::recursive_mutex> lock(mutex_);
         if (config.has_param(CONFIG_ENDPOINT)) {
             this->setup_publish_channel(config.get_param<std::string>(CONFIG_ENDPOINT));
         }
