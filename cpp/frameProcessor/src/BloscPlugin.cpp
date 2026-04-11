@@ -134,7 +134,7 @@ BloscPlugin::~BloscPlugin()
  * @param src_frame - source frame to compress
  * @return pair<shared_ptr<Frame>, bool> - shared_ptr to compressed frame and boolean indicating success/fail
  */
-std::pair<boost::shared_ptr<Frame>, bool> BloscPlugin::compress_frame(const boost::shared_ptr<Frame>& src_frame)
+std::pair<std::shared_ptr<Frame>, bool> BloscPlugin::compress_frame(const std::shared_ptr<Frame>& src_frame)
 {
     int compressed_size = 0;
     bool comp_res = false;
@@ -152,9 +152,9 @@ std::pair<boost::shared_ptr<Frame>, bool> BloscPlugin::compress_frame(const boos
 
     size_t dest_data_size = c_settings.uncompressed_size + BLOSC_MAX_OVERHEAD;
 
-    boost::shared_ptr<Frame> dest_frame;
+    std::shared_ptr<Frame> dest_frame;
     try {
-        dest_frame = boost::make_shared<DataBlockFrame>(dest_meta_data, dest_data_size);
+        dest_frame = std::make_shared<DataBlockFrame>(dest_meta_data, dest_data_size);
 
         LOG4CXX_DEBUG_LEVEL(
             2, logger_,
@@ -211,7 +211,7 @@ std::pair<boost::shared_ptr<Frame>, bool> BloscPlugin::compress_frame(const boos
  * @param src_frame - source frame to decompress
  * @return pair<shared_ptr<Frame>, bool> - shared_ptr to decompressed frame and boolean indicating success/fail
  */
-std::pair<boost::shared_ptr<Frame>, bool> BloscPlugin::decompress_frame(const boost::shared_ptr<Frame>& src_frame)
+std::pair<std::shared_ptr<Frame>, bool> BloscPlugin::decompress_frame(const std::shared_ptr<Frame>& src_frame)
 {
     size_t dest_size = 0;
     size_t compressed_size;
@@ -219,9 +219,9 @@ std::pair<boost::shared_ptr<Frame>, bool> BloscPlugin::decompress_frame(const bo
     // get destination buffer size - dest_size
     blosc_cbuffer_sizes(src_frame->get_data_ptr(), &dest_size, &compressed_size, &block_size);
     bool decomp_res = false;
-    boost::shared_ptr<Frame> dest_frame;
+    std::shared_ptr<Frame> dest_frame;
     try {
-        dest_frame = boost::make_shared<DataBlockFrame>(src_frame->get_meta_data(), dest_size);
+        dest_frame = std::make_shared<DataBlockFrame>(src_frame->get_meta_data(), dest_size);
 
         LOG4CXX_DEBUG_LEVEL(
             2, logger_,
@@ -310,7 +310,7 @@ void BloscPlugin::process_frame(std::shared_ptr<Frame> src_frame)
         this->current_acquisition_ = src_frame_acquisition_ID;
         this->update_compression_settings();
     }
-    std::pair<boost::shared_ptr<Frame>, bool> output_frame;
+    std::pair<std::shared_ptr<Frame>, bool> output_frame;
     output_frame.second = false;
     switch (this->plugin_mode_) {
     case Mode::COMPRESS:
