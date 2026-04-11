@@ -8,15 +8,14 @@
 #ifndef TOOLS_FILEWRITER_IFRAMECALLBACK_H_
 #define TOOLS_FILEWRITER_IFRAMECALLBACK_H_
 
-#include <boost/shared_ptr.hpp>
-#include <boost/thread.hpp>
-
 #include <log4cxx/basicconfigurator.h>
 #include <log4cxx/helpers/exception.h>
 #include <log4cxx/logger.h>
 #include <log4cxx/propertyconfigurator.h>
 using namespace log4cxx;
 using namespace log4cxx::helpers;
+
+#include <thread>
 
 #include "Frame.h"
 #include "WorkQueue.h"
@@ -33,7 +32,7 @@ class IFrameCallback {
 public:
     IFrameCallback();
     virtual ~IFrameCallback();
-    boost::shared_ptr<WorkQueue<boost::shared_ptr<Frame>>> getWorkQueue();
+    std::shared_ptr<WorkQueue<std::shared_ptr<Frame>>> getWorkQueue();
     void start();
     void stop();
     bool isWorking() const;
@@ -47,15 +46,15 @@ public:
      *
      * \param[in] frame - pointer to Frame object ready for processing by the IFrameCallback subclass.
      */
-    virtual void callback(boost::shared_ptr<Frame> frame) = 0;
+    virtual void callback(std::shared_ptr<Frame> frame) = 0;
 
 private:
     /** Pointer to logger */
     LoggerPtr logger_;
     /** Pointer to worker queue thread */
-    boost::thread* thread_;
+    std::thread* thread_;
     /** Pointer to WorkQueue for Frame object pointers */
-    boost::shared_ptr<WorkQueue<boost::shared_ptr<Frame>>> queue_;
+    std::shared_ptr<WorkQueue<std::shared_ptr<Frame>>> queue_;
     /** IFrameCallback run flag */
     bool run_;
     /** Is this IFrameCallback working */

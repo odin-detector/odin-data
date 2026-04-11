@@ -90,7 +90,7 @@ KafkaProducerPlugin::~KafkaProducerPlugin()
  */
 void KafkaProducerPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
-    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     if (config.has_param(CONFIG_SERVERS)) {
         destroy_kafka();
         configure_kafka_servers(config.get_param<std::string>(CONFIG_SERVERS));
@@ -179,7 +179,7 @@ void KafkaProducerPlugin::destroy_kafka()
 void KafkaProducerPlugin::poll_delivery_message_report_queue()
 {
     if (kafka_producer_ != NULL) {
-        boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+        std::lock_guard<std::recursive_mutex> lock(mutex_);
         rd_kafka_poll(kafka_producer_, 0);
     }
 }
@@ -285,7 +285,7 @@ void KafkaProducerPlugin::configure_partition(int32_t partition)
  * \param[in] frame - Pointer to a Frame object.
  * \param[out] nbytes - Reference to the message size in bytes.
  */
-void* KafkaProducerPlugin::create_message(boost::shared_ptr<Frame> frame, size_t& nbytes)
+void* KafkaProducerPlugin::create_message(std::shared_ptr<Frame> frame, size_t& nbytes)
 {
     // creates header information
     rapidjson::StringBuffer string_buffer;
@@ -306,15 +306,15 @@ void* KafkaProducerPlugin::create_message(boost::shared_ptr<Frame> frame, size_t
     writer.String(MSG_HEADER_FRAME_DIMENSIONS_KEY);
     writer.StartArray();
     dimensions_t dims = frame->get_meta_data().get_dimensions();
-    for (dimensions_t::iterator it = dims.begin(); it != dims.end(); it++) {
+    for (auto it = dims.begin(); it != dims.end(); ++it) {
         writer.Uint64(*it);
     }
     writer.EndArray();
     if (this->include_parameters_) {
-        const std::map<std::string, boost::any>& parameters = frame->get_meta_data().get_parameters();
+        const auto& parameters = frame->get_meta_data().get_parameters();
         writer.String(MSG_HEADER_FRAME_PARAMETERS_KEY);
         writer.StartObject();
-        for (std::map<std::string, boost::any>::const_iterator it = parameters.begin(); it != parameters.end(); it++) {
+        for (auto it = parameters.begin(); it != parameters.end(); ++it) {
             writer.String(it->first.c_str());
             const std::type_info& ti = it->second.type();
             if (it->second.type() == typeid(unsigned long)) {
@@ -353,7 +353,7 @@ void* KafkaProducerPlugin::create_message(boost::shared_ptr<Frame> frame, size_t
  *
  * \param[in] frame - Pointer to a Frame object.
  */
-void KafkaProducerPlugin::enqueue_frame(boost::shared_ptr<Frame> frame)
+void KafkaProducerPlugin::enqueue_frame(std::shared_ptr<Frame> frame)
 {
     LOG4CXX_TRACE(logger_, "Sending frame to message queue ...");
     if (!this->kafka_topic_) {
@@ -361,7 +361,7 @@ void KafkaProducerPlugin::enqueue_frame(boost::shared_ptr<Frame> frame)
         return;
     }
     // This lock avoids configuring/destroying/enqueuing at the same time
-    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     char* buf;
     size_t len;
     // This buffer is freed by kafka (when there are no errors)
@@ -414,7 +414,7 @@ void KafkaProducerPlugin::on_message_error(const char* error)
  *
  * \param[in] frame - Pointer to a Frame object.
  */
-void KafkaProducerPlugin::process_frame(boost::shared_ptr<Frame> frame)
+void KafkaProducerPlugin::process_frame(std::shared_ptr<Frame> frame)
 {
     LOG4CXX_TRACE(logger_, "Received a new frame...");
     if (frame->get_meta_data().get_dataset_name() == this->dataset_name_) {

@@ -4,8 +4,6 @@
 #include "DataBlock.h"
 #include "Frame.h"
 
-#include <boost/shared_ptr.hpp>
-
 namespace FrameProcessor {
 
 class DataBlockFrame : public Frame {
@@ -36,7 +34,7 @@ public:
 
 private:
     /** Pointer to raw data block */
-    boost::shared_ptr<DataBlock> raw_data_block_ptr_;
+    std::shared_ptr<DataBlock> raw_data_block_ptr_;
 };
 
 }

@@ -1,11 +1,5 @@
 #pragma once
 
-#include <boost/bind/bind.hpp>
-#include <boost/test/unit_test.hpp>
-#ifdef BOOST_HAS_PLACEHOLDERS
-using namespace boost::placeholders;
-#endif
-
 #include <log4cxx/basicconfigurator.h>
 #include <log4cxx/consoleappender.h>
 #include <log4cxx/logger.h>
@@ -19,6 +13,10 @@ using namespace log4cxx::xml;
 #include "FileWriterPlugin.h"
 #include "HDF5File.h"
 #include "IpcChannel.h"
+
+#include <boost/test/included/unit_test.hpp>
+
+using namespace std::placeholders;
 
 class GlobalConfig {
 public:
@@ -73,7 +71,7 @@ public:
         FrameProcessor::FrameMetaData frame_meta(
             7, "data", FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
         );
-        frame = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
+        frame = std::shared_ptr<FrameProcessor::DataBlockFrame>(
             new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(img), 24)
         );
 
@@ -81,7 +79,7 @@ public:
             FrameProcessor::FrameMetaData loop_frame_meta(
                 i, "data", FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
             );
-            boost::shared_ptr<FrameProcessor::DataBlockFrame> tmp_frame(
+            std::shared_ptr<FrameProcessor::DataBlockFrame> tmp_frame(
                 new FrameProcessor::DataBlockFrame(loop_frame_meta, static_cast<void*>(img), 24)
             );
             img[0] = i;
@@ -93,13 +91,13 @@ public:
         hdf5_error_definition.write_duration = 1;
         hdf5_error_definition.flush_duration = 2;
         hdf5_error_definition.close_duration = 3;
-        hdf5_error_definition.callback = boost::bind(&dummy_callback, _1);
+        hdf5_error_definition.callback = std::bind(&dummy_callback, _1);
     }
     ~FileWriterPluginTestFixture()
     {
     }
-    boost::shared_ptr<FrameProcessor::DataBlockFrame> frame;
-    std::vector<boost::shared_ptr<FrameProcessor::DataBlockFrame>> frames;
+    std::shared_ptr<FrameProcessor::DataBlockFrame> frame;
+    std::vector<std::shared_ptr<FrameProcessor::DataBlockFrame>> frames;
     FrameProcessor::HDF5ErrorDefinition_t hdf5_error_definition;
     FrameProcessor::FileWriterPlugin fw;
     FrameProcessor::DatasetDefinition dset_def;

@@ -12,7 +12,7 @@
 
 #include "LiveViewPlugin.h"
 
-BOOST_GLOBAL_FIXTURE(GlobalConfig);
+BOOST_TEST_GLOBAL_FIXTURE(GlobalConfig);
 
 std::string global_socket_addr = "tcp://127.0.0.1:";
 uint32_t global_socket_port = 5020;
@@ -31,7 +31,7 @@ public:
         // set up the recieve sockets so we can read data from the plugin's live output.
         recv_socket.subscribe("");
         recv_socket_other.subscribe("");
-        std::string addr = global_socket_addr + boost::to_string(global_socket_port);
+        std::string addr = global_socket_addr + std::to_string(global_socket_port);
         BOOST_TEST_MESSAGE("Address: " + addr);
         recv_socket.connect(addr);
         recv_socket_other.connect("tcp://127.0.0.1:5050");
@@ -64,7 +64,7 @@ public:
         );
 
         // create test frame
-        frame = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
+        frame = std::shared_ptr<FrameProcessor::DataBlockFrame>(
             new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(img_8), 12)
         );
 
@@ -73,7 +73,7 @@ public:
         );
 
         // create test frame with uint16 data
-        frame_16 = boost::shared_ptr<FrameProcessor::DataBlockFrame>(
+        frame_16 = std::shared_ptr<FrameProcessor::DataBlockFrame>(
             new FrameProcessor::DataBlockFrame(frame_16_meta, static_cast<void*>(img_16), 24)
         );
 
@@ -85,7 +85,7 @@ public:
             );
             if (i % 4)
                 tmp_frame_meta.set_parameter<uint8_t>("test_tag", 0);
-            boost::shared_ptr<FrameProcessor::DataBlockFrame> tmp_frame(
+            std::shared_ptr<FrameProcessor::DataBlockFrame> tmp_frame(
                 new FrameProcessor::DataBlockFrame(tmp_frame_meta, static_cast<void*>(img_8), 12)
             );
             frames.push_back(tmp_frame);
@@ -117,9 +117,9 @@ public:
         global_socket_port++;
     }
 
-    boost::shared_ptr<FrameProcessor::Frame> frame;
-    boost::shared_ptr<FrameProcessor::Frame> frame_16;
-    std::vector<boost::shared_ptr<FrameProcessor::Frame>> frames;
+    std::shared_ptr<FrameProcessor::Frame> frame;
+    std::shared_ptr<FrameProcessor::Frame> frame_16;
+    std::vector<std::shared_ptr<FrameProcessor::Frame>> frames;
 
     uint8_t img_8[12];
     uint16_t img_16[12];

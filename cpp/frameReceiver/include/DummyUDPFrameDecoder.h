@@ -8,7 +8,6 @@
 #ifndef INCLUDE_DUMMYFRAMEDECODERUDP_H_
 #define INCLUDE_DUMMYFRAMEDECODERUDP_H_
 
-#include <boost/shared_ptr.hpp>
 #include <iostream>
 #include <stdint.h>
 #include <time.h>
@@ -76,8 +75,8 @@ private:
     std::size_t udp_packet_size_;
     unsigned int status_get_count_;
 
-    boost::shared_ptr<void> current_packet_header_;
-    boost::shared_ptr<void> dropped_frame_buffer_;
+    std::shared_ptr<void> current_packet_header_;
+    std::shared_ptr<void> dropped_frame_buffer_;
 
     int current_frame_seen_;
     int current_frame_buffer_id_;

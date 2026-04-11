@@ -10,7 +10,7 @@
 
 #include "Fixtures.h"
 
-BOOST_GLOBAL_FIXTURE(GlobalConfig);
+BOOST_TEST_GLOBAL_FIXTURE(GlobalConfig);
 
 #include "DummyUDPProcessPlugin.h"
 

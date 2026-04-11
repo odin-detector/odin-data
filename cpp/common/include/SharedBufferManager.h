@@ -8,12 +8,12 @@
 #ifndef SHAREDBUFFERMANAGER_H_
 #define SHAREDBUFFERMANAGER_H_
 
+#include <memory>
 #include <stddef.h>
 #include <string>
 
 #include <boost/interprocess/mapped_region.hpp>
 #include <boost/interprocess/shared_memory_object.hpp>
-#include <boost/shared_ptr.hpp>
 
 #include "OdinDataException.h"
 
@@ -63,7 +63,7 @@ private:
     static size_t last_manager_id;
 };
 
-typedef boost::shared_ptr<SharedBufferManager> SharedBufferManagerPtr;
+typedef std::shared_ptr<SharedBufferManager> SharedBufferManagerPtr;
 
 } // namespace OdinData
 #endif /* SHAREDBUFFERMANAGER_H_ */

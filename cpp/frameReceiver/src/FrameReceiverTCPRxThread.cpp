@@ -22,7 +22,7 @@ FrameReceiverTCPRxThread::FrameReceiverTCPRxThread(
     LOG4CXX_DEBUG_LEVEL(1, logger_, "FrameReceiverTCPRxThread constructor entered....");
 
     // Store the frame decoder as a TCP type frame decoder
-    frame_decoder_ = boost::dynamic_pointer_cast<FrameDecoderTCP>(frame_decoder);
+    frame_decoder_ = std::dynamic_pointer_cast<FrameDecoderTCP>(frame_decoder);
 }
 
 FrameReceiverTCPRxThread::~FrameReceiverTCPRxThread()
@@ -91,8 +91,7 @@ void FrameReceiverTCPRxThread::run_specific_service(void)
 
         // Register this socket
         this->register_socket(
-            recv_socket_,
-            boost::bind(&FrameReceiverTCPRxThread::handle_receive_socket, this, recv_socket_, (int)rx_port)
+            recv_socket_, std::bind(&FrameReceiverTCPRxThread::handle_receive_socket, this, recv_socket_, (int)rx_port)
         );
     }
 }

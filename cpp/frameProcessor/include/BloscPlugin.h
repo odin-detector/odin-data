@@ -47,7 +47,7 @@ public:
     static const std::string CONFIG_BLOSC_MODE;
 
     // Baseclass API to implement:
-    void process_frame(boost::shared_ptr<Frame> frame);
+    void process_frame(std::shared_ptr<Frame> frame);
     void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
     void requestConfiguration(OdinData::IpcMessage& reply);
     int get_version_major();
@@ -58,8 +58,8 @@ public:
 
 private:
     // Methods unique to this class
-    std::pair<boost::shared_ptr<Frame>, bool> compress_frame(const boost::shared_ptr<Frame>& frame);
-    std::pair<boost::shared_ptr<Frame>, bool> decompress_frame(const boost::shared_ptr<Frame>& frame);
+    std::pair<std::shared_ptr<Frame>, bool> compress_frame(const std::shared_ptr<Frame>& frame);
+    std::pair<std::shared_ptr<Frame>, bool> decompress_frame(const std::shared_ptr<Frame>& frame);
     void update_compression_settings();
     friend struct Mode_map;
     enum class Mode {
@@ -77,7 +77,7 @@ private:
     /** Pointer to logger */
     LoggerPtr logger_;
     /** Mutex used to make this class thread safe */
-    boost::recursive_mutex mutex_;
+    std::recursive_mutex mutex_;
     /** Current acquisition ID */
     std::string current_acquisition_;
     /** Compression settings */

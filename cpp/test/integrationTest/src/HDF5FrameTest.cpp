@@ -1,4 +1,5 @@
 #include <boost/foreach.hpp>
+#include <boost/optional/optional.hpp>
 #include <boost/program_options.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>

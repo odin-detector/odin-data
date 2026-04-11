@@ -28,7 +28,7 @@ const std::string SharedMemoryController::SHARED_MEMORY_CONTROLLER_NAME = "share
  * \param[in] txEndPoint - string name of the publishing endpoint for frame release notifications.
  */
 SharedMemoryController::SharedMemoryController(
-    boost::shared_ptr<OdinData::IpcReactor> reactor,
+    std::shared_ptr<OdinData::IpcReactor> reactor,
     const std::string& rxEndPoint,
     const std::string& txEndPoint
 ) :
@@ -55,7 +55,7 @@ SharedMemoryController::SharedMemoryController(
     }
 
     // Add the Frame Ready channel to the reactor
-    reactor_->register_channel(rxChannel_, boost::bind(&SharedMemoryController::handleRxChannel, this));
+    reactor_->register_channel(rxChannel_, std::bind(&SharedMemoryController::handleRxChannel, this));
 
     // Now connect the frame release response channel
     try {
@@ -111,7 +111,7 @@ void SharedMemoryController::setSharedBufferManager(const std::string& shared_bu
     }
 
     // Create a new shared buffer manager
-    sbm_ = boost::shared_ptr<OdinData::SharedBufferManager>(new OdinData::SharedBufferManager(shared_buffer_name));
+    sbm_ = std::shared_ptr<OdinData::SharedBufferManager>(new OdinData::SharedBufferManager(shared_buffer_name));
 
     // Set configured status to true
     sharedBufferConfigured_ = true;
@@ -132,7 +132,7 @@ void SharedMemoryController::requestSharedBufferConfig(const bool deferred)
 {
     if (deferred) {
         LOG4CXX_DEBUG_LEVEL(1, logger_, "Registering timer for deferred shared buffer configuration request");
-        reactor_->register_timer(1000, 1, boost::bind(&SharedMemoryController::requestSharedBufferConfig, this, false));
+        reactor_->register_timer(1000, 1, std::bind(&SharedMemoryController::requestSharedBufferConfig, this, false));
         sharedBufferConfigRequestDeferred_ = true;
     } else {
         // If this is being called by a deferred request timer but the shared buffer has been configured in the
@@ -187,13 +187,13 @@ void SharedMemoryController::handleRxChannel()
                         frame_number, "raw", FrameProcessor::raw_64bit, "", std::vector<unsigned long long>()
                     );
 
-                    boost::shared_ptr<SharedBufferFrame> frame;
-                    frame = boost::shared_ptr<SharedBufferFrame>(new SharedBufferFrame(
+                    std::shared_ptr<SharedBufferFrame> frame;
+                    frame = std::shared_ptr<SharedBufferFrame>(new SharedBufferFrame(
                         frame_meta, sbm_->get_buffer_address(bufferID), sbm_->get_buffer_size(), bufferID, &txChannel_
                     ));
 
                     // Loop over registered callbacks, placing the frame onto each queue
-                    std::map<std::string, boost::shared_ptr<IFrameCallback>>::iterator cbIter;
+                    std::map<std::string, std::shared_ptr<IFrameCallback>>::iterator cbIter;
                     for (cbIter = callbacks_.begin(); cbIter != callbacks_.end(); ++cbIter) {
                         cbIter->second->getWorkQueue()->add(frame, true);
                     }
@@ -245,7 +245,7 @@ void SharedMemoryController::handleRxChannel()
  * \param[in] name - string index of the callback.
  * \param[in] cb - IFrameCallback to register for updates.
  */
-void SharedMemoryController::registerCallback(const std::string& name, boost::shared_ptr<IFrameCallback> cb)
+void SharedMemoryController::registerCallback(const std::string& name, std::shared_ptr<IFrameCallback> cb)
 {
     // Check if we own the callback already
     if (callbacks_.count(name) == 0) {
@@ -264,7 +264,7 @@ void SharedMemoryController::registerCallback(const std::string& name, boost::sh
  */
 void SharedMemoryController::removeCallback(const std::string& name)
 {
-    boost::shared_ptr<IFrameCallback> cb;
+    std::shared_ptr<IFrameCallback> cb;
     if (callbacks_.count(name) > 0) {
         // Get the pointer
         cb = callbacks_[name];
@@ -292,11 +292,11 @@ void SharedMemoryController::status(OdinData::IpcMessage& status)
 void SharedMemoryController::injectEOA()
 {
     // Create the EOA frame object
-    boost::shared_ptr<FrameProcessor::EndOfAcquisitionFrame> eoa
-        = boost::shared_ptr<FrameProcessor::EndOfAcquisitionFrame>(new FrameProcessor::EndOfAcquisitionFrame());
+    std::shared_ptr<FrameProcessor::EndOfAcquisitionFrame> eoa
+        = std::shared_ptr<FrameProcessor::EndOfAcquisitionFrame>(new FrameProcessor::EndOfAcquisitionFrame());
 
     // Loop over registered callbacks, placing the frame onto each queue
-    std::map<std::string, boost::shared_ptr<IFrameCallback>>::iterator cbIter;
+    std::map<std::string, std::shared_ptr<IFrameCallback>>::iterator cbIter;
     for (cbIter = callbacks_.begin(); cbIter != callbacks_.end(); ++cbIter) {
         cbIter->second->getWorkQueue()->add(eoa, true);
     }

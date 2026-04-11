@@ -63,7 +63,7 @@ LiveViewPlugin::~LiveViewPlugin()
  *
  * \param[in] frame - pointer to a frame object.
  */
-void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
+void LiveViewPlugin::process_frame(std::shared_ptr<Frame> frame)
 {
     /** Static Frame Count will increment each time this method is called, basically as a count of how many frames have
      * been processed by the plugin*/
@@ -211,7 +211,7 @@ void LiveViewPlugin::requestConfiguration(OdinData::IpcMessage& reply)
  * \param[in] frame_num - the number of the frame
  *
  */
-void LiveViewPlugin::pass_live_frame(boost::shared_ptr<Frame> frame)
+void LiveViewPlugin::pass_live_frame(std::shared_ptr<Frame> frame)
 {
     void* frame_data_copy = (void*)frame->get_image_ptr();
 
@@ -256,7 +256,7 @@ void LiveViewPlugin::pass_live_frame(boost::shared_ptr<Frame> frame)
 
     size_t dim_size = dim.size();
     for (size_t i = 0; i < dim_size; i++) {
-        std::string dimString = boost::to_string(dim[i]);
+        std::string dimString = std::to_string(dim[i]);
         rapidjson::Value dimStringVal(dimString.c_str(), document.GetAllocator());
         valueDims.PushBack(dimStringVal, document.GetAllocator());
     }

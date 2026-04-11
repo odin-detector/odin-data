@@ -4,7 +4,7 @@
 #include "Fixtures.h"
 #include "TestHelperFunctions.h"
 
-BOOST_GLOBAL_FIXTURE(GlobalConfig);
+BOOST_TEST_GLOBAL_FIXTURE(GlobalConfig);
 
 BOOST_FIXTURE_TEST_SUITE(AcquisitionUnitTest, FileWriterPluginTestFixture);
 
@@ -209,7 +209,7 @@ BOOST_AUTO_TEST_CASE(AcquisitionGetOffsetInFile)
 BOOST_AUTO_TEST_CASE(AcquisitionAdjustFrameOffset)
 {
     FrameProcessor::Acquisition acquisition(hdf5_error_definition);
-    boost::shared_ptr<FrameProcessor::DataBlockFrame> frame = get_dummy_frame();
+    std::shared_ptr<FrameProcessor::DataBlockFrame> frame = get_dummy_frame();
     frame->meta_data().set_frame_offset(0);
 
     size_t adjusted_offset = acquisition.adjust_frame_offset(frame);
@@ -258,7 +258,7 @@ BOOST_AUTO_TEST_CASE(AcquisitionFrameVerification)
 
     acquisition.dataset_defs_["raw"] = dset_def;
 
-    boost::shared_ptr<FrameProcessor::DataBlockFrame> frame = get_dummy_frame();
+    std::shared_ptr<FrameProcessor::DataBlockFrame> frame = get_dummy_frame();
     frame->meta_data().set_compression_type(FrameProcessor::unknown_compression);
 
     bool verified = acquisition.check_frame_valid(frame);

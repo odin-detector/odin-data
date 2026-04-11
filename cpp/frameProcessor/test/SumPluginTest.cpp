@@ -6,7 +6,7 @@
 
 #include "SumPlugin.h"
 
-BOOST_GLOBAL_FIXTURE(GlobalConfig);
+BOOST_TEST_GLOBAL_FIXTURE(GlobalConfig);
 
 BOOST_AUTO_TEST_SUITE(SumPluginUnitTest);
 
@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE(SumFrame)
         1, "raw", FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
     );
 
-    boost::shared_ptr<FrameProcessor::DataBlockFrame> frame(
+    std::shared_ptr<FrameProcessor::DataBlockFrame> frame(
         new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(img), 24)
     );
 
@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE(SumEmptyFrame)
         0, "raw", FrameProcessor::raw_16bit, "test", dims, FrameProcessor::no_compression
     );
     char dummy_data[2] = { 0, 0 };
-    boost::shared_ptr<FrameProcessor::DataBlockFrame> frame(
+    std::shared_ptr<FrameProcessor::DataBlockFrame> frame(
         new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(dummy_data), 2)
     );
 
@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(SumNotSupportedDataType)
 {
     FrameProcessor::SumPlugin plugin;
     // check that sum parameter is not set in unsupported data types
-    boost::shared_ptr<FrameProcessor::DataBlockFrame> frame = get_dummy_frame();
+    std::shared_ptr<FrameProcessor::DataBlockFrame> frame = get_dummy_frame();
     frame->meta_data().set_data_type(FrameProcessor::raw_float);
     plugin.process_frame(frame);
     BOOST_CHECK(!frame->get_meta_data().has_parameter(FrameProcessor::SUM_PARAM_NAME));

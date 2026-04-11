@@ -25,7 +25,7 @@ SumPlugin::~SumPlugin()
     LOG4CXX_TRACE(logger_, "SumPlugin destructor.");
 }
 
-template <class PixelType> static uint64_t calculate_sum(boost::shared_ptr<Frame> frame)
+template <class PixelType> static uint64_t calculate_sum(std::shared_ptr<Frame> frame)
 {
     uint64_t sum_value = 0;
     const PixelType* data = static_cast<const PixelType*>(frame->get_image_ptr());
@@ -43,7 +43,7 @@ template <class PixelType> static uint64_t calculate_sum(boost::shared_ptr<Frame
  *
  * \param[in] frame - Pointer to a Frame object.
  */
-void SumPlugin::process_frame(boost::shared_ptr<Frame> frame)
+void SumPlugin::process_frame(std::shared_ptr<Frame> frame)
 {
     LOG4CXX_TRACE(logger_, "Received a new frame...");
     switch (frame->get_meta_data().get_data_type()) {

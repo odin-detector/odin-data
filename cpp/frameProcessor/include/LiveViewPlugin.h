@@ -25,9 +25,9 @@ class LiveViewPlugin : public FrameProcessorPlugin {
 public:
     LiveViewPlugin();
     virtual ~LiveViewPlugin();
-    void process_frame(boost::shared_ptr<Frame> frame);
+    void process_frame(std::shared_ptr<Frame> frame);
     void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
-    void pass_live_frame(boost::shared_ptr<Frame> frame);
+    void pass_live_frame(std::shared_ptr<Frame> frame);
     int get_version_major();
     int get_version_minor();
     int get_version_patch();
