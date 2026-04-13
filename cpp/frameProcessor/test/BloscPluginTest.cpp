@@ -6,7 +6,7 @@
 #include "BloscPlugin.h"
 #include "Fixtures.h"
 
-BOOST_GLOBAL_FIXTURE(GlobalConfig);
+    BOOST_GLOBAL_FIXTURE(GlobalConfig);
 
 class BloscPluginTestFixture {
 public:

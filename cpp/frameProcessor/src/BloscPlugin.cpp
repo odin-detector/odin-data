@@ -110,6 +110,10 @@ BloscPlugin::BloscPlugin() :
         CONFIG_BLOSC_MODE, PMDD::STRING_T, PMDA::READ_WRITE,
         { Mode_map::COMPRESS_MODE, Mode_map::DECOMPRESS_MODE, Mode_map::OFF_MODE }
     );
+    add_config_param_metadata(
+        CONFIG_BLOSC_MODE, PMDD::STRING_T, PMDA::READ_WRITE,
+        { Mode_map::COMPRESS_MODE, Mode_map::DECOMPRESS_MODE, Mode_map::OFF_MODE }
+    );
 
     this->commanded_compression_settings_.blosc_compressor = BLOSC_LZ4_COMPNAME;
     this->commanded_compression_settings_.shuffle = BLOSC_BITSHUFFLE_STR;
