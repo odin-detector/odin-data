@@ -14,11 +14,9 @@
 BOOST_GLOBAL_FIXTURE(GlobalConfig);
 
 class ParameterPublishPluginTestFixture {
-#define SZ_ 4
 public:
     ParameterPublishPluginTestFixture() :
-        params { "low2", "low1", "high1", "high2" },
-        params_vals { 1, 4, 2, 3 },
+        parameters { { { 1, "low2" }, { 4, "low1" }, { 2, "high1" }, { 3, "high2" } } },
         img { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 }
     {
         /**
@@ -28,8 +26,8 @@ public:
         FrameProcessor::FrameMetaData frame_meta(
             1, "raw", FrameProcessor::raw_16bit, "test", { 3, 4 }, FrameProcessor::no_compression
         );
-        for (int i = 0; i < SZ_; ++i) {
-            frame_meta.set_parameter<uint64_t>(params[i], params_vals[i]);
+        for (size_t i = 0; i < parameters.size(); ++i) {
+            frame_meta.set_parameter<uint64_t>(parameters[i].param, parameters[i].val);
         }
         frame = boost::make_shared<FrameProcessor::DataBlockFrame>(frame_meta, static_cast<void*>(img), 24);
         set_debug_level(3);
@@ -37,8 +35,11 @@ public:
     }
 
     //
-    const char* params[SZ_];
-    const uint64_t params_vals[SZ_];
+    struct param_pair {
+        const uint64_t val;
+        const char* param;
+    };
+    const std::array<param_pair, 4> parameters;
     unsigned short img[12];
     boost::shared_ptr<FrameProcessor::Frame> frame;
     FrameProcessor::ParameterPublishPlugin plugin;
@@ -57,8 +58,8 @@ BOOST_AUTO_TEST_CASE(ParameterPublishPlugin_Publish)
     constexpr const char* inproc_endpoint = "inproc://testcase1";
     listen_ch.subscribe("");
     listen_ch.connect(inproc_endpoint);
-    for (int i = 0; i < SZ_; ++i) {
-        BOOST_CHECK_NO_THROW(cfg.set_param(FPPP::CONFIG_ADD_PARAMETER, std::string(PPPT::params[i])));
+    for (size_t i = 0; i < parameters.size(); ++i) {
+        BOOST_CHECK_NO_THROW(cfg.set_param(FPPP::CONFIG_ADD_PARAMETER, std::string(PPPT::parameters[i].param)));
         BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
     }
     BOOST_CHECK_NO_THROW(cfg.set_param(FPPP::CONFIG_ENDPOINT, std::string(inproc_endpoint)));
@@ -70,9 +71,11 @@ BOOST_AUTO_TEST_CASE(ParameterPublishPlugin_Publish)
     BOOST_CHECK(d.HasMember(FPPP::DATA_PARAMETERS.c_str()) && d[FPPP::DATA_PARAMETERS.c_str()].IsString());
     rapidjson::Document nested_params;
     BOOST_REQUIRE_NO_THROW(nested_params.Parse(d[FPPP::DATA_PARAMETERS.c_str()].GetString()));
-    for (int i = 0; i < SZ_; ++i) {
-        BOOST_CHECK(nested_params.HasMember(PPPT::params[i]) && nested_params[PPPT::params[i]].IsInt());
-        BOOST_CHECK_EQUAL(nested_params[PPPT::params[i]].GetInt(), PPPT::params_vals[i]);
+    for (size_t i = 0; i < parameters.size(); ++i) {
+        BOOST_CHECK(
+            nested_params.HasMember(PPPT::parameters[i].param) && nested_params[PPPT::parameters[i].param].IsInt()
+        );
+        BOOST_CHECK_EQUAL(nested_params[PPPT::parameters[i].param].GetInt(), PPPT::parameters[i].val);
     }
 }
 
