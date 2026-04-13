@@ -5,6 +5,9 @@
  *      Author: Tim Nicholls, STFC Application Engineering Group
  */
 
+#define BOOST_TEST_MODULE "IpcChannelTests"
+#define BOOST_TEST_MAIN
+
 #include <boost/test/unit_test.hpp>
 #include <string>
 

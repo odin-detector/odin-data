@@ -7,10 +7,11 @@ name = "odin-data"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "License :: OSI Approved :: Apache Software License",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 description = "DAQ software libraries for capturing and storing data from parallel detector systems"
 dynamic = ["version"]
@@ -20,7 +21,7 @@ authors = [
     {name = "Tim Nicholls", email = "tim.nicholls@stfc.ac.uk"},
 ]
 dependencies = [
-    "odin-control@git+https://git@github.com/odin-detector/odin-control",
+    "odin-control@git+https://github.com/odin-detector/odin-control@1cf475b60abf66666d31c7e74b9d19540c2ea6c3",
     "posix_ipc>=1.0.4",
     "pysnmp>=4.4.4",
     "numpy>=1.14.0",

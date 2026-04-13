@@ -1,4 +1,3 @@
-
 set(CMAKE_INCLUDE_CURRENT_DIR on)
 ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK)
 
@@ -108,4 +107,3 @@ if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
                NAMES rt)
   target_link_libraries( frameProcessor ${REALTIME_LIBRARY} )
 endif()
-

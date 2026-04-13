@@ -1,8 +1,11 @@
+# Require CMake version >=3.22 (default in Ubuntu 22.04)
+cmake_minimum_required(VERSION 3.22)
+
 # Project name
 project(OdinData)
 
-# Require CMake version >=2.8
-cmake_minimum_required(VERSION 2.8)
+include(${CMAKE_SOURCE_DIR}/cmake/CodeCoverage.cmake)
+setup_coverage()
 
 # Set output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -42,10 +45,14 @@ endif(NOT APPLE)
 # directories of additional CMake modules (ie. MacroOutOfSourceBuild.cmake):
 set(CMAKE_MODULE_PATH ${OdinData_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
+# Newer versions of cmake don't include this flag by default and seems to be needed for
+# use of dlopen so that symbols are not pruned from the symbol table
+add_link_options("-rdynamic")
+
 # Allow macOS shared (dynamic) libraries to link with undefined symbols
 if (APPLE)
-	message("Allowing undefined symbols in macOS shared library linking")
-    set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -undefined dynamic_lookup")
+  message("Allowing undefined symbols in macOS shared library linking")
+  set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -undefined dynamic_lookup")
 endif(APPLE)
 
 # Set up RPATH handling correctly so that both built and installed targets have the appropriate

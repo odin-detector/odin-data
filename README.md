@@ -1,9 +1,8 @@
 # odin-data
 
-[![Code CI](https://github.com/odin-detector/odin-data/actions/workflows/code.yml/badge.svg?branch=master)](https://github.com/odin-detector/odin-data/actions/workflows/code.yml)
-[![Docs CI](https://github.com/odin-detector/odin-data/actions/workflows/docs.yml/badge.svg?branch=master)](https://github.com/odin-detector/odin-data/actions/workflows/docs.yml)
-[![Code Climate](https://codeclimate.com/github/odin-detector/odin-data/badges/gpa.svg)](https://codeclimate.com/github/odin-detector/odin-data)
-[![Test Coverage](https://codeclimate.com/github/odin-detector/odin-data/badges/coverage.svg)](https://codeclimate.com/github/odin-detector/odin-data/coverage)
+[![cpp-test](https://github.com/odin-detector/odin-data/actions/workflows/_cpp_test.yml/badge.svg)](https://github.com/odin-detector/odin-data/actions/workflows/_cpp_test.yml)
+[![docs-build](https://github.com/odin-detector/odin-data/actions/workflows/_docs.yml/badge.svg)](https://github.com/odin-detector/odin-data/actions/workflows/_docs.yml)
+[![codecov](https://codecov.io/gh/odin-detector/odin-data/branch/master/graph/badge.svg?token=Urucx8wsTU)](https://codecov.io/gh/odin-detector/odin-data)
 [![Apache License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 odin-data is a modular, scalable, high-throughput data acquisition framework consisting

@@ -67,9 +67,9 @@ public:
     static constexpr char STATUS_FRAMES_MAX[11] = "frames_max";
     static constexpr char STATUS_FRAMES_WRITTEN[15] = "frames_written";
     static constexpr char STATUS_FRAMES_PROCESSED[17] = "frames_processed";
-    static constexpr char STATUS_FILE_PATH[10] = "file_path";
+    static constexpr char STATUS_FILE_PATH[18] = "current_file_path";
     static constexpr char STATUS_FILE_NAME[10] = "file_name";
-    static constexpr char STATUS_ACQUISITION_ID[15] = "acquisition_id";
+    static constexpr char STATUS_ACQUISITION_ID[23] = "current_acquisition_id";
     static constexpr char STATUS_PROCESSES[10] = "processes";
     static constexpr char STATUS_RANK[5] = "rank";
     static constexpr char STATUS_TIMEOUT_ACTIVE[15] = "timeout_active";

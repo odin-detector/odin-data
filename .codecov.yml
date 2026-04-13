@@ -1,0 +1,7 @@
+ignore:
+  - "cpp/common/include/rapidjson"
+  - "cpp/common/include/zmq"
+  - "cpp/test"
+  - "cpp/frameProcessor/test"
+  - "cpp/frameReceiver/test"
+  - "cpp/frameSimulator"

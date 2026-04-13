@@ -9,6 +9,8 @@
 /.cproject
 /.project
 /.pydevproject
+.cache
+*~
 .project
 venv*
 tools/python/.coverage
