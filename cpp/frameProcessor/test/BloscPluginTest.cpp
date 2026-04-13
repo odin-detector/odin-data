@@ -6,7 +6,7 @@
 #include "BloscPlugin.h"
 #include "Fixtures.h"
 
-    BOOST_GLOBAL_FIXTURE(GlobalConfig);
+BOOST_GLOBAL_FIXTURE(GlobalConfig);
 
 class BloscPluginTestFixture {
 public:
@@ -14,7 +14,7 @@ public:
     {
         set_debug_level(3);
         std::array<int, 64000> vec {}; // 256kb data size
-        vec.fill(2398);
+        vec.fill(2398); // fill with random value
 
         blosc_plugin.set_name("BloscPluginTest");
         frame = boost::make_shared<FrameProcessor::DataBlockFrame>(
