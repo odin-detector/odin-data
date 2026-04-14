@@ -46,6 +46,14 @@ public:
     static const std::string CONFIG_BLOSC_SHUFFLE;
     static const std::string CONFIG_BLOSC_MODE;
 
+    constexpr static char BLOSC_NOSHUFFLE_STR[] = "noshuffle";
+    constexpr static char BLOSC_SHUFFLE_STR[] = "shuffle";
+    constexpr static char BLOSC_BITSHUFFLE_STR[] = "bitshuffle";
+
+    constexpr static char COMPRESS_MODE[] = "compress";
+    constexpr static char DECOMPRESS_MODE[] = "decompress";
+    constexpr static char OFF_MODE[] = "off";
+
     // Baseclass API to implement:
     void process_frame(boost::shared_ptr<Frame> frame);
     void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);

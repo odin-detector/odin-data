@@ -17,28 +17,26 @@
 namespace FrameProcessor {
 
 BOOST_STATIC_ASSERT_MSG(BLOSC_VERSION_FORMAT == BLOSC_FORMAT_ODIN_USES, "Error: Wrong version of blosc library");
-
+using FPB = BloscPlugin;
 struct Mode_map {
-    using BPM = FrameProcessor::BloscPlugin::Mode;
-    static constexpr char COMPRESS_MODE[] = "compress";
-    static constexpr char DECOMPRESS_MODE[] = "decompress";
-    static constexpr char OFF_MODE[] = "off";
+    using BPM = BloscPlugin::Mode;
     static const std::unordered_map<std::string, const BPM> mode_map;
     static std::string mode_to_str(BPM mode)
     {
         switch (mode) {
         case BPM::COMPRESS:
-            return COMPRESS_MODE;
+            return FPB::COMPRESS_MODE;
         case BPM::DECOMPRESS:
-            return DECOMPRESS_MODE;
+            return FPB::DECOMPRESS_MODE;
         }
-        return OFF_MODE;
+        return FPB::OFF_MODE;
     }
 };
+
 const std::unordered_map<std::string, const Mode_map::BPM> Mode_map::mode_map
-    = { { Mode_map::COMPRESS_MODE, Mode_map::BPM::COMPRESS },
-        { Mode_map::DECOMPRESS_MODE, Mode_map::BPM::DECOMPRESS },
-        { Mode_map::OFF_MODE, Mode_map::BPM::OFF } };
+    = { { FPB::COMPRESS_MODE, Mode_map::BPM::COMPRESS },
+        { FPB::DECOMPRESS_MODE, Mode_map::BPM::DECOMPRESS },
+        { FPB::OFF_MODE, Mode_map::BPM::OFF } };
 
 const std::string BloscPlugin::CONFIG_BLOSC_COMPRESSOR = "compressor";
 const std::string BloscPlugin::CONFIG_BLOSC_THREADS = "threads";
@@ -46,15 +44,11 @@ const std::string BloscPlugin::CONFIG_BLOSC_LEVEL = "level";
 const std::string BloscPlugin::CONFIG_BLOSC_SHUFFLE = "shuffle";
 const std::string BloscPlugin::CONFIG_BLOSC_MODE = "mode";
 
-constexpr char BLOSC_NOSHUFFLE_STR[] = "noshuffle";
-constexpr char BLOSC_SHUFFLE_STR[] = "shuffle";
-constexpr char BLOSC_BITSHUFFLE_STR[] = "bitshuffle";
-
 // hashmap alias
-using string2int = std::unordered_map<std::string, unsigned int>;
-static std::unordered_map<std::string, const unsigned int> shuffle_str2i { { BLOSC_NOSHUFFLE_STR, 0 },
-                                                                           { BLOSC_SHUFFLE_STR, 1 },
-                                                                           { BLOSC_BITSHUFFLE_STR, 2 } };
+
+static std::unordered_map<std::string, const unsigned int> shuffle_str2i { { FPB::BLOSC_NOSHUFFLE_STR, 0 },
+                                                                           { FPB::BLOSC_SHUFFLE_STR, 1 },
+                                                                           { FPB::BLOSC_BITSHUFFLE_STR, 2 } };
 static std::unordered_map<std::string, const unsigned int> compressor_str2i {
     { BLOSC_BLOSCLZ_COMPNAME, 0 }, { BLOSC_LZ4_COMPNAME, 1 },  { BLOSC_LZ4HC_COMPNAME, 2 },
     { BLOSC_SNAPPY_COMPNAME, 3 },  { BLOSC_ZLIB_COMPNAME, 4 }, { BLOSC_ZSTD_COMPNAME, 5 }
@@ -107,12 +101,7 @@ BloscPlugin::BloscPlugin() :
         { BLOSC_NOSHUFFLE_STR, BLOSC_SHUFFLE_STR, BLOSC_BITSHUFFLE_STR }
     );
     add_config_param_metadata(
-        CONFIG_BLOSC_MODE, PMDD::STRING_T, PMDA::READ_WRITE,
-        { Mode_map::COMPRESS_MODE, Mode_map::DECOMPRESS_MODE, Mode_map::OFF_MODE }
-    );
-    add_config_param_metadata(
-        CONFIG_BLOSC_MODE, PMDD::STRING_T, PMDA::READ_WRITE,
-        { Mode_map::COMPRESS_MODE, Mode_map::DECOMPRESS_MODE, Mode_map::OFF_MODE }
+        CONFIG_BLOSC_MODE, PMDD::STRING_T, PMDA::READ_WRITE, { FPB::COMPRESS_MODE, FPB::DECOMPRESS_MODE, FPB::OFF_MODE }
     );
 
     this->commanded_compression_settings_.blosc_compressor = BLOSC_LZ4_COMPNAME;
@@ -283,16 +272,13 @@ std::pair<boost::shared_ptr<Frame>, bool> BloscPlugin::decompress_frame(const bo
 
 /**
  * Update the compression settings
+ * The this->mutex_ MUST be held when this function is called!
  */
 void BloscPlugin::update_compression_settings()
 {
     this->compression_settings_ = this->commanded_compression_settings_;
-
-    int ret = 0;
     const char* p_compressor_name;
-    ret = blosc_compcode_to_compname(
-        compressor_str2i[this->compression_settings_.blosc_compressor], &p_compressor_name
-    );
+    blosc_compcode_to_compname(compressor_str2i[this->compression_settings_.blosc_compressor], &p_compressor_name);
     LOG4CXX_DEBUG_LEVEL(
         1, logger_,
         "Blosc compression settings: " << " acquisition=\"" << this->current_acquisition_ << "\""
@@ -302,15 +288,7 @@ void BloscPlugin::update_compression_settings()
                                        << " typesize=" << this->compression_settings_.type_size
                                        << " nbytes=" << this->compression_settings_.uncompressed_size
     );
-    ret = blosc_set_compressor(p_compressor_name);
-    if (ret < 0) {
-        LOG4CXX_ERROR(
-            logger_,
-            "Blosc failed to set compressor: " << " " << this->compression_settings_.blosc_compressor << " "
-                                               << *p_compressor_name
-        );
-        throw std::runtime_error("Blosc failed to set compressor");
-    }
+    blosc_set_compressor(p_compressor_name);
     blosc_set_nthreads(this->compression_settings_.threads);
 }
 
@@ -360,9 +338,6 @@ void BloscPlugin::process_frame(boost::shared_ptr<Frame> src_frame)
  */
 void BloscPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
-    // Protect this method
-    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
-
     LOG4CXX_INFO(logger_, config.encode());
     if (config.has_param(BloscPlugin::CONFIG_BLOSC_MODE)) {
         std::string&& mode_str = config.get_param<std::string>(BloscPlugin::CONFIG_BLOSC_MODE);
@@ -389,14 +364,12 @@ void BloscPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& 
             reply.set_param<std::string>("warning: level", "Capped at upper range: 9");
         }
         this->commanded_compression_settings_.compression_level = blosc_level;
-        if (this->current_acquisition_ == "") {
-            this->update_compression_settings();
-        }
     }
 
     if (config.has_param(BloscPlugin::CONFIG_BLOSC_SHUFFLE)) {
         std::string&& blosc_shuffle = config.get_param<std::string>(BloscPlugin::CONFIG_BLOSC_SHUFFLE);
-        // Range checking: 0, 1, 2 are valid values. Anything else result in setting value 0 (no shuffle)
+        // Validate shuffle seting against lookup table. 0, 1, 2 are valid values. Anything else result in setting
+        // "noshuffle" string
         if (!shuffle_str2i.count(blosc_shuffle)) {
             LOG4CXX_WARN(
                 logger_, "Commanded blosc shuffle: " << blosc_shuffle << " is invalid. Disabling SHUFFLE filter"
@@ -405,14 +378,22 @@ void BloscPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& 
             reply.set_param<std::string>("warning: shuffle filter", "Disabled");
         }
         this->commanded_compression_settings_.shuffle = std::move(blosc_shuffle);
-        if (this->current_acquisition_ == "") {
-            this->update_compression_settings();
+    }
+
+    if (config.has_param(BloscPlugin::CONFIG_BLOSC_THREADS)) {
+        unsigned int blosc_threads = config.get_param<unsigned int>(BloscPlugin::CONFIG_BLOSC_THREADS);
+        if (blosc_threads > BLOSC_MAX_THREADS) {
+            LOG4CXX_WARN(logger_, "Commanded blosc threads: " << blosc_threads << " is too large. Setting 8 threads.");
+            blosc_threads = 8;
+            reply.set_param<int>("warning: threads", blosc_threads);
         }
+        this->commanded_compression_settings_.threads = blosc_threads;
     }
 
     if (config.has_param(BloscPlugin::CONFIG_BLOSC_COMPRESSOR)) {
         std::string&& blosc_compressor = config.get_param<std::string>(BloscPlugin::CONFIG_BLOSC_COMPRESSOR);
-        // Range checking: 0, 1, 2, 3, 4, 5 are valid values. Anything else result in setting value  (no shuffle)
+        // Validate compressor name setting against lookup table. 0, 1, 2, 3, 4, 5 are valid values. Anything else
+        // results in setting compressor "lz4" as default
         if (!compressor_str2i.count(blosc_compressor)) {
             LOG4CXX_WARN(
                 logger_,
@@ -423,9 +404,11 @@ void BloscPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& 
             reply.set_param<int>("warning: compressor", BLOSC_LZ4);
         }
         this->commanded_compression_settings_.blosc_compressor = std::move(blosc_compressor);
-        if (this->current_acquisition_ == "") {
-            this->update_compression_settings();
-        }
+    }
+    // Protect the update_compression_settings() method
+    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    if (this->current_acquisition_ == "") {
+        this->update_compression_settings();
     }
 }
 
