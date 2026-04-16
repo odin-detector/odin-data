@@ -85,8 +85,6 @@ void create_cd_values(const BloscCompressionSettings& settings, std::vector<unsi
  */
 BloscPlugin::BloscPlugin() :
     current_acquisition_(""),
-    data_buffer_ptr_(NULL),
-    data_buffer_size_(0),
     plugin_mode_ { Mode::COMPRESS }
 {
     add_config_param_metadata(
@@ -133,9 +131,6 @@ BloscPlugin::BloscPlugin() :
 BloscPlugin::~BloscPlugin()
 {
     LOG4CXX_DEBUG_LEVEL(3, logger_, "BloscPlugin destructor.");
-    if (this->data_buffer_ptr_ != NULL) {
-        free(data_buffer_ptr_);
-    }
 }
 
 /**
