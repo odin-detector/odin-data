@@ -24,7 +24,7 @@ public:
          * Add some parameter values to be published
          */
         FrameProcessor::FrameMetaData frame_meta(
-            1, "raw", FrameProcessor::raw_16bit, "test", { 3, 4 }, FrameProcessor::no_compression
+            1, "raw", FrameProcessor::raw_64bit, "test", { 3, 4 }, FrameProcessor::no_compression
         );
         for (size_t i = 0; i < parameters.size(); ++i) {
             frame_meta.set_parameter<uint64_t>(parameters[i].param, parameters[i].val);
@@ -63,8 +63,8 @@ BOOST_AUTO_TEST_CASE(ParameterPublishPlugin_Publish)
         BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
     }
     BOOST_CHECK_NO_THROW(cfg.set_param(FPPP::CONFIG_ENDPOINT, std::string(inproc_endpoint)));
-    BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
-    plugin.process_frame(frame);
+    BOOST_REQUIRE_NO_THROW(plugin.configure(cfg, reply));
+    BOOST_REQUIRE_NO_THROW(plugin.process_frame(frame));
 
     rapidjson::Document d;
     BOOST_REQUIRE_NO_THROW(d.Parse(listen_ch.recv().c_str()));

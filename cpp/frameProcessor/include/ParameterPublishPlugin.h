@@ -44,7 +44,7 @@ private:
     /** Pointer to logger */
     LoggerPtr logger_;
     /** Mutex used to make this class thread safe */
-    std::recursive_mutex mutex_;
+    std::mutex mutex_;
     /** Parameters to publish */
     std::unordered_set<std::string> parameters_;
     /** Configured endpoint messages are published on */

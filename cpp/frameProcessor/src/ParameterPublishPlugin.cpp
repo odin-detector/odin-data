@@ -42,12 +42,30 @@ ParameterPublishPlugin::~ParameterPublishPlugin()
 void ParameterPublishPlugin::process_frame(boost::shared_ptr<Frame> frame)
 {
     try {
-        std::lock_guard<std::recursive_mutex> lock(mutex_);
+        std::lock_guard<std::mutex> lock(mutex_);
         OdinData::JsonDict json;
         OdinData::JsonDict parameters_json;
         for (auto& parameter : this->parameters_) {
             if (frame->meta_data().has_parameter(parameter)) {
-                parameters_json.add(parameter, frame->meta_data().get_parameter<uint64_t>(parameter));
+                switch (frame->meta_data().get_data_type()) {
+                case DataType::raw_8bit:
+                    parameters_json.add(parameter, frame->meta_data().get_parameter<uint8_t>(parameter));
+                    break;
+                case DataType::raw_16bit:
+                    parameters_json.add(parameter, frame->meta_data().get_parameter<uint16_t>(parameter));
+                    break;
+                case DataType::raw_32bit:
+                    parameters_json.add(parameter, frame->meta_data().get_parameter<uint32_t>(parameter));
+                    break;
+                case DataType::raw_64bit:
+                    parameters_json.add(parameter, frame->meta_data().get_parameter<uint64_t>(parameter));
+                    break;
+                case DataType::raw_float:
+                    parameters_json.add(parameter, frame->meta_data().get_parameter<float_t>(parameter));
+                    break;
+                default:
+                    parameters_json.add(parameter, frame->meta_data().get_parameter<uint64_t>(parameter));
+                }
             }
         }
         json.add(DATA_FRAME_NUMBER, static_cast<int64_t>(frame->get_frame_number()));
@@ -79,7 +97,7 @@ void ParameterPublishPlugin::process_frame(boost::shared_ptr<Frame> frame)
 void ParameterPublishPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
     try {
-        std::lock_guard<std::recursive_mutex> lock(mutex_);
+        std::lock_guard<std::mutex> lock(mutex_);
         if (config.has_param(CONFIG_ENDPOINT)) {
             this->setup_publish_channel(config.get_param<std::string>(CONFIG_ENDPOINT));
         }
