@@ -42,7 +42,7 @@ public:
         );
         // set compression mode to "compress". This is the default too however
         BOOST_CHECK_NO_THROW(
-            cfg_.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_MODE, std::string(FPB::COMPRESS_MODE))
+            cfg_.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_MODE, std::string(FPB::BLOSC_COMPRESS_MODE_STR))
         );
         BOOST_REQUIRE_NO_THROW(blosc_plugin.configure(cfg_, reply));
         // register the frame to itself so we can get the
@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE(BloscPlugin_compress_decompress)
 
     // Decompress Test
     BOOST_CHECK_NO_THROW(
-        cfg_.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_MODE, std::string(FPB::DECOMPRESS_MODE))
+        cfg_.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_MODE, std::string(FPB::BLOSC_DECOMPRESS_MODE_STR))
     );
     BOOST_REQUIRE_NO_THROW(blosc_plugin.configure(cfg_, reply));
     BOOST_REQUIRE_NO_THROW(blosc_plugin.process_frame(compressed_frame));
@@ -101,7 +101,9 @@ BOOST_AUTO_TEST_CASE(BloscPlugin_off)
     setup_blosc_config(cfg_, reply);
 
     // reset the compression mode as "off" - no compression should occur and the source frame should be pushed on queue
-    BOOST_CHECK_NO_THROW(cfg_.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_MODE, std::string(FPB::OFF_MODE)));
+    BOOST_CHECK_NO_THROW(
+        cfg_.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_MODE, std::string(FPB::BLOSC_OFF_MODE_STR))
+    );
     BOOST_REQUIRE_NO_THROW(blosc_plugin.configure(cfg_, reply));
     BOOST_REQUIRE_NO_THROW(blosc_plugin.process_frame(frame));
     boost::shared_ptr<FrameProcessor::Frame> same_frame = blosc_plugin.getWorkQueue()->remove();

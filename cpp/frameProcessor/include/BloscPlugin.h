@@ -50,9 +50,9 @@ public:
     constexpr static char BLOSC_SHUFFLE_STR[] = "shuffle";
     constexpr static char BLOSC_BITSHUFFLE_STR[] = "bitshuffle";
 
-    constexpr static char COMPRESS_MODE[] = "compress";
-    constexpr static char DECOMPRESS_MODE[] = "decompress";
-    constexpr static char OFF_MODE[] = "off";
+    constexpr static char BLOSC_COMPRESS_MODE_STR[] = "compress";
+    constexpr static char BLOSC_DECOMPRESS_MODE_STR[] = "decompress";
+    constexpr static char BLOSC_OFF_MODE_STR[] = "off";
 
     // Baseclass API to implement:
     void process_frame(boost::shared_ptr<Frame> frame);

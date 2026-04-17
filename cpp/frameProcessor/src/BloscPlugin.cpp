@@ -25,18 +25,20 @@ struct Mode_map {
     {
         switch (mode) {
         case BPM::COMPRESS:
-            return FPB::COMPRESS_MODE;
+            return FPB::BLOSC_COMPRESS_MODE_STR;
         case BPM::DECOMPRESS:
-            return FPB::DECOMPRESS_MODE;
+            return FPB::BLOSC_DECOMPRESS_MODE_STR;
+        case BPM::OFF:
+            return FPB::BLOSC_OFF_MODE_STR;
         }
-        return FPB::OFF_MODE;
+        return FPB::BLOSC_OFF_MODE_STR;
     }
 };
 
 const std::unordered_map<std::string, const Mode_map::BPM> Mode_map::mode_map
-    = { { FPB::COMPRESS_MODE, Mode_map::BPM::COMPRESS },
-        { FPB::DECOMPRESS_MODE, Mode_map::BPM::DECOMPRESS },
-        { FPB::OFF_MODE, Mode_map::BPM::OFF } };
+    = { { FPB::BLOSC_COMPRESS_MODE_STR, Mode_map::BPM::COMPRESS },
+        { FPB::BLOSC_DECOMPRESS_MODE_STR, Mode_map::BPM::DECOMPRESS },
+        { FPB::BLOSC_OFF_MODE_STR, Mode_map::BPM::OFF } };
 
 const std::string BloscPlugin::CONFIG_BLOSC_COMPRESSOR = "compressor";
 const std::string BloscPlugin::CONFIG_BLOSC_THREADS = "threads";
@@ -99,7 +101,8 @@ BloscPlugin::BloscPlugin() :
         { BLOSC_NOSHUFFLE_STR, BLOSC_SHUFFLE_STR, BLOSC_BITSHUFFLE_STR }
     );
     add_config_param_metadata(
-        CONFIG_BLOSC_MODE, PMDD::STRING_T, PMDA::READ_WRITE, { FPB::COMPRESS_MODE, FPB::DECOMPRESS_MODE, FPB::OFF_MODE }
+        CONFIG_BLOSC_MODE, PMDD::STRING_T, PMDA::READ_WRITE,
+        { FPB::BLOSC_COMPRESS_MODE_STR, FPB::BLOSC_DECOMPRESS_MODE_STR, FPB::BLOSC_OFF_MODE_STR }
     );
 
     this->commanded_compression_settings_.blosc_compressor = BLOSC_LZ4_COMPNAME;
@@ -140,41 +143,30 @@ BloscPlugin::~BloscPlugin()
  */
 std::pair<boost::shared_ptr<Frame>, bool> BloscPlugin::compress_frame(const boost::shared_ptr<Frame>& src_frame)
 {
-    int compressed_size = 0;
     bool comp_res = false;
-    BloscCompressionSettings c_settings;
-
-    FrameMetaData dest_meta_data = src_frame->get_meta_data_copy();
-    dest_meta_data.set_compression_type(blosc);
 
     const void* src_data_ptr = static_cast<const void*>(static_cast<const char*>(src_frame->get_image_ptr()));
-
-    c_settings = this->compression_settings_;
-
-    c_settings.type_size = get_size_from_enum(src_frame->get_meta_data().get_data_type());
-    c_settings.uncompressed_size = src_frame->get_image_size();
-
-    size_t dest_data_size = c_settings.uncompressed_size + BLOSC_MAX_OVERHEAD;
-
+    size_t type_size = get_size_from_enum(src_frame->get_meta_data().get_data_type());
+    int uncompressed_size = src_frame->get_image_size();
+    size_t dest_data_size = uncompressed_size + BLOSC_MAX_OVERHEAD;
     boost::shared_ptr<Frame> dest_frame;
     try {
-        dest_frame = boost::make_shared<DataBlockFrame>(dest_meta_data, dest_data_size);
-
+        dest_frame = boost::make_shared<DataBlockFrame>(src_frame->get_meta_data(), dest_data_size);
+        dest_frame->meta_data().set_compression_type(blosc);
         LOG4CXX_DEBUG_LEVEL(
             2, logger_,
             "Blosc compression: frame=" << src_frame->get_frame_number() << " acquisition=\""
                                         << src_frame->get_meta_data().get_acquisition_ID() << '\"' << " compressor="
                                         << blosc_get_compressor() << " threads=" << blosc_get_nthreads()
-                                        << " clevel=" << c_settings.compression_level
-                                        << " doshuffle=" << c_settings.shuffle << " typesize=" << c_settings.type_size
-                                        << " comp_bytes=" << c_settings.uncompressed_size
-                                        << " destsize=" << dest_data_size << " src=" << src_data_ptr
-                                        << " dest=" << dest_frame->get_image_ptr()
+                                        << " clevel=" << compression_settings_.compression_level
+                                        << " doshuffle=" << compression_settings_.shuffle << " typesize=" << type_size
+                                        << " comp_bytes=" << uncompressed_size << " destsize=" << dest_data_size
+                                        << " src=" << src_data_ptr << " dest=" << dest_frame->get_image_ptr()
         );
-        compressed_size = blosc_compress_ctx(
-            c_settings.compression_level, shuffle_str2i[c_settings.shuffle], c_settings.type_size,
-            c_settings.uncompressed_size, src_data_ptr, dest_frame->get_image_ptr(), dest_data_size,
-            blosc_get_compressor(), 0, c_settings.threads
+        int compressed_size = blosc_compress_ctx(
+            compression_settings_.compression_level, shuffle_str2i[compression_settings_.shuffle], type_size,
+            uncompressed_size, src_data_ptr, dest_frame->get_image_ptr(), dest_data_size, blosc_get_compressor(), 0,
+            compression_settings_.threads
         );
 
         if (compressed_size > 0) {
@@ -192,9 +184,9 @@ std::pair<boost::shared_ptr<Frame>, bool> BloscPlugin::compress_frame(const boos
                 logger_,
                 "blosc_compress failed. error="
                     << compressed_size << " compressor=" << blosc_get_compressor()
-                    << " threads=" << blosc_get_nthreads() << " clevel=" << c_settings.compression_level
-                    << " doshuffle=" << c_settings.shuffle << " typesize=" << c_settings.type_size
-                    << " comp_bytes=" << c_settings.uncompressed_size << " destsize=" << dest_data_size
+                    << " threads=" << blosc_get_nthreads() << " clevel=" << compression_settings_.compression_level
+                    << " doshuffle=" << compression_settings_.shuffle << " typesize=" << type_size
+                    << " comp_bytes=" << uncompressed_size << " destsize=" << dest_data_size
             );
         } else {
             dest_frame.reset();
@@ -363,8 +355,7 @@ void BloscPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& 
 
     if (config.has_param(BloscPlugin::CONFIG_BLOSC_SHUFFLE)) {
         std::string&& blosc_shuffle = config.get_param<std::string>(BloscPlugin::CONFIG_BLOSC_SHUFFLE);
-        // Validate shuffle seting against lookup table. 0, 1, 2 are valid values. Anything else result in setting
-        // "noshuffle" string
+        // Validate shuffle string against lookup table. Invalid strings results in default setting "noshuffle" string
         if (!shuffle_str2i.count(blosc_shuffle)) {
             LOG4CXX_WARN(
                 logger_, "Commanded blosc shuffle: " << blosc_shuffle << " is invalid. Disabling SHUFFLE filter"
@@ -387,8 +378,8 @@ void BloscPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& 
 
     if (config.has_param(BloscPlugin::CONFIG_BLOSC_COMPRESSOR)) {
         std::string&& blosc_compressor = config.get_param<std::string>(BloscPlugin::CONFIG_BLOSC_COMPRESSOR);
-        // Validate compressor name setting against lookup table. 0, 1, 2, 3, 4, 5 are valid values. Anything else
-        // results in setting compressor "lz4" as default
+        // Validate compressor name string against lookup table. Invalid strings result in default setting compressor
+        // "lz4" as default
         if (!compressor_str2i.count(blosc_compressor)) {
             LOG4CXX_WARN(
                 logger_,
