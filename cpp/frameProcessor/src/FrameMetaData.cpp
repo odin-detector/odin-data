@@ -167,7 +167,7 @@ void FrameMetaData::set_frame_offset(const int64_t& offset)
 /** Adjust frame offset by increment
  * @param increment to adjust offset by
  */
-void FrameMetaData::adjust_frame_offset(const int64_t& increment)
+void FrameMetaData::adjust_frame_offset(const int64_t increment)
 {
     this->frame_offset_ += increment;
 }

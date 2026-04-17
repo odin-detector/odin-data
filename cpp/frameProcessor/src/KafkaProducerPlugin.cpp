@@ -90,7 +90,7 @@ KafkaProducerPlugin::~KafkaProducerPlugin()
  */
 void KafkaProducerPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
-    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     if (config.has_param(CONFIG_SERVERS)) {
         destroy_kafka();
         configure_kafka_servers(config.get_param<std::string>(CONFIG_SERVERS));
@@ -179,7 +179,7 @@ void KafkaProducerPlugin::destroy_kafka()
 void KafkaProducerPlugin::poll_delivery_message_report_queue()
 {
     if (kafka_producer_ != NULL) {
-        boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+        std::lock_guard<std::mutex> lock(mutex_);
         rd_kafka_poll(kafka_producer_, 0);
     }
 }
@@ -361,7 +361,7 @@ void KafkaProducerPlugin::enqueue_frame(boost::shared_ptr<Frame> frame)
         return;
     }
     // This lock avoids configuring/destroying/enqueuing at the same time
-    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     char* buf;
     size_t len;
     // This buffer is freed by kafka (when there are no errors)
