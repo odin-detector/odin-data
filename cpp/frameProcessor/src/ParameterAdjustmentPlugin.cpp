@@ -50,7 +50,8 @@ void ParameterAdjustmentPlugin::process_frame(boost::shared_ptr<Frame> frame)
                     std::string input_parameter = parameter_inputs_[iter->first];
                     if (frame->meta_data().has_parameter(input_parameter)) {
                         uint64_t param_value
-                            = frame->meta_data().get_parameter<uint64_t>(input_parameter) + iter->second;
+                            = boost::get<uint64_t>(frame->meta_data().get_parameter<uint64_t>(input_parameter))
+                            + iter->second;
                         frame->meta_data().set_parameter<uint64_t>(iter->first, param_value);
                     } else {
                         std::stringstream ss;

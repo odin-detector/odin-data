@@ -4,9 +4,11 @@
 #include <map>
 #include <stdint.h>
 #include <string>
+#include <type_traits>
 #include <vector>
 
-#include <boost/any.hpp>
+#include <boost/variant.hpp>
+
 #include <log4cxx/logger.h>
 
 #include "FrameProcessorDefinitions.h"
@@ -17,23 +19,50 @@ typedef std::vector<dimsize_t> dimensions_t;
 namespace FrameProcessor {
 
 class FrameMetaData {
-
 public:
+    using pType_t = boost::variant<boost::blank, uint8_t, uint16_t, uint32_t, uint64_t, float>;
     FrameMetaData(
-        const long long& frame_number,
+        long long frame_number,
         const std::string& dataset_name,
-        const DataType& data_type,
+        DataType data_type,
         const std::string& acquisition_ID,
         const std::vector<unsigned long long>& dimensions,
-        const CompressionType& compression_type = no_compression
-    );
+        CompressionType compression_type = no_compression
+    ) :
+        frame_number_(frame_number),
+        dataset_name_(dataset_name),
+        data_type_(data_type),
+        acquisition_ID_(acquisition_ID),
+        dimensions_(dimensions),
+        compression_type_(compression_type),
+        frame_offset_(0),
+        logger(log4cxx::Logger::getLogger("FP.FrameMetaData"))
+    {
+    }
 
-    FrameMetaData();
+    FrameMetaData(FrameMetaData&& rhs) = default; // move constructor
 
-    FrameMetaData(const FrameMetaData& frame);
+    FrameMetaData& operator=(FrameMetaData&& rhs) = default; // move constructor
+
+    FrameMetaData& operator=(const FrameMetaData& rhs) = default; // move-assignment operator
+
+    FrameMetaData() :
+        frame_number_(-1),
+        dataset_name_(""),
+        data_type_(raw_unknown),
+        compression_type_(unknown_compression),
+        frame_offset_(0),
+        logger(log4cxx::Logger::getLogger("FP.FrameMetaData"))
+    {
+    }
+
+    FrameMetaData(const FrameMetaData& frame) = default;
 
     /** Return frame parameters */
-    const std::map<std::string, boost::any>& get_parameters() const;
+    const std::unordered_map<std::string, pType_t>& get_parameters() const
+    {
+        return this->parameters_;
+    }
 
     /** Get frame parameter
      *
@@ -41,21 +70,28 @@ public:
      * @param parameter_name
      * @return
      */
-    template <class T> T get_parameter(const std::string& parameter_name) const
+    template <
+        class T,
+        typename = typename std::enable_if<std::is_integral<T>::value || std::is_floating_point<T>::value>::type>
+    pType_t get_parameter(const std::string& parameter_name) const
     {
-        std::map<std::string, boost::any>::const_iterator iter = parameters_.find(parameter_name);
-        if (iter == parameters_.end()) {
-            LOG4CXX_ERROR(logger, "Unable to find parameter: " + parameter_name);
-            throw std::runtime_error("Unable to find parameter");
+        if (parameters_.count(parameter_name)) {
+            return parameters_.at(parameter_name);
         }
-        try {
-            return boost::any_cast<T>(iter->second);
-        } catch (boost::bad_any_cast& e) {
-            LOG4CXX_ERROR(logger, "Parameter has wrong type: " + parameter_name);
-            throw std::runtime_error("Parameter has wrong type");
-        } catch (std::exception& e) {
-            throw std::runtime_error("Unknown exception fetching parameter");
+        LOG4CXX_ERROR(logger, "Unable to find parameter: " + parameter_name);
+        return boost::blank {};
+    }
+
+    template <
+        class T,
+        typename = typename std::enable_if<std::is_integral<T>::value || std::is_floating_point<T>::value>::type>
+    pType_t get_parameter(std::string&& parameter_name) const
+    {
+        if (parameters_.count(parameter_name)) {
+            return parameters_.at(parameter_name);
         }
+        LOG4CXX_ERROR(logger, "Unable to find parameter: " + parameter_name);
+        return {};
     }
 
     /** Set frame parameter
@@ -64,9 +100,21 @@ public:
      * @param parameter_name
      * @param value
      */
-    template <class T> void set_parameter(const std::string& parameter_name, T value)
+
+    template <
+        class T,
+        typename = typename std::enable_if<std::is_integral<T>::value || std::is_floating_point<T>::value>::type>
+    void set_parameter(const std::string& parameter_name, T value)
     {
         parameters_[parameter_name] = value;
+    }
+
+    template <
+        class T,
+        typename = typename std::enable_if<std::is_integral<T>::value || std::is_floating_point<T>::value>::type>
+    void set_parameter(std::string&& parameter_name, T value)
+    {
+        parameters_[std::move(parameter_name)] = value;
     }
 
     /** Check if frame has parameter
@@ -76,53 +124,108 @@ public:
      */
     bool has_parameter(const std::string& index) const
     {
-        return (parameters_.count(index) == 1);
+        return parameters_.count(index);
     }
 
     /** Return frame number */
-    long long get_frame_number() const;
+    long long get_frame_number() const
+    {
+        return this->frame_number_;
+    }
 
     /** Set frame number */
-    void set_frame_number(const long long& frame_number);
+    void set_frame_number(const long long& frame_number)
+    {
+        this->frame_number_ = frame_number;
+    }
 
     /** Return dataset_name */
-    const std::string& get_dataset_name() const;
+    const std::string& get_dataset_name() const
+    {
+        return this->dataset_name_;
+    }
 
     /** Set dataset name */
-    void set_dataset_name(const std::string& dataset_name);
+    void set_dataset_name(const std::string& dataset_name)
+    {
+        this->dataset_name_ = dataset_name;
+    }
+
+    void set_dataset_name(std::string&& dataset_name)
+    {
+        this->dataset_name_ = std::move(dataset_name);
+    }
 
     /** Return data type */
-    DataType get_data_type() const;
+    DataType get_data_type() const
+    {
+        return this->data_type_;
+    }
 
     /** Set data type */
-    void set_data_type(DataType data_type);
+    void set_data_type(DataType data_type)
+    {
+        this->data_type_ = data_type;
+    }
 
     /** Return acquisition ID */
-    const std::string& get_acquisition_ID() const;
+    const std::string& get_acquisition_ID() const
+    {
+        return this->acquisition_ID_;
+    }
 
     /** Set acquisition ID */
-    void set_acquisition_ID(const std::string& acquisition_ID);
+    void set_acquisition_ID(const std::string& acquisition_ID)
+    {
+        this->acquisition_ID_ = acquisition_ID;
+    }
 
     /** Return dimensions */
-    const dimensions_t& get_dimensions() const;
+    const dimensions_t& get_dimensions() const
+    {
+        return this->dimensions_;
+    }
 
     /** Set dimensions */
-    void set_dimensions(const dimensions_t& dimensions);
+    void set_dimensions(const dimensions_t& dimensions)
+    {
+        this->dimensions_ = dimensions;
+    }
+
+    void set_dimensions(dimensions_t&& dimensions)
+    {
+        this->dimensions_ = std::move(dimensions);
+    }
 
     /** Return compression type */
-    CompressionType get_compression_type() const;
+    CompressionType get_compression_type() const
+    {
+        return this->compression_type_;
+    }
 
     /** Set compression type */
-    void set_compression_type(CompressionType compression_type);
+    void set_compression_type(CompressionType compression_type)
+    {
+        this->compression_type_ = compression_type;
+    }
 
     /** Return frame offset */
-    int64_t get_frame_offset() const;
+    int64_t get_frame_offset() const
+    {
+        return this->frame_offset_;
+    }
 
     /** Set frame offset */
-    void set_frame_offset(const int64_t& offset);
+    void set_frame_offset(const int64_t& offset)
+    {
+        this->frame_offset_ = offset;
+    }
 
     /** Adjust frame offset by increment */
-    void adjust_frame_offset(const int64_t& increment);
+    void adjust_frame_offset(const int64_t& increment)
+    {
+        this->frame_offset_ += increment;
+    }
 
 private:
     /** Frame number */
@@ -147,7 +250,7 @@ private:
     CompressionType compression_type_;
 
     /** Map of parameters */
-    std::map<std::string, boost::any> parameters_;
+    std::unordered_map<std::string, pType_t> parameters_;
 
     /** Frame offset */
     int64_t frame_offset_;

@@ -317,44 +317,33 @@ void HDF5File::write_parameter(const Frame& frame, DatasetDefinition dataset_def
     boost::lock_guard<boost::recursive_mutex> lock(mutex_);
 
     void* data_ptr;
-    size_t size = 0;
-    uint8_t u8value = 0;
-    uint16_t u16value = 0;
-    uint32_t u32value = 0;
-    uint64_t u64value = 0;
-    float f32value = 0;
+    FrameMetaData::pType_t value;
 
     // Get the correct value and size from the parameter given its type
     switch (dataset_definition.data_type) {
     case raw_8bit:
-        u8value = frame.get_meta_data().get_parameter<uint8_t>(dataset_definition.name);
-        data_ptr = &u8value;
-        size = sizeof(uint8_t);
+        value = frame.get_meta_data().get_parameter<uint8_t>(dataset_definition.name);
+        data_ptr = reinterpret_cast<void*>(boost::get<uint8_t>(&value));
         break;
     case raw_16bit:
-        u16value = frame.get_meta_data().get_parameter<uint16_t>(dataset_definition.name);
-        data_ptr = &u16value;
-        size = sizeof(uint16_t);
+        value = frame.get_meta_data().get_parameter<uint16_t>(dataset_definition.name);
+        data_ptr = reinterpret_cast<void*>(boost::get<uint16_t>(&value));
         break;
     case raw_32bit:
-        u32value = frame.get_meta_data().get_parameter<uint32_t>(dataset_definition.name);
-        data_ptr = &u32value;
-        size = sizeof(uint32_t);
+        value = frame.get_meta_data().get_parameter<uint32_t>(dataset_definition.name);
+        data_ptr = reinterpret_cast<void*>(boost::get<uint32_t>(&value));
         break;
     case raw_64bit:
-        u64value = frame.get_meta_data().get_parameter<uint64_t>(dataset_definition.name);
-        data_ptr = &u64value;
-        size = sizeof(uint64_t);
+        value = frame.get_meta_data().get_parameter<uint64_t>(dataset_definition.name);
+        data_ptr = reinterpret_cast<void*>(boost::get<uint64_t>(&value));
         break;
     case raw_float:
-        f32value = frame.get_meta_data().get_parameter<float>(dataset_definition.name);
-        data_ptr = &f32value;
-        size = sizeof(float);
+        value = frame.get_meta_data().get_parameter<float>(dataset_definition.name);
+        data_ptr = reinterpret_cast<void*>(boost::get<float>(&value));
         break;
     default:
-        u16value = frame.get_meta_data().get_parameter<uint16_t>(dataset_definition.name);
-        data_ptr = &u16value;
-        size = sizeof(uint16_t);
+        value = frame.get_meta_data().get_parameter<uint16_t>(dataset_definition.name);
+        data_ptr = reinterpret_cast<void*>(boost::get<uint16_t>(&value));
         break;
     }
 

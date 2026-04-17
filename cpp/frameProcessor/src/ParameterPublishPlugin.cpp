@@ -49,22 +49,34 @@ void ParameterPublishPlugin::process_frame(boost::shared_ptr<Frame> frame)
             if (frame->meta_data().has_parameter(parameter)) {
                 switch (frame->meta_data().get_data_type()) {
                 case DataType::raw_8bit:
-                    parameters_json.add(parameter, frame->meta_data().get_parameter<uint8_t>(parameter));
+                    parameters_json.add(
+                        parameter, boost::get<uint8_t>(frame->meta_data().get_parameter<uint8_t>(parameter))
+                    );
                     break;
                 case DataType::raw_16bit:
-                    parameters_json.add(parameter, frame->meta_data().get_parameter<uint16_t>(parameter));
+                    parameters_json.add(
+                        parameter, boost::get<uint16_t>(frame->meta_data().get_parameter<uint16_t>(parameter))
+                    );
                     break;
                 case DataType::raw_32bit:
-                    parameters_json.add(parameter, frame->meta_data().get_parameter<uint32_t>(parameter));
+                    parameters_json.add(
+                        parameter, boost::get<uint32_t>(frame->meta_data().get_parameter<uint32_t>(parameter))
+                    );
                     break;
                 case DataType::raw_64bit:
-                    parameters_json.add(parameter, frame->meta_data().get_parameter<uint64_t>(parameter));
+                    parameters_json.add(
+                        parameter, boost::get<uint64_t>(frame->meta_data().get_parameter<uint64_t>(parameter))
+                    );
                     break;
                 case DataType::raw_float:
-                    parameters_json.add(parameter, frame->meta_data().get_parameter<float_t>(parameter));
+                    parameters_json.add(
+                        parameter, boost::get<float_t>(frame->meta_data().get_parameter<float>(parameter))
+                    );
                     break;
                 default:
-                    parameters_json.add(parameter, frame->meta_data().get_parameter<uint64_t>(parameter));
+                    parameters_json.add(
+                        parameter, boost::get<uint64_t>(frame->meta_data().get_parameter<uint64_t>(parameter))
+                    );
                 }
             }
         }
