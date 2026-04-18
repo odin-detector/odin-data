@@ -135,7 +135,7 @@ private:
     int polling_timer_id_;
     /* For protecting critical region, specially when configuring, we don't
      * want to poll or produce while the handlers are been destroyed */
-    boost::recursive_mutex mutex_;
+    std::mutex mutex_;
 
     /** True if frame parameters need to be included in the message header */
     bool include_parameters_;

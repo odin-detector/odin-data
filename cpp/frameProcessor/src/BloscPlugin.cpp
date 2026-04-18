@@ -287,7 +287,7 @@ void BloscPlugin::update_compression_settings()
 void BloscPlugin::process_frame(boost::shared_ptr<Frame> src_frame)
 {
     // Protect this method
-    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
 
     LOG4CXX_DEBUG_LEVEL(3, logger_, "Received a new frame...");
 
@@ -392,7 +392,7 @@ void BloscPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& 
         this->commanded_compression_settings_.blosc_compressor = std::move(blosc_compressor);
     }
     // Protect the update_compression_settings() method
-    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     if (this->current_acquisition_ == "") {
         this->update_compression_settings();
     }

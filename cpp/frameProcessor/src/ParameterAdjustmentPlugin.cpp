@@ -36,6 +36,7 @@ ParameterAdjustmentPlugin::~ParameterAdjustmentPlugin()
  */
 void ParameterAdjustmentPlugin::process_frame(boost::shared_ptr<Frame> frame)
 {
+    std::lock_guard<std::mutex> guard { mutex_ };
     // Apply any parameter adjustments
     if (parameter_adjustments_.size() != 0) {
         std::map<std::string, int64_t>::iterator iter;
@@ -84,6 +85,7 @@ void ParameterAdjustmentPlugin::process_frame(boost::shared_ptr<Frame> frame)
 void ParameterAdjustmentPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
     try {
+        std::lock_guard<std::mutex> guard { mutex_ };
         // Check if we are setting the parameter adjustment values
         if (config.has_param(PARAMETER_NAME_CONFIG)) {
             OdinData::IpcMessage parameter_config(config.get_param<const rapidjson::Value&>(PARAMETER_NAME_CONFIG));

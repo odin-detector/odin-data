@@ -49,6 +49,7 @@ private:
     std::map<std::string, int64_t> parameter_adjustments_;
     /** Map of input parameters to use for each parameter **/
     std::map<std::string, std::string> parameter_inputs_;
+    std::mutex mutex_;
 };
 
 } /* namespace FrameProcessor */
