@@ -19,6 +19,10 @@ typedef std::vector<dimsize_t> dimensions_t;
 namespace FrameProcessor {
 
 class FrameMetaData {
+    // template <typename T>
+    // using is_integral_val = std::is_same<T, uint8_t>::value || std::is_same<t, uint16_t>::value
+    //     || std::is_same<T, uint32_t>::value || std::is_same<T, uint64_t>::value;
+
 public:
     using pType_t = boost::variant<boost::blank, uint8_t, uint16_t, uint32_t, uint64_t, float>;
     FrameMetaData(
@@ -72,7 +76,9 @@ public:
      */
     template <
         class T,
-        typename = typename std::enable_if<std::is_integral<T>::value || std::is_floating_point<T>::value>::type>
+        typename = typename std::enable_if<
+            std::is_same<T, uint8_t>::value || std::is_same<T, uint16_t>::value || std::is_same<T, uint32_t>::value
+            || std::is_same<T, uint64_t>::value || std::is_floating_point<T>::value>::type>
     pType_t get_parameter(const std::string& parameter_name) const
     {
         if (parameters_.count(parameter_name)) {
@@ -84,7 +90,9 @@ public:
 
     template <
         class T,
-        typename = typename std::enable_if<std::is_integral<T>::value || std::is_floating_point<T>::value>::type>
+        typename = typename std::enable_if<
+            std::is_same<T, uint8_t>::value || std::is_same<T, uint16_t>::value || std::is_same<T, uint32_t>::value
+            || std::is_same<T, uint64_t>::value || std::is_floating_point<T>::value>::type>
     pType_t get_parameter(std::string&& parameter_name) const
     {
         if (parameters_.count(parameter_name)) {
@@ -103,7 +111,9 @@ public:
 
     template <
         class T,
-        typename = typename std::enable_if<std::is_integral<T>::value || std::is_floating_point<T>::value>::type>
+        typename = typename std::enable_if<
+            std::is_same<T, uint8_t>::value || std::is_same<T, uint16_t>::value || std::is_same<T, uint32_t>::value
+            || std::is_same<T, uint64_t>::value || std::is_floating_point<T>::value>::type>
     void set_parameter(const std::string& parameter_name, T value)
     {
         parameters_[parameter_name] = value;
@@ -111,7 +121,9 @@ public:
 
     template <
         class T,
-        typename = typename std::enable_if<std::is_integral<T>::value || std::is_floating_point<T>::value>::type>
+        typename = typename std::enable_if<
+            std::is_same<T, uint8_t>::value || std::is_same<T, uint16_t>::value || std::is_same<T, uint32_t>::value
+            || std::is_same<T, uint64_t>::value || std::is_floating_point<T>::value>::type>
     void set_parameter(std::string&& parameter_name, T value)
     {
         parameters_[std::move(parameter_name)] = value;
