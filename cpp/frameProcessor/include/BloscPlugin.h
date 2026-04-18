@@ -92,8 +92,10 @@ private:
     BloscCompressionSettings compression_settings_;
     /** Compression settings for the next acquisition */
     BloscCompressionSettings commanded_compression_settings_;
-    /** Mode the plugin is configured to */
+    /** Current Mode the plugin is configured to */
     Mode plugin_mode_;
+    /** Plugin mode for the next acquisition */
+    Mode commanded_plugin_mode_;
 };
 
 } /* namespace FrameProcessor */

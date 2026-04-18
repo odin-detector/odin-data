@@ -264,6 +264,7 @@ std::pair<boost::shared_ptr<Frame>, bool> BloscPlugin::decompress_frame(const bo
 void BloscPlugin::update_compression_settings()
 {
     this->compression_settings_ = this->commanded_compression_settings_;
+    this->plugin_mode_ = this->commanded_plugin_mode_;
     const char* p_compressor_name;
     blosc_compcode_to_compname(compressor_str2i[this->compression_settings_.blosc_compressor], &p_compressor_name);
     LOG4CXX_DEBUG_LEVEL(
@@ -329,10 +330,10 @@ void BloscPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& 
     if (config.has_param(BloscPlugin::CONFIG_BLOSC_MODE)) {
         std::string&& mode_str = config.get_param<std::string>(BloscPlugin::CONFIG_BLOSC_MODE);
         if (!Mode_map::mode_map.count(mode_str)) {
-            this->plugin_mode_ = Mode::OFF;
+            this->commanded_plugin_mode_ = Mode::OFF;
             reply.set_param<std::string>("warning: mode", "Set Off");
         } else {
-            this->plugin_mode_ = Mode_map::mode_map.at(mode_str);
+            this->commanded_plugin_mode_ = Mode_map::mode_map.at(mode_str);
         }
     }
 
@@ -393,9 +394,7 @@ void BloscPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& 
     }
     // Protect the update_compression_settings() method
     std::lock_guard<std::mutex> lock(mutex_);
-    if (this->current_acquisition_ == "") {
-        this->update_compression_settings();
-    }
+    this->update_compression_settings();
 }
 
 /** Get configuration settings for the BloscPlugin
