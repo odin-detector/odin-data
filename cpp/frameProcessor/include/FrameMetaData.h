@@ -19,12 +19,9 @@ typedef std::vector<dimsize_t> dimensions_t;
 namespace FrameProcessor {
 
 class FrameMetaData {
-    // template <typename T>
-    // using is_integral_val = std::is_same<T, uint8_t>::value || std::is_same<t, uint16_t>::value
-    //     || std::is_same<T, uint32_t>::value || std::is_same<T, uint64_t>::value;
+    using pType_t = boost::variant<boost::blank, uint8_t, uint16_t, uint32_t, uint64_t, float>;
 
 public:
-    using pType_t = boost::variant<boost::blank, uint8_t, uint16_t, uint32_t, uint64_t, float>;
     FrameMetaData(
         long long frame_number,
         const std::string& dataset_name,
@@ -69,37 +66,43 @@ public:
     }
 
     /** Get frame parameter
+     * @attention This function potentially THROWS exceptions
+     *            if parameter_name is NOT found in the container.
+     *            OR if the specified type T does NOT match what
+     *            is stored.
+     *            To avoid potential exceptions from invalid parameters
+     *            check for validity of parameter_name using:
+     *
+     *               bool has_parameter(const std::string& index) const;
+     *
+     *            before calling this function or its overload(s).
+     *            AND ensure the template type specialized - T,
+     *            is what is stored in the FrameMetadata with:
+     *
+     *               bool is_type(const std::string& index) const;
      *
      * @tparam T
      * @param parameter_name
      * @return
      */
     template <
-        class T,
+        typename T,
         typename = typename std::enable_if<
             std::is_same<T, uint8_t>::value || std::is_same<T, uint16_t>::value || std::is_same<T, uint32_t>::value
             || std::is_same<T, uint64_t>::value || std::is_floating_point<T>::value>::type>
-    pType_t get_parameter(const std::string& parameter_name) const
+    T get_parameter(const std::string& parameter_name) const
     {
-        if (parameters_.count(parameter_name)) {
-            return parameters_.at(parameter_name);
-        }
-        LOG4CXX_ERROR(logger, "Unable to find parameter: " + parameter_name);
-        return boost::blank {};
+        return boost::get<T>(parameters_.at(parameter_name));
     }
 
     template <
-        class T,
+        typename T,
         typename = typename std::enable_if<
             std::is_same<T, uint8_t>::value || std::is_same<T, uint16_t>::value || std::is_same<T, uint32_t>::value
             || std::is_same<T, uint64_t>::value || std::is_floating_point<T>::value>::type>
-    pType_t get_parameter(std::string&& parameter_name) const
+    T get_parameter(std::string&& parameter_name) const
     {
-        if (parameters_.count(parameter_name)) {
-            return parameters_.at(parameter_name);
-        }
-        LOG4CXX_ERROR(logger, "Unable to find parameter: " + parameter_name);
-        return {};
+        return boost::get<T>(parameters_.at(parameter_name));
     }
 
     /** Set frame parameter
@@ -110,7 +113,7 @@ public:
      */
 
     template <
-        class T,
+        typename T,
         typename = typename std::enable_if<
             std::is_same<T, uint8_t>::value || std::is_same<T, uint16_t>::value || std::is_same<T, uint32_t>::value
             || std::is_same<T, uint64_t>::value || std::is_floating_point<T>::value>::type>
@@ -120,7 +123,7 @@ public:
     }
 
     template <
-        class T,
+        typename T,
         typename = typename std::enable_if<
             std::is_same<T, uint8_t>::value || std::is_same<T, uint16_t>::value || std::is_same<T, uint32_t>::value
             || std::is_same<T, uint64_t>::value || std::is_floating_point<T>::value>::type>
@@ -129,30 +132,69 @@ public:
         parameters_[std::move(parameter_name)] = value;
     }
 
+    /**
+     * Check if the assumed type of the parameter THROWS
+     *
+     * @attention This method assumes 'index' is present in the object
+     *            It may THROW an std::out_of_range exception if index
+     *            has not been validated to be present in the object!
+     *            validate the parameter - 'index' is present with:
+     *
+     *                      bool has_parameter(const std::string& index) const
+     *
+     * @param index - the parameter whose's stored type is
+     *                to be validated!
+     * @tparam T - the assumed type of index.
+     * @return bool
+     *            true - if the type T matches stored type
+     *            false - if the type T doesn't match stored type
+     *
+     */
+    template <
+        typename T,
+        typename = typename std::enable_if<
+            std::is_same<T, uint8_t>::value || std::is_same<T, uint16_t>::value || std::is_same<T, uint32_t>::value
+            || std::is_same<T, uint64_t>::value || std::is_floating_point<T>::value>::type>
+    bool is_type(const std::string& index) const
+    {
+        bool is_type_v = true;
+        try {
+            boost::get<T>(parameters_.at(index));
+        } catch (const boost::bad_get& err) {
+            is_type_v = false;
+        }
+        return is_type_v;
+    }
+
     /** Check if frame has parameter
      *
      * @param index
      * @return
      */
-    bool has_parameter(const std::string& index) const
+    bool has_parameter(const std::string& index) const noexcept
     {
         return parameters_.count(index);
     }
 
     /** Return frame number */
-    long long get_frame_number() const
+    long long get_frame_number() const noexcept
     {
         return this->frame_number_;
     }
 
     /** Set frame number */
-    void set_frame_number(const long long& frame_number)
+    void set_frame_number(const long long frame_number) noexcept
     {
         this->frame_number_ = frame_number;
     }
 
     /** Return dataset_name */
-    const std::string& get_dataset_name() const
+    const std::string& get_dataset_name() const noexcept
+    {
+        return this->dataset_name_;
+    }
+
+    std::string get_dataset_name_c() const noexcept
     {
         return this->dataset_name_;
     }
@@ -163,25 +205,25 @@ public:
         this->dataset_name_ = dataset_name;
     }
 
-    void set_dataset_name(std::string&& dataset_name)
+    void set_dataset_name(std::string&& dataset_name) noexcept
     {
         this->dataset_name_ = std::move(dataset_name);
     }
 
     /** Return data type */
-    DataType get_data_type() const
+    DataType get_data_type() const noexcept
     {
         return this->data_type_;
     }
 
     /** Set data type */
-    void set_data_type(DataType data_type)
+    void set_data_type(DataType data_type) noexcept
     {
         this->data_type_ = data_type;
     }
 
     /** Return acquisition ID */
-    const std::string& get_acquisition_ID() const
+    const std::string& get_acquisition_ID() const noexcept
     {
         return this->acquisition_ID_;
     }
@@ -192,8 +234,18 @@ public:
         this->acquisition_ID_ = acquisition_ID;
     }
 
+    void set_acquisition_ID(std::string&& acquisition_ID)
+    {
+        this->acquisition_ID_ = std::move(acquisition_ID);
+    }
+
     /** Return dimensions */
-    const dimensions_t& get_dimensions() const
+    const dimensions_t& get_dimensions() const noexcept
+    {
+        return this->dimensions_;
+    }
+
+    dimensions_t get_dimensions_c() const noexcept
     {
         return this->dimensions_;
     }
@@ -204,37 +256,37 @@ public:
         this->dimensions_ = dimensions;
     }
 
-    void set_dimensions(dimensions_t&& dimensions)
+    void set_dimensions(dimensions_t&& dimensions) noexcept
     {
         this->dimensions_ = std::move(dimensions);
     }
 
     /** Return compression type */
-    CompressionType get_compression_type() const
+    CompressionType get_compression_type() const noexcept
     {
         return this->compression_type_;
     }
 
     /** Set compression type */
-    void set_compression_type(CompressionType compression_type)
+    void set_compression_type(CompressionType compression_type) noexcept
     {
         this->compression_type_ = compression_type;
     }
 
     /** Return frame offset */
-    int64_t get_frame_offset() const
+    int64_t get_frame_offset() const noexcept
     {
         return this->frame_offset_;
     }
 
     /** Set frame offset */
-    void set_frame_offset(const int64_t& offset)
+    void set_frame_offset(const int64_t offset)
     {
         this->frame_offset_ = offset;
     }
 
     /** Adjust frame offset by increment */
-    void adjust_frame_offset(const int64_t& increment)
+    void adjust_frame_offset(const int64_t increment)
     {
         this->frame_offset_ += increment;
     }
@@ -242,9 +294,6 @@ public:
 private:
     /** Frame number */
     long long frame_number_;
-
-    /** Pointer to logger */
-    log4cxx::LoggerPtr logger;
 
     /** Name of this dataset */
     std::string dataset_name_;
@@ -266,6 +315,9 @@ private:
 
     /** Frame offset */
     int64_t frame_offset_;
+
+    /** Pointer to logger */
+    log4cxx::LoggerPtr logger;
 };
 
 }

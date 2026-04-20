@@ -34,12 +34,12 @@ BOOST_AUTO_TEST_CASE(AddParameter)
     // Check the offset is applied and the parameter exists when a frame is sent
     frame->set_frame_number(0);
     plugin.process_frame(frame);
-    BOOST_CHECK_EQUAL(4, boost::get<uint64_t>(frame->get_meta_data().get_parameter<uint64_t>("UID")));
+    BOOST_CHECK_EQUAL(4, frame->get_meta_data().get_parameter<uint64_t>("UID"));
 
     // Check the offset is still applied when not on frame 0
     frame->set_frame_number(10);
     plugin.process_frame(frame);
-    BOOST_CHECK_EQUAL(14, boost::get<uint64_t>(frame->get_meta_data().get_parameter<uint64_t>("UID")));
+    BOOST_CHECK_EQUAL(14, frame->get_meta_data().get_parameter<uint64_t>("UID"));
 
     // Configure a new offset
     cfg.set_param(FrameProcessor::PARAMETER_NAME_CONFIG + "/UID/" + FrameProcessor::PARAMETER_ADJUSTMENT_CONFIG, 33);
@@ -48,12 +48,12 @@ BOOST_AUTO_TEST_CASE(AddParameter)
     // Check the new offset is applied
     frame->set_frame_number(1);
     plugin.process_frame(frame);
-    BOOST_CHECK_EQUAL(34, boost::get<uint64_t>(frame->get_meta_data().get_parameter<uint64_t>("UID")));
+    BOOST_CHECK_EQUAL(34, frame->get_meta_data().get_parameter<uint64_t>("UID"));
 
     // Check the new offset is applied when on frame 2
     frame->set_frame_number(2);
     plugin.process_frame(frame);
-    BOOST_CHECK_EQUAL(35, boost::get<uint64_t>(frame->get_meta_data().get_parameter<uint64_t>("UID")));
+    BOOST_CHECK_EQUAL(35, frame->get_meta_data().get_parameter<uint64_t>("UID"));
 
     // Configure a negative adjustment value
     cfg.set_param(FrameProcessor::PARAMETER_NAME_CONFIG + "/UID/" + FrameProcessor::PARAMETER_ADJUSTMENT_CONFIG, -2);
@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE(AddParameter)
     // Check the new offset is applied ok
     frame->set_frame_number(3);
     plugin.process_frame(frame);
-    BOOST_CHECK_EQUAL(1, boost::get<uint64_t>(frame->get_meta_data().get_parameter<uint64_t>("UID")));
+    BOOST_CHECK_EQUAL(1, frame->get_meta_data().get_parameter<uint64_t>("UID"));
 }
 
 BOOST_AUTO_TEST_CASE(AdjustExistingParameter)
@@ -76,14 +76,14 @@ BOOST_AUTO_TEST_CASE(AdjustExistingParameter)
     frame->set_frame_number(0);
     frame->meta_data().set_parameter("UID", uid);
     plugin.process_frame(frame);
-    BOOST_CHECK_EQUAL(0, boost::get<uint64_t>(frame->get_meta_data().get_parameter<uint64_t>("UID")));
+    BOOST_CHECK_EQUAL(0, frame->get_meta_data().get_parameter<uint64_t>("UID"));
 
     // Check a non 0 goes to the same when no config has been sent
     frame->set_frame_number(27);
     uid = 27;
     frame->meta_data().set_parameter("UID", uid);
     plugin.process_frame(frame);
-    BOOST_CHECK_EQUAL(27, boost::get<uint64_t>(frame->get_meta_data().get_parameter<uint64_t>("UID")));
+    BOOST_CHECK_EQUAL(27, frame->get_meta_data().get_parameter<uint64_t>("UID"));
 
     // Configure an offset of 4 for the UID parameter
     OdinData::IpcMessage reply;
@@ -96,14 +96,14 @@ BOOST_AUTO_TEST_CASE(AdjustExistingParameter)
     uid = 0;
     frame->meta_data().set_parameter("UID", uid);
     plugin.process_frame(frame);
-    BOOST_CHECK_EQUAL(4, boost::get<uint64_t>(frame->get_meta_data().get_parameter<uint64_t>("UID")));
+    BOOST_CHECK_EQUAL(4, frame->get_meta_data().get_parameter<uint64_t>("UID"));
 
     // Check the parameter overwrites any existing value
     frame->set_frame_number(10);
     uid = 123;
     frame->meta_data().set_parameter("UID", uid);
     plugin.process_frame(frame);
-    BOOST_CHECK_EQUAL(14, boost::get<uint64_t>(frame->get_meta_data().get_parameter<uint64_t>("UID")));
+    BOOST_CHECK_EQUAL(14, frame->get_meta_data().get_parameter<uint64_t>("UID"));
 }
 
 BOOST_AUTO_TEST_SUITE_END(); // ParameterAdjustmentPluginUnitTest

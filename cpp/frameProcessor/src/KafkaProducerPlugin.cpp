@@ -319,19 +319,19 @@ void* KafkaProducerPlugin::create_message(boost::shared_ptr<Frame> frame, size_t
             const std::type_info& ti = it.second.type();
             switch (it.second.which()) {
             case 1:
-                writer.Uint(boost::get<uint8_t>(frame->get_meta_data().get_parameter<uint8_t>(it.first)));
+                writer.Uint(frame->get_meta_data().get_parameter<uint8_t>(it.first));
                 break;
             case 2:
-                writer.Uint(boost::get<uint16_t>(frame->get_meta_data().get_parameter<uint16_t>(it.first)));
+                writer.Uint(frame->get_meta_data().get_parameter<uint16_t>(it.first));
                 break;
             case 3:
-                writer.Uint(boost::get<uint32_t>(frame->get_meta_data().get_parameter<uint32_t>(it.first)));
+                writer.Uint(frame->get_meta_data().get_parameter<uint32_t>(it.first));
                 break;
             case 4:
-                writer.Uint64(boost::get<uint64_t>(frame->get_meta_data().get_parameter<uint64_t>(it.first)));
+                writer.Uint64(frame->get_meta_data().get_parameter<uint64_t>(it.first));
                 break;
             case 5:
-                writer.Double(boost::get<float>(frame->get_meta_data().get_parameter<float>(it.first)));
+                writer.Double(frame->get_meta_data().get_parameter<float>(it.first));
                 break;
             default:
                 writer.Null();

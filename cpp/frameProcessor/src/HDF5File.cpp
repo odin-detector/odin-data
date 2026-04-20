@@ -314,35 +314,36 @@ void HDF5File::write_parameter(const Frame& frame, DatasetDefinition dataset_def
     // Protect this method
     std::lock_guard<std::mutex> lock { mutex_ };
     HDF5Dataset_t& dset = this->get_hdf5_dataset(dataset_definition.name);
-
+    void* data_ptr;
+    uint64_t val64;
+    float val_f;
     // Get the correct value and size from the parameter given its type
     if (frame.get_meta_data().has_parameter(dataset_definition.name)) {
-        void* data_ptr;
-        FrameMetaData::pType_t value;
+
         switch (dataset_definition.data_type) {
         case raw_8bit:
-            value = frame.get_meta_data().get_parameter<uint8_t>(dataset_definition.name);
-            data_ptr = reinterpret_cast<void*>(boost::get<uint8_t>(&value));
+            val64 = frame.get_meta_data().get_parameter<uint8_t>(dataset_definition.name);
+            data_ptr = reinterpret_cast<void*>(&val64);
             break;
         case raw_16bit:
-            value = frame.get_meta_data().get_parameter<uint16_t>(dataset_definition.name);
-            data_ptr = reinterpret_cast<void*>(boost::get<uint16_t>(&value));
+            val64 = frame.get_meta_data().get_parameter<uint16_t>(dataset_definition.name);
+            data_ptr = reinterpret_cast<void*>(&val64);
             break;
         case raw_32bit:
-            value = frame.get_meta_data().get_parameter<uint32_t>(dataset_definition.name);
-            data_ptr = reinterpret_cast<void*>(boost::get<uint32_t>(&value));
+            val64 = frame.get_meta_data().get_parameter<uint32_t>(dataset_definition.name);
+            data_ptr = reinterpret_cast<void*>(&val64);
             break;
         case raw_64bit:
-            value = frame.get_meta_data().get_parameter<uint64_t>(dataset_definition.name);
-            data_ptr = reinterpret_cast<void*>(boost::get<uint64_t>(&value));
+            val64 = frame.get_meta_data().get_parameter<uint64_t>(dataset_definition.name);
+            data_ptr = reinterpret_cast<void*>(&val64);
             break;
         case raw_float:
-            value = frame.get_meta_data().get_parameter<float>(dataset_definition.name);
-            data_ptr = reinterpret_cast<void*>(boost::get<float>(&value));
+            val_f = frame.get_meta_data().get_parameter<float>(dataset_definition.name);
+            data_ptr = reinterpret_cast<void*>(&val64);
             break;
         default:
-            value = frame.get_meta_data().get_parameter<uint16_t>(dataset_definition.name);
-            data_ptr = reinterpret_cast<void*>(boost::get<uint16_t>(&value));
+            val64 = frame.get_meta_data().get_parameter<uint16_t>(dataset_definition.name);
+            data_ptr = reinterpret_cast<void*>(&val64);
             break;
         }
 
