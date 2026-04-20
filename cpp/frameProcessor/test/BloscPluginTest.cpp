@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(BloscPlugin_compress_decompress)
     setup_blosc_config(cfg_, reply);
     // Compress Test
     BOOST_REQUIRE_NO_THROW(blosc_plugin.process_frame(frame));
-    boost::shared_ptr<FrameProcessor::Frame> compressed_frame = blosc_plugin.getWorkQueue()->remove();
+    boost::shared_ptr<FrameProcessor::Frame> compressed_frame = blosc_plugin.getWorkQueue().remove();
     BOOST_CHECK(compressed_frame->get_image_size() < frame->get_image_size());
     BOOST_TEST_MESSAGE(
         "Compressed frame size = " << compressed_frame->get_image_size()
@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(BloscPlugin_compress_decompress)
     BOOST_CHECK_NO_THROW(cfg_.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_MODE, std::string("decompress")));
     BOOST_REQUIRE_NO_THROW(blosc_plugin.configure(cfg_, reply));
     BOOST_REQUIRE_NO_THROW(blosc_plugin.process_frame(compressed_frame));
-    boost::shared_ptr<FrameProcessor::Frame> decompressed_frame = blosc_plugin.getWorkQueue()->remove();
+    boost::shared_ptr<FrameProcessor::Frame> decompressed_frame = blosc_plugin.getWorkQueue().remove();
     BOOST_CHECK(
         decompressed_frame->get_image_size() > compressed_frame->get_image_size()
         && decompressed_frame->get_image_size() == frame->get_image_size()
@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE(BloscPlugin_off)
     BOOST_CHECK_NO_THROW(cfg_.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_MODE, std::string("off")));
     BOOST_REQUIRE_NO_THROW(blosc_plugin.configure(cfg_, reply));
     BOOST_REQUIRE_NO_THROW(blosc_plugin.process_frame(frame));
-    boost::shared_ptr<FrameProcessor::Frame> same_frame = blosc_plugin.getWorkQueue()->remove();
+    boost::shared_ptr<FrameProcessor::Frame> same_frame = blosc_plugin.getWorkQueue().remove();
     BOOST_CHECK(
         same_frame->get_image_size() == frame->get_image_size() && frame->get_data_ptr() == same_frame->get_data_ptr()
     );
