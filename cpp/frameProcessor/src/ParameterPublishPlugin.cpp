@@ -61,7 +61,7 @@ void ParameterPublishPlugin::process_frame(boost::shared_ptr<Frame> frame)
                     parameters_json.add(parameter, frame->meta_data().get_parameter<uint64_t>(parameter));
                     break;
                 case DataType::raw_float:
-                    parameters_json.add(parameter, frame->meta_data().get_parameter<float_t>(parameter));
+                    parameters_json.add(parameter, frame->meta_data().get_parameter<float>(parameter));
                     break;
                 default:
                     parameters_json.add(parameter, frame->meta_data().get_parameter<uint64_t>(parameter));
