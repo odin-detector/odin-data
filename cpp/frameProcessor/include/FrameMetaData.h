@@ -41,11 +41,13 @@ public:
     {
     }
 
+    FrameMetaData(const FrameMetaData& frame) = default; // copy constructor
+
     FrameMetaData(FrameMetaData&& rhs) = default; // move constructor
 
-    FrameMetaData& operator=(FrameMetaData&& rhs) = default; // move constructor
+    FrameMetaData& operator=(const FrameMetaData& rhs) = default; // copy-assignment operator
 
-    FrameMetaData& operator=(const FrameMetaData& rhs) = default; // move-assignment operator
+    FrameMetaData& operator=(FrameMetaData&& rhs) = default; // move-assignment operator
 
     FrameMetaData() :
         frame_number_(-1),
@@ -56,8 +58,6 @@ public:
         logger(log4cxx::Logger::getLogger("FP.FrameMetaData"))
     {
     }
-
-    FrameMetaData(const FrameMetaData& frame) = default;
 
     /** Return frame parameters */
     const std::unordered_map<std::string, pType_t>& get_parameters() const
@@ -87,20 +87,8 @@ public:
      */
     template <
         typename T,
-        typename = typename std::enable_if<
-            std::is_same<T, uint8_t>::value || std::is_same<T, uint16_t>::value || std::is_same<T, uint32_t>::value
-            || std::is_same<T, uint64_t>::value || std::is_floating_point<T>::value>::type>
+        typename = typename std::enable_if<std::is_unsigned<T>::value || std::is_same<T, float>::value>::type>
     T get_parameter(const std::string& parameter_name) const
-    {
-        return boost::get<T>(parameters_.at(parameter_name));
-    }
-
-    template <
-        typename T,
-        typename = typename std::enable_if<
-            std::is_same<T, uint8_t>::value || std::is_same<T, uint16_t>::value || std::is_same<T, uint32_t>::value
-            || std::is_same<T, uint64_t>::value || std::is_floating_point<T>::value>::type>
-    T get_parameter(std::string&& parameter_name) const
     {
         return boost::get<T>(parameters_.at(parameter_name));
     }
@@ -114,9 +102,7 @@ public:
 
     template <
         typename T,
-        typename = typename std::enable_if<
-            std::is_same<T, uint8_t>::value || std::is_same<T, uint16_t>::value || std::is_same<T, uint32_t>::value
-            || std::is_same<T, uint64_t>::value || std::is_floating_point<T>::value>::type>
+        typename = typename std::enable_if<std::is_unsigned<T>::value || std::is_same<T, float>::value>::type>
     void set_parameter(const std::string& parameter_name, T value)
     {
         parameters_[parameter_name] = value;
@@ -124,9 +110,7 @@ public:
 
     template <
         typename T,
-        typename = typename std::enable_if<
-            std::is_same<T, uint8_t>::value || std::is_same<T, uint16_t>::value || std::is_same<T, uint32_t>::value
-            || std::is_same<T, uint64_t>::value || std::is_floating_point<T>::value>::type>
+        typename = typename std::enable_if<std::is_unsigned<T>::value || std::is_same<T, float>::value>::type>
     void set_parameter(std::string&& parameter_name, T value)
     {
         parameters_[std::move(parameter_name)] = value;
@@ -152,18 +136,15 @@ public:
      */
     template <
         typename T,
-        typename = typename std::enable_if<
-            std::is_same<T, uint8_t>::value || std::is_same<T, uint16_t>::value || std::is_same<T, uint32_t>::value
-            || std::is_same<T, uint64_t>::value || std::is_floating_point<T>::value>::type>
+        typename = typename std::enable_if<std::is_unsigned<T>::value || std::is_same<T, float>::value>::type>
     bool is_type(const std::string& index) const
     {
-        bool is_type_v = true;
         try {
             boost::get<T>(parameters_.at(index));
+            return true;
         } catch (const boost::bad_get& err) {
-            is_type_v = false;
+            return false;
         }
-        return is_type_v;
     }
 
     /** Check if frame has parameter
@@ -228,6 +209,11 @@ public:
         return this->acquisition_ID_;
     }
 
+    std::string get_acquisition_ID_c() const
+    {
+        return this->acquisition_ID_;
+    }
+
     /** Set acquisition ID */
     void set_acquisition_ID(const std::string& acquisition_ID)
     {
@@ -245,7 +231,7 @@ public:
         return this->dimensions_;
     }
 
-    dimensions_t get_dimensions_c() const noexcept
+    dimensions_t get_dimensions_c() const
     {
         return this->dimensions_;
     }
@@ -280,13 +266,13 @@ public:
     }
 
     /** Set frame offset */
-    void set_frame_offset(const int64_t offset)
+    void set_frame_offset(const int64_t offset) noexcept
     {
         this->frame_offset_ = offset;
     }
 
     /** Adjust frame offset by increment */
-    void adjust_frame_offset(const int64_t increment)
+    void adjust_frame_offset(const int64_t increment) noexcept
     {
         this->frame_offset_ += increment;
     }
