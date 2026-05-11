@@ -31,8 +31,8 @@ class TestIpcTornadoChannel(TestCase):
         client.socket = MagicMock()
         client.socket.get_monitor_socket = MagicMock(return_value="test_socket")
         client.register_monitor("test_cb")
-        self.assertEquals(client._monitor_socket, "test_socket")
-        self.assertEquals(client._monitor_callback, "test_cb")
+        self.assertEqual(client._monitor_socket, "test_socket")
+        self.assertEqual(client._monitor_callback, "test_cb")
         zmq_stream.assert_called_once_with("test_socket")
 
         # Mock the callback and verify it is called when the callback is triggered
