@@ -183,8 +183,8 @@ class TestClientProgram(TestCase):
         ):
             # Verify command line arguments are parsed as expected
             client = OdinDataClient()
-            self.assertEquals(client.args.ctrl_endpoint, "tcp://1.1.1.1:9999")
-            self.assertEquals(client.args.request_config, True)
-            self.assertEquals(client.args.request_commands, True)
-            self.assertEquals(client.args.status, True)
-            self.assertEquals(client.args.shutdown, True)
+            self.assertEqual(client.args.ctrl_endpoint, "tcp://1.1.1.1:9999")
+            self.assertEqual(client.args.request_config, True)
+            self.assertEqual(client.args.request_commands, True)
+            self.assertEqual(client.args.status, True)
+            self.assertEqual(client.args.shutdown, True)
