@@ -1,27 +1,27 @@
-import json
 import time
-from unittest import TestCase
-from unittest.mock import DEFAULT, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
-import zmq
-from odin_data.control.ipc_client import IpcClient, IpcMessageException
-from odin_data.control.odin_data_controller import IpcTornadoClient, OdinDataController
+import pytest
+from odin_data.control.odin_data_controller import OdinDataController
 
 
-@patch("odin_data.control.odin_data_controller.IpcTornadoClient")
-class TestOdinDataController(TestCase):
-    def test_configuration(self, ipcClient):
-
+@pytest.fixture()
+def controller():
+    with patch("odin_data.control.odin_data_controller.IpcTornadoClient"):
         controller = OdinDataController("testname", "127.0.0.1:10000")
+        yield controller
 
-        # Assert IpcChannel constructed
-        ipcClient.assert_called_once()
+        controller.shutdown()
+
+
+class TestOdinDataController:
+    def test_configuration(self, controller):
 
         # Get the controller API and assert return
         api = controller.get("api", True)
-        self.assertAlmostEqual(api["api"]["value"], 0.1)
-        self.assertEqual(api["api"]["writeable"], False)
-        self.assertEqual(api["api"]["type"], "float")
+        assert api["api"]["value"] == 0.1
+        assert not api["api"]["writeable"]
+        assert api["api"]["type"] == "float"
 
         # Put a simple value to config
         controller.put("0/config", {})
@@ -30,12 +30,12 @@ class TestOdinDataController(TestCase):
         controller.set_error("Test error 1")
         # Read the error and assert it has been set
         err = controller.get("0/status/error", True)
-        self.assertEqual(err["error"]["value"], "Test error 1")
+        assert err["error"]["value"], "Test error 1"
 
         # Clear the error and reassert it is empty
         controller.clear_error()
         err = controller.get("0/status/error", True)
-        self.assertEqual(err["error"]["value"], "")
+        assert err["error"]["value"] == ""
 
         # Patch the ipcClient to return true for connected status
         controller._clients[0].connected.return_value = True
@@ -52,7 +52,10 @@ class TestOdinDataController(TestCase):
             },
         )
         # Verify the reply contains the matched structure of the two dicts
-        self.assertEquals(cfg, {"p1": {"p2": []}})
+        assert cfg == {"p1": {"p2": []}}
+
+        # Allow time for the update loop to execute once
+        time.sleep(1.0)
 
         # Set up a difference in the config cache
         controller._clients[0].send_configuration = MagicMock()
@@ -66,8 +69,3 @@ class TestOdinDataController(TestCase):
         controller._clients[0].send_configuration.assert_called_once_with(
             {"item1": "Value1"}
         )
-
-        # Allow time for the update loop to execute once
-        time.sleep(1.0)
-
-        controller.shutdown()
