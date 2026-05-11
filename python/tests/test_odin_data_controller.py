@@ -52,7 +52,7 @@ class TestOdinDataController(TestCase):
             },
         )
         # Verify the reply contains the matched structure of the two dicts
-        self.assertAlmostEquals(cfg, {"p1": {"p2": []}})
+        self.assertEquals(cfg, {"p1": {"p2": []}})
 
         # Set up a difference in the config cache
         controller._clients[0].send_configuration = MagicMock()
