@@ -14,25 +14,14 @@ from odin_data.control.ipc_message import IpcMessage
 class TestMetaWriter:
     def test_full_stack_meta_writer(self):
         # Spawn the meta_writer application into a subprocess
-        #        subprocess_path = str(
-        #            Path(__file__).parent.parent
-        #            / "src/odin_data/meta_writer/meta_writer_app.py"
-        #        )
         subprocess_path = Path(odin_data.meta_writer.meta_writer_app.__file__)
         src_path = subprocess_path.parent
-        # print(src_path)
-        #        self.process = subprocess.Popen(["coverage", "run", subprocess_path])
-
-        # subprocess_path = Path(
-        #    "/venv/lib/python3.11/site-packages/odin_data/meta_writer/meta_writer_app.py"
-        # )
         self.process = subprocess.Popen(
             [
                 sys.executable,
                 "-m",
                 "coverage",
                 "run",
-                # "--debug=trace",
                 "--source={}".format(src_path),
                 subprocess_path,
             ]

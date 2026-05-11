@@ -1,15 +1,8 @@
-import json
-import time
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
-import zmq
 from odin.adapters.adapter import ApiAdapterRequest
-from odin.adapters.parameter_tree import (
-    ParameterTreeError,
-)
 from odin_data.control.meta_listener_adapter import MetaListenerAdapter
-from odin_data.control.odin_data_adapter import OdinDataAdapter
 
 
 @patch("odin_data.control.odin_data_adapter.OdinDataAdapter._controller_cls")
