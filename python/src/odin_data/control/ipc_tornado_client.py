@@ -17,7 +17,12 @@ class IpcTornadoClient(object):
     IPC_VAL_REQ_CFG = "request_configuration"
     IPC_VAL_REQ_CMDS = "request_commands"
     IPC_VAL_STATUS = "status"
+    IPC_VAL_CONFIG = "config"
     CLIENT_CONNECTED = "connected"
+    IPC_VAL_CONFIG_METADATA = "config_metadata"
+    IPC_VAL_STATUS_METADATA = "status_metadata"
+    METADATA_KEY = "metadata"
+    PARAMS_KEY = "params"
 
     MESSAGE_ID_MAX = 2**32
 
@@ -161,7 +166,7 @@ class IpcTornadoClient(object):
 
         :param version_msg: Incoming version message response
         """
-        params = version_msg['params']
+        params = version_msg[IpcTornadoChannel.PARAMS_KEY]
         self._parameters['version'] = params['version']
 
     def _update_configuration(self, config_msg):
@@ -170,17 +175,25 @@ class IpcTornadoClient(object):
 
         :param config_msg: Incoming configuration message response
         """
-        params = config_msg['params']
-        self._parameters['config'] = params
+        self._parameters[IpcTornadoChannel.IPC_VAL_CONFIG] = config_msg[IpcTornadoChannel.PARAMS_KEY]
+        if(self.METADATA_KEY in config_msg):
+            self._parameters[self.IPC_VAL_CONFIG_METADATA] = config_msg[self.METADATA_KEY]
+        else:
+            self._parameters.pop(self.IPC_VAL_CONFIG_METADATA, None)
 
     def _update_status(self, status_msg):
         """Store the response to a status message in the _parameters dict.
 
         :param status_msg: Incoming status message response
         """
-        params = status_msg['params']
+        params = status_msg[IpcTornadoChannel.PARAMS_KEY]
         params['timestamp'] = status_msg['timestamp']
         self._parameters[self.IPC_VAL_STATUS] = params
+        if(self.METADATA_KEY in status_msg):
+            self._parameters[self.IPC_VAL_STATUS_METADATA] = status_msg[self.METADATA_KEY]
+        else:
+            self._parameters.pop(self.IPC_VAL_STATUS_METADATA, None)
+
         if 'error' not in self._parameters[self.IPC_VAL_STATUS]:
             self._parameters[self.IPC_VAL_STATUS]['error'] = []
         with self._lock:

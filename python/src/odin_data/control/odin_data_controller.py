@@ -3,13 +3,13 @@ Created on 30th November 2023
 
 :author: Alan Greer
 """
-
 import logging
 import threading
 import time
 
 from deepdiff import DeepDiff
-from odin.adapters.parameter_tree import ParameterTree
+from .derived_parameter_tree import DerivedParameterTree
+from odin.adapters.parameter_tree import ParameterAccessor, ParameterTree
 
 from odin_data.control.ipc_tornado_client import IpcTornadoClient
 
@@ -43,7 +43,7 @@ class OdinDataController(object):
         self.setup_parameter_tree()
 
         # TODO: Consider renaming this
-        self._params = ParameterTree(self._tree, mutable=True)
+        self._params = DerivedParameterTree(self._tree, mutable=True)
 
         # Create the status loop handling thread
         self._status_running = True
@@ -75,7 +75,7 @@ class OdinDataController(object):
         # First we need to insert the new parameter tree
         self._tree[path] = tree
         # Next, we must re-build the complete parameter tree
-        self._params = ParameterTree(self._tree, mutable=True)
+        self._params = DerivedParameterTree(self._tree, mutable=True)
 
     def set_error(self, err):
         # Record the error message into the status
@@ -129,16 +129,16 @@ class OdinDataController(object):
                         logging.error("Unhandled exception: %s", e)
 
                     # Request parameter updates
-                    for parameter_tree in [
+                    for param_req in [
                         "status",
                         "request_configuration",
-                        "request_commands"
+                        "request_commands",
                     ]:
                         try:
-                            msg = client.send_request(parameter_tree)
+                            msg = client.send_request(param_req)
                             if client.wait_for_response(msg.get_msg_id()):
                                 logging.error(
-                                    f"{parameter_tree} request to "
+                                    f"{param_req} request to "
                                     f"{client.ctrl_endpoint} timed out"
                                 )
                         except Exception as e:
@@ -146,19 +146,52 @@ class OdinDataController(object):
                             logging.error("Unhandled exception: %s", e)
 
                     self.handle_client(client, index)
-                    if "status" in client.parameters:
+                    if IpcTornadoClient.IPC_VAL_STATUS in client.parameters:
+                        status_resp = client.parameters[IpcTornadoClient.IPC_VAL_STATUS]
+                        if IpcTornadoClient.CONFIG_METADATA in client.parameters:
+                            metadata = client.parameters[
+                                IpcTornadoClient.CONFIG_METADATA
+                            ]
+                            self._params.replace(
+                                f"{index}/{IpcTornadoClient.IPC_VAL_STATUS}",
+                                status_resp[IpcTornadoClient.IPC_VAL_STATUS],
+                                metadata,
+                            )
+                        else:
+                            self._params.replace(
+                                f"{index}/{IpcTornadoClient.IPC_VAL_STATUS}",
+                                status_resp[IpcTornadoClient.IPC_VAL_STATUS],
+                            )
                         self._params.replace(
-                            f"{index}/status", client.parameters["status"]
+                            f"{index}/{IpcTornadoClient.IPC_VAL_STATUS}", client.parameters[IpcTornadoClient.IPC_VAL_STATUS]
                         )
-                    if "config" in client.parameters:
-                        self._params.replace(
-                            f"{index}/config", client.parameters["config"]
-                        )
+                    # The client.parameters["config"] value contains the "params" response of a "request_configuration" command
+                    # The ParameterTree's metadata needs to be populated with the fields from the "metadata" of the response.
+                    # Is the above line possible?
+                    # The OdinDataController has a ParameterTree, the ParameterTree has a ParameterAccessor member object
+                    # Effectively, we can set the metadata in the ParameterTree using it's accessor object to modify it's
+                    # parameters!
+                    # But although this works, we need to think of a way of creating an API for BOTH
+                    # the odin-control and FrameProcessorPlugin's ParamMetadata class so there is consistency and
+                    # good engineering practice.
+                    if IpcTornadoClient.IPC_VAL_CONFIG in client.parameters:
+                        config_resp = client.parameters[IpcTornadoClient.IPC_VAL_CONFIG]
+                        if IpcTornadoClient.IPC_VAL_CONFIG_METADATA in client.parameters:
+                            metadata = client.parameters[
+                                IpcTornadoClient.IPC_VAL_CONFIG_METADATA
+                            ]
+                            self._params.replace(
+                                f"{index}/{IpcTornadoClient.IPC_VAL_CONFIG}", config_resp[IpcTornadoClient.IPC_VAL_CONFIG], metadata
+                            )
+                        else:
+                            self._params.replace(
+                                f"{index}/{IpcTornadoClient.IPC_VAL_CONFIG}", config_resp[IpcTornadoClient.IPC_VAL_CONFIG]
+                            )
                     if "commands" in client.parameters:
                         self.parse_available_commands(index, client)
 
                 self._config_cache = [
-                    self._params.get(f"{idx}/config")
+                    self._params.get(f"{idx}/{IpcTornadoClient.IPC_VAL_CONFIG}")
                     for idx, _ in enumerate(self._clients)
                 ]
 
@@ -184,21 +217,19 @@ class OdinDataController(object):
                     "allowed": (
                         lambda x=client.parameters["commands"][plugin]["supported"]: x,
                         None,
-                        {}
+                        {},
                     ),
                     "execute": (
                         "",
-                        lambda value,
-                        index = index,
-                        plugin = plugin: self.queue_command(index, plugin, value),
-                        {}
-                    )
+                        lambda value, index=index, plugin=plugin: self.queue_command(
+                            index, plugin, value
+                        ),
+                        {},
+                    ),
                 }
 
             # If the structure has changed then update the parameter tree
-            self._params.replace(
-                f"{index}/command", command_tree
-            )
+            self._params.replace(f"{index}/command", command_tree)
             self._supported_commands[index] = client.parameters["commands"]
 
     def queue_command(self, index, plugin, value):
