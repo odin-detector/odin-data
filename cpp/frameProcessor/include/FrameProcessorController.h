@@ -77,6 +77,9 @@ private:
     /** Configuration constant for executing setup of shared memory interface **/
     static const std::string CONFIG_FR_SETUP;
 
+    /** current metadata hash-value **/
+    static const std::string METADATA_HASH;
+
     /** Configuration constant for control socket endpoint **/
     static const std::string CONFIG_CTRL_ENDPOINT;
     /** Configuration constant for meta data endpoint **/
@@ -180,6 +183,10 @@ private:
     std::string frReadyEndpoint_;
     /** End point for frameReceiver release channel */
     std::string frReleaseEndpoint_;
+    /** Time stamp for config metadata update of frame processors */
+    size_t last_hash_config_metadata_;
+    /** Time stamp for metadata update of frame processors */
+    size_t last_hash_status_metadata_;
 };
 
 } /* namespace FrameProcessor */
