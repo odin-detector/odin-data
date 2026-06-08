@@ -297,10 +297,7 @@ void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply, bool m
     // returns all key strings in "params" as a '/' delimited string
     std::string param_keys = reply.get_keys("params", '/');
     size_t hash = std::hash<std::string> {}(param_keys);
-    if (this->last_hash_config_metadata_ != hash) {
-        this->last_hash_config_metadata_ = hash;
-    }
-    reply.set_param(FrameProcessorController::METADATA_HASH, last_hash_config_metadata_);
+    reply.set_param(FrameProcessorController::METADATA_HASH, hash);
 
     std::map<std::string, boost::shared_ptr<FrameProcessorPlugin>>::iterator iter;
     if (metadata) {
@@ -546,10 +543,7 @@ void FrameProcessorController::requestConfiguration(OdinData::IpcMessage& reply,
     // returns all key strings in "params" as a '/' delimited string
     std::string param_keys = reply.get_keys("params", '/');
     size_t hash = std::hash<std::string> {}(param_keys);
-    if (this->last_hash_status_metadata_ != hash) {
-        this->last_hash_status_metadata_ = hash;
-    }
-    reply.set_param(FrameProcessorController::METADATA_HASH, last_hash_status_metadata_);
+    reply.set_param(FrameProcessorController::METADATA_HASH, hash);
 
     if (metadata) {
         for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {

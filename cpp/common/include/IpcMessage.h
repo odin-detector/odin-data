@@ -477,7 +477,7 @@ private:
     // helper function to append
     static void get_keys_helper(const rapidjson::Value& value, const char delim, std::string& result)
     {
-        if (value.IsObject()) {
+        if (__builtin_expect(value.IsObject(), 1)) {
             for (const auto& member : value.GetObject()) {
                 // Store the found key
                 result.append(member.name.GetString()) += delim;
