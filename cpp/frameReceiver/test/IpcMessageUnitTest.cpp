@@ -384,4 +384,31 @@ BOOST_AUTO_TEST_CASE(TestIpcMessageCreationSpeed)
     );
 }
 
+BOOST_AUTO_TEST_CASE(IpcMessageGetKeys)
+{
+    const char* json_str = "{     \"msg_type\":\"cmd\","
+                           "      \"msg_val\":\"status\","
+                           "      \"timestamp\" : \"2026-05-09T12:10:01.123456\","
+                           "      \"status\" : true,"
+                           "      \"params\" : {"
+                           "          \"param1\" : \"values\","
+                           "          \"param2\" : 274,"
+                           "          \"info\": {"
+                           "               \"phoneNumber\": 2026,"
+                           "               \"state\": true,"
+                           "               \"name\":{"
+                           "                   \"first\": \"odin\","
+                           "                   \"last\": \"data\""
+                           "               },"
+                           "               \"dob\": 2011"
+                           "          }"
+                           "      }"
+                           "}";
+    OdinData::IpcMessage test_msg(json_str, true);
+    BOOST_CHECK(test_msg.is_valid() == true);
+    std::string keys_list = test_msg.get_keys("params");
+    std::cout << keys_list << '\n';
+    BOOST_CHECK(keys_list == "param1/param2/info/phoneNumber/state/name/first/last/dob/");
+}
+
 BOOST_AUTO_TEST_SUITE_END();
