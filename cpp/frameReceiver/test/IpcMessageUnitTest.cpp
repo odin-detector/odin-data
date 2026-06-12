@@ -407,7 +407,6 @@ BOOST_AUTO_TEST_CASE(IpcMessageGetKeys)
     OdinData::IpcMessage test_msg(json_str, true);
     BOOST_CHECK(test_msg.is_valid() == true);
     std::string keys_list = test_msg.get_keys("params");
-    std::cout << keys_list << '\n';
     BOOST_CHECK(keys_list == "param1/param2/info/phoneNumber/state/name/first/last/dob/");
 }
 
