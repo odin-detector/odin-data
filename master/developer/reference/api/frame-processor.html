@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>FrameProcessor API Reference &#8212; odin-data 0.1.dev1+gd57dee568 documentation</title>
+    <title>FrameProcessor API Reference &#8212; odin-data 0.1.dev1+gccce65cb0 documentation</title>
   
   
   
@@ -27,26 +27,26 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../_static/styles/theme.css?digest=7f76b32a3354e82990f2" rel="stylesheet" />
-<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=7f76b32a3354e82990f2" rel="stylesheet" />
+  <link href="../../../_static/styles/theme.css?digest=0790524f97105ba85085" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=0790524f97105ba85085" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../../../_static/scripts/fontawesome.js?digest=7f76b32a3354e82990f2"></script>
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=0790524f97105ba85085"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=7f76b32a3354e82990f2" />
-<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=7f76b32a3354e82990f2" />
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=0790524f97105ba85085" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=0790524f97105ba85085" />
 
-    <script src="../../../_static/documentation_options.js?v=d8f23b00"></script>
+    <script src="../../../_static/documentation_options.js?v=04517e3d"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'developer/reference/api/frame-processor';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.17.0';
+        DOCUMENTATION_OPTIONS.theme_version = '0.18.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://odin-detector.github.io/odin-data/switcher.json';
         DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'master';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
@@ -77,7 +77,9 @@
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -188,11 +190,18 @@
       
         <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
       
         <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -205,8 +214,7 @@
           
           
           
-          <a href="https://github.com/odin-detector/odin-data" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/odin-detector/odin-data" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
       
@@ -308,11 +316,18 @@
         
           <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
         
           <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -325,8 +340,7 @@
           
           
           
-          <a href="https://github.com/odin-detector/odin-data" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/odin-detector/odin-data" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
         
@@ -1823,6 +1837,36 @@
 <span id="_CPPv3N14FrameProcessor11BloscPlugin17CONFIG_BLOSC_MODEE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin17CONFIG_BLOSC_MODEE"></span><span id="FrameProcessor::BloscPlugin::CONFIG_BLOSC_MODE__ssC"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a6787ad8e7153d608e30123e58a01ec6d"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CONFIG_BLOSC_MODE</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;mode&quot;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin17CONFIG_BLOSC_MODEE" title="Link to this definition">#</a><br /></dt>
 <dd></dd></dl>
 
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin19BLOSC_NOSHUFFLE_STRE">
+<span id="_CPPv3N14FrameProcessor11BloscPlugin19BLOSC_NOSHUFFLE_STRE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin19BLOSC_NOSHUFFLE_STRE"></span><span id="FrameProcessor::BloscPlugin::BLOSC_NOSHUFFLE_STR__cA"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1ab366a603514df8e0cfd8cd2f8627f816"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">constexpr</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">BLOSC_NOSHUFFLE_STR</span></span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;noshuffle&quot;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin19BLOSC_NOSHUFFLE_STRE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin17BLOSC_SHUFFLE_STRE">
+<span id="_CPPv3N14FrameProcessor11BloscPlugin17BLOSC_SHUFFLE_STRE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin17BLOSC_SHUFFLE_STRE"></span><span id="FrameProcessor::BloscPlugin::BLOSC_SHUFFLE_STR__cA"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1afe62a62e8ce7b99dba93ef06bb6c6b3e"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">constexpr</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">BLOSC_SHUFFLE_STR</span></span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;shuffle&quot;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin17BLOSC_SHUFFLE_STRE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin20BLOSC_BITSHUFFLE_STRE">
+<span id="_CPPv3N14FrameProcessor11BloscPlugin20BLOSC_BITSHUFFLE_STRE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin20BLOSC_BITSHUFFLE_STRE"></span><span id="FrameProcessor::BloscPlugin::BLOSC_BITSHUFFLE_STR__cA"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1ad870102afa0cf0b01cae364199a373fc"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">constexpr</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">BLOSC_BITSHUFFLE_STR</span></span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;bitshuffle&quot;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin20BLOSC_BITSHUFFLE_STRE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin23BLOSC_COMPRESS_MODE_STRE">
+<span id="_CPPv3N14FrameProcessor11BloscPlugin23BLOSC_COMPRESS_MODE_STRE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin23BLOSC_COMPRESS_MODE_STRE"></span><span id="FrameProcessor::BloscPlugin::BLOSC_COMPRESS_MODE_STR__cA"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a9590d83ee9dc2ac0e5e34424314e3865"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">constexpr</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">BLOSC_COMPRESS_MODE_STR</span></span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;compress&quot;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin23BLOSC_COMPRESS_MODE_STRE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin25BLOSC_DECOMPRESS_MODE_STRE">
+<span id="_CPPv3N14FrameProcessor11BloscPlugin25BLOSC_DECOMPRESS_MODE_STRE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin25BLOSC_DECOMPRESS_MODE_STRE"></span><span id="FrameProcessor::BloscPlugin::BLOSC_DECOMPRESS_MODE_STR__cA"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1afdc093ef49cfbb9c4bcbb739521fa79b"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">constexpr</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">BLOSC_DECOMPRESS_MODE_STR</span></span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;decompress&quot;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin25BLOSC_DECOMPRESS_MODE_STRE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin18BLOSC_OFF_MODE_STRE">
+<span id="_CPPv3N14FrameProcessor11BloscPlugin18BLOSC_OFF_MODE_STRE"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin18BLOSC_OFF_MODE_STRE"></span><span id="FrameProcessor::BloscPlugin::BLOSC_OFF_MODE_STR__cA"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a8fbdf3c8f94159f612262d783a2a7cb5"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">constexpr</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">BLOSC_OFF_MODE_STR</span></span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;off&quot;</span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin18BLOSC_OFF_MODE_STRE" title="Link to this definition">#</a><br /></dt>
+<dd></dd></dl>
+
 </div>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-types">Private Types</p>
@@ -1881,7 +1925,7 @@
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin27update_compression_settingsEv">
 <span id="_CPPv3N14FrameProcessor11BloscPlugin27update_compression_settingsEv"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin27update_compression_settingsEv"></span><span id="FrameProcessor::BloscPlugin::update_compression_settings"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1ace70c9387172e20dc6f245c4cd819e29"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">update_compression_settings</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin27update_compression_settingsEv" title="Link to this definition">#</a><br /></dt>
-<dd><p>Update the compression settings </p>
+<dd><p>Update the compression settings The this-&gt;mutex_ MUST be held when this function is called! </p>
 </dd></dl>
 
 </div>
@@ -1918,20 +1962,15 @@
 </dd></dl>
 
 <dl class="cpp var">
-<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin16data_buffer_ptr_E">
-<span id="_CPPv3N14FrameProcessor11BloscPlugin16data_buffer_ptr_E"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin16data_buffer_ptr_E"></span><span id="FrameProcessor::BloscPlugin::data_buffer_ptr___voidP"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1aa1bacad9feb5de63690c54685ee9fcb5"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">data_buffer_ptr_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin16data_buffer_ptr_E" title="Link to this definition">#</a><br /></dt>
-<dd><p>Temporary buffer for compressed/decompressed data </p>
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin12plugin_mode_E">
+<span id="_CPPv3N14FrameProcessor11BloscPlugin12plugin_mode_E"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin12plugin_mode_E"></span><span id="FrameProcessor::BloscPlugin::plugin_mode___Mode"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a3b1d7b2b34e6cc3be91aeadda201d136"></span><a class="reference internal" href="#_CPPv4N14FrameProcessor11BloscPlugin4ModeE" title="FrameProcessor::BloscPlugin::Mode"><span class="n"><span class="pre">Mode</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">plugin_mode_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin12plugin_mode_E" title="Link to this definition">#</a><br /></dt>
+<dd><p>Current Mode the plugin is configured to </p>
 </dd></dl>
 
 <dl class="cpp var">
-<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin17data_buffer_size_E">
-<span id="_CPPv3N14FrameProcessor11BloscPlugin17data_buffer_size_E"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin17data_buffer_size_E"></span><span id="FrameProcessor::BloscPlugin::data_buffer_size___s"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1ab188c36c8588bdf47257f9c3351d314f"></span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">data_buffer_size_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin17data_buffer_size_E" title="Link to this definition">#</a><br /></dt>
-<dd></dd></dl>
-
-<dl class="cpp var">
-<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin12plugin_mode_E">
-<span id="_CPPv3N14FrameProcessor11BloscPlugin12plugin_mode_E"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin12plugin_mode_E"></span><span id="FrameProcessor::BloscPlugin::plugin_mode___Mode"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1a3b1d7b2b34e6cc3be91aeadda201d136"></span><a class="reference internal" href="#_CPPv4N14FrameProcessor11BloscPlugin4ModeE" title="FrameProcessor::BloscPlugin::Mode"><span class="n"><span class="pre">Mode</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">plugin_mode_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin12plugin_mode_E" title="Link to this definition">#</a><br /></dt>
-<dd><p>Mode the plugin is configured to </p>
+<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor11BloscPlugin22commanded_plugin_mode_E">
+<span id="_CPPv3N14FrameProcessor11BloscPlugin22commanded_plugin_mode_E"></span><span id="_CPPv2N14FrameProcessor11BloscPlugin22commanded_plugin_mode_E"></span><span id="FrameProcessor::BloscPlugin::commanded_plugin_mode___Mode"></span><span class="target" id="classFrameProcessor_1_1BloscPlugin_1af071b8816f57d677189bb04997692d75"></span><a class="reference internal" href="#_CPPv4N14FrameProcessor11BloscPlugin4ModeE" title="FrameProcessor::BloscPlugin::Mode"><span class="n"><span class="pre">Mode</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">commanded_plugin_mode_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor11BloscPlugin22commanded_plugin_mode_E" title="Link to this definition">#</a><br /></dt>
+<dd><p>Plugin mode for the next acquisition </p>
 </dd></dl>
 
 </div>
@@ -6932,6 +6971,12 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin18CONFIG_BLOSC_LEVELE"><code class="docutils literal notranslate"><span class="pre">CONFIG_BLOSC_LEVEL</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin20CONFIG_BLOSC_SHUFFLEE"><code class="docutils literal notranslate"><span class="pre">CONFIG_BLOSC_SHUFFLE</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin17CONFIG_BLOSC_MODEE"><code class="docutils literal notranslate"><span class="pre">CONFIG_BLOSC_MODE</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin19BLOSC_NOSHUFFLE_STRE"><code class="docutils literal notranslate"><span class="pre">BLOSC_NOSHUFFLE_STR</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin17BLOSC_SHUFFLE_STRE"><code class="docutils literal notranslate"><span class="pre">BLOSC_SHUFFLE_STR</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin20BLOSC_BITSHUFFLE_STRE"><code class="docutils literal notranslate"><span class="pre">BLOSC_BITSHUFFLE_STR</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin23BLOSC_COMPRESS_MODE_STRE"><code class="docutils literal notranslate"><span class="pre">BLOSC_COMPRESS_MODE_STR</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin25BLOSC_DECOMPRESS_MODE_STRE"><code class="docutils literal notranslate"><span class="pre">BLOSC_DECOMPRESS_MODE_STR</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin18BLOSC_OFF_MODE_STRE"><code class="docutils literal notranslate"><span class="pre">BLOSC_OFF_MODE_STR</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin4ModeE"><code class="docutils literal notranslate"><span class="pre">Mode</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin4Mode8COMPRESSE"><code class="docutils literal notranslate"><span class="pre">COMPRESS</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin4Mode10DECOMPRESSE"><code class="docutils literal notranslate"><span class="pre">DECOMPRESS</span></code></a></li>
@@ -6946,9 +6991,8 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin20current_acquisition_E"><code class="docutils literal notranslate"><span class="pre">current_acquisition_</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin21compression_settings_E"><code class="docutils literal notranslate"><span class="pre">compression_settings_</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin31commanded_compression_settings_E"><code class="docutils literal notranslate"><span class="pre">commanded_compression_settings_</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin16data_buffer_ptr_E"><code class="docutils literal notranslate"><span class="pre">data_buffer_ptr_</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin17data_buffer_size_E"><code class="docutils literal notranslate"><span class="pre">data_buffer_size_</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin12plugin_mode_E"><code class="docutils literal notranslate"><span class="pre">plugin_mode_</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin22commanded_plugin_mode_E"><code class="docutils literal notranslate"><span class="pre">commanded_plugin_mode_</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin26BloscDecompressionSettingsE"><code class="docutils literal notranslate"><span class="pre">FrameProcessor::BloscPlugin::BloscDecompressionSettings</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin26BloscDecompressionSettings9type_sizeE"><code class="docutils literal notranslate"><span class="pre">type_size</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor11BloscPlugin26BloscDecompressionSettings17uncompressed_sizeE"><code class="docutils literal notranslate"><span class="pre">uncompressed_size</span></code></a></li>
@@ -7689,8 +7733,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../_static/scripts/bootstrap.js?digest=7f76b32a3354e82990f2"></script>
-<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=7f76b32a3354e82990f2"></script>
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=0790524f97105ba85085"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=0790524f97105ba85085"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -7702,7 +7746,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.17.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.18.0.
 </p></div>
       
     </div>
