@@ -3,15 +3,35 @@ Created on 30th November 2023
 
 :author: Alan Greer
 """
+
 import logging
 import threading
 import time
 
+from functools import reduce
 from deepdiff import DeepDiff
-from .derived_parameter_tree import DerivedParameterTree
-from odin.adapters.parameter_tree import ParameterAccessor, ParameterTree
 
+from odin.adapters.parameter_tree import ParameterAccessor, ParameterTree
 from odin_data.control.ipc_tornado_client import IpcTornadoClient
+
+
+def recursive_splice(path=[], params_node={}, metadata={}):
+    if isinstance(params_node, dict):
+        for k, v in params_node.items():
+            recursive_splice(path.append(str(k)), v, metadata)
+        return {
+            k: recursive_splice(path + [k], v, metadata) for k, v in params_node.items()
+        }
+    else:
+        param_metadata = reduce(lambda d, key: d[key], path, metadata)
+        params_node = (params_node, param_metadata)
+        return params_node
+
+
+def splice_params_metadata(params, metadata):
+    path = []
+    params = recursive_splice(path, params, metadata)
+    return params
 
 
 class OdinDataController(object):
@@ -22,6 +42,10 @@ class OdinDataController(object):
         self._name = name
         self._api = 0.1
         self._error = ""
+        self.config_metadata_hash = -1
+        self.status_metadata_hash = -1
+        self.config_metadata_hash_prev = 0
+        self.status_metadata_hash_prev = 0
         self._endpoints = []
         self._config_cache = None
 
@@ -31,8 +55,8 @@ class OdinDataController(object):
             ep = {"ip_address": arg.split(":")[0], "port": int(arg.split(":")[1])}
             self._endpoints.append(ep)
 
-        self._supported_commands = [None]*len(self._endpoints)
-        self._queued_command = [None]*len(self._endpoints)
+        self._supported_commands = [None] * len(self._endpoints)
+        self._queued_command = [None] * len(self._endpoints)
 
         for ep in self._endpoints:
             logging.debug("Creating client {}:{}".format(ep["ip_address"], ep["port"]))
@@ -43,7 +67,7 @@ class OdinDataController(object):
         self.setup_parameter_tree()
 
         # TODO: Consider renaming this
-        self._params = DerivedParameterTree(self._tree, mutable=True)
+        self._params = ParameterTree(self._tree, mutable=True)
 
         # Create the status loop handling thread
         self._status_running = True
@@ -75,7 +99,7 @@ class OdinDataController(object):
         # First we need to insert the new parameter tree
         self._tree[path] = tree
         # Next, we must re-build the complete parameter tree
-        self._params = DerivedParameterTree(self._tree, mutable=True)
+        self._params = ParameterTree(self._tree, mutable=True)
 
     def set_error(self, err):
         # Record the error message into the status
@@ -130,12 +154,20 @@ class OdinDataController(object):
 
                     # Request parameter updates
                     for param_req in [
-                        "status",
-                        "request_configuration",
-                        "request_commands",
+                        IpcTornadoClient.IPC_VAL_STATUS,
+                        IpcTornadoClient.IPC_VAL_REQ_CFG,
+                        IpcTornadoClient.IPC_VAL_REQ_CMDS,
                     ]:
                         try:
-                            msg = client.send_request(param_req)
+                            if(param_req == IpcTornadoClient.IPC_VAL_REQ_CFG and self.config_metadata_hash != self.config_metadata_hash_prev):
+                                msg = client.send_request(param_req, True)
+                                self.config_metadata_hash_prev = self.config_metadata_hash
+                            elif(param_req == IpcTornadoClient.IPC_VAL_STATUS and self.status_metadata_hash != self.status_metadata_hash_prev):
+                                msg = client.send_request(param_req, True)
+                                self.status_metadata_hash_prev = self.status_metadata_hash
+                            else:
+                                msg = client.send_request(param_req)
+
                             if client.wait_for_response(msg.get_msg_id()):
                                 logging.error(
                                     f"{param_req} request to "
@@ -148,23 +180,11 @@ class OdinDataController(object):
                     self.handle_client(client, index)
                     if IpcTornadoClient.IPC_VAL_STATUS in client.parameters:
                         status_resp = client.parameters[IpcTornadoClient.IPC_VAL_STATUS]
-                        if IpcTornadoClient.CONFIG_METADATA in client.parameters:
-                            metadata = client.parameters[
-                                IpcTornadoClient.CONFIG_METADATA
-                            ]
-                            self._params.replace(
-                                f"{index}/{IpcTornadoClient.IPC_VAL_STATUS}",
-                                status_resp[IpcTornadoClient.IPC_VAL_STATUS],
-                                metadata,
-                            )
-                        else:
-                            self._params.replace(
-                                f"{index}/{IpcTornadoClient.IPC_VAL_STATUS}",
-                                status_resp[IpcTornadoClient.IPC_VAL_STATUS],
-                            )
-                        self._params.replace(
-                            f"{index}/{IpcTornadoClient.IPC_VAL_STATUS}", client.parameters[IpcTornadoClient.IPC_VAL_STATUS]
-                        )
+                        self.status_metadata_hash = client.parameters[IpcTornadoClient.IPC_VAL_STATUS_METADATA_HASH]
+                        if IpcTornadoClient.IPC_VAL_STATUS_METADATA in client.parameters:
+                            metadata = client.parameters[IpcTornadoClient.IPC_VAL_STATUS_METADATA]
+                            status_resp = splice_params_metadata(status_resp, metadata)
+                        self._params.replace(f"{index}/{IpcTornadoClient.IPC_VAL_STATUS}", status_resp)
                     # The client.parameters["config"] value contains the "params" response of a "request_configuration" command
                     # The ParameterTree's metadata needs to be populated with the fields from the "metadata" of the response.
                     # Is the above line possible?
@@ -176,17 +196,11 @@ class OdinDataController(object):
                     # good engineering practice.
                     if IpcTornadoClient.IPC_VAL_CONFIG in client.parameters:
                         config_resp = client.parameters[IpcTornadoClient.IPC_VAL_CONFIG]
-                        if IpcTornadoClient.IPC_VAL_CONFIG_METADATA in client.parameters:
-                            metadata = client.parameters[
-                                IpcTornadoClient.IPC_VAL_CONFIG_METADATA
-                            ]
-                            self._params.replace(
-                                f"{index}/{IpcTornadoClient.IPC_VAL_CONFIG}", config_resp[IpcTornadoClient.IPC_VAL_CONFIG], metadata
-                            )
-                        else:
-                            self._params.replace(
-                                f"{index}/{IpcTornadoClient.IPC_VAL_CONFIG}", config_resp[IpcTornadoClient.IPC_VAL_CONFIG]
-                            )
+                        self.config_metadata_hash = client.parameters[IpcTornadoClient.IPC_VAL_CONFIG_METADATA_HASH]
+                        if (IpcTornadoClient.IPC_VAL_CONFIG_METADATA in client.parameters):
+                            metadata = client.parameters[IpcTornadoClient.IPC_VAL_CONFIG_METADATA]
+                            config_resp = splice_params_metadata(config_resp, metadata)
+                        self._params.replace(f"{index}/{IpcTornadoClient.IPC_VAL_CONFIG}", config_resp)
                     if "commands" in client.parameters:
                         self.parse_available_commands(index, client)
 
@@ -234,7 +248,7 @@ class OdinDataController(object):
 
     def queue_command(self, index, plugin, value):
         """Called for each command PUT that is received by the adapter
-        PUT URI is of the form index/command/plugin/execute and the 
+        PUT URI is of the form index/command/plugin/execute and the
         value is the name of the command to execute.
         This method simply queues commands for execution after any configuration
         changes have been applied.
@@ -245,8 +259,8 @@ class OdinDataController(object):
         self._queued_command[index] = (plugin, value)
 
     def execute_queued(self):
-        """ After configuration changes have been applied this method is called.  It
-        checks to see if any commands have been queued, and if any are found then 
+        """After configuration changes have been applied this method is called.  It
+        checks to see if any commands have been queued, and if any are found then
         they are executed.
         """
         for index, _ in enumerate(self._queued_command):
