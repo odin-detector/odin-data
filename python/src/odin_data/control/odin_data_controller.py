@@ -55,8 +55,8 @@ class OdinDataController(object):
             ep = {"ip_address": arg.split(":")[0], "port": int(arg.split(":")[1])}
             self._endpoints.append(ep)
 
-        self._supported_commands = [None] * len(self._endpoints)
-        self._queued_command = [None] * len(self._endpoints)
+        self._supported_commands = [None]*len(self._endpoints)
+        self._queued_command = [None]*len(self._endpoints)
 
         for ep in self._endpoints:
             logging.debug("Creating client {}:{}".format(ep["ip_address"], ep["port"]))
@@ -185,15 +185,6 @@ class OdinDataController(object):
                             metadata = client.parameters[IpcTornadoClient.IPC_VAL_STATUS_METADATA]
                             status_resp = splice_params_metadata(status_resp, metadata)
                         self._params.replace(f"{index}/{IpcTornadoClient.IPC_VAL_STATUS}", status_resp)
-                    # The client.parameters["config"] value contains the "params" response of a "request_configuration" command
-                    # The ParameterTree's metadata needs to be populated with the fields from the "metadata" of the response.
-                    # Is the above line possible?
-                    # The OdinDataController has a ParameterTree, the ParameterTree has a ParameterAccessor member object
-                    # Effectively, we can set the metadata in the ParameterTree using it's accessor object to modify it's
-                    # parameters!
-                    # But although this works, we need to think of a way of creating an API for BOTH
-                    # the odin-control and FrameProcessorPlugin's ParamMetadata class so there is consistency and
-                    # good engineering practice.
                     if IpcTornadoClient.IPC_VAL_CONFIG in client.parameters:
                         config_resp = client.parameters[IpcTornadoClient.IPC_VAL_CONFIG]
                         self.config_metadata_hash = client.parameters[IpcTornadoClient.IPC_VAL_CONFIG_METADATA_HASH]
@@ -231,14 +222,13 @@ class OdinDataController(object):
                     "allowed": (
                         lambda x=client.parameters["commands"][plugin]["supported"]: x,
                         None,
-                        {},
+                        {}
                     ),
                     "execute": (
                         "",
-                        lambda value, index=index, plugin=plugin: self.queue_command(
-                            index, plugin, value
-                        ),
-                        {},
+                        lambda value, index=index,
+                        plugin=plugin: self.queue_command(index, plugin, value),
+                        {}
                     ),
                 }
 
@@ -259,8 +249,8 @@ class OdinDataController(object):
         self._queued_command[index] = (plugin, value)
 
     def execute_queued(self):
-        """After configuration changes have been applied this method is called.  It
-        checks to see if any commands have been queued, and if any are found then
+        """ After configuration changes have been applied this method is called.  It
+        checks to see if any commands have been queued, and if any are found then 
         they are executed.
         """
         for index, _ in enumerate(self._queued_command):
