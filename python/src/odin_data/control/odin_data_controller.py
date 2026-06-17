@@ -226,10 +226,11 @@ class OdinDataController(object):
                     ),
                     "execute": (
                         "",
-                        lambda value, index=index,
-                        plugin=plugin: self.queue_command(index, plugin, value),
+                        lambda value,
+                        index = index,
+                        plugin = plugin: self.queue_command(index, plugin, value),
                         {}
-                    ),
+                    )
                 }
 
             # If the structure has changed then update the parameter tree
@@ -238,7 +239,7 @@ class OdinDataController(object):
 
     def queue_command(self, index, plugin, value):
         """Called for each command PUT that is received by the adapter
-        PUT URI is of the form index/command/plugin/execute and the
+        PUT URI is of the form index/command/plugin/execute and the 
         value is the name of the command to execute.
         This method simply queues commands for execution after any configuration
         changes have been applied.
