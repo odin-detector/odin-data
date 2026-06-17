@@ -169,7 +169,7 @@ class IpcTornadoClient(object):
 
         :param version_msg: Incoming version message response
         """
-        params = version_msg[IpcTornadoChannel.PARAMS_KEY]
+        params = version_msg[self.PARAMS_KEY]
         self._parameters['version'] = params['version']
 
     def _update_configuration(self, config_msg):
@@ -178,8 +178,8 @@ class IpcTornadoClient(object):
 
         :param config_msg: Incoming configuration message response
         """
-        self._parameters[IpcTornadoChannel.IPC_VAL_CONFIG] = config_msg[IpcTornadoChannel.PARAMS_KEY]
-        self._parameters[IpcTornadoChannel.IPC_VAL_CONFIG_METADATA_HASH] = config_msg[IpcTornadoChannel.METADATA_HASH_KEY]
+        self._parameters[self.IPC_VAL_CONFIG] = config_msg[self.PARAMS_KEY]
+        self._parameters[self.IPC_VAL_CONFIG_METADATA_HASH] = config_msg[self.METADATA_HASH_KEY]
         if(self.METADATA_KEY in config_msg):
             self._parameters[self.IPC_VAL_CONFIG_METADATA] = config_msg[self.METADATA_KEY]
         else:
@@ -190,10 +190,10 @@ class IpcTornadoClient(object):
 
         :param status_msg: Incoming status message response
         """
-        params = status_msg[IpcTornadoChannel.PARAMS_KEY]
+        params = status_msg[self.PARAMS_KEY]
         params['timestamp'] = status_msg['timestamp']
         self._parameters[self.IPC_VAL_STATUS] = params
-        self._parameters[IpcTornadoChannel.IPC_VAL_STATUS_METADATA_HASH] = status_msg[IpcTornadoChannel.METADATA_HASH_KEY]
+        self._parameters[self.IPC_VAL_STATUS_METADATA_HASH] = status_msg[self.METADATA_HASH_KEY]
         if(self.METADATA_KEY in status_msg):
             self._parameters[self.IPC_VAL_STATUS_METADATA] = status_msg[self.METADATA_KEY]
         else:

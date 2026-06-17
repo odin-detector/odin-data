@@ -7,18 +7,16 @@ Created on 30th November 2023
 import logging
 import threading
 import time
-
 from functools import reduce
-from deepdiff import DeepDiff
 
+from deepdiff import DeepDiff
 from odin.adapters.parameter_tree import ParameterAccessor, ParameterTree
+
 from odin_data.control.ipc_tornado_client import IpcTornadoClient
 
 
-def recursive_splice(path=[], params_node={}, metadata={}):
+def recursive_splice(path, params_node, metadata):
     if isinstance(params_node, dict):
-        for k, v in params_node.items():
-            recursive_splice(path.append(str(k)), v, metadata)
         return {
             k: recursive_splice(path + [k], v, metadata) for k, v in params_node.items()
         }
@@ -159,14 +157,14 @@ class OdinDataController(object):
                         IpcTornadoClient.IPC_VAL_REQ_CMDS,
                     ]:
                         try:
+                            with_metadata = False
                             if(param_req == IpcTornadoClient.IPC_VAL_REQ_CFG and self.config_metadata_hash != self.config_metadata_hash_prev):
-                                msg = client.send_request(param_req, True)
+                                with_metadata = True
                                 self.config_metadata_hash_prev = self.config_metadata_hash
                             elif(param_req == IpcTornadoClient.IPC_VAL_STATUS and self.status_metadata_hash != self.status_metadata_hash_prev):
-                                msg = client.send_request(param_req, True)
+                                with_metadata = True
                                 self.status_metadata_hash_prev = self.status_metadata_hash
-                            else:
-                                msg = client.send_request(param_req)
+                            msg = client.send_request(param_req, with_metadata)
 
                             if client.wait_for_response(msg.get_msg_id()):
                                 logging.error(
