@@ -262,7 +262,7 @@ class IpcTornadoClient(object):
         """
         msg = IpcMessage("cmd", value)
         if(with_metadata):
-            msg.set_param("metadata", True)
+            msg.set_param(self.METADATA_KEY, True)
         return self._send_message(msg)
 
     def send_configuration(self, content, target=None, valid_error=None):

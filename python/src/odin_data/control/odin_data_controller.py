@@ -158,6 +158,8 @@ class OdinDataController(object):
                     ]:
                         try:
                             with_metadata = False
+                            # Check if the previous values of the config and status metadata hash matches the latest value.
+                            # If they do not match, set with_metadata to True and update the previous hash value with the latest.
                             if(param_req == IpcTornadoClient.IPC_VAL_REQ_CFG and self.config_metadata_hash != self.config_metadata_hash_prev):
                                 with_metadata = True
                                 self.config_metadata_hash_prev = self.config_metadata_hash
@@ -176,6 +178,8 @@ class OdinDataController(object):
                             logging.error("Unhandled exception: %s", e)
 
                     self.handle_client(client, index)
+                    # Always track/update the hash value of the config and status metadata values
+                    # using the variables status_metadata_hash & config_metadata_hash variables
                     if IpcTornadoClient.IPC_VAL_STATUS in client.parameters:
                         status_resp = client.parameters[IpcTornadoClient.IPC_VAL_STATUS]
                         self.status_metadata_hash = client.parameters[IpcTornadoClient.IPC_VAL_STATUS_METADATA_HASH]
