@@ -313,7 +313,7 @@ class Int32HDF5Dataset(HDF5Dataset):
         cache=True,
         block_size=1000000,
         block_timeout=600,
-        **kwargs
+        **kwargs,
     ):
         super(Int32HDF5Dataset, self).__init__(
             name,
@@ -325,7 +325,7 @@ class Int32HDF5Dataset(HDF5Dataset):
             cache=cache,
             block_size=block_size,
             block_timeout=block_timeout,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -341,7 +341,7 @@ class Int64HDF5Dataset(HDF5Dataset):
         cache=True,
         block_size=1000000,
         block_timeout=600,
-        **kwargs
+        **kwargs,
     ):
         super(Int64HDF5Dataset, self).__init__(
             name,
@@ -352,7 +352,7 @@ class Int64HDF5Dataset(HDF5Dataset):
             cache=cache,
             block_size=block_size,
             block_timeout=block_timeout,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -367,7 +367,7 @@ class Float32HDF5Dataset(HDF5Dataset):
         cache=True,
         block_size=1000000,
         block_timeout=600,
-        **kwargs
+        **kwargs,
     ):
         super(Float32HDF5Dataset, self).__init__(
             name,
@@ -378,7 +378,7 @@ class Float32HDF5Dataset(HDF5Dataset):
             cache=cache,
             block_size=block_size,
             block_timeout=block_timeout,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -393,7 +393,7 @@ class Float64HDF5Dataset(HDF5Dataset):
         cache=True,
         block_size=1000000,
         block_timeout=600,
-        **kwargs
+        **kwargs,
     ):
         super(Float64HDF5Dataset, self).__init__(
             name,
@@ -404,7 +404,7 @@ class Float64HDF5Dataset(HDF5Dataset):
             cache=cache,
             block_size=block_size,
             block_timeout=block_timeout,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -421,7 +421,7 @@ class StringHDF5Dataset(HDF5Dataset):
         cache=True,
         block_size=1000000,
         block_timeout=600,
-        **kwargs
+        **kwargs,
     ):
         """
         Args:
@@ -439,8 +439,10 @@ class StringHDF5Dataset(HDF5Dataset):
             cache=cache,
             block_size=block_size,
             block_timeout=block_timeout,
-            **kwargs
+            **kwargs,
         )
+        if length and not maxshape:
+            self.maxshape = None
 
     def prepare_data(self, data):
         """Prepare data ready to write to hdf5 dataset
