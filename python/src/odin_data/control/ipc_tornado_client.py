@@ -182,8 +182,6 @@ class IpcTornadoClient(object):
         self._parameters[self.IPC_VAL_CONFIG_METADATA_HASH] = config_msg[self.METADATA_HASH_KEY]
         if(self.METADATA_KEY in config_msg):
             self._parameters[self.IPC_VAL_CONFIG_METADATA] = config_msg[self.METADATA_KEY]
-        else:
-            self._parameters.pop(self.IPC_VAL_CONFIG_METADATA, None)
 
     def _update_status(self, status_msg):
         """Store the response to a status message in the _parameters dict.
@@ -196,8 +194,6 @@ class IpcTornadoClient(object):
         self._parameters[self.IPC_VAL_STATUS_METADATA_HASH] = status_msg[self.METADATA_HASH_KEY]
         if(self.METADATA_KEY in status_msg):
             self._parameters[self.IPC_VAL_STATUS_METADATA] = status_msg[self.METADATA_KEY]
-        else:
-            self._parameters.pop(self.IPC_VAL_STATUS_METADATA, None)
 
         if 'error' not in self._parameters[self.IPC_VAL_STATUS]:
             self._parameters[self.IPC_VAL_STATUS]['error'] = []
