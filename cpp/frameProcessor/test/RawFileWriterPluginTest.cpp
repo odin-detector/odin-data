@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(RawFileWriterPlugin_with_acq_id)
     BOOST_REQUIRE_NO_THROW(rfw_plugin.status(reply_));
     BOOST_CHECK_EQUAL(
         reply_.get_param<size_t>(
-            FP::CONFIG_REQUEST + '/' + rfw_plugin.get_name() + '/'
+            FP::STATUS_REQUEST + '/' + rfw_plugin.get_name() + '/'
             + FrameProcessor::RawFileWriterPlugin::STATUS_DROPPED_FRAMES
         ),
         0
@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE(RawFileWriterPlugin_no_acq_id)
     BOOST_REQUIRE_NO_THROW(rfw_plugin.status(reply_));
     BOOST_CHECK_EQUAL(
         reply_.get_param<size_t>(
-            FP::CONFIG_REQUEST + '/' + rfw_plugin.get_name() + '/'
+            FP::STATUS_REQUEST + '/' + rfw_plugin.get_name() + '/'
             + FrameProcessor::RawFileWriterPlugin::STATUS_DROPPED_FRAMES
         ),
         0
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(RawFileWriterPlugin_dropped_frames)
     BOOST_REQUIRE_NO_THROW(rfw_plugin.status(reply_));
     BOOST_CHECK_EQUAL(
         reply_.get_param<size_t>(
-            FP::CONFIG_REQUEST + '/' + rfw_plugin.get_name() + '/'
+            FP::STATUS_REQUEST + '/' + rfw_plugin.get_name() + '/'
             + FrameProcessor::RawFileWriterPlugin::STATUS_DROPPED_FRAMES
         ),
         process_times
