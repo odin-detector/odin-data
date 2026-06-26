@@ -45,6 +45,8 @@ public:
     std::vector<std::string> get_warnings();
     virtual void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
     virtual void requestConfiguration(OdinData::IpcMessage& reply);
+    constexpr static char STATUS_REQUEST[] = "status_request";
+    constexpr static char CONFIG_REQUEST[] = "config_request";
 
     /** Request the plugin's configuration and status Metadata.
      * \param[out] reply - Response IpcMessage with current config metadata.

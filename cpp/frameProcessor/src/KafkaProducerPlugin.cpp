@@ -121,11 +121,12 @@ void KafkaProducerPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcM
  */
 void KafkaProducerPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
-    reply.set_param(get_name() + '/' + KafkaProducerPlugin::CONFIG_SERVERS, this->servers_);
-    reply.set_param(get_name() + '/' + KafkaProducerPlugin::CONFIG_TOPIC, this->topic_name_);
-    reply.set_param(get_name() + '/' + KafkaProducerPlugin::CONFIG_PARTITION, this->partition_);
-    reply.set_param(get_name() + '/' + KafkaProducerPlugin::CONFIG_DATASET, this->dataset_name_);
-    reply.set_param(get_name() + '/' + KafkaProducerPlugin::CONFIG_INCLUDE_PARAMETERS, this->include_parameters_);
+    std::string prefix = CONFIG_REQUEST + '/' + this->get_name() + '/';
+    reply.set_param(prefix + KafkaProducerPlugin::CONFIG_SERVERS, this->servers_);
+    reply.set_param(prefix + KafkaProducerPlugin::CONFIG_TOPIC, this->topic_name_);
+    reply.set_param(prefix + KafkaProducerPlugin::CONFIG_PARTITION, this->partition_);
+    reply.set_param(prefix + KafkaProducerPlugin::CONFIG_DATASET, this->dataset_name_);
+    reply.set_param(prefix + KafkaProducerPlugin::CONFIG_INCLUDE_PARAMETERS, this->include_parameters_);
 }
 
 /**
@@ -137,12 +138,14 @@ void KafkaProducerPlugin::status(OdinData::IpcMessage& status)
 {
     // Make sure statistics are updated
     poll_delivery_message_report_queue();
+
+    std::string prefix = STATUS_REQUEST + '/' + this->get_name() + '/';
     /* Number of sent frames */
-    status.set_param(get_name() + '/' + STATUS_FRAMES_SENT, frames_sent_);
+    status.set_param(prefix + STATUS_FRAMES_SENT, frames_sent_);
     /* Number of lost frames */
-    status.set_param(get_name() + '/' + STATUS_FRAMES_LOST, frames_lost_);
+    status.set_param(prefix + STATUS_FRAMES_LOST, frames_lost_);
     /* Number of acknowledged frames */
-    status.set_param(get_name() + '/' + STATUS_FRAMES_ACK, frames_ack_);
+    status.set_param(prefix + STATUS_FRAMES_ACK, frames_ack_);
 }
 
 /**

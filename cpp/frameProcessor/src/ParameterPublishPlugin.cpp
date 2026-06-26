@@ -120,9 +120,9 @@ void ParameterPublishPlugin::configure(OdinData::IpcMessage& config, OdinData::I
  */
 void ParameterPublishPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
-    reply.set_param(get_name() + "/" + CONFIG_ENDPOINT, this->channel_endpoint_);
+    reply.set_param(CONFIG_REQUEST + '/' + this->get_name() + '/' + CONFIG_ENDPOINT, this->channel_endpoint_);
     // Create use a key with a `[]` suffix so that it appends to an array as we set it repeatedly
-    std::string parameters_key = get_name() + "/" + DATA_PARAMETERS + "[]";
+    std::string parameters_key = CONFIG_REQUEST + '/' + get_name() + '/' + DATA_PARAMETERS + "[]";
     for (auto& it : this->parameters_) {
         reply.set_param(parameters_key, it);
     }

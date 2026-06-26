@@ -307,17 +307,18 @@ std::string GapFillPlugin::get_version_long()
  */
 void GapFillPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
+    std::string prefix = CONFIG_REQUEST + '/' + this->get_name() + '/';
     for (int index = 0; index < grid_.size(); index++) {
-        reply.set_param(get_name() + '/' + CONFIG_GRID_SIZE + "[]", grid_[index]);
+        reply.set_param(prefix + CONFIG_GRID_SIZE + "[]", grid_[index]);
     }
     for (int index = 0; index < chip_.size(); index++) {
-        reply.set_param(get_name() + '/' + CONFIG_CHIP_SIZE + "[]", chip_[index]);
+        reply.set_param(prefix + CONFIG_CHIP_SIZE + "[]", chip_[index]);
     }
     for (int index = 0; index < gaps_x_.size(); index++) {
-        reply.set_param(get_name() + '/' + CONFIG_GRID_X_GAPS + "[]", gaps_x_[index]);
+        reply.set_param(prefix + CONFIG_GRID_X_GAPS + "[]", gaps_x_[index]);
     }
     for (int index = 0; index < gaps_y_.size(); index++) {
-        reply.set_param(get_name() + '/' + CONFIG_GRID_Y_GAPS + "[]", gaps_y_[index]);
+        reply.set_param(prefix + CONFIG_GRID_Y_GAPS + "[]", gaps_y_[index]);
     }
 }
 

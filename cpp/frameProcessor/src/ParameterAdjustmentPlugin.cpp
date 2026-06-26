@@ -143,10 +143,11 @@ void ParameterAdjustmentPlugin::configure(OdinData::IpcMessage& config, OdinData
  */
 void ParameterAdjustmentPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
+    std::string prefix = CONFIG_REQUEST + '/' + this->get_name() + '/';
     std::map<std::string, int64_t>::iterator iter;
     for (iter = parameter_adjustments_.begin(); iter != parameter_adjustments_.end(); ++iter) {
         reply.set_param(
-            get_name() + '/' + PARAMETER_NAME_CONFIG + '/' + iter->first + '/' + PARAMETER_ADJUSTMENT_CONFIG,
+            prefix + PARAMETER_NAME_CONFIG + '/' + iter->first + '/' + PARAMETER_ADJUSTMENT_CONFIG,
             (int64_t)iter->second
         );
     }
@@ -154,8 +155,7 @@ void ParameterAdjustmentPlugin::requestConfiguration(OdinData::IpcMessage& reply
     std::map<std::string, std::string>::iterator input_iter;
     for (input_iter = parameter_inputs_.begin(); input_iter != parameter_inputs_.end(); ++input_iter) {
         reply.set_param(
-            get_name() + '/' + PARAMETER_NAME_CONFIG + '/' + input_iter->first + '/' + PARAMETER_INPUT_CONFIG,
-            input_iter->second
+            prefix + PARAMETER_NAME_CONFIG + '/' + input_iter->first + '/' + PARAMETER_INPUT_CONFIG, input_iter->second
         );
     }
 }

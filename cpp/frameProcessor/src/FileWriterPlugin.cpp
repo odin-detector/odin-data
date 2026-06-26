@@ -423,7 +423,7 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
 void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
     // Return the configuration of the file writer plugin
-    std::string process_str = get_name() + '/' + FileWriterPlugin::CONFIG_PROCESS + '/';
+    std::string process_str = CONFIG_REQUEST + '/' + get_name() + '/' + FileWriterPlugin::CONFIG_PROCESS + '/';
     reply.set_param(process_str + FileWriterPlugin::CONFIG_PROCESS_NUMBER, concurrent_processes_);
     reply.set_param(process_str + FileWriterPlugin::CONFIG_PROCESS_RANK, concurrent_rank_);
     reply.set_param(process_str + FileWriterPlugin::CONFIG_PROCESS_BLOCKSIZE, frames_per_block_);
@@ -432,7 +432,7 @@ void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
     reply.set_param(process_str + FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_THRESHOLD, alignment_threshold_);
     reply.set_param(process_str + FileWriterPlugin::CONFIG_PROCESS_ALIGNMENT_VALUE, alignment_value_);
 
-    std::string file_str = get_name() + '/' + FileWriterPlugin::CONFIG_FILE + '/';
+    std::string file_str = CONFIG_REQUEST + '/' + get_name() + '/' + FileWriterPlugin::CONFIG_FILE + '/';
     reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_PATH, next_acquisition_->file_path_);
     reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_PREFIX, next_acquisition_->configured_filename_);
     reply.set_param(file_str + FileWriterPlugin::CONFIG_FILE_USE_NUMBERS, use_file_numbering_);
@@ -445,42 +445,43 @@ void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
     reply.set_param(file_str + FileWriterPlugin::FLUSH_ERROR_DURATION, hdf5_error_definition_.flush_duration);
     reply.set_param(file_str + FileWriterPlugin::CLOSE_ERROR_DURATION, hdf5_error_definition_.close_duration);
 
-    reply.set_param(get_name() + '/' + FileWriterPlugin::CONFIG_FRAMES, next_acquisition_->total_frames_);
-    reply.set_param(get_name() + '/' + FileWriterPlugin::CONFIG_MASTER_DATASET, master_frame_);
-    reply.set_param(get_name() + '/' + FileWriterPlugin::ACQUISITION_ID, next_acquisition_->acquisition_id_);
-    reply.set_param(get_name() + '/' + FileWriterPlugin::CLOSE_TIMEOUT_PERIOD, timeout_period_);
+    std::string prefix = CONFIG_REQUEST + '/' + get_name() + '/';
+    reply.set_param(prefix + FileWriterPlugin::CONFIG_FRAMES, next_acquisition_->total_frames_);
+    reply.set_param(prefix + FileWriterPlugin::CONFIG_MASTER_DATASET, master_frame_);
+    reply.set_param(prefix + FileWriterPlugin::ACQUISITION_ID, next_acquisition_->acquisition_id_);
+    reply.set_param(prefix + FileWriterPlugin::CLOSE_TIMEOUT_PERIOD, timeout_period_);
 
     // Check for datasets
     std::map<std::string, DatasetDefinition>::iterator iter;
     for (iter = this->dataset_defs_.begin(); iter != this->dataset_defs_.end(); ++iter) {
         // Add the dataset type
         reply.set_param(
-            get_name() + "/dataset/" + iter->first + '/' + FileWriterPlugin::CONFIG_DATASET_TYPE,
+            prefix + "dataset/" + iter->first + '/' + FileWriterPlugin::CONFIG_DATASET_TYPE,
             get_type_from_enum(iter->second.data_type)
         );
 
         // Add the dataset compression
         reply.set_param(
-            get_name() + "/dataset/" + iter->first + '/' + FileWriterPlugin::CONFIG_DATASET_COMPRESSION,
+            prefix + "dataset/" + iter->first + '/' + FileWriterPlugin::CONFIG_DATASET_COMPRESSION,
             get_compress_from_enum(iter->second.compression)
         );
         reply.set_param(
-            get_name() + "/dataset/" + iter->first + '/' + FileWriterPlugin::CONFIG_DATASET_BLOSC_COMPRESSOR,
+            prefix + "dataset/" + iter->first + '/' + FileWriterPlugin::CONFIG_DATASET_BLOSC_COMPRESSOR,
             (int)iter->second.blosc_compressor
         );
         reply.set_param(
-            get_name() + "/dataset/" + iter->first + '/' + FileWriterPlugin::CONFIG_DATASET_BLOSC_LEVEL,
+            prefix + "dataset/" + iter->first + '/' + FileWriterPlugin::CONFIG_DATASET_BLOSC_LEVEL,
             (int)iter->second.blosc_level
         );
         reply.set_param(
-            get_name() + "/dataset/" + iter->first + '/' + FileWriterPlugin::CONFIG_DATASET_BLOSC_SHUFFLE,
+            prefix + "dataset/" + iter->first + '/' + FileWriterPlugin::CONFIG_DATASET_BLOSC_SHUFFLE,
             (int)iter->second.blosc_shuffle
         );
 
         // Check for and add dimensions
         if (iter->second.frame_dimensions.size() > 0) {
             std::string dimParamName
-                = get_name() + "/dataset/" + iter->first + '/' + FileWriterPlugin::CONFIG_DATASET_DIMS + "[]";
+                = prefix + "dataset/" + iter->first + '/' + FileWriterPlugin::CONFIG_DATASET_DIMS + "[]";
             for (int index = 0; index < iter->second.frame_dimensions.size(); index++) {
                 reply.set_param(dimParamName, (int)iter->second.frame_dimensions[index]);
             }
@@ -488,7 +489,7 @@ void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
         // Check for and add chunking dimensions
         if (iter->second.chunks.size() > 0) {
             std::string chunkParamName
-                = get_name() + "/dataset/" + iter->first + '/' + FileWriterPlugin::CONFIG_DATASET_CHUNKS + "[]";
+                = prefix + "dataset/" + iter->first + '/' + FileWriterPlugin::CONFIG_DATASET_CHUNKS + "[]";
             for (int index = 0; index < iter->second.chunks.size(); index++) {
                 reply.set_param(chunkParamName, (int)iter->second.chunks[index]);
             }
@@ -878,7 +879,7 @@ void FileWriterPlugin::delete_datasets()
 void FileWriterPlugin::status(OdinData::IpcMessage& status)
 {
     // Record the plugin's status items
-    std::string prefix = get_name() + '/';
+    std::string prefix = STATUS_REQUEST + '/' + get_name() + '/';
     status.set_param(prefix + STATUS_WRITING, this->writing_);
     status.set_param(prefix + STATUS_FRAMES_MAX, (int)this->current_acquisition_->frames_to_write_);
     status.set_param(prefix + STATUS_FRAMES_WRITTEN, (int)this->current_acquisition_->frames_written_);
@@ -901,7 +902,7 @@ void FileWriterPlugin::status(OdinData::IpcMessage& status)
  */
 void FileWriterPlugin::add_file_writing_stats(OdinData::IpcMessage& status)
 {
-    std::string prefix = get_name() + '/' + STATUS_TIMING + '/';
+    std::string prefix = STATUS_REQUEST + '/' + get_name() + '/' + STATUS_TIMING + '/';
     status.set_param(prefix + STATUS_LAST_CREATE, (int)hdf5_call_durations_.create.last_);
     status.set_param(prefix + STATUS_MAX_CREATE, (int)hdf5_call_durations_.create.max_);
     status.set_param(prefix + STATUS_MEAN_CREATE, (int)hdf5_call_durations_.create.mean_);
