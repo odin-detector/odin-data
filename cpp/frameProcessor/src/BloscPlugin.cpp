@@ -403,21 +403,14 @@ void BloscPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& 
  */
 void BloscPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
+    std::string prefix = CONFIG_REQUEST + '/' + this->get_name() + '/';
     reply.set_param(
-        this->get_name() + '/' + BloscPlugin::CONFIG_BLOSC_COMPRESSOR,
-        this->commanded_compression_settings_.blosc_compressor
+        prefix + BloscPlugin::CONFIG_BLOSC_COMPRESSOR, this->commanded_compression_settings_.blosc_compressor
     );
-    reply.set_param(
-        this->get_name() + '/' + BloscPlugin::CONFIG_BLOSC_THREADS, this->commanded_compression_settings_.threads
-    );
-    reply.set_param(
-        this->get_name() + '/' + BloscPlugin::CONFIG_BLOSC_SHUFFLE, this->commanded_compression_settings_.shuffle
-    );
-    reply.set_param(
-        this->get_name() + '/' + BloscPlugin::CONFIG_BLOSC_LEVEL,
-        this->commanded_compression_settings_.compression_level
-    );
-    reply.set_param(this->get_name() + '/' + BloscPlugin::CONFIG_BLOSC_MODE, Mode_map::mode_to_str(this->plugin_mode_));
+    reply.set_param(prefix + BloscPlugin::CONFIG_BLOSC_THREADS, this->commanded_compression_settings_.threads);
+    reply.set_param(prefix + BloscPlugin::CONFIG_BLOSC_SHUFFLE, this->commanded_compression_settings_.shuffle);
+    reply.set_param(prefix + BloscPlugin::CONFIG_BLOSC_LEVEL, this->commanded_compression_settings_.compression_level);
+    reply.set_param(prefix + BloscPlugin::CONFIG_BLOSC_MODE, Mode_map::mode_to_str(this->plugin_mode_));
 }
 
 int BloscPlugin::get_version_major()

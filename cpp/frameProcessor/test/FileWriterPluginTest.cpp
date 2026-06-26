@@ -138,7 +138,12 @@ BOOST_AUTO_TEST_CASE(FileWriterPluginZeroFrames)
 
         OdinData::IpcMessage reply2;
         fwp.requestConfiguration(reply2);
-        BOOST_CHECK_EQUAL(1, reply2.get_param<int>("hdf/frames"));
+        BOOST_CHECK_EQUAL(
+            1,
+            reply2.get_param<int>(
+                FP::CONFIG_REQUEST + '/' + fwp.get_name() + '/' + FrameProcessor::FileWriterPlugin::CONFIG_FRAMES
+            )
+        );
     }
     {
         OdinData::IpcMessage cfg;
@@ -147,7 +152,12 @@ BOOST_AUTO_TEST_CASE(FileWriterPluginZeroFrames)
 
         OdinData::IpcMessage reply2;
         fwp.requestConfiguration(reply2);
-        BOOST_CHECK_EQUAL(0, reply2.get_param<int>("hdf/frames"));
+        BOOST_CHECK_EQUAL(
+            0,
+            reply2.get_param<int>(
+                FP::CONFIG_REQUEST + '/' + fwp.get_name() + '/' + FrameProcessor::FileWriterPlugin::CONFIG_FRAMES
+            )
+        );
     }
 }
 

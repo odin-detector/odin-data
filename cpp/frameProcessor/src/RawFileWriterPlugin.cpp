@@ -99,8 +99,9 @@ void RawFileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcM
  */
 void RawFileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
-    reply.set_param(this->get_name() + '/' + RawFileWriterPlugin::CONFIG_FILE_PATH, this->file_path_.string());
-    reply.set_param(this->get_name() + '/' + RawFileWriterPlugin::CONFIG_ENABLED, this->enabled_);
+    std::string prefix = CONFIG_REQUEST + '/' + this->get_name() + '/';
+    reply.set_param(prefix + RawFileWriterPlugin::CONFIG_FILE_PATH, this->file_path_.string());
+    reply.set_param(prefix + RawFileWriterPlugin::CONFIG_ENABLED, this->enabled_);
 }
 
 /** Get status of the RawFileWriterPlugin
@@ -109,7 +110,10 @@ void RawFileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
  */
 void RawFileWriterPlugin::status(OdinData::IpcMessage& status)
 {
-    status.set_param(this->get_name() + '/' + RawFileWriterPlugin::STATUS_DROPPED_FRAMES, this->dropped_frames_);
+    status.set_param(
+        STATUS_REQUEST + '/' + this->get_name() + '/' + RawFileWriterPlugin::STATUS_DROPPED_FRAMES,
+        this->dropped_frames_
+    );
 }
 
 int RawFileWriterPlugin::get_version_major()

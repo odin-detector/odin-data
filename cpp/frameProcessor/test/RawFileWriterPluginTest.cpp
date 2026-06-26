@@ -51,7 +51,9 @@ BOOST_AUTO_TEST_CASE(RawFileWriterPlugin_invalid_path)
     BOOST_REQUIRE_EXCEPTION(rfw_plugin.configure(bad_cfg_1, reply_bad_), std::runtime_error, RFWP::is_not_critical);
     BOOST_REQUIRE_NO_THROW(rfw_plugin.requestConfiguration(reply_bad_));
     BOOST_CHECK_EQUAL(
-        reply_bad_.get_param<bool>(rfw_plugin.get_name() + '/' + FrameProcessor::RawFileWriterPlugin::CONFIG_ENABLED),
+        reply_bad_.get_param<bool>(
+            FP::CONFIG_REQUEST + '/' + rfw_plugin.get_name() + '/' + FrameProcessor::RawFileWriterPlugin::CONFIG_ENABLED
+        ),
         false
     );
 }
@@ -66,7 +68,9 @@ BOOST_AUTO_TEST_CASE(RawFileWriterPlugin_existing_path)
     BOOST_REQUIRE_EXCEPTION(rfw_plugin.configure(bad_cfg_2, reply_bad_), std::runtime_error, RFWP::is_not_critical);
     BOOST_REQUIRE_NO_THROW(rfw_plugin.requestConfiguration(reply_bad_));
     BOOST_CHECK_EQUAL(
-        reply_bad_.get_param<bool>(rfw_plugin.get_name() + '/' + FrameProcessor::RawFileWriterPlugin::CONFIG_ENABLED),
+        reply_bad_.get_param<bool>(
+            FP::CONFIG_REQUEST + '/' + rfw_plugin.get_name() + '/' + FrameProcessor::RawFileWriterPlugin::CONFIG_ENABLED
+        ),
         false
     );
 }
@@ -86,7 +90,8 @@ BOOST_AUTO_TEST_CASE(RawFileWriterPlugin_with_acq_id)
     BOOST_REQUIRE_NO_THROW(rfw_plugin.status(reply_));
     BOOST_CHECK_EQUAL(
         reply_.get_param<size_t>(
-            rfw_plugin.get_name() + '/' + FrameProcessor::RawFileWriterPlugin::STATUS_DROPPED_FRAMES
+            FP::CONFIG_REQUEST + '/' + rfw_plugin.get_name() + '/'
+            + FrameProcessor::RawFileWriterPlugin::STATUS_DROPPED_FRAMES
         ),
         0
     );
@@ -108,7 +113,8 @@ BOOST_AUTO_TEST_CASE(RawFileWriterPlugin_no_acq_id)
     BOOST_REQUIRE_NO_THROW(rfw_plugin.status(reply_));
     BOOST_CHECK_EQUAL(
         reply_.get_param<size_t>(
-            rfw_plugin.get_name() + '/' + FrameProcessor::RawFileWriterPlugin::STATUS_DROPPED_FRAMES
+            FP::CONFIG_REQUEST + '/' + rfw_plugin.get_name() + '/'
+            + FrameProcessor::RawFileWriterPlugin::STATUS_DROPPED_FRAMES
         ),
         0
     );
@@ -138,7 +144,8 @@ BOOST_AUTO_TEST_CASE(RawFileWriterPlugin_dropped_frames)
     BOOST_REQUIRE_NO_THROW(rfw_plugin.status(reply_));
     BOOST_CHECK_EQUAL(
         reply_.get_param<size_t>(
-            rfw_plugin.get_name() + '/' + FrameProcessor::RawFileWriterPlugin::STATUS_DROPPED_FRAMES
+            FP::CONFIG_REQUEST + '/' + rfw_plugin.get_name() + '/'
+            + FrameProcessor::RawFileWriterPlugin::STATUS_DROPPED_FRAMES
         ),
         process_times
     );

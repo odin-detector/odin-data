@@ -105,3 +105,5 @@ public:
     FrameProcessor::DatasetDefinition dset_def;
     FrameProcessor::HDF5CallDurations_t durations;
 };
+
+using FP = FrameProcessor::FrameProcessorPlugin;

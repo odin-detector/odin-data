@@ -89,14 +89,14 @@ BOOST_AUTO_TEST_CASE(ParameterPublishPlugin_endpointConfigure)
     BOOST_REQUIRE_NO_THROW(plugin.requestConfiguration(reply));
     BOOST_CHECK_EQUAL(
         cfg.get_param<std::string>(FPPP::CONFIG_ENDPOINT),
-        reply.get_param<std::string>(plugin.get_name() + '/' + FPPP::CONFIG_ENDPOINT)
+        reply.get_param<std::string>(FP::CONFIG_REQUEST + '/' + plugin.get_name() + '/' + FPPP::CONFIG_ENDPOINT)
     );
     BOOST_CHECK_NO_THROW(cfg.set_param(FPPP::CONFIG_ENDPOINT, std::string("tcp://*:12340")));
     BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
     BOOST_REQUIRE_NO_THROW(plugin.requestConfiguration(reply));
     BOOST_CHECK_EQUAL(
         cfg.get_param<std::string>(FPPP::CONFIG_ENDPOINT),
-        reply.get_param<std::string>(plugin.get_name() + '/' + FPPP::CONFIG_ENDPOINT)
+        reply.get_param<std::string>(FP::CONFIG_REQUEST + '/' + plugin.get_name() + '/' + FPPP::CONFIG_ENDPOINT)
     );
 }
 
