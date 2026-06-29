@@ -537,6 +537,7 @@ void FrameProcessorController::requestConfiguration(OdinData::IpcMessage& reply,
     // Loop over plugins and request current configuration from each
     std::map<std::string, boost::shared_ptr<FrameProcessorPlugin>>::iterator iter;
     for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
+        reply.set_param("plugins/names[]", iter->first);
         iter->second->requestConfiguration(reply);
     }
 
