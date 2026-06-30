@@ -189,8 +189,7 @@ class IpcTornadoClient(object):
             self._parameters[self.IPC_VAL_CONFIG][self.CONFIG_PARAMS_KEY][name] = params[name]
             params.pop(name, None)
         params.pop("plugins", None)
-        # store all the CONFIG parameters in the "params" sub-dictionary
-        self._parameters[self.IPC_VAL_CONFIG]['timestamp'] = config_msg['timestamp']
+
         if(self.METADATA_HASH_KEY in params):
             self._parameters[self.IPC_VAL_CONFIG_METADATA_HASH] = params[self.METADATA_HASH_KEY]
             params.pop(self.METADATA_HASH_KEY, None)
@@ -211,9 +210,7 @@ class IpcTornadoClient(object):
         for name in plugin_names:
             self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY][name] = params[name]
             params.pop(name, None)
-        # create a key called "params" to store all the status parameters of each plugin
-        
-        # store all the status parameters in the "params" sub-dictionary
+
         self._parameters[self.IPC_VAL_STATUS]['timestamp'] = status_msg['timestamp']
         if(self.METADATA_HASH_KEY in params):
             self._parameters[self.IPC_VAL_STATUS_METADATA_HASH] = params[self.METADATA_HASH_KEY]
