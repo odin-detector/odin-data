@@ -399,9 +399,22 @@ void FrameProcessorPlugin::notify_end_of_acquisition()
  */
 void FrameProcessorPlugin::push(boost::shared_ptr<Frame> frame)
 {
+    thread_local bool err_frame = false;
     if (!frame->get_end_of_acquisition() && !frame->is_valid()) {
-        throw std::runtime_error("FrameProcessorPlugin::push Invalid frame pushed onto plugin chain");
+        if (!err_frame) {
+            // Log a consecutive series of bad frames ONCE!
+            LOG4CXX_ERROR(
+                logger_,
+                "FrameProcessorPlugin::push() Invalid frame - "
+                    << " Frame no.: " << frame->get_frame_number()
+                    << " ID: " << frame->get_meta_data().get_acquisition_ID()
+            );
+            err_frame = true;
+        }
+        return;
     }
+    err_frame && (err_frame = false);
+
     // Loop over blocking callbacks, calling each function and waiting for return
     std::map<std::string, boost::shared_ptr<IFrameCallback>>::iterator bcbIter;
     for (bcbIter = blocking_callbacks_.begin(); bcbIter != blocking_callbacks_.end(); ++bcbIter) {
@@ -424,9 +437,21 @@ void FrameProcessorPlugin::push(boost::shared_ptr<Frame> frame)
  */
 void FrameProcessorPlugin::push(const std::string& plugin_name, boost::shared_ptr<Frame> frame)
 {
+    thread_local bool err_frame = false;
     if (!frame->get_end_of_acquisition() && !frame->is_valid()) {
-        throw std::runtime_error("FrameProcessorPlugin::push Invalid frame pushed onto plugin chain");
+        if (!err_frame) {
+            // Log a consecutive series of bad frames ONCE!
+            LOG4CXX_ERROR(
+                logger_,
+                "FrameProcessorPlugin::push() Invalid frame - "
+                    << " Frame no.: " << frame->get_frame_number()
+                    << " ID: " << frame->get_meta_data().get_acquisition_ID()
+            );
+            err_frame = true;
+        }
+        return;
     }
+    err_frame && (err_frame = false);
     if (blocking_callbacks_.find(plugin_name) != blocking_callbacks_.end()) {
         blocking_callbacks_[plugin_name]->callback(frame);
     }

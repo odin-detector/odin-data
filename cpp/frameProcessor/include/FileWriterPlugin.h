@@ -177,7 +177,7 @@ private:
     /** Pointer to logger */
     LoggerPtr logger_;
     /** Mutex used to make this class thread safe */
-    boost::recursive_mutex mutex_;
+    std::mutex mutex_;
     /** Is this plugin writing frames to file? */
     bool writing_;
     /** Number of concurrent file writers executing */

@@ -38,7 +38,7 @@ OffsetAdjustmentPlugin::~OffsetAdjustmentPlugin()
  */
 void OffsetAdjustmentPlugin::process_frame(boost::shared_ptr<Frame> frame)
 {
-    frame->meta_data().adjust_frame_offset(offset_adjustment_);
+    frame->meta_data().adjust_frame_offset(offset_adjustment_.load());
     this->push(frame);
 }
 
@@ -56,8 +56,8 @@ void OffsetAdjustmentPlugin::configure(OdinData::IpcMessage& config, OdinData::I
     try {
         // Check if we are setting the offset adjustment
         if (config.has_param(OFFSET_ADJUSTMENT_CONFIG)) {
-            offset_adjustment_ = (int64_t)config.get_param<int64_t>(OFFSET_ADJUSTMENT_CONFIG);
-            LOG4CXX_INFO(logger_, "Setting offset adjustment to " << offset_adjustment_);
+            offset_adjustment_.store(config.get_param<int64_t>(OFFSET_ADJUSTMENT_CONFIG));
+            LOG4CXX_INFO(logger_, "Setting offset adjustment to " << offset_adjustment_.load());
         }
     } catch (std::runtime_error& e) {
         std::stringstream ss;
@@ -74,7 +74,7 @@ void OffsetAdjustmentPlugin::configure(OdinData::IpcMessage& config, OdinData::I
  */
 void OffsetAdjustmentPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
-    reply.set_param(get_name() + '/' + OFFSET_ADJUSTMENT_CONFIG, offset_adjustment_);
+    reply.set_param(get_name() + '/' + OFFSET_ADJUSTMENT_CONFIG, offset_adjustment_.load());
 }
 
 int OffsetAdjustmentPlugin::get_version_major()

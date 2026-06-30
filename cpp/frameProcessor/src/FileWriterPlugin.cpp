@@ -217,7 +217,7 @@ void FileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame)
 {
     // Protect this method
     boost::mutex::scoped_lock cflock(close_file_mutex_);
-    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
 
     // check it matches the current (or next) acquisition.
     // frames that don't match are dropped / ignored.
@@ -322,7 +322,7 @@ void FileWriterPlugin::stop_writing()
 void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
     // Protect this method
-    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
 
     LOG4CXX_INFO(logger_, config.encode());
 
@@ -1070,7 +1070,7 @@ void FileWriterPlugin::run_close_file_timeout()
                 if (!timeout_condition_.timed_wait(lock, boost::posix_time::milliseconds(timeout_period_))) {
                     // Timeout
                     LOG4CXX_DEBUG_LEVEL(1, logger_, "Close file Timeout timed out");
-                    boost::lock_guard<boost::recursive_mutex> lock(mutex_);
+                    std::lock_guard<std::mutex> lock(mutex_);
                     if (writing_ && timeout_active_) {
                         set_error("Timed out waiting for frames, stopping writing");
                         stop_acquisition();

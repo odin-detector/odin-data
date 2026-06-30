@@ -107,6 +107,8 @@ private:
 
     /**Boolean that shows if the plugin has a successfully bound ZMQ endpoint*/
     bool is_bound_;
+
+    std::mutex mutex_;
 };
 
 } /* namespace FrameProcessor */

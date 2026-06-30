@@ -43,6 +43,7 @@ const std::string FrameProcessorController::CONFIG_VALUE = "value";
 
 const std::string FrameProcessorController::COMMAND_KEY = "command";
 const std::string FrameProcessorController::SUPPORTED_KEY = "supported";
+const std::string FrameProcessorController::METADATA_HASH = "metadata_hash";
 
 const int FrameProcessorController::META_TX_HWM = 10000;
 
@@ -118,6 +119,7 @@ void FrameProcessorController::handleCtrlChannel()
     try {
         OdinData::IpcMessage ctrlMsg(ctrlMsgEncoded.c_str());
         OdinData::IpcMessage replyMsg; // Instantiate default IpmMessage
+        replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeAck); // GCOV_EXCL_LINE
         replyMsg.set_msg_val(ctrlMsg.get_msg_val());
         msg_id = ctrlMsg.get_msg_id();
         replyMsg.set_msg_id(msg_id);
@@ -291,6 +293,11 @@ void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply, bool m
     if (sharedMemController_) {
         sharedMemController_->status(reply);
     }
+
+    // returns all key strings in "params" as a '/' delimited string
+    std::string param_keys = reply.get_keys("params", '/');
+    size_t hash = std::hash<std::string> {}(param_keys);
+    reply.set_param(FrameProcessorController::METADATA_HASH, hash);
 
     std::map<std::string, boost::shared_ptr<FrameProcessorPlugin>>::iterator iter;
     if (metadata) {
@@ -530,8 +537,14 @@ void FrameProcessorController::requestConfiguration(OdinData::IpcMessage& reply,
     // Loop over plugins and request current configuration from each
     std::map<std::string, boost::shared_ptr<FrameProcessorPlugin>>::iterator iter;
     for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
+        reply.set_param("plugins/names[]", iter->first);
         iter->second->requestConfiguration(reply);
     }
+
+    // returns all key strings in "params" as a '/' delimited string
+    std::string param_keys = reply.get_keys("params", '/');
+    size_t hash = std::hash<std::string> {}(param_keys);
+    reply.set_param(FrameProcessorController::METADATA_HASH, hash);
 
     if (metadata) {
         for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {

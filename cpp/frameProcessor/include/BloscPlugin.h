@@ -18,11 +18,11 @@ namespace FrameProcessor {
 
 typedef struct {
     int compression_level;
-    unsigned int shuffle;
+    std::string shuffle;
     size_t type_size;
     size_t uncompressed_size;
     unsigned int threads;
-    unsigned int blosc_compressor;
+    std::string blosc_compressor;
 } BloscCompressionSettings;
 void create_cd_values(const BloscCompressionSettings& settings, std::vector<unsigned int> cd_values);
 
@@ -38,13 +38,21 @@ class BloscPlugin : public FrameProcessorPlugin {
 public:
     BloscPlugin();
     virtual ~BloscPlugin();
-    boost::shared_ptr<Frame> compress_frame(boost::shared_ptr<Frame> frame);
 
     /** Configuration constants */
     static const std::string CONFIG_BLOSC_COMPRESSOR;
     static const std::string CONFIG_BLOSC_THREADS;
     static const std::string CONFIG_BLOSC_LEVEL;
     static const std::string CONFIG_BLOSC_SHUFFLE;
+    static const std::string CONFIG_BLOSC_MODE;
+
+    constexpr static char BLOSC_NOSHUFFLE_STR[] = "noshuffle";
+    constexpr static char BLOSC_SHUFFLE_STR[] = "shuffle";
+    constexpr static char BLOSC_BITSHUFFLE_STR[] = "bitshuffle";
+
+    constexpr static char BLOSC_COMPRESS_MODE_STR[] = "compress";
+    constexpr static char BLOSC_DECOMPRESS_MODE_STR[] = "decompress";
+    constexpr static char BLOSC_OFF_MODE_STR[] = "off";
 
     // Baseclass API to implement:
     void process_frame(boost::shared_ptr<Frame> frame);
@@ -58,23 +66,36 @@ public:
 
 private:
     // Methods unique to this class
+    std::pair<boost::shared_ptr<Frame>, bool> compress_frame(const boost::shared_ptr<Frame>& frame);
+    std::pair<boost::shared_ptr<Frame>, bool> decompress_frame(const boost::shared_ptr<Frame>& frame);
     void update_compression_settings();
-    void* get_buffer(size_t nbytes);
-
+    friend struct Mode_map;
+    enum class Mode {
+        COMPRESS,
+        DECOMPRESS,
+        OFF
+    };
+    typedef struct {
+        size_t type_size;
+        size_t uncompressed_size;
+        unsigned int threads;
+        unsigned int blosc_compressor;
+    } BloscDecompressionSettings;
     // private data
     /** Pointer to logger */
     LoggerPtr logger_;
     /** Mutex used to make this class thread safe */
-    boost::recursive_mutex mutex_;
+    std::mutex mutex_;
     /** Current acquisition ID */
     std::string current_acquisition_;
     /** Compression settings */
     BloscCompressionSettings compression_settings_;
     /** Compression settings for the next acquisition */
     BloscCompressionSettings commanded_compression_settings_;
-    /** Temporary buffer for compressed data */
-    void* data_buffer_ptr_;
-    size_t data_buffer_size_;
+    /** Current Mode the plugin is configured to */
+    Mode plugin_mode_;
+    /** Plugin mode for the next acquisition */
+    Mode commanded_plugin_mode_;
 };
 
 } /* namespace FrameProcessor */

@@ -122,7 +122,7 @@ public:
     void set_frame_offset(const int64_t& offset);
 
     /** Adjust frame offset by increment */
-    void adjust_frame_offset(const int64_t& increment);
+    void adjust_frame_offset(const int64_t increment);
 
 private:
     /** Frame number */
