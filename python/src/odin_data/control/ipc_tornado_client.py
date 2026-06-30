@@ -26,6 +26,8 @@ class IpcTornadoClient(object):
     METADATA_KEY = "metadata"
     METADATA_HASH_KEY = "metadata_hash"
     PARAMS_KEY = "params"
+    STATUS_PARAMS_KEY = "status_request"
+    CONFIG_PARAMS_KEY = "config_request"
 
     MESSAGE_ID_MAX = 2**32
 
@@ -178,10 +180,24 @@ class IpcTornadoClient(object):
 
         :param config_msg: Incoming configuration message response
         """
-        self._parameters[self.IPC_VAL_CONFIG] = config_msg[self.PARAMS_KEY]
-        self._parameters[self.IPC_VAL_CONFIG_METADATA_HASH] = config_msg[self.METADATA_HASH_KEY]
-        if(self.METADATA_KEY in config_msg):
-            self._parameters[self.IPC_VAL_CONFIG_METADATA] = config_msg[self.METADATA_KEY]
+        params = config_msg[self.PARAMS_KEY]
+        
+        plugin_names : list = params["plugins"]["names"]
+        self._parameters[self.IPC_VAL_CONFIG] = {}
+        self._parameters[self.IPC_VAL_CONFIG][self.CONFIG_PARAMS_KEY]: dict = {}
+        for name in plugin_names:
+            self._parameters[self.IPC_VAL_CONFIG][self.CONFIG_PARAMS_KEY][name] = params[name]
+            params.pop(name, None)
+        params.pop("plugins", None)
+        # store all the CONFIG parameters in the "params" sub-dictionary
+        self._parameters[self.IPC_VAL_CONFIG]['timestamp'] = config_msg['timestamp']
+        if(self.METADATA_HASH_KEY in params):
+            self._parameters[self.IPC_VAL_CONFIG_METADATA_HASH] = params[self.METADATA_HASH_KEY]
+            params.pop(self.METADATA_HASH_KEY, None)
+        if(self.METADATA_KEY in params):
+            self._parameters[self.IPC_VAL_CONFIG_METADATA] = params[self.METADATA_KEY]
+            params.pop(self.METADATA_KEY, None)
+        self._parameters[self.IPC_VAL_CONFIG][self.PARAMS_KEY] = params
 
     def _update_status(self, status_msg):
         """Store the response to a status message in the _parameters dict.
@@ -189,18 +205,29 @@ class IpcTornadoClient(object):
         :param status_msg: Incoming status message response
         """
         params = status_msg[self.PARAMS_KEY]
-        params['timestamp'] = status_msg['timestamp']
-        self._parameters[self.IPC_VAL_STATUS] = params
-        self._parameters[self.IPC_VAL_STATUS_METADATA_HASH] = status_msg[self.METADATA_HASH_KEY]
-        if(self.METADATA_KEY in status_msg):
-            self._parameters[self.IPC_VAL_STATUS_METADATA] = status_msg[self.METADATA_KEY]
+        plugin_names : list = params["plugins"]["names"]
+        self._parameters[self.IPC_VAL_STATUS]: dict = {}
+        self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY]: dict = {}
+        for name in plugin_names:
+            self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY][name] = params[name]
+            params.pop(name, None)
+        # create a key called "params" to store all the status parameters of each plugin
+        
+        # store all the status parameters in the "params" sub-dictionary
+        self._parameters[self.IPC_VAL_STATUS]['timestamp'] = status_msg['timestamp']
+        if(self.METADATA_HASH_KEY in params):
+            self._parameters[self.IPC_VAL_STATUS_METADATA_HASH] = params[self.METADATA_HASH_KEY]
+            params.pop(self.METADATA_HASH_KEY, None)
+        if(self.METADATA_KEY in params):
+            self._parameters[self.IPC_VAL_STATUS_METADATA] = params[self.METADATA_KEY]
+            params.pop(self.METADATA_KEY, None)
+        self._parameters[self.IPC_VAL_STATUS][self.PARAMS_KEY] = params
 
-        if 'error' not in self._parameters[self.IPC_VAL_STATUS]:
+        if 'error' not in params:
             self._parameters[self.IPC_VAL_STATUS]['error'] = []
         with self._lock:
             for msg in self._rejected_configs:
                 self._parameters[self.IPC_VAL_STATUS]['error'].append(self._rejected_configs[msg].get_params()['error'])
-
         # If we have received a status response then we must be connected
         self._parameters[self.IPC_VAL_STATUS][self.CLIENT_CONNECTED] = True
 

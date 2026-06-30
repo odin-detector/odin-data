@@ -21,9 +21,12 @@ def recursive_splice(path, params_node, metadata):
             k: recursive_splice(path + [k], v, metadata) for k, v in params_node.items()
         }
     else:
-        param_metadata = reduce(lambda d, key: d[key], path, metadata)
-        params_node = (params_node, param_metadata)
-        return params_node
+        try:
+            param_metadata = reduce(lambda d, key: d[key], path, metadata)
+            return (params_node, param_metadata)
+        except (KeyError, TypeError):
+            # Safe fallback: keeps the data, flags missing metadata
+            return (params_node, None)
 
 
 def splice_params_metadata(params, metadata):
@@ -180,16 +183,22 @@ class OdinDataController(object):
                     self.handle_client(client, index)
                     # Always track/update the hash value of the config and status metadata values
                     # using the variables status_metadata_hash & config_metadata_hash variables
-                    if IpcTornadoClient.IPC_VAL_STATUS in client.parameters:
-                        status_resp = client.parameters[IpcTornadoClient.IPC_VAL_STATUS]
-                        self.status_metadata_hash = client.parameters[IpcTornadoClient.IPC_VAL_STATUS_METADATA_HASH]
+                    if IpcTornadoClient.IPC_VAL_STATUS in client.parameters and client.parameters[IpcTornadoClient.IPC_VAL_STATUS]["connected"]:
+                        status_resp = None
+                        if(IpcTornadoClient.STATUS_PARAMS_KEY in client.parameters[IpcTornadoClient.IPC_VAL_STATUS]):
+                            status_resp = client.parameters[IpcTornadoClient.IPC_VAL_STATUS][IpcTornadoClient.STATUS_PARAMS_KEY]
+                        if(IpcTornadoClient.IPC_VAL_STATUS_METADATA_HASH in client.parameters):
+                            self.status_metadata_hash = client.parameters[IpcTornadoClient.IPC_VAL_STATUS_METADATA_HASH]
                         if IpcTornadoClient.IPC_VAL_STATUS_METADATA in client.parameters:
                             metadata = client.parameters[IpcTornadoClient.IPC_VAL_STATUS_METADATA]
+                        if(status_resp is not None):
                             status_resp = splice_params_metadata(status_resp, metadata)
                         self._params.replace(f"{index}/{IpcTornadoClient.IPC_VAL_STATUS}", status_resp)
                     if IpcTornadoClient.IPC_VAL_CONFIG in client.parameters:
-                        config_resp = client.parameters[IpcTornadoClient.IPC_VAL_CONFIG]
-                        self.config_metadata_hash = client.parameters[IpcTornadoClient.IPC_VAL_CONFIG_METADATA_HASH]
+                        if(IpcTornadoClient.CONFIG_PARAMS_KEY in client.parameters[IpcTornadoClient.IPC_VAL_CONFIG]):
+                            config_resp = client.parameters[IpcTornadoClient.IPC_VAL_CONFIG][IpcTornadoClient.CONFIG_PARAMS_KEY]
+                        if(IpcTornadoClient.IPC_VAL_CONFIG_METADATA_HASH in client.parameters):
+                            self.config_metadata_hash = client.parameters[IpcTornadoClient.IPC_VAL_CONFIG_METADATA_HASH]
                         if (IpcTornadoClient.IPC_VAL_CONFIG_METADATA in client.parameters):
                             metadata = client.parameters[IpcTornadoClient.IPC_VAL_CONFIG_METADATA]
                             config_resp = splice_params_metadata(config_resp, metadata)
