@@ -151,4 +151,60 @@ BOOST_AUTO_TEST_CASE(FileWriterPluginZeroFrames)
     }
 }
 
+BOOST_AUTO_TEST_CASE(FileWriterPluginStatusSanityCheck)
+{
+    FrameProcessor::FileWriterPlugin fwp;
+    using FPFW = FrameProcessor::FileWriterPlugin;
+    fwp.set_name("hdf");
+    {
+      OdinData::IpcMessage reply;
+      BOOST_REQUIRE_NO_THROW(fwp.status(reply));
+      BOOST_TEST_MESSAGE(reply.encode());
+    }
+
+
+//    std::vector<std::string> names = reply.get_param_names();
+//    for (auto iter = names.begin(); iter != names.end(); ++iter){
+//        std::cout << *iter << std::endl;
+//        BOOST_TEST_MESSAGE(*iter);
+//    }
+
+//    std::string prefix = fwp.get_name();
+//    OdinData::IpcMessage status(reply.get_param<const rapidjson::Value&>(prefix));
+//    names = status.get_param_names();
+//    for (auto iter = names.begin(); iter != names.end(); ++iter){
+//        BOOST_TEST_MESSAGE(*iter);
+//    }
+
+
+//    BOOST_CHECK(status.has_param(FPFW::STATUS_WRITING));
+
+    /*    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_FRAMES_MAX));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_FRAMES_WRITTEN));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_FRAMES_WRITTEN));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_FRAMES_PROCESSED));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_FILE_PATH));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_FILE_NAME));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_ACQUISITION_ID));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_PROCESSES));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_RANK));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_TIMEOUT_ACTIVE));
+
+    prefix += FPFW::STATUS_TIMING;
+    BOOST_CHECK(reply.has_param(prefix));
+    prefix += '/';
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_LAST_CREATE));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_MAX_CREATE));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_MEAN_CREATE));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_LAST_WRITE));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_MEAN_WRITE));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_LAST_FLUSH));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_MAX_FLUSH));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_MEAN_FLUSH));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_LAST_CLOSE));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_MAX_CLOSE));
+    BOOST_CHECK(reply.has_param(prefix + FPFW::STATUS_MEAN_CLOSE));
+    */
+}
+
 BOOST_AUTO_TEST_SUITE_END();

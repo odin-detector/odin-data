@@ -46,14 +46,14 @@ jobs:
           INSTALL_PREFIX: ${{ env.INSTALL_PREFIX }}
         run: |
           for unittest in $(find $INSTALL_PREFIX/bin -name "unit_fr_*"); do
-              $unittest --log_level=test_suite
+              $unittest --log_level=all
           done
       - name: Run frame processor unit tests
         env:
           INSTALL_PREFIX: ${{ env.INSTALL_PREFIX }}
         run: |
           for unittest in $(find $INSTALL_PREFIX/bin -name "unit_fp_*"); do
-              $unittest --log_level=test_suite
+              $unittest --log_level=all
           done
       - name: Run odin-data frame integration test
         env:
