@@ -40,6 +40,7 @@ LiveViewPlugin::LiveViewPlugin() :
     add_config_param_metadata(CONFIG_SOCKET_ADDR, PMDD::STRING_T, PMDA::READ_WRITE);
     add_config_param_metadata(CONFIG_DATASET_NAME, PMDD::STRINGARR_T, PMDA::READ_WRITE);
     add_config_param_metadata(CONFIG_TAGGED_FILTER_NAME, PMDD::STRINGARR_T, PMDA::READ_WRITE);
+    update_config_metadata_version();
 
     set_frame_freq_config(DEFAULT_FRAME_FREQ);
     set_per_second_config(DEFAULT_PER_SECOND);
@@ -197,6 +198,7 @@ void LiveViewPlugin::requestConfiguration(OdinData::IpcMessage& reply)
     reply.set_param(get_name() + '/' + LiveViewPlugin::CONFIG_SOCKET_ADDR, image_view_socket_addr_);
     reply.set_param(get_name() + '/' + LiveViewPlugin::CONFIG_PER_SECOND, per_second_);
     reply.set_param(get_name() + '/' + LiveViewPlugin::CONFIG_DATASET_NAME, dataset_names_);
+    reply.set_param(this->get_name() + '/' + FrameProcessorPlugin::METADATA_VERSION, get_metadata_version());
 }
 
 /**

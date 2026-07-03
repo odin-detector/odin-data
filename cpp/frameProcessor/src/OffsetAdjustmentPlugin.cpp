@@ -20,6 +20,7 @@ OffsetAdjustmentPlugin::OffsetAdjustmentPlugin() :
     logger_ = Logger::getLogger("FP.OffsetAdjustmentPlugin");
     LOG4CXX_INFO(logger_, "OffsetAdjustmentPlugin version " << this->get_version_long() << " loaded");
     add_config_param_metadata(OFFSET_ADJUSTMENT_CONFIG, PMDD::INT_T, PMDA::READ_WRITE);
+    update_config_metadata_version();
 }
 
 /**
@@ -75,6 +76,7 @@ void OffsetAdjustmentPlugin::configure(OdinData::IpcMessage& config, OdinData::I
 void OffsetAdjustmentPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
     reply.set_param(get_name() + '/' + OFFSET_ADJUSTMENT_CONFIG, offset_adjustment_.load());
+    reply.set_param(this->get_name() + '/' + FrameProcessorPlugin::METADATA_VERSION, get_metadata_version());
 }
 
 int OffsetAdjustmentPlugin::get_version_major()

@@ -104,6 +104,7 @@ BloscPlugin::BloscPlugin() :
         CONFIG_BLOSC_MODE, PMDD::STRING_T, PMDA::READ_WRITE,
         { FPB::BLOSC_COMPRESS_MODE_STR, FPB::BLOSC_DECOMPRESS_MODE_STR, FPB::BLOSC_OFF_MODE_STR }
     );
+    update_config_metadata_version();
 
     this->commanded_compression_settings_.blosc_compressor = BLOSC_LZ4_COMPNAME;
     this->commanded_compression_settings_.shuffle = BLOSC_BITSHUFFLE_STR;
@@ -418,6 +419,7 @@ void BloscPlugin::requestConfiguration(OdinData::IpcMessage& reply)
         this->commanded_compression_settings_.compression_level
     );
     reply.set_param(this->get_name() + '/' + BloscPlugin::CONFIG_BLOSC_MODE, Mode_map::mode_to_str(this->plugin_mode_));
+    reply.set_param(this->get_name() + '/' + FrameProcessorPlugin::METADATA_VERSION, get_metadata_version());
 }
 
 int BloscPlugin::get_version_major()

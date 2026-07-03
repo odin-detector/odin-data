@@ -168,6 +168,7 @@ FileWriterPlugin::FileWriterPlugin() :
     add_status_param_metadata(prefix + STATUS_LAST_CLOSE, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
     add_status_param_metadata(prefix + STATUS_MAX_CLOSE, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
     add_status_param_metadata(prefix + STATUS_MEAN_CLOSE, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
+    update_config_metadata_version();
 
     this->logger_ = Logger::getLogger("FP.FileWriterPlugin");
     LOG4CXX_INFO(logger_, "FileWriterPlugin version " << this->get_version_long() << " loaded");
@@ -366,6 +367,7 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
                     this->configure_dataset(dataset_name, dsetConfig, reply);
                 }
             }
+            update_config_metadata_version();
         }
 
         // Check to see if we are deleting all datasets
@@ -494,6 +496,7 @@ void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
             }
         }
     }
+    reply.set_param(this->get_name() + '/' + FrameProcessorPlugin::METADATA_VERSION, get_metadata_version());
 }
 
 /**

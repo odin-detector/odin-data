@@ -127,6 +127,7 @@ void ParameterAdjustmentPlugin::configure(OdinData::IpcMessage& config, OdinData
                 parameter_adjustments_.clear();
                 parameter_inputs_.clear();
             }
+            update_config_metadata_version();
         }
     } catch (std::runtime_error& e) {
         std::stringstream ss;
@@ -158,6 +159,7 @@ void ParameterAdjustmentPlugin::requestConfiguration(OdinData::IpcMessage& reply
             input_iter->second
         );
     }
+    reply.set_param(this->get_name() + '/' + FrameProcessorPlugin::METADATA_VERSION, get_metadata_version());
 }
 
 int ParameterAdjustmentPlugin::get_version_major()

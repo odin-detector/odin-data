@@ -294,11 +294,6 @@ void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply, bool m
         sharedMemController_->status(reply);
     }
 
-    // returns all key strings in "params" as a '/' delimited string
-    std::string param_keys = reply.get_keys("params", '/');
-    size_t hash = std::hash<std::string> {}(param_keys);
-    reply.set_param(FrameProcessorController::METADATA_HASH, hash);
-
     std::map<std::string, boost::shared_ptr<FrameProcessorPlugin>>::iterator iter;
     if (metadata) {
         for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
@@ -541,10 +536,14 @@ void FrameProcessorController::requestConfiguration(OdinData::IpcMessage& reply,
         iter->second->requestConfiguration(reply);
     }
 
-    // returns all key strings in "params" as a '/' delimited string
-    std::string param_keys = reply.get_keys("params", '/');
-    size_t hash = std::hash<std::string> {}(param_keys);
-    reply.set_param(FrameProcessorController::METADATA_HASH, hash);
+    int64_t latest_metadata_ver = -1;
+    for (auto iter : plugins_) {
+        latest_metadata_ver = std::max(
+            latest_metadata_ver,
+            reply.get_param<int64_t>(iter.second->get_name() + '/' + FrameProcessorPlugin::METADATA_VERSION)
+        );
+    }
+    reply.set_param(FrameProcessorController::METADATA_HASH, latest_metadata_ver);
 
     if (metadata) {
         for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
