@@ -68,6 +68,7 @@ add_unit_test(MetaMessage)
 add_unit_test(OffsetAdjustmentPlugin)
 add_unit_test(ParameterAdjustmentPlugin)
 add_unit_test(ParameterPublishPlugin)
+add_unit_test(FrameProcessorPluginConfigure)
 add_unit_test(RawFileWriterPlugin)
 add_unit_test(SumPlugin)
 
