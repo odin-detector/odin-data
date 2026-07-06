@@ -24,7 +24,6 @@ def setter_func(tornado_client:IpcTornadoClient, path: list, value):
 def getter_func(paramTree: dict, path: list):
     if(path[-1] == ''):
         del path[-1]
-    # print(paramTree)
     return reduce(lambda d, key: d[key], path, paramTree)
 
 class OdinDataController(object):
@@ -119,10 +118,10 @@ class OdinDataController(object):
         # After all config processing has completed, execute queued commands
         # self.execute_queued() # Still necessary??
     
-    def recursive_splice(self, resp_type:str, index, path:list, params_node:dict, metadata:dict):
+    def recursive_splice(self, index:int, resp_type:str, path:list, params_node:dict, metadata:dict):
         if isinstance(params_node, dict):
             return {
-                k: self.recursive_splice(resp_type, index, path + [k], v, metadata) for k, v in params_node.items()
+                k: self.recursive_splice(index, resp_type, path + [k], v, metadata) for k, v in params_node.items()
             }
         else:
             try:
@@ -135,7 +134,6 @@ class OdinDataController(object):
                 
                 if(param_metadata["access_mode"] == "rw"): # has to be a configuration parameter! So we assign a setter!
                     setter = partial(setter_func, self._clients[index], path)
-                # if(param_metadata[""])
                 param_metadata.pop("access_mode", None) # pop "access_mode"
                 param_metadata.pop(ParameterAccessor.AUTO_METADATA_FIELDS[0], None) # pop "type"
                 return (getter, setter, param_metadata)
@@ -143,12 +141,34 @@ class OdinDataController(object):
                 # Safe fallback: keeps the data, flags missing metadata
                 return (params_node, None)
 
-
     def splice_params_metadata(self, index, resp_type:str, params:dict, metadata:dict):
         path = []
-        params = self.recursive_splice(resp_type, index, path, params, metadata)
+        params = self.recursive_splice(index, resp_type, path, params, metadata)
         return params
-    
+
+    def _update_params_with_metadata(self, value_dict:dict, index:int, value_key:str, param_key:str, metadata_key:str, metadata_hash_key:str):
+        # IpcTornadoClient.STATUS_PARAMS_KEY == param_key
+        # client.parameters[IpcTornadoClient.IPC_VAL_STATUS] == value_dict
+        # IpcTornadoClient.IPC_VAL_STATUS == value_key
+        # IpcTornadoClient.IPC_VAL_STATUS_METADATA_HASH == metadata_hash_key
+        # IpcTornadoClient.IPC_VAL_STATUS_METADATA == metadata_key
+        resp = None
+        hash_val = 0
+        if(param_key in value_dict):
+            resp = value_dict[param_key]
+            if(value_key == IpcTornadoClient.IPC_VAL_CONFIG):
+                self._config_resposes[index] = resp
+            elif(value_key == IpcTornadoClient.IPC_VAL_STATUS):
+                self._status_resposes[index] = resp
+        if(metadata_hash_key in value_dict):
+            hash_val = value_dict[metadata_hash_key]
+        if metadata_key in value_dict:
+            metadata = value_dict[metadata_key]
+            if(resp is not None):
+                resp = self.splice_params_metadata(index, value_key, resp, metadata)
+                self._params.replace(f"{index}/{value_key}", resp)
+        return hash_val
+
     def update_loop(self):
         """Handle background update loop tasks.
         This method handles background update tasks executed periodically in the tornado
@@ -158,81 +178,71 @@ class OdinDataController(object):
         logging.debug("Starting the status/config update thread...")
 
         while self._status_running:
-            try:
+            # try:
             # Handle background tasks
             # Loop over all connected clients and obtain the status
-                for index, client in enumerate(self._clients):
+            for index, client in enumerate(self._clients):
+                try:
+                    # First check for stale status within a client (1 seconds)
+                    # client.check_for_stale_status(1.0)
+                    # Now check for a transition from disconnected to connected
+                    if not client.connected():
+                        self._client_connections[index] = False
+                    else:
+                        if not self._client_connections[index]:
+                            self._client_connections[index] = True
+                except Exception as e:
+                    # Exception caught, log the error but do not stop the update loop
+                    logging.error("Unhandled exception: %s", e)
+                # Request parameter updates
+                for param_req in [
+                    IpcTornadoClient.IPC_VAL_STATUS,
+                    IpcTornadoClient.IPC_VAL_REQ_CFG,
+                    IpcTornadoClient.IPC_VAL_REQ_CMDS,
+                ]:
                     try:
-                        # First check for stale status within a client (1 seconds)
-                        # client.check_for_stale_status(1.0)
-                        # Now check for a transition from disconnected to connected
-                        if not client.connected():
-                            self._client_connections[index] = False
-                        else:
-                            if not self._client_connections[index]:
-                                self._client_connections[index] = True
+                        with_metadata = False
+                        # Check if the previous values of the config and status metadata hash matches the latest value.
+                        # If they do not match, set with_metadata to True and update the previous hash value with the latest.
+                        if(param_req == IpcTornadoClient.IPC_VAL_REQ_CFG and self.config_metadata_hash != self.config_metadata_hash_prev):
+                            with_metadata = True
+                            self.config_metadata_hash_prev = self.config_metadata_hash
+                        elif(param_req == IpcTornadoClient.IPC_VAL_STATUS and self.status_metadata_hash != self.status_metadata_hash_prev):
+                            with_metadata = True
+                            self.status_metadata_hash_prev = self.status_metadata_hash
+                        msg = client.send_request(param_req, with_metadata)
+                        if client.wait_for_response(msg.get_msg_id()):
+                            logging.error(
+                                f"{param_req} request to "
+                                f"{client.ctrl_endpoint} timed out"
+                            )
                     except Exception as e:
-                        # Exception caught, log the error but do not stop the update loop
+                        # Log the error, but do not stop the update loop
                         logging.error("Unhandled exception: %s", e)
-                    # Request parameter updates
-                    for param_req in [
-                        IpcTornadoClient.IPC_VAL_STATUS,
-                        IpcTornadoClient.IPC_VAL_REQ_CFG,
-                        IpcTornadoClient.IPC_VAL_REQ_CMDS,
-                    ]:
-                        try:
-                            with_metadata = False
-                            # Check if the previous values of the config and status metadata hash matches the latest value.
-                            # If they do not match, set with_metadata to True and update the previous hash value with the latest.
-                            if(param_req == IpcTornadoClient.IPC_VAL_REQ_CFG and self.config_metadata_hash != self.config_metadata_hash_prev):
-                                with_metadata = True
-                                self.config_metadata_hash_prev = self.config_metadata_hash
-                            elif(param_req == IpcTornadoClient.IPC_VAL_STATUS and self.status_metadata_hash != self.status_metadata_hash_prev):
-                                with_metadata = True
-                                self.status_metadata_hash_prev = self.status_metadata_hash
-                            msg = client.send_request(param_req, with_metadata)
-                            if client.wait_for_response(msg.get_msg_id()):
-                                logging.error(
-                                    f"{param_req} request to "
-                                    f"{client.ctrl_endpoint} timed out"
-                                )
-                        except Exception as e:
-                            # Log the error, but do not stop the update loop
-                            logging.error("Unhandled exception: %s", e)
-                    self.handle_client(client, index)
-                    # Always track/update the hash value of the config and status metadata values
-                    # using the variables status_metadata_hash & config_metadata_hash variables
-                    if IpcTornadoClient.IPC_VAL_STATUS in client.parameters and client.parameters[IpcTornadoClient.IPC_VAL_STATUS]["connected"]:
-                        status_resp = None
-                        if(IpcTornadoClient.STATUS_PARAMS_KEY in client.parameters[IpcTornadoClient.IPC_VAL_STATUS]):
-                            status_resp = client.parameters[IpcTornadoClient.IPC_VAL_STATUS][IpcTornadoClient.STATUS_PARAMS_KEY]
-                            self._status_resposes[index] = status_resp
-                        if(IpcTornadoClient.IPC_VAL_STATUS_METADATA_HASH in client.parameters):
-                            self.status_metadata_hash = client.parameters[IpcTornadoClient.IPC_VAL_STATUS_METADATA_HASH]
-                        if IpcTornadoClient.IPC_VAL_STATUS_METADATA in client.parameters:
-                            metadata = client.parameters[IpcTornadoClient.IPC_VAL_STATUS_METADATA]
-                        if(status_resp is not None):
-                            status_resp = self.splice_params_metadata(index, IpcTornadoClient.IPC_VAL_STATUS, status_resp, metadata)
-                            self._params.replace(f"{index}/{IpcTornadoClient.IPC_VAL_STATUS}", status_resp)
-                    if IpcTornadoClient.IPC_VAL_CONFIG in client.parameters:
-                        if(IpcTornadoClient.CONFIG_PARAMS_KEY in client.parameters[IpcTornadoClient.IPC_VAL_CONFIG]):
-                            config_resp = client.parameters[IpcTornadoClient.IPC_VAL_CONFIG][IpcTornadoClient.CONFIG_PARAMS_KEY]
-                            self._config_resposes[index] = config_resp
-                        if(IpcTornadoClient.IPC_VAL_CONFIG_METADATA_HASH in client.parameters):
-                            self.config_metadata_hash = client.parameters[IpcTornadoClient.IPC_VAL_CONFIG_METADATA_HASH]
-                        if (IpcTornadoClient.IPC_VAL_CONFIG_METADATA in client.parameters):
-                            metadata = client.parameters[IpcTornadoClient.IPC_VAL_CONFIG_METADATA]
-                            config_resp = self.splice_params_metadata(index, IpcTornadoClient.IPC_VAL_CONFIG, config_resp, metadata)
-                            self._params.replace(f"{index}/{IpcTornadoClient.IPC_VAL_CONFIG}", config_resp)
-                    if "commands" in client.parameters:
-                        self.parse_available_commands(index, client)
-                self._config_cache = [
-                    self._params.get(f"{idx}/{IpcTornadoClient.IPC_VAL_CONFIG}")
-                    for idx, _ in enumerate(self._clients)
-                ]
-                self.process_updates()
-            except Exception as ex:
-                logging.error("{}".format(ex))
+                self.handle_client(client, index)
+                # Always track/update the hash value of the config and status metadata values
+                # using the variables status_metadata_hash & config_metadata_hash variables
+                if IpcTornadoClient.IPC_VAL_STATUS in client.parameters and client.parameters[IpcTornadoClient.IPC_VAL_STATUS]["connected"]:
+                    self.status_metadata_hash = self._update_params_with_metadata(client.parameters[IpcTornadoClient.IPC_VAL_STATUS],
+                                                                                    index, IpcTornadoClient.IPC_VAL_STATUS,
+                                                                                    IpcTornadoClient.STATUS_PARAMS_KEY,
+                                                                                    IpcTornadoClient.IPC_VAL_STATUS_METADATA,
+                                                                                    IpcTornadoClient.IPC_VAL_STATUS_METADATA_HASH)
+                if IpcTornadoClient.IPC_VAL_CONFIG in client.parameters:
+                    self.config_metadata_hash = self._update_params_with_metadata(client.parameters[IpcTornadoClient.IPC_VAL_CONFIG],
+                                                                                    index, IpcTornadoClient.IPC_VAL_CONFIG,
+                                                                                    IpcTornadoClient.CONFIG_PARAMS_KEY,
+                                                                                    IpcTornadoClient.IPC_VAL_CONFIG_METADATA,
+                                                                                    IpcTornadoClient.IPC_VAL_CONFIG_METADATA_HASH)
+                if "commands" in client.parameters:
+                    self.parse_available_commands(index, client)
+            self._config_cache = [
+                self._params.get(f"{idx}/{IpcTornadoClient.IPC_VAL_CONFIG}")
+                for idx, _ in enumerate(self._clients)
+            ]
+            self.process_updates()
+            # except Exception as ex:
+                # logging.error("{}".format(ex))
 
             time.sleep(self._update_interval)
 

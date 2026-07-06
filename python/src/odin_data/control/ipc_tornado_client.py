@@ -191,10 +191,10 @@ class IpcTornadoClient(object):
         params.pop("plugins", None)
 
         if(self.METADATA_HASH_KEY in params):
-            self._parameters[self.IPC_VAL_CONFIG_METADATA_HASH] = params[self.METADATA_HASH_KEY]
+            self._parameters[self.IPC_VAL_CONFIG][self.IPC_VAL_CONFIG_METADATA_HASH] = params[self.METADATA_HASH_KEY]
             params.pop(self.METADATA_HASH_KEY, None)
         if(self.METADATA_KEY in params):
-            self._parameters[self.IPC_VAL_CONFIG_METADATA] = params[self.METADATA_KEY]
+            self._parameters[self.IPC_VAL_CONFIG][self.IPC_VAL_CONFIG_METADATA] = params[self.METADATA_KEY]
             params.pop(self.METADATA_KEY, None)
         self._parameters[self.IPC_VAL_CONFIG][self.PARAMS_KEY] = params
 
@@ -213,10 +213,10 @@ class IpcTornadoClient(object):
 
         self._parameters[self.IPC_VAL_STATUS]['timestamp'] = status_msg['timestamp']
         if(self.METADATA_HASH_KEY in params):
-            self._parameters[self.IPC_VAL_STATUS_METADATA_HASH] = params[self.METADATA_HASH_KEY]
+            self._parameters[self.IPC_VAL_STATUS][self.IPC_VAL_STATUS_METADATA_HASH] = params[self.METADATA_HASH_KEY]
             params.pop(self.METADATA_HASH_KEY, None)
         if(self.METADATA_KEY in params):
-            self._parameters[self.IPC_VAL_STATUS_METADATA] = params[self.METADATA_KEY]
+            self._parameters[self.IPC_VAL_STATUS][self.IPC_VAL_STATUS_METADATA] = params[self.METADATA_KEY]
             params.pop(self.METADATA_KEY, None)
         self._parameters[self.IPC_VAL_STATUS][self.PARAMS_KEY] = params
 
