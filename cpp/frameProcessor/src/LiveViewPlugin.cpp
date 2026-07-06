@@ -198,7 +198,7 @@ void LiveViewPlugin::requestConfiguration(OdinData::IpcMessage& reply)
     reply.set_param(get_name() + '/' + LiveViewPlugin::CONFIG_SOCKET_ADDR, image_view_socket_addr_);
     reply.set_param(get_name() + '/' + LiveViewPlugin::CONFIG_PER_SECOND, per_second_);
     reply.set_param(get_name() + '/' + LiveViewPlugin::CONFIG_DATASET_NAME, dataset_names_);
-    reply.set_param(this->get_name() + '/' + FrameProcessorPlugin::METADATA_VERSION, get_metadata_version());
+    reply.set_param(this->get_name() + '/' + FrameProcessorPlugin::METADATA_VERSION, get_config_metadata_version());
 }
 
 /**

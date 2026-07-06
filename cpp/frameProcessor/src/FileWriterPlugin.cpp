@@ -143,6 +143,7 @@ FileWriterPlugin::FileWriterPlugin() :
         FileWriterPlugin::CLOSE_TIMEOUT_PERIOD, PMDD::UINT_T, PMDA::READ_WRITE, 0, PMD::MAX_UNSET
     );
     add_config_param_metadata(FileWriterPlugin::START_CLOSE_TIMEOUT, PMDD::BOOL_T, PMDA::READ_WRITE);
+    update_config_metadata_version();
 
     add_status_param_metadata(STATUS_WRITING, PMDD::BOOL_T, PMDA::READ_ONLY);
     add_status_param_metadata(STATUS_FRAMES_MAX, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
@@ -168,7 +169,7 @@ FileWriterPlugin::FileWriterPlugin() :
     add_status_param_metadata(prefix + STATUS_LAST_CLOSE, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
     add_status_param_metadata(prefix + STATUS_MAX_CLOSE, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
     add_status_param_metadata(prefix + STATUS_MEAN_CLOSE, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
-    update_config_metadata_version();
+    update_status_metadata_version();
 
     this->logger_ = Logger::getLogger("FP.FileWriterPlugin");
     LOG4CXX_INFO(logger_, "FileWriterPlugin version " << this->get_version_long() << " loaded");
@@ -496,7 +497,7 @@ void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
             }
         }
     }
-    reply.set_param(this->get_name() + '/' + FrameProcessorPlugin::METADATA_VERSION, get_metadata_version());
+    reply.set_param(this->get_name() + '/' + FrameProcessorPlugin::METADATA_VERSION, get_config_metadata_version());
 }
 
 /**
@@ -893,6 +894,7 @@ void FileWriterPlugin::status(OdinData::IpcMessage& status)
     status.set_param(prefix + STATUS_RANK, (int)this->concurrent_rank_);
     status.set_param(prefix + STATUS_TIMEOUT_ACTIVE, this->timeout_active_);
     add_file_writing_stats(status);
+    status.set_param(this->get_name() + '/' + FrameProcessorPlugin::METADATA_VERSION, get_status_metadata_version());
 }
 
 /**

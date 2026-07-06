@@ -419,7 +419,7 @@ void BloscPlugin::requestConfiguration(OdinData::IpcMessage& reply)
         this->commanded_compression_settings_.compression_level
     );
     reply.set_param(this->get_name() + '/' + BloscPlugin::CONFIG_BLOSC_MODE, Mode_map::mode_to_str(this->plugin_mode_));
-    reply.set_param(this->get_name() + '/' + FrameProcessorPlugin::METADATA_VERSION, get_metadata_version());
+    reply.set_param(this->get_name() + '/' + FrameProcessorPlugin::METADATA_VERSION, get_config_metadata_version());
 }
 
 int BloscPlugin::get_version_major()

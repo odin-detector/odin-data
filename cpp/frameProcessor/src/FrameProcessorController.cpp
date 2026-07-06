@@ -316,6 +316,20 @@ void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply, bool m
         std::vector<std::string> plugin_warnings = iter->second->get_warnings();
         warning_messages.insert(warning_messages.end(), plugin_warnings.begin(), plugin_warnings.end());
     }
+
+    int64_t latest_metadata_ver = -1;
+    for (auto iter : plugins_) {
+        try {
+            latest_metadata_ver = std::max(
+                latest_metadata_ver,
+                reply.get_param<int64_t>(iter.second->get_name() + '/' + FrameProcessorPlugin::METADATA_VERSION)
+            );
+        } catch (...) {
+            // pass
+        }
+    }
+    reply.set_param(FrameProcessorController::METADATA_HASH, latest_metadata_ver);
+
     std::vector<std::string>::iterator error_iter;
     for (error_iter = error_messages.begin(); error_iter != error_messages.end(); ++error_iter) {
         reply.set_param("error[]", *error_iter);

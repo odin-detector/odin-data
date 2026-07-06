@@ -127,7 +127,7 @@ void ParameterPublishPlugin::requestConfiguration(OdinData::IpcMessage& reply)
     for (auto& it : this->parameters_) {
         reply.set_param(parameters_key, it);
     }
-    reply.set_param(this->get_name() + '/' + FrameProcessorPlugin::METADATA_VERSION, get_metadata_version());
+    reply.set_param(this->get_name() + '/' + FrameProcessorPlugin::METADATA_VERSION, get_config_metadata_version());
 }
 
 /** Bind to endpoint and store for config reporting

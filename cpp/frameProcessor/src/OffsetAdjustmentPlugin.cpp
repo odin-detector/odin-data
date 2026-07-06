@@ -76,7 +76,7 @@ void OffsetAdjustmentPlugin::configure(OdinData::IpcMessage& config, OdinData::I
 void OffsetAdjustmentPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
     reply.set_param(get_name() + '/' + OFFSET_ADJUSTMENT_CONFIG, offset_adjustment_.load());
-    reply.set_param(this->get_name() + '/' + FrameProcessorPlugin::METADATA_VERSION, get_metadata_version());
+    reply.set_param(this->get_name() + '/' + FrameProcessorPlugin::METADATA_VERSION, get_config_metadata_version());
 }
 
 int OffsetAdjustmentPlugin::get_version_major()

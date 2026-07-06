@@ -320,7 +320,7 @@ void GapFillPlugin::requestConfiguration(OdinData::IpcMessage& reply)
     for (int index = 0; index < gaps_y_.size(); index++) {
         reply.set_param(get_name() + '/' + CONFIG_GRID_Y_GAPS + "[]", gaps_y_[index]);
     }
-    reply.set_param(this->get_name() + '/' + FrameProcessorPlugin::METADATA_VERSION, get_metadata_version());
+    reply.set_param(this->get_name() + '/' + FrameProcessorPlugin::METADATA_VERSION, get_config_metadata_version());
 }
 
 } // namespace FrameProcessor

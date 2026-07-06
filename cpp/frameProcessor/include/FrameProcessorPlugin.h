@@ -83,9 +83,20 @@ protected:
         auto val = std::chrono::duration_cast<std::chrono::milliseconds>(time_stamp_ms.time_since_epoch());
         this->config_metadata_ts_ = val.count();
     }
-    inline int64_t get_metadata_version()
+    /** function to update the status time-stamp! */
+    inline void update_status_metadata_version(void)
+    {
+        auto time_stamp_ms = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
+        auto val = std::chrono::duration_cast<std::chrono::milliseconds>(time_stamp_ms.time_since_epoch());
+        this->status_metadata_ts_ = val.count();
+    }
+    inline int64_t get_config_metadata_version()
     {
         return this->config_metadata_ts_;
+    }
+    inline int64_t get_status_metadata_version()
+    {
+        return this->status_metadata_ts_;
     }
     void push(boost::shared_ptr<Frame> frame);
     void push(const std::string& plugin_name, boost::shared_ptr<Frame> frame);
@@ -256,6 +267,8 @@ private:
     CallDuration process_duration_;
     /** time-stamp to represent the version of config metadata */
     int64_t config_metadata_ts_;
+    /** time-stamp to represent the version of config metadata */
+    int64_t status_metadata_ts_;
 };
 
 } /* namespace FrameProcessor */
