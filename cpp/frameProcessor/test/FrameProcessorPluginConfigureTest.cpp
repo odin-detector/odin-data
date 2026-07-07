@@ -21,9 +21,14 @@ BOOST_AUTO_TEST_CASE(BloscPluginConfigureUpdatesRequestedSettings)
 
     OdinData::IpcMessage reply;
     OdinData::IpcMessage cfg;
-    cfg.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_MODE, std::string(FrameProcessor::BloscPlugin::BLOSC_COMPRESS_MODE_STR));
+    cfg.set_param(
+        FrameProcessor::BloscPlugin::CONFIG_BLOSC_MODE,
+        std::string(FrameProcessor::BloscPlugin::BLOSC_COMPRESS_MODE_STR)
+    );
     cfg.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_LEVEL, 7);
-    cfg.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_SHUFFLE, std::string(FrameProcessor::BloscPlugin::BLOSC_SHUFFLE_STR));
+    cfg.set_param(
+        FrameProcessor::BloscPlugin::CONFIG_BLOSC_SHUFFLE, std::string(FrameProcessor::BloscPlugin::BLOSC_SHUFFLE_STR)
+    );
     cfg.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_THREADS, 4u);
     cfg.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_COMPRESSOR, std::string("zlib"));
 
@@ -34,12 +39,16 @@ BOOST_AUTO_TEST_CASE(BloscPluginConfigureUpdatesRequestedSettings)
         reply.get_param<std::string>(plugin.get_name() + "/" + FrameProcessor::BloscPlugin::CONFIG_BLOSC_MODE),
         std::string(FrameProcessor::BloscPlugin::BLOSC_COMPRESS_MODE_STR)
     );
-    BOOST_CHECK_EQUAL(reply.get_param<int>(plugin.get_name() + "/" + FrameProcessor::BloscPlugin::CONFIG_BLOSC_LEVEL), 7);
+    BOOST_CHECK_EQUAL(
+        reply.get_param<int>(plugin.get_name() + "/" + FrameProcessor::BloscPlugin::CONFIG_BLOSC_LEVEL), 7
+    );
     BOOST_CHECK_EQUAL(
         reply.get_param<std::string>(plugin.get_name() + "/" + FrameProcessor::BloscPlugin::CONFIG_BLOSC_SHUFFLE),
         std::string(FrameProcessor::BloscPlugin::BLOSC_SHUFFLE_STR)
     );
-    BOOST_CHECK_EQUAL(reply.get_param<unsigned int>(plugin.get_name() + "/" + FrameProcessor::BloscPlugin::CONFIG_BLOSC_THREADS), 4u);
+    BOOST_CHECK_EQUAL(
+        reply.get_param<unsigned int>(plugin.get_name() + "/" + FrameProcessor::BloscPlugin::CONFIG_BLOSC_THREADS), 4u
+    );
     BOOST_CHECK_EQUAL(
         reply.get_param<std::string>(plugin.get_name() + "/" + FrameProcessor::BloscPlugin::CONFIG_BLOSC_COMPRESSOR),
         std::string("zlib")
@@ -60,9 +69,15 @@ BOOST_AUTO_TEST_CASE(DummyUDPProcessPluginConfigureUpdatesConfiguration)
     plugin.configure(cfg, reply);
     plugin.requestConfiguration(reply);
 
-    BOOST_CHECK_EQUAL(reply.get_param<int>(plugin.get_name() + "/" + FrameProcessor::DummyUDPProcessPlugin::CONFIG_IMAGE_WIDTH), 128);
-    BOOST_CHECK_EQUAL(reply.get_param<int>(plugin.get_name() + "/" + FrameProcessor::DummyUDPProcessPlugin::CONFIG_IMAGE_HEIGHT), 64);
-    BOOST_CHECK_EQUAL(reply.get_param<bool>(plugin.get_name() + "/" + FrameProcessor::DummyUDPProcessPlugin::CONFIG_COPY_FRAME), true);
+    BOOST_CHECK_EQUAL(
+        reply.get_param<int>(plugin.get_name() + "/" + FrameProcessor::DummyUDPProcessPlugin::CONFIG_IMAGE_WIDTH), 128
+    );
+    BOOST_CHECK_EQUAL(
+        reply.get_param<int>(plugin.get_name() + "/" + FrameProcessor::DummyUDPProcessPlugin::CONFIG_IMAGE_HEIGHT), 64
+    );
+    BOOST_CHECK_EQUAL(
+        reply.get_param<bool>(plugin.get_name() + "/" + FrameProcessor::DummyUDPProcessPlugin::CONFIG_COPY_FRAME), true
+    );
 }
 
 BOOST_AUTO_TEST_CASE(GapFillPluginConfigureEnablesValidConfiguration)
@@ -104,7 +119,9 @@ BOOST_AUTO_TEST_CASE(GapFillPluginConfigureEnablesValidConfiguration)
     dimensions_t dims(2);
     dims[0] = 4;
     dims[1] = 4;
-    FrameProcessor::FrameMetaData frame_meta(1, "data", FrameProcessor::raw_16bit, "test", dims, FrameProcessor::no_compression);
+    FrameProcessor::FrameMetaData frame_meta(
+        1, "data", FrameProcessor::raw_16bit, "test", dims, FrameProcessor::no_compression
+    );
     char dummy_data[16] = { 0 };
     boost::shared_ptr<FrameProcessor::DataBlockFrame> frame(
         new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(dummy_data), sizeof(dummy_data))
@@ -139,7 +156,9 @@ BOOST_AUTO_TEST_CASE(ParameterAdjustmentPluginConfigureAddsConfiguredParameter)
     dimensions_t dims(2);
     dims[0] = 1;
     dims[1] = 1;
-    FrameProcessor::FrameMetaData frame_meta(7, "data", FrameProcessor::raw_16bit, "test", dims, FrameProcessor::no_compression);
+    FrameProcessor::FrameMetaData frame_meta(
+        7, "data", FrameProcessor::raw_16bit, "test", dims, FrameProcessor::no_compression
+    );
     char dummy_data[2] = { 0 };
     boost::shared_ptr<FrameProcessor::DataBlockFrame> frame(
         new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(dummy_data), sizeof(dummy_data))
