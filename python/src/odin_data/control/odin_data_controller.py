@@ -39,7 +39,6 @@ class OdinDataController(object):
         self.config_metadata_hash_prev = 0
         self.status_metadata_hash_prev = 0
         self._endpoints = []
-        self._config_cache = None
         self._config_resposes:list[dict] = [None] * len(endpoints)
         self._status_resposes:list[dict] = [None] * len(endpoints)
 
@@ -236,10 +235,6 @@ class OdinDataController(object):
                                                                                     IpcTornadoClient.IPC_VAL_CONFIG_METADATA_HASH)
                 if "commands" in client.parameters:
                     self.parse_available_commands(index, client)
-            self._config_cache = [
-                self._params.get(f"{idx}/{IpcTornadoClient.IPC_VAL_CONFIG}")
-                for idx, _ in enumerate(self._clients)
-            ]
             self.process_updates()
             # except Exception as ex:
                 # logging.error("{}".format(ex))
@@ -287,30 +282,6 @@ class OdinDataController(object):
             f"Queue command: index [{index}] plugin [{plugin}] command [{value}]"
         )
         self._queued_command[index] = (plugin, value)
-
-    def execute_queued(self):
-        """ After configuration changes have been applied this method is called.  It
-        checks to see if any commands have been queued, and if any are found then 
-        they are executed.
-        """
-        for index, _ in enumerate(self._queued_command):
-            if self._queued_command[index] is not None:
-                plugin, command = self._queued_command[index]
-                self._queued_command[index] = None
-                logging.info(
-                    f"Execute: index[{index}] plugin [{plugin}] command [{command}]"
-                )
-                # Call the execution check method prior to sending to a client
-                if self.can_execute(index, plugin, command):
-                    self._clients[index].execute_command(plugin, command)
-
-    def can_execute(self, index, plugin, command):
-        """Called for each command that is about to be sent to a client
-        application.  If this method returns false then the command is not
-        sent.  This method can be overloaded by subclasses to implement
-        controller specific logic checks prior to sending the command.
-        """
-        return True
 
     def handle_client(self, client, index):
         """Called on each client in the update_loop loop before updating the
