@@ -45,6 +45,8 @@ GapFillPlugin::~GapFillPlugin()
  */
 void GapFillPlugin::process_frame(boost::shared_ptr<Frame> frame)
 {
+    // protect method
+    std::lock_guard<std::mutex> guard { mutex_ };
     LOG4CXX_TRACE(logger_, "GapFillPlugin Process Frame.");
 
     // Call the insert gaps method and push the resulting frame if it is not null
@@ -117,7 +119,6 @@ bool GapFillPlugin::configuration_valid(boost::shared_ptr<Frame> frame)
  */
 boost::shared_ptr<Frame> GapFillPlugin::insert_gaps(boost::shared_ptr<Frame> frame)
 {
-
     boost::shared_ptr<Frame> gap_frame;
 
     dimensions_t frame_dimensions = frame->get_meta_data().get_dimensions();
@@ -203,6 +204,7 @@ boost::shared_ptr<Frame> GapFillPlugin::insert_gaps(boost::shared_ptr<Frame> fra
 void GapFillPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
     try {
+        std::lock_guard<std::mutex> guard { mutex_ };
         // Check if the grid size is being set
         if (config.has_param(CONFIG_GRID_SIZE)) {
             const rapidjson::Value& val = config.get_param<const rapidjson::Value&>(CONFIG_GRID_SIZE);

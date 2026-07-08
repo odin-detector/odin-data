@@ -67,6 +67,7 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
 {
     /** Static Frame Count will increment each time this method is called, basically as a count of how many frames have
      * been processed by the plugin*/
+    std::lock_guard<std::mutex> guard { mutex_ };
     static uint32_t frame_count_;
     LOG4CXX_TRACE(logger_, "LiveViewPlugin Process Frame.");
     if (is_bound_) {
@@ -150,6 +151,7 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
 void LiveViewPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
     try {
+        std::lock_guard<std::mutex> guard { mutex_ };
         /* Check if we're setting the frequency of frames to show*/
         if (config.has_param(CONFIG_FRAME_FREQ)) {
             set_frame_freq_config(config.get_param<int32_t>(CONFIG_FRAME_FREQ));

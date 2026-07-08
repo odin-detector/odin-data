@@ -43,6 +43,7 @@ const std::string FrameProcessorController::CONFIG_VALUE = "value";
 
 const std::string FrameProcessorController::COMMAND_KEY = "command";
 const std::string FrameProcessorController::SUPPORTED_KEY = "supported";
+const std::string FrameProcessorController::METADATA_HASH = "metadata_hash";
 
 const int FrameProcessorController::META_TX_HWM = 10000;
 
@@ -293,6 +294,11 @@ void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply, bool m
         sharedMemController_->status(reply);
     }
 
+    // returns all key strings in "params" as a '/' delimited string
+    std::string param_keys = reply.get_keys("params", '/');
+    size_t hash = std::hash<std::string> {}(param_keys);
+    reply.set_param(FrameProcessorController::METADATA_HASH, hash);
+
     std::map<std::string, boost::shared_ptr<FrameProcessorPlugin>>::iterator iter;
     if (metadata) {
         for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
@@ -531,8 +537,14 @@ void FrameProcessorController::requestConfiguration(OdinData::IpcMessage& reply,
     // Loop over plugins and request current configuration from each
     std::map<std::string, boost::shared_ptr<FrameProcessorPlugin>>::iterator iter;
     for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
+        reply.set_param("plugins/names[]", iter->first);
         iter->second->requestConfiguration(reply);
     }
+
+    // returns all key strings in "params" as a '/' delimited string
+    std::string param_keys = reply.get_keys("params", '/');
+    size_t hash = std::hash<std::string> {}(param_keys);
+    reply.set_param(FrameProcessorController::METADATA_HASH, hash);
 
     if (metadata) {
         for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {

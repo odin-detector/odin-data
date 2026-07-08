@@ -271,6 +271,19 @@ public:
         }
     }
 
+    // returns all the key-strings of param_str as a single 'delim' delimited string
+    std::string get_keys(const std::string& param_str, const char delim = '/')
+    {
+        std::string keys_str;
+        constexpr size_t string_size = 256;
+        keys_str.reserve(string_size);
+        if (this->doc_.FindMember(param_str.c_str()) == doc_.MemberEnd())
+            return "";
+        rapidjson::Value& params = this->doc_[param_str.c_str()];
+        get_keys_helper(params, delim, keys_str);
+        return keys_str;
+    }
+
     //! Sets the nack message type with a reason parameter
     void set_nack(const std::string& reason);
 
@@ -461,6 +474,25 @@ private:
 
     //! Maps an internal message timestamp representation to an ISO8601 extended format string
     std::string valid_msg_timestamp(boost::posix_time::ptime msg_timestamp);
+
+    // helper function to recursively append key-strings in 'value' to the 'result' variable
+    static void get_keys_helper(const rapidjson::Value& value, const char delim, std::string& result)
+    {
+        if (__builtin_expect(value.IsObject(), 1)) {
+            for (const auto& member : value.GetObject()) {
+                // Store the found key
+                result.append(member.name.GetString()) += delim;
+
+                // Look deeper inside this key's value
+                get_keys_helper(member.value, delim, result);
+            }
+        } else if (value.IsArray()) {
+            // Arrays don't have keys, but their elements (like child objects) might
+            for (const auto& item : value.GetArray()) {
+                get_keys_helper(item, delim, result);
+            }
+        }
+    }
 
     //! Indicates if the message has a params block
     bool has_params(void) const;
