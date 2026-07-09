@@ -15,7 +15,13 @@ def ipc_channel():
 @pytest.fixture
 def client(ipc_channel):
     with patch("odin_data.client.OdinDataClient._parse_arguments"):
-        yield OdinDataClient()
+        client = OdinDataClient()
+        client.args.config_file = None
+        client.args.request_config = False
+        client.args.request_commands = False
+        client.args.status = False
+        client.args.shutdown = False
+        yield client
 
 
 @pytest.fixture
@@ -38,10 +44,6 @@ class TestClientProgram:
         assert client._msg_id == 1
 
     def test_shutdown(self, client):
-        client.args.config_file = None
-        client.args.request_config = False
-        client.args.request_commands = False
-        client.args.status = False
         client.args.shutdown = True
 
         client.ctrl_channel.send = MagicMock()
@@ -53,11 +55,7 @@ class TestClientProgram:
         assert '"msg_val": "shutdown"' in args[0]
 
     def test_status(self, client):
-        client.args.config_file = None
-        client.args.request_config = False
-        client.args.request_commands = False
         client.args.status = True
-        client.args.shutdown = False
 
         client.ctrl_channel.send = MagicMock()
         client.run()
@@ -68,11 +66,7 @@ class TestClientProgram:
         assert '"msg_val": "status"' in args[0]
 
     def test_request_command(self, client):
-        client.args.config_file = None
-        client.args.request_config = False
         client.args.request_commands = True
-        client.args.status = False
-        client.args.shutdown = False
 
         client.ctrl_channel.send = MagicMock()
         client.run()
@@ -83,11 +77,7 @@ class TestClientProgram:
         assert '"msg_val": "request_commands"' in args[0]
 
     def test_request_config(self, client):
-        client.args.config_file = None
         client.args.request_config = True
-        client.args.request_commands = False
-        client.args.status = False
-        client.args.shutdown = False
 
         client.ctrl_channel.send = MagicMock()
         client.run()
@@ -104,10 +94,6 @@ class TestClientProgram:
 
         with open(file_name, "r") as r_file:
             client.args.config_file = r_file
-            client.args.request_config = False
-            client.args.request_commands = False
-            client.args.status = False
-            client.args.shutdown = False
 
             client.ctrl_channel.send = MagicMock()
             client.run()
@@ -124,10 +110,6 @@ class TestClientProgram:
 
         with open(file_name, "r") as r_file:
             client.args.config_file = r_file
-            client.args.request_config = False
-            client.args.request_commands = False
-            client.args.status = False
-            client.args.shutdown = False
 
             client.ctrl_channel.send = MagicMock()
             client.run()
