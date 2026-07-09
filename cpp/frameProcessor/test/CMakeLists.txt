@@ -2,10 +2,12 @@
 #  <target_name>Test.cpp
 # The target name will be prefixed with unit_fp_ to differentiate from any other type of
 # unit test executables.
+file(GLOB APP_SOURCES_M ${FRAMEPROCESSOR_DIR}/src/FrameProcessorController.cpp ${FRAMEPROCESSOR_DIR}/src/SharedMemoryController.cpp)
+
 function(add_unit_test _target)
   set(_source ${_target}Test.cpp)
   set(_target "unit_fp_${_target}")
-  add_executable(${_target} ${_source})
+  add_executable(${_target} ${APP_SOURCES_M} ${_source})
 
   target_link_libraries(${_target}
     ${LIB_PROCESSOR}
@@ -50,6 +52,7 @@ add_definitions(-DBUILD_DIR="${CMAKE_BINARY_DIR}")
 
 include_directories(
   ${FRAMEPROCESSOR_DIR}/include
+  ${FRAMEPROCESSOR_DIR}
   ${HDF5_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
   ${LOG4CXX_INCLUDE_DIRS}/..

@@ -45,7 +45,6 @@ public:
     void status(OdinData::IpcMessage& status);
     bool reset_statistics(void);
 
-private:
     /** Configuration constant for image width **/
     static const std::string CONFIG_IMAGE_WIDTH;
     /** Configuration constant for image height **/
@@ -57,6 +56,8 @@ private:
     static const std::string EXECUTE_PRINT;
 
     void process_frame(boost::shared_ptr<Frame> frame);
+
+private:
     void process_lost_packets(boost::shared_ptr<Frame>& frame);
 
     /** Pointer to logger */

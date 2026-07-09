@@ -115,8 +115,7 @@ void FrameReceiverTCPRxThread::handle_receive_socket(int recv_socket_, int recv_
     ssize_t bytes_read = 0;
     size_t total_bytes_read = 0;
 
-    unsigned char* fb_bytePtr = reinterpret_cast<unsigned char*>(
-        frame_buffer
+    unsigned char* fb_bytePtr = reinterpret_cast<unsigned char*>(frame_buffer
     ); // reinterpret the void* address as an unsigned char pointer so we can do arithmetic
     while (total_bytes_read < message_size
            && ((bytes_read = read(recv_socket_, reinterpret_cast<void*>(fb_bytePtr), message_size - total_bytes_read))
