@@ -119,8 +119,7 @@ BOOST_AUTO_TEST_CASE(ParameterAdjustmentPluginConfigureAddsConfiguredParameter)
 
     OdinData::IpcMessage reply;
     OdinData::IpcMessage cfg;
-    cfg.set_param(FrameProcessor::PARAMETER_NAME_CONFIG + "/energy/adjustment", 2);
-    cfg.set_param(FrameProcessor::PARAMETER_NAME_CONFIG + "/energy/input", std::string("frame_number"));
+    cfg.set_param(FrameProcessor::PARAMETER_NAME_CONFIG + "/energy/" + FrameProcessor::PARAMETER_ADJUSTMENT_CONFIG, 2);
 
     plugin.configure(cfg, reply);
 
@@ -151,7 +150,7 @@ BOOST_AUTO_TEST_CASE(ParameterPublishPluginConfigureStoresEndpointAndParameters)
     OdinData::IpcMessage cfg;
 
     cfg.set_param(FrameProcessor::ParameterPublishPlugin::CONFIG_ENDPOINT, std::string("inproc://param-publish"));
-    cfg.set_param(FrameProcessor::ParameterPublishPlugin::CONFIG_ADD_PARAMETER, std::string("temperature"));
+    cfg.set_param(FrameProcessor::ParameterPublishPlugin::CONFIG_ADD_PARAMETER + "[]", std::string("temperature"));
 
     plugin.configure(cfg, reply);
     plugin.requestConfiguration(reply);
