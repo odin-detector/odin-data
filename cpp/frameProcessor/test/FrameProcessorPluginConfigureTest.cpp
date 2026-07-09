@@ -1,8 +1,6 @@
 #define BOOST_TEST_MODULE "FrameProcessorPluginConfigureTests"
 #define BOOST_TEST_MAIN
 
-#include <rapidjson/document.h>
-
 #include "Fixtures.h"
 
 #include "BloscPlugin.h"
@@ -85,34 +83,18 @@ BOOST_AUTO_TEST_CASE(GapFillPluginConfigureEnablesValidConfiguration)
     FrameProcessor::GapFillPlugin plugin;
     plugin.set_name("gapfill");
 
-    rapidjson::Document grid;
-    grid.SetArray();
-    grid.PushBack(rapidjson::Value(2), grid.GetAllocator());
-    grid.PushBack(rapidjson::Value(2), grid.GetAllocator());
-
-    rapidjson::Document chip;
-    chip.SetArray();
-    chip.PushBack(rapidjson::Value(2), chip.GetAllocator());
-    chip.PushBack(rapidjson::Value(2), chip.GetAllocator());
-
-    rapidjson::Document gaps_x;
-    gaps_x.SetArray();
-    gaps_x.PushBack(rapidjson::Value(1), gaps_x.GetAllocator());
-    gaps_x.PushBack(rapidjson::Value(2), gaps_x.GetAllocator());
-    gaps_x.PushBack(rapidjson::Value(1), gaps_x.GetAllocator());
-
-    rapidjson::Document gaps_y;
-    gaps_y.SetArray();
-    gaps_y.PushBack(rapidjson::Value(1), gaps_y.GetAllocator());
-    gaps_y.PushBack(rapidjson::Value(2), gaps_y.GetAllocator());
-    gaps_y.PushBack(rapidjson::Value(1), gaps_y.GetAllocator());
-
     OdinData::IpcMessage reply;
     OdinData::IpcMessage cfg;
-    cfg.set_param(FrameProcessor::GapFillPlugin::CONFIG_GRID_SIZE, grid);
-    cfg.set_param(FrameProcessor::GapFillPlugin::CONFIG_CHIP_SIZE, chip);
-    cfg.set_param(FrameProcessor::GapFillPlugin::CONFIG_GRID_X_GAPS, gaps_x);
-    cfg.set_param(FrameProcessor::GapFillPlugin::CONFIG_GRID_Y_GAPS, gaps_y);
+    cfg.set_param(FrameProcessor::GapFillPlugin::CONFIG_GRID_SIZE + "[]", 2);
+    cfg.set_param(FrameProcessor::GapFillPlugin::CONFIG_GRID_SIZE + "[]", 2);
+    cfg.set_param(FrameProcessor::GapFillPlugin::CONFIG_CHIP_SIZE + "[]", 2);
+    cfg.set_param(FrameProcessor::GapFillPlugin::CONFIG_CHIP_SIZE + "[]", 2);
+    cfg.set_param(FrameProcessor::GapFillPlugin::CONFIG_GRID_X_GAPS + "[]", 1);
+    cfg.set_param(FrameProcessor::GapFillPlugin::CONFIG_GRID_X_GAPS + "[]", 2);
+    cfg.set_param(FrameProcessor::GapFillPlugin::CONFIG_GRID_X_GAPS + "[]", 1);
+    cfg.set_param(FrameProcessor::GapFillPlugin::CONFIG_GRID_Y_GAPS + "[]", 1);
+    cfg.set_param(FrameProcessor::GapFillPlugin::CONFIG_GRID_Y_GAPS + "[]", 2);
+    cfg.set_param(FrameProcessor::GapFillPlugin::CONFIG_GRID_Y_GAPS + "[]", 1);
 
     plugin.configure(cfg, reply);
 
@@ -135,21 +117,10 @@ BOOST_AUTO_TEST_CASE(ParameterAdjustmentPluginConfigureAddsConfiguredParameter)
     FrameProcessor::ParameterAdjustmentPlugin plugin;
     plugin.set_name("param_adjust");
 
-    rapidjson::Document params;
-    params.SetObject();
-    rapidjson::Value param_name(rapidjson::kStringType);
-    param_name.SetString("energy", params.GetAllocator());
-    rapidjson::Value param_cfg(rapidjson::kObjectType);
-    rapidjson::Value adjustment(2);
-    rapidjson::Value input(rapidjson::kStringType);
-    input.SetString("frame_number", params.GetAllocator());
-    param_cfg.AddMember("adjustment", adjustment, params.GetAllocator());
-    param_cfg.AddMember("input", input, params.GetAllocator());
-    params.AddMember(param_name, param_cfg, params.GetAllocator());
-
     OdinData::IpcMessage reply;
     OdinData::IpcMessage cfg;
-    cfg.set_param(FrameProcessor::PARAMETER_NAME_CONFIG, params);
+    cfg.set_param(FrameProcessor::PARAMETER_NAME_CONFIG + "/energy/adjustment", 2);
+    cfg.set_param(FrameProcessor::PARAMETER_NAME_CONFIG + "/energy/input", std::string("frame_number"));
 
     plugin.configure(cfg, reply);
 
@@ -178,14 +149,9 @@ BOOST_AUTO_TEST_CASE(ParameterPublishPluginConfigureStoresEndpointAndParameters)
 
     OdinData::IpcMessage reply;
     OdinData::IpcMessage cfg;
-    rapidjson::Document params;
-    params.SetArray();
-    rapidjson::Value value(rapidjson::kStringType);
-    value.SetString("temperature", params.GetAllocator());
-    params.PushBack(value, params.GetAllocator());
 
     cfg.set_param(FrameProcessor::ParameterPublishPlugin::CONFIG_ENDPOINT, std::string("inproc://param-publish"));
-    cfg.set_param(FrameProcessor::ParameterPublishPlugin::CONFIG_ADD_PARAMETER, params);
+    cfg.set_param(FrameProcessor::ParameterPublishPlugin::CONFIG_ADD_PARAMETER, std::string("temperature"));
 
     plugin.configure(cfg, reply);
     plugin.requestConfiguration(reply);
@@ -203,12 +169,8 @@ BOOST_AUTO_TEST_CASE(FrameProcessorControllerConfigureRoutesPluginConfiguration)
     OdinData::IpcMessage reply;
     OdinData::IpcMessage cfg;
 
-    rapidjson::Document plugin_cfg;
-    plugin_cfg.SetObject();
-    plugin_cfg.AddMember("load", rapidjson::Value(rapidjson::kObjectType), plugin_cfg.GetAllocator());
-    plugin_cfg.AddMember("connect", rapidjson::Value(rapidjson::kObjectType), plugin_cfg.GetAllocator());
-
-    cfg.set_param("plugin", plugin_cfg);
+    cfg.set_param("plugin/load/dummy", true);
+    cfg.set_param("plugin/connect/dummy", true);
 
     BOOST_CHECK_NO_THROW(controller.configure(cfg, reply));
 }
