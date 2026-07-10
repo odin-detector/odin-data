@@ -149,10 +149,12 @@ BOOST_AUTO_TEST_CASE(ParameterPublishPluginConfigureStoresEndpointAndParameters)
     OdinData::IpcMessage reply;
     OdinData::IpcMessage cfg;
 
-    cfg.set_param(FrameProcessor::ParameterPublishPlugin::CONFIG_ENDPOINT, std::string("inproc://param-publish"));
-    cfg.set_param(FrameProcessor::ParameterPublishPlugin::CONFIG_ADD_PARAMETER + "[]", std::string("temperature"));
-
+    cfg.set_param(FrameProcessor::ParameterPublishPlugin::CONFIG_ADD_PARAMETER, std::string("temperature"));
     plugin.configure(cfg, reply);
+
+    cfg.set_param(FrameProcessor::ParameterPublishPlugin::CONFIG_ENDPOINT, std::string("inproc://param-publish"));
+    plugin.configure(cfg, reply);
+
     plugin.requestConfiguration(reply);
 
     BOOST_CHECK_EQUAL(
