@@ -24,18 +24,6 @@ def client(ipc_channel):
         yield client
 
 
-@pytest.fixture
-def tmp_json_file():
-    """Creates a temporary JSON file and cleans it up after the test."""
-    tmp_file = tempfile.NamedTemporaryFile(mode="w", delete=False)
-    yield tmp_file
-    tmp_file_name = tmp_file.name
-    if not tmp_file.closed:
-        tmp_file.close()
-    if os.path.exists(tmp_file_name):
-        os.remove(tmp_file_name)
-
-
 class TestClientProgram:
     def test_client(self, client):
         assert client._msg_id == 0
@@ -87,10 +75,10 @@ class TestClientProgram:
         assert '"msg_type": "cmd"' in args[0]
         assert '"msg_val": "request_configuration"' in args[0]
 
-    def test_config_cmd(self, client, tmp_json_file):
-        tmp_json_file.write('{"test": "val"}\n')
-        file_name = tmp_json_file.name
-        tmp_json_file.close()
+    def test_config_cmd(self, client, tmp_path):
+        file = tmp_path / "config.json"
+        file.write_text('{"test": "val"}\n')
+        file_name = file.absolute()
 
         with open(file_name, "r") as r_file:
             client.args.config_file = r_file
@@ -104,9 +92,10 @@ class TestClientProgram:
             assert '"msg_val": "configure"' in args[0]
             assert '"params": {"test": "val"}' in args[0]
 
-    def test_bad_json(self, client, tmp_json_file):
-        file_name = tmp_json_file.name
-        tmp_json_file.close()
+    def test_bad_json(self, client, tmp_path):
+        file = tmp_path / "config.json"
+        file.write_text("")
+        file_name = file.absolute()
 
         with open(file_name, "r") as r_file:
             client.args.config_file = r_file
