@@ -143,7 +143,6 @@ FileWriterPlugin::FileWriterPlugin() :
         FileWriterPlugin::CLOSE_TIMEOUT_PERIOD, PMDD::UINT_T, PMDA::READ_WRITE, 0, PMD::MAX_UNSET
     );
     add_config_param_metadata(FileWriterPlugin::START_CLOSE_TIMEOUT, PMDD::BOOL_T, PMDA::READ_WRITE);
-    update_config_metadata_version();
 
     add_status_param_metadata(STATUS_WRITING, PMDD::BOOL_T, PMDA::READ_ONLY);
     add_status_param_metadata(STATUS_FRAMES_MAX, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
@@ -497,7 +496,6 @@ void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
             }
         }
     }
-    reply.set_param(this->get_name() + '/' + FrameProcessorPlugin::METADATA_VERSION, get_config_metadata_version());
 }
 
 /**
@@ -882,7 +880,7 @@ void FileWriterPlugin::delete_datasets()
 void FileWriterPlugin::status(OdinData::IpcMessage& status)
 {
     // Record the plugin's status items
-    std::string prefix = get_name() + '/';
+    const std::string prefix = get_name() + '/';
     status.set_param(prefix + STATUS_WRITING, this->writing_);
     status.set_param(prefix + STATUS_FRAMES_MAX, (int)this->current_acquisition_->frames_to_write_);
     status.set_param(prefix + STATUS_FRAMES_WRITTEN, (int)this->current_acquisition_->frames_written_);
@@ -894,7 +892,6 @@ void FileWriterPlugin::status(OdinData::IpcMessage& status)
     status.set_param(prefix + STATUS_RANK, (int)this->concurrent_rank_);
     status.set_param(prefix + STATUS_TIMEOUT_ACTIVE, this->timeout_active_);
     add_file_writing_stats(status);
-    status.set_param(this->get_name() + '/' + FrameProcessorPlugin::METADATA_VERSION, get_status_metadata_version());
 }
 
 /**

@@ -25,9 +25,7 @@ RawFileWriterPlugin::RawFileWriterPlugin() :
     LOG4CXX_TRACE(logger_, "RawFileWriterPlugin constructor.");
     add_config_param_metadata(CONFIG_FILE_PATH, PMDD::STRING_T, PMDA::READ_WRITE);
     add_config_param_metadata(CONFIG_ENABLED, PMDD::BOOL_T, PMDA::READ_WRITE);
-    update_config_metadata_version();
     add_status_param_metadata(STATUS_DROPPED_FRAMES, PMDD::UINT_T, PMDA::READ_ONLY, 0);
-    update_status_metadata_version();
 }
 
 void RawFileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame)
@@ -103,7 +101,6 @@ void RawFileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 {
     reply.set_param(this->get_name() + '/' + RawFileWriterPlugin::CONFIG_FILE_PATH, this->file_path_.string());
     reply.set_param(this->get_name() + '/' + RawFileWriterPlugin::CONFIG_ENABLED, this->enabled_);
-    reply.set_param(this->get_name() + '/' + FrameProcessorPlugin::METADATA_VERSION, get_config_metadata_version());
 }
 
 /** Get status of the RawFileWriterPlugin
@@ -113,7 +110,6 @@ void RawFileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 void RawFileWriterPlugin::status(OdinData::IpcMessage& status)
 {
     status.set_param(this->get_name() + '/' + RawFileWriterPlugin::STATUS_DROPPED_FRAMES, this->dropped_frames_);
-    status.set_param(this->get_name() + '/' + FrameProcessorPlugin::METADATA_VERSION, get_status_metadata_version());
 }
 
 int RawFileWriterPlugin::get_version_major()

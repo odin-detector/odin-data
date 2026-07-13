@@ -77,8 +77,8 @@ private:
     /** Configuration constant for executing setup of shared memory interface **/
     static const std::string CONFIG_FR_SETUP;
 
-    /** current metadata hash-value **/
-    static const std::string METADATA_HASH;
+    /** latest metadata timestamp **/
+    static const std::string METADATA_TS_KEY;
 
     /** Configuration constant for control socket endpoint **/
     static const std::string CONFIG_CTRL_ENDPOINT;

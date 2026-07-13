@@ -29,7 +29,6 @@ GapFillPlugin::GapFillPlugin()
     add_config_param_metadata(GapFillPlugin::CONFIG_CHIP_SIZE, PMDD::INTARR_T, PMDA::READ_WRITE);
     add_config_param_metadata(GapFillPlugin::CONFIG_GRID_X_GAPS, PMDD::INTARR_T, PMDA::READ_WRITE);
     add_config_param_metadata(GapFillPlugin::CONFIG_GRID_Y_GAPS, PMDD::INTARR_T, PMDA::READ_WRITE);
-    update_config_metadata_version();
 
     LOG4CXX_INFO(logger_, "GapFillPlugin version " << this->get_version_long() << " loaded");
 }
@@ -320,7 +319,6 @@ void GapFillPlugin::requestConfiguration(OdinData::IpcMessage& reply)
     for (int index = 0; index < gaps_y_.size(); index++) {
         reply.set_param(get_name() + '/' + CONFIG_GRID_Y_GAPS + "[]", gaps_y_[index]);
     }
-    reply.set_param(this->get_name() + '/' + FrameProcessorPlugin::METADATA_VERSION, get_config_metadata_version());
 }
 
 } // namespace FrameProcessor

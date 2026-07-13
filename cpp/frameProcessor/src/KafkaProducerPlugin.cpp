@@ -62,12 +62,10 @@ KafkaProducerPlugin::KafkaProducerPlugin() :
     add_config_param_metadata(CONFIG_PARTITION, PMDD::INT_T, PMDA::READ_WRITE, -1);
     add_config_param_metadata(CONFIG_DATASET, PMDD::STRING_T, PMDA::READ_WRITE);
     add_config_param_metadata(CONFIG_INCLUDE_PARAMETERS, PMDD::BOOL_T, PMDA::READ_WRITE);
-    update_config_metadata_version();
 
     add_status_param_metadata(STATUS_FRAMES_SENT, PMDD::UINT_T, PMDA::READ_ONLY, 0);
     add_status_param_metadata(STATUS_FRAMES_LOST, PMDD::UINT_T, PMDA::READ_ONLY, 0);
     add_status_param_metadata(STATUS_FRAMES_ACK, PMDD::UINT_T, PMDA::READ_ONLY, 0);
-    update_status_metadata_version();
 
     this->reset_statistics();
 }
@@ -128,7 +126,6 @@ void KafkaProducerPlugin::requestConfiguration(OdinData::IpcMessage& reply)
     reply.set_param(get_name() + '/' + KafkaProducerPlugin::CONFIG_PARTITION, this->partition_);
     reply.set_param(get_name() + '/' + KafkaProducerPlugin::CONFIG_DATASET, this->dataset_name_);
     reply.set_param(get_name() + '/' + KafkaProducerPlugin::CONFIG_INCLUDE_PARAMETERS, this->include_parameters_);
-    reply.set_param(this->get_name() + '/' + FrameProcessorPlugin::METADATA_VERSION, get_config_metadata_version());
 }
 
 /**
@@ -146,7 +143,7 @@ void KafkaProducerPlugin::status(OdinData::IpcMessage& status)
     status.set_param(get_name() + '/' + STATUS_FRAMES_LOST, frames_lost_);
     /* Number of acknowledged frames */
     status.set_param(get_name() + '/' + STATUS_FRAMES_ACK, frames_ack_);
-    status.set_param(this->get_name() + '/' + FrameProcessorPlugin::METADATA_VERSION, get_status_metadata_version());
+    status.set_param(this->get_name() + '/' + FrameProcessorPlugin::METADATA_TS_KEY, get_status_metadata_version());
 }
 
 /**

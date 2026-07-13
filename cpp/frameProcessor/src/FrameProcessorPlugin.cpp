@@ -20,6 +20,8 @@ FrameProcessorPlugin::FrameProcessorPlugin() :
 {
     OdinData::configure_logging_mdc(OdinData::app_path.c_str());
     logger_ = log4cxx::Logger::getLogger("FP.FrameProcessorPlugin");
+    update_config_metadata_version();
+    update_status_metadata_version();
 }
 
 /**

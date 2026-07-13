@@ -43,7 +43,7 @@ const std::string FrameProcessorController::CONFIG_VALUE = "value";
 
 const std::string FrameProcessorController::COMMAND_KEY = "command";
 const std::string FrameProcessorController::SUPPORTED_KEY = "supported";
-const std::string FrameProcessorController::METADATA_HASH = "metadata_hash";
+const std::string FrameProcessorController::METADATA_TS_KEY = "metadata_ts";
 
 const int FrameProcessorController::META_TX_HWM = 10000;
 
@@ -302,11 +302,14 @@ void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply, bool m
         }
     }
 
+    int64_t latest_metadata_ver = -1;
     // Loop over plugins, list names and request status from each
     for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
         reply.set_param("plugins/names[]", iter->first);
         // Request status for the plugin
         iter->second->status(reply);
+        // Check for the latest timestamp
+        latest_metadata_ver = std::max(latest_metadata_ver, iter->second->get_status_metadata_ts());
         // Add performance statistics
         iter->second->add_performance_stats(reply);
         // Read error level
@@ -316,19 +319,7 @@ void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply, bool m
         std::vector<std::string> plugin_warnings = iter->second->get_warnings();
         warning_messages.insert(warning_messages.end(), plugin_warnings.begin(), plugin_warnings.end());
     }
-
-    int64_t latest_metadata_ver = -1;
-    for (auto iter : plugins_) {
-        try {
-            latest_metadata_ver = std::max(
-                latest_metadata_ver,
-                reply.get_param<int64_t>(iter.second->get_name() + '/' + FrameProcessorPlugin::METADATA_VERSION)
-            );
-        } catch (...) {
-            // pass
-        }
-    }
-    reply.set_param(FrameProcessorController::METADATA_HASH, latest_metadata_ver);
+    reply.set_param(FrameProcessorController::METADATA_TS_KEY, latest_metadata_ver);
 
     std::vector<std::string>::iterator error_iter;
     for (error_iter = error_messages.begin(); error_iter != error_messages.end(); ++error_iter) {
@@ -544,20 +535,14 @@ void FrameProcessorController::requestConfiguration(OdinData::IpcMessage& reply,
     reply.set_param(fr_cnxn_str + FrameProcessorController::CONFIG_FR_RELEASE, frReleaseEndpoint_);
 
     // Loop over plugins and request current configuration from each
+    int64_t latest_metadata_ver = -1;
     std::map<std::string, boost::shared_ptr<FrameProcessorPlugin>>::iterator iter;
     for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
         reply.set_param("plugins/names[]", iter->first);
         iter->second->requestConfiguration(reply);
+        latest_metadata_ver = std::max(latest_metadata_ver, iter->second->get_config_metadata_ts());
     }
-
-    int64_t latest_metadata_ver = -1;
-    for (auto iter : plugins_) {
-        latest_metadata_ver = std::max(
-            latest_metadata_ver,
-            reply.get_param<int64_t>(iter.second->get_name() + '/' + FrameProcessorPlugin::METADATA_VERSION)
-        );
-    }
-    reply.set_param(FrameProcessorController::METADATA_HASH, latest_metadata_ver);
+    reply.set_param(FrameProcessorController::METADATA_TS_KEY, latest_metadata_ver);
 
     if (metadata) {
         for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
