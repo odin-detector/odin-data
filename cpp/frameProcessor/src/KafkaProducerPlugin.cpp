@@ -143,7 +143,6 @@ void KafkaProducerPlugin::status(OdinData::IpcMessage& status)
     status.set_param(get_name() + '/' + STATUS_FRAMES_LOST, frames_lost_);
     /* Number of acknowledged frames */
     status.set_param(get_name() + '/' + STATUS_FRAMES_ACK, frames_ack_);
-    status.set_param(this->get_name() + '/' + FrameProcessorPlugin::METADATA_TS_KEY, get_status_metadata_version());
 }
 
 /**
