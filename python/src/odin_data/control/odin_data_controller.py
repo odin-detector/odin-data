@@ -48,8 +48,8 @@ class OdinDataController(object):
             ep = {"ip_address": arg.split(":")[0], "port": int(arg.split(":")[1])}
             self._endpoints.append(ep)
 
-        self._supported_commands = [None]*len(self._endpoints)
-        self._queued_command = [None]*len(self._endpoints)
+        self._supported_commands = [None] * len(self._endpoints)
+        self._queued_command = [None] * len(self._endpoints)
 
         for ep in self._endpoints:
             logging.debug("Creating client {}:{}".format(ep["ip_address"], ep["port"]))
@@ -85,7 +85,7 @@ class OdinDataController(object):
             self._tree[str(idx)] = {
                 "status": {"error": (lambda: self._error, None, {})},
                 "config": {},
-                "command": {}
+                "command": {},
             }
 
     def merge_external_tree(self, path, tree):
@@ -96,7 +96,7 @@ class OdinDataController(object):
 
     def set_error(self, err):
         # Record the error message into the status
-        self._error
+        self._error = err
 
     def clear_error(self):
         # Clear the error message out of the status dict
@@ -256,15 +256,15 @@ class OdinDataController(object):
                     "allowed": (
                         lambda x=client.parameters["commands"][plugin]["supported"]: x,
                         None,
-                        {}
+                        {},
                     ),
                     "execute": (
                         "",
-                        lambda value,
-                        index = index,
-                        plugin = plugin: self.queue_command(index, plugin, value),
-                        {}
-                    )
+                        lambda value, index=index, plugin=plugin: self.queue_command(
+                            index, plugin, value
+                        ),
+                        {},
+                    ),
                 }
 
             # If the structure has changed then update the parameter tree
@@ -273,7 +273,7 @@ class OdinDataController(object):
 
     def queue_command(self, index, plugin, value):
         """Called for each command PUT that is received by the adapter
-        PUT URI is of the form index/command/plugin/execute and the 
+        PUT URI is of the form index/command/plugin/execute and the
         value is the name of the command to execute.
         This method simply queues commands for execution after any configuration
         changes have been applied.
