@@ -59,5 +59,8 @@ GitHub = "https://github.com/odin-detector/odin-data"
 version_file = "src/odin_data/_version.py"
 root = "../"
 
+[tool.coverage.run]
+patch = ["subprocess"]
+
 [tool.coverage.paths]
 source = ["src", "**/site-packages/"]
