@@ -30,12 +30,12 @@ class TestIpcTornadoClient:
         client._callback([reply_str])
         assert client.parameters["version"] == "1.0.0"
 
-        reply_str = '{"id": 1, "msg_type": "cmd", "msg_val": "request_configuration", "params": {"test_config_item": "Test1"}}'
+        reply_str = '{"id": 1, "msg_type": "cmd", "msg_val": "request_configuration", "params": { "plugins": {"names": [test_config_item] }, "metadata_hash": 12345, "test_config_item": "Test1"}}'
         client.send_request("request_configuration")
         client._callback([reply_str])
         assert client.parameters["config"] == {"test_config_item": "Test1"}
 
-        reply_str = '{"id": 2, "msg_type": "cmd", "msg_val": "status", "timestamp": "00:00:00.00", "params": {"test_status_item": "Test2"}}'
+        reply_str = '{"id": 2, "msg_type": "cmd", "msg_val": "status", "timestamp": "00:00:00.00", "params": { "plugins": {"names": [test_config_item] }, "metadata_hash": 12345, "test_config_item": "Test1"}}'
         client.send_request("status")
         client._callback([reply_str])
         assert client.parameters["status"] == {
