@@ -168,7 +168,6 @@ FileWriterPlugin::FileWriterPlugin() :
     add_status_param_metadata(prefix + STATUS_LAST_CLOSE, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
     add_status_param_metadata(prefix + STATUS_MAX_CLOSE, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
     add_status_param_metadata(prefix + STATUS_MEAN_CLOSE, PMDD::UINT_T, PMDA::READ_ONLY, 0, PMD::MAX_UNSET);
-    update_status_metadata_version();
 
     this->logger_ = Logger::getLogger("FP.FileWriterPlugin");
     LOG4CXX_INFO(logger_, "FileWriterPlugin version " << this->get_version_long() << " loaded");
@@ -373,6 +372,7 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
         // Check to see if we are deleting all datasets
         if (config.has_param(FileWriterPlugin::CONFIG_DELETE_DATASETS)) {
             this->delete_datasets();
+            update_config_metadata_version();
         }
 
         // Check to see if we are being told how many frames to write
