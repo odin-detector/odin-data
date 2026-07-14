@@ -50,5 +50,5 @@
     ],
     // After the container is created, install the python project in editable form
     "postCreateCommand": "pip install $([ -f dev-requirements.txt ] && echo '-c dev-requirements.txt') -e './python[dev]'",
-    "postStartCommand": "./setup_git.sh"
+    "postStartCommand":  "/workspaces/odin-data/scripts/setup_git.sh"
 }
