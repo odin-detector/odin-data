@@ -9,6 +9,7 @@
 #include "GapFillPlugin.h"
 #include "ParameterAdjustmentPlugin.h"
 #include "ParameterPublishPlugin.h"
+#include <rapidjson/document.h>
 
 BOOST_GLOBAL_FIXTURE(GlobalConfig);
 
@@ -161,7 +162,12 @@ BOOST_AUTO_TEST_CASE(ParameterPublishPluginConfigureStoresEndpointAndParameters)
         reply.get_param<std::string>(plugin.get_name() + "/" + FrameProcessor::ParameterPublishPlugin::CONFIG_ENDPOINT),
         std::string("inproc://param-publish")
     );
-    BOOST_CHECK_EQUAL(reply.get_param<std::string>(plugin.get_name() + "/parameters[]"), std::string("temperature"));
+    const rapidjson::Value& params = reply.get_param<const rapidjson::Value&>(
+        plugin.get_name() + "/" + FrameProcessor::ParameterPublishPlugin::DATA_PARAMETERS
+    );
+    BOOST_REQUIRE(params.IsArray());
+    BOOST_REQUIRE_EQUAL(params.Size(), 1u);
+    BOOST_CHECK_EQUAL(std::string(params[0].GetString()), std::string("temperature"));
 }
 
 BOOST_AUTO_TEST_CASE(FrameProcessorControllerConfigureRoutesPluginConfiguration)
