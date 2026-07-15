@@ -74,28 +74,28 @@ public:
     void remove_all_callbacks();
     void notify_end_of_acquisition();
     /** return the latest ts of config/status metadata for this plugin instance */
-    inline int64_t get_config_metadata_ts() const
+    __attribute__((always_inline)) int64_t get_config_metadata_ts() const
     {
         return this->config_metadata_ts_;
     }
-    inline int64_t get_status_metadata_ts() const
+    __attribute__((always_inline)) int64_t get_status_metadata_ts() const
     {
         return this->status_metadata_ts_;
     }
 
 protected:
     /** function to update the config time-stamp! */
-    inline void update_config_metadata_version(void)
+    __attribute__((always_inline)) void update_config_metadata_version(void)
     {
-        auto time_stamp_ms = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now());
-        auto val = std::chrono::duration_cast<std::chrono::milliseconds>(time_stamp_ms.time_since_epoch());
+        auto time_stamp_ms = std::chrono::time_point_cast<std::chrono::microseconds>(std::chrono::steady_clock::now());
+        auto val = std::chrono::duration_cast<std::chrono::microseconds>(time_stamp_ms.time_since_epoch());
         this->config_metadata_ts_ = val.count();
     }
     /** function to update the status time-stamp! */
-    inline void update_status_metadata_version(void)
+    __attribute__((always_inline)) void update_status_metadata_version(void)
     {
-        auto time_stamp_ms = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now());
-        auto val = std::chrono::duration_cast<std::chrono::milliseconds>(time_stamp_ms.time_since_epoch());
+        auto time_stamp_ms = std::chrono::time_point_cast<std::chrono::microseconds>(std::chrono::steady_clock::now());
+        auto val = std::chrono::duration_cast<std::chrono::microseconds>(time_stamp_ms.time_since_epoch());
         this->status_metadata_ts_ = val.count();
     }
     void push(boost::shared_ptr<Frame> frame);

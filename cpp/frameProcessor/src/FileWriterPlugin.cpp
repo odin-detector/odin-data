@@ -350,6 +350,7 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
                 LOG4CXX_INFO(logger_, "Dataset name " << dataset_name << " found, creating...");
                 // If we can retrieve a single string parameter then we are being asked to create
                 // a new dataset.  Only create it if it doesn't already exist.
+                std::cout << "Creating new dataset\n";
                 create_new_dataset(dataset_name);
             } catch (OdinData::IpcMessageException& e) {
                 // The object passed to us is a dataset description so pass to the configure_dataset method.

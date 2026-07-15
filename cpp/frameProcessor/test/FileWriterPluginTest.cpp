@@ -151,4 +151,18 @@ BOOST_AUTO_TEST_CASE(FileWriterPluginZeroFrames)
     }
 }
 
+BOOST_AUTO_TEST_CASE(FileWriterPluginMetadataTimestampUpdate)
+{
+    FrameProcessor::FileWriterPlugin fwp;
+    int64_t first_ts = fwp.get_config_metadata_ts();
+    OdinData::IpcMessage cfg;
+    OdinData::IpcMessage reply;
+    fwp.set_name("hdf");
+    cfg.set_param<std::string>(FrameProcessor::FileWriterPlugin::CONFIG_DATASET, "new_dataset");
+    fwp.configure(cfg, reply);
+    int64_t second_ts = fwp.get_config_metadata_ts();
+    std::cout << "The first is: " << first_ts << " the second is: " << second_ts << '\n';
+    BOOST_CHECK(second_ts > first_ts);
+}
+
 BOOST_AUTO_TEST_SUITE_END();

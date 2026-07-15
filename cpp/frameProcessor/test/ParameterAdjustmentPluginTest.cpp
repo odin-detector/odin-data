@@ -106,4 +106,16 @@ BOOST_AUTO_TEST_CASE(AdjustExistingParameter)
     BOOST_CHECK_EQUAL(14, frame->get_meta_data().get_parameter<uint64_t>("UID"));
 }
 
+BOOST_AUTO_TEST_CASE(ValidateMetadataTimestampUpdate)
+{
+    FrameProcessor::ParameterAdjustmentPlugin plugin;
+    OdinData::IpcMessage reply;
+    OdinData::IpcMessage cfg;
+    int64_t first_ts = plugin.get_config_metadata_ts();
+    cfg.set_param(FrameProcessor::PARAMETER_NAME_CONFIG + "/UID/" + FrameProcessor::PARAMETER_ADJUSTMENT_CONFIG, 4);
+    plugin.configure(cfg, reply);
+    int64_t second_ts = plugin.get_config_metadata_ts();
+    BOOST_CHECK(second_ts > first_ts);
+}
+
 BOOST_AUTO_TEST_SUITE_END(); // ParameterAdjustmentPluginUnitTest
