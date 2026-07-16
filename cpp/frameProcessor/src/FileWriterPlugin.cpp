@@ -366,13 +366,13 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
                     this->configure_dataset(dataset_name, dsetConfig, reply);
                 }
             }
-            update_config_metadata_version();
+            update_config_ts();
         }
 
         // Check to see if we are deleting all datasets
         if (config.has_param(FileWriterPlugin::CONFIG_DELETE_DATASETS)) {
             this->delete_datasets();
-            update_config_metadata_version();
+            update_config_ts();
         }
 
         // Check to see if we are being told how many frames to write

@@ -309,7 +309,7 @@ void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply, bool m
         // Request status for the plugin
         iter->second->status(reply);
         // Check for the latest timestamp
-        latest_metadata_ver = std::max(latest_metadata_ver, iter->second->get_status_metadata_ts());
+        latest_metadata_ver = std::max(latest_metadata_ver, iter->second->get_status_ts());
         // Add performance statistics
         iter->second->add_performance_stats(reply);
         // Read error level
@@ -540,7 +540,7 @@ void FrameProcessorController::requestConfiguration(OdinData::IpcMessage& reply,
     for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
         reply.set_param("plugins/names[]", iter->first);
         iter->second->requestConfiguration(reply);
-        latest_metadata_ver = std::max(latest_metadata_ver, iter->second->get_config_metadata_ts());
+        latest_metadata_ver = std::max(latest_metadata_ver, iter->second->get_config_ts());
     }
     reply.set_param(FrameProcessorController::METADATA_TS_KEY, latest_metadata_ver);
 

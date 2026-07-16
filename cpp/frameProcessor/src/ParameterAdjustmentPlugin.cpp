@@ -127,7 +127,7 @@ void ParameterAdjustmentPlugin::configure(OdinData::IpcMessage& config, OdinData
                 parameter_adjustments_.clear();
                 parameter_inputs_.clear();
             }
-            update_config_metadata_version();
+            update_config_ts();
         }
     } catch (std::runtime_error& e) {
         std::stringstream ss;

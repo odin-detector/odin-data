@@ -111,10 +111,10 @@ BOOST_AUTO_TEST_CASE(ValidateMetadataTimestampUpdate)
     FrameProcessor::ParameterAdjustmentPlugin plugin;
     OdinData::IpcMessage reply;
     OdinData::IpcMessage cfg;
-    int64_t first_ts = plugin.get_config_metadata_ts();
+    int64_t first_ts = plugin.get_config_ts();
     cfg.set_param(FrameProcessor::PARAMETER_NAME_CONFIG + "/UID/" + FrameProcessor::PARAMETER_ADJUSTMENT_CONFIG, 4);
     plugin.configure(cfg, reply);
-    int64_t second_ts = plugin.get_config_metadata_ts();
+    int64_t second_ts = plugin.get_config_ts();
     BOOST_CHECK(second_ts > first_ts);
 }
 
