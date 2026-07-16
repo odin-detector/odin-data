@@ -18,7 +18,7 @@ For them to be used you MUST run the following command (only needs to be run onc
 
 Either:
 
-    Build (or rebuild) the dev-container in VScode, and the hooks are a automatically setup.
+    Build (or rebuild) the dev-container in VScode, and the hooks are automatically setup.
 
 Or:
     Run
@@ -38,7 +38,7 @@ for this repository)
 
 Either:
 
-   Build (or rebuild) the dev-container in VScode, and the tools are a automatically setup.
+   Build (or rebuild) the dev-container in VScode, and the tools are automatically setup.
 
 Or:
 
