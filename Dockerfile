@@ -27,7 +27,7 @@ RUN dnf update -y && dnf install -y  \
     # General build
     cmake git \
     # cpp compiler
-    gcc-toolset-15-gcc gcc-toolset-15-gcc-c++ gcc-toolset-15-binutils \
+    #gcc-toolset-15-gcc gcc-toolset-15-gcc-c++ gcc-toolset-15-binutils \
     # odin-data C++ dependencies
     blosc-devel boost-devel hdf5-devel log4cxx-devel libpcap-devel czmq-devel \
     # python
@@ -40,10 +40,10 @@ RUN dnf update -y && dnf install -y  \
     dnf -y clean all
 
 #Source GCC15 to ensure it is the compiler
-ENV PATH="/opt/rh/gcc-toolset-15/root/usr/bin:${PATH}"
-ENV PCP_DIR="/opt/rh/gcc-toolset-15/root"
-ENV CC="/opt/rh/gcc-toolset-15/root/usr/bin/gcc"
-ENV CXX="/opt/rh/gcc-toolset-15/root/usr/bin/g++"
+#ENV PATH="/opt/rh/gcc-toolset-15/root/usr/bin:${PATH}"
+#ENV PCP_DIR="/opt/rh/gcc-toolset-15/root"
+#ENV CC="/opt/rh/gcc-toolset-15/root/usr/bin/gcc"
+#ENV CXX="/opt/rh/gcc-toolset-15/root/usr/bin/g++"
 
 
 # Python dependencies
@@ -69,7 +69,7 @@ COPY . .
 # C++
 RUN mkdir -p build && cd build && \
     cmake -DCMAKE_INSTALL_PREFIX=/odin \
-          -DCMAKE_BUILD_TYPE=RelWithDebInf \
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo \
           -DCMAKE_CXX_FLAGS="-O3 -fno-omit-frame-pointer" \
     ../cpp && \
     make -j8 VERBOSE=1 && \
