@@ -61,9 +61,8 @@ COPY . .
 # C++
 RUN mkdir -p build && cd build && \
     cmake -DCMAKE_INSTALL_PREFIX=/odin \
-    -DODIN_DATA_VERSION_MAJOR=1 \
-    -DODIN_DATA_VERSION_MINOR=13 \
-    -DODIN_DATA_VERSION_PATCH=0 \
+          -DCMAKE_BUILD_TYPE=RelWithDebInf \
+          -DCMAKE_CXX_FLAGS="-O3 -fno-omit-frame-pointer" \
     ../cpp && \
     make -j8 VERBOSE=1 && \
     make install
