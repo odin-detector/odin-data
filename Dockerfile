@@ -26,6 +26,8 @@ RUN dnf group install -y "Development Tools"
 RUN dnf update -y && dnf install -y  \
     # General build
     cmake git \
+    # cpp compiler
+    gcc-toolset-15-gcc gcc-toolset-15-gcc-c++ gcc-toolset-15-binutils \
     # odin-data C++ dependencies
     blosc-devel boost-devel hdf5-devel log4cxx-devel libpcap-devel czmq-devel \
     # python
@@ -36,6 +38,12 @@ RUN dnf update -y && dnf install -y  \
     gdb valgrind && \
     # tidy up
     dnf -y clean all
+
+#Source GCC15 to ensure it is the compiler
+ENV PATH="/opt/rh/gcc-toolset-15/root/usr/bin:${PATH}"
+ENV PCP_DIR="/opt/rh/gcc-toolset-15/root"
+ENV CC="/opt/rh/gcc-toolset-15/root/usr/bin/gcc"
+ENV CXX="/opt/rh/gcc-toolset-15/root/usr/bin/g++"
 
 
 # Python dependencies
