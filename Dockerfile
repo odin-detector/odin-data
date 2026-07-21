@@ -47,7 +47,7 @@ RUN python3.11 -m ensurepip && \
 # Install hdf5filters from source
 RUN git clone https://github.com/DiamondLightSource/hdf5filters.git && cd hdf5filters && \
     mkdir -p cmake-build && cd cmake-build && \
-    cmake -DCMAKE_INSTALL_PREFIX=/odin -DCMAKE_BUILD_TYPE=Release -DUSE_AVX2=ON .. && \
+    cmake -DCMAKE_INSTALL_PREFIX=/odin -DCMAKE_BUILD_TYPE=Release .. && \
     make install && \
     rm -rf hdf5filters
 
@@ -60,7 +60,11 @@ COPY . .
 
 # C++
 RUN mkdir -p build && cd build && \
-    cmake -DCMAKE_INSTALL_PREFIX=/odin ../cpp && \
+    cmake -DCMAKE_INSTALL_PREFIX=/odin \
+    -DODIN_DATA_VERSION_MAJOR=1 \
+    -DODIN_DATA_VERSION_MINOR=13 \
+    -DODIN_DATA_VERSION_PATCH=0 \
+    ../cpp && \
     make -j8 VERBOSE=1 && \
     make install
 
