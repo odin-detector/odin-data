@@ -7,13 +7,13 @@ Created on 30th November 2023
 import logging
 import threading
 import time
-from functools import reduce
-from functools import partial
+from functools import partial, reduce
 
 from deepdiff import DeepDiff
 from odin.adapters.parameter_tree import ParameterAccessor, ParameterTree
 
 from odin_data.control.ipc_tornado_client import IpcTornadoClient
+
 
 def setter_func(tornado_client:IpcTornadoClient, path: list, value):
     if(path[-1] == ''):
@@ -59,7 +59,6 @@ class OdinDataController(object):
         # set up controller specific parameters
         self.setup_parameter_tree()
 
-        # TODO: Consider renaming this
         self._params = ParameterTree(self._tree, mutable=True)
 
         # Create the status loop handling thread
@@ -88,12 +87,6 @@ class OdinDataController(object):
                 "command": {},
             }
 
-    def merge_external_tree(self, path, tree):
-        # First we need to insert the new parameter tree
-        self._tree[path] = tree
-        # Next, we must re-build the complete parameter tree
-        self._params = ParameterTree(self._tree, mutable=True)
-
     def set_error(self, err):
         # Record the error message into the status
         self._error = err
@@ -110,7 +103,7 @@ class OdinDataController(object):
         :param meta: Should the ParameterTree return the meta data associated with the value
         :return: dict object containing the value and meta data if requested
         """
-        return self._params.get(path, meta) # ParameterTree.get() can call an IpcMessage request
+        return self._params.get(path, meta) # ParameterTree.get() returns the value in the cache
 
     def put(self, path, value):
         self._params.set(path, value)
@@ -130,12 +123,12 @@ class OdinDataController(object):
                     getter = partial(getter_func, self._config_resposes[index], path)
                 else:
                     getter = partial(getter_func, self._status_resposes[index], path)
-                
-                if(param_metadata["access_mode"] == "rw"): # has to be a configuration parameter! So we assign a setter!
+                metadata = dict(param_metadata)
+                if(metadata["access_mode"] == "rw"): # has to be a configuration parameter! So we assign a setter!
                     setter = partial(setter_func, self._clients[index], path)
-                param_metadata.pop("access_mode", None) # pop "access_mode"
-                param_metadata.pop(ParameterAccessor.AUTO_METADATA_FIELDS[0], None) # pop "type"
-                return (getter, setter, param_metadata)
+                metadata.pop("access_mode", None) # pop "access_mode"
+                metadata.pop(ParameterAccessor.AUTO_METADATA_FIELDS[0], None) # pop "type"
+                return (getter, setter, metadata)
             except (KeyError, TypeError):
                 # Safe fallback: keeps the data, flags missing metadata
                 return (params_node, None)
@@ -146,11 +139,12 @@ class OdinDataController(object):
         return params
 
     def _update_params_with_metadata(self, value_dict:dict, index:int, value_key:str, param_key:str, metadata_key:str, metadata_hash_key:str):
-        # IpcTornadoClient.STATUS_PARAMS_KEY == param_key
-        # client.parameters[IpcTornadoClient.IPC_VAL_STATUS] == value_dict
-        # IpcTornadoClient.IPC_VAL_STATUS == value_key
-        # IpcTornadoClient.IPC_VAL_STATUS_METADATA_HASH == metadata_hash_key
-        # IpcTornadoClient.IPC_VAL_STATUS_METADATA == metadata_key
+        # NB: 'STATUS' can be replace with 'CONFIG' in the following comments:
+        #   IpcTornadoClient.STATUS_PARAMS_KEY == param_key
+        #   client.parameters[IpcTornadoClient.IPC_VAL_STATUS] == value_dict
+        #   IpcTornadoClient.IPC_VAL_STATUS == value_key
+        #   IpcTornadoClient.IPC_VAL_STATUS_METADATA_HASH == metadata_hash_key
+        #   IpcTornadoClient.IPC_VAL_STATUS_METADATA == metadata_key
         resp = None
         hash_val = 0
         if(param_key in value_dict):
