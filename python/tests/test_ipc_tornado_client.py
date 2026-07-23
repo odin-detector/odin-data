@@ -1,6 +1,6 @@
-import pytest
 from unittest.mock import patch
 
+import pytest
 from odin_data.control.ipc_message import IpcMessage, IpcMessageException
 from odin_data.control.ipc_tornado_client import IpcTornadoClient
 
@@ -22,7 +22,11 @@ class TestIpcTornadoClient:
         assert client._port == 9999
         tornado_channel.assert_called_once_with(tornado_channel.CHANNEL_TYPE_DEALER)
 
-        assert client.parameters == {client.IPC_VAL_STATUS: {client.CLIENT_CONNECTED: False}}
+        assert client.parameters == {
+            client.IPC_VAL_STATUS: {
+                client.STATUS_PARAMS_KEY: {client.CLIENT_CONNECTED: False}
+            }
+        }
         assert client.connected() is False
 
         reply_str = '{"id": 0, "msg_type": "cmd", "msg_val": "request_version", "params": {"version": "1.0.0"}}'
@@ -30,19 +34,26 @@ class TestIpcTornadoClient:
         client._callback([reply_str])
         assert client.parameters["version"] == "1.0.0"
 
-        reply_str = '{"id": 1, "msg_type": "cmd", "msg_val": "request_configuration", "params": {"test_config_item": "Test1"}}'
+        reply_str = '{"id": 1, "msg_type": "cmd", "msg_val": "request_configuration", "params": { "plugins": {"names": ["test_config_item"] }, "config_ts": 12345, "test_config_item": "Test1"}}'
         client.send_request("request_configuration")
         client._callback([reply_str])
-        assert client.parameters["config"] == {"test_config_item": "Test1"}
+        assert client.parameters["config"] == {
+            "config_request": {"test_config_item": "Test1"},
+            "config_ts": 12345,
+        }
 
-        reply_str = '{"id": 2, "msg_type": "cmd", "msg_val": "status", "timestamp": "00:00:00.00", "params": {"test_status_item": "Test2"}}'
+        reply_str = '{"id": 2, "msg_type": "cmd", "msg_val": "status", "timestamp": "00:00:00.00", "params": { "plugins": {"names": ["test_config_item"] }, "status_ts": 12345, "test_config_item": "Test1"}}'
         client.send_request("status")
         client._callback([reply_str])
         assert client.parameters["status"] == {
-            "test_status_item": "Test2",
-            "timestamp": "00:00:00.00",
-            "error": [],
-            "connected": True,
+            "status_request": {
+                "plugins": {"names": ["test_config_item"]},
+                "test_config_item": "Test1",
+                "timestamp": "00:00:00.00",
+                "error": [],
+                "connected": True,
+            },
+            "status_ts": 12345,
         }
         assert client.connected() is True
 
@@ -59,10 +70,10 @@ class TestIpcTornadoClient:
         assert rejected[4].get_msg_id() == IpcMessage(from_str=reply_str).get_msg_id()
         assert client.check_for_rejection(4) is True
 
-        reply_str = '{"id": 5, "msg_type": "cmd", "msg_val": "status", "timestamp": "00:00:00.00", "params": {"test_status_item": "Test2"}}'
+        reply_str = '{"id": 5, "msg_type": "cmd", "msg_val": "status", "timestamp": "00:00:00.00", "params": { "plugins": {"names": ["test_status_item"] }, "test_status_item": "Test2"}}'
         client.send_request("status")
         client._callback([reply_str])
-        assert client.parameters["status"]["error"] == ["test error"]
+        assert client.parameters["status"]["status_request"]["error"] == ["test error"]
 
         client.clear_rejected_configs()
         assert len(client.read_rejected_configs()) == 0

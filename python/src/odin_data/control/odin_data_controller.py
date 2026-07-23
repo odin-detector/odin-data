@@ -7,12 +7,24 @@ Created on 30th November 2023
 import logging
 import threading
 import time
+from functools import partial, reduce
 
 from deepdiff import DeepDiff
-from odin.adapters.parameter_tree import ParameterTree
+from odin.adapters.parameter_tree import ParameterAccessor, ParameterTree
 
 from odin_data.control.ipc_tornado_client import IpcTornadoClient
 
+
+def setter_func(tornado_client:IpcTornadoClient, path: list, value):
+    if(path[-1] == ''):
+        del path[-1]
+    if(value is not None):
+        tornado_client.send_configuration({path[-1], value})
+
+def getter_func(paramTree: dict, path: list):
+    if(path[-1] == ''):
+        del path[-1]
+    return reduce(lambda d, key: d[key], path, paramTree)
 
 class OdinDataController(object):
     def __init__(self, name, endpoints, update_interval=0.5):
@@ -22,8 +34,13 @@ class OdinDataController(object):
         self._name = name
         self._api = 0.1
         self._error = ""
+        self.config_metadata_ts = -1
+        self.status_metadata_ts = -1
+        self.config_metadata_ts_prev = 0
+        self.status_metadata_ts_prev = 0
         self._endpoints = []
-        self._config_cache = None
+        self._config_resposes:list[dict] = [None] * len(endpoints)
+        self._status_resposes:list[dict] = [None] * len(endpoints)
 
         for arg in endpoints.split(","):
             arg = arg.strip()
@@ -42,7 +59,6 @@ class OdinDataController(object):
         # set up controller specific parameters
         self.setup_parameter_tree()
 
-        # TODO: Consider renaming this
         self._params = ParameterTree(self._tree, mutable=True)
 
         # Create the status loop handling thread
@@ -71,12 +87,6 @@ class OdinDataController(object):
                 "command": {},
             }
 
-    def merge_external_tree(self, path, tree):
-        # First we need to insert the new parameter tree
-        self._tree[path] = tree
-        # Next, we must re-build the complete parameter tree
-        self._params = ParameterTree(self._tree, mutable=True)
-
     def set_error(self, err):
         # Record the error message into the status
         self._error = err
@@ -93,13 +103,64 @@ class OdinDataController(object):
         :param meta: Should the ParameterTree return the meta data associated with the value
         :return: dict object containing the value and meta data if requested
         """
-        return self._params.get(path, meta)
+        return self._params.get(path, meta) # ParameterTree.get() returns the value in the cache
 
     def put(self, path, value):
         self._params.set(path, value)
-        self.process_config_changes()
         # After all config processing has completed, execute queued commands
-        self.execute_queued()
+        # self.execute_queued() # Still necessary??
+    
+    def recursive_splice(self, index:int, resp_type:str, path:list, params_node:dict, metadata:dict):
+        if isinstance(params_node, dict):
+            return {
+                k: self.recursive_splice(index, resp_type, path + [k], v, metadata) for k, v in params_node.items()
+            }
+        else:
+            try:
+                param_metadata = reduce(lambda d, key: d[key], path, metadata)
+                setter = None
+                if(resp_type == IpcTornadoClient.IPC_VAL_CONFIG):
+                    getter = partial(getter_func, self._config_resposes[index], path)
+                else:
+                    getter = partial(getter_func, self._status_resposes[index], path)
+                metadata = dict(param_metadata)
+                if(metadata["access_mode"] == "rw"): # has to be a configuration parameter! So we assign a setter!
+                    setter = partial(setter_func, self._clients[index], path)
+                metadata.pop("access_mode", None) # pop "access_mode"
+                metadata.pop(ParameterAccessor.AUTO_METADATA_FIELDS[0], None) # pop "type"
+                return (getter, setter, metadata)
+            except (KeyError, TypeError):
+                # Safe fallback: keeps the data, flags missing metadata
+                return (params_node, None)
+
+    def splice_params_metadata(self, index, resp_type:str, params:dict, metadata:dict):
+        path = []
+        params = self.recursive_splice(index, resp_type, path, params, metadata)
+        return params
+
+    def _update_params_with_metadata(self, value_dict:dict, index:int, value_key:str, param_key:str, metadata_key:str, metadata_ts_key:str):
+        # NB: 'STATUS' can be replace with 'CONFIG' in the following comments:
+        #   IpcTornadoClient.STATUS_PARAMS_KEY == param_key
+        #   client.parameters[IpcTornadoClient.IPC_VAL_STATUS] == value_dict
+        #   IpcTornadoClient.IPC_VAL_STATUS == value_key
+        #   IpcTornadoClient.IPC_VAL_STATUS_TS == metadata_ts_key
+        #   IpcTornadoClient.IPC_VAL_STATUS_METADATA == metadata_key
+        resp = None
+        response_ts_ver = 0
+        if(param_key in value_dict):
+            resp = value_dict[param_key]
+            if(value_key == IpcTornadoClient.IPC_VAL_CONFIG):
+                self._config_resposes[index] = resp
+            elif(value_key == IpcTornadoClient.IPC_VAL_STATUS):
+                self._status_resposes[index] = resp
+        if(metadata_ts_key in value_dict):
+            response_ts_ver = value_dict[metadata_ts_key]
+        if metadata_key in value_dict:
+            metadata = value_dict[metadata_key]
+            if(resp is not None):
+                resp = self.splice_params_metadata(index, value_key, resp, metadata)
+                self._params.replace(f"{index}/{value_key}", resp)
+        return response_ts_ver
 
     def update_loop(self):
         """Handle background update loop tasks.
@@ -123,47 +184,53 @@ class OdinDataController(object):
                         else:
                             if not self._client_connections[index]:
                                 self._client_connections[index] = True
-
                     except Exception as e:
                         # Exception caught, log the error but do not stop the update loop
                         logging.error("Unhandled exception: %s", e)
-
                     # Request parameter updates
-                    for parameter_tree in [
-                        "status",
-                        "request_configuration",
-                        "request_commands",
+                    for param_req in [
+                        IpcTornadoClient.IPC_VAL_STATUS,
+                        IpcTornadoClient.IPC_VAL_REQ_CFG,
+                        IpcTornadoClient.IPC_VAL_REQ_CMDS,
                     ]:
                         try:
-                            msg = client.send_request(parameter_tree)
+                            with_metadata = False
+                            # Check if the previous values of the config and status metadata hash matches the latest value.
+                            # If they do not match, set with_metadata to True and update the previous hash value with the latest.
+                            if(param_req == IpcTornadoClient.IPC_VAL_REQ_CFG and self.config_metadata_ts != self.config_metadata_ts_prev):
+                                with_metadata = True
+                                self.config_metadata_ts_prev = self.config_metadata_ts
+                            elif(param_req == IpcTornadoClient.IPC_VAL_STATUS and self.status_metadata_ts != self.status_metadata_ts_prev):
+                                with_metadata = True
+                                self.status_metadata_ts_prev = self.status_metadata_ts
+                            msg = client.send_request(param_req, with_metadata)
                             if client.wait_for_response(msg.get_msg_id()):
                                 logging.error(
-                                    f"{parameter_tree} request to "
+                                    f"{param_req} request to "
                                     f"{client.ctrl_endpoint} timed out"
                                 )
                         except Exception as e:
                             # Log the error, but do not stop the update loop
                             logging.error("Unhandled exception: %s", e)
-
                     self.handle_client(client, index)
-                    if "status" in client.parameters:
-                        self._params.replace(
-                            f"{index}/status", client.parameters["status"]
-                        )
-                    if "config" in client.parameters:
-                        self._params.replace(
-                            f"{index}/config", client.parameters["config"]
-                        )
+                    # Always track/update the hash value of the config and status metadata values
+                    # using the variables status_metadata_hash & config_metadata_hash variables
+                    if IpcTornadoClient.IPC_VAL_STATUS in client.parameters and \
+                        client.parameters[IpcTornadoClient.IPC_VAL_STATUS][IpcTornadoClient.STATUS_PARAMS_KEY][IpcTornadoClient.CLIENT_CONNECTED]:
+                        self.status_metadata_ts = self._update_params_with_metadata(client.parameters[IpcTornadoClient.IPC_VAL_STATUS],
+                                                                                        index, IpcTornadoClient.IPC_VAL_STATUS,
+                                                                                        IpcTornadoClient.STATUS_PARAMS_KEY,
+                                                                                        IpcTornadoClient.IPC_VAL_STATUS_METADATA,
+                                                                                        IpcTornadoClient.IPC_VAL_STATUS_TS)
+                    if IpcTornadoClient.IPC_VAL_CONFIG in client.parameters:
+                        self.config_metadata_ts = self._update_params_with_metadata(client.parameters[IpcTornadoClient.IPC_VAL_CONFIG],
+                                                                                        index, IpcTornadoClient.IPC_VAL_CONFIG,
+                                                                                        IpcTornadoClient.CONFIG_PARAMS_KEY,
+                                                                                        IpcTornadoClient.IPC_VAL_CONFIG_METADATA,
+                                                                                        IpcTornadoClient.IPC_VAL_CONFIG_TS)
                     if "commands" in client.parameters:
                         self.parse_available_commands(index, client)
-
-                self._config_cache = [
-                    self._params.get(f"{idx}/config")
-                    for idx, _ in enumerate(self._clients)
-                ]
-
                 self.process_updates()
-
             except Exception as ex:
                 logging.error("{}".format(ex))
 
@@ -211,84 +278,12 @@ class OdinDataController(object):
         )
         self._queued_command[index] = (plugin, value)
 
-    def execute_queued(self):
-        """After configuration changes have been applied this method is called.  It
-        checks to see if any commands have been queued, and if any are found then
-        they are executed.
-        """
-        for index, _ in enumerate(self._queued_command):
-            if self._queued_command[index] is not None:
-                plugin, command = self._queued_command[index]
-                self._queued_command[index] = None
-                logging.info(
-                    f"Execute: index[{index}] plugin [{plugin}] command [{command}]"
-                )
-                # Call the execution check method prior to sending to a client
-                if self.can_execute(index, plugin, command):
-                    self._clients[index].execute_command(plugin, command)
-
-    def can_execute(self, index, plugin, command):
-        """Called for each command that is about to be sent to a client
-        application.  If this method returns false then the command is not
-        sent.  This method can be overloaded by subclasses to implement
-        controller specific logic checks prior to sending the command.
-        """
-        return True
-
     def handle_client(self, client, index):
         """Called on each client in the update_loop loop before updating the
         parameter tree and caching the config, can be overloaded by
         subclasses to implement controller specific logic.
         """
         pass
-
-    def process_config_changes(self):
-        """Search through the application config trees and compare with the
-        latest cached version.  Any changes should be built into a new config
-        message and sent down to the applications.
-        This method must be called after the set method is called and needs to
-        be executed in its own thread to avoid blocking the tornado loop.
-        """
-        new_config = [
-            self._params.get(f"{idx}/config") for idx, _ in enumerate(self._clients)
-        ]
-        diff = DeepDiff(self._config_cache, new_config)
-
-        if "values_changed" in diff:
-            logging.debug("Config deltas: %s", diff)
-            # Build an array of configurations from any differences.
-            # There will be 1 configuration object for each client (if differences
-            # are present)
-            configs = [None] * len(self._clients)
-            for root in diff["values_changed"]:
-                # Clean up the root string removing start and end constants
-                path = (
-                    root.replace("root[", "").rstrip("]").replace("'", "").split("][")
-                )
-                logging.debug("Path: {}".format(path))
-                # First element of the path is the index of the client
-                # Second element of the path is the key 'config'
-                index = int(path[0])
-                # Build the config for this root
-                if configs[index] is None:
-                    configs[index] = {}
-                client_cfg = configs[index]
-                logging.debug("Client config [%s]: %s", index, client_cfg)
-                cfg = client_cfg
-                for item in path[2:-1]:
-                    if item not in cfg:
-                        cfg[item] = {}
-                    cfg = cfg[item]
-                cfg[path[-1]] = diff["values_changed"][root]["new_value"]
-
-            logging.info("Sending configs: %s", configs)
-
-            # Loop through the new params
-            index = 0
-            for config in configs:
-                if config is not None:
-                    self._clients[index].send_configuration(config)
-                index += 1
 
     def create_demand_config(self, new_params, old_params):
         config = None
