@@ -49,5 +49,6 @@
         "source=/dev/shm,target=/dev/shm,type=bind"
     ],
     // After the container is created, install the python project in editable form
-    "postCreateCommand": "pip install $([ -f dev-requirements.txt ] && echo '-c dev-requirements.txt') -e './python[dev]'"
+    "postCreateCommand": "pip install $([ -f dev-requirements.txt ] && echo '-c dev-requirements.txt') -e './python[dev]'",
+    "postStartCommand":  "/workspaces/odin-data/scripts/setup_git.sh"
 }
