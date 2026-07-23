@@ -19,7 +19,7 @@ file(GLOB APP_SOURCES FrameReceiverApp.cpp
 
 add_executable(frameReceiver ${APP_SOURCES})
 
-target_link_libraries(frameReceiver ${LIB_RECEIVER} ${COMMON_LIBRARY} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES})
+target_link_libraries(frameReceiver ${LIB_RECEIVER} ${COMMON_LIBRARY} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} common_flags)
 
 if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
     find_library(REALTIME_LIBRARY
