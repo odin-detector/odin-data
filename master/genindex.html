@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; odin-data 0.1.dev1+g878e04f17 documentation</title>
+    <title>Index &#8212; odin-data 0.1.dev1+g10415aaca documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
-    <script src="_static/documentation_options.js?v=f95d7c51"></script>
+    <script src="_static/documentation_options.js?v=406b622d"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/design-tabs.js?v=f930bc37"></script>
@@ -1156,6 +1156,8 @@
 </li>
       <li><a href="developer/reference/api/frame-processor.html#_CPPv4N14FrameProcessor24FrameProcessorController12CONFIG_STOREE">FrameProcessor::FrameProcessorController::CONFIG_STORE (C++ member)</a>
 </li>
+      <li><a href="developer/reference/api/frame-processor.html#_CPPv4N14FrameProcessor24FrameProcessorController13CONFIG_TS_KEYE">FrameProcessor::FrameProcessorController::CONFIG_TS_KEY (C++ member)</a>
+</li>
       <li><a href="developer/reference/api/frame-processor.html#_CPPv4N14FrameProcessor24FrameProcessorController12CONFIG_VALUEE">FrameProcessor::FrameProcessorController::CONFIG_VALUE (C++ member)</a>
 </li>
       <li><a href="developer/reference/api/frame-processor.html#_CPPv4N14FrameProcessor24FrameProcessorController9configureERN8OdinData10IpcMessageERN8OdinData10IpcMessageE">FrameProcessor::FrameProcessorController::configure (C++ function)</a>
@@ -1202,8 +1204,6 @@
 </li>
       <li><a href="developer/reference/api/frame-processor.html#_CPPv4N14FrameProcessor24FrameProcessorController11META_TX_HWME">FrameProcessor::FrameProcessorController::META_TX_HWM (C++ member)</a>
 </li>
-      <li><a href="developer/reference/api/frame-processor.html#_CPPv4N14FrameProcessor24FrameProcessorController13METADATA_HASHE">FrameProcessor::FrameProcessorController::METADATA_HASH (C++ member)</a>
-</li>
       <li><a href="developer/reference/api/frame-processor.html#_CPPv4N14FrameProcessor24FrameProcessorController14metaRxChannel_E">FrameProcessor::FrameProcessorController::metaRxChannel_ (C++ member)</a>
 </li>
       <li><a href="developer/reference/api/frame-processor.html#_CPPv4N14FrameProcessor24FrameProcessorController14metaTxChannel_E">FrameProcessor::FrameProcessorController::metaTxChannel_ (C++ member)</a>
@@ -1248,6 +1248,8 @@
 </li>
       <li><a href="developer/reference/api/frame-processor.html#_CPPv4N14FrameProcessor24FrameProcessorController19shutdownFrameCount_E">FrameProcessor::FrameProcessorController::shutdownFrameCount_ (C++ member)</a>
 </li>
+      <li><a href="developer/reference/api/frame-processor.html#_CPPv4N14FrameProcessor24FrameProcessorController13STATUS_TS_KEYE">FrameProcessor::FrameProcessorController::STATUS_TS_KEY (C++ member)</a>
+</li>
       <li><a href="developer/reference/api/frame-processor.html#_CPPv4N14FrameProcessor24FrameProcessorController15stored_configs_E">FrameProcessor::FrameProcessorController::stored_configs_ (C++ member)</a>
 </li>
       <li><a href="developer/reference/api/frame-processor.html#_CPPv4N14FrameProcessor24FrameProcessorController13SUPPORTED_KEYE">FrameProcessor::FrameProcessorController::SUPPORTED_KEY (C++ member)</a>
@@ -1288,6 +1290,8 @@
 </li>
       <li><a href="developer/reference/api/frame-processor.html#_CPPv4N14FrameProcessor20FrameProcessorPlugin16config_metadata_E">FrameProcessor::FrameProcessorPlugin::config_metadata_ (C++ member)</a>
 </li>
+      <li><a href="developer/reference/api/frame-processor.html#_CPPv4N14FrameProcessor20FrameProcessorPlugin10config_ts_E">FrameProcessor::FrameProcessorPlugin::config_ts_ (C++ member)</a>
+</li>
       <li><a href="developer/reference/api/frame-processor.html#_CPPv4N14FrameProcessor20FrameProcessorPlugin9configureERN8OdinData10IpcMessageERN8OdinData10IpcMessageE">FrameProcessor::FrameProcessorPlugin::configure (C++ function)</a>
 </li>
       <li><a href="developer/reference/api/frame-processor.html#_CPPv4I0EN14FrameProcessor20FrameProcessorPlugin26enableif_str_or_datatype_tE">FrameProcessor::FrameProcessorPlugin::enableif_str_or_datatype_t (C++ type)</a>
@@ -1298,9 +1302,13 @@
 </li>
       <li><a href="developer/reference/api/frame-processor.html#_CPPv4N14FrameProcessor20FrameProcessorPlugin20FrameProcessorPluginEv">FrameProcessor::FrameProcessorPlugin::FrameProcessorPlugin (C++ function)</a>
 </li>
+      <li><a href="developer/reference/api/frame-processor.html#_CPPv4NK14FrameProcessor20FrameProcessorPlugin13get_config_tsEv">FrameProcessor::FrameProcessorPlugin::get_config_ts (C++ function)</a>
+</li>
       <li><a href="developer/reference/api/frame-processor.html#_CPPv4N14FrameProcessor20FrameProcessorPlugin10get_errorsEv">FrameProcessor::FrameProcessorPlugin::get_errors (C++ function)</a>
 </li>
       <li><a href="developer/reference/api/frame-processor.html#_CPPv4NK14FrameProcessor20FrameProcessorPlugin8get_nameEv">FrameProcessor::FrameProcessorPlugin::get_name (C++ function)</a>
+</li>
+      <li><a href="developer/reference/api/frame-processor.html#_CPPv4NK14FrameProcessor20FrameProcessorPlugin13get_status_tsEv">FrameProcessor::FrameProcessorPlugin::get_status_ts (C++ function)</a>
 </li>
       <li><a href="developer/reference/api/frame-processor.html#_CPPv4N14FrameProcessor20FrameProcessorPlugin12get_warningsEv">FrameProcessor::FrameProcessorPlugin::get_warnings (C++ function)</a>
 </li>
@@ -1355,6 +1363,12 @@
       <li><a href="developer/reference/api/frame-processor.html#_CPPv4N14FrameProcessor20FrameProcessorPlugin6statusERN8OdinData10IpcMessageE">FrameProcessor::FrameProcessorPlugin::status (C++ function)</a>
 </li>
       <li><a href="developer/reference/api/frame-processor.html#_CPPv4N14FrameProcessor20FrameProcessorPlugin16status_metadata_E">FrameProcessor::FrameProcessorPlugin::status_metadata_ (C++ member)</a>
+</li>
+      <li><a href="developer/reference/api/frame-processor.html#_CPPv4N14FrameProcessor20FrameProcessorPlugin10status_ts_E">FrameProcessor::FrameProcessorPlugin::status_ts_ (C++ member)</a>
+</li>
+      <li><a href="developer/reference/api/frame-processor.html#_CPPv4N14FrameProcessor20FrameProcessorPlugin16update_config_tsEv">FrameProcessor::FrameProcessorPlugin::update_config_ts (C++ function)</a>
+</li>
+      <li><a href="developer/reference/api/frame-processor.html#_CPPv4N14FrameProcessor20FrameProcessorPlugin16update_status_tsEv">FrameProcessor::FrameProcessorPlugin::update_status_ts (C++ function)</a>
 </li>
       <li><a href="developer/reference/api/frame-processor.html#_CPPv4N14FrameProcessor20FrameProcessorPlugin7versionERN8OdinData10IpcMessageE">FrameProcessor::FrameProcessorPlugin::version (C++ function)</a>
 </li>
@@ -1428,14 +1442,14 @@
 </li>
       <li><a href="developer/reference/api/frame-processor.html#_CPPv4N14FrameProcessor8HDF5File11file_index_E">FrameProcessor::HDF5File::file_index_ (C++ member)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="developer/reference/api/frame-processor.html#_CPPv4N14FrameProcessor8HDF5File9filename_E">FrameProcessor::HDF5File::filename_ (C++ member)</a>
 </li>
       <li><a href="developer/reference/api/frame-processor.html#_CPPv4N14FrameProcessor8HDF5File18get_dataset_framesERKNSt6stringE">FrameProcessor::HDF5File::get_dataset_frames (C++ function)</a>
 </li>
       <li><a href="developer/reference/api/frame-processor.html#_CPPv4N14FrameProcessor8HDF5File20get_dataset_max_sizeERKNSt6stringE">FrameProcessor::HDF5File::get_dataset_max_size (C++ function)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="developer/reference/api/frame-processor.html#_CPPv4N14FrameProcessor8HDF5File14get_file_indexEv">FrameProcessor::HDF5File::get_file_index (C++ function)</a>
 </li>
       <li><a href="developer/reference/api/frame-processor.html#_CPPv4N14FrameProcessor8HDF5File12get_filenameEv">FrameProcessor::HDF5File::get_filename (C++ function)</a>
@@ -2544,10 +2558,6 @@
 </li>
       <li><a href="developer/reference/api/common.html#_CPPv4I0EN8OdinData10IpcMessage13get_attributeE1TRKNSt6stringE">OdinData::IpcMessage::get_attribute (C++ function)</a>, <a href="developer/reference/api/common.html#_CPPv4I0EN8OdinData10IpcMessage13get_attributeE1TRKNSt6stringERK1T">[1]</a>
 </li>
-      <li><a href="developer/reference/api/common.html#_CPPv4N8OdinData10IpcMessage8get_keysERKNSt6stringEKc">OdinData::IpcMessage::get_keys (C++ function)</a>
-</li>
-      <li><a href="developer/reference/api/common.html#_CPPv4N8OdinData10IpcMessage15get_keys_helperERKN9rapidjson5ValueEKcRNSt6stringE">OdinData::IpcMessage::get_keys_helper (C++ function)</a>
-</li>
       <li><a href="developer/reference/api/common.html#_CPPv4NK8OdinData10IpcMessage16get_msg_datetimeEv">OdinData::IpcMessage::get_msg_datetime (C++ function)</a>
 </li>
       <li><a href="developer/reference/api/common.html#_CPPv4NK8OdinData10IpcMessage10get_msg_idEv">OdinData::IpcMessage::get_msg_id (C++ function)</a>
@@ -2628,10 +2638,10 @@
 </li>
       <li><a href="developer/reference/api/common.html#_CPPv4N8OdinData10IpcMessage6MsgVal17MsgValCmdShutdownE">OdinData::IpcMessage::MsgVal::MsgValCmdShutdown (C++ enumerator)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="developer/reference/api/common.html#_CPPv4N8OdinData10IpcMessage6MsgVal15MsgValCmdStatusE">OdinData::IpcMessage::MsgVal::MsgValCmdStatus (C++ enumerator)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="developer/reference/api/common.html#_CPPv4N8OdinData10IpcMessage6MsgVal13MsgValIllegalE">OdinData::IpcMessage::MsgVal::MsgValIllegal (C++ enumerator)</a>
 </li>
       <li><a href="developer/reference/api/common.html#_CPPv4N8OdinData10IpcMessage6MsgVal24MsgValNotifyBufferConfigE">OdinData::IpcMessage::MsgVal::MsgValNotifyBufferConfig (C++ enumerator)</a>
