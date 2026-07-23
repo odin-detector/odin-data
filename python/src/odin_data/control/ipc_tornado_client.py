@@ -207,11 +207,12 @@ class IpcTornadoClient(object):
         plugin_names : list = params["plugins"]["names"]
         self._parameters[self.IPC_VAL_STATUS]: dict = {}
         self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY]: dict = {}
+        self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY]["plugins"] = params["plugins"]
         for name in plugin_names:
             self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY][name] = params[name]
             params.pop(name, None)
 
-        self._parameters[self.IPC_VAL_STATUS]['timestamp'] = status_msg['timestamp']
+        self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY]['timestamp'] = status_msg['timestamp']
         if(self.METADATA_HASH_KEY in params):
             self._parameters[self.IPC_VAL_STATUS][self.IPC_VAL_STATUS_METADATA_HASH] = params[self.METADATA_HASH_KEY]
             params.pop(self.METADATA_HASH_KEY, None)
@@ -221,12 +222,12 @@ class IpcTornadoClient(object):
         self._parameters[self.IPC_VAL_STATUS][self.PARAMS_KEY] = params
 
         if 'error' not in params:
-            self._parameters[self.IPC_VAL_STATUS]['error'] = []
+            self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY]['error'] = []
         with self._lock:
             for msg in self._rejected_configs:
                 self._parameters[self.IPC_VAL_STATUS]['error'].append(self._rejected_configs[msg].get_params()['error'])
         # If we have received a status response then we must be connected
-        self._parameters[self.IPC_VAL_STATUS][self.CLIENT_CONNECTED] = True
+        self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY][self.CLIENT_CONNECTED] = True
 
     def _update_commands(self, commands_msg):
         """Store the response to a request_commands message in the _parameters dict.
@@ -248,7 +249,7 @@ class IpcTornadoClient(object):
 
         :return: The connected state of the client
         """
-        return self._parameters[self.IPC_VAL_STATUS][self.CLIENT_CONNECTED]
+        return self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY][self.CLIENT_CONNECTED]
 
     def _send_message(self, msg):
         """Injects the next message ID into the message object.
