@@ -20,11 +20,10 @@ class IpcTornadoClient(object):
     IPC_VAL_CONFIG = "config"
     CLIENT_CONNECTED = "connected"
     IPC_VAL_CONFIG_METADATA = "config_metadata"
-    IPC_VAL_CONFIG_METADATA_HASH = "config_metadata_hash"
+    IPC_VAL_CONFIG_TS = "config_ts"
     IPC_VAL_STATUS_METADATA = "status_metadata"
-    IPC_VAL_STATUS_METADATA_HASH = "status_metadata_hash"
+    IPC_VAL_STATUS_TS = "status_ts"
     METADATA_KEY = "metadata"
-    METADATA_HASH_KEY = "metadata_hash"
     PARAMS_KEY = "params"
     STATUS_PARAMS_KEY = "status_request"
     CONFIG_PARAMS_KEY = "config_request"
@@ -190,13 +189,12 @@ class IpcTornadoClient(object):
             params.pop(name, None)
         params.pop("plugins", None)
 
-        if(self.METADATA_HASH_KEY in params):
-            self._parameters[self.IPC_VAL_CONFIG][self.IPC_VAL_CONFIG_METADATA_HASH] = params[self.METADATA_HASH_KEY]
-            params.pop(self.METADATA_HASH_KEY, None)
+        if(self.IPC_VAL_CONFIG_TS in params):
+            self._parameters[self.IPC_VAL_CONFIG][self.IPC_VAL_CONFIG_TS] = params[self.IPC_VAL_CONFIG_TS]
+            params.pop(self.IPC_VAL_CONFIG_TS, None)
         if(self.METADATA_KEY in params):
             self._parameters[self.IPC_VAL_CONFIG][self.IPC_VAL_CONFIG_METADATA] = params[self.METADATA_KEY]
             params.pop(self.METADATA_KEY, None)
-        self._parameters[self.IPC_VAL_CONFIG][self.PARAMS_KEY] = params
 
     def _update_status(self, status_msg):
         """Store the response to a status message in the _parameters dict.
@@ -211,9 +209,9 @@ class IpcTornadoClient(object):
             params.pop(name, None)
 
         self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY]['timestamp'] = status_msg['timestamp']
-        if(self.METADATA_HASH_KEY in params):
-            self._parameters[self.IPC_VAL_STATUS][self.IPC_VAL_STATUS_METADATA_HASH] = params[self.METADATA_HASH_KEY]
-            params.pop(self.METADATA_HASH_KEY, None)
+        if(self.IPC_VAL_STATUS_TS in params):
+            self._parameters[self.IPC_VAL_STATUS][self.IPC_VAL_STATUS_TS] = params[self.IPC_VAL_STATUS_TS]
+            params.pop(self.IPC_VAL_STATUS_TS, None)
         if(self.METADATA_KEY in params):
             self._parameters[self.IPC_VAL_STATUS][self.IPC_VAL_STATUS_METADATA] = params[self.METADATA_KEY]
             params.pop(self.METADATA_KEY, None)

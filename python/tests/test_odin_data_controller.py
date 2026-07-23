@@ -17,18 +17,18 @@ def controller():
         IpcTornadoClient_mock.IPC_VAL_STATUS = "status"
         IpcTornadoClient_mock.STATUS_PARAMS_KEY = "status_request"
         IpcTornadoClient_mock.IPC_VAL_STATUS_METADATA = "status_metadata"
-        IpcTornadoClient_mock.IPC_VAL_STATUS_METADATA_HASH = "status_metadata_hash"
+        IpcTornadoClient_mock.IPC_VAL_STATUS_TS = "status_ts"
         IpcTornadoClient_mock.IPC_VAL_CONFIG = "config"
         IpcTornadoClient_mock.CONFIG_PARAMS_KEY = "config_request"
         IpcTornadoClient_mock.IPC_VAL_CONFIG_METADATA = "config_metadata"
-        IpcTornadoClient_mock.IPC_VAL_CONFIG_METADATA_HASH = "config_metadata_hash"
+        IpcTornadoClient_mock.IPC_VAL_CONFIG_TS = "config_ts"
         IpcTornadoClient_mock.return_value.parameters = {
             "config": {
                 "config_request": {
                     "blosc": {"compressor": "lz4", "level": 1, "shuffle": "shuffle", "threads": 1},
                     "live": {"compressor": "lz4", "level": 1, "shuffle": "shuffle", "threads": 1},
                 },
-                "config_metadata_hash": 1234567,
+                "config_ts": 1234567,
                 "config_metadata": {
                     "blosc": {
                         "compressor": {

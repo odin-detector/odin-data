@@ -34,19 +34,17 @@ class TestIpcTornadoClient:
         client._callback([reply_str])
         assert client.parameters["version"] == "1.0.0"
 
-        reply_str = '{"id": 1, "msg_type": "cmd", "msg_val": "request_configuration", "params": { "plugins": {"names": ["test_config_item"] }, "metadata_hash": 12345, "test_config_item": "Test1"}}'
+        reply_str = '{"id": 1, "msg_type": "cmd", "msg_val": "request_configuration", "params": { "plugins": {"names": ["test_config_item"] }, "config_ts": 12345, "test_config_item": "Test1"}}'
         client.send_request("request_configuration")
         client._callback([reply_str])
         assert client.parameters["config"] == {
             "config_request": {"test_config_item": "Test1"},
-            "config_metadata_hash": 12345,
-            "params": {},
+            "config_ts": 12345,
         }
 
-        reply_str = '{"id": 2, "msg_type": "cmd", "msg_val": "status", "timestamp": "00:00:00.00", "params": { "plugins": {"names": ["test_config_item"] }, "metadata_hash": 12345, "test_config_item": "Test1"}}'
+        reply_str = '{"id": 2, "msg_type": "cmd", "msg_val": "status", "timestamp": "00:00:00.00", "params": { "plugins": {"names": ["test_config_item"] }, "status_ts": 12345, "test_config_item": "Test1"}}'
         client.send_request("status")
         client._callback([reply_str])
-        print(client.parameters["status"])
         assert client.parameters["status"] == {
             "status_request": {
                 "plugins": {"names": ["test_config_item"]},
@@ -55,7 +53,7 @@ class TestIpcTornadoClient:
                 "error": [],
                 "connected": True,
             },
-            "status_metadata_hash": 12345
+            "status_ts": 12345,
         }
         assert client.connected() is True
 

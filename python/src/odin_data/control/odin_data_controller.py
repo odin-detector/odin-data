@@ -34,10 +34,10 @@ class OdinDataController(object):
         self._name = name
         self._api = 0.1
         self._error = ""
-        self.config_metadata_hash = -1
-        self.status_metadata_hash = -1
-        self.config_metadata_hash_prev = 0
-        self.status_metadata_hash_prev = 0
+        self.config_metadata_ts = -1
+        self.status_metadata_ts = -1
+        self.config_metadata_ts_prev = 0
+        self.status_metadata_ts_prev = 0
         self._endpoints = []
         self._config_resposes:list[dict] = [None] * len(endpoints)
         self._status_resposes:list[dict] = [None] * len(endpoints)
@@ -138,29 +138,29 @@ class OdinDataController(object):
         params = self.recursive_splice(index, resp_type, path, params, metadata)
         return params
 
-    def _update_params_with_metadata(self, value_dict:dict, index:int, value_key:str, param_key:str, metadata_key:str, metadata_hash_key:str):
+    def _update_params_with_metadata(self, value_dict:dict, index:int, value_key:str, param_key:str, metadata_key:str, metadata_ts_key:str):
         # NB: 'STATUS' can be replace with 'CONFIG' in the following comments:
         #   IpcTornadoClient.STATUS_PARAMS_KEY == param_key
         #   client.parameters[IpcTornadoClient.IPC_VAL_STATUS] == value_dict
         #   IpcTornadoClient.IPC_VAL_STATUS == value_key
-        #   IpcTornadoClient.IPC_VAL_STATUS_METADATA_HASH == metadata_hash_key
+        #   IpcTornadoClient.IPC_VAL_STATUS_TS == metadata_ts_key
         #   IpcTornadoClient.IPC_VAL_STATUS_METADATA == metadata_key
         resp = None
-        hash_val = 0
+        response_ts_ver = 0
         if(param_key in value_dict):
             resp = value_dict[param_key]
             if(value_key == IpcTornadoClient.IPC_VAL_CONFIG):
                 self._config_resposes[index] = resp
             elif(value_key == IpcTornadoClient.IPC_VAL_STATUS):
                 self._status_resposes[index] = resp
-        if(metadata_hash_key in value_dict):
-            hash_val = value_dict[metadata_hash_key]
+        if(metadata_ts_key in value_dict):
+            response_ts_ver = value_dict[metadata_ts_key]
         if metadata_key in value_dict:
             metadata = value_dict[metadata_key]
             if(resp is not None):
                 resp = self.splice_params_metadata(index, value_key, resp, metadata)
                 self._params.replace(f"{index}/{value_key}", resp)
-        return hash_val
+        return response_ts_ver
 
     def update_loop(self):
         """Handle background update loop tasks.
@@ -197,12 +197,12 @@ class OdinDataController(object):
                             with_metadata = False
                             # Check if the previous values of the config and status metadata hash matches the latest value.
                             # If they do not match, set with_metadata to True and update the previous hash value with the latest.
-                            if(param_req == IpcTornadoClient.IPC_VAL_REQ_CFG and self.config_metadata_hash != self.config_metadata_hash_prev):
+                            if(param_req == IpcTornadoClient.IPC_VAL_REQ_CFG and self.config_metadata_ts != self.config_metadata_ts_prev):
                                 with_metadata = True
-                                self.config_metadata_hash_prev = self.config_metadata_hash
-                            elif(param_req == IpcTornadoClient.IPC_VAL_STATUS and self.status_metadata_hash != self.status_metadata_hash_prev):
+                                self.config_metadata_ts_prev = self.config_metadata_ts
+                            elif(param_req == IpcTornadoClient.IPC_VAL_STATUS and self.status_metadata_ts != self.status_metadata_ts_prev):
                                 with_metadata = True
-                                self.status_metadata_hash_prev = self.status_metadata_hash
+                                self.status_metadata_ts_prev = self.status_metadata_ts
                             msg = client.send_request(param_req, with_metadata)
                             if client.wait_for_response(msg.get_msg_id()):
                                 logging.error(
@@ -217,17 +217,17 @@ class OdinDataController(object):
                     # using the variables status_metadata_hash & config_metadata_hash variables
                     if IpcTornadoClient.IPC_VAL_STATUS in client.parameters and \
                         client.parameters[IpcTornadoClient.IPC_VAL_STATUS][IpcTornadoClient.STATUS_PARAMS_KEY][IpcTornadoClient.CLIENT_CONNECTED]:
-                        self.status_metadata_hash = self._update_params_with_metadata(client.parameters[IpcTornadoClient.IPC_VAL_STATUS],
+                        self.status_metadata_ts = self._update_params_with_metadata(client.parameters[IpcTornadoClient.IPC_VAL_STATUS],
                                                                                         index, IpcTornadoClient.IPC_VAL_STATUS,
                                                                                         IpcTornadoClient.STATUS_PARAMS_KEY,
                                                                                         IpcTornadoClient.IPC_VAL_STATUS_METADATA,
-                                                                                        IpcTornadoClient.IPC_VAL_STATUS_METADATA_HASH)
+                                                                                        IpcTornadoClient.IPC_VAL_STATUS_TS)
                     if IpcTornadoClient.IPC_VAL_CONFIG in client.parameters:
-                        self.config_metadata_hash = self._update_params_with_metadata(client.parameters[IpcTornadoClient.IPC_VAL_CONFIG],
+                        self.config_metadata_ts = self._update_params_with_metadata(client.parameters[IpcTornadoClient.IPC_VAL_CONFIG],
                                                                                         index, IpcTornadoClient.IPC_VAL_CONFIG,
                                                                                         IpcTornadoClient.CONFIG_PARAMS_KEY,
                                                                                         IpcTornadoClient.IPC_VAL_CONFIG_METADATA,
-                                                                                        IpcTornadoClient.IPC_VAL_CONFIG_METADATA_HASH)
+                                                                                        IpcTornadoClient.IPC_VAL_CONFIG_TS)
                     if "commands" in client.parameters:
                         self.parse_available_commands(index, client)
                 self.process_updates()
