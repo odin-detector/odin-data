@@ -1,13 +1,12 @@
-# Shared setup stage ###########################################################
-FROM ubuntu:24.04 AS common
+FROM rockylinux:9  AS common
 
 ENV PATH=/odin/bin:/odin/scripts:/venv/bin:$PATH
 
 # Get fundamental packages
-RUN apt-get update -y && \
-    apt-get install --no-install-recommends -y curl \
-    tar ca-certificates software-properties-common && \
-    apt-get -y clean all
+RUN dnf update -y && \
+    dnf install  -y \
+    tar ca-certificates  && \
+    dnf -y clean all
 
 # Get zellij
 RUN curl -L https://github.com/zellij-org/zellij/releases/download/v0.40.1/zellij-x86_64-unknown-linux-musl.tar.gz -o zellij.tar.gz && \
@@ -20,31 +19,43 @@ RUN mkdir -p ~/.config/zellij && \
 FROM common AS developer
 
 # System dependencies
-RUN add-apt-repository -y ppa:deadsnakes/ppa && \
-    apt-get update -y && apt-get install -y --no-install-recommends \
+
+RUN dnf install -y epel-release && \
+    dnf config-manager --set-enabled crb
+RUN dnf group install -y "Development Tools"
+RUN dnf update -y && dnf install -y  \
     # General build
-    build-essential cmake git \
+    cmake git \
+    # cpp compiler
+    #gcc-toolset-15-gcc gcc-toolset-15-gcc-c++ gcc-toolset-15-binutils \
     # odin-data C++ dependencies
-    libblosc-dev libboost-all-dev libhdf5-dev liblog4cxx-dev libpcap-dev libczmq-dev \
+    blosc-devel boost-devel hdf5-devel log4cxx-devel libpcap-devel czmq-devel \
     # python
-    python3.11-dev python3.11-venv \
+    python3.11-devel python3.11-pip \
     # clang tools
-    clang-format-20 clang-tidy-20 \
+    clang20-tools-extra \
     # debugging
     gdb valgrind && \
     # tidy up
-    apt-get -y clean all
+    dnf -y clean all
+
+#Source GCC15 to ensure it is the compiler
+#ENV PATH="/opt/rh/gcc-toolset-15/root/usr/bin:${PATH}"
+#ENV PCP_DIR="/opt/rh/gcc-toolset-15/root"
+#ENV CC="/opt/rh/gcc-toolset-15/root/usr/bin/gcc"
+#ENV CXX="/opt/rh/gcc-toolset-15/root/usr/bin/g++"
+
 
 # Python dependencies
 RUN python3.11 -m ensurepip && \
     python3.11 -m venv /venv && \
-    python -m pip install --upgrade pip && \
-    python -m pip install git+https://github.com/odin-detector/odin-control
+    /venv/bin/python -m pip install --upgrade pip && \
+    /venv/bin/python -m pip install git+https://github.com/odin-detector/odin-control
 
 # Install hdf5filters from source
 RUN git clone https://github.com/DiamondLightSource/hdf5filters.git && cd hdf5filters && \
     mkdir -p cmake-build && cd cmake-build && \
-    cmake -DCMAKE_INSTALL_PREFIX=/odin -DCMAKE_BUILD_TYPE=Release -DUSE_AVX2=ON .. && \
+    cmake -DCMAKE_INSTALL_PREFIX=/odin -DCMAKE_BUILD_TYPE=Release .. && \
     make install && \
     rm -rf hdf5filters
 
@@ -57,25 +68,29 @@ COPY . .
 
 # C++
 RUN mkdir -p build && cd build && \
-    cmake -DCMAKE_INSTALL_PREFIX=/odin ../cpp && \
+    cmake -DCMAKE_INSTALL_PREFIX=/odin \
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+          -DCMAKE_CXX_FLAGS="-O3 -fno-omit-frame-pointer" \
+    ../cpp && \
     make -j8 VERBOSE=1 && \
     make install
 
 # Python
-RUN python -m pip install /odin/odin-data/python[meta_writer]
+RUN python3.11 -m pip install /odin/odin-data/python[meta_writer]
 
 # Runtime stage ################################################################
 FROM common AS runtime
 
 # Runtime system dependencies
-RUN add-apt-repository -y ppa:deadsnakes/ppa && \
-    apt-get update -y && apt-get install -y --no-install-recommends \
+RUN dnf install -y epel-release && \
+    dnf config-manager --set-enabled crb
+RUN dnf update -y && dnf install -y \
     # C++ dependencies
-    libblosc-dev libboost-all-dev libhdf5-dev liblog4cxx-dev libpcap-dev libczmq-dev \
+    blosc-devel boost-devel hdf5-devel log4cxx-devel libpcap-devel czmq-devel \
     # Python dependencies
-    python3.11 && \
+    python3.11-devel && \
     # Tidy up
-    apt-get -y clean all
+    dnf -y clean all
 
 COPY --from=build /odin /odin
 COPY --from=build /venv /venv
