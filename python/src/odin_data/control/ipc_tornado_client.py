@@ -205,8 +205,6 @@ class IpcTornadoClient(object):
         """
         params = status_msg[self.PARAMS_KEY]
         plugin_names : list = params["plugins"]["names"]
-        self._parameters[self.IPC_VAL_STATUS]: dict = {}
-        self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY]: dict = {}
         self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY]["plugins"] = params["plugins"]
         for name in plugin_names:
             self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY][name] = params[name]
