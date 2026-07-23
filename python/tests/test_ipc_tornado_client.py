@@ -23,7 +23,9 @@ class TestIpcTornadoClient:
         tornado_channel.assert_called_once_with(tornado_channel.CHANNEL_TYPE_DEALER)
 
         assert client.parameters == {
-            client.IPC_VAL_STATUS: {client.CLIENT_CONNECTED: False}
+            client.IPC_VAL_STATUS: {
+                client.STATUS_PARAMS_KEY: {client.CLIENT_CONNECTED: False}
+            }
         }
         assert client.connected() is False
 
@@ -44,13 +46,16 @@ class TestIpcTornadoClient:
         reply_str = '{"id": 2, "msg_type": "cmd", "msg_val": "status", "timestamp": "00:00:00.00", "params": { "plugins": {"names": ["test_config_item"] }, "metadata_hash": 12345, "test_config_item": "Test1"}}'
         client.send_request("status")
         client._callback([reply_str])
+        print(client.parameters["status"])
         assert client.parameters["status"] == {
-            "status_request": {"test_config_item": "Test1"},
-            "timestamp": "00:00:00.00",
-            "status_metadata_hash": 12345,
-            "params": {"plugins": {"names": ["test_config_item"]}},
-            "error": [],
-            "connected": True,
+            "status_request": {
+                "plugins": {"names": ["test_config_item"]},
+                "test_config_item": "Test1",
+                "timestamp": "00:00:00.00",
+                "error": [],
+                "connected": True,
+            },
+            "status_metadata_hash": 12345
         }
         assert client.connected() is True
 
@@ -70,7 +75,7 @@ class TestIpcTornadoClient:
         reply_str = '{"id": 5, "msg_type": "cmd", "msg_val": "status", "timestamp": "00:00:00.00", "params": { "plugins": {"names": ["test_status_item"] }, "test_status_item": "Test2"}}'
         client.send_request("status")
         client._callback([reply_str])
-        assert client.parameters["status"]["error"] == ["test error"]
+        assert client.parameters["status"]["status_request"]["error"] == ["test error"]
 
         client.clear_rejected_configs()
         assert len(client.read_rejected_configs()) == 0

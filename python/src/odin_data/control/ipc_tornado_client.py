@@ -48,7 +48,7 @@ class IpcTornadoClient(object):
         self._ip_address = ip_address
         self._port = port
 
-        self._parameters = {self.IPC_VAL_STATUS: {self.CLIENT_CONNECTED: False}}
+        self._parameters = {self.IPC_VAL_STATUS: {self.STATUS_PARAMS_KEY:{ self.CLIENT_CONNECTED: False}}}
         self.ctrl_endpoint = self.ENDPOINT_TEMPLATE.format(IP=ip_address, PORT=port)
         self.logger.debug("Connecting to client at %s", self.ctrl_endpoint)
         self.ctrl_channel = IpcTornadoChannel(IpcTornadoChannel.CHANNEL_TYPE_DEALER)
@@ -121,10 +121,10 @@ class IpcTornadoClient(object):
         self.logger.debug("Msg received from %s: %s", self.ctrl_endpoint, msg)
         if msg['event'] == IpcTornadoChannel.CONNECTED:
             self.logger.debug("  Connected...")
-            self._parameters[self.IPC_VAL_STATUS][self.CLIENT_CONNECTED] = True
+            self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY][self.CLIENT_CONNECTED] = True
         if msg['event'] == IpcTornadoChannel.DISCONNECTED:
             self.logger.debug("  Disconnected...")
-            self._parameters[self.IPC_VAL_STATUS][self.CLIENT_CONNECTED] = False
+            self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY][self.CLIENT_CONNECTED] = False
 
     def _callback(self, msg):
         """Handes incoming messages from the main ZeroMQ socket.
@@ -219,13 +219,12 @@ class IpcTornadoClient(object):
         if(self.METADATA_KEY in params):
             self._parameters[self.IPC_VAL_STATUS][self.IPC_VAL_STATUS_METADATA] = params[self.METADATA_KEY]
             params.pop(self.METADATA_KEY, None)
-        self._parameters[self.IPC_VAL_STATUS][self.PARAMS_KEY] = params
 
         if 'error' not in params:
             self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY]['error'] = []
         with self._lock:
             for msg in self._rejected_configs:
-                self._parameters[self.IPC_VAL_STATUS]['error'].append(self._rejected_configs[msg].get_params()['error'])
+                self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY]['error'].append(self._rejected_configs[msg].get_params()['error'])
         # If we have received a status response then we must be connected
         self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY][self.CLIENT_CONNECTED] = True
 
