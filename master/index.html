@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>odin-data &#8212; odin-data 0.1.dev1+g10415aaca documentation</title>
+    <title>odin-data &#8212; odin-data 0.1.dev1+g6b9b64751 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
-    <script src="_static/documentation_options.js?v=406b622d"></script>
+    <script src="_static/documentation_options.js?v=4b377381"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/design-tabs.js?v=f930bc37"></script>
@@ -404,6 +404,33 @@ of two communicating applications; the FrameReceiver and FrameProcessor. It acts
 data capture and processing pipeline for detector data streams transferred over a
 network connection. The FrameReceiver constructs data frames in shared memory buffers
 and the FrameProcessor performs processing on the buffer and writes data to disk.</p>
+<p>Notes to Contributors:</p>
+<ol class="arabic simple">
+<li><p>To allow sharing of git hooks they have been stored in the directory ‘.githooks’.
+For them to be used you MUST run the following command (only needs to be run once)</p></li>
+</ol>
+<p>Either:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Build (or rebuild) the dev-container in VScode, and the hooks are automatically setup.
+</pre></div>
+</div>
+<p>Or:
+Run
+<code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">config</span> <span class="pre">core.hooksPath</span> <span class="pre">.githooks</span></code>
+If not developing using the dev container.</p>
+<ol class="arabic simple" start="2">
+<li><p>In order to allow formatting changes (and possibly other things) to be made to the codebase,
+without too much disruption to the efficacy of the git-blame the following procedure can
+be used.</p></li>
+</ol>
+<p>There is a file called .git-blame-ignore-revs in the root of the repository that can be
+updated to record each commit that should be ignored for git-blame purposes.</p>
+<p>To actually set this up so that it is used by git-blame you need to the run the following
+command (it only needs to be run once as the information is then stored in .git/config
+for this repository)</p>
+<p>Either:</p>
+<p>Build (or rebuild) the dev-container in VScode, and the tools are automatically setup.</p>
+<p>Or:</p>
+<p>git config blame.ignoreRevsFile .git-blame-ignore-revs</p>
 </section>
 <section id="how-the-documentation-is-structured">
 <h1>How the documentation is structured<a class="headerlink" href="#how-the-documentation-is-structured" title="Link to this heading">#</a></h1>
