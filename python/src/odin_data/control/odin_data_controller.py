@@ -158,6 +158,11 @@ class OdinDataController(object):
             response_ts_ver = value_dict[metadata_ts_key]
         if metadata_key in value_dict:
             metadata = value_dict[metadata_key]
+            # If we have received metadata then we need to updae the
+            # 'command' structure on the next processing
+            # Because the 'command" structure might have an update!
+            # This is a slower update, but also a design trade-off for simplicity
+            self._command_needs_update = True
             if(resp is not None):
                 resp = self.splice_params_metadata(index, value_key, resp, metadata)
                 # Rebuild the entire tree
@@ -199,14 +204,11 @@ class OdinDataController(object):
                             with_metadata = False
                             # Check if the previous values of the config and status metadata hash matches the latest value.
                             # If they do not match, set with_metadata to True and update the previous hash value with the latest.
-                            # An updated hash value also implies that the command structure needs to be updated
                             if(param_req == IpcTornadoClient.IPC_VAL_REQ_CFG and self.config_metadata_ts != self.config_metadata_ts_prev):
                                 with_metadata = True
-                                self._command_needs_update = True
                                 self.config_metadata_ts_prev = self.config_metadata_ts
                             elif(param_req == IpcTornadoClient.IPC_VAL_STATUS and self.status_metadata_ts != self.status_metadata_ts_prev):
                                 with_metadata = True
-                                self._command_needs_update = True
                                 self.status_metadata_ts_prev = self.status_metadata_ts
                             msg = client.send_request(param_req, with_metadata)
                             if client.wait_for_response(msg.get_msg_id()):
