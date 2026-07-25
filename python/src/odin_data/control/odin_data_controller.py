@@ -39,6 +39,7 @@ class OdinDataController(object):
         self.config_metadata_ts_prev = 0
         self.status_metadata_ts_prev = 0
         self._endpoints = []
+        self._command_needs_update: bool = False
         self._config_resposes:list[dict] = [None] * len(endpoints)
         self._status_resposes:list[dict] = [None] * len(endpoints)
 
@@ -138,7 +139,7 @@ class OdinDataController(object):
         params = self.recursive_splice(index, resp_type, path, params, metadata)
         return params
 
-    def _update_params_with_metadata(self, value_dict:dict, index:int, value_key:str, param_key:str, metadata_key:str, metadata_ts_key:str):
+    def _update_params_with_metadata(self, value_dict:dict, index:int, value_key:str, param_key:str, metadata_key:str, metadata_ts_key:str, client: IpcTornadoClient):
         # NB: 'STATUS' can be replace with 'CONFIG' in the following comments:
         #   IpcTornadoClient.STATUS_PARAMS_KEY == param_key
         #   client.parameters[IpcTornadoClient.IPC_VAL_STATUS] == value_dict
@@ -159,6 +160,7 @@ class OdinDataController(object):
             metadata = value_dict[metadata_key]
             if(resp is not None):
                 resp = self.splice_params_metadata(index, value_key, resp, metadata)
+                # Rebuild the entire tree
                 self._params.replace(f"{index}/{value_key}", resp)
         return response_ts_ver
 
@@ -197,11 +199,14 @@ class OdinDataController(object):
                             with_metadata = False
                             # Check if the previous values of the config and status metadata hash matches the latest value.
                             # If they do not match, set with_metadata to True and update the previous hash value with the latest.
+                            # An updated hash value also implies that the command structure needs to be updated
                             if(param_req == IpcTornadoClient.IPC_VAL_REQ_CFG and self.config_metadata_ts != self.config_metadata_ts_prev):
                                 with_metadata = True
+                                self._command_needs_update = True
                                 self.config_metadata_ts_prev = self.config_metadata_ts
                             elif(param_req == IpcTornadoClient.IPC_VAL_STATUS and self.status_metadata_ts != self.status_metadata_ts_prev):
                                 with_metadata = True
+                                self._command_needs_update = True
                                 self.status_metadata_ts_prev = self.status_metadata_ts
                             msg = client.send_request(param_req, with_metadata)
                             if client.wait_for_response(msg.get_msg_id()):
@@ -221,15 +226,18 @@ class OdinDataController(object):
                                                                                         index, IpcTornadoClient.IPC_VAL_STATUS,
                                                                                         IpcTornadoClient.STATUS_PARAMS_KEY,
                                                                                         IpcTornadoClient.IPC_VAL_STATUS_METADATA,
-                                                                                        IpcTornadoClient.IPC_VAL_STATUS_TS)
+                                                                                        IpcTornadoClient.IPC_VAL_STATUS_TS,
+                                                                                        client)
                     if IpcTornadoClient.IPC_VAL_CONFIG in client.parameters:
                         self.config_metadata_ts = self._update_params_with_metadata(client.parameters[IpcTornadoClient.IPC_VAL_CONFIG],
                                                                                         index, IpcTornadoClient.IPC_VAL_CONFIG,
                                                                                         IpcTornadoClient.CONFIG_PARAMS_KEY,
                                                                                         IpcTornadoClient.IPC_VAL_CONFIG_METADATA,
-                                                                                        IpcTornadoClient.IPC_VAL_CONFIG_TS)
-                    if "commands" in client.parameters:
+                                                                                        IpcTornadoClient.IPC_VAL_CONFIG_TS,
+                                                                                        client)
+                    if "commands" in client.parameters and (self._command_needs_update == True):
                         self.parse_available_commands(index, client)
+                        self._command_needs_update = False
                 self.process_updates()
             except Exception as ex:
                 logging.error("{}".format(ex))
@@ -238,33 +246,29 @@ class OdinDataController(object):
 
     def parse_available_commands(self, index, client):
         # Check for differences in the command structure
-        # If differences exist build a new ParameterTree structure for commands
-        diff = DeepDiff(self._supported_commands[index], client.parameters["commands"])
-        if diff:
-            logging.debug(
-                f"Command structure has changed: {client.parameters['commands']}"
-            )
-            command_tree = {}
-            for plugin in client.parameters["commands"]:
-                # Build the execution branch for each plugin
-                command_tree[plugin] = {
-                    "allowed": (
-                        lambda x=client.parameters["commands"][plugin]["supported"]: x,
-                        None,
-                        {},
+        logging.debug(
+            f"Command structure has changed: {client.parameters['commands']}"
+        )
+        command_tree = {}
+        for plugin in client.parameters["commands"]:
+            # Build the execution branch for each plugin
+            command_tree[plugin] = {
+                "allowed": (
+                    lambda x=client.parameters["commands"][plugin]["supported"]: x,
+                    None,
+                    {},
+                ),
+                "execute": (
+                    "",
+                    lambda value, index=index, plugin=plugin: self.queue_command(
+                        index, plugin, value
                     ),
-                    "execute": (
-                        "",
-                        lambda value, index=index, plugin=plugin: self.queue_command(
-                            index, plugin, value
-                        ),
-                        {},
-                    ),
-                }
-
-            # If the structure has changed then update the parameter tree
+                    {},
+                ),
+            }
+        # If the structure has changed then update the parameter tree
             self._params.replace(f"{index}/command", command_tree)
-            self._supported_commands[index] = client.parameters["commands"]
+        self._supported_commands[index] = client.parameters["commands"]
 
     def queue_command(self, index, plugin, value):
         """Called for each command PUT that is received by the adapter
