@@ -16,6 +16,8 @@ target_compile_options(common_flags INTERFACE
   -Wunused-but-set-variable
   -Wreorder
   -Wunused-variable
+  -Wsign-compare
+  -Wunused-function
   #-Werror
 )
 
