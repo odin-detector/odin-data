@@ -118,10 +118,8 @@ void FrameSimulatorPluginUDP::prepare_packets(const struct pcap_pkthdr* header, 
 
     LOG4CXX_DEBUG(logger_, "Preparing packet(s)");
 
-    int size = header->len;
     struct iphdr* iph = (struct iphdr*)(buffer + sizeof(struct ethhdr));
     struct udphdr* udph = (struct udphdr*)(buffer + iph->ihl * 4 + sizeof(struct ethhdr));
-    const u_char* d = &buffer[sizeof(struct ethhdr) + iph->ihl * 4 + sizeof udph];
 
     int header_size = sizeof(struct ethhdr) + iph->ihl * 4 + sizeof(udph);
 

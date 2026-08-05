@@ -15,6 +15,7 @@ target_compile_options(common_flags INTERFACE
   #-Wall
   -Wunused-but-set-variable
   -Wreorder
+  -Wunused-variable
   #-Werror
 )
 

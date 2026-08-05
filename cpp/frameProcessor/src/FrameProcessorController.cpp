@@ -1061,9 +1061,6 @@ void FrameProcessorController::runIpcService(void)
     // Create the reactor
     reactor_ = boost::shared_ptr<OdinData::IpcReactor>(new OdinData::IpcReactor());
 
-    // Add the tick timer to the reactor
-    int tick_timer_id = reactor_->register_timer(1000, 0, boost::bind(&FrameProcessorController::tickTimer, this));
-
     // Set thread state to running, allows constructor to return
     threadRunning_ = true;
 

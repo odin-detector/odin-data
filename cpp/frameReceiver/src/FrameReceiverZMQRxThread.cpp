@@ -72,8 +72,6 @@ void FrameReceiverZMQRxThread::handle_receive_socket()
                               << nextMessageBuffer
     );
 
-    FrameDecoder::FrameReceiveState frame_receive_state = frame_decoder_->process_message(msg_len);
-
     // Now check for end of messsage
     if (skt_channel_.eom()) {
         // Message complete, notify the decoder
