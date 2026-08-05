@@ -11,7 +11,11 @@ setup_coverage()
 add_library(common_flags INTERFACE)
 
 target_compile_options(common_flags INTERFACE
-  -O2
+  -O0
+  #-Wall
+  -Wunused-but-set-variable
+  -Wreorder
+  #-Werror
 )
 
 
@@ -166,7 +170,7 @@ configure_file(${COMMON_DIR}/include/version.h.in "${CMAKE_BINARY_DIR}/include/v
 include_directories(${CMAKE_BINARY_DIR}/include)
 
 # Add common/include directory to include path
-include_directories(${COMMON_DIR}/include)
+include_directories(SYSTEM ${COMMON_DIR}/include)
 
 # Add the cmake subdirectory so that CMake finders are installed
 add_subdirectory(cmake)
