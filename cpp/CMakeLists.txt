@@ -13,11 +13,6 @@ add_library(common_flags INTERFACE)
 target_compile_options(common_flags INTERFACE
   -O0
   -Wall
-  -Wunused-but-set-variable
-  -Wreorder
-  -Wunused-variable
-  -Wsign-compare
-  -Wunused-function
   #-Werror
 )
 
