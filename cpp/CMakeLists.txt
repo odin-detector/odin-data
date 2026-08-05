@@ -7,6 +7,14 @@ project(OdinData)
 include(${CMAKE_SOURCE_DIR}/cmake/CodeCoverage.cmake)
 setup_coverage()
 
+# Create "compiler flags" target
+add_library(common_flags INTERFACE)
+
+target_compile_options(common_flags INTERFACE
+  -O2
+)
+
+
 # Set output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
