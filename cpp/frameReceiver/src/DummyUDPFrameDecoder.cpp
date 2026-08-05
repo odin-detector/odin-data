@@ -154,7 +154,7 @@ void DummyUDPFrameDecoder::request_configuration(const std::string param_prefix,
 //!
 //! \return size of frame buffer in bytes
 //!
-const size_t DummyUDPFrameDecoder::get_frame_buffer_size(void) const
+size_t DummyUDPFrameDecoder::get_frame_buffer_size(void) const
 {
     size_t frame_buffer_size = get_frame_header_size() + (udp_packets_per_frame_ * udp_packet_size_);
     return frame_buffer_size;
@@ -166,7 +166,7 @@ const size_t DummyUDPFrameDecoder::get_frame_buffer_size(void) const
 //! DummyUDP frame header.
 //!
 //! \return size of the frame header in bytes
-const size_t DummyUDPFrameDecoder::get_frame_header_size(void) const
+size_t DummyUDPFrameDecoder::get_frame_header_size(void) const
 {
     return sizeof(DummyUDP::FrameHeader);
 }
@@ -178,7 +178,7 @@ const size_t DummyUDPFrameDecoder::get_frame_header_size(void) const
 //!
 //! \return size of the packet header in bytes.
 //!
-const size_t DummyUDPFrameDecoder::get_packet_header_size(void) const
+size_t DummyUDPFrameDecoder::get_packet_header_size(void) const
 {
     return sizeof(DummyUDP::PacketHeader);
 }

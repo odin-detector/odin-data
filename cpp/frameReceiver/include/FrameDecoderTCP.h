@@ -34,7 +34,7 @@ public:
     virtual ~FrameDecoderTCP() = 0;
 
     virtual void* get_next_message_buffer(void) = 0;
-    virtual const size_t get_next_message_size(void) const = 0;
+    virtual size_t get_next_message_size(void) const = 0;
 
     virtual FrameReceiveState process_message(size_t bytes_received) = 0;
 
