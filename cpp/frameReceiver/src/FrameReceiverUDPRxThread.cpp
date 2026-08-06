@@ -145,7 +145,5 @@ void FrameReceiverUDPRxThread::handle_receive_socket(int recv_socket, int recv_p
                               << frame_decoder_->get_next_payload_buffer()
     );
 
-
     frame_decoder_->process_packet(bytes_received, recv_port, &from_addr);
-
 }
