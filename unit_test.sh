@@ -4,39 +4,55 @@ set -euo pipefail
 
 repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 build_dir="${BUILD_DIR:-${repo_dir}/vscode_build}"
-test_dir="${UNIT_TEST_DIR:-${build_dir}/bin}"
+bin_dir="${TEST_BIN_DIR:-${build_dir}/bin}"
+lib_dir="${TEST_LIB_DIR:-${build_dir}/lib}"
+config_source_dir="${INTEGRATION_CONFIG_DIR:-${build_dir}/test/integrationTest/config}"
 
-if [[ ! -d "${test_dir}" ]]; then
-  echo "Unit-test directory does not exist: ${test_dir}" >&2
+if [[ ! -d "${bin_dir}" ]]; then
+  echo "Test binary directory does not exist: ${bin_dir}" >&2
   exit 1
 fi
 
-tests=()
+receiver_tests=()
 while IFS= read -r test_path; do
-  tests+=("${test_path}")
-done < <(
-  find "${test_dir}" -type f -perm -111 \
-    \( -name 'unit_fr_*' -o -name 'unit_fp_*' \) | sort
-)
+  receiver_tests+=("${test_path}")
+done < <(find "${bin_dir}" -maxdepth 1 -type f -perm -111 -name 'unit_fr_*' | sort)
 
-if [[ ${#tests[@]} -eq 0 ]]; then
-  echo "No unit-test executables were found in ${test_dir}" >&2
+processor_tests=()
+while IFS= read -r test_path; do
+  processor_tests+=("${test_path}")
+done < <(find "${bin_dir}" -maxdepth 1 -type f -perm -111 -name 'unit_fp_*' | sort)
+
+if [[ ${#receiver_tests[@]} -eq 0 ]]; then
+  echo "No frame-receiver unit tests were found in ${bin_dir}" >&2
   exit 1
 fi
 
-log_dir="$(mktemp -d "${TMPDIR:-/tmp}/odin-unit-tests.XXXXXX")"
+if [[ ${#processor_tests[@]} -eq 0 ]]; then
+  echo "No frame-processor unit tests were found in ${bin_dir}" >&2
+  exit 1
+fi
+
+log_dir="$(mktemp -d "${TMPDIR:-/tmp}/odin-tests.XXXXXX")"
 trap 'rm -rf "${log_dir}"' EXIT
 
 failed_tests=()
 failed_statuses=()
 failed_logs=()
+test_count=0
 
-for test_path in "${tests[@]}"; do
-  test_name="$(basename "${test_path}")"
-  test_log="${log_dir}/${test_name}.log"
+run_test()
+{
+  local test_name="$1"
+  shift
 
+  local test_log="${log_dir}/${test_name}.log"
+  local test_status
+
+  test_count=$((test_count + 1))
   echo "==> Running ${test_name}"
-  if "${test_path}" --log_level=test_suite >"${test_log}" 2>&1; then
+
+  if "$@" >"${test_log}" 2>&1; then
     echo "    PASS"
   else
     test_status=$?
@@ -45,11 +61,66 @@ for test_path in "${tests[@]}"; do
     failed_logs+=("${test_log}")
     echo "    FAIL"
   fi
+}
+
+echo "Frame receiver unit tests"
+for test_path in "${receiver_tests[@]}"; do
+  run_test "$(basename "${test_path}")" "${test_path}" --log_level=test_suite
 done
+
+echo
+echo "Frame processor unit tests"
+for test_path in "${processor_tests[@]}"; do
+  run_test "$(basename "${test_path}")" "${test_path}" --log_level=test_suite
+done
+
+echo
+echo "Odin-data frame integration test"
+
+required_integration_files=(
+  "${bin_dir}/odinDataTest"
+  "${bin_dir}/frameReceiver"
+  "${bin_dir}/frameProcessor"
+  "${bin_dir}/frameSimulator"
+  "${bin_dir}/frameTests"
+  "${config_source_dir}/dummyUDP.json"
+  "${config_source_dir}/dummyUDP-fr.json"
+  "${config_source_dir}/dummyUDP-fp.json"
+  "${config_source_dir}/testUDP.json"
+  "${build_dir}/CMakeCache.txt"
+)
+
+for required_file in "${required_integration_files[@]}"; do
+  if [[ ! -e "${required_file}" ]]; then
+    echo "Required integration-test file does not exist: ${required_file}" >&2
+    exit 1
+  fi
+done
+
+configured_prefix="$(sed -n 's/^CMAKE_INSTALL_PREFIX:[^=]*=//p' "${build_dir}/CMakeCache.txt" | head -n 1)"
+if [[ -z "${configured_prefix}" ]]; then
+  echo "Unable to read CMAKE_INSTALL_PREFIX from ${build_dir}/CMakeCache.txt" >&2
+  exit 1
+fi
+
+runtime_dir="${log_dir}/runtime"
+mkdir -p "${runtime_dir}/test_config"
+ln -s "${bin_dir}" "${runtime_dir}/bin"
+ln -s "${lib_dir}" "${runtime_dir}/lib"
+
+for config_name in dummyUDP.json dummyUDP-fr.json dummyUDP-fp.json testUDP.json; do
+  sed "s|${configured_prefix}|${runtime_dir}|g" \
+    "${config_source_dir}/${config_name}" >"${runtime_dir}/test_config/${config_name}"
+done
+
+run_test \
+  "odinDataTest" \
+  "${bin_dir}/odinDataTest" \
+  "--json=${runtime_dir}/test_config/dummyUDP.json"
 
 if [[ ${#failed_tests[@]} -ne 0 ]]; then
   echo
-  echo "${#failed_tests[@]} of ${#tests[@]} unit-test executables failed:"
+  echo "${#failed_tests[@]} of ${test_count} test executables failed:"
 
   for ((index = 0; index < ${#failed_tests[@]}; index++)); do
     echo
@@ -60,4 +131,5 @@ if [[ ${#failed_tests[@]} -ne 0 ]]; then
   exit 1
 fi
 
-echo "All ${#tests[@]} unit-test executables passed."
+echo
+echo "All ${test_count} test executables passed."
