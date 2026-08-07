@@ -23,11 +23,11 @@ install(TARGETS ${LIB_SIMULATOR} DESTINATION lib)
 add_executable(frameSimulator ${APP_SOURCES} FrameSimulatorApp.cpp)
 
 target_sources(frameSimulator ${APP_SOURCES} PRIVATE
-        FrameSimulatorPlugin.cpp
-        FrameSimulatorOption.cpp
-        FrameSimulatorPluginUDP.cpp
-        UDPFrame.cpp
-        Packet.cpp)
+               FrameSimulatorPlugin.cpp
+               FrameSimulatorOption.cpp
+               FrameSimulatorPluginUDP.cpp
+               UDPFrame.cpp
+               Packet.cpp)
 
 target_link_libraries(frameSimulator ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${PCAP_LIBRARY} ${COMMON_LIBRARY})
 

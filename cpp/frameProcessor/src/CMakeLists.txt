@@ -8,19 +8,19 @@ add_definitions(${HDF5_DEFINITIONS})
 add_library(${LIB_PROCESSOR} SHARED ${LIB_SOURCES})
 
 target_sources(${LIB_PROCESSOR} ${LIB_SOURCES} PRIVATE
-                      DataBlock.cpp
-                      DataBlockPool.cpp
-                      EndOfAcquisitionFrame.cpp
-                      FrameProcessorPlugin.cpp
-                      FrameMetaData.cpp
-                      Frame.cpp
-                      SharedBufferFrame.cpp
-                      DataBlockFrame.cpp
-                      MetaMessage.cpp
-                      MetaMessagePublisher.cpp
-                      IFrameCallback.cpp
-                      CallDuration.cpp
-                      WatchdogTimer.cpp )
+              DataBlock.cpp
+              DataBlockPool.cpp
+              EndOfAcquisitionFrame.cpp
+              FrameProcessorPlugin.cpp
+              FrameMetaData.cpp
+              Frame.cpp
+              SharedBufferFrame.cpp
+              DataBlockFrame.cpp
+              MetaMessage.cpp
+              MetaMessagePublisher.cpp
+              IFrameCallback.cpp
+              CallDuration.cpp
+              WatchdogTimer.cpp)
 
 target_link_libraries(${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${COMMON_LIBRARY})
 install(TARGETS ${LIB_PROCESSOR} DESTINATION lib)
