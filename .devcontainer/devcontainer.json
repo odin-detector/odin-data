@@ -1,7 +1,11 @@
 // For format details, see https://containers.dev/implementors/json_reference/
 {
     "name": "odin-data devcontainer",
-    "image": "ghcr.io/odin-detector/odin-data-developer:latest",
+    "build": {
+        "dockerfile": "../Dockerfile",
+        "context": "..",
+        "target": "developer"
+    },
     "remoteEnv": {
         // Allow X11 apps to run inside the container
         "DISPLAY": "${localEnv:DISPLAY}"
@@ -49,5 +53,6 @@
         "source=/dev/shm,target=/dev/shm,type=bind"
     ],
     // After the container is created, install the python project in editable form
-    "postCreateCommand": "pip install $([ -f dev-requirements.txt ] && echo '-c dev-requirements.txt') -e './python[dev]'"
+    "postCreateCommand": "pip install $([ -f dev-requirements.txt ] && echo '-c dev-requirements.txt') -e './python[dev]'",
+    "postStartCommand":  "/workspaces/odin-data/scripts/setup_git.sh"
 }
