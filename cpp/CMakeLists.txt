@@ -11,12 +11,11 @@ setup_coverage()
 add_library(common_flags INTERFACE)
 
 target_compile_options(common_flags INTERFACE
-  -O0
+  -O2
+  -g
   -Wall
   -Wextra
-  #-Werror
 )
-
 
 # Set output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
