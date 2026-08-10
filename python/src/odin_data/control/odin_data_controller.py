@@ -29,10 +29,10 @@ class OdinDataController(object):
         self._name = name
         self._api = 0.1
         self._error = ""
-        self.config_ts = -1
-        self.status_ts = -1
-        self.config_ts_prev = 0
-        self.status_ts_prev = 0
+        self.config_ts:list[int] = [-1] * len(endpoints)
+        self.status_ts:list[int] = [-1] * len(endpoints)
+        self.config_ts_prev:list[int] = [0] * len(endpoints)
+        self.status_ts_prev:list[int] = [0] * len(endpoints)
         self._endpoints = []
         self._command_needs_update: bool = False
         self._config_resposes:list[dict] = [None] * len(endpoints)
@@ -209,12 +209,12 @@ class OdinDataController(object):
                             with_metadata = False
                             # Check if the previous values of the config and status time-stamp matches the latest value.
                             # If they do not match, set 'with_metadata' to True and update the previous time-stamp value with the latest.
-                            if(param_req == IpcTornadoClient.IPC_VAL_REQ_CFG and self.config_ts != self.config_ts_prev):
+                            if(param_req == IpcTornadoClient.IPC_VAL_REQ_CFG and self.config_ts[index] != self.config_ts_prev[index]):
                                 with_metadata = True
-                                self.config_ts_prev = self.config_ts
-                            elif(param_req == IpcTornadoClient.IPC_VAL_STATUS and self.status_ts != self.status_ts_prev):
+                                self.config_ts_prev[index] = self.config_ts[index]
+                            elif(param_req == IpcTornadoClient.IPC_VAL_STATUS and self.status_ts[index] != self.status_ts_prev[index]):
                                 with_metadata = True
-                                self.status_ts_prev = self.status_ts
+                                self.status_ts_prev[index] = self.status_ts[index]
                             msg = client.send_request(param_req, with_metadata)
                             if client.wait_for_response(msg.get_msg_id()):
                                 logging.error(
@@ -229,12 +229,12 @@ class OdinDataController(object):
                     # using the class members status_ts & config_ts variables
                     if IpcTornadoClient.IPC_VAL_STATUS in client.parameters and \
                         client.parameters[IpcTornadoClient.IPC_VAL_STATUS][IpcTornadoClient.STATUS_PARAMS_KEY][IpcTornadoClient.CLIENT_CONNECTED]:
-                        self.status_ts = self._update_params_with_metadata(client.parameters[IpcTornadoClient.IPC_VAL_STATUS],
+                        self.status_ts[index] = self._update_params_with_metadata(client.parameters[IpcTornadoClient.IPC_VAL_STATUS],
                                                                                         index, IpcTornadoClient.STATUS_PARAMS_KEY,
                                                                                         IpcTornadoClient.IPC_VAL_STATUS_METADATA,
                                                                                         IpcTornadoClient.IPC_VAL_STATUS_TS)
                     if IpcTornadoClient.IPC_VAL_CONFIG in client.parameters:
-                        self.config_ts = self._update_params_with_metadata(client.parameters[IpcTornadoClient.IPC_VAL_CONFIG],
+                        self.config_ts[index] = self._update_params_with_metadata(client.parameters[IpcTornadoClient.IPC_VAL_CONFIG],
                                                                                         index, IpcTornadoClient.CONFIG_PARAMS_KEY,
                                                                                         IpcTornadoClient.IPC_VAL_CONFIG_METADATA,
                                                                                         IpcTornadoClient.IPC_VAL_CONFIG_TS)
