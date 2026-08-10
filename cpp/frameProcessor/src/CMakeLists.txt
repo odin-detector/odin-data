@@ -4,31 +4,33 @@ ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK)
 include_directories(${FRAMEPROCESSOR_DIR}/include ${HDF5_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${LOG4CXX_INCLUDE_DIRS}/.. ${ZEROMQ_INCLUDE_DIRS})
 add_definitions(${HDF5_DEFINITIONS})
 
-file(GLOB LIB_SOURCES DataBlock.cpp
-                      DataBlockPool.cpp
-                      EndOfAcquisitionFrame.cpp
-                      FrameProcessorPlugin.cpp
-                      FrameMetaData.cpp
-                      Frame.cpp
-                      SharedBufferFrame.cpp
-                      DataBlockFrame.cpp
-                      MetaMessage.cpp
-                      MetaMessagePublisher.cpp
-                      IFrameCallback.cpp
-                      CallDuration.cpp
-                      WatchdogTimer.cpp )
-
 # Add library for common plugin code
 add_library(${LIB_PROCESSOR} SHARED ${LIB_SOURCES})
+
+target_sources(${LIB_PROCESSOR} ${LIB_SOURCES} PRIVATE
+              DataBlock.cpp
+              DataBlockPool.cpp
+              EndOfAcquisitionFrame.cpp
+              FrameProcessorPlugin.cpp
+              FrameMetaData.cpp
+              Frame.cpp
+              SharedBufferFrame.cpp
+              DataBlockFrame.cpp
+              MetaMessage.cpp
+              MetaMessagePublisher.cpp
+              IFrameCallback.cpp
+              CallDuration.cpp
+              WatchdogTimer.cpp)
+
 target_link_libraries(${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${COMMON_LIBRARY})
 install(TARGETS ${LIB_PROCESSOR} DESTINATION lib)
 
-file(GLOB APP_SOURCES FrameProcessorController.cpp
-                      SharedMemoryController.cpp
-                      SharedMemoryParser.cpp
-                      SocketHandler.cpp )
+add_executable(frameProcessor)
 
-add_executable(frameProcessor ${APP_SOURCES} FrameProcessorApp.cpp)
+target_sources(frameProcessor PRIVATE
+               FrameProcessorController.cpp
+               SharedMemoryController.cpp
+               FrameProcessorApp.cpp)
 
 target_link_libraries(frameProcessor ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES} ${COMMON_LIBRARY})
 if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
