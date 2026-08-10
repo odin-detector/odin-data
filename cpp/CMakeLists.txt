@@ -11,7 +11,7 @@ setup_coverage()
 add_library(common_flags INTERFACE)
 
 target_compile_options(common_flags INTERFACE
-  -O2
+  -O2 -g
 )
 
 
