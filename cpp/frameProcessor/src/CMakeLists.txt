@@ -25,11 +25,12 @@ target_sources(${LIB_PROCESSOR} ${LIB_SOURCES} PRIVATE
 target_link_libraries(${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${COMMON_LIBRARY})
 install(TARGETS ${LIB_PROCESSOR} DESTINATION lib)
 
-add_executable(frameProcessor ${APP_SOURCES} FrameProcessorApp.cpp)
+add_executable(frameProcessor)
 
 target_sources(frameProcessor PRIVATE
                FrameProcessorController.cpp
-               SharedMemoryController.cpp)
+               SharedMemoryController.cpp
+               FrameProcessorApp.cpp)
 
 target_link_libraries(frameProcessor ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES} ${COMMON_LIBRARY})
 if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
