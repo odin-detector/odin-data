@@ -1,10 +1,10 @@
 // For format details, see https://containers.dev/implementors/json_reference/
 {
     "name": "odin-data devcontainer",
-    "build" : {
-        "dockerfile" : "../Dockerfile",
-        "context" : "..",
-        "target" : "developer"
+    "build": {
+        "dockerfile": "../Dockerfile",
+        "context": "..",
+        "target": "developer"
     },
     "remoteEnv": {
         // Allow X11 apps to run inside the container
