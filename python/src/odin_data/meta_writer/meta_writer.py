@@ -171,12 +171,12 @@ class MetaWriter(object):
 
         try:
             self._hdf5_file = h5py.File(file_path, "w", libver="latest")
-        except IOError as error:
+        except OSError as error:
             self._logger.error(
                 "%s | Failed to create file:\n%s: %s",
                 self._name,
-                error.__class__.__name__,
-                error.message,
+                type(error).__name__,
+                error,
             )
             return
 
