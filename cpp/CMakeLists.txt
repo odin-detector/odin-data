@@ -3,9 +3,6 @@ cmake_minimum_required(VERSION 3.22)
 
 # Project name
 project(OdinData)
-# set(CMAKE_CXX_STANDARD 17)
-# set(CMAKE_CXX_STANDARD_REQUIRED ON)
-# set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(${CMAKE_SOURCE_DIR}/cmake/CodeCoverage.cmake)
 setup_coverage()
@@ -39,8 +36,6 @@ add_compile_options(
   # -Wold-style-cast
   # -Wzero-as-null-pointer-constant
   # -Wuseless-cast
-
-  -O0
 )
 
 # Set output directories
