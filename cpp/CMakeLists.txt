@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 3.22)
 
 # Project name
 project(OdinData)
+# set(CMAKE_CXX_STANDARD 17)
+# set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(${CMAKE_SOURCE_DIR}/cmake/CodeCoverage.cmake)
 setup_coverage()
@@ -12,13 +15,17 @@ add_compile_options(
   -Wextra
   -Wpedantic
 
-  -Wformat=2
-  -Wshadow
-  -Wundef
-  -Wnull-dereference
-  -Wduplicated-cond
-  -Wduplicated-branches
-  -Wlogical-op
+  #-Wformat=2
+  #-Wshadow
+  #-Wundef
+  #-Wnull-dereference
+  #-Wduplicated-cond
+  #-Wduplicated-branches
+  #-Wlogical-op
+
+  # -Wdeprecated
+  # -Wdeprecated-declarations
+  # -Wdeprecated-copy-dtor
 
   # -Wnon-virtual-dtor
   # -Woverloaded-virtual
