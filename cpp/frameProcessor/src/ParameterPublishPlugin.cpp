@@ -16,8 +16,8 @@ const std::string ParameterPublishPlugin::DATA_PARAMETERS = "parameters";
  * The constructor sets up logging used within the class.
  */
 ParameterPublishPlugin::ParameterPublishPlugin() :
-    publish_channel_(ZMQ_PUB),
-    channel_endpoint_("")
+    channel_endpoint_(""),
+    publish_channel_(ZMQ_PUB)
 {
     // Setup logging for the class
     logger_ = Logger::getLogger("FP.ParameterPublishPlugin");

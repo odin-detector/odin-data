@@ -80,16 +80,16 @@ FileWriterPlugin::FileWriterPlugin() :
     concurrent_rank_(0),
     frames_per_block_(1),
     blocks_per_file_(0),
-    first_file_index_(0),
-    use_file_numbering_(true),
-    file_postfix_(""),
-    file_extension_("h5"),
     use_earliest_hdf5_(false),
     alignment_threshold_(1),
     alignment_value_(1),
     timeout_period_(0),
     timeout_thread_running_(true),
-    timeout_thread_(boost::bind(&FileWriterPlugin::run_close_file_timeout, this))
+    timeout_thread_(boost::bind(&FileWriterPlugin::run_close_file_timeout, this)),
+    first_file_index_(0),
+    use_file_numbering_(true),
+    file_postfix_(""),
+    file_extension_("h5")
 {
     std::string prefix = FileWriterPlugin::CONFIG_PROCESS + '/';
     add_config_param_metadata(
@@ -483,7 +483,7 @@ void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
         if (iter->second.frame_dimensions.size() > 0) {
             std::string dimParamName
                 = get_name() + "/dataset/" + iter->first + '/' + FileWriterPlugin::CONFIG_DATASET_DIMS + "[]";
-            for (int index = 0; index < iter->second.frame_dimensions.size(); index++) {
+            for (uint32_t index = 0; index < iter->second.frame_dimensions.size(); index++) {
                 reply.set_param(dimParamName, (int)iter->second.frame_dimensions[index]);
             }
         }
@@ -491,7 +491,7 @@ void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
         if (iter->second.chunks.size() > 0) {
             std::string chunkParamName
                 = get_name() + "/dataset/" + iter->first + '/' + FileWriterPlugin::CONFIG_DATASET_CHUNKS + "[]";
-            for (int index = 0; index < iter->second.chunks.size(); index++) {
+            for (uint32_t index = 0; index < iter->second.chunks.size(); index++) {
                 reply.set_param(chunkParamName, (int)iter->second.chunks[index]);
             }
         }
@@ -756,7 +756,7 @@ void FileWriterPlugin::configure_dataset(
         // Set first chunk dimension (n dimension) to a single frame or item
         chunks[0] = 1;
         // Set the remaining chunk dimensions to the same as the dataset dimensions
-        for (int index = 0; index < dset.frame_dimensions.size(); index++) {
+        for (uint32_t index = 0; index < dset.frame_dimensions.size(); index++) {
             chunks[index + 1] = dset.frame_dimensions[index];
         }
         dset.chunks = chunks;

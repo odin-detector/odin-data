@@ -17,14 +17,14 @@ using namespace FrameReceiver;
 
 DummyTCPFrameDecoder::DummyTCPFrameDecoder() :
     FrameDecoderTCP(),
+    frames_dropped_(0),
+    frames_sent_(0),
+    read_so_far_(0),
     current_frame_number_(DummyTcpFrameDecoderDefaults::frame_number),
     current_frame_buffer_id_(DummyTcpFrameDecoderDefaults::buffer_id),
     header_size_(DummyTcpFrameDecoderDefaults::header_size),
     frame_size_(DummyTcpFrameDecoderDefaults::max_size),
     num_buffers_(DummyTcpFrameDecoderDefaults::num_buffers),
-    frames_dropped_(0),
-    frames_sent_(0),
-    read_so_far_(0),
     receive_state_(FrameDecoder::FrameReceiveStateEmpty)
 {
     this->logger_ = Logger::getLogger("FR.DummyTCPFrameDecoder");

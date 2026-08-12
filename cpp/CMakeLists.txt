@@ -7,14 +7,10 @@ project(OdinData)
 include(${CMAKE_SOURCE_DIR}/cmake/CodeCoverage.cmake)
 setup_coverage()
 
-# Create "compiler flags" target
-add_library(common_flags INTERFACE)
-
-target_compile_options(common_flags INTERFACE
-  -O2
-  -g
+add_compile_options(
   -Wall
-  -Wextra
+  #-Wextra
+  -O0
 )
 
 # Set output directories

@@ -23,7 +23,7 @@ FROM common AS developer
 RUN add-apt-repository -y ppa:deadsnakes/ppa && \
     apt-get update -y && apt-get install -y --no-install-recommends \
     # General build
-    build-essential cmake git \
+    build-essential cmake git ninja-build ccache \
     # odin-data C++ dependencies
     libblosc-dev libboost-all-dev libhdf5-dev liblog4cxx-dev libpcap-dev libczmq-dev \
     # python
