@@ -84,16 +84,16 @@ SharedBufferManager::~SharedBufferManager()
     }
 }
 
-const size_t SharedBufferManager::get_manager_id(void) const
+size_t SharedBufferManager::get_manager_id(void) const
 {
     return manager_hdr_->manager_id;
 }
-const size_t SharedBufferManager::get_num_buffers(void) const
+size_t SharedBufferManager::get_num_buffers(void) const
 {
     return manager_hdr_->num_buffers;
 }
 
-const size_t SharedBufferManager::get_buffer_size(void) const
+size_t SharedBufferManager::get_buffer_size(void) const
 {
     return manager_hdr_->buffer_size;
 }

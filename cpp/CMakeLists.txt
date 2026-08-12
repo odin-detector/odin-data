@@ -9,7 +9,30 @@ setup_coverage()
 
 add_compile_options(
   -Wall
-  #-Wextra
+  -Wextra
+  -Wpedantic
+
+  -Wformat=2
+  -Wshadow
+  -Wundef
+  -Wnull-dereference
+  -Wduplicated-cond
+  -Wduplicated-branches
+  -Wlogical-op
+
+  # -Wnon-virtual-dtor
+  # -Woverloaded-virtual
+  # -Wsuggest-override
+
+  # -Wconversion
+  # -Wsign-conversion
+  # -Wcast-qual
+  # -Wcast-align=strict
+
+  # -Wold-style-cast
+  # -Wzero-as-null-pointer-constant
+  # -Wuseless-cast
+
   -O0
 )
 

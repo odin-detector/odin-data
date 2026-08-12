@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vector>
 
-int main(int argc, char* argv[])
+int main()
 {
     hsize_t CHUNK_NX = 704;
     hsize_t CHUNK_NY = 1484;

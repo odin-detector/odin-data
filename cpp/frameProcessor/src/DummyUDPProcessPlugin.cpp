@@ -96,7 +96,7 @@ std::string DummyUDPProcessPlugin::get_version_long()
  * \param[in] config - Reference to the configuration IpcMessage object.
  * \param[out] reply - Reference to the reply IpcMessage object.
  */
-void DummyUDPProcessPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
+void DummyUDPProcessPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& /* reply */)
 {
 
     if (config.has_param(DummyUDPProcessPlugin::CONFIG_IMAGE_WIDTH)) {
@@ -140,7 +140,7 @@ void DummyUDPProcessPlugin::requestConfiguration(OdinData::IpcMessage& reply)
  * \param[in] config - String containing the command to execute.
  * \param[out] reply - Reference to the reply IpcMessage object.
  */
-void DummyUDPProcessPlugin::execute(const std::string& command, OdinData::IpcMessage& reply)
+void DummyUDPProcessPlugin::execute(const std::string& command, OdinData::IpcMessage& /* reply */)
 {
     if (command == DummyUDPProcessPlugin::EXECUTE_PRINT) {
         LOG4CXX_INFO(logger_, "Image width is " << image_width_);

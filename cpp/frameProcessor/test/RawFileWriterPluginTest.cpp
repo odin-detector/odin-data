@@ -27,7 +27,7 @@ public:
         rfw_plugin.set_name("rfwplugin");
     }
 
-    static bool is_not_critical(const std::runtime_error& er)
+    static bool is_not_critical(const std::runtime_error& /* er */)
     {
         return true;
     }

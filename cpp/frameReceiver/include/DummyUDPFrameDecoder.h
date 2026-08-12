@@ -50,7 +50,7 @@ public:
     size_t get_packet_header_size(void) const;
     void process_packet_header(size_t bytes_received, int port, struct sockaddr_in* from_addr);
 
-    inline const bool trailer_mode(void) const
+    inline bool trailer_mode(void) const
     {
         return false;
     };

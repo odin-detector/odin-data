@@ -376,8 +376,7 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
         }
 
         // Check to see if we are being told how many frames to write
-        if (config.has_param(FileWriterPlugin::CONFIG_FRAMES)
-            && config.get_param<size_t>(FileWriterPlugin::CONFIG_FRAMES) >= 0) {
+        if (config.has_param(FileWriterPlugin::CONFIG_FRAMES)) {
             size_t totalFrames = config.get_param<size_t>(FileWriterPlugin::CONFIG_FRAMES);
             next_acquisition_->total_frames_ = totalFrames;
             next_acquisition_->frames_to_write_ = calc_num_frames(totalFrames);
@@ -511,7 +510,7 @@ void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
  * \param[in] config - IpcMessage containing configuration data.
  * \param[out] reply - Response IpcMessage.
  */
-void FileWriterPlugin::configure_process(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
+void FileWriterPlugin::configure_process(OdinData::IpcMessage& config, OdinData::IpcMessage& /* reply */)
 {
     // Check for process number
     if (config.has_param(FileWriterPlugin::CONFIG_PROCESS_NUMBER)) {
@@ -729,7 +728,7 @@ void FileWriterPlugin::configure_file(OdinData::IpcMessage& config, OdinData::Ip
 void FileWriterPlugin::configure_dataset(
     const std::string& dataset_name,
     OdinData::IpcMessage& config,
-    OdinData::IpcMessage& reply
+    OdinData::IpcMessage& /* reply */
 )
 {
     LOG4CXX_DEBUG_LEVEL(1, logger_, "Configuring dataset [" << dataset_name << "]");

@@ -51,7 +51,7 @@ void OffsetAdjustmentPlugin::process_frame(boost::shared_ptr<Frame> frame)
  * \param[in] config - IpcMessage containing configuration data.
  * \param[out] reply - Response IpcMessage.
  */
-void OffsetAdjustmentPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
+void OffsetAdjustmentPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& /* reply */)
 {
     try {
         // Check if we are setting the offset adjustment

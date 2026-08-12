@@ -45,7 +45,7 @@ DummyTCPFrameDecoder::~DummyTCPFrameDecoder()
  * \param[in] logger The logger
  * \param[in] config_msg The config parameters to initialise with
  */
-void DummyTCPFrameDecoder::init(LoggerPtr& logger, OdinData::IpcMessage& config_msg)
+void DummyTCPFrameDecoder::init(LoggerPtr& /* logger */, OdinData::IpcMessage& /* config_msg */)
 {
 }
 
