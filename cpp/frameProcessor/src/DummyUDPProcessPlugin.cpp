@@ -96,7 +96,7 @@ std::string DummyUDPProcessPlugin::get_version_long()
  * \param[in] config - Reference to the configuration IpcMessage object.
  * \param[out] reply - Reference to the reply IpcMessage object.
  */
-void DummyUDPProcessPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
+void DummyUDPProcessPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& /* reply */)
 {
 
     if (config.has_param(DummyUDPProcessPlugin::CONFIG_IMAGE_WIDTH)) {
@@ -140,7 +140,7 @@ void DummyUDPProcessPlugin::requestConfiguration(OdinData::IpcMessage& reply)
  * \param[in] config - String containing the command to execute.
  * \param[out] reply - Reference to the reply IpcMessage object.
  */
-void DummyUDPProcessPlugin::execute(const std::string& command, OdinData::IpcMessage& reply)
+void DummyUDPProcessPlugin::execute(const std::string& command, OdinData::IpcMessage& /* reply */)
 {
     if (command == DummyUDPProcessPlugin::EXECUTE_PRINT) {
         LOG4CXX_INFO(logger_, "Image width is " << image_width_);
@@ -291,7 +291,7 @@ void DummyUDPProcessPlugin::process_lost_packets(boost::shared_ptr<Frame>& frame
         char* payload_ptr = static_cast<char*>(frame->get_data_ptr()) + sizeof(DummyUDP::FrameHeader);
 
         // Loop over all packets in frame
-        for (int packet_idx = 0; packet_idx < hdr_ptr->total_packets_expected; packet_idx++) {
+        for (uint32_t packet_idx = 0; packet_idx < hdr_ptr->total_packets_expected; packet_idx++) {
             // If header reports packet missing, zero out the packet
             if (hdr_ptr->packet_state[packet_idx] == 0) {
                 LOG4CXX_DEBUG(logger_, "Missing packet number " << packet_idx);

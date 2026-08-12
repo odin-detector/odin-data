@@ -80,7 +80,7 @@ private:
     int m_socket;
 
     // Used by send_packet to send each frame to the correct port
-    mutable int curr_port_index;
+    mutable uint64_t curr_port_index;
     mutable int curr_frame;
 
     pcap_t* m_handle;

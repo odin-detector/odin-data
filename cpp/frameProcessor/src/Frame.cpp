@@ -9,12 +9,12 @@ namespace FrameProcessor {
  * @param image_offset - between start of data memory and image
  */
 Frame::Frame(const FrameMetaData& meta_data, const size_t& data_size, const int& image_offset) :
+    logger_(log4cxx::Logger::getLogger("FP.Frame")),
     meta_data_(meta_data),
     data_size_(data_size),
-    image_offset_(image_offset),
     image_size_(data_size - image_offset),
-    outer_chunk_size_(1),
-    logger_(log4cxx::Logger::getLogger("FP.Frame"))
+    image_offset_(image_offset),
+    outer_chunk_size_(1)
 {
 }
 
@@ -94,9 +94,8 @@ void Frame::set_data_size(size_t size)
 }
 
 /** Return the frame number
-/** Return the frame number
-* @return frame frame number
-*/
+ *  @return frame frame number
+ * */
 long long Frame::get_frame_number() const
 {
     return this->meta_data_.get_frame_number();

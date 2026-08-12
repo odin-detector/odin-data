@@ -29,6 +29,9 @@
             ]
         }
     },
+    "containerEnv": {
+        "CCACHE_DIR": "/ccache"
+    },
     // For docker, VSCODE_REMOTE_USER must be set to your username. You will run with
     // full sudo rights. For podman, it should be left blank. You will run as root
     // inside, but host mounts will be owned by your user id and permissions will be
@@ -50,6 +53,8 @@
     "workspaceMount": "source=${localWorkspaceFolder}/..,target=/workspaces,type=bind",
     "mounts": [
         // Mount /dev/shm for odin-data applications to use
+        "source=odin-data-build,target=/workspaces/odin-data/vscode_build,type=volume",
+        "source=odin-data-ccache,target=/ccache,type=volume",
         "source=/dev/shm,target=/dev/shm,type=bind"
     ],
     // After the container is created, install the python project in editable form

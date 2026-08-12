@@ -1,12 +1,16 @@
 {
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
-    "cmake.generator": "Unix Makefiles",
+    "cmake.generator": "Ninja",
     "cmake.sourceDirectory": "${workspaceFolder}/cpp",
     "cmake.buildDirectory": "${workspaceFolder}/vscode_build",
     "cmake.installPrefix": "/odin",
+    "cmake.configureSettings": {
+        "CMAKE_CXX_COMPILER_LAUNCHER": "ccache"
+    },
     "editor.codeActionsOnSave": {
         "source.organizeImports": "explicit"
     },
+
     "files.insertFinalNewline": true,
     "[python]": {
         "editor.defaultFormatter": "charliermarsh.ruff",

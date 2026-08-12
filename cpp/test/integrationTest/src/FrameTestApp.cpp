@@ -35,16 +35,6 @@ namespace po = boost::program_options;
 #include "DebugLevelLogger.h"
 #include "logging.h"
 
-/** Check that str contains suffix
- * /param[in] str - string to test
- * /param[in] suffix - test suffix
- * /return true if suffix found; else false
- */
-static bool has_suffix(const std::string& str, const std::string& suffix)
-{
-    return str.size() >= suffix.size() && str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
-}
-
 /** Parse command line arguments
  * /param[in] argc - argument count; number of arguments to parse
  * /param[in] argv - one-dimensional string array of command line arguments
@@ -149,11 +139,11 @@ int main(int argc, char* argv[])
             sleep(sleeptime);
         }
 
-        for (int i = 0; i < processes.size(); i++) {
+        for (uint32_t i = 0; i < processes.size(); i++) {
             processes[i]->end();
         }
 
-        for (int j = 0; j < utilities.size(); j++) {
+        for (uint32_t j = 0; j < utilities.size(); j++) {
             int status = utilities[j]->exit_status();
             if (status != 0)
                 return status;

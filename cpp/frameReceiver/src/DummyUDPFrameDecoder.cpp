@@ -88,9 +88,9 @@ void DummyUDPFrameDecoder::init(LoggerPtr& logger, OdinData::IpcMessage& config_
 {
 
     // Pass the configuration message to the base class decoder
-    FrameDecoderUDP::init(logger_, config_msg);
+    FrameDecoderUDP::init(logger, config_msg);
 
-    LOG4CXX_DEBUG_LEVEL(2, logger_, "Got decoder config message: " << config_msg.encode());
+    LOG4CXX_DEBUG_LEVEL(2, logger, "Got decoder config message: " << config_msg.encode());
 
     // Determine the number of UDP packets per frame if present in the config message, checking that
     // it doesn't exceed the maximum permitted
@@ -154,7 +154,7 @@ void DummyUDPFrameDecoder::request_configuration(const std::string param_prefix,
 //!
 //! \return size of frame buffer in bytes
 //!
-const size_t DummyUDPFrameDecoder::get_frame_buffer_size(void) const
+size_t DummyUDPFrameDecoder::get_frame_buffer_size(void) const
 {
     size_t frame_buffer_size = get_frame_header_size() + (udp_packets_per_frame_ * udp_packet_size_);
     return frame_buffer_size;
@@ -166,7 +166,7 @@ const size_t DummyUDPFrameDecoder::get_frame_buffer_size(void) const
 //! DummyUDP frame header.
 //!
 //! \return size of the frame header in bytes
-const size_t DummyUDPFrameDecoder::get_frame_header_size(void) const
+size_t DummyUDPFrameDecoder::get_frame_header_size(void) const
 {
     return sizeof(DummyUDP::FrameHeader);
 }
@@ -178,7 +178,7 @@ const size_t DummyUDPFrameDecoder::get_frame_header_size(void) const
 //!
 //! \return size of the packet header in bytes.
 //!
-const size_t DummyUDPFrameDecoder::get_packet_header_size(void) const
+size_t DummyUDPFrameDecoder::get_packet_header_size(void) const
 {
     return sizeof(DummyUDP::PacketHeader);
 }
@@ -207,7 +207,7 @@ void* DummyUDPFrameDecoder::get_packet_header_buffer(void)
 //! \param[in] port - UDP port packet header was received on
 //! \param[in] from_addr - socket address structure with details of source packet
 //!
-void DummyUDPFrameDecoder::process_packet_header(size_t bytes_received, int port, struct sockaddr_in* from_addr)
+void DummyUDPFrameDecoder::process_packet_header(size_t /* bytes_received */, int /* port */, struct sockaddr_in* /* from_addr */)
 {
 
     // Extract fields from the packet header
@@ -339,7 +339,7 @@ size_t DummyUDPFrameDecoder::get_next_payload_size(void) const
 //! \return current frame receive state
 //!
 FrameDecoder::FrameReceiveState
-DummyUDPFrameDecoder::process_packet(size_t bytes_received, int port, struct sockaddr_in* from_addr)
+DummyUDPFrameDecoder::process_packet(size_t /*bytes_received*/, int /* port */, struct sockaddr_in* /* from_addr */)
 {
     FrameDecoder::FrameReceiveState frame_state = FrameDecoder::FrameReceiveStateIncomplete;
 

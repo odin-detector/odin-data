@@ -16,9 +16,9 @@ const std::string RawFileWriterPlugin::CONFIG_ENABLED = "writing_enabled";
 const std::string RawFileWriterPlugin::STATUS_DROPPED_FRAMES = "dropped_frames";
 
 RawFileWriterPlugin::RawFileWriterPlugin() :
+    enabled_ { false },
     file_path_ { "" },
-    dropped_frames_ { 0 },
-    enabled_ { false }
+    dropped_frames_ { 0 }
 {
     // Setup logging for the class
     logger_ = Logger::getLogger("FP.RawFileWriterPlugin");
@@ -68,7 +68,7 @@ void RawFileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame)
  * @param config
  * @param reply
  */
-void RawFileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
+void RawFileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& /* reply */)
 {
     // Protect this method
     std::lock_guard<std::mutex> lock { mutex_ };

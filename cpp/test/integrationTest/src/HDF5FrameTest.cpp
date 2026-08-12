@@ -80,7 +80,7 @@ public:
 
         BOOST_FOREACH (boost::property_tree::ptree::value_type& vc, ptree.get_child("Test.data"))
             BOOST_CHECK_EQUAL(data_out[std::atoi(vc.first.c_str())], ptree.get<T>("Test.data." + vc.first));
-    };
+    }
 
     ~HDF5FrameTest()
     {
@@ -98,8 +98,7 @@ BOOST_AUTO_TEST_CASE(HDF5Frame_size)
     const int ndims = H5Sget_simple_extent_ndims(space);
 
     hsize_t dims[ndims];
-    int ndms = H5Sget_simple_extent_dims(space, dims, NULL);
-
+    H5Sget_simple_extent_dims(space, dims, NULL);
     int frames = dims[0];
 
     if (boost::optional<int> t_dims = ptree.get_optional<int>("Test.dimensions"))

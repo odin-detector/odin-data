@@ -347,7 +347,6 @@ BOOST_AUTO_TEST_CASE(TestIpcMessageCreationSpeed)
     BOOST_CHECK_NO_THROW(for (int i = 0; i < numLoops; i++) {
         OdinData::IpcMessage simpleMessage(OdinData::IpcMessage::MsgTypeCmd, OdinData::IpcMessage::MsgValCmdStatus);
         simpleMessage.set_param<int>("loopParam", i);
-        const char* encodedMsg = simpleMessage.encode();
     });
 
     gettime(&end);

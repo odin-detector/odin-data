@@ -7,6 +7,37 @@ project(OdinData)
 include(${CMAKE_SOURCE_DIR}/cmake/CodeCoverage.cmake)
 setup_coverage()
 
+add_compile_options(
+  -Wall
+  -Wextra
+  -Wpedantic
+
+  #-Wformat=2
+  #-Wshadow
+  #-Wundef
+  #-Wnull-dereference
+  #-Wduplicated-cond
+  #-Wduplicated-branches
+  #-Wlogical-op
+
+  # -Wdeprecated
+  # -Wdeprecated-declarations
+  # -Wdeprecated-copy-dtor
+
+  # -Wnon-virtual-dtor
+  # -Woverloaded-virtual
+  # -Wsuggest-override
+
+  # -Wconversion
+  # -Wsign-conversion
+  # -Wcast-qual
+  # -Wcast-align=strict
+
+  # -Wold-style-cast
+  # -Wzero-as-null-pointer-constant
+  # -Wuseless-cast
+)
+
 # Set output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -158,7 +189,7 @@ configure_file(${COMMON_DIR}/include/version.h.in "${CMAKE_BINARY_DIR}/include/v
 include_directories(${CMAKE_BINARY_DIR}/include)
 
 # Add common/include directory to include path
-include_directories(${COMMON_DIR}/include)
+include_directories(SYSTEM ${COMMON_DIR}/include)
 
 # Add the cmake subdirectory so that CMake finders are installed
 add_subdirectory(cmake)
