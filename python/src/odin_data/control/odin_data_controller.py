@@ -14,29 +14,57 @@ from odin.adapters.parameter_tree import ParameterAccessor, ParameterTree
 from odin_data.control.ipc_tornado_client import IpcTornadoClient
 
 
-def setter_func(tornado_client:IpcTornadoClient, path: list, value):
-    if(value is not None):
+def setter_func(tornado_client: IpcTornadoClient, path: list, value):
+    """
+    Send a configuration message to a C++ odin-data application with the parameter name
+    specified by the path and the value set to value
+
+    :param tornado_client: Client connection to C++ odin-data application.
+    :param path: List of path components of the configuration parameter to set.
+    :param value: New value of the configuration parameter.
+    """
+    if value is not None:
         tornado_client.send_configuration({path[-1], value})
 
+
 def getter_func(paramTree: dict, path: list):
+    """
+    Walks down through the `paramTree` dict by following a sequence of keys specified in `path`.
+    Each element of `path` is used to index into the current level, descending one level per key.
+
+    :param paramTree: The dictionary to search.
+    :param path: Sequence of keys used to walk down through the dictionary.
+    :return: The value found at the given path.
+    """
     return reduce(lambda d, key: d[key], path, paramTree)
+
 
 class OdinDataController(object):
     def __init__(self, name, endpoints, update_interval=0.5):
+        """
+        Initialise an OdinDataController object.  Record the client connection endpoints and
+        set up corresponding `IpcTornadoClient`s for each endpoint.  Set up the initial `ParameterTree`
+        for the controller and create a status thread for continual monitoring of the client
+        applications status and configuration.
+
+        :param name: Set the name of this controller object.
+        :param endpoints: A list of endpoint strings for clients in the form `<ip_address>:<port>`.
+        :param update_interval: The status update interval in seconds.
+        """
         self._clients = []
         self._client_connections = []
         self._update_interval = update_interval
         self._name = name
         self._api = 0.1
         self._error = ""
-        self.config_ts:list[int] = [-1] * len(endpoints)
-        self.status_ts:list[int] = [-1] * len(endpoints)
-        self.config_ts_prev:list[int] = [0] * len(endpoints)
-        self.status_ts_prev:list[int] = [0] * len(endpoints)
+        self.config_ts: list[int] = [-1] * len(endpoints)
+        self.status_ts: list[int] = [-1] * len(endpoints)
+        self.config_ts_prev: list[int] = [0] * len(endpoints)
+        self.status_ts_prev: list[int] = [0] * len(endpoints)
         self._endpoints = []
         self._command_needs_update: bool = False
-        self._config_resposes:list[dict] = [None] * len(endpoints)
-        self._status_resposes:list[dict] = [None] * len(endpoints)
+        self._config_resposes: list[dict] = [None] * len(endpoints)
+        self._status_resposes: list[dict] = [None] * len(endpoints)
 
         for arg in endpoints.split(","):
             arg = arg.strip()
@@ -64,6 +92,12 @@ class OdinDataController(object):
         self._status_thread.start()
 
     def setup_parameter_tree(self):
+        """
+        Builds the initial `ParameterTree` dictionary for this `OdinDataController`.  Adds top-level
+        information including the API version and module name, as well as the client list.  Then
+        for each connected client `status`, `config`, and `command` dictionaries are added.  These are
+        all empty at this stage, and are filled by introspecting the client applications once connected.
+        """
         self._tree = {
             "api": (lambda: self._api, None, {}),
             "module": (lambda: self._name, None, {}),
@@ -84,11 +118,17 @@ class OdinDataController(object):
             }
 
     def set_error(self, err):
-        # Record the error message into the status
+        """
+        Record the error message into the status of this controller's `ParameterTree`.
+
+        :param err: The error message to set.
+        """
         self._error = err
 
     def clear_error(self):
-        # Clear the error message out of the status dict
+        """
+        Clear the error message out of the status of this controller's `ParameterTree`.
+        """
         self._error = ""
 
     def get(self, path, meta):
@@ -99,37 +139,67 @@ class OdinDataController(object):
         :param meta: Should the ParameterTree return the meta data associated with the value
         :return: dict object containing the value and meta data if requested
         """
-        return self._params.get(path, meta) # ParameterTree.get() returns the value in the cache
+        return self._params.get(
+            path, meta
+        )  # ParameterTree.get() returns the value in the cache
 
     def put(self, path, value):
+        """
+        Sets `value` at the provided `path` on the internal `ParameterTree`.  This will result
+        in a callback triggering through the `setter_func` module function and send the value
+        to the underlying C++ applications.
+
+        :params path: URI path of the parameter to set.
+        :param value: Value to set.
+        """
         self._params.set(path, value)
         # After all config processing has completed, execute queued commands
         # self.execute_queued() # Still necessary??
-    
-    def recursive_splice(self, index:int, resp_type:str, path:list, params_node:dict, metadata:dict):
+
+    def recursive_splice(
+        self, index: int, resp_type: str, path: list, params_node: dict, metadata: dict
+    ):
+        """
+        Recursively walks the supplied `params_node` dictionary, and for each leaf value looks
+        up matching metadata and builds a `(getter, setter, metadata)` tuple suitable for the
+        `ParameterTree`.  A setter is only added when the access mode of the `metadata` is "rw".
+
+        :param index: The index of the IpcTornadoClient object.
+        :param resp_type: String to indicate if it is a STATUS/CONFIG response.
+        :param params_node: Config/Status parameters dictionary.
+        :param metadata: Config/Status parameter metadata dictionary.
+        :return: tuple of `(getter, setter, metadata)`
+        """
         if isinstance(params_node, dict):
             return {
-                k: self.recursive_splice(index, resp_type, path + [k], v, metadata) for k, v in params_node.items()
+                k: self.recursive_splice(index, resp_type, path + [k], v, metadata)
+                for k, v in params_node.items()
             }
         else:
             try:
                 param_metadata = reduce(lambda d, key: d[key], path, metadata)
                 setter = None
-                if(resp_type == IpcTornadoClient.CONFIG_PARAMS_KEY):
+                if resp_type == IpcTornadoClient.CONFIG_PARAMS_KEY:
                     getter = partial(getter_func, self._config_resposes[index], path)
                 else:
                     getter = partial(getter_func, self._status_resposes[index], path)
                 metadata = dict(param_metadata)
-                if(metadata["access_mode"] == "rw"): # has to be a configuration parameter! So we assign a setter!
+                if (
+                    metadata["access_mode"] == "rw"
+                ):  # has to be a configuration parameter! So we assign a setter!
                     setter = partial(setter_func, self._clients[index], path)
-                metadata.pop("access_mode", None) # pop "access_mode"
-                metadata.pop(ParameterAccessor.AUTO_METADATA_FIELDS[0], None) # pop "type"
+                metadata.pop("access_mode", None)  # pop "access_mode"
+                metadata.pop(
+                    ParameterAccessor.AUTO_METADATA_FIELDS[0], None
+                )  # pop "type"
                 return (getter, setter, metadata)
             except (KeyError, TypeError):
                 # Safe fallback: keeps the data, flags missing metadata
                 return (params_node, None)
 
-    def splice_params_metadata(self, index, resp_type:str, params:dict, metadata:dict):
+    def splice_params_metadata(
+        self, index, resp_type: str, params: dict, metadata: dict
+    ):
         """
         Recursive function to append metadata of each parameter to it's value together in a tuple.
         This is the format the ParameterTree expects it.
@@ -138,11 +208,18 @@ class OdinDataController(object):
         params_node - Config/Status Parameters dictionary.
         metadata - Config/Status Parameter-metadata dictionary.
         """
-        path = [] # path - the full path of the parameter is a list format.
+        path = []  # path - the full path of the parameter is a list format.
         params = self.recursive_splice(index, resp_type, path, params, metadata)
         return params
 
-    def _update_params_with_metadata(self, value_dict:dict, index:int, param_key:str, metadata_key:str, metadata_ts_key:str):
+    def _update_params_with_metadata(
+        self,
+        value_dict: dict,
+        index: int,
+        param_key: str,
+        metadata_key: str,
+        metadata_ts_key: str,
+    ):
         """
         dict - The dictionary containing the status or config_request response.
         index - The index of the IpcClient which received this response. This is used as a key in the ParameterTree
@@ -153,22 +230,22 @@ class OdinDataController(object):
         resp = None
         response_ts_ver = 0
         pt_string = ""
-        if(param_key in value_dict):
+        if param_key in value_dict:
             resp = value_dict[param_key]
-            if(param_key == IpcTornadoClient.CONFIG_PARAMS_KEY):
+            if param_key == IpcTornadoClient.CONFIG_PARAMS_KEY:
                 self._config_resposes[index] = resp
                 pt_string = IpcTornadoClient.IPC_VAL_CONFIG
-            elif(param_key == IpcTornadoClient.STATUS_PARAMS_KEY):
+            elif param_key == IpcTornadoClient.STATUS_PARAMS_KEY:
                 self._status_resposes[index] = resp
                 pt_string = IpcTornadoClient.IPC_VAL_STATUS
-        if(metadata_ts_key in value_dict):
+        if metadata_ts_key in value_dict:
             response_ts_ver = value_dict[metadata_ts_key]
         if metadata_key in value_dict:
             metadata = value_dict[metadata_key]
             # If we have received metadata then we need to update the 'command' structure on the next processing.
             # Because the 'command" structure might have an update!
             self._command_needs_update = True
-            if(resp is not None):
+            if resp is not None:
                 resp = self.splice_params_metadata(index, param_key, resp, metadata)
                 # Rebuild the entire tree
                 self._params.replace(f"{index}/{pt_string}", resp)
@@ -209,10 +286,16 @@ class OdinDataController(object):
                             with_metadata = False
                             # Check if the previous values of the config and status time-stamp matches the latest value.
                             # If they do not match, set 'with_metadata' to True and update the previous time-stamp value with the latest.
-                            if(param_req == IpcTornadoClient.IPC_VAL_REQ_CFG and self.config_ts[index] != self.config_ts_prev[index]):
+                            if (
+                                param_req == IpcTornadoClient.IPC_VAL_REQ_CFG
+                                and self.config_ts[index] != self.config_ts_prev[index]
+                            ):
                                 with_metadata = True
                                 self.config_ts_prev[index] = self.config_ts[index]
-                            elif(param_req == IpcTornadoClient.IPC_VAL_STATUS and self.status_ts[index] != self.status_ts_prev[index]):
+                            elif (
+                                param_req == IpcTornadoClient.IPC_VAL_STATUS
+                                and self.status_ts[index] != self.status_ts_prev[index]
+                            ):
                                 with_metadata = True
                                 self.status_ts_prev[index] = self.status_ts[index]
                             msg = client.send_request(param_req, with_metadata)
@@ -227,18 +310,30 @@ class OdinDataController(object):
                     self.handle_client(client, index)
                     # Always track/update the time-stamp values of config and status
                     # using the class members status_ts & config_ts variables
-                    if IpcTornadoClient.IPC_VAL_STATUS in client.parameters and \
-                        client.parameters[IpcTornadoClient.IPC_VAL_STATUS][IpcTornadoClient.STATUS_PARAMS_KEY][IpcTornadoClient.CLIENT_CONNECTED]:
-                        self.status_ts[index] = self._update_params_with_metadata(client.parameters[IpcTornadoClient.IPC_VAL_STATUS],
-                                                                                        index, IpcTornadoClient.STATUS_PARAMS_KEY,
-                                                                                        IpcTornadoClient.IPC_VAL_STATUS_METADATA,
-                                                                                        IpcTornadoClient.IPC_VAL_STATUS_TS)
+                    if (
+                        IpcTornadoClient.IPC_VAL_STATUS in client.parameters
+                        and client.parameters[IpcTornadoClient.IPC_VAL_STATUS][
+                            IpcTornadoClient.STATUS_PARAMS_KEY
+                        ][IpcTornadoClient.CLIENT_CONNECTED]
+                    ):
+                        self.status_ts[index] = self._update_params_with_metadata(
+                            client.parameters[IpcTornadoClient.IPC_VAL_STATUS],
+                            index,
+                            IpcTornadoClient.STATUS_PARAMS_KEY,
+                            IpcTornadoClient.IPC_VAL_STATUS_METADATA,
+                            IpcTornadoClient.IPC_VAL_STATUS_TS,
+                        )
                     if IpcTornadoClient.IPC_VAL_CONFIG in client.parameters:
-                        self.config_ts[index] = self._update_params_with_metadata(client.parameters[IpcTornadoClient.IPC_VAL_CONFIG],
-                                                                                        index, IpcTornadoClient.CONFIG_PARAMS_KEY,
-                                                                                        IpcTornadoClient.IPC_VAL_CONFIG_METADATA,
-                                                                                        IpcTornadoClient.IPC_VAL_CONFIG_TS)
-                    if "commands" in client.parameters and (self._command_needs_update == True):
+                        self.config_ts[index] = self._update_params_with_metadata(
+                            client.parameters[IpcTornadoClient.IPC_VAL_CONFIG],
+                            index,
+                            IpcTornadoClient.CONFIG_PARAMS_KEY,
+                            IpcTornadoClient.IPC_VAL_CONFIG_METADATA,
+                            IpcTornadoClient.IPC_VAL_CONFIG_TS,
+                        )
+                    if "commands" in client.parameters and (
+                        self._command_needs_update == True
+                    ):
                         self.parse_available_commands(index, client)
                         self._command_needs_update = False
                 self.process_updates()
@@ -248,10 +343,15 @@ class OdinDataController(object):
             time.sleep(self._update_interval)
 
     def parse_available_commands(self, index, client):
+        """
+        Rebuilds the `command` branch of the `ParameterTree` from the client's currently
+        supported commands.
+
+        :param index: The index of the IpcTornadoClient object.
+        :param client: The IpcTornadoClient.
+        """
         # Check for differences in the command structure
-        logging.debug(
-            f"Command structure has changed: {client.parameters['commands']}"
-        )
+        logging.debug(f"Command structure has changed: {client.parameters['commands']}")
         command_tree = {}
         for plugin in client.parameters["commands"]:
             # Build the execution branch for each plugin
@@ -269,7 +369,7 @@ class OdinDataController(object):
                     {},
                 ),
             }
-        # If the structure has changed then update the parameter tree
+            # If the structure has changed then update the parameter tree
             self._params.replace(f"{index}/command", command_tree)
         self._supported_commands[index] = client.parameters["commands"]
 
