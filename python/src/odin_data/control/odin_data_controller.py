@@ -180,7 +180,7 @@ class OdinDataController(object):
                 param_metadata = reduce(lambda d, key: d[key], path, metadata)
                 setter = None
                 if resp_type == IpcTornadoClient.CONFIG_PARAMS_KEY:
-                    getter = partial(getter_func, self._config_respnoses[index], path)
+                    getter = partial(getter_func, self._config_responses[index], path)
                 else:
                     getter = partial(getter_func, self._status_responses[index], path)
                 metadata = dict(param_metadata)

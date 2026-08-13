@@ -145,7 +145,7 @@ class TestOdinDataController:
         controller._params._tree["0"]["config"]["blosc"]["compressor"]._set.assert_called_once_with("lz4hc")
 
         # Set a new value for the 'compressor'
-        controller._config_resposes[0]["blosc"]["compressor"] = "snappy"
+        controller._config_responses[0]["blosc"]["compressor"] = "snappy"
         compressor = controller.get("0/config/blosc/compressor", True)
         assert compressor == {
             "compressor": {
