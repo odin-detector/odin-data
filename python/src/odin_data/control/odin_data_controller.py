@@ -63,8 +63,8 @@ class OdinDataController(object):
         self.status_ts_prev: list[int] = [0] * len(endpoints)
         self._endpoints = []
         self._command_needs_update: bool = False
-        self._config_resposes: list[dict] = [None] * len(endpoints)
-        self._status_resposes: list[dict] = [None] * len(endpoints)
+        self._config_resposes: list[dict | None] = [None] * len(endpoints)
+        self._status_resposes: list[dict | None] = [None] * len(endpoints)
 
         for arg in endpoints.split(","):
             arg = arg.strip()
@@ -363,7 +363,7 @@ class OdinDataController(object):
                 ),
                 "execute": (
                     "",
-                    lambda value, index=index, plugin=plugin: self.queue_command(
+                    lambda value, index=index, plugin=plugin: self.send_command(
                         index, plugin, value
                     ),
                     {},
@@ -373,17 +373,19 @@ class OdinDataController(object):
             self._params.replace(f"{index}/command", command_tree)
         self._supported_commands[index] = client.parameters["commands"]
 
-    def queue_command(self, index, plugin, value):
-        """Called for each command PUT that is received by the adapter
+    def send_command(self, index, plugin, value):
+        """Called for each command from parse_available_commands
         PUT URI is of the form index/command/plugin/execute and the
         value is the name of the command to execute.
-        This method simply queues commands for execution after any configuration
-        changes have been applied.
+        This method sends each commands as demanded.
         """
         logging.info(
-            f"Queue command: index [{index}] plugin [{plugin}] command [{value}]"
+            f"Send command: index [{index}] plugin [{plugin}] command [{value}]"
         )
-        self._queued_command[index] = (plugin, value)
+        # Call the execution check method prior to sending to a client
+        if self.can_execute(index, plugin, value):
+            self._clients[index].execute_command(plugin, value)
+
 
     def handle_client(self, client, index):
         """Called on each client in the update_loop loop before updating the
