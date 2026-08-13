@@ -63,8 +63,8 @@ class OdinDataController(object):
         self.status_ts_prev: list[int] = [0] * len(endpoints)
         self._endpoints = []
         self._command_needs_update: bool = False
-        self._config_resposes: list[dict | None] = [None] * len(endpoints)
-        self._status_resposes: list[dict | None] = [None] * len(endpoints)
+        self._config_responses: list[dict | None] = [None] * len(endpoints)
+        self._status_responses: list[dict | None] = [None] * len(endpoints)
 
         for arg in endpoints.split(","):
             arg = arg.strip()
@@ -180,9 +180,9 @@ class OdinDataController(object):
                 param_metadata = reduce(lambda d, key: d[key], path, metadata)
                 setter = None
                 if resp_type == IpcTornadoClient.CONFIG_PARAMS_KEY:
-                    getter = partial(getter_func, self._config_resposes[index], path)
+                    getter = partial(getter_func, self._config_respnoses[index], path)
                 else:
-                    getter = partial(getter_func, self._status_resposes[index], path)
+                    getter = partial(getter_func, self._status_responses[index], path)
                 metadata = dict(param_metadata)
                 if (
                     metadata["access_mode"] == "rw"
@@ -233,10 +233,10 @@ class OdinDataController(object):
         if param_key in value_dict:
             resp = value_dict[param_key]
             if param_key == IpcTornadoClient.CONFIG_PARAMS_KEY:
-                self._config_resposes[index] = resp
+                self._config_responses[index] = resp
                 pt_string = IpcTornadoClient.IPC_VAL_CONFIG
             elif param_key == IpcTornadoClient.STATUS_PARAMS_KEY:
-                self._status_resposes[index] = resp
+                self._status_responses[index] = resp
                 pt_string = IpcTornadoClient.IPC_VAL_STATUS
         if metadata_ts_key in value_dict:
             response_ts_ver = value_dict[metadata_ts_key]
