@@ -5,6 +5,7 @@ Will need to be subclassed by detector specific implementation.
 
 Matt Taylor, Diamond Light Source
 """
+
 import os
 from time import time
 import logging
@@ -14,6 +15,7 @@ import h5py
 from odin_data import __version__
 from odin_data.meta_writer.hdf5dataset import HDF5Dataset, Int64HDF5Dataset
 from odin_data.util import construct_version_dict
+from typing import Iterable
 
 # Data message parameters
 FRAME = "frame"
@@ -34,7 +36,6 @@ FLUSH_TIMEOUT = "flush_timeout"
 
 
 class MetaWriterConfig(object):
-
     def __init__(self, sensor_shape):
         """
         Args:
@@ -208,7 +209,7 @@ class MetaWriter(object):
                 chunks = dataset.maxshape
             if isinstance(chunks, int):
                 chunks = (chunks,)
-            if None in chunks:
+            if isinstance(chunks, Iterable) and None in chunks:
                 chunks = None
             self._logger.debug("Dataset {} chunking: {}".format(dataset.name, chunks))
 
@@ -571,7 +572,9 @@ class MetaWriter(object):
             return
 
         self._logger.debug(
-            "%s | Received stopacquisition from endpoint %s", self._name, header[ENDPOINT]
+            "%s | Received stopacquisition from endpoint %s",
+            self._name,
+            header[ENDPOINT],
         )
         self._processes_running[self._endpoints.index(header[ENDPOINT])] = False
 
