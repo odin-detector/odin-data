@@ -386,6 +386,13 @@ class OdinDataController(object):
         if self.can_execute(index, plugin, value):
             self._clients[index].execute_command(plugin, value)
 
+    def can_execute(self, index, plugin, command):
+        """Called for each command that is about to be sent to a client
+        application.  If this method returns false then the command is not
+        sent.  This method can be overloaded by subclasses to implement
+        controller specific logic checks prior to sending the command.
+        """
+        return True
 
     def handle_client(self, client, index):
         """Called on each client in the update_loop loop before updating the
