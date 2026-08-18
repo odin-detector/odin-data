@@ -201,7 +201,7 @@ class OdinDataController(object):
         self, index, resp_type: str, params: dict, metadata: dict
     ):
         """
-        Recursive function to append metadata of each parameter to it's value together in a tuple.
+        Recursive function to append metadata of each parameter to its value together in a tuple.
         This is the format the ParameterTree expects it.
 
         index - the index of the IpcTornadoClient object.
@@ -380,7 +380,7 @@ class OdinDataController(object):
 
     def send_command(self, index, plugin, value):
         """
-        This method sends each commands as demanded as an IpcMessage.
+        This method sends the command as demanded as an IpcMessage.
 
         :param index: The index of the IpcTornadoClient object.
         :param plugin: The name of the plugin to which the command belongs
