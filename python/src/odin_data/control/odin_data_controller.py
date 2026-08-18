@@ -16,7 +16,7 @@ from odin_data.control.ipc_tornado_client import IpcTornadoClient
 
 def setter_func(tornado_client: IpcTornadoClient, path: list, value):
     """
-    Send a configuration message to a C++ odin-data application with the parameter name
+    Send a configuration message to odin-data application with the parameter name
     specified by the path and the value set to value
 
     :param tornado_client: Client connection to C++ odin-data application.
@@ -203,6 +203,7 @@ class OdinDataController(object):
         """
         Recursive function to append metadata of each parameter to it's value together in a tuple.
         This is the format the ParameterTree expects it.
+
         index - the index of the IpcTornadoClient object.
         resp_type - string to indicate if it is a STATUS/CONFIG response
         params_node - Config/Status Parameters dictionary.
@@ -221,6 +222,9 @@ class OdinDataController(object):
         metadata_ts_key: str,
     ):
         """
+        Helper function to parse the config/status response from the IpcTornadoClient
+        and append metadata to associated values
+
         dict - The dictionary containing the status or config_request response.
         index - The index of the IpcClient which received this response. This is used as a key in the ParameterTree
         param_key - The key which the IpcTornadoClient stored the response in; either STATUS_PARAM_KEY/CONFIG_PARAM_KEY
@@ -252,7 +256,8 @@ class OdinDataController(object):
         return response_ts_ver
 
     def update_loop(self):
-        """Handle background update loop tasks.
+        """
+        Handle background update loop tasks.
         This method handles background update tasks executed periodically in the tornado
         IOLoop instance. This includes requesting the status from the underlying application
         and preparing the JSON encoded reply in a format that can be easily parsed.
@@ -374,10 +379,12 @@ class OdinDataController(object):
         self._supported_commands[index] = client.parameters["commands"]
 
     def send_command(self, index, plugin, value):
-        """Called for each command from parse_available_commands
-        PUT URI is of the form index/command/plugin/execute and the
-        value is the name of the command to execute.
-        This method sends each commands as demanded.
+        """
+        This method sends each commands as demanded as an IpcMessage.
+
+        :param index: The index of the IpcTornadoClient object.
+        :param plugin: The name of the plugin to which the command belongs
+        :param value: The name of the command to execute
         """
         logging.info(
             f"Send command: index [{index}] plugin [{plugin}] command [{value}]"
@@ -395,7 +402,8 @@ class OdinDataController(object):
         return True
 
     def handle_client(self, client, index):
-        """Called on each client in the update_loop loop before updating the
+        """
+        Called on each client in the update_loop loop before updating the
         parameter tree and caching the config, can be overloaded by
         subclasses to implement controller specific logic.
         """
