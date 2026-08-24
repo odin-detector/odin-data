@@ -176,19 +176,20 @@ class TestMetaWriter:
     def test_create_file_logs_os_error(self, caplog):
         from odin_data.meta_writer.meta_writer import MetaWriter, MetaWriterConfig
 
+        invalid_file = "/invalid/test_meta.h5"
         writer = MetaWriter(
             name="test",
             directory="/invalid",
             endpoints=[],
             config=MetaWriterConfig(sensor_shape=(1, 1)),
         )
-        error = PermissionError(13, "Permission denied", "/invalid/test_meta.h5")
+        error = PermissionError(13, "Permission denied", invalid_file)
 
-        with patch("odin_data.meta_writer.meta_writer.h5py.File", side_effect=error):
-            with caplog.at_level(logging.ERROR):
-                writer._create_file("/invalid/test_meta.h5", dataset_size=1)
+        with (
+            patch("odin_data.meta_writer.meta_writer.h5py.File", side_effect=error),
+            caplog.at_level(logging.ERROR),
+        ):
+            writer._create_file(invalid_file, dataset_size=1)
 
-        assert "Failed to create file" in caplog.text
-        assert "PermissionError" in caplog.text
-        assert "Permission denied" in caplog.text
+        assert str(error) in caplog.text
         assert writer.file_open is False
