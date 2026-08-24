@@ -17,7 +17,16 @@ class IpcTornadoClient(object):
     IPC_VAL_REQ_CFG = "request_configuration"
     IPC_VAL_REQ_CMDS = "request_commands"
     IPC_VAL_STATUS = "status"
+    IPC_VAL_CONFIG = "config"
     CLIENT_CONNECTED = "connected"
+    IPC_VAL_CONFIG_METADATA = "config_metadata"
+    IPC_VAL_CONFIG_TS = "config_ts"
+    IPC_VAL_STATUS_METADATA = "status_metadata"
+    IPC_VAL_STATUS_TS = "status_ts"
+    METADATA_KEY = "metadata"
+    PARAMS_KEY = "params"
+    STATUS_PARAMS_KEY = "status_request"
+    CONFIG_PARAMS_KEY = "config_request"
 
     MESSAGE_ID_MAX = 2**32
 
@@ -38,7 +47,7 @@ class IpcTornadoClient(object):
         self._ip_address = ip_address
         self._port = port
 
-        self._parameters = {self.IPC_VAL_STATUS: {self.CLIENT_CONNECTED: False}}
+        self._parameters = {self.IPC_VAL_STATUS: {self.STATUS_PARAMS_KEY:{ self.CLIENT_CONNECTED: False}}}
         self.ctrl_endpoint = self.ENDPOINT_TEMPLATE.format(IP=ip_address, PORT=port)
         self.logger.debug("Connecting to client at %s", self.ctrl_endpoint)
         self.ctrl_channel = IpcTornadoChannel(IpcTornadoChannel.CHANNEL_TYPE_DEALER)
@@ -111,10 +120,10 @@ class IpcTornadoClient(object):
         self.logger.debug("Msg received from %s: %s", self.ctrl_endpoint, msg)
         if msg['event'] == IpcTornadoChannel.CONNECTED:
             self.logger.debug("  Connected...")
-            self._parameters[self.IPC_VAL_STATUS][self.CLIENT_CONNECTED] = True
+            self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY][self.CLIENT_CONNECTED] = True
         if msg['event'] == IpcTornadoChannel.DISCONNECTED:
             self.logger.debug("  Disconnected...")
-            self._parameters[self.IPC_VAL_STATUS][self.CLIENT_CONNECTED] = False
+            self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY][self.CLIENT_CONNECTED] = False
 
     def _callback(self, msg):
         """Handes incoming messages from the main ZeroMQ socket.
@@ -161,7 +170,7 @@ class IpcTornadoClient(object):
 
         :param version_msg: Incoming version message response
         """
-        params = version_msg['params']
+        params = version_msg[self.PARAMS_KEY]
         self._parameters['version'] = params['version']
 
     def _update_configuration(self, config_msg):
@@ -170,25 +179,50 @@ class IpcTornadoClient(object):
 
         :param config_msg: Incoming configuration message response
         """
-        params = config_msg['params']
-        self._parameters['config'] = params
+        params = config_msg[self.PARAMS_KEY]
+        
+        plugin_names : list = params["plugins"]["names"]
+        self._parameters[self.IPC_VAL_CONFIG] = {}
+        self._parameters[self.IPC_VAL_CONFIG][self.CONFIG_PARAMS_KEY]: dict = {}
+        for name in plugin_names:
+            self._parameters[self.IPC_VAL_CONFIG][self.CONFIG_PARAMS_KEY][name] = params[name]
+            params.pop(name, None)
+        params.pop("plugins", None)
+
+        if(self.IPC_VAL_CONFIG_TS in params):
+            self._parameters[self.IPC_VAL_CONFIG][self.IPC_VAL_CONFIG_TS] = params[self.IPC_VAL_CONFIG_TS]
+            params.pop(self.IPC_VAL_CONFIG_TS, None)
+        if(self.METADATA_KEY in params):
+            self._parameters[self.IPC_VAL_CONFIG][self.IPC_VAL_CONFIG_METADATA] = params[self.METADATA_KEY]
+            params.pop(self.METADATA_KEY, None)
 
     def _update_status(self, status_msg):
         """Store the response to a status message in the _parameters dict.
 
         :param status_msg: Incoming status message response
         """
-        params = status_msg['params']
-        params['timestamp'] = status_msg['timestamp']
-        self._parameters[self.IPC_VAL_STATUS] = params
-        if 'error' not in self._parameters[self.IPC_VAL_STATUS]:
-            self._parameters[self.IPC_VAL_STATUS]['error'] = []
+        params = status_msg[self.PARAMS_KEY]
+        plugin_names : list = params["plugins"]["names"]
+        self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY]["plugins"] = params["plugins"]
+        for name in plugin_names:
+            self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY][name] = params[name]
+            params.pop(name, None)
+
+        self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY]['timestamp'] = status_msg['timestamp']
+        if(self.IPC_VAL_STATUS_TS in params):
+            self._parameters[self.IPC_VAL_STATUS][self.IPC_VAL_STATUS_TS] = params[self.IPC_VAL_STATUS_TS]
+            params.pop(self.IPC_VAL_STATUS_TS, None)
+        if(self.METADATA_KEY in params):
+            self._parameters[self.IPC_VAL_STATUS][self.IPC_VAL_STATUS_METADATA] = params[self.METADATA_KEY]
+            params.pop(self.METADATA_KEY, None)
+
+        if 'error' not in params:
+            self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY]['error'] = []
         with self._lock:
             for msg in self._rejected_configs:
-                self._parameters[self.IPC_VAL_STATUS]['error'].append(self._rejected_configs[msg].get_params()['error'])
-
+                self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY]['error'].append(self._rejected_configs[msg].get_params()['error'])
         # If we have received a status response then we must be connected
-        self._parameters[self.IPC_VAL_STATUS][self.CLIENT_CONNECTED] = True
+        self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY][self.CLIENT_CONNECTED] = True
 
     def _update_commands(self, commands_msg):
         """Store the response to a request_commands message in the _parameters dict.
@@ -210,7 +244,7 @@ class IpcTornadoClient(object):
 
         :return: The connected state of the client
         """
-        return self._parameters[self.IPC_VAL_STATUS][self.CLIENT_CONNECTED]
+        return self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY][self.CLIENT_CONNECTED]
 
     def _send_message(self, msg):
         """Injects the next message ID into the message object.
@@ -236,13 +270,15 @@ class IpcTornadoClient(object):
         else:
             raise IpcMessageException("Request\n%s\nunsuccessful. Got no response." % msg)
 
-    def send_request(self, value):
+    def send_request(self, value, with_metadata=False):
         """Creates an IpcMessage object with the specified value
         and calls the _send_message method with the message object.
 
         :param value: Value of the IpcMessage object
         """
         msg = IpcMessage("cmd", value)
+        if(with_metadata):
+            msg.set_param(self.METADATA_KEY, True)
         return self._send_message(msg)
 
     def send_configuration(self, content, target=None, valid_error=None):
