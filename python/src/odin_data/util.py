@@ -1,10 +1,10 @@
 import re
 import sys
 
-if sys.version_info[0] >= 3:
+if sys.version_info[0] >= 3:  # pragma: no cover
     unicode = str
     bytes = bytes
-else:
+else:  # pragma: no cover
     unicode = unicode
     bytes = str
 

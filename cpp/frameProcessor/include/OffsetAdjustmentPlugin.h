@@ -18,6 +18,8 @@ using namespace log4cxx::helpers;
 #include "ClassLoader.h"
 #include "FrameProcessorPlugin.h"
 
+#include <atomic>
+
 namespace FrameProcessor {
 
 const int DEFAULT_OFFSET_ADJUSTMENT = 0;
@@ -45,7 +47,7 @@ private:
     /** Pointer to logger */
     LoggerPtr logger_;
     /** Offset adjustment to use **/
-    int64_t offset_adjustment_;
+    std::atomic<int64_t> offset_adjustment_;
 };
 
 } /* namespace FrameProcessor */

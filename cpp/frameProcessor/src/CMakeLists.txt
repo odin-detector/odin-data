@@ -95,10 +95,15 @@ if (${KAFKA_FOUND})
     install(TARGETS KafkaProducerPlugin DESTINATION lib)
 endif()
 
-# Add library for Tmpfs plugin
+# Add library for Raw File-writer plugin
 add_library(RawFileWriterPlugin SHARED RawFileWriterPlugin.cpp RawFileWriterPluginLib.cpp)
 target_link_libraries(RawFileWriterPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${COMMON_LIBRARY})
 install(TARGETS RawFileWriterPlugin DESTINATION lib)
+
+# Add library for Parameter Publish plugin
+add_library(ParameterPublishPlugin SHARED ParameterPublishPlugin.cpp ParameterPublishPluginLib.cpp)
+target_link_libraries(ParameterPublishPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${COMMON_LIBRARY})
+install(TARGETS ParameterPublishPlugin DESTINATION lib)
 
 # Add test and project source files to executable
 if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )

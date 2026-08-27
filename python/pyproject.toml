@@ -27,7 +27,6 @@ dependencies = [
     "numpy>=1.14.0",
     "pyzmq>=17.1.0",
     "pygelf>=0.3.5",
-    "deepdiff",
 ]
 
 [project.optional-dependencies]
@@ -58,6 +57,9 @@ GitHub = "https://github.com/odin-detector/odin-data"
 [tool.setuptools_scm]
 version_file = "src/odin_data/_version.py"
 root = "../"
+
+[tool.coverage.run]
+patch = ["subprocess"]
 
 [tool.coverage.paths]
 source = ["src", "**/site-packages/"]

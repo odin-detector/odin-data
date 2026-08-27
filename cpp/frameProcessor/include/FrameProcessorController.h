@@ -77,6 +77,10 @@ private:
     /** Configuration constant for executing setup of shared memory interface **/
     static const std::string CONFIG_FR_SETUP;
 
+    /** key-strings for latest config and status timestamp **/
+    static const std::string CONFIG_TS_KEY;
+    static const std::string STATUS_TS_KEY;
+
     /** Configuration constant for control socket endpoint **/
     static const std::string CONFIG_CTRL_ENDPOINT;
     /** Configuration constant for meta data endpoint **/

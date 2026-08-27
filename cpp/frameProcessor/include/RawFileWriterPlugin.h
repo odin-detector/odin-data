@@ -36,7 +36,7 @@ public:
 
 private:
     /** Mutex used to make this class thread safe */
-    std::recursive_mutex mutex_;
+    std::mutex mutex_;
     /** Pointer to logger */
     LoggerPtr logger_;
     /** Flag to enable or disable file writing */

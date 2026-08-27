@@ -7,8 +7,9 @@ from odin_data.control.odin_data_adapter import OdinDataAdapter
 
 
 class MetaListenerAdapter(OdinDataAdapter):
-
     """An OdinControl adapter for a MetaListener"""
+
+    ERROR_FAILED_TO_SEND = "Unable to successfully send request to client"
 
     def __init__(self, **kwargs):
         logging.debug("MetaListenerAdapter init called")
@@ -41,7 +42,7 @@ class MetaListenerAdapter(OdinDataAdapter):
             "status/full_file_path": "",
             "status/num_processors": 0,
             "status/writing": False,
-            "status/written": 0
+            "status/written": 0,
         }
 
     def _map_acquisition_parameter(self, path):
@@ -49,15 +50,15 @@ class MetaListenerAdapter(OdinDataAdapter):
         # Replace the first slash with acquisitions/<acquisition_id>/
         # E.g. status/filename -> status/acquisitions/<acquisition_id>/filename
         full_path = path.replace(
-            "/", "/acquisitions/{}/".format(self.acquisition_id),
-            1  # First slash only
+            "/",
+            "/acquisitions/{}/".format(self.acquisition_id),
+            1,  # First slash only
         )
         return full_path.split("/")  # Return list of uri items
 
-    @request_types('application/json')
-    @response_types('application/json', default='application/json')
+    @request_types("application/json")
+    @response_types("application/json", default="application/json")
     def get(self, path, request):
-
         """Implementation of the HTTP GET verb for MetaListenerAdapter
 
         :param path: URI path of the GET request
@@ -76,11 +77,10 @@ class MetaListenerAdapter(OdinDataAdapter):
             response["acquisition_active"] = self.acquisition_active
         elif path == "config/acquisitions":
             acquisition_tree = self.traverse_parameters(
-                self._clients[0].parameters,
-                ["config", "acquisitions"]
+                self._client.parameters, ["config", "acquisitions"]
             )
             if acquisition_tree is not None:
-                response["acquisitions"] = "," .join(acquisition_tree.keys())
+                response["acquisitions"] = ",".join(acquisition_tree.keys())
             else:
                 response["acquisitions"] = None
         elif path in self._status_parameters:
@@ -92,10 +92,9 @@ class MetaListenerAdapter(OdinDataAdapter):
 
         return ApiAdapterResponse(response, status_code=status_code)
 
-    @request_types('application/json')
-    @response_types('application/json', default='application/json')
+    @request_types("application/json")
+    @response_types("application/json", default="application/json")
     def put(self, path, request):
-
         """
         Implementation of the HTTP PUT verb for MetaListenerAdapter
 
@@ -106,10 +105,9 @@ class MetaListenerAdapter(OdinDataAdapter):
         """
         logging.debug("PUT path: %s", path)
         logging.debug("PUT request: %s", request)
-        logging.debug("PUT request.body: %s",
-                      str(escape.url_unescape(request.body)))
+        logging.debug("PUT request.body: %s", str(escape.url_unescape(request.body)))
 
-        value = str(escape.url_unescape(request.body)).replace('"', '')
+        value = str(escape.url_unescape(request.body)).replace('"', "")
 
         if path in self._config_parameters:
             # Store config to re-send with acquisition ID when it is changed
@@ -129,10 +127,7 @@ class MetaListenerAdapter(OdinDataAdapter):
             self.acquisition_active = False
 
             # By default we stop all acquisitions by passing None
-            config = {
-                "acquisition_id": None,
-                "stop": True
-            }
+            config = {"acquisition_id": None, "stop": True}
             if self.acquisition_id is not None:
                 # If we have an Acquisition ID then stop that one only
                 config["acquisition_id"] = self.acquisition_id
@@ -154,10 +149,10 @@ class MetaListenerAdapter(OdinDataAdapter):
         try:
             self._client.send_configuration(config_message)
         except Exception as err:
-            logging.debug(OdinDataAdapter.ERROR_FAILED_TO_SEND)
+            logging.debug(self.ERROR_FAILED_TO_SEND)
             logging.error("Error: %s", err)
             status_code = 503
-            response = {"error": OdinDataAdapter.ERROR_FAILED_TO_SEND}
+            response = {"error": self.ERROR_FAILED_TO_SEND}
 
         return status_code, response
 
@@ -179,7 +174,7 @@ class MetaListenerAdapter(OdinDataAdapter):
                 for parameter in self._status_parameters:
                     value = self.traverse_parameters(
                         self._client.parameters,
-                        self._map_acquisition_parameter(parameter)
+                        self._map_acquisition_parameter(parameter),
                     )
                     self._status_parameters[parameter] = value
             else:

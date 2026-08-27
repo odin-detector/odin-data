@@ -43,6 +43,8 @@ const std::string FrameProcessorController::CONFIG_VALUE = "value";
 
 const std::string FrameProcessorController::COMMAND_KEY = "command";
 const std::string FrameProcessorController::SUPPORTED_KEY = "supported";
+const std::string FrameProcessorController::CONFIG_TS_KEY = "config_ts";
+const std::string FrameProcessorController::STATUS_TS_KEY = "status_ts";
 
 const int FrameProcessorController::META_TX_HWM = 10000;
 
@@ -301,11 +303,14 @@ void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply, bool m
         }
     }
 
+    int64_t latest_ts = -1;
     // Loop over plugins, list names and request status from each
     for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
         reply.set_param("plugins/names[]", iter->first);
         // Request status for the plugin
         iter->second->status(reply);
+        // Check for the latest timestamp
+        latest_ts = std::max(latest_ts, iter->second->get_status_ts());
         // Add performance statistics
         iter->second->add_performance_stats(reply);
         // Read error level
@@ -315,6 +320,8 @@ void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply, bool m
         std::vector<std::string> plugin_warnings = iter->second->get_warnings();
         warning_messages.insert(warning_messages.end(), plugin_warnings.begin(), plugin_warnings.end());
     }
+    reply.set_param(FrameProcessorController::STATUS_TS_KEY, latest_ts);
+
     std::vector<std::string>::iterator error_iter;
     for (error_iter = error_messages.begin(); error_iter != error_messages.end(); ++error_iter) {
         reply.set_param("error[]", *error_iter);
@@ -531,8 +538,11 @@ void FrameProcessorController::requestConfiguration(OdinData::IpcMessage& reply,
     // Loop over plugins and request current configuration from each
     std::map<std::string, std::shared_ptr<FrameProcessorPlugin>>::iterator iter;
     for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
+        reply.set_param("plugins/names[]", iter->first);
         iter->second->requestConfiguration(reply);
+        latest_ts = std::max(latest_ts, iter->second->get_config_ts());
     }
+    reply.set_param(FrameProcessorController::CONFIG_TS_KEY, latest_ts);
 
     if (metadata) {
         for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {

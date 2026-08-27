@@ -213,8 +213,8 @@ FileWriterPlugin::~FileWriterPlugin()
 void FileWriterPlugin::process_frame(std::shared_ptr<Frame> frame)
 {
     // Protect this method
-    std::scoped_lock cflock(close_file_mutex_);
-    std::lock_guard<std::recursive_mutex> lock(mutex_);
+    boost::mutex::scoped_lock cflock(close_file_mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
 
     // check it matches the current (or next) acquisition.
     // frames that don't match are dropped / ignored.
@@ -319,7 +319,7 @@ void FileWriterPlugin::stop_writing()
 void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
     // Protect this method
-    std::lock_guard<std::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
 
     LOG4CXX_INFO(logger_, config.encode());
 
@@ -363,11 +363,13 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
                     this->configure_dataset(dataset_name, dsetConfig, reply);
                 }
             }
+            update_config_ts();
         }
 
         // Check to see if we are deleting all datasets
         if (config.has_param(FileWriterPlugin::CONFIG_DELETE_DATASETS)) {
             this->delete_datasets();
+            update_config_ts();
         }
 
         // Check to see if we are being told how many frames to write
@@ -875,7 +877,7 @@ void FileWriterPlugin::delete_datasets()
 void FileWriterPlugin::status(OdinData::IpcMessage& status)
 {
     // Record the plugin's status items
-    std::string prefix = get_name() + '/';
+    const std::string prefix = get_name() + '/';
     status.set_param(prefix + STATUS_WRITING, this->writing_);
     status.set_param(prefix + STATUS_FRAMES_MAX, (int)this->current_acquisition_->frames_to_write_);
     status.set_param(prefix + STATUS_FRAMES_WRITTEN, (int)this->current_acquisition_->frames_written_);
@@ -1069,7 +1071,7 @@ void FileWriterPlugin::run_close_file_timeout()
                     })) {
                     // Timeout
                     LOG4CXX_DEBUG_LEVEL(1, logger_, "Close file Timeout timed out");
-                    std::lock_guard<std::recursive_mutex> lock(mutex_);
+                    std::lock_guard<std::mutex> lock(mutex_);
                     if (writing_ && timeout_active_) {
                         set_error("Timed out waiting for frames, stopping writing");
                         stop_acquisition();

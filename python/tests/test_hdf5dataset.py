@@ -1,15 +1,13 @@
-import os
+import tempfile
 import time
 
 import h5py as h5
 import numpy
-
 from odin_data.meta_writer.hdf5dataset import (
     HDF5UnlimitedCache,
+    Int32HDF5Dataset,
     StringHDF5Dataset,
-    Int32HDF5Dataset
 )
-import tempfile
 
 
 class _TestMockDataset:
@@ -314,13 +312,18 @@ def test_string_types():
 
 
 def test_attributes_added():
-    dataset_with_units = Int32HDF5Dataset("test_dataset", cache=False, attributes={"units": "m"})
+    dataset_with_units = Int32HDF5Dataset(
+        "test_dataset", cache=False, attributes={"units": "m"}
+    )
 
     temp_file = tempfile.TemporaryFile()
     with h5.File(temp_file, "w") as f:
         dataset_with_units.initialise(
             f.create_dataset(
-                "test_dataset", shape=(1,), maxshape=(1,), dtype=dataset_with_units.dtype
+                "test_dataset",
+                shape=(1,),
+                maxshape=(1,),
+                dtype=dataset_with_units.dtype,
             ),
             0,
         )
