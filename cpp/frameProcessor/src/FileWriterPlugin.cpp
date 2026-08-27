@@ -213,7 +213,7 @@ FileWriterPlugin::~FileWriterPlugin()
 void FileWriterPlugin::process_frame(std::shared_ptr<Frame> frame)
 {
     // Protect this method
-    boost::mutex::scoped_lock cflock(close_file_mutex_);
+    std::lock_guard<std::mutex> cflock(close_file_mutex_);
     std::lock_guard<std::mutex> lock(mutex_);
 
     // check it matches the current (or next) acquisition.

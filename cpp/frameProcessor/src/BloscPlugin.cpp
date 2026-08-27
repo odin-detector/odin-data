@@ -149,9 +149,9 @@ std::pair<std::shared_ptr<Frame>, bool> BloscPlugin::compress_frame(const std::s
     size_t type_size = get_size_from_enum(src_frame->get_meta_data().get_data_type());
     int uncompressed_size = src_frame->get_image_size();
     size_t dest_data_size = uncompressed_size + BLOSC_MAX_OVERHEAD;
-    boost::shared_ptr<Frame> dest_frame;
+    std::shared_ptr<Frame> dest_frame;
     try {
-        dest_frame = boost::make_shared<DataBlockFrame>(src_frame->get_meta_data(), dest_data_size);
+        dest_frame = std::make_shared<DataBlockFrame>(src_frame->get_meta_data(), dest_data_size);
         dest_frame->meta_data().set_compression_type(blosc);
         LOG4CXX_DEBUG_LEVEL(
             2, logger_,

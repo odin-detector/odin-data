@@ -97,8 +97,8 @@ protected:
         auto val = std::chrono::duration_cast<std::chrono::microseconds>(time_stamp_ms.time_since_epoch());
         this->status_ts_ = val.count();
     }
-    void push(boost::shared_ptr<Frame> frame);
-    void push(const std::string& plugin_name, boost::shared_ptr<Frame> frame);
+    void push(std::shared_ptr<Frame> frame);
+    void push(const std::string& plugin_name, std::shared_ptr<Frame> frame);
 
     using ParameterMetadataMap_t = std::unordered_map<std::string, ParamMetadata>;
     using All_val_vec_t = std::vector<ParamMetadata::allowed_values_t>;

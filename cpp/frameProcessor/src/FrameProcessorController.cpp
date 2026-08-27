@@ -536,6 +536,7 @@ void FrameProcessorController::requestConfiguration(OdinData::IpcMessage& reply,
     reply.set_param(fr_cnxn_str + FrameProcessorController::CONFIG_FR_RELEASE, frReleaseEndpoint_);
 
     // Loop over plugins and request current configuration from each
+    int64_t latest_ts = -1;
     std::map<std::string, std::shared_ptr<FrameProcessorPlugin>>::iterator iter;
     for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
         reply.set_param("plugins/names[]", iter->first);
