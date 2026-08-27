@@ -10,14 +10,6 @@ include_directories(${TEST_DIR}/integrationTest/include
 
 add_definitions(${HDF5_DEFINITIONS})
 
-file(GLOB ODINDATA_SOURCES FrameTestApp.cpp
-				PropertyTreeUtility.cpp
-				ControlUtility.cpp)
-
-file(GLOB FRAMETEST_SOURCES FrameSimulatorUnitTestMain.cpp
-						HDF5FrameTest.cpp
-						PropertyTreeUtility.cpp)
-
 # Add executable to run odin-data system
 add_executable(odinDataTest ${ODINDATA_SOURCES})
 
@@ -25,7 +17,17 @@ add_executable(odinDataTest ${ODINDATA_SOURCES})
 add_executable(frameTests ${FRAMETEST_SOURCES})
 
 target_link_libraries(odinDataTest ${Boost_LIBRARIES} ${HDF5_LIBRARIES} ${LOG4CXX_LIBRARIES} ${COMMON_LIBRARY})
+target_sources(odinDataTest PRIVATE
+				FrameTestApp.cpp
+				PropertyTreeUtility.cpp
+				ControlUtility.cpp)
+
 target_link_libraries(frameTests ${Boost_LIBRARIES} ${HDF5_LIBRARIES} ${LOG4CXX_LIBRARIES} ${COMMON_LIBRARY})
+target_sources(frameTests PRIVATE
+				FrameSimulatorUnitTestMain.cpp
+				HDF5FrameTest.cpp
+				PropertyTreeUtility.cpp)
+
 
 install(TARGETS odinDataTest RUNTIME DESTINATION bin)
 install(TARGETS frameTests RUNTIME DESTINATION bin)

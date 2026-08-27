@@ -25,7 +25,7 @@ namespace FrameProcessor {
 /**
  * The FrameProcessorController class has overall responsibility for management of the
  * core classes and plugins present within the frame processor application. This class
- * maintains the SharedMemoryController and SharedMemoryParser classes. The class
+ * maintains the SharedMemoryController class. The class
  * also manages the control IpcChannel, and accepts configuration IpcMessages. The
  * class provides an interface for loading plugins, connecting the plugins together
  * into chains and for configuring the plugins (from the control channel).
