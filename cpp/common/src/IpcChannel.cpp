@@ -330,7 +330,7 @@ const std::string IpcChannel::recv(std::string* identity_str)
     if (socket_type_ == ZMQ_ROUTER) {
         zmq::message_t identity_msg;
         socket_.recv(&identity_msg);
-        if (identity_str != NULL) {
+        if (identity_str != nullptr) {
             *identity_str = std::string(static_cast<char*>(identity_msg.data()), identity_msg.size());
         }
     }
@@ -363,7 +363,7 @@ const std::size_t IpcChannel::recv_raw(void* msg_buf, std::string* identity_str)
     if (socket_type_ == ZMQ_ROUTER) {
         zmq::message_t identity_msg;
         socket_.recv(&identity_msg);
-        if (identity_str != NULL) {
+        if (identity_str != nullptr) {
             *identity_str = std::string(static_cast<char*>(identity_msg.data()), identity_msg.size());
         }
     }

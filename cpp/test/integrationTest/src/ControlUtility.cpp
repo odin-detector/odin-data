@@ -69,7 +69,7 @@ void ControlUtility::run_process(const bool& wait_child)
         );
         int status;
         if (wait_child) {
-            wait(NULL);
+            wait(nullptr);
         }
     }
 
@@ -79,7 +79,7 @@ void ControlUtility::run_process(const bool& wait_child)
         for (int s = 0; s < process_args_.size(); s++) {
             args.push_back((char*)process_args_.at(s).data());
         }
-        args.push_back(NULL);
+        args.push_back(nullptr);
 
         execv(process_path_.c_str(), args.data());
     }
