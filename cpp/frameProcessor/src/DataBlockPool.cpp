@@ -153,7 +153,7 @@ void DataBlockPool::internal_allocate(size_t block_count, size_t block_size)
     // Allocate the number of data blocks, each of size block_size
     std::shared_ptr<DataBlock> block;
     for (size_t count = 0; count < block_count; count++) {
-        block = std::shared_ptr<DataBlock>(new DataBlock(block_size));
+        block = std::make_shared<DataBlock>(block_size);
         free_list_.push_front(block);
         // Record the newly allocated block
         free_blocks_++;

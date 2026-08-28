@@ -565,9 +565,9 @@ void FrameReceiverController::configure_buffer_manager(OdinData::IpcMessage& con
             }
 
             // Create a new shared buffer manager
-            buffer_manager_.reset(new SharedBufferManager(
+            buffer_manager_ = std::make_shared<SharedBufferManager>(
                 shared_buffer_name, max_buffer_mem, frame_decoder_->get_frame_buffer_size(), true
-            ));
+            );
 
             // Record the total number of buffers in the system here
             total_buffers_ = buffer_manager_->get_num_buffers();

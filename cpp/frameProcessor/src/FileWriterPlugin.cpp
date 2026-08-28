@@ -168,8 +168,8 @@ FileWriterPlugin::FileWriterPlugin() :
 
     this->logger_ = Logger::getLogger("FP.FileWriterPlugin");
     LOG4CXX_INFO(logger_, "FileWriterPlugin version " << this->get_version_long() << " loaded");
-    this->current_acquisition_ = std::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
-    this->next_acquisition_ = std::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
+    this->current_acquisition_ = std::make_shared<Acquisition>(hdf5_error_definition_);
+    this->next_acquisition_ = std::make_shared<Acquisition>(hdf5_error_definition_);
     hdf5_error_definition_.create_duration = 0;
     hdf5_error_definition_.write_duration = 0;
     hdf5_error_definition_.flush_duration = 0;
@@ -271,7 +271,7 @@ void FileWriterPlugin::start_writing()
         // rank has been changed since the frame count was set
         next_acquisition_->frames_to_write_ = calc_num_frames(this->next_acquisition_->total_frames_);
         this->current_acquisition_ = next_acquisition_;
-        this->next_acquisition_ = std::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
+        this->next_acquisition_ = std::make_shared<Acquisition>(hdf5_error_definition_);
 
         // Set up datasets within the current acquisition
         std::map<std::string, DatasetDefinition>::iterator iter;
@@ -1017,7 +1017,7 @@ void FileWriterPlugin::stop_acquisition()
             if (next_acquisition_->total_frames_ > 0 && next_acquisition_->frames_to_write_ == 0) {
                 // We're not expecting any frames, so just clear out the nextAcquisition for the next one and don't
                 // start writing
-                this->next_acquisition_ = std::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
+                this->next_acquisition_ = std::make_shared<Acquisition>(hdf5_error_definition_);
                 LOG4CXX_INFO(
                     logger_,
                     "FrameProcessor will not receive any frames from this acquisition and so no output file will be "
@@ -1124,9 +1124,9 @@ void FileWriterPlugin::execute(const std::string& command, OdinData::IpcMessage&
         if (next_acquisition_->total_frames_ > 0 && next_acquisition_->frames_to_write_ == 0) {
             // We're not expecting any frames, so just clear out the nextAcquisition for the next one and don't start
             // writing
-            this->next_acquisition_ = std::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
+            this->next_acquisition_ = std::make_shared<Acquisition>(hdf5_error_definition_);
             if (!writing_) {
-                this->current_acquisition_ = std::shared_ptr<Acquisition>(new Acquisition(hdf5_error_definition_));
+                this->current_acquisition_ = std::make_shared<Acquisition>(hdf5_error_definition_);
             }
             LOG4CXX_INFO(
                 logger_,

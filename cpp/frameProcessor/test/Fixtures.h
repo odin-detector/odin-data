@@ -71,9 +71,7 @@ public:
         FrameProcessor::FrameMetaData frame_meta(
             7, "data", FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
         );
-        frame = std::shared_ptr<FrameProcessor::DataBlockFrame>(
-            new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(img), 24)
-        );
+        frame = std::make_shared<FrameProcessor::DataBlockFrame>(frame_meta, static_cast<void*>(img), 24);
 
         for (unsigned short i = 0; i < 10; i++) {
             FrameProcessor::FrameMetaData loop_frame_meta(

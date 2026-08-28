@@ -20,7 +20,7 @@ IFrameCallback::IFrameCallback() :
     working_(false)
 {
     // Create the work queue for message offload
-    queue_ = std::shared_ptr<WorkQueue<std::shared_ptr<Frame>>>(new WorkQueue<std::shared_ptr<Frame>>);
+    queue_ = std::make_shared<WorkQueue<std::shared_ptr<Frame>>>();
 }
 
 /**

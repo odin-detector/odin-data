@@ -111,7 +111,7 @@ void SharedMemoryController::setSharedBufferManager(const std::string& shared_bu
     }
 
     // Create a new shared buffer manager
-    sbm_ = std::shared_ptr<OdinData::SharedBufferManager>(new OdinData::SharedBufferManager(shared_buffer_name));
+    sbm_ = std::make_shared<OdinData::SharedBufferManager>(shared_buffer_name);
 
     // Set configured status to true
     sharedBufferConfigured_ = true;
@@ -188,9 +188,9 @@ void SharedMemoryController::handleRxChannel()
                     );
 
                     std::shared_ptr<SharedBufferFrame> frame;
-                    frame = std::shared_ptr<SharedBufferFrame>(new SharedBufferFrame(
+                    frame = std::make_shared<SharedBufferFrame>(
                         frame_meta, sbm_->get_buffer_address(bufferID), sbm_->get_buffer_size(), bufferID, &txChannel_
-                    ));
+                    );
 
                     // Loop over registered callbacks, placing the frame onto each queue
                     std::map<std::string, std::shared_ptr<IFrameCallback>>::iterator cbIter;
@@ -293,7 +293,7 @@ void SharedMemoryController::injectEOA()
 {
     // Create the EOA frame object
     std::shared_ptr<FrameProcessor::EndOfAcquisitionFrame> eoa
-        = std::shared_ptr<FrameProcessor::EndOfAcquisitionFrame>(new FrameProcessor::EndOfAcquisitionFrame());
+        = std::make_shared<FrameProcessor::EndOfAcquisitionFrame>();
 
     // Loop over registered callbacks, placing the frame onto each queue
     std::map<std::string, std::shared_ptr<IFrameCallback>>::iterator cbIter;

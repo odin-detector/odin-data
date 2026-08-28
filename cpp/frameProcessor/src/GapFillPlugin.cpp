@@ -183,10 +183,10 @@ std::shared_ptr<Frame> GapFillPlugin::insert_gaps(std::shared_ptr<Frame> frame)
     FrameProcessor::FrameMetaData frame_meta = frame->get_meta_data_copy();
     frame_meta.set_dimensions(img_dims);
 
-    gap_frame = std::shared_ptr<FrameProcessor::DataBlockFrame>(new FrameProcessor::DataBlockFrame(
+    gap_frame = std::make_shared<FrameProcessor::DataBlockFrame>(
         frame_meta, static_cast<void*>(new_image),
         img_x * img_y * get_size_from_enum(frame->get_meta_data().get_data_type())
-    ));
+    );
 
     // Free the allocated memory
     free(new_image);

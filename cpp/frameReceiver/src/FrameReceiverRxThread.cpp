@@ -53,7 +53,7 @@ bool FrameReceiverRxThread::start()
 
     bool init_ok = true;
 
-    rx_thread_ = std::shared_ptr<std::thread>(new std::thread(std::bind(&FrameReceiverRxThread::run_service, this)));
+    rx_thread_ = std::make_shared<std::thread>(std::bind(&FrameReceiverRxThread::run_service, this));
 
     // Wait for the thread service to initialise and be running properly, logging an error
     // an returning false if the thread fails to start within a reasonable time. Also

@@ -64,18 +64,14 @@ public:
         );
 
         // create test frame
-        frame = std::shared_ptr<FrameProcessor::DataBlockFrame>(
-            new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(img_8), 12)
-        );
+        frame = std::make_shared<FrameProcessor::DataBlockFrame>(frame_meta, static_cast<void*>(img_8), 12);
 
         FrameProcessor::FrameMetaData frame_16_meta(
             2, "data", FrameProcessor::raw_16bit, "test", img_dims, FrameProcessor::no_compression
         );
 
         // create test frame with uint16 data
-        frame_16 = std::shared_ptr<FrameProcessor::DataBlockFrame>(
-            new FrameProcessor::DataBlockFrame(frame_16_meta, static_cast<void*>(img_16), 24)
-        );
+        frame_16 = std::make_shared<FrameProcessor::DataBlockFrame>(frame_16_meta, static_cast<void*>(img_16), 24);
 
         // create multiple test frames
         for (int i = 0; i < 10; i++) {

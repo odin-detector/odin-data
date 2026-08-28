@@ -9,6 +9,7 @@
 #include "DebugLevelLogger.h"
 #include "gettime.h"
 #include "logging.h"
+#include <memory>
 
 namespace FrameProcessor {
 
@@ -382,7 +383,7 @@ void FrameProcessorPlugin::callback(std::shared_ptr<Frame> frame)
 void FrameProcessorPlugin::notify_end_of_acquisition()
 {
     // Create an EndOfAcquisitionFrame object and push it through the processing chain
-    std::shared_ptr<EndOfAcquisitionFrame> eoa = std::shared_ptr<EndOfAcquisitionFrame>(new EndOfAcquisitionFrame());
+    auto eoa = std::make_shared<EndOfAcquisitionFrame>();
     this->push(eoa);
 }
 

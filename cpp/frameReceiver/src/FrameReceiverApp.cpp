@@ -184,7 +184,7 @@ int FrameReceiverApp::run(void)
     LOG4CXX_INFO(logger_, "frameReceiver version " << ODIN_DATA_VERSION_STR << " starting up");
 
     // Instantiate a controller
-    controller_ = std::shared_ptr<FrameReceiverController>(new FrameReceiverController(io_threads_));
+    controller_ = std::make_shared<FrameReceiverController>(io_threads_);
 
     try {
 

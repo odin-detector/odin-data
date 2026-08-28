@@ -6,6 +6,7 @@
  */
 
 #include <cstdio>
+#include <memory>
 
 #include "DataBlockPool.h"
 #include "DebugLevelLogger.h"
@@ -930,9 +931,8 @@ void FrameProcessorController::setupFrameReceiverInterface(
                 sharedMemController_.reset();
             }
             // Create the new shared memory controller and give it the parser and publisher
-            sharedMemController_ = std::shared_ptr<SharedMemoryController>(
-                new SharedMemoryController(reactor_, frSubscriberString, frPublisherString)
-            );
+            sharedMemController_
+                = std::make_shared<SharedMemoryController>(reactor_, frSubscriberString, frPublisherString);
             frReadyEndpoint_ = frSubscriberString;
             frReleaseEndpoint_ = frPublisherString;
 
@@ -1059,7 +1059,7 @@ void FrameProcessorController::runIpcService(void)
     LOG4CXX_DEBUG_LEVEL(1, logger_, "Running IPC thread service");
 
     // Create the reactor
-    reactor_ = std::shared_ptr<OdinData::IpcReactor>(new OdinData::IpcReactor());
+    reactor_ = std::make_shared<OdinData::IpcReactor>();
 
     // Add the tick timer to the reactor
     int tick_timer_id = reactor_->register_timer(1000, 0, std::bind(&FrameProcessorController::tickTimer, this));

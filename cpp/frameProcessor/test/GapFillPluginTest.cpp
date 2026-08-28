@@ -32,9 +32,7 @@ public:
             7, "data", FrameProcessor::raw_16bit, "scan1", img_dims, FrameProcessor::no_compression
         );
 
-        frame = std::shared_ptr<FrameProcessor::DataBlockFrame>(
-            new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(img), 24)
-        );
+        frame = std::make_shared<FrameProcessor::DataBlockFrame>(frame_meta, static_cast<void*>(img), 24);
 
         unsigned short img_2[16] = { 1, 1, 2, 2, 1, 1, 2, 2, 3, 3, 4, 4, 3, 3, 4, 4 };
         img_dims[0] = 4;
@@ -47,9 +45,7 @@ public:
             7, "data", FrameProcessor::raw_16bit, "scan1", img_dims, FrameProcessor::no_compression
         );
 
-        frame_2 = std::shared_ptr<FrameProcessor::DataBlockFrame>(
-            new FrameProcessor::DataBlockFrame(frame_2_meta, static_cast<void*>(img_2), 32)
-        );
+        frame_2 = std::make_shared<FrameProcessor::DataBlockFrame>(frame_2_meta, static_cast<void*>(img_2), 32);
     }
 
     ~GapFillPluginTestFixture()

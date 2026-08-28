@@ -213,7 +213,7 @@ void Acquisition::create_file(size_t file_number, HDF5CallDurations_t& call_dura
     close_file(previous_file_, call_durations);
     previous_file_ = current_file_;
 
-    current_file_ = std::shared_ptr<HDF5File>(new HDF5File(hdf5_error_definition_));
+    current_file_ = std::make_shared<HDF5File>(hdf5_error_definition_);
 
     // Create the file
     std::filesystem::path full_path = std::filesystem::path(file_path_) / std::filesystem::path(filename_);
