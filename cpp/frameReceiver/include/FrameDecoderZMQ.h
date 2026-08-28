@@ -28,7 +28,7 @@ public:
     FrameDecoderZMQ() :
         FrameDecoder() { };
 
-    virtual ~FrameDecoderZMQ() = 0;
+    ~FrameDecoderZMQ() override = 0;
 
     virtual void* get_next_message_buffer(void) = 0;
     virtual FrameReceiveState process_message(size_t bytes_received) = 0;

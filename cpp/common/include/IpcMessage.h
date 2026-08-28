@@ -33,13 +33,13 @@ public:
         what_(what) { };
 
     //! Returns the content of the informational message
-    virtual const char* what(void) const noexcept
+    const char* what(void) const noexcept override
     {
         return what_.c_str();
     };
 
     //! Destructor
-    ~IpcMessageException(void) noexcept { };
+    ~IpcMessageException(void) noexcept override { };
 
 private:
     // Member variables

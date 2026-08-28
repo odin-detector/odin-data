@@ -33,7 +33,7 @@ namespace FrameProcessor {
 class FrameProcessorPlugin : public IFrameCallback, public OdinData::IVersionedObject, public MetaMessagePublisher {
 public:
     FrameProcessorPlugin();
-    virtual ~FrameProcessorPlugin();
+    ~FrameProcessorPlugin() override;
     void set_name(const std::string& name);
     std::string get_name() const;
     void set_error(const std::string& msg);
@@ -239,7 +239,7 @@ private:
         }
     }
 
-    void callback(std::shared_ptr<Frame> frame);
+    void callback(std::shared_ptr<Frame> frame) override;
 
     /**
      * This is called by the callback method when any new frames have

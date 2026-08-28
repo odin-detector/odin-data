@@ -28,7 +28,7 @@ public:
     FrameDecoderUDP() :
         FrameDecoder() { };
 
-    virtual ~FrameDecoderUDP() = 0;
+    ~FrameDecoderUDP() override = 0;
 
     virtual const bool requires_header_peek(void) const = 0;
 

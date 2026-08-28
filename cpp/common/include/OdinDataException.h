@@ -24,13 +24,13 @@ public:
         what_(std::move(what)) { };
 
     //! Returns the content of the informational message
-    virtual const char* what(void) const noexcept
+    const char* what(void) const noexcept override
     {
         return what_.c_str();
     };
 
     //! Destructor
-    ~OdinDataException(void) noexcept { };
+    ~OdinDataException(void) noexcept override { };
 
 private:
     // Member variables

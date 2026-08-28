@@ -26,19 +26,19 @@ class SumPlugin : public FrameProcessorPlugin {
 public:
     SumPlugin();
 
-    ~SumPlugin();
+    ~SumPlugin() override;
 
-    void process_frame(std::shared_ptr<Frame> frame);
+    void process_frame(std::shared_ptr<Frame> frame) override;
 
-    int get_version_major();
+    int get_version_major() override;
 
-    int get_version_minor();
+    int get_version_minor() override;
 
-    int get_version_patch();
+    int get_version_patch() override;
 
-    std::string get_version_short();
+    std::string get_version_short() override;
 
-    std::string get_version_long();
+    std::string get_version_long() override;
 
 private:
     /** Pointer to logger */

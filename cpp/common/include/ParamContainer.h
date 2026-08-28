@@ -30,13 +30,13 @@ public:
         what_(what) { };
 
     //! Return the content of the informational message
-    virtual const char* what(void) const noexcept
+    const char* what(void) const noexcept override
     {
         return what_.c_str();
     };
 
     //! Destructor
-    ~ParamContainerException(void) noexcept { };
+    ~ParamContainerException(void) noexcept override { };
 
 private:
     // Member variables

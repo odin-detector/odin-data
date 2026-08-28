@@ -28,7 +28,7 @@ public:
     FrameDecoderTCP() :
         FrameDecoder() { };
 
-    virtual ~FrameDecoderTCP() = 0;
+    ~FrameDecoderTCP() override = 0;
 
     virtual void* get_next_message_buffer(void) = 0;
     virtual const size_t get_next_message_size(void) const = 0;

@@ -52,7 +52,7 @@ public:
 
     FrameDecoder();
 
-    virtual ~FrameDecoder() = 0;
+    ~FrameDecoder() override = 0;
 
     virtual void init(LoggerPtr& logger, OdinData::IpcMessage& config_msg);
     virtual void init(OdinData::IpcMessage& config_msg);

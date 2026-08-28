@@ -31,19 +31,19 @@ namespace FrameProcessor {
 class DummyUDPProcessPlugin : public FrameProcessorPlugin {
 public:
     DummyUDPProcessPlugin();
-    virtual ~DummyUDPProcessPlugin();
-    int get_version_major();
-    int get_version_minor();
-    int get_version_patch();
-    std::string get_version_short();
-    std::string get_version_long();
+    ~DummyUDPProcessPlugin() override;
+    int get_version_major() override;
+    int get_version_minor() override;
+    int get_version_patch() override;
+    std::string get_version_short() override;
+    std::string get_version_long() override;
 
-    void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
-    void requestConfiguration(OdinData::IpcMessage& reply);
-    void execute(const std::string& command, OdinData::IpcMessage& reply);
-    std::vector<std::string> requestCommands();
-    void status(OdinData::IpcMessage& status);
-    bool reset_statistics(void);
+    void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply) override;
+    void requestConfiguration(OdinData::IpcMessage& reply) override;
+    void execute(const std::string& command, OdinData::IpcMessage& reply) override;
+    std::vector<std::string> requestCommands() override;
+    void status(OdinData::IpcMessage& status) override;
+    bool reset_statistics(void) override;
 
 private:
     /** Configuration constant for image width **/
@@ -56,7 +56,7 @@ private:
     /** Command execution constant for print command **/
     static const std::string EXECUTE_PRINT;
 
-    void process_frame(std::shared_ptr<Frame> frame);
+    void process_frame(std::shared_ptr<Frame> frame) override;
     void process_lost_packets(std::shared_ptr<Frame>& frame);
 
     /** Pointer to logger */
