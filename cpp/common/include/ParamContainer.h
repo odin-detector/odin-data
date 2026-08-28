@@ -22,21 +22,21 @@ namespace OdinData {
 class ParamContainerException : public std::exception {
 public:
     //! Create ParamContainerException with no message
-    ParamContainerException(void) throw() :
+    ParamContainerException(void) noexcept :
         what_("") { };
 
     //! Create ParamContainerException with informational message
-    ParamContainerException(const std::string what) throw() :
+    ParamContainerException(const std::string what) noexcept :
         what_(what) { };
 
     //! Return the content of the informational message
-    virtual const char* what(void) const throw()
+    virtual const char* what(void) const noexcept
     {
         return what_.c_str();
     };
 
     //! Destructor
-    ~ParamContainerException(void) throw() { };
+    ~ParamContainerException(void) noexcept { };
 
 private:
     // Member variables

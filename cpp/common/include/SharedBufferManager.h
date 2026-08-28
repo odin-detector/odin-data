@@ -22,8 +22,8 @@ namespace OdinData {
 //! SharedBufferManagerException - custom exception class implementing "what" for error string
 class SharedBufferManagerException : public OdinDataException {
 public:
-    SharedBufferManagerException(const std::string what) :
-        OdinDataException(what)
+    SharedBufferManagerException(std::string&& what) :
+        OdinDataException(std::move(what))
     {
     }
 };

@@ -32,8 +32,8 @@ const std::string CONFIG_DECODER_FRAME_TIMEOUT_MS = "frame_timeout_ms";
 
 class FrameDecoderException : public OdinData::OdinDataException {
 public:
-    FrameDecoderException(const std::string what) :
-        OdinData::OdinDataException(what) { };
+    FrameDecoderException(std::string&& what) :
+        OdinData::OdinDataException(std::move(what)) { };
 };
 
 typedef std::function<void(int, int)> FrameReadyCallback;

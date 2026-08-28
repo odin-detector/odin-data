@@ -35,8 +35,8 @@ namespace OdinData {
 //! IpcReactorException - custom exception class implementing "what" for error string
 class IpcReactorException : public OdinDataException {
 public:
-    IpcReactorException(const std::string what) :
-        OdinDataException(what)
+    IpcReactorException(std::string&& what) :
+        OdinDataException(std::move(what))
     {
     }
 };

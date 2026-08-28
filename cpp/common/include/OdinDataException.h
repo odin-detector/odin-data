@@ -16,21 +16,21 @@ namespace OdinData {
 class OdinDataException : public std::exception {
 public:
     //! Create OdinDataException with no message
-    OdinDataException(void) throw() :
+    OdinDataException(void) noexcept :
         what_("") { };
 
     //! Creates OdinDataException with informational message
-    OdinDataException(const std::string what) throw() :
-        what_(what) { };
+    OdinDataException(std::string&& what) noexcept :
+        what_(std::move(what)) { };
 
     //! Returns the content of the informational message
-    virtual const char* what(void) const throw()
+    virtual const char* what(void) const noexcept
     {
         return what_.c_str();
     };
 
     //! Destructor
-    ~OdinDataException(void) throw() { };
+    ~OdinDataException(void) noexcept { };
 
 private:
     // Member variables

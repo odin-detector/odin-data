@@ -32,8 +32,8 @@ const std::string RX_THREAD_ID = "RX_THREAD";
 
 class FrameReceiverRxThreadException : public OdinData::OdinDataException {
 public:
-    FrameReceiverRxThreadException(const std::string what) :
-        OdinData::OdinDataException(what) { };
+    FrameReceiverRxThreadException(std::string&& what) :
+        OdinData::OdinDataException(std::move(what)) { };
 };
 
 class FrameReceiverRxThread {

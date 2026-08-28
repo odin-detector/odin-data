@@ -25,21 +25,21 @@ namespace OdinData {
 class IpcMessageException : public std::exception {
 public:
     //! Create IpcMessageException with no message
-    IpcMessageException(void) throw() :
+    IpcMessageException(void) noexcept :
         what_("") { };
 
     //! Creates IpcMessageExcetpion with informational message
-    IpcMessageException(const std::string what) throw() :
+    IpcMessageException(const std::string what) noexcept :
         what_(what) { };
 
     //! Returns the content of the informational message
-    virtual const char* what(void) const throw()
+    virtual const char* what(void) const noexcept
     {
         return what_.c_str();
     };
 
     //! Destructor
-    ~IpcMessageException(void) throw() { };
+    ~IpcMessageException(void) noexcept { };
 
 private:
     // Member variables
