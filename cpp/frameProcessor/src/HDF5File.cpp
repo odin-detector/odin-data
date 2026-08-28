@@ -40,7 +40,7 @@ HDF5File::HDF5File(const HDF5ErrorDefinition_t& hdf5_error_definition) :
     this->logger_ = Logger::getLogger("FP.HDF5File");
     LOG4CXX_TRACE(logger_, "HDF5File constructor.");
     if (!hdf_initialised) {
-        ensure_h5_result(H5Eset_auto2(H5E_DEFAULT, nullptr, nullptr), "H5Eset_auto2 failed");
+        ensure_h5_result(H5Eset_auto2(H5E_DEFAULT, NULL, NULL), "H5Eset_auto2 failed");
         ensure_h5_result(H5Ewalk2(H5E_DEFAULT, H5E_WALK_DOWNWARD, hdf5_error_cb, this), "H5Ewalk2 failed");
         hdf_initialised = true;
     }
@@ -191,7 +191,7 @@ size_t HDF5File::create_file(
 
     // Create the memspace for writing parameter datasets
     hsize_t elementSize[1] = { 1 };
-    param_memspace_ = H5Screate_simple(1, elementSize, nullptr);
+    param_memspace_ = H5Screate_simple(1, elementSize, NULL);
     ensure_h5_result(param_memspace_, "Failed to create parameter dataspace");
 
     file_index_ = file_index;
@@ -376,7 +376,7 @@ void HDF5File::write_parameter(const Frame& frame, DatasetDefinition dataset_def
 
     // Select the hyperslab
     ensure_h5_result(
-        H5Sselect_hyperslab(fspace, H5S_SELECT_SET, &offset.front(), nullptr, elementSize, nullptr),
+        H5Sselect_hyperslab(fspace, H5S_SELECT_SET, &offset.front(), NULL, elementSize, NULL),
         "H5Sselect_hyperslab failed"
     );
 
@@ -459,7 +459,7 @@ void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index
         // Create a fixed size dataspace with the given dimensions
         LOG4CXX_DEBUG_LEVEL(1, logger_, "Creating fixed size dataspace");
         dset_dims[0] = definition.num_frames;
-        dataspace = H5Screate_simple(dset_dims.size(), &dset_dims.front(), nullptr);
+        dataspace = H5Screate_simple(dset_dims.size(), &dset_dims.front(), NULL);
         // Limit outermost chunk dimension to maximum dataset size (H5Dchunk.c:891 [1.10.5])
         if (chunk_dims[0] > dset_dims[0]) {
             chunk_dims[0] = dset_dims[0];

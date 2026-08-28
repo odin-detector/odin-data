@@ -75,7 +75,7 @@ public:
 
             // This will open the shared library and in doing so register
             void* dlib = dlopen(path.c_str(), RTLD_NOW);
-            if (dlib == nullptr) {
+            if (!dlib) {
                 // Throw a traceable exception with the dlerror as the reason
                 throw std::runtime_error(dlerror());
             } else {

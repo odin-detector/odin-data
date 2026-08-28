@@ -369,7 +369,7 @@ void IpcReactor::rebuild_pollitems(void)
         }
 
         for (SocketMap::iterator it = sockets_.begin(); it != sockets_.end(); ++item, ++it) {
-            zmq::pollitem_t pollitem = { nullptr, it->first, ZMQ_POLLIN, 0 };
+            zmq::pollitem_t pollitem = { NULL, it->first, ZMQ_POLLIN, 0 };
             pollitems_[item] = pollitem;
             callbacks_[item] = it->second;
         }

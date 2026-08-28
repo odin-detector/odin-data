@@ -46,7 +46,7 @@ void configure_logging_mdc(const char* app_path)
     MDC::put("pid", ss.str());
 
     const char* app_name = strrchr(app_path, static_cast<int>('/'));
-    if (app_name != nullptr) {
+    if (!app_name) {
         MDC::put("app", app_name + 1);
     } else {
         MDC::put("app", app_path);

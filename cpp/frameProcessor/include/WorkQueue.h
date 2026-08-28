@@ -39,8 +39,8 @@ public:
      */
     WorkQueue()
     {
-        pthread_mutex_init(&m_mutex, nullptr);
-        pthread_cond_init(&m_condv, nullptr);
+        pthread_mutex_init(&m_mutex, NULL);
+        pthread_cond_init(&m_condv, NULL);
     }
 
     /** Destructor.

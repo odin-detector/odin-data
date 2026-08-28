@@ -69,7 +69,7 @@ void ControlUtility::run_process(const bool& wait_child)
         );
         int status;
         if (wait_child) {
-            wait(nullptr);
+            wait(NULL);
         }
     }
 
