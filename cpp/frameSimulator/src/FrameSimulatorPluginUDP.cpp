@@ -1,7 +1,7 @@
 #include "FrameSimulatorPluginUDP.h"
 
+#include <cstring>
 #include <functional>
-#include <string.h>
 #include <unistd.h>
 
 #include <net/ethernet.h>

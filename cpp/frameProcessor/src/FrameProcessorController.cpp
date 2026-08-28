@@ -5,7 +5,7 @@
  *      Author: gnx91527
  */
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "DataBlockPool.h"
 #include "DebugLevelLogger.h"

@@ -6,7 +6,7 @@
  */
 
 #include "IpcChannel.h"
-#include <stdio.h>
+#include <cstdio>
 
 #define within(num) (int)((float)(num) * random() / (RAND_MAX + 1.0))
 

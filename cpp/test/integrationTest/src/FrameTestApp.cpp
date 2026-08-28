@@ -1,6 +1,6 @@
+#include <csignal>
 #include <iostream>
 #include <map>
-#include <signal.h>
 #include <string>
 #include <utility>
 #include <vector>

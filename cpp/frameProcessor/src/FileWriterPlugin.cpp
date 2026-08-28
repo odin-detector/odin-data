@@ -3,7 +3,7 @@
  *
  */
 
-#include <assert.h>
+#include <cassert>
 #include <filesystem>
 
 #include <hdf5_hl.h>
