@@ -1,9 +1,11 @@
 import json
+import logging
 import os
 import subprocess
 import sys
 import time
 from pathlib import Path
+from unittest.mock import patch
 
 import h5py as h5
 import odin_data.meta_writer.meta_writer_app
@@ -170,3 +172,24 @@ class TestMetaWriter:
         os.remove("/tmp/test_file_2_meta.h5")
 
         self.process.wait()
+
+    def test_create_file_logs_os_error(self, caplog):
+        from odin_data.meta_writer.meta_writer import MetaWriter, MetaWriterConfig
+
+        invalid_file = "/invalid/test_meta.h5"
+        writer = MetaWriter(
+            name="test",
+            directory="/invalid",
+            endpoints=[],
+            config=MetaWriterConfig(sensor_shape=(1, 1)),
+        )
+        error = PermissionError(13, "Permission denied", invalid_file)
+
+        with (
+            patch("odin_data.meta_writer.meta_writer.h5py.File", side_effect=error),
+            caplog.at_level(logging.ERROR),
+        ):
+            writer._create_file(invalid_file, dataset_size=1)
+
+        assert str(error) in caplog.text
+        assert writer.file_open is False
