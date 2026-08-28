@@ -646,15 +646,15 @@ void FrameReceiverController::configure_rx_thread(OdinData::IpcMessage& config_m
             // Create the RX thread object
             switch (rx_type) {
             case Defaults::RxTypeUDP:
-                rx_thread_.reset(new FrameReceiverUDPRxThread(config_, buffer_manager_, frame_decoder_));
+                rx_thread_ = std::make_unique<FrameReceiverUDPRxThread>(config_, buffer_manager_, frame_decoder_);
                 break;
 
             case Defaults::RxTypeZMQ:
-                rx_thread_.reset(new FrameReceiverZMQRxThread(config_, buffer_manager_, frame_decoder_));
+                rx_thread_ = std::make_unique<FrameReceiverZMQRxThread>(config_, buffer_manager_, frame_decoder_);
                 break;
 
             case Defaults::RxTypeTCP:
-                rx_thread_.reset(new FrameReceiverTCPRxThread(config_, buffer_manager_, frame_decoder_));
+                rx_thread_ = std::make_unique<FrameReceiverTCPRxThread>(config_, buffer_manager_, frame_decoder_);
                 break;
 
             default:
@@ -982,7 +982,7 @@ void FrameReceiverController::notify_buffer_config(const bool deferred)
 //!
 void FrameReceiverController::store_rx_thread_status(OdinData::IpcMessage& rx_status_msg)
 {
-    rx_thread_status_.reset(new IpcMessage(rx_status_msg.encode()));
+    rx_thread_status_ = std::make_unique<IpcMessage>(rx_status_msg.encode());
     LOG4CXX_DEBUG_LEVEL(4, logger_, "RX thread status: " << rx_thread_status_->encode());
 }
 
