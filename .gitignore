@@ -31,3 +31,5 @@ tools/python/build/
 tools/python/dist/
 
 docs/build/
+
+.devcontainer/devcontainer-lock.json
