@@ -7,7 +7,7 @@ repo_dir="$(cd -- "${script_dir}/.." && pwd)"
 build_dir="${BUILD_DIR:-${repo_dir}/vscode_build}"
 bin_dir="${TEST_BIN_DIR:-${build_dir}/bin}"
 lib_dir="${TEST_LIB_DIR:-${build_dir}/lib}"
-config_source_dir="${INTEGRATION_CONFIG_DIR:-${build_dir}/test/integrationTest/config}"
+config_source_dir="${INTEGRATION_CONFIG_DIR:-${repo_dir}/cpp/test/integrationTest/config}"
 
 if [[ ! -d "${bin_dir}" ]]; then
   echo "Test binary directory does not exist: ${bin_dir}" >&2
@@ -88,7 +88,6 @@ required_integration_files=(
   "${config_source_dir}/dummyUDP-fr.json"
   "${config_source_dir}/dummyUDP-fp.json"
   "${config_source_dir}/testUDP.json"
-  "${build_dir}/CMakeCache.txt"
 )
 
 for required_file in "${required_integration_files[@]}"; do
@@ -98,21 +97,15 @@ for required_file in "${required_integration_files[@]}"; do
   fi
 done
 
-configured_prefix="$(sed -n 's/^CMAKE_INSTALL_PREFIX:[^=]*=//p' "${build_dir}/CMakeCache.txt" | head -n 1)"
-if [[ -z "${configured_prefix}" ]]; then
-  echo "Unable to read CMAKE_INSTALL_PREFIX from ${build_dir}/CMakeCache.txt" >&2
-  exit 1
-fi
-
-# The generated integration configs contain the CMake install prefix. Replace it
-# in temporary copies so every process uses the binaries from vscode_build.
+# Replace the install-prefix placeholder in temporary config copies so every
+# process uses the binaries and libraries from vscode_build.
 runtime_dir="${log_dir}/runtime"
 mkdir -p "${runtime_dir}/test_config"
 ln -s "${bin_dir}" "${runtime_dir}/bin"
 ln -s "${lib_dir}" "${runtime_dir}/lib"
 
 for config_name in dummyUDP.json dummyUDP-fr.json dummyUDP-fp.json testUDP.json; do
-  sed "s|${configured_prefix}|${runtime_dir}|g" \
+  sed "s|\\\${CMAKE_INSTALL_PREFIX}|${runtime_dir}|g" \
     "${config_source_dir}/${config_name}" >"${runtime_dir}/test_config/${config_name}"
 done
 
