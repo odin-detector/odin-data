@@ -144,10 +144,6 @@ private:
     std::map<std::string, std::string> stored_configs_;
     /** Condition for exiting this file writing process */
     boost::condition_variable exitCondition_;
-    /** Frames to write before shutting down - 0 to disable shutdown */
-    unsigned int shutdownFrameCount_;
-    /** Total frames processed */
-    unsigned int totalFrames_;
     /** Master frame specifier - Frame to include in count of total frames processed */
     std::string masterFrame_;
     /** Mutex used for locking the exitCondition */
@@ -162,6 +158,8 @@ private:
     bool pluginShutdownSent_;
     /** Have we successfully shutdown */
     bool shutdown_;
+    /** ZMQ context for IPC channels */
+    OdinData::IpcContext& ipc_context_;
     /** Main thread used for control message handling */
     boost::thread ctrlThread_;
     /** Store for any messages occurring during thread initialisation */
@@ -170,8 +168,6 @@ private:
     boost::shared_ptr<OdinData::IpcReactor> reactor_;
     /** End point for control messages */
     std::string ctrlChannelEndpoint_;
-    /** ZMQ context for IPC channels */
-    OdinData::IpcContext& ipc_context_;
     /** IpcChannel for control messages */
     OdinData::IpcChannel ctrlChannel_;
     /** IpcChannel for meta-data messages */
@@ -184,6 +180,10 @@ private:
     std::string frReadyEndpoint_;
     /** End point for frameReceiver release channel */
     std::string frReleaseEndpoint_;
+    /** Frames to write before shutting down - 0 to disable shutdown */
+    unsigned int shutdownFrameCount_;
+    /** Total frames processed */
+    unsigned int totalFrames_;
 };
 
 } /* namespace FrameProcessor */
