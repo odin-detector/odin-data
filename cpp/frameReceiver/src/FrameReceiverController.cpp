@@ -351,10 +351,9 @@ void FrameReceiverController::unbind_channel(OdinData::IpcChannel* channel, std:
 {
     if (channel->has_bound_endpoint(endpoint)) {
         if (deferred) {
-            reactor_.register_timer(
-                deferred_action_delay_ms, 1,
-                boost::bind(&FrameReceiverController::unbind_channel, this, channel, endpoint, false)
-            );
+            reactor_.register_timer(deferred_action_delay_ms, 1, [this, channel, endpoint]() mutable {
+                unbind_channel(channel, endpoint, false);
+            });
         } else {
             LOG4CXX_DEBUG_LEVEL(1, logger_, "Unbinding channel endpoint " << endpoint);
             channel->unbind(endpoint);

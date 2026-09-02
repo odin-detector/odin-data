@@ -36,12 +36,12 @@ class FrameSimulatorPluginUDP : public FrameSimulatorPlugin {
 
 public:
     FrameSimulatorPluginUDP();
-    ~FrameSimulatorPluginUDP();
+    ~FrameSimulatorPluginUDP() override;
 
-    virtual void populate_options(po::options_description& config);
+    void populate_options(po::options_description& config) override;
 
-    virtual bool setup(const po::variables_map& vm);
-    virtual void simulate();
+    bool setup(const po::variables_map& vm) override;
+    void simulate() override;
 
 protected:
     static void pkt_callback(u_char* user, const pcap_pkthdr* hdr, const u_char* buffer);
