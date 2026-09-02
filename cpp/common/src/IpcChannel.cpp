@@ -321,7 +321,7 @@ void IpcChannel::router_send_identity(const std::string& identity_str)
 //! \param[out] identity_str - pointer to string to receive identity on ROUTER sockets
 //! \return string containing the message
 //!
-const std::string IpcChannel::recv(std::string* identity_str)
+std::string IpcChannel::recv(std::string* identity_str)
 {
     // For ROUTER channels, receive the required identity message part first and copy
     // into the specified string location if not NULL.
