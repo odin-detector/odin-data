@@ -207,12 +207,7 @@ void* DummyUDPFrameDecoder::get_packet_header_buffer(void)
 //! \param[in] port - UDP port packet header was received on
 //! \param[in] from_addr - socket address structure with details of source packet
 //!
-void DummyUDPFrameDecoder::process_packet_header
-(
-    size_t /* bytes_received */, 
-    int /* port */, 
-    struct sockaddr_in* /* from_addr */
-)
+void DummyUDPFrameDecoder::process_packet_header(size_t /* bytes_received */, int /* port */, struct sockaddr_in* /* from_addr */)
 {
 
     // Extract fields from the packet header
