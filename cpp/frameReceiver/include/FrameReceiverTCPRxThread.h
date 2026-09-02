@@ -40,7 +40,7 @@ private:
     void run_specific_service(void);
     void cleanup_specific_service(void);
 
-    void handle_receive_socket(int socket_fd, int recv_port);
+    void handle_receive_socket(int socket_fd);
 
     LoggerPtr logger_;
     FrameDecoderTCPPtr frame_decoder_;
