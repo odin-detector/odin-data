@@ -16,13 +16,14 @@ namespace FrameProcessor {
 
 WatchdogTimer::WatchdogTimer(const std::function<void(const std::string&)>& timeout_callback) :
     worker_thread_running_(false),
-    worker_thread_(std::bind(&WatchdogTimer::run, this)),
-    timeout_callback_(timeout_callback),
     timer_id_(0),
     is_valid_id_(false),
-    ticks_(0)
+    ticks_(0),
+    timeout_callback_(timeout_callback)
 {
     this->logger_ = Logger::getLogger("FP.WatchdogTimer");
+
+    worker_thread_ = std::thread(&WatchdogTimer::run, this);
 
     // Wait until worker thread is ready before returning
     while (!worker_thread_running_) { }
