@@ -102,7 +102,7 @@ void* DummyTCPFrameDecoder::get_next_message_buffer(void)
 //!
 //! \return size of frame buffer in bytes
 //!
-const size_t DummyTCPFrameDecoder::get_frame_buffer_size(void) const
+size_t DummyTCPFrameDecoder::get_frame_buffer_size(void) const
 {
     return buffer_size_;
 }
@@ -112,7 +112,7 @@ const size_t DummyTCPFrameDecoder::get_frame_buffer_size(void) const
 //! This method returns the size of the frame header used by the decoder.
 //!
 //! \return size of the frame header in bytes
-const size_t DummyTCPFrameDecoder::get_frame_header_size(void) const
+size_t DummyTCPFrameDecoder::get_frame_header_size(void) const
 {
     return header_size_;
 }
@@ -138,7 +138,7 @@ FrameDecoder::FrameReceiveState DummyTCPFrameDecoder::process_message(size_t byt
         throw "Not Implemented: Can not handle case when too many bytes received";
 }
 
-const size_t DummyTCPFrameDecoder::get_next_message_size(void) const
+size_t DummyTCPFrameDecoder::get_next_message_size(void) const
 {
     return frame_size_ - read_so_far_;
 }

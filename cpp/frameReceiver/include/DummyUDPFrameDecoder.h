@@ -40,14 +40,14 @@ public:
     void init(LoggerPtr& logger, OdinData::IpcMessage& config_msg);
     void request_configuration(const std::string param_prefix, OdinData::IpcMessage& config_reply);
 
-    const size_t get_frame_buffer_size(void) const;
-    const size_t get_frame_header_size(void) const;
+    size_t get_frame_buffer_size(void) const;
+    size_t get_frame_header_size(void) const;
 
-    inline const bool requires_header_peek(void) const
+    inline bool requires_header_peek(void) const
     {
         return true;
     };
-    const size_t get_packet_header_size(void) const;
+    size_t get_packet_header_size(void) const;
     void process_packet_header(size_t bytes_received, int port, struct sockaddr_in* from_addr);
 
     inline const bool trailer_mode(void) const
