@@ -23,7 +23,7 @@ FrameDecoder::FrameDecoder() :
     frames_dropped_(0) { };
 
 //! This overload is scheduled for deletion; logger is unused.
-void FrameDecoder::init(LoggerPtr& logger, OdinData::IpcMessage& config_msg)
+void FrameDecoder::init(LoggerPtr& /* logger */, OdinData::IpcMessage& config_msg)
 {
     init(config_msg);
 }
@@ -137,7 +137,7 @@ void FrameDecoder::push_empty_buffer(int buffer_id)
 //!
 //! \return number of empty buffers queued
 //!
-const size_t FrameDecoder::get_num_empty_buffers(void) const
+size_t FrameDecoder::get_num_empty_buffers(void) const
 {
     return empty_buffer_queue_.size();
 }
@@ -149,7 +149,7 @@ const size_t FrameDecoder::get_num_empty_buffers(void) const
 //!
 //! \return - number of buffers currently mapped for incoming frames
 //!
-const size_t FrameDecoder::get_num_mapped_buffers(void) const
+size_t FrameDecoder::get_num_mapped_buffers(void) const
 {
     return frame_buffer_map_.size();
 }
@@ -160,7 +160,7 @@ const size_t FrameDecoder::get_num_mapped_buffers(void) const
 //!
 //! \return - current frame timeout in milliseconds
 //!
-const unsigned int FrameDecoder::get_frame_timeout_ms(void) const
+unsigned int FrameDecoder::get_frame_timeout_ms(void) const
 {
     return frame_timeout_ms_;
 }
@@ -173,7 +173,7 @@ const unsigned int FrameDecoder::get_frame_timeout_ms(void) const
 //!
 //! \return - number of frames timed out
 //!
-const unsigned int FrameDecoder::get_num_frames_timedout(void) const
+unsigned int FrameDecoder::get_num_frames_timedout(void) const
 {
     return frames_timedout_;
 }
@@ -185,7 +185,7 @@ const unsigned int FrameDecoder::get_num_frames_timedout(void) const
 //!
 //! \return - number of frames dropped
 //!
-const unsigned int FrameDecoder::get_num_frames_dropped(void) const
+unsigned int FrameDecoder::get_num_frames_dropped(void) const
 {
     return frames_dropped_;
 }

@@ -6,7 +6,7 @@
  */
 
 #include "IpcChannel.h"
-#include <stdio.h>
+#include <cstdio>
 
 #define within(num) (int)((float)(num) * random() / (RAND_MAX + 1.0))
 
@@ -91,9 +91,7 @@ IpcChannel::IpcChannel(int type, const std::string identity) :
 
 //! IpcChannel destructor
 //!
-IpcChannel::~IpcChannel()
-{
-}
+IpcChannel::~IpcChannel() = default;
 
 //! Bind the IpcChannel to an endpoint
 //!
@@ -323,14 +321,14 @@ void IpcChannel::router_send_identity(const std::string& identity_str)
 //! \param[out] identity_str - pointer to string to receive identity on ROUTER sockets
 //! \return string containing the message
 //!
-const std::string IpcChannel::recv(std::string* identity_str)
+std::string IpcChannel::recv(std::string* identity_str)
 {
     // For ROUTER channels, receive the required identity message part first and copy
     // into the specified string location if not NULL.
     if (socket_type_ == ZMQ_ROUTER) {
         zmq::message_t identity_msg;
         socket_.recv(&identity_msg);
-        if (identity_str != NULL) {
+        if (identity_str != nullptr) {
             *identity_str = std::string(static_cast<char*>(identity_msg.data()), identity_msg.size());
         }
     }
@@ -355,7 +353,7 @@ const std::string IpcChannel::recv(std::string* identity_str)
 //! \param[out] identity_str - pointer to string to receive identity on ROUTER sockets
 //! \return size of the received message
 //!
-const std::size_t IpcChannel::recv_raw(void* msg_buf, std::string* identity_str)
+std::size_t IpcChannel::recv_raw(void* msg_buf, std::string* identity_str)
 {
 
     // For ROUTER channels, receive the required identity message part first and copy
@@ -363,7 +361,7 @@ const std::size_t IpcChannel::recv_raw(void* msg_buf, std::string* identity_str)
     if (socket_type_ == ZMQ_ROUTER) {
         zmq::message_t identity_msg;
         socket_.recv(&identity_msg);
-        if (identity_str != NULL) {
+        if (identity_str != nullptr) {
             *identity_str = std::string(static_cast<char*>(identity_msg.data()), identity_msg.size());
         }
     }

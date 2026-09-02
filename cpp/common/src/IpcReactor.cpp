@@ -32,9 +32,7 @@ IpcReactorTimer::IpcReactorTimer(size_t delay_ms, size_t times, TimerCallback ca
 }
 
 //! Destructor - destroys an IpcReactorTimer object
-IpcReactorTimer::~IpcReactorTimer()
-{
-}
+IpcReactorTimer::~IpcReactorTimer() = default;
 
 //! Returns the unique ID of the timer instance
 //!
@@ -130,8 +128,8 @@ int IpcReactorTimer::last_timer_id_ = 0;
 
 IpcReactor::IpcReactor() :
     terminate_reactor_(false),
-    pollitems_(0),
-    callbacks_(0),
+    pollitems_(nullptr),
+    callbacks_(nullptr),
     pollsize_(0),
     needs_rebuild_(true)
 {
@@ -338,13 +336,13 @@ void IpcReactor::rebuild_pollitems(void)
     // If the existing pollitems array is valid, delete it
     if (pollitems_) {
         delete[] pollitems_;
-        pollitems_ = 0;
+        pollitems_ = nullptr;
     }
 
     // If the existing callback array is valid, delete it
     if (callbacks_) {
         delete[] callbacks_;
-        callbacks_ = 0;
+        callbacks_ = nullptr;
     }
 
     // Set the number of items to poll to the number of channels registered
@@ -369,7 +367,7 @@ void IpcReactor::rebuild_pollitems(void)
         }
 
         for (SocketMap::iterator it = sockets_.begin(); it != sockets_.end(); ++item, ++it) {
-            zmq::pollitem_t pollitem = { 0, it->first, ZMQ_POLLIN, 0 };
+            zmq::pollitem_t pollitem = { nullptr, it->first, ZMQ_POLLIN, 0 };
             pollitems_[item] = pollitem;
             callbacks_[item] = it->second;
         }
@@ -392,9 +390,9 @@ long IpcReactor::calculate_timeout(void)
     // Calculate shortest timeout up to one hour (!!), looping through
     // current timers to see which fires first
     TimeMs tickless = IpcReactorTimer::clock_mono_ms() + (1000 * 3600);
-    for (TimerMap::iterator it = timers_.begin(); it != timers_.end(); ++it) {
-        if (tickless > (it->second)->when()) {
-            tickless = (it->second)->when();
+    for (auto& timer : timers_) {
+        if (tickless > (timer.second)->when()) {
+            tickless = (timer.second)->when();
         }
     }
 

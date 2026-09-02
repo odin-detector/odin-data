@@ -15,7 +15,7 @@ namespace FrameProcessor {
  * The constructor creates the new WorkQueue object.
  */
 IFrameCallback::IFrameCallback() :
-    thread_(0),
+    thread_(nullptr),
     run_(false),
     working_(false)
 {
@@ -26,9 +26,7 @@ IFrameCallback::IFrameCallback() :
 /**
  * Destructor
  */
-IFrameCallback::~IFrameCallback()
-{
-}
+IFrameCallback::~IFrameCallback() = default;
 
 /** Return the pointer to the WorkQueue.
  *

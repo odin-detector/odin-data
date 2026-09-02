@@ -27,12 +27,12 @@ static const uint32_t packet_number_mask = 0x3FFFFFFF;
 static const int32_t default_frame_number = -1;
 static const std::size_t default_packet_size = 8000;
 
-typedef struct {
+struct PacketHeader {
     uint32_t frame_number;
     uint32_t packet_number_flags;
-} PacketHeader;
+};
 
-typedef struct {
+struct FrameHeader {
     uint32_t frame_number;
     uint32_t frame_state;
     struct timespec frame_start_time;
@@ -40,9 +40,9 @@ typedef struct {
     uint32_t total_packets_received;
     std::size_t packet_size;
     uint8_t packet_state[max_packets];
-} FrameHeader;
+};
 
-inline const std::size_t max_frame_size(void)
+inline std::size_t max_frame_size(void)
 {
     std::size_t max_frame_size = sizeof(FrameHeader) + (max_packet_size * max_packets);
     return max_frame_size;

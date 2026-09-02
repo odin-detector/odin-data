@@ -36,11 +36,11 @@ public:
         FrameDecoderPtr frame_decoder,
         unsigned int tick_period_ms = 100
     );
-    virtual ~FrameReceiverUDPRxThread();
+    ~FrameReceiverUDPRxThread() override;
 
 private:
-    void run_specific_service(void);
-    void cleanup_specific_service(void);
+    void run_specific_service(void) override;
+    void cleanup_specific_service(void) override;
 
     void handle_receive_socket(int socket_fd, int recv_port);
 

@@ -20,10 +20,10 @@ namespace FrameProcessor {
 class RawFileWriterPlugin : public FrameProcessorPlugin {
 public:
     RawFileWriterPlugin();
-    void process_frame(boost::shared_ptr<Frame> frame);
-    void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
-    void requestConfiguration(OdinData::IpcMessage& reply);
-    void status(OdinData::IpcMessage& reply);
+    void process_frame(boost::shared_ptr<Frame> frame) override;
+    void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply) override;
+    void requestConfiguration(OdinData::IpcMessage& reply) override;
+    void status(OdinData::IpcMessage& reply) override;
     int get_version_major() override;
     int get_version_minor() override;
     int get_version_patch() override;

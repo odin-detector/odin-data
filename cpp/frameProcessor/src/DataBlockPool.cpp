@@ -15,9 +15,7 @@ namespace FrameProcessor {
  */
 std::map<size_t, DataBlockPool*> DataBlockPool::instance_map_;
 
-DataBlockPool::~DataBlockPool()
-{
-}
+DataBlockPool::~DataBlockPool() = default;
 
 /**
  * Static method to force allocation of new DataBlocks which are added to
@@ -126,11 +124,11 @@ DataBlockPool* DataBlockPool::instance(size_t block_size)
  * methods to enforce only one pool for each index is created.
  */
 DataBlockPool::DataBlockPool() :
+    logger_(log4cxx::Logger::getLogger("FP.DataBlockPool")),
     free_blocks_(0),
     used_blocks_(0),
     total_blocks_(0),
-    memory_allocated_(0),
-    logger_(log4cxx::Logger::getLogger("FP.DataBlockPool"))
+    memory_allocated_(0)
 {
 }
 

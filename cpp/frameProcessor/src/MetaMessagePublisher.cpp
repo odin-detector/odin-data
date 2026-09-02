@@ -16,9 +16,7 @@ MetaMessagePublisher::MetaMessagePublisher() :
 {
 }
 
-MetaMessagePublisher::~MetaMessagePublisher()
-{
-}
+MetaMessagePublisher::~MetaMessagePublisher() = default;
 
 void MetaMessagePublisher::connect_meta_channel()
 {

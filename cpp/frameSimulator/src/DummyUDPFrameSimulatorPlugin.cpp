@@ -8,8 +8,8 @@
 #include <algorithm>
 #include <boost/lexical_cast.hpp>
 #include <cstdlib>
+#include <ctime>
 #include <iostream>
-#include <time.h>
 
 #include "version.h"
 

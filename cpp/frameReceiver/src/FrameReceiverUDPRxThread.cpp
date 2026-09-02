@@ -35,10 +35,7 @@ void FrameReceiverUDPRxThread::run_specific_service(void)
 {
     LOG4CXX_DEBUG_LEVEL(1, logger_, "Running UDP RX thread service");
 
-    for (std::vector<uint16_t>::iterator rx_port_itr = config_.rx_ports_.begin();
-         rx_port_itr != config_.rx_ports_.end(); rx_port_itr++) {
-
-        uint16_t rx_port = *rx_port_itr;
+    for (unsigned short rx_port : config_.rx_ports_) {
 
         // Create the receive socket
         int recv_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -93,9 +90,9 @@ void FrameReceiverUDPRxThread::run_specific_service(void)
         }
 
         // Register this socket
-        this->register_socket(
-            recv_socket, boost::bind(&FrameReceiverUDPRxThread::handle_receive_socket, this, recv_socket, (int)rx_port)
-        );
+        this->register_socket(recv_socket, [this, recv_socket, recv_port = static_cast<int>(rx_port)] {
+            handle_receive_socket(recv_socket, recv_port);
+        });
     }
 }
 
@@ -116,6 +113,7 @@ void FrameReceiverUDPRxThread::handle_receive_socket(int recv_socket, int recv_p
         void* header_buffer = frame_decoder_->get_packet_header_buffer();
         socklen_t from_len = sizeof(from_addr);
         size_t bytes_received
+        //BUG??: recvfrom is ssize_t but bytes_recieved is size_t
             = recvfrom(recv_socket, header_buffer, header_size, MSG_PEEK, (struct sockaddr*)&from_addr, &from_len);
         LOG4CXX_DEBUG_LEVEL(3, logger_, "RX thread received " << bytes_received << " header bytes on recv socket");
         frame_decoder_->process_packet_header(bytes_received, recv_port, &from_addr);
@@ -145,6 +143,6 @@ void FrameReceiverUDPRxThread::handle_receive_socket(int recv_socket, int recv_p
                               << frame_decoder_->get_next_payload_buffer()
     );
 
-    FrameDecoder::FrameReceiveState frame_receive_state
-        = frame_decoder_->process_packet(bytes_received, recv_port, &from_addr);
+    frame_decoder_->process_packet(bytes_received, recv_port, &from_addr);
+
 }

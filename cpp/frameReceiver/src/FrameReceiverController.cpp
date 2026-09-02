@@ -165,7 +165,7 @@ void FrameReceiverController::run(void)
 void FrameReceiverController::stop(const bool deferred)
 {
     if (deferred) {
-        reactor_.register_timer(deferred_action_delay_ms, 1, boost::bind(&FrameReceiverController::stop, this, false));
+        reactor_.register_timer(deferred_action_delay_ms, 1, [this] { stop(false); });
     } else {
         LOG4CXX_TRACE(logger_, "FrameReceiverController::stop()");
         terminate_controller_ = true;
@@ -189,7 +189,6 @@ void FrameReceiverController::configure_ipc_channels(OdinData::IpcMessage& confi
     static bool ctrl_channel_configured = false;
     static bool rx_channel_configured = false;
     static bool ready_channel_configured = false;
-    static bool release_channel_configured = false;
 
     // Clear the IPC config status until successful completion
     ipc_configured_ = false;
@@ -237,7 +236,6 @@ void FrameReceiverController::configure_ipc_channels(OdinData::IpcMessage& confi
             this->unbind_channel(&frame_release_channel_, config_.frame_release_endpoint_, false);
             this->setup_frame_release_channel(frame_release_endpoint);
             config_.frame_release_endpoint_ = frame_release_endpoint;
-            release_channel_configured = true;
         }
     }
 
@@ -267,7 +265,7 @@ void FrameReceiverController::setup_control_channel(const std::string& endpoint)
     }
 
     // Add channel to the reactor
-    reactor_.register_channel(ctrl_channel_, boost::bind(&FrameReceiverController::handle_ctrl_channel, this));
+    reactor_.register_channel(ctrl_channel_, [this] { handle_ctrl_channel(); });
 }
 
 //! Set up the receiver thread channel.
@@ -290,7 +288,7 @@ void FrameReceiverController::setup_rx_channel(const std::string& endpoint)
     }
 
     // Add channel to the reactor
-    reactor_.register_channel(rx_channel_, boost::bind(&FrameReceiverController::handle_rx_channel, this));
+    reactor_.register_channel(rx_channel_, [this] { handle_rx_channel(); });
 }
 
 //! Set up the frame ready notification channel.
@@ -336,9 +334,7 @@ void FrameReceiverController::setup_frame_release_channel(const std::string& end
     frame_release_channel_.subscribe("");
 
     // Add channel to the reactor
-    reactor_.register_channel(
-        frame_release_channel_, boost::bind(&FrameReceiverController::handle_frame_release_channel, this)
-    );
+    reactor_.register_channel(frame_release_channel_, [this] { handle_frame_release_channel(); });
 }
 
 //! Unbind an IpcChannel from an endpoint.
@@ -355,10 +351,9 @@ void FrameReceiverController::unbind_channel(OdinData::IpcChannel* channel, std:
 {
     if (channel->has_bound_endpoint(endpoint)) {
         if (deferred) {
-            reactor_.register_timer(
-                deferred_action_delay_ms, 1,
-                boost::bind(&FrameReceiverController::unbind_channel, this, channel, endpoint, false)
-            );
+            reactor_.register_timer(deferred_action_delay_ms, 1, [this, channel, endpoint]() mutable {
+                unbind_channel(channel, endpoint, false);
+            });
         } else {
             LOG4CXX_DEBUG_LEVEL(1, logger_, "Unbinding channel endpoint " << endpoint);
             channel->unbind(endpoint);
@@ -703,7 +698,6 @@ void FrameReceiverController::handle_ctrl_channel(void)
 
     // Construct a default reply
     IpcMessage ctrl_reply;
-    IpcMessage::MsgVal ctrl_reply_val = IpcMessage::MsgValIllegal;
 
     bool request_ok = true;
     std::ostringstream error_ss;
@@ -960,9 +954,7 @@ void FrameReceiverController::notify_buffer_config(const bool deferred)
     // buffer configuration.
 
     if (deferred) {
-        reactor_.register_timer(
-            deferred_action_delay_ms, 1, boost::bind(&FrameReceiverController::notify_buffer_config, this, false)
-        );
+        reactor_.register_timer(deferred_action_delay_ms, 1, [this] { notify_buffer_config(false); });
     } else {
         LOG4CXX_DEBUG_LEVEL(1, logger_, "Notifying downstream processes of shared buffer configuration");
 

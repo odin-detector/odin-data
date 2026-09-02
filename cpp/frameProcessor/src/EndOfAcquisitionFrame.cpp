@@ -13,33 +13,26 @@ EndOfAcquisitionFrame::EndOfAcquisitionFrame() :
  * implement as shallow copy
  * @param frame
  */
-EndOfAcquisitionFrame::EndOfAcquisitionFrame(const EndOfAcquisitionFrame& frame) :
-    Frame(frame) { };
+EndOfAcquisitionFrame::EndOfAcquisitionFrame(const EndOfAcquisitionFrame& frame) = default;
 
 /** Assignment operator;
  * implement as deep copy
  * @param frame
  * @return Frame
  */
-EndOfAcquisitionFrame& EndOfAcquisitionFrame::operator=(EndOfAcquisitionFrame& frame)
-{
-    Frame::operator=(frame);
-    return *this;
-}
+EndOfAcquisitionFrame& EndOfAcquisitionFrame::operator=(EndOfAcquisitionFrame& frame) = default;
 
 /** Destroy frame
  *
  */
-EndOfAcquisitionFrame::~EndOfAcquisitionFrame()
-{
-}
+EndOfAcquisitionFrame::~EndOfAcquisitionFrame() = default;
 
 /** No data ptr so return null
  *
  */
 void* EndOfAcquisitionFrame::get_data_ptr() const
 {
-    return NULL;
+    return nullptr;
 }
 
 /** Return true to signify that this frame

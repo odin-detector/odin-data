@@ -23,7 +23,7 @@ using namespace log4cxx::helpers;
 
 namespace FrameSimulator {
 
-typedef std::vector<UDPFrame> UDPFrames;
+using UDPFrames = std::vector<UDPFrame>;
 
 /** FrameSimulatorPluginUDP
  *
@@ -36,12 +36,12 @@ class FrameSimulatorPluginUDP : public FrameSimulatorPlugin {
 
 public:
     FrameSimulatorPluginUDP();
-    ~FrameSimulatorPluginUDP();
+    ~FrameSimulatorPluginUDP() override;
 
-    virtual void populate_options(po::options_description& config);
+    void populate_options(po::options_description& config) override;
 
-    virtual bool setup(const po::variables_map& vm);
-    virtual void simulate();
+    bool setup(const po::variables_map& vm) override;
+    void simulate() override;
 
 protected:
     static void pkt_callback(u_char* user, const pcap_pkthdr* hdr, const u_char* buffer);
@@ -80,7 +80,7 @@ private:
     int m_socket;
 
     // Used by send_packet to send each frame to the correct port
-    mutable int curr_port_index;
+    mutable uint64_t curr_port_index;
     mutable int curr_frame;
 
     pcap_t* m_handle;

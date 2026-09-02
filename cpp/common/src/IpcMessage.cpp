@@ -24,8 +24,8 @@ IpcMessage::IpcMessage(MsgType msg_type, MsgVal msg_val, bool strict_validation)
     strict_validation_(strict_validation),
     msg_type_(msg_type),
     msg_val_(msg_val),
-    msg_id_(0),
-    msg_timestamp_(boost::posix_time::microsec_clock::local_time())
+    msg_timestamp_(boost::posix_time::microsec_clock::local_time()),
+    msg_id_(0)
 {
     // Intialise empty JSON document
     doc_.SetObject();
@@ -113,8 +113,8 @@ IpcMessage::IpcMessage(const rapidjson::Value& value, MsgType msg_type, MsgVal m
     strict_validation_(strict_validation),
     msg_type_(msg_type),
     msg_val_(msg_val),
-    msg_id_(0),
-    msg_timestamp_(boost::posix_time::microsec_clock::local_time())
+    msg_timestamp_(boost::posix_time::microsec_clock::local_time()),
+    msg_id_(0)
 {
     // Intialise empty JSON document
     doc_.SetObject();
@@ -134,8 +134,8 @@ IpcMessage::IpcMessage(const rapidjson::Value& value, MsgType msg_type, MsgVal m
 void IpcMessage::update(const IpcMessage& other)
 {
     std::vector<std::string> params = other.get_param_names();
-    for (std::vector<std::string>::const_iterator itr = params.begin(); itr != params.end(); ++itr) {
-        this->set_param<const rapidjson::Value&>(*itr, other.get_param<const rapidjson::Value&>(*itr));
+    for (const auto& param : params) {
+        this->set_param<const rapidjson::Value&>(param, other.get_param<const rapidjson::Value&>(param));
     }
 }
 
@@ -252,7 +252,7 @@ bool IpcMessage::is_valid(void)
 //!
 //! \return MsgType enumerated message type attribute
 
-const IpcMessage::MsgType IpcMessage::get_msg_type(void) const
+IpcMessage::MsgType IpcMessage::get_msg_type(void) const
 {
     return msg_type_;
 }
@@ -263,7 +263,7 @@ const IpcMessage::MsgType IpcMessage::get_msg_type(void) const
 //!
 //! \return MsgVal enumerated message value attribute
 
-const IpcMessage::MsgVal IpcMessage::get_msg_val(void) const
+IpcMessage::MsgVal IpcMessage::get_msg_val(void) const
 {
     return msg_val_;
 }
@@ -296,7 +296,7 @@ const struct tm IpcMessage::get_msg_datetime(void) const
 //! This method returns the "id" attribute of the message.
 //!
 //! \return unsigned int message id
-const unsigned int IpcMessage::get_msg_id(void) const
+unsigned int IpcMessage::get_msg_id(void) const
 {
     return msg_id_;
 }
@@ -650,7 +650,7 @@ boost::posix_time::ptime IpcMessage::valid_msg_timestamp(std::string msg_timesta
 std::string IpcMessage::valid_msg_timestamp(boost::posix_time::ptime msg_timestamp)
 {
     // Return message timestamp as string in ISO8601 extended format
-    return boost::posix_time::to_iso_extended_string(msg_timestamp_);
+    return boost::posix_time::to_iso_extended_string(msg_timestamp);
 }
 
 //! Indicates if the message has a params block.

@@ -31,11 +31,13 @@ void print_stack_trace(FILE* out = stderr, unsigned int max_frames = 63)
     // Print a header
     fprintf(out, "stack trace:\n");
 
-    // Declare storage array for stack trace address data
-    void* addrlist[max_frames + 1];
+    // Keep this storage fixed-size: the handler must not allocate memory.
+    constexpr unsigned int max_supported_frames = 63;
+    const unsigned int frame_limit = max_frames < max_supported_frames ? max_frames : max_supported_frames;
+    void* addrlist[max_supported_frames + 1];
 
     // Retrieve current stack addresses
-    uint32_t addrlen = backtrace(addrlist, sizeof(addrlist) / sizeof(void*));
+    uint32_t addrlen = backtrace(addrlist, frame_limit + 1);
 
     if (addrlen == 0) {
         fprintf(out, "  \n");
@@ -59,10 +61,10 @@ void print_stack_trace(FILE* out = stderr, unsigned int max_frames = 63)
  * @param si struct with signal information
  * @param unused
  */
-void abort_handler(int signum, siginfo_t* si, void* unused)
+void abort_handler(int signum, siginfo_t*, void*)
 {
     // Associate each signal with a signal name string.
-    const char* name = NULL;
+    const char* name = nullptr;
     switch (signum) {
     case SIGABRT:
         name = "SIGABRT";
@@ -122,12 +124,12 @@ void init_seg_fault_handler()
     sa.sa_sigaction = abort_handler;
     sigemptyset(&sa.sa_mask);
 
-    sigaction(SIGABRT, &sa, NULL);
-    sigaction(SIGSEGV, &sa, NULL);
-    sigaction(SIGBUS, &sa, NULL);
-    sigaction(SIGILL, &sa, NULL);
-    sigaction(SIGFPE, &sa, NULL);
-    sigaction(SIGPIPE, &sa, NULL);
+    sigaction(SIGABRT, &sa, nullptr);
+    sigaction(SIGSEGV, &sa, nullptr);
+    sigaction(SIGBUS, &sa, nullptr);
+    sigaction(SIGILL, &sa, nullptr);
+    sigaction(SIGFPE, &sa, nullptr);
+    sigaction(SIGPIPE, &sa, nullptr);
 }
 }
 

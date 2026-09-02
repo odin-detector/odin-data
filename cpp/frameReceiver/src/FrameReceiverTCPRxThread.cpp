@@ -34,10 +34,7 @@ void FrameReceiverTCPRxThread::run_specific_service(void)
 {
     LOG4CXX_DEBUG_LEVEL(1, logger_, "Running TCP RX thread service");
 
-    for (std::vector<uint16_t>::iterator rx_port_itr = config_.rx_ports_.begin();
-         rx_port_itr != config_.rx_ports_.end(); rx_port_itr++) {
-
-        uint16_t rx_port = *rx_port_itr;
+    for (unsigned short rx_port : config_.rx_ports_) {
 
         // Create the receive socket
         int recv_socket_ = socket(AF_INET, SOCK_STREAM, 0);
@@ -90,10 +87,7 @@ void FrameReceiverTCPRxThread::run_specific_service(void)
         }
 
         // Register this socket
-        this->register_socket(
-            recv_socket_,
-            boost::bind(&FrameReceiverTCPRxThread::handle_receive_socket, this, recv_socket_, (int)rx_port)
-        );
+        this->register_socket(recv_socket_, [this, recv_socket_] { handle_receive_socket(recv_socket_); });
     }
 }
 
@@ -106,7 +100,7 @@ void FrameReceiverTCPRxThread::cleanup_specific_service(void)
     close(recv_socket_);
 }
 
-void FrameReceiverTCPRxThread::handle_receive_socket(int recv_socket_, int recv_port)
+void FrameReceiverTCPRxThread::handle_receive_socket(int recv_socket_)
 {
     // Receive a message from the main thread channel and place it directly into
     // the provided memory buffer

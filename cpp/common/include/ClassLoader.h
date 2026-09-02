@@ -43,7 +43,7 @@ template <typename BaseClass> class ClassLoader {
     /**
      * Shared pointer to the specified BaseClass
      */
-    typedef boost::shared_ptr<BaseClass> maker_t();
+    using maker_t = boost::shared_ptr<BaseClass>();
 
 public:
     /**
@@ -75,7 +75,7 @@ public:
 
             // This will open the shared library and in doing so register
             void* dlib = dlopen(path.c_str(), RTLD_NOW);
-            if (dlib == NULL) {
+            if (dlib == nullptr) {
                 // Throw a traceable exception with the dlerror as the reason
                 throw std::runtime_error(dlerror());
             } else {

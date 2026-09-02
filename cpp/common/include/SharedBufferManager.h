@@ -30,11 +30,11 @@ public:
 
 class SharedBufferManager {
 public:
-    typedef struct {
+    struct Header {
         size_t manager_id;
         size_t num_buffers;
         size_t buffer_size;
-    } Header;
+    };
 
     SharedBufferManager(
         const std::string& shared_mem_name,
@@ -46,9 +46,9 @@ public:
 
     ~SharedBufferManager();
 
-    const size_t get_manager_id(void) const;
-    const size_t get_num_buffers(void) const;
-    const size_t get_buffer_size(void) const;
+    size_t get_manager_id(void) const;
+    size_t get_num_buffers(void) const;
+    size_t get_buffer_size(void) const;
 
     void* get_buffer_address(const unsigned int buffer) const;
 
@@ -63,7 +63,7 @@ private:
     static size_t last_manager_id;
 };
 
-typedef boost::shared_ptr<SharedBufferManager> SharedBufferManagerPtr;
+using SharedBufferManagerPtr = boost::shared_ptr<SharedBufferManager>;
 
 } // namespace OdinData
 #endif /* SHAREDBUFFERMANAGER_H_ */

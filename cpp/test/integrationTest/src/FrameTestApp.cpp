@@ -1,6 +1,6 @@
+#include <csignal>
 #include <iostream>
 #include <map>
-#include <signal.h>
 #include <string>
 #include <utility>
 #include <vector>
@@ -34,16 +34,6 @@ namespace po = boost::program_options;
 
 #include "DebugLevelLogger.h"
 #include "logging.h"
-
-/** Check that str contains suffix
- * /param[in] str - string to test
- * /param[in] suffix - test suffix
- * /return true if suffix found; else false
- */
-static bool has_suffix(const std::string& str, const std::string& suffix)
-{
-    return str.size() >= suffix.size() && str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
-}
 
 /** Parse command line arguments
  * /param[in] argc - argument count; number of arguments to parse
@@ -149,12 +139,12 @@ int main(int argc, char* argv[])
             sleep(sleeptime);
         }
 
-        for (int i = 0; i < processes.size(); i++) {
-            processes[i]->end();
+        for (auto& process : processes) {
+            process->end();
         }
 
-        for (int j = 0; j < utilities.size(); j++) {
-            int status = utilities[j]->exit_status();
+        for (auto& utility : utilities) {
+            int status = utility->exit_status();
             if (status != 0)
                 return status;
         }

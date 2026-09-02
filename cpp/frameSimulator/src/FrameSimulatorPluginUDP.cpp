@@ -1,7 +1,7 @@
 #include "FrameSimulatorPluginUDP.h"
 
+#include <cstring>
 #include <functional>
-#include <string.h>
 #include <unistd.h>
 
 #include <net/ethernet.h>
@@ -93,7 +93,7 @@ bool FrameSimulatorPluginUDP::setup(const po::variables_map& vm)
         // Open a handle to the pcap file
         m_handle = pcap_open_offline(opt_pcapfile.get_val(vm).c_str(), errbuf);
 
-        if (m_handle == NULL) {
+        if (m_handle == nullptr) {
             LOG4CXX_ERROR(logger_, "pcap open failed: " << errbuf);
             return false;
         }
@@ -118,10 +118,8 @@ void FrameSimulatorPluginUDP::prepare_packets(const struct pcap_pkthdr* header, 
 
     LOG4CXX_DEBUG(logger_, "Preparing packet(s)");
 
-    int size = header->len;
     struct iphdr* iph = (struct iphdr*)(buffer + sizeof(struct ethhdr));
     struct udphdr* udph = (struct udphdr*)(buffer + iph->ihl * 4 + sizeof(struct ethhdr));
-    const u_char* d = &buffer[sizeof(struct ethhdr) + iph->ihl * 4 + sizeof udph];
 
     int header_size = sizeof(struct ethhdr) + iph->ihl * 4 + sizeof(udph);
 
@@ -215,7 +213,7 @@ void FrameSimulatorPluginUDP::replay_frames()
                 struct timespec wait_spec;
                 wait_spec.tv_sec = (int)wait_time_s;
                 wait_spec.tv_nsec = (long)((wait_time_s - (float)wait_spec.tv_sec) * 1000000000L);
-                nanosleep(&wait_spec, NULL);
+                nanosleep(&wait_spec, nullptr);
             }
         }
 

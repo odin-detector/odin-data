@@ -39,9 +39,9 @@ public:
         OdinData::OdinDataException(what) { };
 };
 
-typedef boost::function<void(int, int)> FrameReadyCallback;
-typedef std::queue<int> EmptyBufferQueue;
-typedef std::map<int, int> FrameBufferMap;
+using FrameReadyCallback = boost::function<void(int, int)>;
+using EmptyBufferQueue = std::queue<int>;
+using FrameBufferMap = std::map<int, int>;
 
 class FrameDecoder : public OdinData::IVersionedObject {
 public:
@@ -55,25 +55,25 @@ public:
 
     FrameDecoder();
 
-    virtual ~FrameDecoder() = 0;
+    ~FrameDecoder() override = 0;
 
     virtual void init(LoggerPtr& logger, OdinData::IpcMessage& config_msg);
     virtual void init(OdinData::IpcMessage& config_msg);
     virtual void request_configuration(const std::string param_prefix, OdinData::IpcMessage& config_reply);
     virtual std::vector<std::string> request_commands();
     virtual void execute(const std::string& command, OdinData::IpcMessage& reply);
-    virtual const size_t get_frame_buffer_size(void) const = 0;
-    virtual const size_t get_frame_header_size(void) const = 0;
+    virtual size_t get_frame_buffer_size(void) const = 0;
+    virtual size_t get_frame_header_size(void) const = 0;
 
     void register_buffer_manager(OdinData::SharedBufferManagerPtr buffer_manager);
     void register_frame_ready_callback(FrameReadyCallback callback);
     void push_empty_buffer(int buffer_id);
-    const size_t get_num_empty_buffers(void) const;
-    const size_t get_num_mapped_buffers(void) const;
+    size_t get_num_empty_buffers(void) const;
+    size_t get_num_mapped_buffers(void) const;
     void drop_all_buffers(void);
-    const unsigned int get_frame_timeout_ms(void) const;
-    const unsigned int get_num_frames_timedout(void) const;
-    const unsigned int get_num_frames_dropped(void) const;
+    unsigned int get_frame_timeout_ms(void) const;
+    unsigned int get_num_frames_timedout(void) const;
+    unsigned int get_num_frames_dropped(void) const;
     virtual void monitor_buffers(void) = 0;
     virtual void get_status(const std::string param_prefix, OdinData::IpcMessage& status_msg) = 0;
     void version(const std::string param_prefix, OdinData::IpcMessage& status);
@@ -96,9 +96,9 @@ protected:
     unsigned int frames_dropped_; //!< Number of frames dropped due to lack of buffers
 };
 
-inline FrameDecoder::~FrameDecoder() { };
+inline FrameDecoder::~FrameDecoder() = default;
 
-typedef boost::shared_ptr<FrameDecoder> FrameDecoderPtr;
+using FrameDecoderPtr = boost::shared_ptr<FrameDecoder>;
 
 } // namespace FrameReceiver
 #endif /* INCLUDE_FRAMEDECODER_H_ */

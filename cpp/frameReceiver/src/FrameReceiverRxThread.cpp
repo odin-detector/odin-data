@@ -55,8 +55,7 @@ bool FrameReceiverRxThread::start()
 
     bool init_ok = true;
 
-    rx_thread_
-        = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&FrameReceiverRxThread::run_service, this)));
+    rx_thread_ = boost::shared_ptr<boost::thread>(new boost::thread([this] { run_service(); }));
 
     // Wait for the thread service to initialise and be running properly, logging an error
     // an returning false if the thread fails to start within a reasonable time. Also
@@ -127,22 +126,22 @@ void FrameReceiverRxThread::run_service(void)
     }
 
     // Add the RX channel to the reactor
-    reactor_.register_channel(rx_channel_, boost::bind(&FrameReceiverRxThread::handle_rx_channel, this));
+    reactor_.register_channel(rx_channel_, [this] { handle_rx_channel(); });
 
     // Run the specific service setup implemented in subclass
     run_specific_service();
 
     // Add the tick timer to the reactor
-    int tick_timer_id
-        = reactor_.register_timer(tick_period_ms_, 0, boost::bind(&FrameReceiverRxThread::tick_timer, this));
+    int tick_timer_id = reactor_.register_timer(tick_period_ms_, 0, [this] { tick_timer(); });
 
     // Add the buffer monitor timer to the reactor
-    int buffer_monitor_timer_id = reactor_.register_timer(
-        frame_decoder_->get_frame_timeout_ms(), 0, boost::bind(&FrameReceiverRxThread::buffer_monitor_timer, this)
-    );
+    int buffer_monitor_timer_id
+        = reactor_.register_timer(frame_decoder_->get_frame_timeout_ms(), 0, [this] { buffer_monitor_timer(); });
 
     // Register the frame release callback with the decoder
-    frame_decoder_->register_frame_ready_callback(boost::bind(&FrameReceiverRxThread::frame_ready, this, _1, _2));
+    frame_decoder_->register_frame_ready_callback([this](int buffer_id, int frame_number) {
+        frame_ready(buffer_id, frame_number);
+    });
 
     // If there was any prior error setting the thread up, return
     if (thread_init_error_) {
@@ -168,10 +167,9 @@ void FrameReceiverRxThread::run_service(void)
     reactor_.remove_timer(tick_timer_id);
     reactor_.remove_timer(buffer_monitor_timer_id);
 
-    for (std::vector<int>::iterator recv_sock_it = recv_sockets_.begin(); recv_sock_it != recv_sockets_.end();
-         recv_sock_it++) {
-        reactor_.remove_socket(*recv_sock_it);
-        close(*recv_sock_it);
+    for (int& recv_socket : recv_sockets_) {
+        reactor_.remove_socket(recv_socket);
+        close(recv_socket);
     }
     recv_sockets_.clear();
     rx_channel_.close();

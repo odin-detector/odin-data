@@ -7,7 +7,7 @@
 
 namespace FrameSimulator {
 
-typedef std::vector<boost::shared_ptr<Packet>> PacketList;
+using PacketList = std::vector<boost::shared_ptr<Packet>>;
 
 /** UDPFrame class
  *

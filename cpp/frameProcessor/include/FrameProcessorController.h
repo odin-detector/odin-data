@@ -36,7 +36,7 @@ class FrameProcessorController : public IFrameCallback,
                                  public boost::enable_shared_from_this<FrameProcessorController> {
 public:
     FrameProcessorController(unsigned int num_io_threads = OdinData::Defaults::default_io_threads);
-    virtual ~FrameProcessorController();
+    ~FrameProcessorController() override;
     void handleCtrlChannel();
     void handleMetaRxChannel();
     void provideStatus(OdinData::IpcMessage& reply, bool metadata);
@@ -46,7 +46,7 @@ public:
     void execute(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
     void requestCommands(OdinData::IpcMessage& reply);
     void resetStatistics(OdinData::IpcMessage& reply);
-    void configurePlugin(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
+    void configurePlugin(OdinData::IpcMessage& config);
     void loadPlugin(const std::string& index, const std::string& name, const std::string& library);
     void connectPlugin(const std::string& index, const std::string& connectTo);
     void disconnectPlugin(const std::string& index, const std::string& disconnectFrom);
@@ -132,7 +132,7 @@ private:
     void closeMetaTxInterface();
     void runIpcService(void);
     void tickTimer(void);
-    void callback(boost::shared_ptr<Frame> frame);
+    void callback(boost::shared_ptr<Frame> frame) override;
 
     /** Pointer to the logging facility */
     log4cxx::LoggerPtr logger_;
@@ -144,10 +144,6 @@ private:
     std::map<std::string, std::string> stored_configs_;
     /** Condition for exiting this file writing process */
     boost::condition_variable exitCondition_;
-    /** Frames to write before shutting down - 0 to disable shutdown */
-    unsigned int shutdownFrameCount_;
-    /** Total frames processed */
-    unsigned int totalFrames_;
     /** Master frame specifier - Frame to include in count of total frames processed */
     std::string masterFrame_;
     /** Mutex used for locking the exitCondition */
@@ -162,6 +158,8 @@ private:
     bool pluginShutdownSent_;
     /** Have we successfully shutdown */
     bool shutdown_;
+    /** ZMQ context for IPC channels */
+    OdinData::IpcContext& ipc_context_;
     /** Main thread used for control message handling */
     boost::thread ctrlThread_;
     /** Store for any messages occurring during thread initialisation */
@@ -170,8 +168,6 @@ private:
     boost::shared_ptr<OdinData::IpcReactor> reactor_;
     /** End point for control messages */
     std::string ctrlChannelEndpoint_;
-    /** ZMQ context for IPC channels */
-    OdinData::IpcContext& ipc_context_;
     /** IpcChannel for control messages */
     OdinData::IpcChannel ctrlChannel_;
     /** IpcChannel for meta-data messages */
@@ -184,6 +180,10 @@ private:
     std::string frReadyEndpoint_;
     /** End point for frameReceiver release channel */
     std::string frReleaseEndpoint_;
+    /** Frames to write before shutting down - 0 to disable shutdown */
+    unsigned int shutdownFrameCount_;
+    /** Total frames processed */
+    unsigned int totalFrames_;
 };
 
 } /* namespace FrameProcessor */

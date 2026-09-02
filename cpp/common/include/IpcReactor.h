@@ -44,10 +44,10 @@ public:
 };
 
 //! Function signature for timer callback methods
-typedef boost::function<void()> TimerCallback;
+using TimerCallback = boost::function<void()>;
 
 //! Reactor millisecond time type
-typedef int64_t TimeMs;
+using TimeMs = int64_t;
 
 //! IpcReactorTimer - timer objects for use in the IpcReactor class
 class IpcReactorTimer {
@@ -86,18 +86,18 @@ private:
 };
 
 //! Function signature for reactor callback methods
-typedef boost::function<void()> ReactorCallback;
+using ReactorCallback = boost::function<void()>;
 
 //! Pointer to underlying ZMQ socket of a channel
-typedef zmq::socket_t* SocketPtr;
+using SocketPtr = zmq::socket_t*;
 
 //! Internal map to associate channel socket with a callback method
-typedef std::map<SocketPtr, ReactorCallback> ChannelMap;
+using ChannelMap = std::map<SocketPtr, ReactorCallback>;
 
-typedef std::map<int, ReactorCallback> SocketMap;
+using SocketMap = std::map<int, ReactorCallback>;
 
 //! Internal map to associate timer ID with a timer
-typedef std::map<int, boost::shared_ptr<IpcReactorTimer>> TimerMap;
+using TimerMap = std::map<int, boost::shared_ptr<IpcReactorTimer>>;
 
 class IpcReactor {
 public:

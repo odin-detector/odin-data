@@ -1,11 +1,21 @@
 # Require CMake version >=3.22 (default in Ubuntu 22.04)
 cmake_minimum_required(VERSION 3.22)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Project name
 project(OdinData)
 
 include(${CMAKE_SOURCE_DIR}/cmake/CodeCoverage.cmake)
 setup_coverage()
+
+add_compile_options(
+  -Wall
+  -Wextra
+  -Wpedantic
+  $<$<CXX_COMPILER_ID:GNU>:-Wno-class-memaccess>
+)
 
 # Set output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)

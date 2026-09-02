@@ -23,15 +23,15 @@ namespace FrameProcessor {
 class ParameterPublishPlugin : public FrameProcessorPlugin {
 public:
     ParameterPublishPlugin();
-    ~ParameterPublishPlugin();
-    void process_frame(boost::shared_ptr<Frame> frame);
-    void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
-    void requestConfiguration(OdinData::IpcMessage& reply);
-    int get_version_major();
-    int get_version_minor();
-    int get_version_patch();
-    std::string get_version_short();
-    std::string get_version_long();
+    ~ParameterPublishPlugin() override;
+    void process_frame(boost::shared_ptr<Frame> frame) override;
+    void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply) override;
+    void requestConfiguration(OdinData::IpcMessage& reply) override;
+    int get_version_major() override;
+    int get_version_minor() override;
+    int get_version_patch() override;
+    std::string get_version_short() override;
+    std::string get_version_long() override;
 
     // Config message keys
     static const std::string CONFIG_ENDPOINT;

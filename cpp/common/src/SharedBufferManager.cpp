@@ -23,7 +23,7 @@ try :
     shared_mem_size_(shared_mem_size),
     remove_when_deleted_(remove_when_deleted),
     shared_mem_(open_or_create, shared_mem_name_.c_str(), read_write),
-    manager_hdr_(0) {
+    manager_hdr_(nullptr) {
 
     // Check that the buffer size specified is non-zero
     if (buffer_size == 0) {
@@ -84,16 +84,16 @@ SharedBufferManager::~SharedBufferManager()
     }
 }
 
-const size_t SharedBufferManager::get_manager_id(void) const
+size_t SharedBufferManager::get_manager_id(void) const
 {
     return manager_hdr_->manager_id;
 }
-const size_t SharedBufferManager::get_num_buffers(void) const
+size_t SharedBufferManager::get_num_buffers(void) const
 {
     return manager_hdr_->num_buffers;
 }
 
-const size_t SharedBufferManager::get_buffer_size(void) const
+size_t SharedBufferManager::get_buffer_size(void) const
 {
     return manager_hdr_->buffer_size;
 }

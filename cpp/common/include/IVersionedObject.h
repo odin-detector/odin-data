@@ -17,8 +17,8 @@ namespace OdinData {
  */
 class IVersionedObject {
 public:
-    IVersionedObject() { };
-    virtual ~IVersionedObject() { };
+    IVersionedObject() = default;
+    virtual ~IVersionedObject() = default;
     virtual int get_version_major() = 0;
     virtual int get_version_minor() = 0;
     virtual int get_version_patch() = 0;

@@ -18,7 +18,7 @@ namespace FrameProcessor {
 class CallDuration {
 public:
     CallDuration();
-    ~CallDuration() { };
+    ~CallDuration() = default;
 
     void update(unsigned int duration);
     void reset();

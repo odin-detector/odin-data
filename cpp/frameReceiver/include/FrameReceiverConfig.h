@@ -82,7 +82,7 @@ public:
                 = port_list_str.substr(start, (end == std::string::npos) ? std::string::npos : end - start).c_str();
             start = ((end > (std::string::npos - delimiter.size())) ? std::string::npos : end + delimiter.size());
 
-            uint16_t port = static_cast<uint16_t>(strtol(port_str, NULL, 0));
+            uint16_t port = static_cast<uint16_t>(strtol(port_str, nullptr, 0));
             if (port != 0) {
                 port_list.push_back(port);
             }

@@ -11,8 +11,8 @@
 
 #include "FrameProcessorDefinitions.h"
 
-typedef unsigned long long dimsize_t;
-typedef std::vector<dimsize_t> dimensions_t;
+using dimsize_t = unsigned long long;
+using dimensions_t = std::vector<dimsize_t>;
 
 namespace FrameProcessor {
 
@@ -30,7 +30,8 @@ public:
 
     FrameMetaData();
 
-    FrameMetaData(const FrameMetaData& frame);
+    FrameMetaData(const FrameMetaData& frame) = default;
+    FrameMetaData& operator=(const FrameMetaData&) = default;
 
     /** Return frame parameters */
     const std::map<std::string, boost::any>& get_parameters() const;

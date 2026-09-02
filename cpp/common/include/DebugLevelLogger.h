@@ -12,7 +12,7 @@
 using namespace log4cxx;
 using namespace log4cxx::helpers;
 
-typedef unsigned int DebugLevel;
+using DebugLevel = unsigned int;
 
 extern DebugLevel debug_level;
 void set_debug_level(DebugLevel level);

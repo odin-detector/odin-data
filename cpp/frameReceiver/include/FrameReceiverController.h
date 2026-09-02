@@ -98,8 +98,8 @@ private:
 
     bool need_ipc_reconfig_; //!< Flag to signal reconfiguration of IPC channels
     bool need_decoder_reconfig_; //!< Flag to signal reconfiguration of frame decoder
-    bool need_rx_thread_reconfig_; //!< Flag to signal reconfiguration of RX thread
     bool need_buffer_manager_reconfig_; //!< Flag to signal reconfiguration of buffer manager
+    bool need_rx_thread_reconfig_; //!< Flag to signal reconfiguration of RX thread
 
     bool ipc_configured_; //!< Indicates that IPC channels are configured
     bool decoder_configured_; //!< Indicates that the frame decoder is configured
