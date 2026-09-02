@@ -53,7 +53,7 @@ const std::string COMPRESS_TYPES[] = { "unknown", "none", "LZ4", "BSLZ4", "blosc
  * @param str data type as string
  * @return DataType data type
  */
-static DataType get_type_from_string(const std::string& str)
+inline DataType get_type_from_string(const std::string& str)
 {
     if (str == "unknown")
         return raw_unknown;
@@ -75,7 +75,7 @@ static DataType get_type_from_string(const std::string& str)
  * \param[in] type - enum value
  * \return size_t data type size
  */
-static size_t get_size_from_enum(DataType type)
+inline size_t get_size_from_enum(DataType type)
 {
     if (type == raw_8bit)
         return sizeof(uint8_t); // 1 byte
@@ -103,7 +103,7 @@ static size_t get_size_from_enum(DataType type)
  * \param[in] type - enum value
  * \return string value representing data type, or "unknown" if an unrecognised enum value
  */
-static std::string get_type_from_enum(DataType type)
+inline std::string get_type_from_enum(DataType type)
 {
     if (type >= 0 && type < sizeof(DATA_TYPES) / sizeof(DATA_TYPES[0])) {
         return DATA_TYPES[type];
@@ -117,7 +117,7 @@ static std::string get_type_from_enum(DataType type)
  * @param str compression type as string
  * @return CompressionType compression type
  */
-static CompressionType get_compression_from_string(const std::string& str)
+inline CompressionType get_compression_from_string(const std::string& str)
 {
     if (str == "unknown")
         return unknown_compression;
@@ -138,7 +138,7 @@ static CompressionType get_compression_from_string(const std::string& str)
  * \param[in] compress - enum value
  * \return the string value representing the compression. Assumed none if the enum value is unrecognised.
  */
-static std::string get_compress_from_enum(CompressionType compress)
+inline std::string get_compress_from_enum(CompressionType compress)
 {
     if (compress >= 0 && compress < sizeof(COMPRESS_TYPES) / sizeof(COMPRESS_TYPES[0])) {
         return COMPRESS_TYPES[compress];
