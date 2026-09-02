@@ -284,7 +284,7 @@ void Acquisition::create_file(size_t file_number, HDF5CallDurations_t& call_dura
  */
 void Acquisition::close_file(std::shared_ptr<HDF5File> file, HDF5CallDurations_t& call_durations)
 {
-    if (!file) {
+    if (file) {
         LOG4CXX_INFO(logger_, "Closing file " << file->get_filename());
         size_t close_duration = file->close_file();
         call_durations.close.update(close_duration);
@@ -550,7 +550,7 @@ std::shared_ptr<HDF5File> Acquisition::get_file(size_t frame_offset, HDF5CallDur
     // Get the file for this frame index
     if (file_index == current_file_->get_file_index()) {
         return this->current_file_;
-    } else if (!previous_file_ && file_index == previous_file_->get_file_index()) {
+    } else if (bool(previous_file_) & (file_index == previous_file_->get_file_index())) {
         return this->previous_file_;
     } else if (file_index > current_file_->get_file_index()) {
         LOG4CXX_TRACE(

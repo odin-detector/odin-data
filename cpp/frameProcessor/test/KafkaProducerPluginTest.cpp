@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(KafkaProducerPluginCheckMessageContent)
     size_t msg_size;
     void* data = plugin.create_message(frame, msg_size);
 
-    BOOST_CHECK(data != NULL);
+    BOOST_CHECK(data != nullptr);
 
     uint16_t header_size = *(static_cast<uint16_t*>(data));
 
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(KafkaProducerPluginCheckMessageSize)
     void* data = plugin.create_message(frame, msg_size);
     uint16_t header_size = *(static_cast<uint16_t*>(data));
 
-    BOOST_CHECK(data != NULL);
+    BOOST_CHECK(data != nullptr);
 
     // Total size is the sum of each part size: [header size] + [header] + [data]
     BOOST_CHECK(msg_size == sizeof(uint16_t) + header_size + sizeof(test_data));
@@ -86,11 +86,11 @@ BOOST_AUTO_TEST_CASE(KafkaProducerPluginCheckMessageHeader)
     size_t msg_size;
     void* data = plugin.create_message(frame, msg_size);
 
-    BOOST_CHECK(data != NULL);
+    BOOST_CHECK(data != nullptr);
 
     uint16_t header_size = *(static_cast<uint16_t*>(data));
     char* header_data = static_cast<char*>(data) + sizeof(uint16_t);
-    // Check that the header ends with a null byte
+    // Check that the header ends with a nullptr byte
     BOOST_CHECK(header_data[header_size - 1] == 0);
     rapidjson::Document document;
     document.Parse(header_data);
@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE(KafkaProducerPluginCheckMessageHeader)
     BOOST_CHECK_CLOSE(
         document[MSG_HEADER_FRAME_PARAMETERS_KEY][TEST_PARAM2_NAME].GetDouble(), TEST_PARAM2_VALUE, TOLERANCE
     );
-    // an unsupported type has null as value
+    // an unsupported type has nullptr as value
     BOOST_CHECK(document[MSG_HEADER_FRAME_PARAMETERS_KEY][TEST_PARAM3_NAME].IsNull());
     free(data);
 }

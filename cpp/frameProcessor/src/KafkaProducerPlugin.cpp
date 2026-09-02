@@ -48,8 +48,8 @@ const std::string KafkaProducerPlugin::CONFIG_INCLUDE_PARAMETERS = "include_para
 KafkaProducerPlugin::KafkaProducerPlugin() :
     dataset_name_(KAFKA_DEFAULT_DATASET),
     topic_name_(KAFKA_DEFAULT_TOPIC),
-    kafka_producer_(NULL),
-    kafka_topic_(NULL),
+    kafka_producer_(nullptr),
+    kafka_topic_(nullptr),
     partition_(RD_KAFKA_PARTITION_UA),
     include_parameters_(true)
 {
@@ -161,14 +161,14 @@ bool KafkaProducerPlugin::reset_statistics()
  */
 void KafkaProducerPlugin::destroy_kafka()
 {
-    if (kafka_topic_ != NULL) {
+    if (kafka_topic_ != nullptr) {
         rd_kafka_flush(kafka_producer_, KAFKA_LINGER_MS);
         rd_kafka_topic_destroy(kafka_topic_);
-        kafka_topic_ = NULL;
+        kafka_topic_ = nullptr;
     }
-    if (kafka_producer_ != NULL) {
+    if (kafka_producer_ != nullptr) {
         rd_kafka_destroy(kafka_producer_);
-        kafka_producer_ = NULL;
+        kafka_producer_ = nullptr;
     }
 }
 
@@ -178,7 +178,7 @@ void KafkaProducerPlugin::destroy_kafka()
  */
 void KafkaProducerPlugin::poll_delivery_message_report_queue()
 {
-    if (kafka_producer_ != NULL) {
+    if (kafka_producer_ != nullptr) {
         std::lock_guard<std::mutex> lock(mutex_);
         rd_kafka_poll(kafka_producer_, 0);
     }
@@ -235,17 +235,17 @@ void KafkaProducerPlugin::configure_kafka_servers(std::string servers)
 void KafkaProducerPlugin::configure_kafka_topic(std::string topic_name)
 {
 
-    if (this->kafka_producer_ == NULL) {
+    if (this->kafka_producer_ == nullptr) {
         LOG4CXX_WARN(logger_, "Broker is not configured");
-        this->kafka_topic_ = NULL;
+        this->kafka_topic_ = nullptr;
         return;
     }
 
-    if (this->kafka_topic_ != NULL) {
+    if (this->kafka_topic_ != nullptr) {
         rd_kafka_topic_destroy(kafka_topic_);
     }
 
-    this->kafka_topic_ = rd_kafka_topic_new(kafka_producer_, topic_name.c_str(), NULL);
+    this->kafka_topic_ = rd_kafka_topic_new(kafka_producer_, topic_name.c_str(), nullptr);
 
     if (!this->kafka_topic_) {
         LOG4CXX_ERROR(logger_, "Kafka topic error");
@@ -332,7 +332,7 @@ void* KafkaProducerPlugin::create_message(std::shared_ptr<Frame> frame, size_t& 
     if (string_buffer.GetSize() > USHRT_MAX) {
         LOG4CXX_ERROR(logger_, "Header size is too big, it should be less than " << USHRT_MAX);
         nbytes = 0;
-        return NULL;
+        return nullptr;
     }
 
     size_t message_size = sizeof(uint16_t) + string_buffer.GetSize() + 1 + frame->get_data_size();
@@ -377,7 +377,7 @@ void KafkaProducerPlugin::enqueue_frame(std::shared_ptr<Frame> frame)
         /* Data */
         buf, len,
         /* No key */
-        NULL, 0,
+        nullptr, 0,
         /* Opaque pointer */
         this
     );

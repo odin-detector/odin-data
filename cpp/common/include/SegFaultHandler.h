@@ -122,12 +122,12 @@ void init_seg_fault_handler()
     sa.sa_sigaction = abort_handler;
     sigemptyset(&sa.sa_mask);
 
-    sigaction(SIGABRT, &sa, NULL);
-    sigaction(SIGSEGV, &sa, NULL);
-    sigaction(SIGBUS, &sa, NULL);
-    sigaction(SIGILL, &sa, NULL);
-    sigaction(SIGFPE, &sa, NULL);
-    sigaction(SIGPIPE, &sa, NULL);
+    sigaction(SIGABRT, &sa, nullptr);
+    sigaction(SIGSEGV, &sa, nullptr);
+    sigaction(SIGBUS, &sa, nullptr);
+    sigaction(SIGILL, &sa, nullptr);
+    sigaction(SIGFPE, &sa, nullptr);
+    sigaction(SIGPIPE, &sa, nullptr);
 }
 }
 
