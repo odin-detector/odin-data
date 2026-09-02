@@ -49,7 +49,7 @@ private:
 
     int image_width_;
     int image_height_;
-    int packet_len_;
+    uint32_t packet_len_;
 };
 
 }

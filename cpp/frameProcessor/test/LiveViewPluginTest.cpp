@@ -231,7 +231,7 @@ BOOST_AUTO_TEST_CASE(LiveViewDownscaleTest)
     BOOST_CHECK_NO_THROW(cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_FRAME_FREQ, 2));
     BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
     // process all frames. with a downscale factor of 2, this should return all the even numbered frames.
-    for (int i = 0; i < frames.size(); i++) {
+    for (uint32_t i = 0; i < frames.size(); i++) {
         BOOST_REQUIRE_NO_THROW(plugin.process_frame(frames[i]));
     }
 
@@ -261,7 +261,7 @@ BOOST_AUTO_TEST_CASE(LiveViewDatasetFilterTest)
         BOOST_CHECK_NO_THROW(recv_socket.recv()); // clear any extra data from the above while loop
     }
 
-    for (int i = 0; i < frames.size(); i++) {
+    for (uint32_t i = 0; i < frames.size(); i++) {
         BOOST_CHECK_NO_THROW(plugin.process_frame(frames[i]));
     }
 
@@ -273,7 +273,7 @@ BOOST_AUTO_TEST_CASE(LiveViewDatasetFilterTest)
         BOOST_CHECK_NO_THROW(recv_socket.recv_raw(pbuf)
         ); // we dont need the data for this test but still need to read from the socket to clear it from the queue
     }
-    for (int i = 0; i < dataset_processed_frames.size(); i++) {
+    for (uint32_t i = 0; i < dataset_processed_frames.size(); i++) {
         BOOST_REQUIRE_NO_THROW(doc.Parse(dataset_processed_frames[i].c_str()));
         BOOST_CHECK_EQUAL(
             doc["dataset"].GetString(), "data"
@@ -335,7 +335,7 @@ BOOST_AUTO_TEST_CASE(LiveViewTagFilterTest)
         recv_socket.recv(); // clear any extra data from the above while loop
     }
 
-    for (int i = 0; i < frames.size(); i++) {
+    for (uint32_t i = 0; i < frames.size(); i++) {
         BOOST_CHECK_NO_THROW(plugin.process_frame(frames[i]));
     }
 
@@ -347,7 +347,7 @@ BOOST_AUTO_TEST_CASE(LiveViewTagFilterTest)
         BOOST_CHECK_NO_THROW(recv_socket.recv_raw(pbuf)
         ); // we dont need the data for this test but still need to read from the socket to clear it from the queue
     }
-    for (int i = 0; i < tagged_processed_frames.size(); i++) {
+    for (uint32_t i = 0; i < tagged_processed_frames.size(); i++) {
         BOOST_CHECK_NO_THROW(doc.Parse(tagged_processed_frames[i].c_str()));
         BOOST_CHECK_EQUAL(
             doc["tags"][0].GetString(), "test_tag"

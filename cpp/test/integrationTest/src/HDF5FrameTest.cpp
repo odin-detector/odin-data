@@ -98,8 +98,7 @@ BOOST_AUTO_TEST_CASE(HDF5Frame_size)
     const int ndims = H5Sget_simple_extent_ndims(space);
 
     hsize_t dims[ndims];
-    int ndms = H5Sget_simple_extent_dims(space, dims, NULL);
-
+    H5Sget_simple_extent_dims(space, dims, NULL);
     int frames = dims[0];
 
     if (boost::optional<int> t_dims = ptree.get_optional<int>("Test.dimensions"))

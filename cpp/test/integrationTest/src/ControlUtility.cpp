@@ -66,7 +66,6 @@ void ControlUtility::run_process(const bool& wait_child)
         LOG4CXX_DEBUG(
             logger_, "Launching " + process_path_ + "(" + boost::lexical_cast<std::string>(process_pid_) + ")"
         );
-        int status;
         if (wait_child) {
             wait(NULL);
         }
@@ -75,7 +74,7 @@ void ControlUtility::run_process(const bool& wait_child)
     if (process_pid_ == 0) {
 
         std::vector<char*> args;
-        for (int s = 0; s < process_args_.size(); s++) {
+        for (uint32_t s = 0; s < process_args_.size(); s++) {
             args.push_back((char*)process_args_.at(s).data());
         }
         args.push_back(NULL);
@@ -93,7 +92,7 @@ void ControlUtility::run_command()
     std::string command = process_path_;
 
     command += " ";
-    for (int s = 0; s < command_args_.size(); s++) {
+    for (uint32_t s = 0; s < command_args_.size(); s++) {
         if (command_args_[s].find("--") != std::string::npos)
             command += command_args_[s] + "=";
         else
