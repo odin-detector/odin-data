@@ -66,7 +66,6 @@ void ControlUtility::run_process(const bool& wait_child)
         LOG4CXX_DEBUG(
             logger_, "Launching " + process_path_ + "(" + boost::lexical_cast<std::string>(process_pid_) + ")"
         );
-        int status;
         if (wait_child) {
             wait(nullptr);
         }

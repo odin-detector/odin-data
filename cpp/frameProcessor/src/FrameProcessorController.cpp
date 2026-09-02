@@ -179,6 +179,10 @@ void FrameProcessorController::handleCtrlChannel()
                 LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (shutdown): " << replyMsg.encode());
                 break;
             }
+            default:
+                throw std::runtime_error(
+                    "Unhandled IpcMessage value: " + std::to_string(mval) + " in FrameProcessorController"
+                );
             };
         } else {
             LOG4CXX_ERROR(logger_, "Control thread got unexpected message: " << ctrlMsgEncoded);
@@ -429,7 +433,7 @@ void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData:
         OdinData::IpcMessage pluginConfig(
             config.get_param<const rapidjson::Value&>(FrameProcessorController::CONFIG_PLUGIN)
         );
-        this->configurePlugin(pluginConfig, reply);
+        this->configurePlugin(pluginConfig);
     }
 
     // Check if we are being passed the shared memory configuration
@@ -662,7 +666,7 @@ void FrameProcessorController::resetStatistics(OdinData::IpcMessage& reply)
  * \param[in] config - IpcMessage containing configuration data.
  * \param[out] reply - Response IpcMessage.
  */
-void FrameProcessorController::configurePlugin(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
+void FrameProcessorController::configurePlugin(OdinData::IpcMessage& config)
 {
     // Check if we are being asked to load a plugin
     if (config.has_param(FrameProcessorController::CONFIG_PLUGIN_LOAD)) {

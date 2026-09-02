@@ -28,9 +28,9 @@ const std::string LiveViewPlugin::CONFIG_TAGGED_FILTER_NAME = "filter_tagged";
  * Constructor for this class. Sets up ZMQ pub socket and other default values for the config
  */
 LiveViewPlugin::LiveViewPlugin() :
+    time_last_frame_(boost::posix_time::min_date_time),
     publish_socket_(ZMQ_PUB),
-    is_bound_(false),
-    time_last_frame_(boost::posix_time::min_date_time)
+    is_bound_(false)
 {
     logger_ = Logger::getLogger("FP.LiveViewPlugin");
     LOG4CXX_INFO(logger_, "LiveViewPlugin version " << this->get_version_long() << " loaded");
@@ -148,7 +148,7 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
  * \param[in] config - IpcMessage containing configuration data.
  * \param[out] reply - Response IpcMessage.
  */
-void LiveViewPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
+void LiveViewPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& /* reply */)
 {
     try {
         std::lock_guard<std::mutex> guard { mutex_ };
@@ -400,8 +400,8 @@ void LiveViewPlugin::set_dataset_name_config(std::string value)
 
     // loop to log datasets
     this->dataset_names_ = "";
-    for (int i = 0; i < this->dataset_names_.size(); i++) {
-        this->dataset_names_ += dataset_names[i] + ":";
+    for (const auto& dataset_name : dataset_names) {
+        this->dataset_names_ += dataset_name + ":";
     }
     LOG4CXX_INFO(logger_, "Setting the datasets allowed to: " << this->dataset_names_);
 }

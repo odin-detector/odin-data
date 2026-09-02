@@ -121,12 +121,12 @@ boost::shared_ptr<Frame> GapFillPlugin::insert_gaps(boost::shared_ptr<Frame> fra
     dimensions_t frame_dimensions = frame->get_meta_data().get_dimensions();
 
     int img_x = grid_[1] * chip_[1];
-    for (int index = 0; index <= grid_[1]; index++) {
+    for (uint32_t index = 0; index <= grid_[1]; index++) {
         img_x += gaps_x_[index];
     }
     LOG4CXX_TRACE(logger_, "New image width: " << img_x);
     int img_y = grid_[0] * chip_[0];
-    for (int index = 0; index <= grid_[0]; index++) {
+    for (uint32_t index = 0; index <= grid_[0]; index++) {
         img_y += gaps_y_[index];
     }
     LOG4CXX_TRACE(logger_, "New image height: " << img_y);
@@ -139,15 +139,15 @@ boost::shared_ptr<Frame> GapFillPlugin::insert_gaps(boost::shared_ptr<Frame> fra
 
     // Loop over the y grid
     int current_offset_y = 0;
-    for (int y_index = 0; y_index < grid_[0]; y_index++) {
+    for (uint32_t y_index = 0; y_index < grid_[0]; y_index++) {
         current_offset_y += gaps_y_[y_index];
         // Loop over the individual y rows for the grid item
-        for (int y_row = 0; y_row < chip_[0]; y_row++) {
+        for (uint32_t y_row = 0; y_row < chip_[0]; y_row++) {
             int current_offset_x = 0;
             int current_src_row = (y_index * chip_[0]) + y_row;
             int current_dest_row = current_src_row + current_offset_y;
             // Loop over the x grid
-            for (int x_index = 0; x_index < grid_[1]; x_index++) {
+            for (uint32_t x_index = 0; x_index < grid_[1]; x_index++) {
                 // Calculate the current total x gap in pixels
                 current_offset_x += gaps_x_[x_index];
 
@@ -198,7 +198,7 @@ boost::shared_ptr<Frame> GapFillPlugin::insert_gaps(boost::shared_ptr<Frame> fra
  * \param[in] config - IpcMessage containing configuration data.
  * \param[out] reply - Response IpcMessage.
  */
-void GapFillPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
+void GapFillPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& /* reply */)
 {
     try {
         std::lock_guard<std::mutex> guard { mutex_ };

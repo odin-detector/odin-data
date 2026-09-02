@@ -50,7 +50,6 @@ BOOST_FIXTURE_TEST_SUITE(ParameterPublishPluginUnitTest, ParameterPublishPluginT
 BOOST_AUTO_TEST_CASE(ParameterPublishPlugin_Publish)
 {
     using FPPP = FrameProcessor::ParameterPublishPlugin;
-    using PPPT = ParameterPublishPluginTestFixture;
     // Configure thresholds
     OdinData::IpcMessage reply;
     OdinData::IpcMessage cfg;

@@ -80,7 +80,7 @@ public:
 
         BOOST_FOREACH (boost::property_tree::ptree::value_type& vc, ptree.get_child("Test.data"))
             BOOST_CHECK_EQUAL(data_out[std::atoi(vc.first.c_str())], ptree.get<T>("Test.data." + vc.first));
-    };
+    }
 
     ~HDF5FrameTest() = default;
 
