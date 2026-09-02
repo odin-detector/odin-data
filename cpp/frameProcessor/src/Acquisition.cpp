@@ -37,22 +37,22 @@ const std::string META_START_ITEM = "startacquisition";
 const std::string META_STOP_ITEM = "stopacquisition";
 
 Acquisition::Acquisition(const HDF5ErrorDefinition_t& hdf5_error_definition) :
-    concurrent_rank_(0),
-    concurrent_processes_(1),
-    frames_per_block_(1),
-    blocks_per_file_(0),
-    frames_written_(0),
-    frames_processed_(0),
-    total_frames_(0),
     frames_to_write_(0),
+    total_frames_(0),
     starting_file_index_(0),
     use_file_numbers_(true),
+    file_postfix_(""),
     use_earliest_hdf5_(false),
     alignment_threshold_(1),
     alignment_value_(1),
-    last_error_(""),
-    file_postfix_(""),
-    hdf5_error_definition_(hdf5_error_definition)
+    frames_written_(0),
+    frames_processed_(0),
+    concurrent_processes_(1),
+    concurrent_rank_(0),
+    frames_per_block_(1),
+    blocks_per_file_(0),
+    hdf5_error_definition_(hdf5_error_definition),
+    last_error_("")
 {
     this->logger_ = Logger::getLogger("FP.Acquisition");
     LOG4CXX_TRACE(logger_, "Acquisition constructor.");
@@ -112,7 +112,7 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame, HD
 
             size_t frame_offset_in_file = this->get_frame_offset_in_file(frame_offset);
 
-            int dataset_max_offset = file->get_dataset_max_size(frame_dataset_name) - 1;
+            size_t dataset_max_offset = file->get_dataset_max_size(frame_dataset_name) - 1;
             if (dataset_max_offset && frame_offset_in_file > dataset_max_offset) {
                 last_error_ = "Frame offset exceeds dimensions of static dataset";
                 return status_invalid;
@@ -248,7 +248,7 @@ void Acquisition::create_file(size_t file_number, HDF5CallDurations_t& call_dura
         if (dset_def.create_low_high_indexes && frames_per_block_ > 1) {
             low_index = file_number * frames_per_block_ + 1;
             high_index = low_index + frames_per_block_ - 1;
-            if (blocks_per_file_ == 0 || high_index > total_frames_) {
+            if (blocks_per_file_ == 0 || static_cast<size_t>(high_index) > total_frames_) {
                 high_index = total_frames_;
             }
         }
@@ -258,7 +258,7 @@ void Acquisition::create_file(size_t file_number, HDF5CallDurations_t& call_dura
         int wrap = (file_number / concurrent_processes_) + 1;
         int frames_per_file = blocks_per_file_ * frames_per_block_ * dset_def.chunks[0];
         if (frames_per_file > 1) {
-            if (wrap * frames_per_file > frames_to_write_) {
+            if (wrap * frames_per_file > static_cast<long int>(frames_to_write_)) {
                 // This is the final file creation which may contain less than a full block of frames
                 dset_def.num_frames = frames_to_write_ % frames_per_file;
             } else {

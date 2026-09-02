@@ -11,37 +11,24 @@ FrameMetaData::FrameMetaData(
     const CompressionType& compression_type
 ) :
     frame_number_(frame_number),
+    logger(log4cxx::Logger::getLogger("FP.FrameMetaData")),
     dataset_name_(dataset_name),
     data_type_(data_type),
     acquisition_ID_(acquisition_ID),
     dimensions_(dimensions),
     compression_type_(compression_type),
-    frame_offset_(0),
-    logger(log4cxx::Logger::getLogger("FP.FrameMetaData"))
+    frame_offset_(0)
 {
 }
 
 FrameMetaData::FrameMetaData() :
     frame_number_(-1),
+    logger(log4cxx::Logger::getLogger("FP.FrameMetaData")),
     dataset_name_(""),
     data_type_(raw_unknown),
     compression_type_(unknown_compression),
-    frame_offset_(0),
-    logger(log4cxx::Logger::getLogger("FP.FrameMetaData"))
+    frame_offset_(0)
 {
-}
-
-FrameMetaData::FrameMetaData(const FrameMetaData& frame)
-{
-    frame_number_ = frame.frame_number_;
-    dataset_name_ = frame.dataset_name_;
-    data_type_ = frame.data_type_;
-    acquisition_ID_ = frame.acquisition_ID_;
-    dimensions_ = frame.dimensions_;
-    compression_type_ = frame.compression_type_;
-    parameters_ = frame.parameters_;
-    frame_offset_ = frame.frame_offset_;
-    logger = frame.logger;
 }
 
 /** Get frame parameters

@@ -3,10 +3,10 @@
 #include <iostream>
 #include <vector>
 
-int main(int argc, char* argv[])
+int main()
 {
-    hsize_t CHUNK_NX = 704;
-    hsize_t CHUNK_NY = 1484;
+    constexpr hsize_t CHUNK_NX = 704;
+    constexpr hsize_t CHUNK_NY = 1484;
     size_t buf_size = CHUNK_NX * CHUNK_NY * sizeof(int16_t);
     int16_t data_buf[CHUNK_NY][CHUNK_NX];
     int16_t one_buf[CHUNK_NY][CHUNK_NX];
@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
     hid_t dset_id = H5Dcreate2(file, "data", dtype, dataspace, H5P_DEFAULT, prop, dapl);
 
     /* Initialize data for one chunk */
-    int i, n, j;
+    uint32_t i, n, j;
     for (i = n = 0; i < CHUNK_NY; i++) {
         for (j = 0; j < CHUNK_NX; j++) {
             data_buf[i][j] = n++;

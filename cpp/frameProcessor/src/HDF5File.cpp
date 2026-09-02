@@ -28,11 +28,11 @@ herr_t hdf5_error_cb(unsigned n, const H5E_error2_t* err_desc, void* client_data
 
 HDF5File::HDF5File(const HDF5ErrorDefinition_t& hdf5_error_definition) :
     hdf5_file_id_(-1),
-    param_memspace_(-1),
     hdf5_error_flag_(false),
     file_index_(0),
     use_earliest_version_(false),
     unlimited_(false),
+    param_memspace_(-1),
     watchdog_timer_(hdf5_error_definition.callback),
     hdf5_error_definition_(hdf5_error_definition)
 {
@@ -104,7 +104,7 @@ void HDF5File::handle_h5_error(
     throw std::runtime_error(error.str());
 }
 
-void HDF5File::hdf_error_handler(unsigned n, const H5E_error2_t* err_desc)
+void HDF5File::hdf_error_handler(unsigned /* n */, const H5E_error2_t* err_desc)
 {
     hdf5_error_flag_ = true;
     hdf5_errors_.push_back(*err_desc);
@@ -315,7 +315,6 @@ void HDF5File::write_parameter(const Frame& frame, DatasetDefinition dataset_def
     std::lock_guard<std::mutex> lock { mutex_ };
 
     void* data_ptr;
-    size_t size = 0;
     uint8_t u8value = 0;
     uint16_t u16value = 0;
     uint32_t u32value = 0;
@@ -327,32 +326,26 @@ void HDF5File::write_parameter(const Frame& frame, DatasetDefinition dataset_def
     case raw_8bit:
         u8value = frame.get_meta_data().get_parameter<uint8_t>(dataset_definition.name);
         data_ptr = &u8value;
-        size = sizeof(uint8_t);
         break;
     case raw_16bit:
         u16value = frame.get_meta_data().get_parameter<uint16_t>(dataset_definition.name);
         data_ptr = &u16value;
-        size = sizeof(uint16_t);
         break;
     case raw_32bit:
         u32value = frame.get_meta_data().get_parameter<uint32_t>(dataset_definition.name);
         data_ptr = &u32value;
-        size = sizeof(uint32_t);
         break;
     case raw_64bit:
         u64value = frame.get_meta_data().get_parameter<uint64_t>(dataset_definition.name);
         data_ptr = &u64value;
-        size = sizeof(uint64_t);
         break;
     case raw_float:
         f32value = frame.get_meta_data().get_parameter<float>(dataset_definition.name);
         data_ptr = &f32value;
-        size = sizeof(float);
         break;
     default:
         u16value = frame.get_meta_data().get_parameter<uint16_t>(dataset_definition.name);
         data_ptr = &u16value;
-        size = sizeof(uint16_t);
         break;
     }
 
@@ -470,7 +463,7 @@ void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index
     /* Enable chunking  */
     std::stringstream ss;
     ss << "Chunking = " << chunk_dims[0];
-    for (int index = 1; index < chunk_dims.size(); index++) {
+    for (uint32_t index = 1; index < chunk_dims.size(); index++) {
         ss << "," << chunk_dims[index];
     }
     LOG4CXX_DEBUG_LEVEL(1, logger_, ss.str());

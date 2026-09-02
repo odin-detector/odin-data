@@ -17,14 +17,14 @@ using namespace FrameReceiver;
 
 DummyTCPFrameDecoder::DummyTCPFrameDecoder() :
     FrameDecoderTCP(),
+    frames_dropped_(0),
+    frames_sent_(0),
+    read_so_far_(0),
     current_frame_number_(DummyTcpFrameDecoderDefaults::frame_number),
     current_frame_buffer_id_(DummyTcpFrameDecoderDefaults::buffer_id),
     header_size_(DummyTcpFrameDecoderDefaults::header_size),
     frame_size_(DummyTcpFrameDecoderDefaults::max_size),
     num_buffers_(DummyTcpFrameDecoderDefaults::num_buffers),
-    frames_dropped_(0),
-    frames_sent_(0),
-    read_so_far_(0),
     receive_state_(FrameDecoder::FrameReceiveStateEmpty)
 {
     this->logger_ = Logger::getLogger("FR.DummyTCPFrameDecoder");
@@ -45,7 +45,7 @@ DummyTCPFrameDecoder::~DummyTCPFrameDecoder()
  * \param[in] logger The logger
  * \param[in] config_msg The config parameters to initialise with
  */
-void DummyTCPFrameDecoder::init(LoggerPtr& logger, OdinData::IpcMessage& config_msg)
+void DummyTCPFrameDecoder::init(LoggerPtr& /* logger */, OdinData::IpcMessage& /* config_msg */)
 {
 }
 
@@ -102,7 +102,7 @@ void* DummyTCPFrameDecoder::get_next_message_buffer(void)
 //!
 //! \return size of frame buffer in bytes
 //!
-const size_t DummyTCPFrameDecoder::get_frame_buffer_size(void) const
+size_t DummyTCPFrameDecoder::get_frame_buffer_size(void) const
 {
     return buffer_size_;
 }
@@ -112,7 +112,7 @@ const size_t DummyTCPFrameDecoder::get_frame_buffer_size(void) const
 //! This method returns the size of the frame header used by the decoder.
 //!
 //! \return size of the frame header in bytes
-const size_t DummyTCPFrameDecoder::get_frame_header_size(void) const
+size_t DummyTCPFrameDecoder::get_frame_header_size(void) const
 {
     return header_size_;
 }
@@ -138,7 +138,7 @@ FrameDecoder::FrameReceiveState DummyTCPFrameDecoder::process_message(size_t byt
         throw "Not Implemented: Can not handle case when too many bytes received";
 }
 
-const size_t DummyTCPFrameDecoder::get_next_message_size(void) const
+size_t DummyTCPFrameDecoder::get_next_message_size(void) const
 {
     return frame_size_ - read_so_far_;
 }
