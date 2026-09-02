@@ -59,9 +59,7 @@ Acquisition::Acquisition(const HDF5ErrorDefinition_t& hdf5_error_definition) :
     connect_meta_channel();
 }
 
-Acquisition::~Acquisition()
-{
-}
+Acquisition::~Acquisition() = default;
 
 /**
  * Returns the last error message that was generated
@@ -105,7 +103,7 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame, HD
 
             boost::shared_ptr<HDF5File> file = this->get_file(frame_offset, call_durations);
 
-            if (file == 0) {
+            if (file == nullptr) {
                 last_error_ = "Unable to get file for this frame";
                 return status_invalid;
             }
@@ -286,7 +284,7 @@ void Acquisition::create_file(size_t file_number, HDF5CallDurations_t& call_dura
  */
 void Acquisition::close_file(boost::shared_ptr<HDF5File> file, HDF5CallDurations_t& call_durations)
 {
-    if (file != 0) {
+    if (file != nullptr) {
         LOG4CXX_INFO(logger_, "Closing file " << file->get_filename());
         size_t close_duration = file->close_file();
         call_durations.close.update(close_duration);
@@ -552,7 +550,7 @@ boost::shared_ptr<HDF5File> Acquisition::get_file(size_t frame_offset, HDF5CallD
     // Get the file for this frame index
     if (file_index == current_file_->get_file_index()) {
         return this->current_file_;
-    } else if (previous_file_ != 0 && file_index == previous_file_->get_file_index()) {
+    } else if (previous_file_ != nullptr && file_index == previous_file_->get_file_index()) {
         return this->previous_file_;
     } else if (file_index > current_file_->get_file_index()) {
         LOG4CXX_TRACE(

@@ -28,9 +28,9 @@ const std::string LiveViewPlugin::CONFIG_TAGGED_FILTER_NAME = "filter_tagged";
  * Constructor for this class. Sets up ZMQ pub socket and other default values for the config
  */
 LiveViewPlugin::LiveViewPlugin() :
-    time_last_frame_(boost::posix_time::min_date_time),
     publish_socket_(ZMQ_PUB),
-    is_bound_(false)
+    is_bound_(false),
+    time_last_frame_(boost::posix_time::min_date_time)
 {
     logger_ = Logger::getLogger("FP.LiveViewPlugin");
     LOG4CXX_INFO(logger_, "LiveViewPlugin version " << this->get_version_long() << " loaded");
@@ -79,8 +79,8 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
             bool tag_filter_active = !tags_.empty();
             bool is_tagged = false;
             if (tag_filter_active) {
-                for (uint32_t i = 0; i < tags_.size(); i++) {
-                    if (frame->get_meta_data().has_parameter(tags_[i])) {
+                for (const auto& tag : tags_) {
+                    if (frame->get_meta_data().has_parameter(tag)) {
                         is_tagged = true;
                         break;
                     }
@@ -148,7 +148,7 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
  * \param[in] config - IpcMessage containing configuration data.
  * \param[out] reply - Response IpcMessage.
  */
-void LiveViewPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& /* reply */)
+void LiveViewPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
     try {
         std::lock_guard<std::mutex> guard { mutex_ };
@@ -243,9 +243,9 @@ void LiveViewPlugin::pass_live_frame(boost::shared_ptr<Frame> frame)
     rapidjson::Value keyTags("tags", document.GetAllocator());
     rapidjson::Value valueTags(rapidjson::kArrayType);
     if (!tags_.empty()) {
-        for (uint32_t i = 0; i < tags_.size(); i++) {
-            if (meta_data.has_parameter(tags_[i])) {
-                rapidjson::Value tagStringVal(tags_[i].c_str(), document.GetAllocator());
+        for (const auto& tag : tags_) {
+            if (meta_data.has_parameter(tag)) {
+                rapidjson::Value tagStringVal(tag.c_str(), document.GetAllocator());
                 valueTags.PushBack(tagStringVal, document.GetAllocator());
             }
         }
@@ -400,7 +400,7 @@ void LiveViewPlugin::set_dataset_name_config(std::string value)
 
     // loop to log datasets
     this->dataset_names_ = "";
-    for (uint32_t i = 0; i < this->dataset_names_.size(); i++) {
+    for (int i = 0; i < this->dataset_names_.size(); i++) {
         this->dataset_names_ += dataset_names[i] + ":";
     }
     LOG4CXX_INFO(logger_, "Setting the datasets allowed to: " << this->dataset_names_);
@@ -414,9 +414,9 @@ void LiveViewPlugin::set_tagged_filter_config(std::string value)
         boost::split(tags_, value, boost::is_any_of(delim));
     }
     std::string tags_string = "";
-    for (uint32_t i = 0; i < tags_.size(); i++) {
-        boost::trim(tags_[i]);
-        tags_string += tags_[i] + ", ";
+    for (auto& tag : tags_) {
+        boost::trim(tag);
+        tags_string += tag + ", ";
     }
     LOG4CXX_INFO(logger_, "Only Displaying images with the following tags: " << tags_string);
 }

@@ -5,7 +5,7 @@
  *      Author: gnx91527
  */
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "DataBlockPool.h"
 #include "DebugLevelLogger.h"
@@ -61,7 +61,7 @@ FrameProcessorController::FrameProcessorController(unsigned int num_io_threads) 
     pluginShutdownSent_(false),
     shutdown_(false),
     ipc_context_(OdinData::IpcContext::Instance(num_io_threads)),
-    ctrlThread_(boost::bind(&FrameProcessorController::runIpcService, this)),
+    ctrlThread_([this] { runIpcService(); }),
     ctrlChannelEndpoint_(""),
     ctrlChannel_(ZMQ_ROUTER),
     metaRxChannel_(ZMQ_PULL),
@@ -179,8 +179,6 @@ void FrameProcessorController::handleCtrlChannel()
                 LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (shutdown): " << replyMsg.encode());
                 break;
             }
-            default:
-                throw std::runtime_error("Unhandled IpcMessage value: " + std::to_string(mval) + " . in FrameProcessorController.cpp#183");
             };
         } else {
             LOG4CXX_ERROR(logger_, "Control thread got unexpected message: " << ctrlMsgEncoded);
@@ -431,7 +429,7 @@ void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData:
         OdinData::IpcMessage pluginConfig(
             config.get_param<const rapidjson::Value&>(FrameProcessorController::CONFIG_PLUGIN)
         );
-        this->configurePlugin(pluginConfig);
+        this->configurePlugin(pluginConfig, reply);
     }
 
     // Check if we are being passed the shared memory configuration
@@ -664,7 +662,7 @@ void FrameProcessorController::resetStatistics(OdinData::IpcMessage& reply)
  * \param[in] config - IpcMessage containing configuration data.
  * \param[out] reply - Response IpcMessage.
  */
-void FrameProcessorController::configurePlugin(OdinData::IpcMessage& config)
+void FrameProcessorController::configurePlugin(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
     // Check if we are being asked to load a plugin
     if (config.has_param(FrameProcessorController::CONFIG_PLUGIN_LOAD)) {
@@ -983,7 +981,7 @@ void FrameProcessorController::setupControlInterface(const std::string& ctrlEndp
     }
 
     // Add the control channel to the reactor
-    reactor_->register_channel(ctrlChannel_, boost::bind(&FrameProcessorController::handleCtrlChannel, this));
+    reactor_->register_channel(ctrlChannel_, [this] { handleCtrlChannel(); });
 }
 
 /** Close the control interface.
@@ -1011,7 +1009,7 @@ void FrameProcessorController::setupMetaRxInterface()
     }
 
     // Add the control channel to the reactor
-    reactor_->register_channel(metaRxChannel_, boost::bind(&FrameProcessorController::handleMetaRxChannel, this));
+    reactor_->register_channel(metaRxChannel_, [this] { handleMetaRxChannel(); });
 }
 
 void FrameProcessorController::closeMetaRxInterface()
@@ -1062,7 +1060,9 @@ void FrameProcessorController::runIpcService(void)
 
     // Create the reactor
     reactor_ = boost::shared_ptr<OdinData::IpcReactor>(new OdinData::IpcReactor());
-    reactor_->register_timer(1000, 0, boost::bind(&FrameProcessorController::tickTimer, this));
+
+    // Add the tick timer to the reactor
+    reactor_->register_timer(1000, 0, [this] { tickTimer(); });
 
     // Set thread state to running, allows constructor to return
     threadRunning_ = true;

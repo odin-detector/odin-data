@@ -32,9 +32,7 @@ IpcReactorTimer::IpcReactorTimer(size_t delay_ms, size_t times, TimerCallback ca
 }
 
 //! Destructor - destroys an IpcReactorTimer object
-IpcReactorTimer::~IpcReactorTimer()
-{
-}
+IpcReactorTimer::~IpcReactorTimer() = default;
 
 //! Returns the unique ID of the timer instance
 //!
@@ -392,9 +390,9 @@ long IpcReactor::calculate_timeout(void)
     // Calculate shortest timeout up to one hour (!!), looping through
     // current timers to see which fires first
     TimeMs tickless = IpcReactorTimer::clock_mono_ms() + (1000 * 3600);
-    for (TimerMap::iterator it = timers_.begin(); it != timers_.end(); ++it) {
-        if (tickless > (it->second)->when()) {
-            tickless = (it->second)->when();
+    for (auto& timer : timers_) {
+        if (tickless > (timer.second)->when()) {
+            tickless = (timer.second)->when();
         }
     }
 

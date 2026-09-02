@@ -29,41 +29,42 @@ namespace DummyUdpFrameDecoderDefaults {
 class DummyUDPFrameDecoder : public FrameDecoderUDP {
 public:
     DummyUDPFrameDecoder();
-    ~DummyUDPFrameDecoder();
+    ~DummyUDPFrameDecoder() override;
 
-    int get_version_major();
-    int get_version_minor();
-    int get_version_patch();
-    std::string get_version_short();
-    std::string get_version_long();
+    int get_version_major() override;
+    int get_version_minor() override;
+    int get_version_patch() override;
+    std::string get_version_short() override;
+    std::string get_version_long() override;
 
-    void init(LoggerPtr& logger, OdinData::IpcMessage& config_msg);
-    void request_configuration(const std::string param_prefix, OdinData::IpcMessage& config_reply);
+    void init(LoggerPtr& logger, OdinData::IpcMessage& config_msg) override;
+    void request_configuration(const std::string param_prefix, OdinData::IpcMessage& config_reply) override;
 
-    size_t get_frame_buffer_size(void) const;
-    size_t get_frame_header_size(void) const;
+    size_t get_frame_buffer_size(void) const override;
+    size_t get_frame_header_size(void) const override;
 
-    inline bool requires_header_peek(void) const
+    inline bool requires_header_peek(void) const override
     {
         return true;
     };
-    size_t get_packet_header_size(void) const;
-    void process_packet_header(size_t bytes_received, int port, struct sockaddr_in* from_addr);
+    size_t get_packet_header_size(void) const override;
+    void process_packet_header(size_t bytes_received, int port, struct sockaddr_in* from_addr) override;
 
     inline bool trailer_mode(void) const
     {
         return false;
     };
 
-    void* get_next_payload_buffer(void) const;
-    size_t get_next_payload_size(void) const;
-    FrameDecoder::FrameReceiveState process_packet(size_t bytes_received, int port, struct sockaddr_in* from_addr);
+    void* get_next_payload_buffer(void) const override;
+    size_t get_next_payload_size(void) const override;
+    FrameDecoder::FrameReceiveState
+    process_packet(size_t bytes_received, int port, struct sockaddr_in* from_addr) override;
 
-    void monitor_buffers(void);
-    void get_status(const std::string param_prefix, OdinData::IpcMessage& status_msg);
-    void reset_statistics(void);
+    void monitor_buffers(void) override;
+    void get_status(const std::string param_prefix, OdinData::IpcMessage& status_msg) override;
+    void reset_statistics(void) override;
 
-    void* get_packet_header_buffer(void);
+    void* get_packet_header_buffer(void) override;
 
     uint32_t get_frame_number(void) const;
     uint32_t get_packet_number(void) const;
@@ -79,7 +80,7 @@ private:
     boost::shared_ptr<void> current_packet_header_;
     boost::shared_ptr<void> dropped_frame_buffer_;
 
-    uint32_t current_frame_seen_;
+    int current_frame_seen_;
     int current_frame_buffer_id_;
     void* current_frame_buffer_;
     DummyUDP::FrameHeader* current_frame_header_;

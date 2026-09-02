@@ -27,10 +27,7 @@ FrameProcessorPlugin::FrameProcessorPlugin() :
 /**
  * Destructor
  */
-FrameProcessorPlugin::~FrameProcessorPlugin()
-{
-    // TODO Auto-generated destructor stub
-}
+FrameProcessorPlugin::~FrameProcessorPlugin() = default;
 
 /**
  * Set the name of this plugin

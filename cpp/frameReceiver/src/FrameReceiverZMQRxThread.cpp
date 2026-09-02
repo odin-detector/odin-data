@@ -34,16 +34,13 @@ void FrameReceiverZMQRxThread::run_specific_service(void)
 {
     LOG4CXX_DEBUG_LEVEL(1, logger_, "Running ZMQ RX thread service");
 
-    for (std::vector<uint16_t>::iterator rx_port_itr = config_.rx_ports_.begin();
-         rx_port_itr != config_.rx_ports_.end(); rx_port_itr++) {
-        uint16_t rx_port = *rx_port_itr;
-
+    for (unsigned short rx_port : config_.rx_ports_) {
         std::stringstream ss;
         ss << "tcp://" << config_.rx_address_ << ":" << rx_port;
         skt_channel_.connect(ss.str().c_str());
 
         // Register the IPC channel with the reactor
-        reactor_.register_channel(skt_channel_, boost::bind(&FrameReceiverZMQRxThread::handle_receive_socket, this));
+        reactor_.register_channel(skt_channel_, [this] { handle_receive_socket(); });
     }
 }
 

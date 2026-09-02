@@ -134,8 +134,8 @@ IpcMessage::IpcMessage(const rapidjson::Value& value, MsgType msg_type, MsgVal m
 void IpcMessage::update(const IpcMessage& other)
 {
     std::vector<std::string> params = other.get_param_names();
-    for (std::vector<std::string>::const_iterator itr = params.begin(); itr != params.end(); ++itr) {
-        this->set_param<const rapidjson::Value&>(*itr, other.get_param<const rapidjson::Value&>(*itr));
+    for (const auto& param : params) {
+        this->set_param<const rapidjson::Value&>(param, other.get_param<const rapidjson::Value&>(param));
     }
 }
 

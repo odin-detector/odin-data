@@ -28,8 +28,8 @@ DummyUDPFrameDecoder::DummyUDPFrameDecoder() :
     status_get_count_(0),
     current_frame_seen_(DummyUDP::default_frame_number),
     current_frame_buffer_id_(DummyUDP::default_frame_number),
-    current_frame_buffer_(0),
-    current_frame_header_(0),
+    current_frame_buffer_(nullptr),
+    current_frame_header_(nullptr),
     num_active_fems_(0),
     dropping_frame_data_(false),
     packets_received_(0),
@@ -46,9 +46,7 @@ DummyUDPFrameDecoder::DummyUDPFrameDecoder() :
 }
 
 //! Destructor for DummyDUPFrameDecoder
-DummyUDPFrameDecoder::~DummyUDPFrameDecoder()
-{
-}
+DummyUDPFrameDecoder::~DummyUDPFrameDecoder() = default;
 
 int DummyUDPFrameDecoder::get_version_major()
 {

@@ -11,8 +11,8 @@
 
 #include "FrameProcessorDefinitions.h"
 
-typedef unsigned long long dimsize_t;
-typedef std::vector<dimsize_t> dimensions_t;
+using dimsize_t = unsigned long long;
+using dimensions_t = std::vector<dimsize_t>;
 
 namespace FrameProcessor {
 

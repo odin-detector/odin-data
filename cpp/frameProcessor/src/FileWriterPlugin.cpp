@@ -3,7 +3,7 @@
  *
  */
 
-#include <assert.h>
+#include <cassert>
 
 #include <boost/filesystem.hpp>
 #include <hdf5_hl.h>
@@ -85,7 +85,7 @@ FileWriterPlugin::FileWriterPlugin() :
     alignment_value_(1),
     timeout_period_(0),
     timeout_thread_running_(true),
-    timeout_thread_(boost::bind(&FileWriterPlugin::run_close_file_timeout, this)),
+    timeout_thread_([this] { run_close_file_timeout(); }),
     first_file_index_(0),
     use_file_numbering_(true),
     file_postfix_(""),
@@ -177,7 +177,7 @@ FileWriterPlugin::FileWriterPlugin() :
     hdf5_error_definition_.write_duration = 0;
     hdf5_error_definition_.flush_duration = 0;
     hdf5_error_definition_.close_duration = 0;
-    hdf5_error_definition_.callback = boost::bind(&FileWriterPlugin::set_warning, this, _1);
+    hdf5_error_definition_.callback = [this](const std::string& message) { set_warning(message); };
 }
 
 /**
@@ -357,9 +357,7 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
                     config.get_param<const rapidjson::Value&>(FileWriterPlugin::CONFIG_DATASET)
                 );
                 std::vector<std::string> dataset_names = dataset_config.get_param_names();
-                for (std::vector<std::string>::iterator iter = dataset_names.begin(); iter != dataset_names.end();
-                     ++iter) {
-                    std::string dataset_name = *iter;
+                for (auto dataset_name : dataset_names) {
                     LOG4CXX_INFO(logger_, "Dataset name " << dataset_name << " found, creating...");
                     create_new_dataset(dataset_name);
                     OdinData::IpcMessage dsetConfig(dataset_config.get_param<const rapidjson::Value&>(dataset_name));
@@ -376,7 +374,8 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
         }
 
         // Check to see if we are being told how many frames to write
-        if (config.has_param(FileWriterPlugin::CONFIG_FRAMES)) {
+        if (config.has_param(FileWriterPlugin::CONFIG_FRAMES)
+            && config.get_param<size_t>(FileWriterPlugin::CONFIG_FRAMES) >= 0) {
             size_t totalFrames = config.get_param<size_t>(FileWriterPlugin::CONFIG_FRAMES);
             next_acquisition_->total_frames_ = totalFrames;
             next_acquisition_->frames_to_write_ = calc_num_frames(totalFrames);
@@ -482,16 +481,16 @@ void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
         if (iter->second.frame_dimensions.size() > 0) {
             std::string dimParamName
                 = get_name() + "/dataset/" + iter->first + '/' + FileWriterPlugin::CONFIG_DATASET_DIMS + "[]";
-            for (uint32_t index = 0; index < iter->second.frame_dimensions.size(); index++) {
-                reply.set_param(dimParamName, (int)iter->second.frame_dimensions[index]);
+            for (unsigned long long frame_dimension : iter->second.frame_dimensions) {
+                reply.set_param(dimParamName, (int)frame_dimension);
             }
         }
         // Check for and add chunking dimensions
         if (iter->second.chunks.size() > 0) {
             std::string chunkParamName
                 = get_name() + "/dataset/" + iter->first + '/' + FileWriterPlugin::CONFIG_DATASET_CHUNKS + "[]";
-            for (uint32_t index = 0; index < iter->second.chunks.size(); index++) {
-                reply.set_param(chunkParamName, (int)iter->second.chunks[index]);
+            for (unsigned long long chunk : iter->second.chunks) {
+                reply.set_param(chunkParamName, (int)chunk);
             }
         }
     }
@@ -510,7 +509,7 @@ void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
  * \param[in] config - IpcMessage containing configuration data.
  * \param[out] reply - Response IpcMessage.
  */
-void FileWriterPlugin::configure_process(OdinData::IpcMessage& config, OdinData::IpcMessage& /* reply */)
+void FileWriterPlugin::configure_process(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
     // Check for process number
     if (config.has_param(FileWriterPlugin::CONFIG_PROCESS_NUMBER)) {
@@ -728,7 +727,7 @@ void FileWriterPlugin::configure_file(OdinData::IpcMessage& config, OdinData::Ip
 void FileWriterPlugin::configure_dataset(
     const std::string& dataset_name,
     OdinData::IpcMessage& config,
-    OdinData::IpcMessage& /* reply */
+    OdinData::IpcMessage& reply
 )
 {
     LOG4CXX_DEBUG_LEVEL(1, logger_, "Configuring dataset [" << dataset_name << "]");
@@ -755,7 +754,7 @@ void FileWriterPlugin::configure_dataset(
         // Set first chunk dimension (n dimension) to a single frame or item
         chunks[0] = 1;
         // Set the remaining chunk dimensions to the same as the dataset dimensions
-        for (uint32_t index = 0; index < dset.frame_dimensions.size(); index++) {
+        for (int index = 0; index < dset.frame_dimensions.size(); index++) {
             chunks[index + 1] = dset.frame_dimensions[index];
         }
         dset.chunks = chunks;

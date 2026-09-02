@@ -31,7 +31,7 @@ public:
     FrameDecoderTCP() :
         FrameDecoder() { };
 
-    virtual ~FrameDecoderTCP() = 0;
+    ~FrameDecoderTCP() override = 0;
 
     virtual void* get_next_message_buffer(void) = 0;
     virtual size_t get_next_message_size(void) const = 0;
@@ -41,9 +41,9 @@ public:
     void* current_raw_buffer_;
 };
 
-inline FrameDecoderTCP::~FrameDecoderTCP() { };
+inline FrameDecoderTCP::~FrameDecoderTCP() = default;
 
-typedef boost::shared_ptr<FrameDecoderTCP> FrameDecoderTCPPtr;
+using FrameDecoderTCPPtr = boost::shared_ptr<FrameDecoderTCP>;
 
 } // namespace FrameReceiver
 #endif /* INCLUDE_FRAMEDECODER_TCP_H_ */

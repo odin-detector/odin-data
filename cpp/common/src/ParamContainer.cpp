@@ -76,10 +76,10 @@ void ParamContainer::encode(ParamContainer::Document& doc_obj, std::string prefi
     // Iterate through all the bound parameters in the getter map, retreiving their current
     // values and setting in the JSON document. The first element of each map entry returned
     // by the iterator is the path of the parameter and the second is the bound getter method.
-    for (GetterFuncMap::const_iterator it = getter_map_.begin(); it != getter_map_.end(); ++it) {
+    for (const auto& it : getter_map_) {
         rapidjson::Value value_obj;
-        (*it).second(value_obj);
-        std::string path = pointer_prefix + (*it).first;
+        it.second(value_obj);
+        std::string path = pointer_prefix + it.first;
         rapidjson::Pointer(path.c_str()).Set(doc_obj, value_obj);
     }
 }
@@ -169,11 +169,11 @@ void ParamContainer::update(ParamContainer::Document& doc_obj)
     // Iterate through all bound parameters in the setter function map. The first element of each
     // map entry returned by the iterator is the path of the parameter and the second is the bound
     // getter method.
-    for (SetterFuncMap::iterator it = setter_map_.begin(); it != setter_map_.end(); ++it) {
+    for (auto& it : setter_map_) {
         // If the path of the bound parameter is found in the JSON document, call the setter
         // function to update the value of the parameter
-        if (rapidjson::Value* value_ptr = rapidjson::Pointer(pointer_path((*it).first).c_str()).Get(doc_obj)) {
-            (*it).second(*value_ptr);
+        if (rapidjson::Value* value_ptr = rapidjson::Pointer(pointer_path(it.first).c_str()).Get(doc_obj)) {
+            it.second(*value_ptr);
         }
     }
 }

@@ -23,7 +23,7 @@ using namespace log4cxx::helpers;
 
 namespace FrameSimulator {
 
-typedef std::vector<UDPFrame> UDPFrames;
+using UDPFrames = std::vector<UDPFrame>;
 
 /** FrameSimulatorPluginUDP
  *

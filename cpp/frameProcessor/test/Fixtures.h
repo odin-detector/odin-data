@@ -33,10 +33,7 @@ public:
         set_debug_level(3);
         metaRxChannel_.bind("inproc://meta_rx");
     }
-    ~GlobalConfig() {
-        // std::cout << "GlobalConfig constructor" << std::endl;
-        // delete consoleAppender;
-    };
+    ~GlobalConfig() = default;
 
 private:
     ConsoleAppender* consoleAppender;
@@ -93,11 +90,9 @@ public:
         hdf5_error_definition.write_duration = 1;
         hdf5_error_definition.flush_duration = 2;
         hdf5_error_definition.close_duration = 3;
-        hdf5_error_definition.callback = boost::bind(&dummy_callback, _1);
+        hdf5_error_definition.callback = [](const std::string& message) { dummy_callback(message); };
     }
-    ~FileWriterPluginTestFixture()
-    {
-    }
+    ~FileWriterPluginTestFixture() = default;
     boost::shared_ptr<FrameProcessor::DataBlockFrame> frame;
     std::vector<boost::shared_ptr<FrameProcessor::DataBlockFrame>> frames;
     FrameProcessor::HDF5ErrorDefinition_t hdf5_error_definition;

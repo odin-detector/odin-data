@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(BasicSharedBufferTest)
 {
 
     void* buf_address = shared_buffer_manager.get_buffer_address(0);
-    BOOST_CHECK_NE(buf_address, (void*)0);
+    BOOST_CHECK_NE(buf_address, (void*)nullptr);
     BOOST_CHECK_EQUAL(buffer_size, shared_buffer_manager.get_buffer_size());
     BOOST_CHECK_EQUAL(num_buffers, shared_buffer_manager.get_num_buffers());
 }
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE(SharedWithChildProcessTest)
 
         // Check child has non-zero buffer address
         char* child_buf_address = reinterpret_cast<char*>(child_manager.get_buffer_address(0));
-        BOOST_CHECK_NE(child_buf_address, (char*)0);
+        BOOST_CHECK_NE(child_buf_address, (char*)nullptr);
 
         // Check child buffer size matches parent
         size_t child_buffer_size = child_manager.get_buffer_size();

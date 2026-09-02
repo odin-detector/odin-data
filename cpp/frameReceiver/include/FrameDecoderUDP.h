@@ -31,7 +31,7 @@ public:
     FrameDecoderUDP() :
         FrameDecoder() { };
 
-    virtual ~FrameDecoderUDP() = 0;
+    ~FrameDecoderUDP() override = 0;
 
     virtual bool requires_header_peek(void) const = 0;
 
@@ -44,9 +44,9 @@ public:
     virtual FrameReceiveState process_packet(size_t bytes_received, int port, struct sockaddr_in* from_addr) = 0;
 };
 
-inline FrameDecoderUDP::~FrameDecoderUDP() { };
+inline FrameDecoderUDP::~FrameDecoderUDP() = default;
 
-typedef boost::shared_ptr<FrameDecoderUDP> FrameDecoderUDPPtr;
+using FrameDecoderUDPPtr = boost::shared_ptr<FrameDecoderUDP>;
 
 } // namespace FrameReceiver
 #endif /* INCLUDE_FRAMEDECODER_UDP_H_ */

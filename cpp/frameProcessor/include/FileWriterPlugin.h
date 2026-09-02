@@ -36,31 +36,32 @@ class Frame;
 class FileWriterPlugin : public FrameProcessorPlugin {
 public:
     explicit FileWriterPlugin();
-    virtual ~FileWriterPlugin();
+    ~FileWriterPlugin() override;
+    FileWriterPlugin(const FileWriterPlugin& src) = delete;
 
     void start_writing();
     void stop_writing();
-    void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
-    void requestConfiguration(OdinData::IpcMessage& reply);
-    virtual void execute(const std::string& command, OdinData::IpcMessage& reply);
-    virtual std::vector<std::string> requestCommands();
+    void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply) override;
+    void requestConfiguration(OdinData::IpcMessage& reply) override;
+    void execute(const std::string& command, OdinData::IpcMessage& reply) override;
+    std::vector<std::string> requestCommands() override;
     void configure_process(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
     void configure_file(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
     void configure_dataset(const std::string& dataset_name, OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
     void create_new_dataset(const std::string& dset_name);
     void delete_datasets();
-    void status(OdinData::IpcMessage& status);
+    void status(OdinData::IpcMessage& status) override;
     void add_file_writing_stats(OdinData::IpcMessage& status);
-    bool reset_statistics();
+    bool reset_statistics() override;
     void stop_acquisition();
     void start_close_file_timeout();
     void run_close_file_timeout();
     size_t calc_num_frames(size_t total_frames);
-    int get_version_major();
-    int get_version_minor();
-    int get_version_patch();
-    std::string get_version_short();
-    std::string get_version_long();
+    int get_version_major() override;
+    int get_version_minor() override;
+    int get_version_patch() override;
+    std::string get_version_short() override;
+    std::string get_version_long() override;
 
     /** Configuration constant for status related items */
     static constexpr char STATUS_WRITING[8] = "writing";
@@ -163,15 +164,8 @@ public:
     static const std::string STOP_WRITING;
 
 private:
-    /**
-     * Prevent a copy of the FileWriterPlugin plugin.
-     *
-     * \param[in] src
-     */
-    FileWriterPlugin(const FileWriterPlugin& src); // prevent copying one of these
-
-    void process_frame(boost::shared_ptr<Frame> frame);
-    void process_end_of_acquisition();
+    void process_frame(boost::shared_ptr<Frame> frame) override;
+    void process_end_of_acquisition() override;
     bool frame_in_acquisition(boost::shared_ptr<Frame> frame);
 
     /** Pointer to logger */

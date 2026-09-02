@@ -25,21 +25,21 @@ namespace OdinData {
 class IpcMessageException : public std::exception {
 public:
     //! Create IpcMessageException with no message
-    IpcMessageException(void) throw() :
+    IpcMessageException(void) noexcept :
         what_("") { };
 
     //! Creates IpcMessageExcetpion with informational message
-    IpcMessageException(const std::string what) throw() :
+    IpcMessageException(const std::string what) noexcept :
         what_(what) { };
 
     //! Returns the content of the informational message
-    virtual const char* what(void) const throw()
+    const char* what(void) const noexcept override
     {
         return what_.c_str();
     };
 
     //! Destructor
-    ~IpcMessageException(void) throw() { };
+    ~IpcMessageException(void) noexcept override = default;
 
 private:
     // Member variables
@@ -100,13 +100,13 @@ public:
     };
 
     //! Internal bi-directional mapping of message type from string to enumerated MsgType
-    typedef boost::bimap<std::string, MsgType> MsgTypeMap;
+    using MsgTypeMap = boost::bimap<std::string, MsgType>;
     //! Internal bi-directional mapping of message type from string to enumerated MsgType
-    typedef MsgTypeMap::value_type MsgTypeMapEntry;
+    using MsgTypeMapEntry = MsgTypeMap::value_type;
     //! Internal bi-directional mapping of message value from string to enumerated MsgVal
-    typedef boost::bimap<std::string, MsgVal> MsgValMap;
+    using MsgValMap = boost::bimap<std::string, MsgVal>;
     //! Internal bi-directional mapping of message value from string to enumerated MsgVal
-    typedef MsgValMap::value_type MsgValMapEntry;
+    using MsgValMapEntry = MsgValMap::value_type;
 
     IpcMessage(MsgType msg_type = MsgTypeIllegal, MsgVal msg_val = MsgValIllegal, bool strict_validation = true);
 

@@ -24,7 +24,7 @@ public:
     virtual void* get_data_ptr() const;
 
     /** Return confirmation that this is an "end of acquisition" frame*/
-    virtual bool get_end_of_acquisition() const;
+    bool get_end_of_acquisition() const override;
 };
 
 }

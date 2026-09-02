@@ -165,7 +165,7 @@ void FrameReceiverController::run(void)
 void FrameReceiverController::stop(const bool deferred)
 {
     if (deferred) {
-        reactor_.register_timer(deferred_action_delay_ms, 1, boost::bind(&FrameReceiverController::stop, this, false));
+        reactor_.register_timer(deferred_action_delay_ms, 1, [this] { stop(false); });
     } else {
         LOG4CXX_TRACE(logger_, "FrameReceiverController::stop()");
         terminate_controller_ = true;
@@ -265,7 +265,7 @@ void FrameReceiverController::setup_control_channel(const std::string& endpoint)
     }
 
     // Add channel to the reactor
-    reactor_.register_channel(ctrl_channel_, boost::bind(&FrameReceiverController::handle_ctrl_channel, this));
+    reactor_.register_channel(ctrl_channel_, [this] { handle_ctrl_channel(); });
 }
 
 //! Set up the receiver thread channel.
@@ -288,7 +288,7 @@ void FrameReceiverController::setup_rx_channel(const std::string& endpoint)
     }
 
     // Add channel to the reactor
-    reactor_.register_channel(rx_channel_, boost::bind(&FrameReceiverController::handle_rx_channel, this));
+    reactor_.register_channel(rx_channel_, [this] { handle_rx_channel(); });
 }
 
 //! Set up the frame ready notification channel.
@@ -334,9 +334,7 @@ void FrameReceiverController::setup_frame_release_channel(const std::string& end
     frame_release_channel_.subscribe("");
 
     // Add channel to the reactor
-    reactor_.register_channel(
-        frame_release_channel_, boost::bind(&FrameReceiverController::handle_frame_release_channel, this)
-    );
+    reactor_.register_channel(frame_release_channel_, [this] { handle_frame_release_channel(); });
 }
 
 //! Unbind an IpcChannel from an endpoint.
@@ -957,9 +955,7 @@ void FrameReceiverController::notify_buffer_config(const bool deferred)
     // buffer configuration.
 
     if (deferred) {
-        reactor_.register_timer(
-            deferred_action_delay_ms, 1, boost::bind(&FrameReceiverController::notify_buffer_config, this, false)
-        );
+        reactor_.register_timer(deferred_action_delay_ms, 1, [this] { notify_buffer_config(false); });
     } else {
         LOG4CXX_DEBUG_LEVEL(1, logger_, "Notifying downstream processes of shared buffer configuration");
 

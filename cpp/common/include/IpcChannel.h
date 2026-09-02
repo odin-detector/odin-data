@@ -21,11 +21,11 @@ class IpcContext {
 public:
     static IpcContext& Instance(unsigned int io_threads = 1);
     zmq::context_t& get(void);
+    IpcContext(const IpcContext&) = delete;
+    IpcContext& operator=(const IpcContext&) = delete;
 
 private:
     IpcContext(unsigned int io_threads = 1);
-    IpcContext(const IpcContext&);
-    IpcContext& operator=(const IpcContext&);
 
     zmq::context_t zmq_context_;
 };

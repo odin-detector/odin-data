@@ -64,7 +64,7 @@ void print_stack_trace(FILE* out = stderr, unsigned int max_frames = 63)
 void abort_handler(int signum, siginfo_t*, void*)
 {
     // Associate each signal with a signal name string.
-    const char* name = NULL;
+    const char* name = nullptr;
     switch (signum) {
     case SIGABRT:
         name = "SIGABRT";
@@ -124,12 +124,12 @@ void init_seg_fault_handler()
     sa.sa_sigaction = abort_handler;
     sigemptyset(&sa.sa_mask);
 
-    sigaction(SIGABRT, &sa, NULL);
-    sigaction(SIGSEGV, &sa, NULL);
-    sigaction(SIGBUS, &sa, NULL);
-    sigaction(SIGILL, &sa, NULL);
-    sigaction(SIGFPE, &sa, NULL);
-    sigaction(SIGPIPE, &sa, NULL);
+    sigaction(SIGABRT, &sa, nullptr);
+    sigaction(SIGSEGV, &sa, nullptr);
+    sigaction(SIGBUS, &sa, nullptr);
+    sigaction(SIGILL, &sa, nullptr);
+    sigaction(SIGFPE, &sa, nullptr);
+    sigaction(SIGPIPE, &sa, nullptr);
 }
 }
 

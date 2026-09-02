@@ -39,9 +39,9 @@ public:
         OdinData::OdinDataException(what) { };
 };
 
-typedef boost::function<void(int, int)> FrameReadyCallback;
-typedef std::queue<int> EmptyBufferQueue;
-typedef std::map<int, int> FrameBufferMap;
+using FrameReadyCallback = boost::function<void(int, int)>;
+using EmptyBufferQueue = std::queue<int>;
+using FrameBufferMap = std::map<int, int>;
 
 class FrameDecoder : public OdinData::IVersionedObject {
 public:
@@ -55,7 +55,7 @@ public:
 
     FrameDecoder();
 
-    virtual ~FrameDecoder() = 0;
+    ~FrameDecoder() override = 0;
 
     virtual void init(LoggerPtr& logger, OdinData::IpcMessage& config_msg);
     virtual void init(OdinData::IpcMessage& config_msg);
@@ -96,9 +96,9 @@ protected:
     unsigned int frames_dropped_; //!< Number of frames dropped due to lack of buffers
 };
 
-inline FrameDecoder::~FrameDecoder() { };
+inline FrameDecoder::~FrameDecoder() = default;
 
-typedef boost::shared_ptr<FrameDecoder> FrameDecoderPtr;
+using FrameDecoderPtr = boost::shared_ptr<FrameDecoder>;
 
 } // namespace FrameReceiver
 #endif /* INCLUDE_FRAMEDECODER_H_ */

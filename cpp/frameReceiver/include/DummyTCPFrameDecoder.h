@@ -21,28 +21,28 @@ namespace DummyTcpFrameDecoderDefaults {
 class DummyTCPFrameDecoder : public FrameDecoderTCP {
 public:
     DummyTCPFrameDecoder();
-    ~DummyTCPFrameDecoder();
+    ~DummyTCPFrameDecoder() override;
 
-    int get_version_major();
-    int get_version_minor();
-    int get_version_patch();
-    std::string get_version_short();
-    std::string get_version_long();
+    int get_version_major() override;
+    int get_version_minor() override;
+    int get_version_patch() override;
+    std::string get_version_short() override;
+    std::string get_version_long() override;
 
-    void monitor_buffers(void);
-    void get_status(const std::string param_prefix, OdinData::IpcMessage& status_msg);
+    void monitor_buffers(void) override;
+    void get_status(const std::string param_prefix, OdinData::IpcMessage& status_msg) override;
 
-    void init(LoggerPtr& logger, OdinData::IpcMessage& config_msg);
-    void request_configuration(const std::string param_prefix, OdinData::IpcMessage& config_reply);
+    void init(LoggerPtr& logger, OdinData::IpcMessage& config_msg) override;
+    void request_configuration(const std::string param_prefix, OdinData::IpcMessage& config_reply) override;
 
-    void* get_next_message_buffer(void);
-    size_t get_next_message_size(void) const;
-    FrameDecoder::FrameReceiveState process_message(size_t bytes_received);
+    void* get_next_message_buffer(void) override;
+    size_t get_next_message_size(void) const override;
+    FrameDecoder::FrameReceiveState process_message(size_t bytes_received) override;
 
-    size_t get_frame_buffer_size(void) const;
-    size_t get_frame_header_size(void) const;
+    size_t get_frame_buffer_size(void) const override;
+    size_t get_frame_header_size(void) const override;
 
-    void reset_statistics(void);
+    void reset_statistics(void) override;
 
     void* get_packet_header_buffer(void);
 
@@ -55,7 +55,7 @@ private:
     size_t frames_sent_;
     size_t read_so_far_;
     int current_frame_number_;
-    uint32_t current_frame_buffer_id_;
+    int current_frame_buffer_id_;
     size_t buffer_size_;
     size_t header_size_;
     size_t frame_size_;

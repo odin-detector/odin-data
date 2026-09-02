@@ -1,8 +1,8 @@
 #ifndef ODINDATA_LOGGING_H
 #define ODINDATA_LOGGING_H
 
+#include <cstring>
 #include <pwd.h>
-#include <string.h>
 #include <unistd.h>
 
 #include <log4cxx/basicconfigurator.h>

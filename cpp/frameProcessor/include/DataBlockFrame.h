@@ -32,7 +32,7 @@ public:
     ~DataBlockFrame();
 
     /** Return a void pointer to the raw data */
-    virtual void* get_data_ptr() const;
+    void* get_data_ptr() const override;
 
 private:
     /** Pointer to raw data block */

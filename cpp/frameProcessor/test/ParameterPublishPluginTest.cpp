@@ -26,8 +26,8 @@ public:
         FrameProcessor::FrameMetaData frame_meta(
             1, "raw", FrameProcessor::raw_64bit, "test", { 3, 4 }, FrameProcessor::no_compression
         );
-        for (size_t i = 0; i < parameters.size(); ++i) {
-            frame_meta.set_parameter<uint64_t>(parameters[i].param, parameters[i].val);
+        for (auto parameter : parameters) {
+            frame_meta.set_parameter<uint64_t>(parameter.param, parameter.val);
         }
         frame = boost::make_shared<FrameProcessor::DataBlockFrame>(frame_meta, static_cast<void*>(img), 24);
         set_debug_level(3);
@@ -58,8 +58,8 @@ BOOST_AUTO_TEST_CASE(ParameterPublishPlugin_Publish)
     constexpr const char* inproc_endpoint = "inproc://testcase1";
     listen_ch.subscribe("");
     listen_ch.connect(inproc_endpoint);
-    for (size_t i = 0; i < parameters.size(); ++i) {
-        BOOST_CHECK_NO_THROW(cfg.set_param(FPPP::CONFIG_ADD_PARAMETER, std::string(PPPT::parameters[i].param)));
+    for (auto parameter : parameters) {
+        BOOST_CHECK_NO_THROW(cfg.set_param(FPPP::CONFIG_ADD_PARAMETER, std::string(parameter.param)));
         BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
     }
     BOOST_CHECK_NO_THROW(cfg.set_param(FPPP::CONFIG_ENDPOINT, std::string(inproc_endpoint)));
@@ -71,11 +71,9 @@ BOOST_AUTO_TEST_CASE(ParameterPublishPlugin_Publish)
     BOOST_CHECK(d.HasMember(FPPP::DATA_PARAMETERS.c_str()) && d[FPPP::DATA_PARAMETERS.c_str()].IsString());
     rapidjson::Document nested_params;
     BOOST_REQUIRE_NO_THROW(nested_params.Parse(d[FPPP::DATA_PARAMETERS.c_str()].GetString()));
-    for (size_t i = 0; i < parameters.size(); ++i) {
-        BOOST_CHECK(
-            nested_params.HasMember(PPPT::parameters[i].param) && nested_params[PPPT::parameters[i].param].IsInt()
-        );
-        BOOST_CHECK_EQUAL(nested_params[PPPT::parameters[i].param].GetInt(), PPPT::parameters[i].val);
+    for (auto parameter : parameters) {
+        BOOST_CHECK(nested_params.HasMember(parameter.param) && nested_params[parameter.param].IsInt());
+        BOOST_CHECK_EQUAL(nested_params[parameter.param].GetInt(), parameter.val);
     }
 }
 

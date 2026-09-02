@@ -24,21 +24,21 @@ namespace OdinData {
 class ParamContainerException : public std::exception {
 public:
     //! Create ParamContainerException with no message
-    ParamContainerException(void) throw() :
+    ParamContainerException(void) noexcept :
         what_("") { };
 
     //! Create ParamContainerException with informational message
-    ParamContainerException(const std::string what) throw() :
+    ParamContainerException(const std::string what) noexcept :
         what_(what) { };
 
     //! Return the content of the informational message
-    virtual const char* what(void) const throw()
+    const char* what(void) const noexcept override
     {
         return what_.c_str();
     };
 
     //! Destructor
-    ~ParamContainerException(void) throw() { };
+    ~ParamContainerException(void) noexcept override = default;
 
 private:
     // Member variables
@@ -66,21 +66,21 @@ namespace OdinData {
 class ParamContainer {
 
     //! Parameter setter function type definition
-    typedef boost::function<void(rapidjson::Value&)> SetterFunc;
+    using SetterFunc = boost::function<void(rapidjson::Value&)>;
     //! Parameter setter function map type definition
-    typedef std::map<std::string, SetterFunc> SetterFuncMap;
+    using SetterFuncMap = std::map<std::string, SetterFunc>;
     //! Parameter getter function type definition
-    typedef boost::function<void(rapidjson::Value&)> GetterFunc;
+    using GetterFunc = boost::function<void(rapidjson::Value&)>;
     //! Parameter getter function map type definition
-    typedef std::map<std::string, GetterFunc> GetterFuncMap;
+    using GetterFuncMap = std::map<std::string, GetterFunc>;
 
 public:
     //! Use the RapidJSON Document and Value types throughout
-    typedef rapidjson::Document Document;
-    typedef rapidjson::Value Value;
+    using Document = rapidjson::Document;
+    using Value = rapidjson::Value;
 
     //! Default constructor
-    ParamContainer() { };
+    ParamContainer() = default;
 
     //! Copy constructor
     ParamContainer(const ParamContainer& container);

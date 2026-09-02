@@ -9,8 +9,8 @@
 #include <algorithm>
 #include <bitset>
 #include <boost/algorithm/string.hpp>
+#include <cstring>
 #include <sstream>
-#include <string.h>
 #include <unistd.h>
 
 using namespace FrameReceiver;
@@ -35,9 +35,7 @@ DummyTCPFrameDecoder::DummyTCPFrameDecoder() :
 }
 
 //! Destructor for DummyTCPFrameDecoder
-DummyTCPFrameDecoder::~DummyTCPFrameDecoder()
-{
-}
+DummyTCPFrameDecoder::~DummyTCPFrameDecoder() = default;
 
 /**
  * Initialises the frame decoder

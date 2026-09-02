@@ -36,7 +36,7 @@ class FrameProcessorController : public IFrameCallback,
                                  public boost::enable_shared_from_this<FrameProcessorController> {
 public:
     FrameProcessorController(unsigned int num_io_threads = OdinData::Defaults::default_io_threads);
-    virtual ~FrameProcessorController();
+    ~FrameProcessorController() override;
     void handleCtrlChannel();
     void handleMetaRxChannel();
     void provideStatus(OdinData::IpcMessage& reply, bool metadata);
@@ -132,7 +132,7 @@ private:
     void closeMetaTxInterface();
     void runIpcService(void);
     void tickTimer(void);
-    void callback(boost::shared_ptr<Frame> frame);
+    void callback(boost::shared_ptr<Frame> frame) override;
 
     /** Pointer to the logging facility */
     log4cxx::LoggerPtr logger_;

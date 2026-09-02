@@ -35,10 +35,7 @@ void FrameReceiverUDPRxThread::run_specific_service(void)
 {
     LOG4CXX_DEBUG_LEVEL(1, logger_, "Running UDP RX thread service");
 
-    for (std::vector<uint16_t>::iterator rx_port_itr = config_.rx_ports_.begin();
-         rx_port_itr != config_.rx_ports_.end(); rx_port_itr++) {
-
-        uint16_t rx_port = *rx_port_itr;
+    for (unsigned short rx_port : config_.rx_ports_) {
 
         // Create the receive socket
         int recv_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -93,9 +90,9 @@ void FrameReceiverUDPRxThread::run_specific_service(void)
         }
 
         // Register this socket
-        this->register_socket(
-            recv_socket, boost::bind(&FrameReceiverUDPRxThread::handle_receive_socket, this, recv_socket, (int)rx_port)
-        );
+        this->register_socket(recv_socket, [this, recv_socket, recv_port = static_cast<int>(rx_port)] {
+            handle_receive_socket(recv_socket, recv_port);
+        });
     }
 }
 

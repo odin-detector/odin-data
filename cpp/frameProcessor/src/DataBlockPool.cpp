@@ -15,9 +15,7 @@ namespace FrameProcessor {
  */
 std::map<size_t, DataBlockPool*> DataBlockPool::instance_map_;
 
-DataBlockPool::~DataBlockPool()
-{
-}
+DataBlockPool::~DataBlockPool() = default;
 
 /**
  * Static method to force allocation of new DataBlocks which are added to

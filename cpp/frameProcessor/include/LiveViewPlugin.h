@@ -24,15 +24,15 @@ class LiveViewPlugin : public FrameProcessorPlugin {
 
 public:
     LiveViewPlugin();
-    virtual ~LiveViewPlugin();
-    void process_frame(boost::shared_ptr<Frame> frame);
-    void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
+    ~LiveViewPlugin() override;
+    void process_frame(boost::shared_ptr<Frame> frame) override;
+    void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply) override;
     void pass_live_frame(boost::shared_ptr<Frame> frame);
-    int get_version_major();
-    int get_version_minor();
-    int get_version_patch();
-    std::string get_version_short();
-    std::string get_version_long();
+    int get_version_major() override;
+    int get_version_minor() override;
+    int get_version_patch() override;
+    std::string get_version_short() override;
+    std::string get_version_long() override;
 
     /*DEFAULT CONFIG VALUES*/
     /** The default value for the Frame Frequency configuration*/
@@ -67,7 +67,7 @@ private:
 
     void add_json_member(rapidjson::Document* document, std::string key, std::string value);
     void add_json_member(rapidjson::Document* document, std::string key, uint32_t value);
-    void requestConfiguration(OdinData::IpcMessage& reply);
+    void requestConfiguration(OdinData::IpcMessage& reply) override;
     void set_per_second_config(int32_t value);
     void set_frame_freq_config(int32_t value);
     void set_socket_addr_config(std::string value);

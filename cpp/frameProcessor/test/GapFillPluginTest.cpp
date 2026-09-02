@@ -52,9 +52,7 @@ public:
         );
     }
 
-    ~GapFillPluginTestFixture()
-    {
-    }
+    ~GapFillPluginTestFixture() = default;
 
     boost::shared_ptr<FrameProcessor::Frame> frame;
     boost::shared_ptr<FrameProcessor::Frame> frame_2;

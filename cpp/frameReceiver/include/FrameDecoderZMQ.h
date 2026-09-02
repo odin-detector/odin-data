@@ -31,16 +31,16 @@ public:
     FrameDecoderZMQ() :
         FrameDecoder() { };
 
-    virtual ~FrameDecoderZMQ() = 0;
+    ~FrameDecoderZMQ() override = 0;
 
     virtual void* get_next_message_buffer(void) = 0;
     virtual FrameReceiveState process_message(size_t bytes_received) = 0;
     virtual void frame_meta_data(int meta) = 0;
 };
 
-inline FrameDecoderZMQ::~FrameDecoderZMQ() { };
+inline FrameDecoderZMQ::~FrameDecoderZMQ() = default;
 
-typedef boost::shared_ptr<FrameDecoderZMQ> FrameDecoderZMQPtr;
+using FrameDecoderZMQPtr = boost::shared_ptr<FrameDecoderZMQ>;
 
 } // namespace FrameReceiver
 #endif /* INCLUDE_FRAMEDECODER_ZMQ_H_ */

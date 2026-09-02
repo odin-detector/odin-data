@@ -24,16 +24,16 @@ class GapFillPlugin : public FrameProcessorPlugin {
 
 public:
     GapFillPlugin();
-    virtual ~GapFillPlugin();
-    void process_frame(boost::shared_ptr<Frame> frame);
+    ~GapFillPlugin() override;
+    void process_frame(boost::shared_ptr<Frame> frame) override;
     bool configuration_valid(boost::shared_ptr<Frame> frame);
     boost::shared_ptr<Frame> insert_gaps(boost::shared_ptr<Frame> frame);
-    void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
-    int get_version_major();
-    int get_version_minor();
-    int get_version_patch();
-    std::string get_version_short();
-    std::string get_version_long();
+    void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply) override;
+    int get_version_major() override;
+    int get_version_minor() override;
+    int get_version_patch() override;
+    std::string get_version_short() override;
+    std::string get_version_long() override;
 
     /*Config Names*/
     /** The required grid for the image [y, x]*/
@@ -46,7 +46,7 @@ public:
     static const std::string CONFIG_GRID_Y_GAPS;
 
 private:
-    void requestConfiguration(OdinData::IpcMessage& reply);
+    void requestConfiguration(OdinData::IpcMessage& reply) override;
 
     /** Pointer to logger */
     LoggerPtr logger_;

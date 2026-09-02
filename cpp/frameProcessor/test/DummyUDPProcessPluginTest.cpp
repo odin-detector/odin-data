@@ -23,9 +23,7 @@ public:
         dummy_plugin.set_name("dummy");
     }
 
-    ~DummyUDPProcessPluginTestFixture()
-    {
-    }
+    ~DummyUDPProcessPluginTestFixture() = default;
 
     FrameProcessor::DummyUDPProcessPlugin dummy_plugin;
 };

@@ -93,33 +93,35 @@ void ParameterAdjustmentPlugin::configure(OdinData::IpcMessage& config, OdinData
             add_config_param_metadata(PARAMETER_NAME_CONFIG, PMDD::STRINGARR_T, PMDA::READ_WRITE);
 
             if (parameter_names.size() != 0) {
-                for (auto iter = parameter_names.begin(); iter != parameter_names.end(); ++iter) {
-                    OdinData::IpcMessage paramConfig(parameter_config.get_param<const rapidjson::Value&>(*iter));
+                for (auto& parameter_name : parameter_names) {
+                    OdinData::IpcMessage paramConfig(parameter_config.get_param<const rapidjson::Value&>(parameter_name)
+                    );
                     LOG4CXX_INFO(
                         logger_,
                         "Setting adjustment for parameter "
-                            << *iter << " to " << (int64_t)paramConfig.get_param<int64_t>(PARAMETER_ADJUSTMENT_CONFIG)
+                            << parameter_name << " to "
+                            << (int64_t)paramConfig.get_param<int64_t>(PARAMETER_ADJUSTMENT_CONFIG)
                     );
-                    parameter_adjustments_[*iter]
+                    parameter_adjustments_[parameter_name]
                         = (int64_t)paramConfig.get_param<int64_t>(PARAMETER_ADJUSTMENT_CONFIG);
                     add_config_param_metadata(
-                        PARAMETER_NAME_CONFIG + '/' + *iter + '/' + PARAMETER_ADJUSTMENT_CONFIG, PMDD::INT_T,
+                        PARAMETER_NAME_CONFIG + '/' + parameter_name + '/' + PARAMETER_ADJUSTMENT_CONFIG, PMDD::INT_T,
                         PMDA::READ_WRITE
                     );
 
                     if (paramConfig.has_param(PARAMETER_INPUT_CONFIG)) {
                         LOG4CXX_INFO(
                             logger_,
-                            "Setting input for parameter " << *iter << " to "
+                            "Setting input for parameter " << parameter_name << " to "
                                                            << paramConfig.get_param<std::string>(PARAMETER_INPUT_CONFIG)
                         );
-                        parameter_inputs_[*iter] = paramConfig.get_param<std::string>(PARAMETER_INPUT_CONFIG);
+                        parameter_inputs_[parameter_name] = paramConfig.get_param<std::string>(PARAMETER_INPUT_CONFIG);
                         add_config_param_metadata(
-                            PARAMETER_NAME_CONFIG + '/' + *iter + '/' + PARAMETER_INPUT_CONFIG, PMDD::STRING_T,
+                            PARAMETER_NAME_CONFIG + '/' + parameter_name + '/' + PARAMETER_INPUT_CONFIG, PMDD::STRING_T,
                             PMDA::READ_WRITE
                         );
                     } else {
-                        parameter_inputs_[*iter] = "";
+                        parameter_inputs_[parameter_name] = "";
                     }
                 }
             } else {

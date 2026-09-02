@@ -5,9 +5,9 @@
  *      Author: Tim Nicholls, STFC Application Engineering Group
  */
 
+#include <csignal>
 #include <fstream>
 #include <iostream>
-#include <signal.h>
 #include <streambuf>
 #include <string>
 using namespace std;

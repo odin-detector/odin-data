@@ -5,10 +5,10 @@
  *      Author: Alan Greer
  */
 
+#include <csignal>
 #include <cstring>
 #include <fstream>
 #include <iostream>
-#include <signal.h>
 #include <string>
 using namespace std;
 

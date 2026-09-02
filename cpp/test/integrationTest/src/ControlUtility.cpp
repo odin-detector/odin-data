@@ -66,18 +66,19 @@ void ControlUtility::run_process(const bool& wait_child)
         LOG4CXX_DEBUG(
             logger_, "Launching " + process_path_ + "(" + boost::lexical_cast<std::string>(process_pid_) + ")"
         );
+        int status;
         if (wait_child) {
-            wait(NULL);
+            wait(nullptr);
         }
     }
 
     if (process_pid_ == 0) {
 
         std::vector<char*> args;
-        for (uint32_t s = 0; s < process_args_.size(); s++) {
-            args.push_back((char*)process_args_.at(s).data());
+        for (auto& process_arg : process_args_) {
+            args.push_back((char*)process_arg.data());
         }
-        args.push_back(NULL);
+        args.push_back(nullptr);
 
         execv(process_path_.c_str(), args.data());
     }
@@ -92,11 +93,11 @@ void ControlUtility::run_command()
     std::string command = process_path_;
 
     command += " ";
-    for (uint32_t s = 0; s < command_args_.size(); s++) {
-        if (command_args_[s].find("--") != std::string::npos)
-            command += command_args_[s] + "=";
+    for (const auto& command_arg : command_args_) {
+        if (command_arg.find("--") != std::string::npos)
+            command += command_arg + "=";
         else
-            command += command_args_[s] + " ";
+            command += command_arg + " ";
     }
 
     int status = std::system((command).c_str());
