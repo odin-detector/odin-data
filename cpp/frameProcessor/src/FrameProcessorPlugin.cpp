@@ -152,7 +152,7 @@ std::vector<std::string> FrameProcessorPlugin::get_warnings()
  * \param[in] config - IpcMessage containing configuration data.
  * \param[out] reply - Response IpcMessage.
  */
-void FrameProcessorPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
+void FrameProcessorPlugin::configure(OdinData::IpcMessage& /* config */, OdinData::IpcMessage& /* reply */)
 {
     // Default method simply does nothing
 }
@@ -164,7 +164,7 @@ void FrameProcessorPlugin::configure(OdinData::IpcMessage& config, OdinData::Ipc
  *
  * \param[out] reply - Response IpcMessage with current configuration.
  */
-void FrameProcessorPlugin::requestConfiguration(OdinData::IpcMessage& reply)
+void FrameProcessorPlugin::requestConfiguration(OdinData::IpcMessage& /* reply */)
 {
     // Default method simply does nothing
 }
@@ -210,7 +210,7 @@ std::vector<std::string> FrameProcessorPlugin::requestCommands()
  *
  * \param[out] status - Reference to an IpcMessage value to store the status.
  */
-void FrameProcessorPlugin::status(OdinData::IpcMessage& status)
+void FrameProcessorPlugin::status(OdinData::IpcMessage& /* status */)
 {
     // Default method simply does nothing
 }

@@ -116,6 +116,7 @@ void FrameReceiverUDPRxThread::handle_receive_socket(int recv_socket, int recv_p
         void* header_buffer = frame_decoder_->get_packet_header_buffer();
         socklen_t from_len = sizeof(from_addr);
         size_t bytes_received
+        //BUG??: recvfrom is ssize_t but bytes_recieved is size_t
             = recvfrom(recv_socket, header_buffer, header_size, MSG_PEEK, (struct sockaddr*)&from_addr, &from_len);
         LOG4CXX_DEBUG_LEVEL(3, logger_, "RX thread received " << bytes_received << " header bytes on recv socket");
         frame_decoder_->process_packet_header(bytes_received, recv_port, &from_addr);

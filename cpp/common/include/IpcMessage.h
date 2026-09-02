@@ -278,13 +278,13 @@ public:
     bool is_valid(void);
 
     //! Returns type attribute of message
-    const MsgType get_msg_type(void) const;
+    MsgType get_msg_type(void) const;
 
     //! Returns value attribute of message
-    const MsgVal get_msg_val(void) const;
+    MsgVal get_msg_val(void) const;
 
     //! Returns id attribute of message
-    const unsigned int get_msg_id(void) const;
+    unsigned int get_msg_id(void) const;
 
     //! Returns message timestamp as a string in ISO8601 extended format
     const std::string get_msg_timestamp(void) const;

@@ -201,7 +201,7 @@ boost::shared_ptr<Frame> GapFillPlugin::insert_gaps(boost::shared_ptr<Frame> fra
  * \param[in] config - IpcMessage containing configuration data.
  * \param[out] reply - Response IpcMessage.
  */
-void GapFillPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
+void GapFillPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& /* reply */)
 {
     try {
         std::lock_guard<std::mutex> guard { mutex_ };

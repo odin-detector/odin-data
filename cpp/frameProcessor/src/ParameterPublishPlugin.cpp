@@ -94,7 +94,7 @@ void ParameterPublishPlugin::process_frame(boost::shared_ptr<Frame> frame)
  * \param[in] config - IpcMessage containing configuration data.
  * \param[out] reply - Response IpcMessage.
  */
-void ParameterPublishPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
+void ParameterPublishPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& /* reply */)
 {
     try {
         std::lock_guard<std::mutex> lock(mutex_);
