@@ -701,7 +701,6 @@ void FrameReceiverController::handle_ctrl_channel(void)
 
     // Construct a default reply
     IpcMessage ctrl_reply;
-    IpcMessage::MsgVal ctrl_reply_val = IpcMessage::MsgValIllegal;
 
     bool request_ok = true;
     std::ostringstream error_ss;
