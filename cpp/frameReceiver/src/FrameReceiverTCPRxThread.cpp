@@ -87,9 +87,7 @@ void FrameReceiverTCPRxThread::run_specific_service(void)
         }
 
         // Register this socket
-        this->register_socket(recv_socket_, [this, recv_socket_, recv_port = static_cast<int>(rx_port)] {
-            handle_receive_socket(recv_socket_, recv_port);
-        });
+        this->register_socket(recv_socket_, [this, recv_socket_] { handle_receive_socket(recv_socket_); });
     }
 }
 
@@ -102,7 +100,7 @@ void FrameReceiverTCPRxThread::cleanup_specific_service(void)
     close(recv_socket_);
 }
 
-void FrameReceiverTCPRxThread::handle_receive_socket(int recv_socket_, int recv_port)
+void FrameReceiverTCPRxThread::handle_receive_socket(int recv_socket_)
 {
     // Receive a message from the main thread channel and place it directly into
     // the provided memory buffer

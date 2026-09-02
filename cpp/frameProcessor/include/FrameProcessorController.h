@@ -46,7 +46,7 @@ public:
     void execute(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
     void requestCommands(OdinData::IpcMessage& reply);
     void resetStatistics(OdinData::IpcMessage& reply);
-    void configurePlugin(OdinData::IpcMessage& config);
+    void configurePlugin(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
     void loadPlugin(const std::string& index, const std::string& name, const std::string& library);
     void connectPlugin(const std::string& index, const std::string& connectTo);
     void disconnectPlugin(const std::string& index, const std::string& disconnectFrom);
