@@ -29,7 +29,7 @@ checks="${CLANG_TIDY_CHECKS:-${default_checks}}"
 jobs="${CLANG_TIDY_JOBS:-4}"
 apply_fixes=0
 quiet=1
-warnings_as_errors=""
+warnings_as_errors="*"
 source_paths=()
 
 report()
@@ -57,7 +57,8 @@ Options:
   -j, --jobs N                 Parallel clang-tidy processes (default: 4)
       --checks LIST            Override the curated clang-tidy checks
       --warnings-as-errors LIST
-                               Upgrade matching checks to errors
+                               Override which checks are upgraded to errors
+                               (default: all enabled checks)
       --fix                    Apply clang-tidy fix-its to source files
       --verbose                Show run-clang-tidy progress output
   -h, --help                   Show this help
@@ -249,6 +250,11 @@ command=(
     "-checks=${checks}"
     -header-filter "^${escaped_cpp_dir}/"
     -exclude-header-filter "^${escaped_common_include_dir}/(rapidjson|zmq)/"
+    # RapidJSON 1.1 contains an invalid assignment operator in an unused
+    # template. Clang 20 diagnoses its body before the header filter can
+    # discard external diagnostics. Delay template parsing so unused vendored
+    # template bodies are ignored while instantiated code is still analysed.
+    -extra-arg=-fdelayed-template-parsing
 )
 
 if [[ ${quiet} -eq 1 ]]; then
@@ -269,6 +275,27 @@ if [[ ${apply_fixes} -eq 1 ]]; then
     report "Applying clang-tidy fix-its"
 else
     report "Report-only mode; no source files will be changed"
+fi
+
+if [[ ${quiet} -eq 1 ]]; then
+    # Clang reports the number of diagnostics it considered before the header
+    # filters suppress external-code warnings. Those totals are not actionable
+    # findings, so hide only the exact bookkeeping lines in normal output.
+    set +e
+    "${command[@]}" 2>&1 \
+        | sed -u -E '/^[[:space:]]*[0-9]+ warnings? generated\.[[:space:]]*$/d'
+    command_statuses=("${PIPESTATUS[@]}")
+    set -e
+
+    if [[ ${command_statuses[0]} -ne 0 ]]; then
+        exit "${command_statuses[0]}"
+    fi
+    if [[ ${command_statuses[1]} -ne 0 ]]; then
+        exit "${command_statuses[1]}"
+    fi
+
+    report "clang-tidy completed successfully"
+    exit 0
 fi
 
 exec "${command[@]}"
