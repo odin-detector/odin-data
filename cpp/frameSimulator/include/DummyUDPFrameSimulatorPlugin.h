@@ -8,7 +8,6 @@
 using namespace log4cxx;
 using namespace log4cxx::helpers;
 
-#include <boost/shared_ptr.hpp>
 #include <map>
 #include <stdexcept>
 #include <string>
@@ -30,18 +29,18 @@ class DummyUDPFrameSimulatorPlugin : public FrameSimulatorPluginUDP {
 public:
     DummyUDPFrameSimulatorPlugin();
 
-    virtual void populate_options(po::options_description& config);
-    virtual bool setup(const po::variables_map& vm);
+    void populate_options(po::options_description& config) override;
+    bool setup(const po::variables_map& vm) override;
 
-    virtual int get_version_major();
-    virtual int get_version_minor();
-    virtual int get_version_patch();
-    virtual std::string get_version_short();
-    virtual std::string get_version_long();
+    int get_version_major() override;
+    int get_version_minor() override;
+    int get_version_patch() override;
+    std::string get_version_short() override;
+    std::string get_version_long() override;
 
 protected:
-    virtual void extract_frames(const u_char* data, const int& size);
-    virtual void create_frames(const int& num_frames);
+    void extract_frames(const u_char* data, const int& size) override;
+    void create_frames(const int& num_frames) override;
 
 private:
     /** Pointer to logger **/

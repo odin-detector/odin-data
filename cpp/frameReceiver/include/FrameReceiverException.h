@@ -17,21 +17,21 @@ namespace FrameReceiver {
 class FrameReceiverException : public std::exception {
 public:
     //! Create FrameReceiverException with no message
-    FrameReceiverException(void) throw() :
+    FrameReceiverException(void) noexcept :
         what_("") { };
 
     //! Creates FrameReceiverExcetpion with informational message
-    FrameReceiverException(const std::string what) throw() :
+    FrameReceiverException(std::string&& what) noexcept :
         what_(what) { };
 
     //! Returns the content of the informational message
-    virtual const char* what(void) const throw()
+    const char* what(void) const noexcept override
     {
         return what_.c_str();
     };
 
     //! Destructor
-    ~FrameReceiverException(void) throw() { };
+    ~FrameReceiverException(void) noexcept override { };
 
 private:
     // Member variables

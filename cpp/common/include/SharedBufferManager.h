@@ -8,12 +8,12 @@
 #ifndef SHAREDBUFFERMANAGER_H_
 #define SHAREDBUFFERMANAGER_H_
 
+#include <memory>
 #include <stddef.h>
 #include <string>
 
 #include <boost/interprocess/mapped_region.hpp>
 #include <boost/interprocess/shared_memory_object.hpp>
-#include <boost/shared_ptr.hpp>
 
 #include "OdinDataException.h"
 
@@ -22,8 +22,8 @@ namespace OdinData {
 //! SharedBufferManagerException - custom exception class implementing "what" for error string
 class SharedBufferManagerException : public OdinDataException {
 public:
-    SharedBufferManagerException(const std::string what) :
-        OdinDataException(what)
+    SharedBufferManagerException(std::string&& what) :
+        OdinDataException(std::move(what))
     {
     }
 };
@@ -63,7 +63,7 @@ private:
     static size_t last_manager_id;
 };
 
-typedef boost::shared_ptr<SharedBufferManager> SharedBufferManagerPtr;
+typedef std::shared_ptr<SharedBufferManager> SharedBufferManagerPtr;
 
 } // namespace OdinData
 #endif /* SHAREDBUFFERMANAGER_H_ */

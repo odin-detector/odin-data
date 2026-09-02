@@ -3,7 +3,7 @@
 
 #include "Fixtures.h"
 
-BOOST_GLOBAL_FIXTURE(GlobalConfig);
+BOOST_TEST_GLOBAL_FIXTURE(GlobalConfig);
 
 BOOST_FIXTURE_TEST_SUITE(HDF5FileUnitTest, FileWriterPluginTestFixture);
 
@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE(FileWriterPluginMultipleFramesTest)
     BOOST_REQUIRE_NO_THROW(hdf5f.create_file(ss.str(), 0, false, 1, 1));
     BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(dset_def, -1, -1));
 
-    std::vector<boost::shared_ptr<FrameProcessor::DataBlockFrame>>::iterator it;
+    std::vector<std::shared_ptr<FrameProcessor::DataBlockFrame>>::iterator it;
     for (it = frames.begin(); it != frames.end(); ++it) {
         BOOST_TEST_MESSAGE("Writing frame: " << (*it)->get_frame_number());
         BOOST_REQUIRE_NO_THROW(hdf5f.write_frame(*(*it), (*it)->get_frame_number(), 1, durations));
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE(HDF5FileMultipleReverseTest)
     BOOST_TEST_MESSAGE("Writing frame: " << frame->get_frame_number());
     BOOST_REQUIRE_NO_THROW(hdf5f.write_frame(*frame, frame->get_frame_number(), 1, durations));
 
-    std::vector<boost::shared_ptr<FrameProcessor::DataBlockFrame>>::reverse_iterator rit;
+    std::vector<std::shared_ptr<FrameProcessor::DataBlockFrame>>::reverse_iterator rit;
     for (rit = frames.rbegin(); rit != frames.rend(); ++rit) {
         BOOST_TEST_MESSAGE("Writing frame: " << (*rit)->get_frame_number());
         BOOST_REQUIRE_NO_THROW(hdf5f.write_frame(*(*rit), (*rit)->get_frame_number(), 1, durations));
@@ -171,7 +171,7 @@ BOOST_AUTO_TEST_CASE(HDF5FileAdjustHugeOffset)
 
     hsize_t huge_offset = 100000;
 
-    std::vector<boost::shared_ptr<FrameProcessor::DataBlockFrame>>::iterator it;
+    std::vector<std::shared_ptr<FrameProcessor::DataBlockFrame>>::iterator it;
     for (it = frames.begin(); it != frames.end(); ++it) {
         size_t frame_no = (*it)->get_frame_number();
         // PercivalEmulator::FrameHeader img_header = *((*it)->get_header());
@@ -204,7 +204,7 @@ BOOST_AUTO_TEST_CASE(FileWriterPluginWriteParamTest)
 
     BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(param_dset_def, -1, -1));
 
-    std::vector<boost::shared_ptr<FrameProcessor::DataBlockFrame>>::iterator it;
+    std::vector<std::shared_ptr<FrameProcessor::DataBlockFrame>>::iterator it;
     uint64_t val = 0;
     for (it = frames.begin(); it != frames.end(); ++it) {
         (*it)->meta_data().set_parameter("p1", val);
@@ -235,7 +235,7 @@ BOOST_AUTO_TEST_CASE(FileWriterPluginWriteParamWrongTypeTest)
 
     BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(param_dset_def, -1, -1));
 
-    std::vector<boost::shared_ptr<FrameProcessor::DataBlockFrame>>::iterator it;
+    std::vector<std::shared_ptr<FrameProcessor::DataBlockFrame>>::iterator it;
     for (it = frames.begin(); it != frames.end(); ++it) {
         uint64_t val = 123;
         (*it)->meta_data().set_parameter("p1", val);
@@ -265,7 +265,7 @@ BOOST_AUTO_TEST_CASE(FileWriterPluginWriteParamNoParamTest)
 
     BOOST_REQUIRE_NO_THROW(hdf5f.create_dataset(param_dset_def, -1, -1));
 
-    std::vector<boost::shared_ptr<FrameProcessor::DataBlockFrame>>::iterator it;
+    std::vector<std::shared_ptr<FrameProcessor::DataBlockFrame>>::iterator it;
     for (it = frames.begin(); it != frames.end(); ++it) {
         uint64_t val = 123;
         (*it)->meta_data().set_parameter("p2", val);

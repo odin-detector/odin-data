@@ -10,9 +10,6 @@
 #include <string>
 #include <vector>
 
-#include <boost/shared_ptr.hpp>
-#include <boost/thread.hpp>
-
 #include <log4cxx/logger.h>
 using namespace log4cxx;
 
@@ -20,6 +17,8 @@ using namespace log4cxx;
 #include "ClassLoader.h"
 #include "FrameProcessorDefinitions.h"
 #include "FrameProcessorPlugin.h"
+
+#include <condition_variable>
 
 namespace FrameProcessor {
 
@@ -36,31 +35,31 @@ class Frame;
 class FileWriterPlugin : public FrameProcessorPlugin {
 public:
     explicit FileWriterPlugin();
-    virtual ~FileWriterPlugin();
+    ~FileWriterPlugin() override;
 
     void start_writing();
     void stop_writing();
-    void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
-    void requestConfiguration(OdinData::IpcMessage& reply);
-    virtual void execute(const std::string& command, OdinData::IpcMessage& reply);
-    virtual std::vector<std::string> requestCommands();
+    void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply) override;
+    void requestConfiguration(OdinData::IpcMessage& reply) override;
+    void execute(const std::string& command, OdinData::IpcMessage& reply) override;
+    std::vector<std::string> requestCommands() override;
     void configure_process(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
     void configure_file(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
     void configure_dataset(const std::string& dataset_name, OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
     void create_new_dataset(const std::string& dset_name);
     void delete_datasets();
-    void status(OdinData::IpcMessage& status);
+    void status(OdinData::IpcMessage& status) override;
     void add_file_writing_stats(OdinData::IpcMessage& status);
-    bool reset_statistics();
+    bool reset_statistics() override;
     void stop_acquisition();
     void start_close_file_timeout();
     void run_close_file_timeout();
     size_t calc_num_frames(size_t total_frames);
-    int get_version_major();
-    int get_version_minor();
-    int get_version_patch();
-    std::string get_version_short();
-    std::string get_version_long();
+    int get_version_major() override;
+    int get_version_minor() override;
+    int get_version_patch() override;
+    std::string get_version_short() override;
+    std::string get_version_long() override;
 
     /** Configuration constant for status related items */
     static constexpr char STATUS_WRITING[8] = "writing";
@@ -170,9 +169,9 @@ private:
      */
     FileWriterPlugin(const FileWriterPlugin& src); // prevent copying one of these
 
-    void process_frame(boost::shared_ptr<Frame> frame);
-    void process_end_of_acquisition();
-    bool frame_in_acquisition(boost::shared_ptr<Frame> frame);
+    void process_frame(std::shared_ptr<Frame> frame) override;
+    void process_end_of_acquisition() override;
+    bool frame_in_acquisition(std::shared_ptr<Frame> frame);
 
     /** Pointer to logger */
     LoggerPtr logger_;
@@ -185,9 +184,9 @@ private:
     /** Rank of this file writer */
     size_t concurrent_rank_;
     /** Details of the acquisition currently being written */
-    boost::shared_ptr<Acquisition> current_acquisition_;
+    std::shared_ptr<Acquisition> current_acquisition_;
     /** Details of the next acquisition to be written */
-    boost::shared_ptr<Acquisition> next_acquisition_;
+    std::shared_ptr<Acquisition> next_acquisition_;
     /** Map of dataset definitions */
     std::map<std::string, DatasetDefinition> dataset_defs_;
     /** Number of frames to write consecutively in a file */
@@ -203,19 +202,19 @@ private:
     /** Timeout for closing the file after receiving no data */
     size_t timeout_period_;
     /** Mutex used to make starting the close file timeout thread safe */
-    boost::mutex start_timeout_mutex_;
+    std::mutex start_timeout_mutex_;
     /** Mutex used to make running the close file timeout thread safe */
-    boost::mutex close_file_mutex_;
+    std::mutex close_file_mutex_;
     /** Condition variable used to start the close file timeout */
-    boost::condition_variable start_condition_;
+    std::condition_variable start_condition_;
     /** Condition variable used to run the close file timeout */
-    boost::condition_variable timeout_condition_;
+    std::condition_variable timeout_condition_;
     /** Close file timeout active switch */
     bool timeout_active_;
     /** Close file timeout thread running */
     bool timeout_thread_running_;
     /** The close file timeout thread */
-    boost::thread timeout_thread_;
+    std::thread timeout_thread_;
     /** Starting file index (default to 0 index based numbering) */
     uint32_t first_file_index_;
     /** Do we use file numbers in the file name construction.  Defaults to true */

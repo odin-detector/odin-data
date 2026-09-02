@@ -39,7 +39,7 @@ ParameterPublishPlugin::~ParameterPublishPlugin()
  *
  * \param[in] frame - Pointer to a Frame object.
  */
-void ParameterPublishPlugin::process_frame(boost::shared_ptr<Frame> frame)
+void ParameterPublishPlugin::process_frame(std::shared_ptr<Frame> frame)
 {
     try {
         std::lock_guard<std::mutex> lock(mutex_);

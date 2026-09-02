@@ -13,7 +13,7 @@ BOOST_FIXTURE_TEST_SUITE(ParameterAdjustmentPluginUnitTest, FileWriterPluginTest
 BOOST_AUTO_TEST_CASE(AddParameter)
 {
     FrameProcessor::ParameterAdjustmentPlugin plugin;
-    boost::shared_ptr<FrameProcessor::DataBlockFrame> frame = get_dummy_frame();
+    std::shared_ptr<FrameProcessor::DataBlockFrame> frame = get_dummy_frame();
 
     // Check 0 goes to 0 when no config has been sent, and frame doesn't have parameter
     frame->set_frame_number(0);
@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(AddParameter)
 BOOST_AUTO_TEST_CASE(AdjustExistingParameter)
 {
     FrameProcessor::ParameterAdjustmentPlugin plugin;
-    boost::shared_ptr<FrameProcessor::DataBlockFrame> frame = get_dummy_frame();
+    std::shared_ptr<FrameProcessor::DataBlockFrame> frame = get_dummy_frame();
 
     uint64_t uid = 0;
 

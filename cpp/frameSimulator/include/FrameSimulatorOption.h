@@ -1,18 +1,19 @@
 #ifndef FRAMESIMULATOR_FRAMESIMULATOROPTION_H
 #define FRAMESIMULATOR_FRAMESIMULATOROPTION_H
 
-#include <boost/optional.hpp>
-#include <boost/program_options.hpp>
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
+
+#include <boost/program_options.hpp>
 
 namespace po = boost::program_options;
 
 namespace FrameSimulator {
 
 void set_list_option(const std::string& option_val, std::vector<std::string>& list);
-void set_optionallist_option(const std::string& option_val, boost::optional<std::vector<std::string>>& list);
+void set_optionallist_option(const std::string& option_val, std::optional<std::vector<std::string>>& list);
 
 /** Helper class for specifying frame simulator plugin command line options
  * specifies argument string for option
@@ -64,12 +65,12 @@ public:
         return vm[argstring].as<T>();
     }
 
-    void get_val(const po::variables_map& vm, boost::optional<T>& val) const
+    void get_val(const po::variables_map& vm, std::optional<T>& val) const
     {
         if (is_specified(vm))
             val = get_val(vm);
         else if (defaultval) {
-            val = defaultval.get();
+            val = defaultval.value();
         }
     }
 
@@ -77,14 +78,14 @@ public:
     {
         if (defaultval) {
             options.add_options()(
-                argstring.c_str(), po::value<T>()->default_value(defaultval.get()), description.c_str()
+                argstring.c_str(), po::value<T>()->default_value(defaultval.value()), description.c_str()
             );
         } else
             options.add_options()(argstring.c_str(), po::value<T>(), description.c_str());
     }
 
 private:
-    const boost::optional<T> defaultval;
+    const std::optional<T> defaultval;
     const std::string argstring;
     const std::string description;
 };

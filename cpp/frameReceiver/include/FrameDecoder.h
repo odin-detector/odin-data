@@ -15,9 +15,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <boost/function.hpp>
-#include <boost/shared_ptr.hpp>
-
 #include <log4cxx/logger.h>
 using namespace log4cxx;
 using namespace log4cxx::helpers;
@@ -35,11 +32,11 @@ const std::string CONFIG_DECODER_FRAME_TIMEOUT_MS = "frame_timeout_ms";
 
 class FrameDecoderException : public OdinData::OdinDataException {
 public:
-    FrameDecoderException(const std::string what) :
-        OdinData::OdinDataException(what) { };
+    FrameDecoderException(std::string&& what) :
+        OdinData::OdinDataException(std::move(what)) { };
 };
 
-typedef boost::function<void(int, int)> FrameReadyCallback;
+typedef std::function<void(int, int)> FrameReadyCallback;
 typedef std::queue<int> EmptyBufferQueue;
 typedef std::map<int, int> FrameBufferMap;
 
@@ -55,7 +52,7 @@ public:
 
     FrameDecoder();
 
-    virtual ~FrameDecoder() = 0;
+    ~FrameDecoder() override = 0;
 
     virtual void init(LoggerPtr& logger, OdinData::IpcMessage& config_msg);
     virtual void init(OdinData::IpcMessage& config_msg);
@@ -98,7 +95,7 @@ protected:
 
 inline FrameDecoder::~FrameDecoder() { };
 
-typedef boost::shared_ptr<FrameDecoder> FrameDecoderPtr;
+typedef std::shared_ptr<FrameDecoder> FrameDecoderPtr;
 
 } // namespace FrameReceiver
 #endif /* INCLUDE_FRAMEDECODER_H_ */

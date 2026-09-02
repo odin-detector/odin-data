@@ -15,9 +15,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <boost/function.hpp>
-#include <boost/shared_ptr.hpp>
-
 #include <log4cxx/logger.h>
 using namespace log4cxx;
 using namespace log4cxx::helpers;
@@ -31,7 +28,7 @@ public:
     FrameDecoderTCP() :
         FrameDecoder() { };
 
-    virtual ~FrameDecoderTCP() = 0;
+    ~FrameDecoderTCP() override = 0;
 
     virtual void* get_next_message_buffer(void) = 0;
     virtual const size_t get_next_message_size(void) const = 0;
@@ -43,7 +40,7 @@ public:
 
 inline FrameDecoderTCP::~FrameDecoderTCP() { };
 
-typedef boost::shared_ptr<FrameDecoderTCP> FrameDecoderTCPPtr;
+typedef std::shared_ptr<FrameDecoderTCP> FrameDecoderTCPPtr;
 
 } // namespace FrameReceiver
 #endif /* INCLUDE_FRAMEDECODER_TCP_H_ */

@@ -17,7 +17,7 @@ class RawFileWriterPluginTestFixture {
 public:
     RawFileWriterPluginTestFixture() :
         img { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 },
-        frame { boost::make_shared<FrameProcessor::DataBlockFrame>(
+        frame { std::make_shared<FrameProcessor::DataBlockFrame>(
             FrameProcessor::FrameMetaData { 7, "data", FrameProcessor::raw_16bit, "scan1" /*Acq_ID*/, { 3, 4 } },
             static_cast<void*>(img),
             24
@@ -33,7 +33,7 @@ public:
     }
 
     unsigned short img[12];
-    boost::shared_ptr<FrameProcessor::Frame> frame;
+    std::shared_ptr<FrameProcessor::Frame> frame;
     FrameProcessor::RawFileWriterPlugin rfw_plugin;
 };
 
@@ -58,16 +58,17 @@ BOOST_AUTO_TEST_CASE(RawFileWriterPlugin_invalid_path)
 
 BOOST_AUTO_TEST_CASE(RawFileWriterPlugin_existing_path)
 {
-    using RFWP = RawFileWriterPluginTestFixture;
+    // std::filesystem does not treat an attempt to create an existing path as error.
     OdinData::IpcMessage reply_bad_;
     OdinData::IpcMessage bad_cfg_2;
     BOOST_CHECK_NO_THROW(bad_cfg_2.set_param(FrameProcessor::RawFileWriterPlugin::CONFIG_ENABLED, true));
-    BOOST_CHECK_NO_THROW(bad_cfg_2.set_param(FrameProcessor::RawFileWriterPlugin::CONFIG_FILE_PATH, std::string("/")));
-    BOOST_REQUIRE_EXCEPTION(rfw_plugin.configure(bad_cfg_2, reply_bad_), std::runtime_error, RFWP::is_not_critical);
+    BOOST_CHECK_NO_THROW(bad_cfg_2.set_param(FrameProcessor::RawFileWriterPlugin::CONFIG_FILE_PATH, std::string("/tmp"))
+    );
+    BOOST_REQUIRE_NO_THROW(rfw_plugin.configure(bad_cfg_2, reply_bad_));
     BOOST_REQUIRE_NO_THROW(rfw_plugin.requestConfiguration(reply_bad_));
     BOOST_CHECK_EQUAL(
         reply_bad_.get_param<bool>(rfw_plugin.get_name() + '/' + FrameProcessor::RawFileWriterPlugin::CONFIG_ENABLED),
-        false
+        true
     );
 }
 
@@ -90,7 +91,7 @@ BOOST_AUTO_TEST_CASE(RawFileWriterPlugin_with_acq_id)
         ),
         0
     );
-    BOOST_REQUIRE_NO_THROW(boost::filesystem::remove_all("/opt/RFW_valid_dir"));
+    BOOST_REQUIRE_NO_THROW(std::filesystem::remove_all("/opt/RFW_valid_dir"));
 }
 
 BOOST_AUTO_TEST_CASE(RawFileWriterPlugin_no_acq_id)
@@ -112,7 +113,7 @@ BOOST_AUTO_TEST_CASE(RawFileWriterPlugin_no_acq_id)
         ),
         0
     );
-    BOOST_REQUIRE_NO_THROW(boost::filesystem::remove_all("/opt/RFW_valid_dir_2"));
+    BOOST_REQUIRE_NO_THROW(std::filesystem::remove_all("/opt/RFW_valid_dir_2"));
 }
 
 BOOST_AUTO_TEST_CASE(RawFileWriterPlugin_dropped_frames)
@@ -142,7 +143,7 @@ BOOST_AUTO_TEST_CASE(RawFileWriterPlugin_dropped_frames)
         ),
         process_times
     );
-    BOOST_REQUIRE_NO_THROW(boost::filesystem::remove_all("/opt/RFW_testdir"));
+    BOOST_REQUIRE_NO_THROW(std::filesystem::remove_all("/opt/RFW_testdir"));
 }
 
 BOOST_AUTO_TEST_SUITE_END();
