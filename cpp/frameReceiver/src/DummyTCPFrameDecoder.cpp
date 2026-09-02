@@ -84,7 +84,7 @@ void* DummyTCPFrameDecoder::get_next_message_buffer(void)
     // only increment buffer when frame is complete
     if (receive_state_ != FrameDecoder::FrameReceiveStateIncomplete) {
         // get id in buffer circularly
-        if (current_frame_buffer_id_ + 1 >= num_buffers_)
+        if (static_cast<unsigned int>(current_frame_buffer_id_ + 1) >= num_buffers_)
             current_frame_buffer_id_ = 0;
         else
             current_frame_buffer_id_++;

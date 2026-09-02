@@ -212,7 +212,7 @@ void DummyUDPFrameDecoder::process_packet_header(size_t /* bytes_received */, in
     uint32_t frame_number = get_frame_number();
     uint32_t packet_number = get_packet_number();
 
-    if (frame_number != current_frame_seen_) {
+    if (current_frame_seen_ < 0 || frame_number != static_cast<uint32_t>(current_frame_seen_)) {
         current_frame_seen_ = frame_number;
 
         if (frame_buffer_map_.count(current_frame_seen_) == 0) {
