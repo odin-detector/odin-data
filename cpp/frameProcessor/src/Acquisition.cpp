@@ -315,11 +315,10 @@ void Acquisition::validate_dataset_definition(DatasetDefinition definition)
         throw std::runtime_error("Image dimensions must be non-zero");
     }
     // Check chunk dimensions
-    std::vector<long long unsigned int>::iterator iter;
-    for (iter = definition.chunks.begin(); iter != definition.chunks.end(); ++iter) {
-        if (*iter == 0) {
-            throw std::runtime_error("Chunk dimensions must be non-zero");
-        }
+    if (std::any_of(definition.chunks.begin(), definition.chunks.end(), [](auto dimension) {
+            return dimension == 0;
+        })) {
+        throw std::runtime_error("Chunk dimensions must be non-zero");
     }
 }
 
