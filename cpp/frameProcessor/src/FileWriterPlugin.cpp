@@ -752,10 +752,8 @@ void FileWriterPlugin::configure_dataset(
         dimensions_t chunks(dset.frame_dimensions.size() + 1);
         // Set first chunk dimension (n dimension) to a single frame or item
         chunks[0] = 1;
-        // Set the remaining chunk dimensions to the same as the dataset dimensions
-        for (std::size_t index = 0; index < dset.frame_dimensions.size(); index++) {
-            chunks[index + 1] = dset.frame_dimensions[index];
-        }
+        // Copy frame dimensions.
+        std::copy(dset.frame_dimensions.begin(), dset.frame_dimensions.end(), chunks.begin() + 1);
         dset.chunks = chunks;
     }
 
