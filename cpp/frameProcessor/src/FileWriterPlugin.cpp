@@ -3,6 +3,7 @@
  *
  */
 
+#include <algorithm>
 #include <cassert>
 
 #include <boost/filesystem.hpp>
@@ -741,12 +742,11 @@ void FileWriterPlugin::configure_dataset(
     // If there are dimensions present for the dataset then set them
     if (config.has_param(FileWriterPlugin::CONFIG_DATASET_DIMS)) {
         const rapidjson::Value& val = config.get_param<const rapidjson::Value&>(FileWriterPlugin::CONFIG_DATASET_DIMS);
-        // Loop over the dimension values
+        // Convert dimensions.
         dimensions_t dims(val.Size());
-        for (rapidjson::SizeType i = 0; i < val.Size(); i++) {
-            const rapidjson::Value& dim = val[i];
-            dims[i] = dim.GetUint64();
-        }
+        std::transform(val.Begin(), val.End(), dims.begin(), [](const rapidjson::Value& dim) {
+            return dim.GetUint64();
+        });
         dset.frame_dimensions = dims;
         // Create default chunking for the dataset (to include n dimension)
         dimensions_t chunks(dset.frame_dimensions.size() + 1);
