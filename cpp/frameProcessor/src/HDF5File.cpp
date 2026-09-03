@@ -5,6 +5,8 @@
  *      Author: vtu42223
  */
 
+#include <numeric>
+
 #include "HDF5File.h"
 
 #include "DebugLevelLogger.h"
@@ -426,11 +428,10 @@ void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index
     size_t pixel_type_size = H5Tget_size(dtype);
 
     std::vector<hsize_t> frame_dims = definition.frame_dimensions;
-    unsigned int frame_num_pixels = 1;
-    std::vector<hsize_t>::iterator it;
-    for (it = frame_dims.begin(); it != frame_dims.end(); ++it) {
-        frame_num_pixels *= *it;
-    }
+    unsigned int frame_num_pixels
+        = std::accumulate(frame_dims.begin(), frame_dims.end(), 1U, [](unsigned int count, hsize_t dimension) {
+              return count * dimension;
+          });
 
     // Dataset dims: {1, <image size Y>, <image size X>}
     std::vector<hsize_t> dset_dims(1, 1);
