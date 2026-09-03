@@ -5,6 +5,8 @@
  *      Author: vtu42223
  */
 
+#include <algorithm>
+
 #include <boost/any.hpp>
 #include <boost/filesystem.hpp>
 
@@ -307,13 +309,13 @@ void Acquisition::close_file(boost::shared_ptr<HDF5File> file, HDF5CallDurations
 void Acquisition::validate_dataset_definition(DatasetDefinition definition)
 {
     // Check image dimensions
-    std::vector<long long unsigned int>::iterator iter;
-    for (iter = definition.frame_dimensions.begin(); iter != definition.frame_dimensions.end(); ++iter) {
-        if (*iter == 0) {
-            throw std::runtime_error("Image dimensions must be non-zero");
-        }
+    if (std::any_of(definition.frame_dimensions.begin(), definition.frame_dimensions.end(), [](auto dimension) {
+            return dimension == 0;
+        })) {
+        throw std::runtime_error("Image dimensions must be non-zero");
     }
     // Check chunk dimensions
+    std::vector<long long unsigned int>::iterator iter;
     for (iter = definition.chunks.begin(); iter != definition.chunks.end(); ++iter) {
         if (*iter == 0) {
             throw std::runtime_error("Chunk dimensions must be non-zero");
