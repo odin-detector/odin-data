@@ -761,12 +761,11 @@ void FileWriterPlugin::configure_dataset(
     if (config.has_param(FileWriterPlugin::CONFIG_DATASET_CHUNKS)) {
         const rapidjson::Value& val
             = config.get_param<const rapidjson::Value&>(FileWriterPlugin::CONFIG_DATASET_CHUNKS);
-        // Loop over the dimension values
+        // Convert chunks.
         dimensions_t chunks(val.Size());
-        for (rapidjson::SizeType i = 0; i < val.Size(); i++) {
-            const rapidjson::Value& dim = val[i];
-            chunks[i] = dim.GetUint64();
-        }
+        std::transform(val.Begin(), val.End(), chunks.begin(), [](const rapidjson::Value& dim) {
+            return dim.GetUint64();
+        });
         dset.chunks = chunks;
     }
 
