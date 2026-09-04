@@ -180,13 +180,13 @@ class IpcTornadoClient(object):
         :param config_msg: Incoming configuration message response
         """
         params = config_msg[self.PARAMS_KEY]
-        
-        plugin_names : list = params["plugins"]["names"]
         self._parameters[self.IPC_VAL_CONFIG] = {}
-        self._parameters[self.IPC_VAL_CONFIG][self.CONFIG_PARAMS_KEY]: dict = {}
-        for name in plugin_names:
-            self._parameters[self.IPC_VAL_CONFIG][self.CONFIG_PARAMS_KEY][name] = params[name]
-            params.pop(name, None)
+        if("plugins" in params and "names" in params["plugins"]):
+            plugin_names : list = params["plugins"]["names"]
+            self._parameters[self.IPC_VAL_CONFIG][self.CONFIG_PARAMS_KEY]: dict = {}
+            for name in plugin_names:
+                self._parameters[self.IPC_VAL_CONFIG][self.CONFIG_PARAMS_KEY][name] = params[name]
+                params.pop(name, None)
         params.pop("plugins", None)
 
         if(self.IPC_VAL_CONFIG_TS in params):
@@ -202,11 +202,12 @@ class IpcTornadoClient(object):
         :param status_msg: Incoming status message response
         """
         params = status_msg[self.PARAMS_KEY]
-        plugin_names : list = params["plugins"]["names"]
-        self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY]["plugins"] = params["plugins"]
-        for name in plugin_names:
-            self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY][name] = params[name]
-            params.pop(name, None)
+        if("plugins" in params and "names" in params["plugins"]):
+            plugin_names : list = params["plugins"]["names"]
+            self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY]["plugins"] = params["plugins"]
+            for name in plugin_names:
+                self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY][name] = params[name]
+        params.pop("plugins", None)
 
         self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY]['timestamp'] = status_msg['timestamp']
         if(self.IPC_VAL_STATUS_TS in params):
