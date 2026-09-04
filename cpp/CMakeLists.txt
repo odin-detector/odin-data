@@ -4,6 +4,8 @@ cmake_minimum_required(VERSION 3.22)
 # Project name
 project(OdinData)
 
+include(CTest)
+
 include(${CMAKE_SOURCE_DIR}/cmake/CodeCoverage.cmake)
 setup_coverage()
 
@@ -183,3 +185,14 @@ add_subdirectory(${TEST_DIR})
 
 # Add the config subdirectory (config files used for integration testing)
 add_subdirectory(config)
+
+if (BUILD_TESTING)
+  get_property(ODINDATA_TEST_TARGETS GLOBAL PROPERTY ODINDATA_TEST_TARGETS)
+  add_custom_target(check
+    COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure --no-tests=error
+    DEPENDS ${ODINDATA_TEST_TARGETS}
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    USES_TERMINAL
+    COMMENT "Running unit and integration tests"
+  )
+endif()

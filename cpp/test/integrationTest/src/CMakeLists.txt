@@ -27,5 +27,24 @@ add_executable(frameTests ${FRAMETEST_SOURCES})
 target_link_libraries(odinDataTest ${Boost_LIBRARIES} ${HDF5_LIBRARIES} ${LOG4CXX_LIBRARIES} ${COMMON_LIBRARY})
 target_link_libraries(frameTests ${Boost_LIBRARIES} ${HDF5_LIBRARIES} ${LOG4CXX_LIBRARIES} ${COMMON_LIBRARY})
 
+if (BUILD_TESTING)
+  add_test(
+    NAME integration_dummy_udp
+    COMMAND odinDataTest --json=${CMAKE_CONFIG_OUTPUT_DIRECTORY}/dummyUDP.json
+  )
+  set_tests_properties(integration_dummy_udp PROPERTIES LABELS "integration" RUN_SERIAL TRUE TIMEOUT 120)
+  set_property(GLOBAL APPEND PROPERTY ODINDATA_TEST_TARGETS
+    odinDataTest
+    frameTests
+    frameReceiver
+    frameProcessor
+    frameSimulator
+    DummyUDPFrameDecoder
+    DummyUDPFrameSimulatorPlugin
+    DummyUDPProcessPlugin
+    Hdf5Plugin
+  )
+endif()
+
 install(TARGETS odinDataTest RUNTIME DESTINATION bin)
 install(TARGETS frameTests RUNTIME DESTINATION bin)

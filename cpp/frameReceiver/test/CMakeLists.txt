@@ -18,6 +18,12 @@ function(add_unit_test _target)
 
   add_executable(${_target} ${_source} ${RECEIVER_SRCS})
 
+  if (BUILD_TESTING)
+    add_test(NAME ${_target} COMMAND ${_target} --log_level=test_suite)
+    set_tests_properties(${_target} PROPERTIES LABELS "unit;frameReceiver" TIMEOUT 120)
+    set_property(GLOBAL APPEND PROPERTY ODINDATA_TEST_TARGETS ${_target})
+  endif()
+
   target_link_libraries(${_target}
     ${LIB_RECEIVER}
     DummyTCPFrameDecoder

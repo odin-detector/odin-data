@@ -7,6 +7,12 @@ function(add_unit_test _target)
   set(_target "unit_fp_${_target}")
   add_executable(${_target} ${_source})
 
+  if (BUILD_TESTING)
+    add_test(NAME ${_target} COMMAND ${_target} --log_level=test_suite)
+    set_tests_properties(${_target} PROPERTIES LABELS "unit;frameProcessor" TIMEOUT 120)
+    set_property(GLOBAL APPEND PROPERTY ODINDATA_TEST_TARGETS ${_target})
+  endif()
+
   target_link_libraries(${_target}
     ${LIB_PROCESSOR}
     DummyUDPProcessPlugin
