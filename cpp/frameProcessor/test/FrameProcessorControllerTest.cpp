@@ -28,6 +28,8 @@ public:
         created.push_back(this);
         set_error("test error");
         set_warning("test warning");
+        add_config_param_metadata("value", PMDD::INT_T, PMDA::READ_WRITE);
+        add_status_param_metadata("ready", PMDD::BOOL_T, PMDA::READ_ONLY);
     }
 
     static void reset()
@@ -239,6 +241,34 @@ BOOST_AUTO_TEST_CASE(PluginLoadsThroughConfigurationAndReportsConfigurationAndVe
     BOOST_CHECK_EQUAL(version_reply.get_param<std::string>("version/test/short"), "1.2.3");
 }
 
+BOOST_AUTO_TEST_CASE(StatusMetadataAndClearingErrorsAreIsolated)
+{
+    load_plugin("test");
+
+    OdinData::IpcMessage status_reply;
+    controller->provideStatus(status_reply, true);
+    BOOST_CHECK(status_reply.get_param<bool>("test/ready"));
+    BOOST_CHECK_EQUAL(status_reply.get_param<std::string>("metadata/test/ready/type"), "bool");
+    BOOST_CHECK_EQUAL(status_reply.get_param<std::string>("metadata/test/ready/access_mode"), "r");
+    BOOST_CHECK_GT(status_reply.get_param<int64_t>("status_ts"), 0);
+    BOOST_REQUIRE_EQUAL(status_reply.get_param<const rapidjson::Value&>("error").Size(), 1);
+    BOOST_REQUIRE_EQUAL(status_reply.get_param<const rapidjson::Value&>("warning").Size(), 1);
+
+    OdinData::IpcMessage config_reply;
+    controller->requestConfiguration(config_reply, true);
+    BOOST_CHECK_EQUAL(config_reply.get_param<std::string>("metadata/test/value/type"), "int");
+    BOOST_CHECK_EQUAL(config_reply.get_param<std::string>("metadata/test/value/access_mode"), "rw");
+
+    OdinData::IpcMessage clear;
+    clear.set_param("clear_errors", true);
+    configure(clear);
+
+    OdinData::IpcMessage cleared_status;
+    controller->provideStatus(cleared_status, false);
+    BOOST_CHECK(!cleared_status.has_param("error"));
+    BOOST_CHECK(!cleared_status.has_param("warning"));
+}
+
 BOOST_AUTO_TEST_CASE(CommandsAndStatisticsAreIsolated)
 {
     OdinData::IpcMessage empty_command;
@@ -272,6 +302,27 @@ BOOST_AUTO_TEST_CASE(CommandsAndStatisticsAreIsolated)
     controller->resetStatistics(reset_reply);
     BOOST_CHECK_EQUAL(reset_reply.get_msg_type(), OdinData::IpcMessage::MsgTypeNack);
     BOOST_CHECK_EQUAL(reset_reply.get_param<std::string>("error"), "Failed to reset statistics on plugin test");
+}
+
+BOOST_AUTO_TEST_CASE(StoredConfigurationFrameLimitAndDebugLevelBranchesAreConfigured)
+{
+    load_plugin("test");
+
+    OdinData::IpcMessage config;
+    config.set_param("frames", static_cast<unsigned int>(3));
+    config.set_param("debug_level", static_cast<unsigned int>(2));
+    config.set_param("hdf/master", std::string("data"));
+    config.set_param("store/index", std::string("saved"));
+    config.set_param("store/value/test/value", 73);
+    configure(config);
+    BOOST_CHECK_EQUAL(debug_level, 2);
+    BOOST_CHECK_EQUAL(ControllerTestPlugin::configure_calls, 0);
+
+    OdinData::IpcMessage execute;
+    execute.set_param("execute/index", std::string("saved"));
+    configure(execute);
+    BOOST_CHECK_EQUAL(ControllerTestPlugin::configure_calls, 1);
+    BOOST_CHECK_EQUAL(ControllerTestPlugin::configured_value, 73);
 }
 
 BOOST_AUTO_TEST_CASE(PluginLoadFailuresAndMissingConnectionsThrow)
