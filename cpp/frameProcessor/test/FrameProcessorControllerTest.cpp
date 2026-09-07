@@ -511,6 +511,43 @@ BOOST_AUTO_TEST_CASE(ControlChannelDispatchesRequestsAndRunWaitsForShutdown)
     BOOST_REQUIRE_MESSAGE(run_thread.timed_join(boost::posix_time::seconds(2)), "controller run() did not shut down");
 }
 
+BOOST_AUTO_TEST_CASE(MetadataReceiveChannelForwardsMultipartMessages)
+{
+    const std::string endpoint = unique_endpoint("metadata");
+    OdinData::IpcMessage config;
+    config.set_param("meta_endpoint", endpoint);
+    configure(config);
+
+    OdinData::IpcChannel listener(ZMQ_SUB);
+    listener.subscribe("");
+    listener.connect(endpoint.c_str());
+    FrameProcessor::MetaMessagePublisher publisher;
+    publisher.connect_meta_channel();
+
+    int32_t value = 0;
+    std::string header;
+    bool received = false;
+    for (int attempt = 0; attempt < 20 && !received; ++attempt) {
+        publisher.publish_meta("test", "counter", static_cast<int32_t>(123), "{\"source\":\"unit\"}");
+        if (listener.poll(50)) {
+            header = listener.recv();
+            BOOST_REQUIRE(!listener.eom());
+            BOOST_REQUIRE_EQUAL(listener.recv_raw(&value), sizeof(value));
+            BOOST_CHECK(listener.eom());
+            received = true;
+        }
+    }
+    BOOST_REQUIRE_MESSAGE(received, "metadata was not forwarded to the configured PUB endpoint");
+
+    rapidjson::Document document;
+    BOOST_REQUIRE(!document.Parse(header.c_str()).HasParseError());
+    BOOST_CHECK_EQUAL(document["plugin"].GetString(), "test");
+    BOOST_CHECK_EQUAL(document["parameter"].GetString(), "counter");
+    BOOST_CHECK_EQUAL(document["type"].GetString(), "integer");
+    BOOST_CHECK_EQUAL(document["header"]["source"].GetString(), "unit");
+    BOOST_CHECK_EQUAL(value, 123);
+}
+
 BOOST_AUTO_TEST_CASE(PluginLoadFailuresAndMissingConnectionsThrow)
 {
     OdinData::IpcMessage missing_plugin;
