@@ -20,9 +20,38 @@
 
 namespace {
 
+class ControllerTestFrame : public FrameProcessor::Frame {
+public:
+    ControllerTestFrame() :
+        Frame(
+            FrameProcessor::FrameMetaData(
+                1,
+                "data",
+                FrameProcessor::raw_8bit,
+                "controller-test",
+                dimensions_t(1, 1),
+                FrameProcessor::no_compression
+            ),
+            sizeof(data_)
+        ),
+        data_(1)
+    {
+    }
+
+    void* get_data_ptr() const override
+    {
+        return const_cast<uint8_t*>(&data_);
+    }
+
+private:
+    uint8_t data_;
+};
+
 class ControllerTestPlugin : public FrameProcessor::FrameProcessorPlugin {
 public:
-    ControllerTestPlugin()
+    ControllerTestPlugin() :
+        frames_(0),
+        eoa_(0)
     {
         ++instances;
         created.push_back(this);
@@ -104,6 +133,21 @@ public:
         return reset_result;
     }
 
+    void emit_frame()
+    {
+        push(boost::make_shared<ControllerTestFrame>());
+    }
+
+    int frames() const
+    {
+        return frames_;
+    }
+
+    int eoa() const
+    {
+        return eoa_;
+    }
+
     static std::atomic<int> instances;
     static std::atomic<int> configure_calls;
     static std::atomic<int> execute_calls;
@@ -116,9 +160,19 @@ public:
     static std::vector<ControllerTestPlugin*> created;
 
 private:
-    void process_frame(boost::shared_ptr<FrameProcessor::Frame>) override
+    void process_frame(boost::shared_ptr<FrameProcessor::Frame> frame) override
     {
+        ++frames_;
+        push(frame);
     }
+
+    void process_end_of_acquisition() override
+    {
+        ++eoa_;
+    }
+
+    std::atomic<int> frames_;
+    std::atomic<int> eoa_;
 };
 
 std::atomic<int> ControllerTestPlugin::instances(0);
@@ -134,6 +188,12 @@ std::vector<ControllerTestPlugin*> ControllerTestPlugin::created;
 
 namespace controller_test_plugin_registration {
     REGISTER(FrameProcessor::FrameProcessorPlugin, ControllerTestPlugin, "ControllerTestPlugin");
+}
+
+std::string unique_endpoint(const std::string& purpose)
+{
+    static std::atomic<unsigned int> endpoint_number(0);
+    return "inproc://frame-processor-controller-test-" + purpose + "-" + std::to_string(++endpoint_number);
 }
 
 template <typename Predicate> bool wait_until(Predicate predicate, unsigned int timeout_ms = 1000)
@@ -183,6 +243,22 @@ struct ControllerFixture {
             })) {
             throw std::runtime_error("test plugin worker did not start");
         }
+    }
+
+    void connect_plugin(const std::string& index, const std::string& source)
+    {
+        OdinData::IpcMessage config;
+        config.set_param("plugin/connect/index", index);
+        config.set_param("plugin/connect/connection", source);
+        configure(config);
+    }
+
+    void disconnect_plugin(const std::string& index, const std::string& source)
+    {
+        OdinData::IpcMessage config;
+        config.set_param("plugin/disconnect/index", index);
+        config.set_param("plugin/disconnect/connection", source);
+        configure(config);
     }
 
     DebugLevel original_debug_level;
@@ -302,6 +378,32 @@ BOOST_AUTO_TEST_CASE(CommandsAndStatisticsAreIsolated)
     controller->resetStatistics(reset_reply);
     BOOST_CHECK_EQUAL(reset_reply.get_msg_type(), OdinData::IpcMessage::MsgTypeNack);
     BOOST_CHECK_EQUAL(reset_reply.get_param<std::string>("error"), "Failed to reset statistics on plugin test");
+}
+
+BOOST_AUTO_TEST_CASE(PluginConnectionsAndDisconnectionsUseConfigurationInterface)
+{
+    load_plugin("source");
+    load_plugin("sink");
+    BOOST_REQUIRE_EQUAL(ControllerTestPlugin::created.size(), 2);
+    ControllerTestPlugin* source = ControllerTestPlugin::created[0];
+    ControllerTestPlugin* sink = ControllerTestPlugin::created[1];
+
+    connect_plugin("sink", "source");
+    source->emit_frame();
+    BOOST_REQUIRE(wait_until([sink] { return sink->frames() == 1; }));
+
+    disconnect_plugin("sink", "source");
+    source->emit_frame();
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    BOOST_CHECK_EQUAL(sink->frames(), 1);
+
+    connect_plugin("sink", "source");
+    OdinData::IpcMessage disconnect_all;
+    disconnect_all.set_param("plugin/disconnect", std::string("all"));
+    configure(disconnect_all);
+    source->emit_frame();
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    BOOST_CHECK_EQUAL(sink->frames(), 1);
 }
 
 BOOST_AUTO_TEST_CASE(StoredConfigurationFrameLimitAndDebugLevelBranchesAreConfigured)
