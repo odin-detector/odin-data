@@ -266,6 +266,16 @@ struct ControllerFixture {
     boost::shared_ptr<FrameProcessor::FrameProcessorController> controller;
 };
 
+OdinData::IpcMessage
+exchange_control_message(OdinData::IpcChannel& client, OdinData::IpcMessage& request, unsigned int timeout_ms = 2000)
+{
+    std::string encoded = request.encode();
+    client.send(encoded);
+    BOOST_REQUIRE_MESSAGE(client.poll(timeout_ms), "timed out waiting for control-channel reply");
+    const std::string reply = client.recv();
+    return OdinData::IpcMessage(reply.c_str());
+}
+
 } // namespace
 
 BOOST_FIXTURE_TEST_SUITE(FrameProcessorControllerUnitTest, ControllerFixture)
@@ -459,6 +469,46 @@ BOOST_AUTO_TEST_CASE(StoredConfigurationFrameLimitAndDebugLevelBranchesAreConfig
     configure(execute);
     BOOST_CHECK_EQUAL(ControllerTestPlugin::configure_calls, 1);
     BOOST_CHECK_EQUAL(ControllerTestPlugin::configured_value, 73);
+}
+
+BOOST_AUTO_TEST_CASE(ControlChannelDispatchesRequestsAndRunWaitsForShutdown)
+{
+    load_plugin("test");
+    const std::string endpoint = unique_endpoint("control");
+    OdinData::IpcMessage control_config;
+    control_config.set_param("ctrl_endpoint", endpoint);
+    configure(control_config);
+
+    OdinData::IpcChannel client(ZMQ_DEALER, "controller-test-client");
+    client.connect(endpoint.c_str());
+
+    OdinData::IpcMessage status_request(OdinData::IpcMessage::MsgTypeCmd, OdinData::IpcMessage::MsgValCmdStatus);
+    status_request.set_msg_id(17);
+    status_request.set_param("metadata", true);
+    OdinData::IpcMessage status_reply = exchange_control_message(client, status_request);
+    BOOST_CHECK_EQUAL(status_reply.get_msg_type(), OdinData::IpcMessage::MsgTypeAck);
+    BOOST_CHECK_EQUAL(status_reply.get_msg_id(), 17);
+    BOOST_CHECK(status_reply.get_param<bool>("test/ready"));
+    BOOST_CHECK_EQUAL(status_reply.get_param<std::string>("metadata/test/ready/type"), "bool");
+
+    OdinData::IpcMessage config_request(
+        OdinData::IpcMessage::MsgTypeCmd, OdinData::IpcMessage::MsgValCmdRequestConfiguration
+    );
+    config_request.set_msg_id(18);
+    config_request.set_param("metadata", true);
+    OdinData::IpcMessage config_reply = exchange_control_message(client, config_request);
+    BOOST_CHECK_EQUAL(config_reply.get_msg_id(), 18);
+    BOOST_CHECK_EQUAL(config_reply.get_param<std::string>("metadata/test/value/type"), "int");
+
+    boost::thread run_thread(boost::bind(&FrameProcessor::FrameProcessorController::run, controller.get()));
+    BOOST_REQUIRE(wait_until([this] { return controller->isWorking(); }));
+
+    OdinData::IpcMessage shutdown_request(OdinData::IpcMessage::MsgTypeCmd, OdinData::IpcMessage::MsgValCmdShutdown);
+    shutdown_request.set_msg_id(19);
+    OdinData::IpcMessage shutdown_reply = exchange_control_message(client, shutdown_request);
+    BOOST_CHECK_EQUAL(shutdown_reply.get_msg_type(), OdinData::IpcMessage::MsgTypeAck);
+    BOOST_CHECK_EQUAL(shutdown_reply.get_msg_id(), 19);
+    BOOST_REQUIRE_MESSAGE(run_thread.timed_join(boost::posix_time::seconds(2)), "controller run() did not shut down");
 }
 
 BOOST_AUTO_TEST_CASE(PluginLoadFailuresAndMissingConnectionsThrow)
