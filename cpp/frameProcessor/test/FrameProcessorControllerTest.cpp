@@ -190,6 +190,10 @@ namespace controller_test_plugin_registration {
     REGISTER(FrameProcessor::FrameProcessorPlugin, ControllerTestPlugin, "ControllerTestPlugin");
 }
 
+namespace file_writer_test_plugin_registration {
+    REGISTER(FrameProcessor::FrameProcessorPlugin, ControllerTestPlugin, "FileWriterPlugin");
+}
+
 std::string unique_endpoint(const std::string& purpose)
 {
     static std::atomic<unsigned int> endpoint_number(0);
@@ -546,6 +550,25 @@ BOOST_AUTO_TEST_CASE(MetadataReceiveChannelForwardsMultipartMessages)
     BOOST_CHECK_EQUAL(document["type"].GetString(), "integer");
     BOOST_CHECK_EQUAL(document["header"]["source"].GetString(), "unit");
     BOOST_CHECK_EQUAL(value, 123);
+}
+
+BOOST_AUTO_TEST_CASE(FrameCountTriggersShutdownThroughFileWriterCallback)
+{
+    load_plugin("writer", "FileWriterPlugin");
+    BOOST_REQUIRE_EQUAL(ControllerTestPlugin::created.size(), 1);
+    ControllerTestPlugin* writer = ControllerTestPlugin::created[0];
+
+    OdinData::IpcMessage frame_limit;
+    frame_limit.set_param("frames", static_cast<unsigned int>(1));
+    configure(frame_limit);
+
+    boost::thread run_thread(boost::bind(&FrameProcessor::FrameProcessorController::run, controller.get()));
+    BOOST_REQUIRE(wait_until([this, writer] { return controller->isWorking() && writer->isWorking(); }));
+    writer->getWorkQueue()->add(boost::make_shared<ControllerTestFrame>());
+
+    BOOST_REQUIRE_MESSAGE(
+        run_thread.timed_join(boost::posix_time::seconds(2)), "frame-count-triggered shutdown did not finish run()"
+    );
 }
 
 BOOST_AUTO_TEST_CASE(PluginLoadFailuresAndMissingConnectionsThrow)
