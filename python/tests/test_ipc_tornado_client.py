@@ -90,7 +90,6 @@ class TestIpcTornadoClient:
         client.send_configuration({"item1": "value1"})
         client._callback([reply_str])
         rejected = client.read_rejected_configs()
-        print(rejected)
         assert len(rejected) == 1
         assert rejected[6].get_msg_id() == IpcMessage(from_str=reply_str).get_msg_id()
         assert client.check_for_rejection(6) is True
