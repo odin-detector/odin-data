@@ -105,6 +105,11 @@ add_library(ParameterPublishPlugin SHARED ParameterPublishPlugin.cpp ParameterPu
 target_link_libraries(ParameterPublishPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${COMMON_LIBRARY})
 install(TARGETS ParameterPublishPlugin DESTINATION lib)
 
+# Add library for SharedMemory plugin
+add_library(SharedMemoryPlugin SHARED SharedMemoryPlugin.cpp SharedMemoryPluginLib.cpp)
+target_link_libraries(SharedMemoryPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${COMMON_LIBRARY})
+install(TARGETS SharedMemoryPlugin DESTINATION lib)
+
 # Add test and project source files to executable
 if ( ${CMAKE_SYSTEM_NAME} MATCHES Linux )
   # librt required for timing functions

@@ -192,11 +192,9 @@ void SharedMemoryController::handleRxChannel()
                         frame_meta, sbm_->get_buffer_address(bufferID), sbm_->get_buffer_size(), bufferID, &txChannel_
                     ));
 
-                    // Loop over registered callbacks, placing the frame onto each queue
-                    std::map<std::string, boost::shared_ptr<IFrameCallback>>::iterator cbIter;
-                    for (cbIter = callbacks_.begin(); cbIter != callbacks_.end(); ++cbIter) {
-                        cbIter->second->getWorkQueue()->add(frame, true);
-                    }
+                    // call some registerd function here // NOTE FAMOUS
+                    if (!callback_.empty())
+                        callback_(frame);
 
                 } else {
                     LOG4CXX_WARN(
