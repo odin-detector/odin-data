@@ -45,13 +45,21 @@ public:
         const std::string& txEndPoint
     );
     virtual ~SharedMemoryController();
-    void setSharedBufferManager(const std::string& shared_buffer_name);
+    void setSharedBufferManager(std::string& shared_buffer_name);
     void requestSharedBufferConfig(const bool deferred = false);
     void registerCallback(const std::string& name, boost::shared_ptr<IFrameCallback> cb);
     void removeCallback(const std::string& name);
     void handleRxChannel();
     void status(OdinData::IpcMessage& status);
     void injectEOA();
+    const std::string& getName() const
+    {
+        return shbName_;
+    }
+    bool isConfigured() const
+    {
+        return sharedBufferConfigured_;
+    }
     void inject_process_frame_cb(TProcess_frame_cb callback)
     {
         callback_ = callback;
@@ -70,6 +78,8 @@ private:
     OdinData::IpcChannel rxChannel_;
     /** IpcChannel for sending notifications of frame release */
     OdinData::IpcChannel txChannel_;
+    /** Shared buffer name */
+    std::string shbName_;
     /** Shared buffer configured status flag */
     bool sharedBufferConfigured_;
     /** Shared buffer config request deferred flag */

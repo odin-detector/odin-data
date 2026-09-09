@@ -7,6 +7,8 @@ namespace FrameProcessor {
 
 const std::string SharedMemoryPlugin::CONFIG_FR_RELEASE = "fr_release_cnxn";
 const std::string SharedMemoryPlugin::CONFIG_FR_READY = "fr_ready_cnxn";
+const std::string SharedMemoryPlugin::STATUS_SHB_NAME = "shared_buf_name";
+const std::string SharedMemoryPlugin::STATUS_SHB_CONFIGURED = "shared_buf_configured";
 /**
  * The constructor sets up logging used within the class.
  */
@@ -15,6 +17,10 @@ SharedMemoryPlugin::SharedMemoryPlugin()
     // Setup logging for the class
     logger_ = Logger::getLogger("FP.SharedMemoryPlugin");
     LOG4CXX_TRACE(logger_, "SharedMemoryPlugin constructor.");
+    add_config_param_metadata(CONFIG_FR_RELEASE, PMDD::STRING_T, PMDA::READ_WRITE);
+    add_config_param_metadata(CONFIG_FR_READY, PMDD::STRING_T, PMDA::READ_WRITE);
+    add_status_param_metadata(STATUS_SHB_NAME, PMDD::STRING_T, PMDA::READ_ONLY);
+    add_status_param_metadata(STATUS_SHB_CONFIGURED, PMDD::BOOL_T, PMDA::READ_ONLY);
     reactor_ = boost::make_shared<OdinData::IpcReactor>();
     reactor_->register_timer(5000, 0, &dummy_timer);
     // boost::bind
@@ -78,6 +84,24 @@ void SharedMemoryPlugin::setupFrameReceiverInterface(
     } else {
         LOG4CXX_ERROR(logger_, "*** Not updating shared memory, endpoints were not changed");
     }
+}
+
+/** Get configuration settings for the SharedMemoryPlugin
+ *
+ * @param reply - Response IpcMessage.
+ */
+void SharedMemoryPlugin::requestConfiguration(OdinData::IpcMessage& reply)
+{
+    reply.set_param(this->get_name() + '/' + SharedMemoryPlugin::CONFIG_FR_READY, this->frReadyEndpoint_);
+    reply.set_param(this->get_name() + '/' + SharedMemoryPlugin::CONFIG_FR_RELEASE, this->frReleaseEndpoint_);
+}
+
+void SharedMemoryPlugin::status(OdinData::IpcMessage& reply)
+{
+    reply.set_param(this->get_name() + '/' + SharedMemoryPlugin::STATUS_SHB_NAME, shmctrlr_handle_->getName());
+    reply.set_param(
+        this->get_name() + '/' + SharedMemoryPlugin::STATUS_SHB_CONFIGURED, shmctrlr_handle_->isConfigured()
+    );
 }
 
 int SharedMemoryPlugin::get_version_major()

@@ -99,7 +99,7 @@ SharedMemoryController::~SharedMemoryController()
  *
  * \param[in] shared_buffer_name - name of the shared buffer manager
  */
-void SharedMemoryController::setSharedBufferManager(const std::string& shared_buffer_name)
+void SharedMemoryController::setSharedBufferManager(std::string& shared_buffer_name)
 {
 
     // Set configured status to false until the new shared buffer manager is initialised
@@ -111,7 +111,9 @@ void SharedMemoryController::setSharedBufferManager(const std::string& shared_bu
     }
 
     // Create a new shared buffer manager
-    sbm_ = boost::shared_ptr<OdinData::SharedBufferManager>(new OdinData::SharedBufferManager(shared_buffer_name));
+    sbm_ = boost::shared_ptr<OdinData::SharedBufferManager>(
+        new OdinData::SharedBufferManager(std::move(shared_buffer_name))
+    );
 
     // Set configured status to true
     sharedBufferConfigured_ = true;
@@ -214,6 +216,7 @@ void SharedMemoryController::handleRxChannel()
                 LOG4CXX_DEBUG_LEVEL(
                     1, logger_, "Shared buffer config notification received for " << shared_buffer_name
                 );
+                this->shbName_ = shared_buffer_name;
                 this->setSharedBufferManager(shared_buffer_name);
             } catch (OdinData::IpcMessageException& e) {
                 LOG4CXX_ERROR(logger_, "Received shared buffer config notification with no name parameter");

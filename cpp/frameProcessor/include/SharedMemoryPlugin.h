@@ -22,8 +22,8 @@ public:
     SharedMemoryPlugin();
     void process_frame(boost::shared_ptr<Frame> frame);
     void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
-    // void requestConfiguration(OdinData::IpcMessage& reply);
-    // void status(OdinData::IpcMessage& reply);
+    void requestConfiguration(OdinData::IpcMessage& reply);
+    void status(OdinData::IpcMessage& reply);
     int get_version_major() override;
     int get_version_minor() override;
     int get_version_patch() override;
@@ -32,25 +32,23 @@ public:
 
     const static std::string CONFIG_FR_RELEASE;
     const static std::string CONFIG_FR_READY;
-    // const static std::string STATUS_DROPPED_FRAMES;
+    const static std::string STATUS_SHB_NAME;
+    const static std::string STATUS_SHB_CONFIGURED;
 
 private:
-    // OdinData::IpcChannel channel_;
     std::string frReleaseEndpoint_;
     std::string frReadyEndpoint_;
     boost::shared_ptr<OdinData::IpcReactor> reactor_;
 
-    // IpcReactor thread
+    /** IpcReactor thread */
     boost::thread m_thread_;
-
-    // SharedMemoryController sharedMemController_;
+    /** The shared memory controller object */
     boost::shared_ptr<SharedMemoryController> shmctrlr_handle_;
     /** Pointer to logger */
     LoggerPtr logger_;
 
     static void dummy_timer()
     {
-        // std::cout << __func__ << '\n';
     }
     void setupFrameReceiverInterface(const std::string&, const std::string&);
 };
