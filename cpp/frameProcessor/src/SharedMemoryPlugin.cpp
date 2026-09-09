@@ -27,6 +27,13 @@ SharedMemoryPlugin::SharedMemoryPlugin()
     boost::thread m_thread_ { &OdinData::IpcReactor::run, reactor_.get() };
 }
 
+SharedMemoryPlugin::~SharedMemoryPlugin()
+{
+    LOG4CXX_TRACE(logger_, "SharedMemoryPlugin destructor.");
+    reactor_->stop();
+    m_thread_.join();
+}
+
 void SharedMemoryPlugin::process_frame(boost::shared_ptr<Frame> ptr)
 {
     this->push(ptr);
