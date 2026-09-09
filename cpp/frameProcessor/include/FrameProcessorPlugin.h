@@ -43,6 +43,7 @@ public:
     virtual bool reset_statistics();
     std::vector<std::string> get_errors();
     std::vector<std::string> get_warnings();
+    void inject_EOA();
     virtual void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
     virtual void requestConfiguration(OdinData::IpcMessage& reply);
 

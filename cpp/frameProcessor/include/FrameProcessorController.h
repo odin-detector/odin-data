@@ -16,8 +16,6 @@
 #include "IpcChannel.h"
 #include "IpcReactor.h"
 #include "OdinDataDefaults.h"
-#include "SharedBufferManager.h"
-#include "SharedMemoryController.h"
 #include "logging.h"
 
 namespace FrameProcessor {
@@ -68,15 +66,6 @@ private:
     /** Configuration constant to set the debug level of the frame processor **/
     static const std::string CONFIG_DEBUG;
 
-    /** Configuration constant for name of shared memory storage **/
-    static const std::string CONFIG_FR_SHARED_MEMORY;
-    /** Configuration constant for connection string for frame release **/
-    static const std::string CONFIG_FR_RELEASE;
-    /** Configuration constant for connection string for frame ready **/
-    static const std::string CONFIG_FR_READY;
-    /** Configuration constant for executing setup of shared memory interface **/
-    static const std::string CONFIG_FR_SETUP;
-
     /** key-strings for latest config and status timestamp **/
     static const std::string CONFIG_TS_KEY;
     static const std::string STATUS_TS_KEY;
@@ -122,8 +111,6 @@ private:
     /** Configuration constant for the meta TX channel high water mark **/
     static const int META_TX_HWM;
 
-    void setupFrameReceiverInterface(const std::string& frPublisherString, const std::string& frSubscriberString);
-    void closeFrameReceiverInterface();
     void setupControlInterface(const std::string& ctrlEndpointString);
     void closeControlInterface();
     void setupMetaRxInterface();
@@ -136,8 +123,6 @@ private:
 
     /** Pointer to the logging facility */
     log4cxx::LoggerPtr logger_;
-    /** Pointer to the shared memory controller instance for this process */
-    boost::shared_ptr<SharedMemoryController> sharedMemController_;
     /** Map of plugins loaded, indexed by plugin index */
     std::map<std::string, boost::shared_ptr<FrameProcessorPlugin>> plugins_;
     /** Map of stored configuration objects */

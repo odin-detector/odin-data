@@ -47,11 +47,7 @@ public:
     virtual ~SharedMemoryController();
     void setSharedBufferManager(std::string& shared_buffer_name);
     void requestSharedBufferConfig(const bool deferred = false);
-    void registerCallback(const std::string& name, boost::shared_ptr<IFrameCallback> cb);
-    void removeCallback(const std::string& name);
     void handleRxChannel();
-    void status(OdinData::IpcMessage& status);
-    void injectEOA();
     const std::string& getName() const
     {
         return shbName_;

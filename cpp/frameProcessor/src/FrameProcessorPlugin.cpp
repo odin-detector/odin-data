@@ -472,4 +472,17 @@ void FrameProcessorPlugin::process_end_of_acquisition()
 {
 }
 
+/** Method to inject End Of Frame sentinel
+ * down the pipeline. Typically, the FrameProcessorCOntroller
+ * sends this message to the SharedMemoryPlugin
+ */
+void FrameProcessorPlugin::inject_EOA()
+{
+    // Create the EOA frame object
+    boost::shared_ptr<FrameProcessor::EndOfAcquisitionFrame> eoa
+        = boost::make_shared<FrameProcessor::EndOfAcquisitionFrame>();
+    this->process_end_of_acquisition();
+    this->push(eoa);
+}
+
 } /* namespace FrameProcessor */
