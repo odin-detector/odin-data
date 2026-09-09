@@ -207,6 +207,7 @@ class IpcTornadoClient(object):
             self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY]["plugins"] = params["plugins"]
             for name in plugin_names:
                 self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY][name] = params[name]
+                params.pop(name, None)
         params.pop("plugins", None)
 
         self._parameters[self.IPC_VAL_STATUS][self.STATUS_PARAMS_KEY]['timestamp'] = status_msg['timestamp']
