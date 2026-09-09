@@ -22,7 +22,7 @@ SharedMemoryPlugin::SharedMemoryPlugin()
     add_status_param_metadata(STATUS_SHB_NAME, PMDD::STRING_T, PMDA::READ_ONLY);
     add_status_param_metadata(STATUS_SHB_CONFIGURED, PMDD::BOOL_T, PMDA::READ_ONLY);
     reactor_ = boost::make_shared<OdinData::IpcReactor>();
-    reactor_->register_timer(5000, 0, &dummy_timer);
+    reactor_->register_timer(1000, 0, &dummy_timer);
     // boost::bind
     boost::thread m_thread_ { &OdinData::IpcReactor::run, reactor_.get() };
 }
