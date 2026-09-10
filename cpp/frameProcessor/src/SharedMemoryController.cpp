@@ -155,9 +155,7 @@ void SharedMemoryController::requestSharedBufferConfig(const bool deferred)
 /** Called whenever a new IpcMessage is received to notify that a frame is ready.
  *
  * Reads the raw message bytes from the rxChannel_ and constructs an IpcMessage object
- * from the bytes. Verifies the IpcMessage type and value, and then uses the frame
- * number and buffer ID information to tell the SharedMemoryParser which frame is ready
- * for extraction from shared memory.
+ * from the bytes. Verifies the IpcMessage type and value.
  * Loops over registered callbacks and passes the frame to the relevant WorkQueue objects,
  * before sending notifiation that the frame has been released for re-use.
  */

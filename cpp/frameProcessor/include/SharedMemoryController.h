@@ -28,11 +28,7 @@ namespace FrameProcessor {
 /**
  * The SharedMemoryController class uses an IpcReactor object which is used
  * to notify this class when new data is available from the
- * frame receiver service. This class also owns an instance of the
- * SharedMemoryParser class, which extracts the data from the shared memory
- * location specified by the incoming IpcMessage objects, constructs a
- * Frame to contain the data and meta data, and then notifies any listening
- * plugins. This class also notifies the frame receiver service once the
+ * frame receiver service. This class also notifies the frame receiver service once the
  * shared memory location is available for re-use.
  */
 class SharedMemoryController {
