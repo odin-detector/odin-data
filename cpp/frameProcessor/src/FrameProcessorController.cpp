@@ -19,10 +19,6 @@ const std::string FrameProcessorController::META_RX_INTERFACE = "inproc://meta_r
 const std::string FrameProcessorController::CONFIG_EOA = "inject_eoa";
 const std::string FrameProcessorController::CONFIG_DEBUG = "debug_level";
 
-const std::string FrameProcessorController::CONFIG_FR_RELEASE = "fr_release_cnxn";
-const std::string FrameProcessorController::CONFIG_FR_READY = "fr_ready_cnxn";
-const std::string FrameProcessorController::CONFIG_FR_SETUP = "fr_setup";
-
 const std::string FrameProcessorController::CONFIG_CTRL_ENDPOINT = "ctrl_endpoint";
 const std::string FrameProcessorController::CONFIG_META_ENDPOINT = "meta_endpoint";
 
@@ -290,11 +286,6 @@ void FrameProcessorController::provideStatus(OdinData::IpcMessage& reply, bool m
     // Error messages
     std::vector<std::string> error_messages, warning_messages;
 
-    // Request status information from the shared memory controller
-    if (sharedMemController_) {
-        sharedMemController_->status(reply);
-    }
-
     std::map<std::string, boost::shared_ptr<FrameProcessorPlugin>>::iterator iter;
     if (metadata) {
         for (iter = plugins_.begin(); iter != plugins_.end(); ++iter) {
@@ -403,8 +394,9 @@ void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData:
     // Check for a request to inject an End Of Acquisition object
     if (config.has_param(FrameProcessorController::CONFIG_EOA)) {
         LOG4CXX_DEBUG_LEVEL(1, logger_, "Injecting End Of Acquisition object into plugin chain");
-        if (sharedMemController_) {
-            sharedMemController_->injectEOA();
+        std::string plugin_name = config.get_param<std::string>(FrameProcessorController::CONFIG_EOA);
+        if (plugins_.count(plugin_name)) {
+            this->plugins_[plugin_name]->inject_EOA();
         }
     }
 
@@ -430,19 +422,6 @@ void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData:
             config.get_param<const rapidjson::Value&>(FrameProcessorController::CONFIG_PLUGIN)
         );
         this->configurePlugin(pluginConfig, reply);
-    }
-
-    // Check if we are being passed the shared memory configuration
-    if (config.has_param(FrameProcessorController::CONFIG_FR_SETUP)) {
-        OdinData::IpcMessage frConfig(
-            config.get_param<const rapidjson::Value&>(FrameProcessorController::CONFIG_FR_SETUP)
-        );
-        if (frConfig.has_param(FrameProcessorController::CONFIG_FR_RELEASE)
-            && frConfig.has_param(FrameProcessorController::CONFIG_FR_READY)) {
-            std::string pubString = frConfig.get_param<std::string>(FrameProcessorController::CONFIG_FR_RELEASE);
-            std::string subString = frConfig.get_param<std::string>(FrameProcessorController::CONFIG_FR_READY);
-            this->setupFrameReceiverInterface(pubString, subString);
-        }
     }
 
     // Check if we are being asked to store a configuration object
@@ -531,9 +510,6 @@ void FrameProcessorController::requestConfiguration(OdinData::IpcMessage& reply,
     // Add local configuration parameter values to the reply
     reply.set_param(FrameProcessorController::CONFIG_CTRL_ENDPOINT, ctrlChannelEndpoint_);
     reply.set_param(FrameProcessorController::CONFIG_META_ENDPOINT, metaTxChannelEndpoint_);
-    std::string fr_cnxn_str = FrameProcessorController::CONFIG_FR_SETUP + '/';
-    reply.set_param(fr_cnxn_str + FrameProcessorController::CONFIG_FR_READY, frReadyEndpoint_);
-    reply.set_param(fr_cnxn_str + FrameProcessorController::CONFIG_FR_RELEASE, frReleaseEndpoint_);
 
     // Loop over plugins and request current configuration from each
     int64_t latest_ts = -1;
@@ -775,24 +751,8 @@ void FrameProcessorController::loadPlugin(const std::string& index, const std::s
 void FrameProcessorController::connectPlugin(const std::string& index, const std::string& connectTo)
 {
     // Check that the plugin is loaded
-    if (plugins_.count(index) > 0) {
-        // Check for the shared memory connection
-        if (connectTo == "frame_receiver") {
-            if (sharedMemController_) {
-                sharedMemController_->registerCallback(index, plugins_[index]);
-            } else {
-                LOG4CXX_ERROR(
-                    logger_, "Cannot connect " << index << " to frame_receiver, frame_receiver is not configured"
-                );
-                std::stringstream is;
-                is << "Cannot connect " << index << " to frame_receiver, frame_receiver is not configured";
-                throw std::runtime_error(is.str().c_str());
-            }
-        } else {
-            if (plugins_.count(connectTo) > 0) {
-                plugins_[connectTo]->register_callback(index, plugins_[index]);
-            }
-        }
+    if ((plugins_.count(index) > 0) & (plugins_.count(connectTo) > 0)) {
+        plugins_[connectTo]->register_callback(index, plugins_[index]);
     } else {
         LOG4CXX_ERROR(logger_, "Cannot connect plugin with index = " << index << ", plugin isn't loaded");
         std::stringstream is;
@@ -809,15 +769,8 @@ void FrameProcessorController::connectPlugin(const std::string& index, const std
 void FrameProcessorController::disconnectPlugin(const std::string& index, const std::string& disconnectFrom)
 {
     // Check that the plugin is loaded
-    if (plugins_.count(index) > 0) {
-        // Check for the shared memory connection
-        if (disconnectFrom == "frame_receiver") {
-            sharedMemController_->removeCallback(index);
-        } else {
-            if (plugins_.count(disconnectFrom) > 0) {
-                plugins_[disconnectFrom]->remove_callback(index);
-            }
-        }
+    if ((plugins_.count(index) > 0) & ((plugins_.count(disconnectFrom) > 0))) {
+        plugins_[disconnectFrom]->remove_callback(index);
     } else {
         LOG4CXX_ERROR(logger_, "Cannot disconnect plugin with index = " << index << ", plugin isn't loaded");
         std::stringstream is;
@@ -880,8 +833,6 @@ void FrameProcessorController::shutdown()
 
         // Close control IPC channel
         closeControlInterface();
-        // Close FrameReceiver interface IPC channels
-        closeFrameReceiverInterface();
 
         // Destroy any allocated DataBlocks
         LOG4CXX_DEBUG_LEVEL(1, logger_, "Tearing down DataBlockPool");
@@ -899,64 +850,6 @@ void FrameProcessorController::waitForShutdown()
 {
     boost::unique_lock<boost::mutex> lock(exitMutex_);
     exitCondition_.wait(lock);
-}
-
-/** Set up the frame receiver interface.
- *
- * This method creates new SharedMemoryController and SharedMemoryParser objects,
- * which manage the receipt of frame ready notifications and construction of
- * Frame objects from shared memory.
- * Pointers to the two objects are kept by this class.
- *
- * \param[in] sharedMemName - Name of the shared memory block opened by the frame receiver.
- * \param[in] frPublisherString - Endpoint for sending frame release notifications.
- * \param[in] frSubscriberString - Endpoint for receiving frame ready notifications.
- */
-void FrameProcessorController::setupFrameReceiverInterface(
-    const std::string& frPublisherString,
-    const std::string& frSubscriberString
-)
-{
-    LOG4CXX_DEBUG_LEVEL(
-        1, logger_, "Shared Memory Config: Publisher=" << frPublisherString << " Subscriber=" << frSubscriberString
-    );
-
-    // Only reconstruct the shared memory controller if it has never been created or either
-    // of the endpoints has been changed
-    if (!sharedMemController_ || frPublisherString != frReleaseEndpoint_ || frSubscriberString != frReadyEndpoint_) {
-        try {
-            // Release the current shared memory controller if one exists
-            if (sharedMemController_) {
-                sharedMemController_.reset();
-            }
-            // Create the new shared memory controller and give it the parser and publisher
-            sharedMemController_ = boost::shared_ptr<SharedMemoryController>(
-                new SharedMemoryController(reactor_, frSubscriberString, frPublisherString)
-            );
-            frReadyEndpoint_ = frSubscriberString;
-            frReleaseEndpoint_ = frPublisherString;
-
-        } catch (const boost::interprocess::interprocess_exception& e) {
-            LOG4CXX_ERROR(logger_, "Unable to access shared memory: " << e.what());
-        }
-    } else {
-        LOG4CXX_ERROR(logger_, "*** Not updating shared memory, endpoints were not changed");
-    }
-}
-
-/** Close the frame receiver interface.
- */
-void FrameProcessorController::closeFrameReceiverInterface()
-{
-    LOG4CXX_DEBUG_LEVEL(1, logger_, "Closing FrameReceiver interface.");
-    try {
-        // Release the current shared memory controller if one exists
-        if (sharedMemController_) {
-            sharedMemController_.reset();
-        }
-    } catch (const boost::interprocess::interprocess_exception& e) {
-        LOG4CXX_ERROR(logger_, "Error occurred when closing FrameReceiver interface: " << e.what());
-    }
 }
 
 /** Set up the control interface.
