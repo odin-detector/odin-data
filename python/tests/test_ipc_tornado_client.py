@@ -127,3 +127,33 @@ class TestIpcTornadoClient:
         client.send_request("status")
         timeout = client.wait_for_response(9)
         assert timeout is True
+
+        # Test _update_status() removes plugins from input map
+        reply_str: dict = {
+            "id": 9,
+            "msg_type": "cmd",
+            "msg_val": "status",
+            "timestamp": "00:00:00.00",
+            "params": {
+                "plugins": {"names": ["test_status_item"]},
+                "test_status_item": "Test2",
+            },
+        }
+        client._update_status(reply_str)
+        assert reply_str.get("test_status_item") is None
+        assert reply_str.get("plugins") is None
+
+        # Test _update_status() removes plugins from input map
+        reply_str = {
+            "id": 2,
+            "msg_type": "cmd",
+            "msg_val": "request_configuration",
+            "params": {
+                "plugins": {"names": ["test_config_item"]},
+                "config_ts": 12345,
+                "test_config_item": "Test1",
+            },
+        }
+        client._update_configuration(reply_str)
+        assert reply_str.get("test_config_item") is None
+        assert reply_str.get("plugins") is None
