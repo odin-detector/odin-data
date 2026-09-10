@@ -34,7 +34,16 @@ class TestIpcTornadoClient:
         client._callback([reply_str])
         assert client.parameters["version"] == "1.0.0"
 
-        reply_str = '{"id": 1, "msg_type": "cmd", "msg_val": "request_configuration", "params": { "plugins": {"names": ["test_config_item"] }, "config_ts": 12345, "test_config_item": "Test1"}}'
+        # No plugins loaded config reply
+        reply_str = '{"params": {"ctrl_endpoint": "tcp://0.0.0.0:10004", "meta_endpoint": "tcp://*:10008", "config_ts": -1}, "msg_type": "ack", "msg_val": "request_configuration", "id": 1, "timestamp": "2026-09-07T17:22:40.026023"}'
+        client.send_request("request_configuration")
+        client._callback([reply_str])
+        assert client.parameters["config"] == {
+            "config_ts": -1,
+        }
+
+        # Plugin(s) loaded config reply
+        reply_str = '{"id": 2, "msg_type": "cmd", "msg_val": "request_configuration", "params": { "plugins": {"names": ["test_config_item"] }, "config_ts": 12345, "test_config_item": "Test1"}}'
         client.send_request("request_configuration")
         client._callback([reply_str])
         assert client.parameters["config"] == {
@@ -42,7 +51,22 @@ class TestIpcTornadoClient:
             "config_ts": 12345,
         }
 
-        reply_str = '{"id": 2, "msg_type": "cmd", "msg_val": "status", "timestamp": "00:00:00.00", "params": { "plugins": {"names": ["test_config_item"] }, "status_ts": 12345, "test_config_item": "Test1"}}'
+        # No plugins loaded status reply
+        reply_str = '{"params": {"status_ts": -1}, "msg_type": "cmd", "msg_val": "status", "id": 3, "timestamp": "2026-09-07T17:48:43.421252"}'
+        client.send_request("status")
+        client._callback([reply_str])
+        assert client.parameters["status"] == {
+            "status_request": {
+                "timestamp": "2026-09-07T17:48:43.421252",
+                "error": [],
+                "connected": True,
+            },
+            "status_ts": -1,
+        }
+        assert client.connected() is True
+
+        # Plugin(s) loaded status reply
+        reply_str = '{"id": 4, "msg_type": "cmd", "msg_val": "status", "timestamp": "00:00:00.00", "params": { "plugins": {"names": ["test_config_item"] }, "status_ts": 12345, "test_config_item": "Test1"}}'
         client.send_request("status")
         client._callback([reply_str])
         assert client.parameters["status"] == {
@@ -57,20 +81,20 @@ class TestIpcTornadoClient:
         }
         assert client.connected() is True
 
-        reply_str = '{"id": 3, "msg_type": "cmd", "msg_val": "request_commands", "params": {"test_command_item": "Test3"}}'
+        reply_str = '{"id": 5, "msg_type": "cmd", "msg_val": "request_commands", "params": {"test_command_item": "Test3"}}'
         client.send_request("request_commands")
         client._callback([reply_str])
         assert client.parameters["commands"] == {"test_command_item": "Test3"}
 
-        reply_str = '{"id": 4, "msg_type": "nack", "msg_val": "configure", "params": {"test_config_fail": "Test4", "error": "test error"}}'
+        reply_str = '{"id": 6, "msg_type": "nack", "msg_val": "configure", "params": {"test_config_fail": "Test4", "error": "test error"}}'
         client.send_configuration({"item1": "value1"})
         client._callback([reply_str])
         rejected = client.read_rejected_configs()
         assert len(rejected) == 1
-        assert rejected[4].get_msg_id() == IpcMessage(from_str=reply_str).get_msg_id()
-        assert client.check_for_rejection(4) is True
+        assert rejected[6].get_msg_id() == IpcMessage(from_str=reply_str).get_msg_id()
+        assert client.check_for_rejection(6) is True
 
-        reply_str = '{"id": 5, "msg_type": "cmd", "msg_val": "status", "timestamp": "00:00:00.00", "params": { "plugins": {"names": ["test_status_item"] }, "test_status_item": "Test2"}}'
+        reply_str = '{"id": 7, "msg_type": "cmd", "msg_val": "status", "timestamp": "00:00:00.00", "params": { "plugins": {"names": ["test_status_item"] }, "test_status_item": "Test2"}}'
         client.send_request("status")
         client._callback([reply_str])
         assert client.parameters["status"]["status_request"]["error"] == ["test error"]
@@ -78,12 +102,12 @@ class TestIpcTornadoClient:
         client.clear_rejected_configs()
         assert len(client.read_rejected_configs()) == 0
 
-        reply_str = '{"id": 6, "msg_type": "nack", "msg_val": "execute", "params": {"test_command_fail": "Test5"}}'
+        reply_str = '{"id": 8, "msg_type": "nack", "msg_val": "execute", "params": {"test_command_fail": "Test5"}}'
         client.execute_command("text", "execute")
         client._callback([reply_str])
         rejected = client.read_rejected_commands()
         assert len(rejected) == 1
-        assert rejected[6].get_msg_id() == IpcMessage(from_str=reply_str).get_msg_id()
+        assert rejected[8].get_msg_id() == IpcMessage(from_str=reply_str).get_msg_id()
 
         client.clear_rejected_commands()
         assert len(client.read_rejected_commands()) == 0
@@ -98,8 +122,38 @@ class TestIpcTornadoClient:
         with pytest.raises(IpcMessageException):
             client._raise_reply_error("TestMsg", None)
 
-        timeout = client.wait_for_response(7)
+        timeout = client.wait_for_response(9)
         assert timeout is False
         client.send_request("status")
-        timeout = client.wait_for_response(7)
+        timeout = client.wait_for_response(9)
         assert timeout is True
+
+        # Test _update_status() removes plugins from input map
+        reply_str: dict = {
+            "id": 9,
+            "msg_type": "cmd",
+            "msg_val": "status",
+            "timestamp": "00:00:00.00",
+            "params": {
+                "plugins": {"names": ["test_status_item"]},
+                "test_status_item": "Test2",
+            },
+        }
+        client._update_status(reply_str)
+        assert reply_str.get("test_status_item") is None
+        assert reply_str.get("plugins") is None
+
+        # Test _update_status() removes plugins from input map
+        reply_str = {
+            "id": 2,
+            "msg_type": "cmd",
+            "msg_val": "request_configuration",
+            "params": {
+                "plugins": {"names": ["test_config_item"]},
+                "config_ts": 12345,
+                "test_config_item": "Test1",
+            },
+        }
+        client._update_configuration(reply_str)
+        assert reply_str.get("test_config_item") is None
+        assert reply_str.get("plugins") is None
