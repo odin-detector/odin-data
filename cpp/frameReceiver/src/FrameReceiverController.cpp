@@ -909,8 +909,7 @@ void FrameReceiverController::handle_frame_release_channel(void)
                     logger_,
                     "Specified number of frames (" << config_.frame_count_ << ") received and released, terminating"
                 );
-                this->stop();
-                reactor_.stop();
+                this->stop(true);
             }
         } else if ((frame_release.get_msg_type() == IpcMessage::MsgTypeCmd)
                    && (frame_release.get_msg_val() == IpcMessage::MsgValCmdBufferConfigRequest)) {
