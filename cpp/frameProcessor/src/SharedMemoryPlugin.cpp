@@ -105,10 +105,15 @@ void SharedMemoryPlugin::requestConfiguration(OdinData::IpcMessage& reply)
 
 void SharedMemoryPlugin::status(OdinData::IpcMessage& reply)
 {
-    reply.set_param(this->get_name() + '/' + SharedMemoryPlugin::STATUS_SHB_NAME, shmctrlr_handle_->getName());
-    reply.set_param(
-        this->get_name() + '/' + SharedMemoryPlugin::STATUS_SHB_CONFIGURED, shmctrlr_handle_->isConfigured()
-    );
+    if (shmctrlr_handle_) {
+        reply.set_param(this->get_name() + '/' + SharedMemoryPlugin::STATUS_SHB_NAME, shmctrlr_handle_->getName());
+        reply.set_param(
+            this->get_name() + '/' + SharedMemoryPlugin::STATUS_SHB_CONFIGURED, shmctrlr_handle_->isConfigured()
+        );
+    } else {
+        reply.set_param(this->get_name() + '/' + SharedMemoryPlugin::STATUS_SHB_NAME, std::string());
+        reply.set_param(this->get_name() + '/' + SharedMemoryPlugin::STATUS_SHB_CONFIGURED, false);
+    }
 }
 
 int SharedMemoryPlugin::get_version_major()
