@@ -12,7 +12,8 @@ const std::string SharedMemoryPlugin::STATUS_SHB_CONFIGURED = "shared_buf_config
 /**
  * The constructor sets up logging used within the class.
  */
-SharedMemoryPlugin::SharedMemoryPlugin()
+SharedMemoryPlugin::SharedMemoryPlugin() :
+    m_thread_(boost::bind(&SharedMemoryPlugin::start_reactor, this))
 {
     // Setup logging for the class
     logger_ = Logger::getLogger("FP.SharedMemoryPlugin");
@@ -21,10 +22,6 @@ SharedMemoryPlugin::SharedMemoryPlugin()
     add_config_param_metadata(CONFIG_FR_READY, PMDD::STRING_T, PMDA::READ_WRITE);
     add_status_param_metadata(STATUS_SHB_NAME, PMDD::STRING_T, PMDA::READ_ONLY);
     add_status_param_metadata(STATUS_SHB_CONFIGURED, PMDD::BOOL_T, PMDA::READ_ONLY);
-    reactor_ = boost::make_shared<OdinData::IpcReactor>();
-    reactor_->register_timer(1000, 0, &dummy_timer);
-    // boost::bind
-    boost::thread m_thread_ { &OdinData::IpcReactor::run, reactor_.get() };
 }
 
 SharedMemoryPlugin::~SharedMemoryPlugin()
@@ -32,6 +29,13 @@ SharedMemoryPlugin::~SharedMemoryPlugin()
     LOG4CXX_TRACE(logger_, "SharedMemoryPlugin destructor.");
     reactor_->stop();
     m_thread_.join();
+}
+
+void SharedMemoryPlugin::start_reactor()
+{
+    reactor_ = boost::make_shared<OdinData::IpcReactor>();
+    reactor_->register_timer(1000, 0, &dummy_timer);
+    reactor_->run();
 }
 
 void SharedMemoryPlugin::process_frame(boost::shared_ptr<Frame> ptr)

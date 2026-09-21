@@ -21,6 +21,7 @@ class SharedMemoryPlugin : public FrameProcessorPlugin {
 public:
     SharedMemoryPlugin();
     ~SharedMemoryPlugin();
+    void start_reactor();
     void process_frame(boost::shared_ptr<Frame> frame);
     void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
     void requestConfiguration(OdinData::IpcMessage& reply);
