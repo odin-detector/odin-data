@@ -35,6 +35,13 @@ namespace po = boost::program_options;
 #include "DebugLevelLogger.h"
 #include "logging.h"
 
+void cleanup_tempfs(LoggerPtr logger)
+{
+    LOG4CXX_INFO(logger, "Removing tmp .h5 file artifacts.");
+    boost::system::error_code ec;
+    boost::filesystem::remove_all("/tmp/test_1_000001.h5", ec);
+}
+
 /** Check that str contains suffix
  * /param[in] str - string to test
  * /param[in] suffix - test suffix
@@ -152,6 +159,7 @@ int main(int argc, char* argv[])
         for (int i = 0; i < processes.size(); i++) {
             processes[i]->end();
         }
+        cleanup_tempfs(logger);
 
         for (int j = 0; j < utilities.size(); j++) {
             int status = utilities[j]->exit_status();
@@ -161,6 +169,7 @@ int main(int argc, char* argv[])
 
     } catch (const std::exception& e) {
         LOG4CXX_ERROR(logger, "Caught unhandled exception in FrameTestApp, application will terminate: " << e.what());
+        cleanup_tempfs(logger);
         throw;
     }
 
