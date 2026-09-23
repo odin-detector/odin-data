@@ -106,7 +106,7 @@ target_link_libraries(ParameterPublishPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES}
 install(TARGETS ParameterPublishPlugin DESTINATION lib)
 
 # Add library for SharedMemory plugin
-add_library(SharedMemoryPlugin SHARED SharedMemoryPlugin.cpp SharedMemoryPluginLib.cpp)
+add_library(SharedMemoryPlugin SHARED SharedMemoryPlugin.cpp SharedMemoryController.cpp SharedMemoryPluginLib.cpp)
 target_link_libraries(SharedMemoryPlugin ${LIB_PROCESSOR} ${Boost_LIBRARIES} ${LOG4CXX_LIBRARIES} ${ZEROMQ_LIBRARIES} ${COMMON_LIBRARY})
 install(TARGETS SharedMemoryPlugin DESTINATION lib)
 
