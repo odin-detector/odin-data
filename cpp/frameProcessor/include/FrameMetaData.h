@@ -144,6 +144,7 @@ public:
             int id = parameters_.at(index).which();
             return id == (pType_t { T {} }).which();
         }
+        return false;
     }
 
     /** Check if frame has parameter
