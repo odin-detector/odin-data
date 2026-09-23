@@ -139,11 +139,10 @@ public:
         typename = typename std::enable_if<std::is_unsigned<T>::value || std::is_same<T, float>::value>::type>
     bool is_type(const std::string& index) const
     {
-        try {
-            boost::get<T>(parameters_.at(index));
-            return true;
-        } catch (const boost::bad_get& err) {
-            return false;
+        static_assert(std::is_default_constructible<T>::value);
+        if (parameters_.count(index)) {
+            int id = parameters_.at(index).which();
+            return id == (pType_t { T {} }).which();
         }
     }
 
