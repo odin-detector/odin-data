@@ -120,11 +120,14 @@ private:
     void runIpcService(void);
     void tickTimer(void);
     void callback(boost::shared_ptr<Frame> frame);
+    void inject_EOA();
 
     /** Pointer to the logging facility */
     log4cxx::LoggerPtr logger_;
     /** Map of plugins loaded, indexed by plugin index */
     std::map<std::string, boost::shared_ptr<FrameProcessorPlugin>> plugins_;
+    /** Map of plugins loaded to boolean indicating how many ancestors are present */
+    std::unordered_map<std::string, int> ancestor_map_;
     /** Map of stored configuration objects */
     std::map<std::string, std::string> stored_configs_;
     /** Condition for exiting this file writing process */

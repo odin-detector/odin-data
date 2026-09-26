@@ -21,7 +21,6 @@ class SharedMemoryPlugin : public FrameProcessorPlugin {
 public:
     SharedMemoryPlugin();
     ~SharedMemoryPlugin();
-    void start_reactor();
     void process_frame(boost::shared_ptr<Frame> frame);
     void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
     void requestConfiguration(OdinData::IpcMessage& reply);
@@ -36,20 +35,23 @@ public:
     const static std::string CONFIG_FR_READY;
     const static std::string STATUS_SHB_NAME;
     const static std::string STATUS_SHB_CONFIGURED;
+    const static std::string STATUS_FR_RECV;
 
 private:
     std::string frReleaseEndpoint_;
     std::string frReadyEndpoint_;
     boost::shared_ptr<OdinData::IpcReactor> reactor_;
-
     /** IpcReactor thread */
     boost::thread m_thread_;
     /** The shared memory controller object */
     boost::shared_ptr<SharedMemoryController> shmctrlr_handle_;
+
     /** Pointer to logger */
     LoggerPtr logger_;
-
-    static void dummy_timer()
+    /** Number of frames received */
+    size_t frames_recv_;
+    void start_reactor();
+    static void tick_timer()
     {
     }
     void setupFrameReceiverInterface(const std::string&, const std::string&);

@@ -395,8 +395,10 @@ void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData:
     if (config.has_param(FrameProcessorController::CONFIG_EOA)) {
         LOG4CXX_DEBUG_LEVEL(1, logger_, "Injecting End Of Acquisition object into plugin chain");
         std::string plugin_name = config.get_param<std::string>(FrameProcessorController::CONFIG_EOA);
-        if (plugins_.count(plugin_name)) {
-            this->plugins_[plugin_name]->inject_EOA();
+        for (auto& plugin : plugins_) {
+            if (ancestor_map_.at(plugin.first) > 0) {
+                plugin.second->inject_EOA();
+            }
         }
     }
 
@@ -652,6 +654,7 @@ void FrameProcessorController::configurePlugin(OdinData::IpcMessage& config, Odi
             std::string name = pluginConfig.get_param<std::string>(FrameProcessorController::CONFIG_PLUGIN_NAME);
             std::string library = pluginConfig.get_param<std::string>(FrameProcessorController::CONFIG_PLUGIN_LIBRARY);
             this->loadPlugin(index, name, library);
+            ancestor_map_[index] = 0;
         }
     }
 
@@ -753,6 +756,7 @@ void FrameProcessorController::connectPlugin(const std::string& index, const std
     // Check that the plugin is loaded
     if ((plugins_.count(index) > 0) & (plugins_.count(connectTo) > 0)) {
         plugins_[connectTo]->register_callback(index, plugins_[index]);
+        ++ancestor_map_[index]; // plugin index has an ancestor
     } else {
         LOG4CXX_ERROR(logger_, "Cannot connect plugin with index = " << index << ", plugin isn't loaded");
         std::stringstream is;
@@ -771,6 +775,7 @@ void FrameProcessorController::disconnectPlugin(const std::string& index, const 
     // Check that the plugin is loaded
     if ((plugins_.count(index) > 0) & ((plugins_.count(disconnectFrom) > 0))) {
         plugins_[disconnectFrom]->remove_callback(index);
+        --ancestor_map_[index];
     } else {
         LOG4CXX_ERROR(logger_, "Cannot disconnect plugin with index = " << index << ", plugin isn't loaded");
         std::stringstream is;

@@ -9,15 +9,18 @@ const std::string SharedMemoryPlugin::CONFIG_FR_RELEASE = "fr_release_cnxn";
 const std::string SharedMemoryPlugin::CONFIG_FR_READY = "fr_ready_cnxn";
 const std::string SharedMemoryPlugin::STATUS_SHB_NAME = "shared_buf_name";
 const std::string SharedMemoryPlugin::STATUS_SHB_CONFIGURED = "shared_buf_configured";
+const std::string SharedMemoryPlugin::STATUS_FR_RECV = "frames_recv";
 /**
  * The constructor sets up logging used within the class.
  */
 SharedMemoryPlugin::SharedMemoryPlugin() :
-    m_thread_(boost::bind(&SharedMemoryPlugin::start_reactor, this))
+    frames_recv_ { 0 }
 {
     // Setup logging for the class
     logger_ = Logger::getLogger("FP.SharedMemoryPlugin");
     LOG4CXX_TRACE(logger_, "SharedMemoryPlugin constructor.");
+    reactor_ = boost::make_shared<OdinData::IpcReactor>();
+    m_thread_ = boost::thread { boost::bind(&SharedMemoryPlugin::start_reactor, this) };
     add_config_param_metadata(CONFIG_FR_RELEASE, PMDD::STRING_T, PMDA::READ_WRITE);
     add_config_param_metadata(CONFIG_FR_READY, PMDD::STRING_T, PMDA::READ_WRITE);
     add_status_param_metadata(STATUS_SHB_NAME, PMDD::STRING_T, PMDA::READ_ONLY);
@@ -27,19 +30,22 @@ SharedMemoryPlugin::SharedMemoryPlugin() :
 SharedMemoryPlugin::~SharedMemoryPlugin()
 {
     LOG4CXX_TRACE(logger_, "SharedMemoryPlugin destructor.");
-    reactor_->stop();
-    m_thread_.join();
+    if (reactor_) {
+        reactor_->stop();
+        m_thread_.join();
+    }
 }
 
 void SharedMemoryPlugin::start_reactor()
 {
-    reactor_ = boost::make_shared<OdinData::IpcReactor>();
-    reactor_->register_timer(1000, 0, &dummy_timer);
+
+    reactor_->register_timer(1000, 0, &tick_timer);
     reactor_->run();
 }
 
 void SharedMemoryPlugin::process_frame(boost::shared_ptr<Frame> ptr)
 {
+    // ++frames_recv_;
     this->push(ptr);
 }
 
@@ -61,34 +67,31 @@ void SharedMemoryPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMe
  * Pointers to the two objects are kept by this class.
  *
  * \param[in] sharedMemName - Name of the shared memory block opened by the frame receiver.
- * \param[in] frPublisherString - Endpoint for sending frame release notifications.
- * \param[in] frSubscriberString - Endpoint for receiving frame ready notifications.
+ * \param[in] frReleaseString - Endpoint for sending frame release notifications.
+ * \param[in] frReadyString - Endpoint for receiving frame ready notifications.
  */
 void SharedMemoryPlugin::setupFrameReceiverInterface(
-    const std::string& frPublisherString,
-    const std::string& frSubscriberString
+    const std::string& frReleaseString,
+    const std::string& frReadyString
 )
 {
-    LOG4CXX_DEBUG(
-        logger_, "Shared Memory Config: Publisher=" << frPublisherString << " Subscriber=" << frSubscriberString
-    );
+    LOG4CXX_DEBUG(logger_, "Shared Memory Config: Publisher=" << frReleaseString << " Subscriber=" << frReadyString);
 
     // Only reconstruct the shared memory controller if it has never been created or either
     // of the endpoints has been changed
-    if (!shmctrlr_handle_ || frPublisherString != frReleaseEndpoint_ || frSubscriberString != frReadyEndpoint_) {
+    if (!shmctrlr_handle_ || frReleaseString != frReleaseEndpoint_ || frReadyString != frReadyEndpoint_) {
         try {
             // Release the current shared memory controller if one exists
             if (shmctrlr_handle_) {
                 shmctrlr_handle_.reset();
             }
             // Create the new shared memory controller and give it the parser and publisher
-            shmctrlr_handle_
-                = boost::make_shared<SharedMemoryController>(reactor_, frSubscriberString, frPublisherString);
+            shmctrlr_handle_ = boost::make_shared<SharedMemoryController>(reactor_, frReadyString, frReleaseString);
             shmctrlr_handle_->inject_process_frame_cb(
                 boost::bind(&SharedMemoryPlugin::process_frame, this, boost::placeholders::_1)
             );
-            frReadyEndpoint_ = frSubscriberString;
-            frReleaseEndpoint_ = frPublisherString;
+            frReadyEndpoint_ = frReadyString;
+            frReleaseEndpoint_ = frReleaseString;
         } catch (const boost::interprocess::interprocess_exception& e) {
             LOG4CXX_ERROR(logger_, "Unable to access shared memory: \n"); // << e.what());
         }
@@ -115,6 +118,7 @@ void SharedMemoryPlugin::status(OdinData::IpcMessage& reply)
             this->get_name() + '/' + SharedMemoryPlugin::STATUS_SHB_CONFIGURED, shmctrlr_handle_->isConfigured()
         );
     }
+    reply.set_param(this->get_name() + '/' + SharedMemoryPlugin::STATUS_FR_RECV, frames_recv_);
 }
 
 int SharedMemoryPlugin::get_version_major()
