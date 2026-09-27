@@ -12,8 +12,6 @@
 
 namespace FrameProcessor {
 
-const std::string SharedMemoryController::SHARED_MEMORY_CONTROLLER_NAME = "shared_memory";
-
 /** Constructor.
  *
  * The constructor sets up logging used within the class. It also creates the
@@ -80,13 +78,6 @@ SharedMemoryController::~SharedMemoryController()
 {
     LOG4CXX_TRACE(logger_, "Shutting down SharedMemoryController");
 
-    auto it = callbacks_.begin();
-    while (it != callbacks_.end()) {
-        LOG4CXX_DEBUG_LEVEL(1, logger_, "Shutting down callback for " << it->first);
-        it->second->stop();
-        it = callbacks_.erase(it);
-    }
-
     // Close the IPC Channels
     reactor_->remove_channel(txChannel_);
     reactor_->remove_channel(rxChannel_);
@@ -109,11 +100,8 @@ void SharedMemoryController::setSharedBufferManager(std::string& shared_buffer_n
     if (sbm_) {
         sbm_.reset();
     }
-
     // Create a new shared buffer manager
-    sbm_ = boost::shared_ptr<OdinData::SharedBufferManager>(
-        new OdinData::SharedBufferManager(std::move(shared_buffer_name))
-    );
+    sbm_.emplace(shared_buffer_name);
 
     // Set configured status to true
     sharedBufferConfigured_ = true;

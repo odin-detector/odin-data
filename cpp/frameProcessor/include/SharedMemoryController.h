@@ -44,8 +44,7 @@ public:
         const std::string& rxEndPoint,
         const std::string& txEndPoint
     );
-    virtual ~SharedMemoryController();
-    void setSharedBufferManager(std::string& shared_buffer_name);
+    ~SharedMemoryController();
     void requestSharedBufferConfig(const bool deferred = false);
     void handleRxChannel();
     const std::string& getName() const
@@ -64,10 +63,8 @@ public:
 private:
     /** Pointer to logger */
     LoggerPtr logger_;
-    /** Pointer to SharedBufferManager object */
-    boost::shared_ptr<OdinData::SharedBufferManager> sbm_;
-    /** Map of IFrameCallback pointers, indexed by name */
-    std::map<std::string, boost::shared_ptr<IFrameCallback>> callbacks_;
+    /** SharedBufferManager object */
+    boost::optional<OdinData::SharedBufferManager> sbm_;
     /** IpcReactor pointer, for managing IpcMessage objects */
     boost::shared_ptr<OdinData::IpcReactor> reactor_;
     /** IpcChannel for receiving notifications of new frames */
@@ -83,8 +80,7 @@ private:
 
     TProcess_frame_cb callback_;
 
-    /** Name of class used in status messages */
-    static const std::string SHARED_MEMORY_CONTROLLER_NAME;
+    void setSharedBufferManager(std::string& shared_buffer_name);
 };
 
 } /* namespace FrameProcessor */
