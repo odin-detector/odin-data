@@ -73,8 +73,31 @@ public:
     void remove_callback(const std::string& name);
     void remove_all_callbacks();
     void notify_end_of_acquisition();
+    /** return the latest ts of config/status metadata for this plugin instance */
+    __attribute__((always_inline)) int64_t get_config_ts() const
+    {
+        return this->config_ts_;
+    }
+    __attribute__((always_inline)) int64_t get_status_ts() const
+    {
+        return this->status_ts_;
+    }
 
 protected:
+    /** function to update the config time-stamp! */
+    __attribute__((always_inline)) void update_config_ts(void)
+    {
+        auto time_stamp_ms = std::chrono::time_point_cast<std::chrono::microseconds>(std::chrono::steady_clock::now());
+        auto val = std::chrono::duration_cast<std::chrono::microseconds>(time_stamp_ms.time_since_epoch());
+        this->config_ts_ = val.count();
+    }
+    /** function to update the status time-stamp! */
+    __attribute__((always_inline)) void update_status_ts(void)
+    {
+        auto time_stamp_ms = std::chrono::time_point_cast<std::chrono::microseconds>(std::chrono::steady_clock::now());
+        auto val = std::chrono::duration_cast<std::chrono::microseconds>(time_stamp_ms.time_since_epoch());
+        this->status_ts_ = val.count();
+    }
     void push(boost::shared_ptr<Frame> frame);
     void push(const std::string& plugin_name, boost::shared_ptr<Frame> frame);
 
@@ -242,6 +265,10 @@ private:
     boost::mutex mutex_;
     /** process_frame performance stats */
     CallDuration process_duration_;
+    /** time-stamp to represent the version of config structure */
+    int64_t config_ts_;
+    /** time-stamp to represent the version of status structure */
+    int64_t status_ts_;
 };
 
 } /* namespace FrameProcessor */

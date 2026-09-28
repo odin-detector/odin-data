@@ -1,6 +1,8 @@
 #define BOOST_TEST_MODULE "BloscPluginTests"
 #define BOOST_TEST_MAIN
 
+#include <blosc.h>
+
 #include "BloscPlugin.h"
 #include "Fixtures.h"
 
@@ -12,7 +14,7 @@ public:
     {
         set_debug_level(3);
         std::array<int, 64000> vec {}; // 256kb data size
-        vec.fill(2398);
+        vec.fill(2398); // fill with random value
 
         blosc_plugin.set_name("BloscPluginTest");
         frame = boost::make_shared<FrameProcessor::DataBlockFrame>(
@@ -27,14 +29,21 @@ public:
     }
     void setup_blosc_config(OdinData::IpcMessage& cfg_, OdinData::IpcMessage& reply)
     {
+        using FPB = FrameProcessor::BloscPlugin;
         // set compression level to the highest - 9
         BOOST_CHECK_NO_THROW(cfg_.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_LEVEL, 9));
         // set shuffle state to "BLOSC_BITSHUFFLE" - 2
-        BOOST_CHECK_NO_THROW(cfg_.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_SHUFFLE, 2));
+        BOOST_CHECK_NO_THROW(
+            cfg_.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_SHUFFLE, std::string(FPB::BLOSC_SHUFFLE_STR))
+        );
         // set the compressor to be - "zlib"
-        BOOST_CHECK_NO_THROW(cfg_.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_COMPRESSOR, 4));
+        BOOST_CHECK_NO_THROW(
+            cfg_.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_COMPRESSOR, std::string(BLOSC_ZLIB_COMPNAME))
+        );
         // set compression mode to "compress". This is the default too however
-        BOOST_CHECK_NO_THROW(cfg_.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_MODE, std::string("compress")));
+        BOOST_CHECK_NO_THROW(
+            cfg_.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_MODE, std::string(FPB::BLOSC_COMPRESS_MODE_STR))
+        );
         BOOST_REQUIRE_NO_THROW(blosc_plugin.configure(cfg_, reply));
         // register the frame to itself so we can get the
         BOOST_REQUIRE_NO_THROW(blosc_plugin.register_callback(
@@ -53,6 +62,7 @@ BOOST_AUTO_TEST_CASE(BloscPlugin_compress_decompress)
 {
     // process_frame() ought to be a virtual private member method
     // from it's base class FrameProcessorPlugin. This needs to be consolidated!
+    using FPB = FrameProcessor::BloscPlugin;
     OdinData::IpcMessage cfg_;
     OdinData::IpcMessage reply;
     setup_blosc_config(cfg_, reply);
@@ -66,7 +76,9 @@ BOOST_AUTO_TEST_CASE(BloscPlugin_compress_decompress)
     );
 
     // Decompress Test
-    BOOST_CHECK_NO_THROW(cfg_.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_MODE, std::string("decompress")));
+    BOOST_CHECK_NO_THROW(
+        cfg_.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_MODE, std::string(FPB::BLOSC_DECOMPRESS_MODE_STR))
+    );
     BOOST_REQUIRE_NO_THROW(blosc_plugin.configure(cfg_, reply));
     BOOST_REQUIRE_NO_THROW(blosc_plugin.process_frame(compressed_frame));
     boost::shared_ptr<FrameProcessor::Frame> decompressed_frame = blosc_plugin.getWorkQueue()->remove();
@@ -83,12 +95,15 @@ BOOST_AUTO_TEST_CASE(BloscPlugin_compress_decompress)
 BOOST_AUTO_TEST_CASE(BloscPlugin_off)
 {
     // OFF Mode Test
+    using FPB = FrameProcessor::BloscPlugin;
     OdinData::IpcMessage cfg_;
     OdinData::IpcMessage reply;
     setup_blosc_config(cfg_, reply);
 
     // reset the compression mode as "off" - no compression should occur and the source frame should be pushed on queue
-    BOOST_CHECK_NO_THROW(cfg_.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_MODE, std::string("off")));
+    BOOST_CHECK_NO_THROW(
+        cfg_.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_MODE, std::string(FPB::BLOSC_OFF_MODE_STR))
+    );
     BOOST_REQUIRE_NO_THROW(blosc_plugin.configure(cfg_, reply));
     BOOST_REQUIRE_NO_THROW(blosc_plugin.process_frame(frame));
     boost::shared_ptr<FrameProcessor::Frame> same_frame = blosc_plugin.getWorkQueue()->remove();

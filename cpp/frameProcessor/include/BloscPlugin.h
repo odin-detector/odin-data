@@ -18,11 +18,11 @@ namespace FrameProcessor {
 
 typedef struct {
     int compression_level;
-    unsigned int shuffle;
+    std::string shuffle;
     size_t type_size;
     size_t uncompressed_size;
     unsigned int threads;
-    unsigned int blosc_compressor;
+    std::string blosc_compressor;
 } BloscCompressionSettings;
 void create_cd_values(const BloscCompressionSettings& settings, std::vector<unsigned int> cd_values);
 
@@ -45,6 +45,14 @@ public:
     static const std::string CONFIG_BLOSC_LEVEL;
     static const std::string CONFIG_BLOSC_SHUFFLE;
     static const std::string CONFIG_BLOSC_MODE;
+
+    constexpr static char BLOSC_NOSHUFFLE_STR[] = "noshuffle";
+    constexpr static char BLOSC_SHUFFLE_STR[] = "shuffle";
+    constexpr static char BLOSC_BITSHUFFLE_STR[] = "bitshuffle";
+
+    constexpr static char BLOSC_COMPRESS_MODE_STR[] = "compress";
+    constexpr static char BLOSC_DECOMPRESS_MODE_STR[] = "decompress";
+    constexpr static char BLOSC_OFF_MODE_STR[] = "off";
 
     // Baseclass API to implement:
     void process_frame(boost::shared_ptr<Frame> frame);
@@ -84,11 +92,10 @@ private:
     BloscCompressionSettings compression_settings_;
     /** Compression settings for the next acquisition */
     BloscCompressionSettings commanded_compression_settings_;
-    /** Temporary buffer for compressed/decompressed data */
-    void* data_buffer_ptr_;
-    size_t data_buffer_size_;
-    /** Mode the plugin is configured to */
+    /** Current Mode the plugin is configured to */
     Mode plugin_mode_;
+    /** Plugin mode for the next acquisition */
+    Mode commanded_plugin_mode_;
 };
 
 } /* namespace FrameProcessor */

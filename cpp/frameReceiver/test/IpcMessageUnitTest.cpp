@@ -383,5 +383,4 @@ BOOST_AUTO_TEST_CASE(TestIpcMessageCreationSpeed)
                               << rate << " Hz"
     );
 }
-
 BOOST_AUTO_TEST_SUITE_END();

@@ -366,11 +366,13 @@ void FileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMess
                     this->configure_dataset(dataset_name, dsetConfig, reply);
                 }
             }
+            update_config_ts();
         }
 
         // Check to see if we are deleting all datasets
         if (config.has_param(FileWriterPlugin::CONFIG_DELETE_DATASETS)) {
             this->delete_datasets();
+            update_config_ts();
         }
 
         // Check to see if we are being told how many frames to write
@@ -878,7 +880,7 @@ void FileWriterPlugin::delete_datasets()
 void FileWriterPlugin::status(OdinData::IpcMessage& status)
 {
     // Record the plugin's status items
-    std::string prefix = get_name() + '/';
+    const std::string prefix = get_name() + '/';
     status.set_param(prefix + STATUS_WRITING, this->writing_);
     status.set_param(prefix + STATUS_FRAMES_MAX, (int)this->current_acquisition_->frames_to_write_);
     status.set_param(prefix + STATUS_FRAMES_WRITTEN, (int)this->current_acquisition_->frames_written_);
