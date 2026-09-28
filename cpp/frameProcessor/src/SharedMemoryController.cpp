@@ -33,7 +33,6 @@ SharedMemoryController::SharedMemoryController(
     reactor_(reactor),
     rxChannel_(ZMQ_SUB),
     txChannel_(ZMQ_PUB),
-    sharedBufferConfigured_(false),
     sharedBufferConfigRequestDeferred_(false)
 {
     // Setup logging for the class
@@ -92,21 +91,15 @@ SharedMemoryController::~SharedMemoryController()
  */
 void SharedMemoryController::setSharedBufferManager(std::string& shared_buffer_name)
 {
-
-    // Set configured status to false until the new shared buffer manager is initialised
-    sharedBufferConfigured_ = false;
-
     // Reset the shared buffer manager if already existing
     if (sbm_) {
         sbm_.reset();
     }
+
+    LOG4CXX_DEBUG_LEVEL(1, logger_, "Initialising shared buffer manager for buffer " << shared_buffer_name);
+
     // Create a new shared buffer manager
-    sbm_.emplace(shared_buffer_name);
-
-    // Set configured status to true
-    sharedBufferConfigured_ = true;
-
-    LOG4CXX_DEBUG_LEVEL(1, logger_, "Initialised shared buffer manager for buffer " << shared_buffer_name);
+    sbm_.emplace(std::move(shared_buffer_name));
 }
 
 /** Request the shared buffer configuration information from the upstream frame receiver process
@@ -127,7 +120,7 @@ void SharedMemoryController::requestSharedBufferConfig(const bool deferred)
     } else {
         // If this is being called by a deferred request timer but the shared buffer has been configured in the
         // meantime, do not send the request
-        if (sharedBufferConfigRequestDeferred_ && sharedBufferConfigured_) {
+        if (sharedBufferConfigRequestDeferred_ & bool(sbm_)) {
             LOG4CXX_DEBUG_LEVEL(
                 1, logger_, "Not executing deferred configuration request as shared buffer is now configured"
             );

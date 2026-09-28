@@ -53,7 +53,7 @@ public:
     }
     bool isConfigured() const
     {
-        return sharedBufferConfigured_;
+        return sbm_.has_value();
     }
     void inject_process_frame_cb(TProcess_frame_cb callback)
     {
@@ -73,8 +73,6 @@ private:
     OdinData::IpcChannel txChannel_;
     /** Shared buffer name */
     std::string shbName_;
-    /** Shared buffer configured status flag */
-    bool sharedBufferConfigured_;
     /** Shared buffer config request deferred flag */
     bool sharedBufferConfigRequestDeferred_;
 
