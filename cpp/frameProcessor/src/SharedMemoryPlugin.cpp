@@ -86,7 +86,7 @@ void SharedMemoryPlugin::setupFrameReceiverInterface(
                 shmctrlr_handle_.reset();
             }
             // Create the new shared memory controller and give it the parser and publisher
-            shmctrlr_handle_ = boost::make_shared<SharedMemoryController>(reactor_, frReadyString, frReleaseString);
+            shmctrlr_handle_.emplace(reactor_, frReadyString, frReleaseString);
             shmctrlr_handle_->inject_process_frame_cb(
                 boost::bind(&SharedMemoryPlugin::process_frame, this, boost::placeholders::_1)
             );

@@ -44,7 +44,7 @@ private:
     /** IpcReactor thread */
     boost::thread m_thread_;
     /** The shared memory controller object */
-    boost::shared_ptr<SharedMemoryController> shmctrlr_handle_;
+    boost::optional<SharedMemoryController> shmctrlr_handle_;
 
     /** Pointer to logger */
     LoggerPtr logger_;
