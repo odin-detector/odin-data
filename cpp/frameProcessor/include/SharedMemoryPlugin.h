@@ -40,7 +40,7 @@ public:
 private:
     std::string frReleaseEndpoint_;
     std::string frReadyEndpoint_;
-    boost::shared_ptr<OdinData::IpcReactor> reactor_;
+    OdinData::IpcReactor reactor_;
     /** IpcReactor thread */
     boost::thread m_thread_;
     /** The shared memory controller object */

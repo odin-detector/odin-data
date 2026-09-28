@@ -39,11 +39,11 @@ class SharedMemoryController {
     typedef boost::function<void(boost::shared_ptr<Frame> frame)> TProcess_frame_cb;
 
 public:
-    SharedMemoryController(
-        boost::shared_ptr<OdinData::IpcReactor> reactor,
-        const std::string& rxEndPoint,
-        const std::string& txEndPoint
-    );
+    SharedMemoryController(OdinData::IpcReactor& reactor, const std::string& rxEndPoint, const std::string& txEndPoint);
+    SharedMemoryController(const SharedMemoryController&) = default;
+    SharedMemoryController& operator=(const SharedMemoryController&) = delete;
+    SharedMemoryController(SharedMemoryController&&) = delete;
+    SharedMemoryController& operator=(SharedMemoryController&&) = delete;
     ~SharedMemoryController();
     void requestSharedBufferConfig(const bool deferred = false);
     void handleRxChannel();
@@ -65,8 +65,8 @@ private:
     LoggerPtr logger_;
     /** SharedBufferManager object */
     boost::optional<OdinData::SharedBufferManager> sbm_;
-    /** IpcReactor pointer, for managing IpcMessage objects */
-    boost::shared_ptr<OdinData::IpcReactor> reactor_;
+    /** IpcReactor reference, for managing IpcMessage objects */
+    OdinData::IpcReactor& reactor_;
     /** IpcChannel for receiving notifications of new frames */
     OdinData::IpcChannel rxChannel_;
     /** IpcChannel for sending notifications of frame release */

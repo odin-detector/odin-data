@@ -19,7 +19,6 @@ SharedMemoryPlugin::SharedMemoryPlugin() :
     // Setup logging for the class
     logger_ = Logger::getLogger("FP.SharedMemoryPlugin");
     LOG4CXX_TRACE(logger_, "SharedMemoryPlugin constructor.");
-    reactor_ = boost::make_shared<OdinData::IpcReactor>();
     m_thread_ = boost::thread { boost::bind(&SharedMemoryPlugin::start_reactor, this) };
     add_config_param_metadata(CONFIG_FR_RELEASE, PMDD::STRING_T, PMDA::READ_WRITE);
     add_config_param_metadata(CONFIG_FR_READY, PMDD::STRING_T, PMDA::READ_WRITE);
@@ -30,22 +29,19 @@ SharedMemoryPlugin::SharedMemoryPlugin() :
 SharedMemoryPlugin::~SharedMemoryPlugin()
 {
     LOG4CXX_TRACE(logger_, "SharedMemoryPlugin destructor.");
-    if (reactor_) {
-        reactor_->stop();
-        m_thread_.join();
-    }
+    reactor_.stop();
+    m_thread_.join();
 }
 
 void SharedMemoryPlugin::start_reactor()
 {
-
-    reactor_->register_timer(1000, 0, &tick_timer);
-    reactor_->run();
+    reactor_.register_timer(1000, 0, &tick_timer);
+    reactor_.run();
 }
 
 void SharedMemoryPlugin::process_frame(boost::shared_ptr<Frame> ptr)
 {
-    // ++frames_recv_;
+    ++frames_recv_;
     this->push(ptr);
 }
 
@@ -81,7 +77,7 @@ void SharedMemoryPlugin::setupFrameReceiverInterface(
     // of the endpoints has been changed
     if (!shmctrlr_handle_ || frReleaseString != frReleaseEndpoint_ || frReadyString != frReadyEndpoint_) {
         try {
-            // Release the current shared memory controller if one exists
+            // destroy the current shared memory controller if one exists
             if (shmctrlr_handle_) {
                 shmctrlr_handle_.reset();
             }
