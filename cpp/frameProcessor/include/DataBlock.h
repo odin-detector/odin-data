@@ -30,29 +30,33 @@ namespace FrameProcessor {
  * block, when a data block is destroyed it frees memory it allocated memory.
  */
 static constexpr int alignment = 64;
-class alignas(alignment) DataBlock {
+class DataBlock {
     friend class DataBlockPool;
 
 public:
     /** Construct a data block */
     DataBlock(size_t block_size) :
-        logger_(log4cxx::Logger::getLogger("FP.DataBlock")),
         allocated_bytes_(block_size),
         is_pre_allocated_ { false }
     {
-        LOG4CXX_DEBUG_LEVEL(2, logger_, "Constructing DataBlock, allocating " << block_size << " bytes");
+        LOG4CXX_DEBUG_LEVEL(
+            2, log4cxx::Logger::getLogger("FP.DataBlock"),
+            "Constructing DataBlock, allocating " << block_size << " bytes"
+        );
         // Create this DataBlock's unique index
         index_ = DataBlock::get_static_index_count();
         ++DataBlock::get_static_index_count();
         // Allocate the memory required for this data block
         int rc = posix_memalign(&block_ptr_, alignment, block_size);
         if (rc) {
-            LOG4CXX_ERROR(logger_, "Exhausted memory (" << rc << "): could not allocate " << block_size << " bytes");
+            LOG4CXX_ERROR(
+                log4cxx::Logger::getLogger("FP.DataBlock"),
+                "Exhausted memory (" << rc << "): could not allocate " << block_size << " bytes"
+            );
         }
     }
 
     DataBlock(void* ptr, size_t block_size) noexcept :
-        logger_(log4cxx::Logger::getLogger("FP.DataBlock")),
         allocated_bytes_ { block_size },
         index_ { get_static_index_count() },
         is_pre_allocated_ { true },
@@ -69,7 +73,6 @@ public:
 
     /** move constructor */
     DataBlock(DataBlock&& other) noexcept :
-        logger_ { std::move(other.logger_) },
         allocated_bytes_ { other.allocated_bytes_ },
         index_ { other.index_ },
         is_pre_allocated_ { other.is_pre_allocated_ },
@@ -83,7 +86,6 @@ public:
     /** move assignment operator */
     DataBlock& operator=(DataBlock&& other) noexcept
     {
-        logger_ = std::move(other.logger_);
         allocated_bytes_ = other.allocated_bytes_;
         index_ = other.index_;
         block_ptr_ = other.block_ptr_;
@@ -129,7 +131,7 @@ public:
     {
         if (block_size > allocated_bytes_) {
             LOG4CXX_WARN(
-                logger_,
+                log4cxx::Logger::getLogger("FP.DataBlock"),
                 "Trying to copy: " << block_size << " but allocated buffer only: " << allocated_bytes_
                                    << " bytes. Truncating copy."
             );
@@ -180,7 +182,10 @@ private:
      */
     void resize(size_t block_size)
     {
-        LOG4CXX_DEBUG_LEVEL(2, logger_, "Resizing DataBlock " << index_ << " to " << block_size << " bytes");
+        LOG4CXX_DEBUG_LEVEL(
+            2, log4cxx::Logger::getLogger("FP.DataBlock"),
+            "Resizing DataBlock " << index_ << " to " << block_size << " bytes"
+        );
         // If the new size requested is the different
         // to our current size then re-allocate
         if (block_size != allocated_bytes_) {
@@ -190,7 +195,8 @@ private:
             int rc = posix_memalign(&block_ptr_, alignment, block_size);
             if (rc) {
                 LOG4CXX_ERROR(
-                    logger_, "Exhausted memory (" << rc << "): could not reallocate " << block_size << " bytes"
+                    log4cxx::Logger::getLogger("FP.DataBlock"),
+                    "Exhausted memory (" << rc << "): could not reallocate " << block_size << " bytes"
                 );
             }
             // Record our new size
@@ -207,11 +213,9 @@ private:
     {
         /** Static counter for the unique index */
         static int index_counter_ = 0;
+        sizeof(DataBlock);
         return index_counter_;
     }
-
-    /** Pointer to logger */
-    log4cxx::LoggerPtr logger_;
 
     /** Number of bytes allocated for this DataBlock */
     size_t allocated_bytes_;
