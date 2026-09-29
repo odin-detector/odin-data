@@ -51,6 +51,37 @@ public:
         }
     }
 
+    /** delete copy constructor! */
+    DataBlock(const DataBlock&) = delete;
+
+    /** delete copy assignment operator! */
+    DataBlock& operator=(const DataBlock&) = delete;
+
+    /** move constructor */
+    DataBlock(DataBlock&& other) noexcept :
+        logger_ { std::move(other.logger_) },
+        allocated_bytes_ { other.allocated_bytes_ },
+        index_ { other.index_ },
+        block_ptr_ { other.block_ptr_ }
+    {
+        other.allocated_bytes_ = 0;
+        other.index_ = -1;
+        other.block_ptr_ = nullptr;
+    }
+
+    /** move assignment operator */
+    DataBlock& operator=(DataBlock&& other) noexcept
+    {
+        logger_ = std::move(other.logger_);
+        allocated_bytes_ = other.allocated_bytes_;
+        index_ = other.index_;
+        block_ptr_ = other.block_ptr_;
+        other.allocated_bytes_ = 0;
+        other.index_ = -1;
+        other.block_ptr_ = nullptr;
+        return *this;
+    }
+
     /** Destroy a data block */
     ~DataBlock()
     {
