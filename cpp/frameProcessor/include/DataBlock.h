@@ -26,19 +26,19 @@ namespace FrameProcessor {
  * work most efficiently when using the same sized data multiple times. Data
  * can be copied into the allocated block, and a pointer to the raw block is
  * available.
- * Data block memory should NOT be freed outside of the block, when a data block
- * is destroyed it frees its own memory.
+ * Data block memory allocated in this class should NOT be freed outside of the
+ * block, when a data block is destroyed it frees memory it allocated memory.
  */
-class DataBlock {
-
+static constexpr int alignment = 64;
+class alignas(alignment) DataBlock {
     friend class DataBlockPool;
 
 public:
-    static constexpr int alignment = 64;
     /** Construct a data block */
     DataBlock(size_t block_size) :
         logger_(log4cxx::Logger::getLogger("FP.DataBlock")),
-        allocated_bytes_(block_size)
+        allocated_bytes_(block_size),
+        is_pre_allocated_ { false }
     {
         LOG4CXX_DEBUG_LEVEL(2, logger_, "Constructing DataBlock, allocating " << block_size << " bytes");
         // Create this DataBlock's unique index
@@ -49,6 +49,16 @@ public:
         if (rc) {
             LOG4CXX_ERROR(logger_, "Exhausted memory (" << rc << "): could not allocate " << block_size << " bytes");
         }
+    }
+
+    DataBlock(void* ptr, size_t block_size) noexcept :
+        logger_(log4cxx::Logger::getLogger("FP.DataBlock")),
+        allocated_bytes_ { block_size },
+        index_ { get_static_index_count() },
+        is_pre_allocated_ { true },
+        block_ptr_ { ptr }
+    {
+        ++DataBlock::get_static_index_count(); // increment the global index count
     }
 
     /** delete copy constructor! */
@@ -62,6 +72,7 @@ public:
         logger_ { std::move(other.logger_) },
         allocated_bytes_ { other.allocated_bytes_ },
         index_ { other.index_ },
+        is_pre_allocated_ { other.is_pre_allocated_ },
         block_ptr_ { other.block_ptr_ }
     {
         other.allocated_bytes_ = 0;
@@ -76,6 +87,7 @@ public:
         allocated_bytes_ = other.allocated_bytes_;
         index_ = other.index_;
         block_ptr_ = other.block_ptr_;
+        is_pre_allocated_ = other.is_pre_allocated_;
         other.allocated_bytes_ = 0;
         other.index_ = -1;
         other.block_ptr_ = nullptr;
@@ -83,9 +95,10 @@ public:
     }
 
     /** Destroy a data block */
-    ~DataBlock()
+    ~DataBlock() noexcept
     {
-        free(block_ptr_);
+        if (!is_pre_allocated_) /** if NOT pre-allocated */
+            free(block_ptr_);
     }
 
     /** Return the unique index */
@@ -122,7 +135,7 @@ public:
             );
             block_size = allocated_bytes_;
         }
-        memcpy(block_ptr_, data_src, block_size);
+        memcpy(block_ptr_, data_src, block_size <= allocated_bytes_ ? block_size : allocated_bytes_);
     }
 
     /**
@@ -206,8 +219,11 @@ private:
     /** Unique index of this DataBlock */
     int index_;
 
+    /** is the block pre-allocated */
+    bool is_pre_allocated_;
+
     /** Void pointer to the allocated memory */
-    void* block_ptr_;
+    alignas(sizeof(void*)) void* block_ptr_;
 };
 
 } /* namespace FrameProcessor */
