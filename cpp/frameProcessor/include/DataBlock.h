@@ -34,7 +34,9 @@ class DataBlock {
     friend class DataBlockPool;
 
 public:
-    /** Construct a data block */
+    /** DataBlock constructor
+     * @param block_size - size of data in bytes
+     */
     DataBlock(size_t block_size) :
         allocated_bytes_(block_size),
         is_pre_allocated_ { false }
@@ -56,6 +58,10 @@ public:
         }
     }
 
+    /** DataBlock constructor
+     * @param ptr - pointer to pre-allocated memory
+     * @param block_size - size of data in bytes
+     */
     DataBlock(void* ptr, size_t block_size) noexcept :
         allocated_bytes_ { block_size },
         index_ { get_static_index_count() },
@@ -186,6 +192,9 @@ private:
             2, log4cxx::Logger::getLogger("FP.DataBlock"),
             "Resizing DataBlock " << index_ << " to " << block_size << " bytes"
         );
+        if (is_pre_allocated_) {
+            throw std::invalid_argument("Cannot resize fixed buffer!");
+        }
         // If the new size requested is the different
         // to our current size then re-allocate
         if (block_size != allocated_bytes_) {
