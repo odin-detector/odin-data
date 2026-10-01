@@ -876,7 +876,7 @@ void FrameProcessorController::shutdown()
         // Stop worker thread (for IFrameCallback) and reactor
         LOG4CXX_DEBUG_LEVEL(1, logger_, "Stopping FrameProcessorController worker thread and IPCReactor");
         stop();
-        reactor_->stop();
+        reactor_.stop();
 
         // Close control IPC channel
         closeControlInterface();
@@ -981,7 +981,7 @@ void FrameProcessorController::setupControlInterface(const std::string& ctrlEndp
     }
 
     // Add the control channel to the reactor
-    reactor_->register_channel(ctrlChannel_, boost::bind(&FrameProcessorController::handleCtrlChannel, this));
+    reactor_.register_channel(ctrlChannel_, boost::bind(&FrameProcessorController::handleCtrlChannel, this));
 }
 
 /** Close the control interface.
@@ -991,7 +991,7 @@ void FrameProcessorController::closeControlInterface()
     try {
         LOG4CXX_DEBUG_LEVEL(1, logger_, "Closing control endpoint socket.");
         ctrlThread_.join();
-        reactor_->remove_channel(ctrlChannel_);
+        reactor_.remove_channel(ctrlChannel_);
         ctrlChannel_.close();
     } catch (zmq::error_t& e) {
         // TODO: What to do here, I think throw it up
@@ -1009,14 +1009,14 @@ void FrameProcessorController::setupMetaRxInterface()
     }
 
     // Add the control channel to the reactor
-    reactor_->register_channel(metaRxChannel_, boost::bind(&FrameProcessorController::handleMetaRxChannel, this));
+    reactor_.register_channel(metaRxChannel_, boost::bind(&FrameProcessorController::handleMetaRxChannel, this));
 }
 
 void FrameProcessorController::closeMetaRxInterface()
 {
     try {
         LOG4CXX_DEBUG_LEVEL(1, logger_, "Closing meta RX endpoint.");
-        reactor_->remove_channel(metaRxChannel_);
+        reactor_.remove_channel(metaRxChannel_);
         metaRxChannel_.close();
     } catch (zmq::error_t& e) {
         throw std::runtime_error(e.what());
@@ -1058,17 +1058,14 @@ void FrameProcessorController::runIpcService(void)
 
     LOG4CXX_DEBUG_LEVEL(1, logger_, "Running IPC thread service");
 
-    // Create the reactor
-    reactor_ = boost::shared_ptr<OdinData::IpcReactor>(new OdinData::IpcReactor());
-
     // Add the tick timer to the reactor
-    int tick_timer_id = reactor_->register_timer(1000, 0, boost::bind(&FrameProcessorController::tickTimer, this));
+    int tick_timer_id = reactor_.register_timer(1000, 0, boost::bind(&FrameProcessorController::tickTimer, this));
 
     // Set thread state to running, allows constructor to return
     threadRunning_ = true;
 
     // Run the reactor event loop
-    reactor_->run();
+    reactor_.run();
 
     // Cleanup - remove channels, sockets and timers from the reactor and close the receive socket
     LOG4CXX_DEBUG_LEVEL(1, logger_, "Terminating IPC thread service");
@@ -1082,7 +1079,7 @@ void FrameProcessorController::tickTimer(void)
 {
     if (!runThread_) {
         LOG4CXX_DEBUG_LEVEL(1, logger_, "IPC thread terminate detected in timer");
-        reactor_->stop();
+        reactor_.stop();
     }
 }
 
