@@ -25,6 +25,11 @@ public:
     void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
     void requestConfiguration(OdinData::IpcMessage& reply);
     void status(OdinData::IpcMessage& reply);
+    bool reset_statistics()
+    {
+        frames_recv_ = 0;
+        return true;
+    }
     int get_version_major() override;
     int get_version_minor() override;
     int get_version_patch() override;

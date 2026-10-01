@@ -394,9 +394,8 @@ void FrameProcessorController::configure(OdinData::IpcMessage& config, OdinData:
     // Check for a request to inject an End Of Acquisition object
     if (config.has_param(FrameProcessorController::CONFIG_EOA)) {
         LOG4CXX_DEBUG_LEVEL(1, logger_, "Injecting End Of Acquisition object into plugin chain");
-        std::string plugin_name = config.get_param<std::string>(FrameProcessorController::CONFIG_EOA);
         for (auto& plugin : plugins_) {
-            if (ancestor_map_.at(plugin.first) > 0) {
+            if (ancestor_map_.at(plugin.first) <= 0) {
                 plugin.second->inject_EOA();
             }
         }

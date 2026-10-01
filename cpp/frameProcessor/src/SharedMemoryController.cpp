@@ -45,9 +45,6 @@ SharedMemoryController::SharedMemoryController(
         rxChannel_.connect(rxEndPoint.c_str());
         rxChannel_.subscribe("");
     } catch (zmq::error_t& e) {
-        // std::stringstream ss;
-        // ss << "RX channel connect to endpoint " << config_.rx_channel_endpoint_ << " failed: " << e.what();
-        //  TODO: What to do here, I think throw it up
         throw std::runtime_error(e.what());
     }
 
@@ -59,9 +56,6 @@ SharedMemoryController::SharedMemoryController(
         LOG4CXX_DEBUG_LEVEL(1, logger_, "Connecting TX Channel to endpoint: " << txEndPoint);
         txChannel_.connect(txEndPoint.c_str());
     } catch (zmq::error_t& e) {
-        // std::stringstream ss;
-        // ss << "RX channel connect to endpoint " << config_.rx_channel_endpoint_ << " failed: " << e.what();
-        //  TODO: What to do here, I think throw it up
         throw std::runtime_error(e.what());
     }
 
@@ -156,7 +150,7 @@ void SharedMemoryController::handleRxChannel()
         OdinData::IpcMessage rxMsg(rxMsgEncoded.c_str());
 
         if ((rxMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeNotify)
-            && (rxMsg.get_msg_val() == OdinData::IpcMessage::MsgValNotifyFrameReady)) {
+            & (rxMsg.get_msg_val() == OdinData::IpcMessage::MsgValNotifyFrameReady)) {
 
             int bufferID = rxMsg.get_param<int>("buffer_id", -1);
             if (bufferID != -1) {
@@ -191,7 +185,7 @@ void SharedMemoryController::handleRxChannel()
                 LOG4CXX_ERROR(logger_, "RX thread received empty frame notification with buffer ID");
             }
         } else if ((rxMsg.get_msg_type() == OdinData::IpcMessage::MsgTypeNotify)
-                   && (rxMsg.get_msg_val() == OdinData::IpcMessage::MsgValNotifyBufferConfig)) {
+                   & (rxMsg.get_msg_val() == OdinData::IpcMessage::MsgValNotifyBufferConfig)) {
             try {
                 std::string shared_buffer_name = rxMsg.get_param<std::string>("shared_buffer_name");
                 LOG4CXX_DEBUG_LEVEL(
@@ -205,13 +199,11 @@ void SharedMemoryController::handleRxChannel()
         } else {
             LOG4CXX_ERROR(logger_, "RX thread got unexpected message: " << rxMsgEncoded);
 
-            // IpcMessage rx_reply;
-
-            // rx_reply.set_msg_type(IpcMessage::MsgTypeNack);
-            // rx_reply.set_msg_val(rx_msg.get_msg_val());
-            // TODO add error in params
-
-            // rx_channel_.send(rx_reply.encode());
+            OdinData::IpcMessage rxReply;
+            rxReply.set_msg_type(OdinData::IpcMessage::MsgTypeNack);
+            rxReply.set_msg_val(rxMsg.get_msg_val());
+            rxReply.set_param<std::string>("error", "Unexpected msg: " + rxMsgEncoded);
+            rxChannel_.send(rxReply.encode());
         }
     } catch (OdinData::IpcMessageException& e) {
         LOG4CXX_ERROR(logger_, "Error decoding control channel request: " << e.what());
