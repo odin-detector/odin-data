@@ -32,6 +32,7 @@ namespace FrameProcessor {
 static constexpr int alignment = 64;
 class DataBlock {
     friend class DataBlockPool;
+    friend class UDataBlockPool;
 
 public:
     /** DataBlock constructor
@@ -110,7 +111,7 @@ public:
     }
 
     /** Return the unique index */
-    int get_index() const
+    int get_index() const noexcept
     {
         return index_;
     }
@@ -120,7 +121,7 @@ public:
      *
      * \return - size in bytes of this data block.
      */
-    size_t get_size() const
+    size_t get_size() const noexcept
     {
         return allocated_bytes_;
     }
@@ -151,7 +152,7 @@ public:
      *
      * \return - void pointer to memory owned by this data block.
      */
-    const void* get_data() const
+    const void* get_data() const noexcept
     {
         return block_ptr_;
     }
@@ -161,7 +162,7 @@ public:
      *
      * \return - non-const void pointer to memory owned by this data block
      */
-    void* get_writeable_data()
+    void* get_writeable_data() const noexcept
     {
         return block_ptr_;
     }
@@ -171,7 +172,7 @@ public:
      *
      * \return - int current index count
      */
-    static int get_current_index_count()
+    static int get_current_index_count() noexcept
     {
         /** Static counter for the unique index */
         return get_static_index_count();
@@ -218,11 +219,10 @@ private:
      *
      * \return - int current index count
      */
-    static int& get_static_index_count()
+    static int& get_static_index_count() noexcept
     {
         /** Static counter for the unique index */
         static int index_counter_ = 0;
-        sizeof(DataBlock);
         return index_counter_;
     }
 
