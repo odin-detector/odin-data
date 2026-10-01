@@ -1,4 +1,0 @@
-# **How-To Guides**
-
-```{tableofcontents}
-```
