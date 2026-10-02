@@ -36,37 +36,49 @@ namespace FrameProcessor {
  * shared memory location is available for re-use.
  */
 class SharedMemoryController {
+    typedef boost::function<void(boost::shared_ptr<Frame> frame)> TProcess_frame_cb;
+
 public:
     SharedMemoryController(OdinData::IpcReactor& reactor, const std::string& rxEndPoint, const std::string& txEndPoint);
-    virtual ~SharedMemoryController();
-    void setSharedBufferManager(const std::string& shared_buffer_name);
+    SharedMemoryController(const SharedMemoryController&) = default;
+    SharedMemoryController& operator=(const SharedMemoryController&) = delete;
+    SharedMemoryController(SharedMemoryController&&) = delete;
+    SharedMemoryController& operator=(SharedMemoryController&&) = delete;
+    ~SharedMemoryController();
     void requestSharedBufferConfig(const bool deferred = false);
-    void registerCallback(const std::string& name, boost::shared_ptr<IFrameCallback> cb);
-    void removeCallback(const std::string& name);
     void handleRxChannel();
-    void status(OdinData::IpcMessage& status);
-    void injectEOA();
+    const std::string& getName() const
+    {
+        return shbName_;
+    }
+    bool isConfigured() const
+    {
+        return sbm_.has_value();
+    }
+    void inject_process_frame_cb(TProcess_frame_cb callback)
+    {
+        callback_ = callback;
+    }
 
 private:
     /** Pointer to logger */
     LoggerPtr logger_;
-    /** Pointer to SharedBufferManager object */
-    boost::shared_ptr<OdinData::SharedBufferManager> sbm_;
-    /** Map of IFrameCallback pointers, indexed by name */
-    std::map<std::string, boost::shared_ptr<IFrameCallback>> callbacks_;
-    /** IpcReactor pointer, for managing IpcMessage objects */
+    /** SharedBufferManager object */
+    boost::optional<OdinData::SharedBufferManager> sbm_;
+    /** IpcReactor reference, for managing IpcMessage objects */
     OdinData::IpcReactor& reactor_;
     /** IpcChannel for receiving notifications of new frames */
     OdinData::IpcChannel rxChannel_;
     /** IpcChannel for sending notifications of frame release */
     OdinData::IpcChannel txChannel_;
-    /** Shared buffer configured status flag */
-    bool sharedBufferConfigured_;
+    /** Shared buffer name */
+    std::string shbName_;
     /** Shared buffer config request deferred flag */
     bool sharedBufferConfigRequestDeferred_;
 
-    /** Name of class used in status messages */
-    static const std::string SHARED_MEMORY_CONTROLLER_NAME;
+    TProcess_frame_cb callback_;
+
+    void setSharedBufferManager(std::string& shared_buffer_name);
 };
 
 } /* namespace FrameProcessor */

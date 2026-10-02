@@ -18,6 +18,8 @@ function(add_unit_test _target)
     GapFillPlugin
     RawFileWriterPlugin
     ParameterPublishPlugin
+    SharedMemoryPlugin
+    ${COMMON_LIBRARY}
     ${Boost_LIBRARIES}
     ${LOG4CXX_LIBRARIES}
     ${ZEROMQ_LIBRARIES}
@@ -70,6 +72,7 @@ add_unit_test(ParameterAdjustmentPlugin)
 add_unit_test(ParameterPublishPlugin)
 add_unit_test(RawFileWriterPlugin)
 add_unit_test(SumPlugin)
+add_unit_test(SharedMemoryPlugin)
 
 if (${BLOSC_FOUND})
   include_directories(${BLOSC_INCLUDE_DIR})
