@@ -156,16 +156,12 @@ private:
     bool runThread_;
     /** Is the main thread running */
     bool threadRunning_;
-    /** Did an error occur during the thread initialisation */
-    bool threadInitError_;
     /** Have we sent sent the shutdown command to the plugins */
     bool pluginShutdownSent_;
     /** Have we successfully shutdown */
     bool shutdown_;
     /** Main thread used for control message handling */
     boost::thread ctrlThread_;
-    /** Store for any messages occurring during thread initialisation */
-    std::string threadInitMsg_;
     /** IpcReactor for incoming frame handling */
     OdinData::IpcReactor reactor_;
     /** End point for control messages */
