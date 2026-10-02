@@ -154,8 +154,8 @@ private:
     boost::thread ctrlThread_;
     /** Store for any messages occurring during thread initialisation */
     std::string threadInitMsg_;
-    /** Pointer to the IpcReactor for incoming frame handling */
-    boost::shared_ptr<OdinData::IpcReactor> reactor_;
+    /** IpcReactor for incoming frame handling */
+    OdinData::IpcReactor reactor_;
     /** End point for control messages */
     std::string ctrlChannelEndpoint_;
     /** ZMQ context for IPC channels */
