@@ -5,9 +5,10 @@
  *      Author: gnx91527
  */
 
-#ifndef TOOLS_FILEWRITER_DATABLOCK_H_
-#define TOOLS_FILEWRITER_DATABLOCK_H_
+#ifndef DATABLOCK_H_
+#define DATABLOCK_H_
 
+#include <atomic>
 #include <malloc.h>
 #include <stdlib.h>
 #include <string.h>
@@ -42,13 +43,11 @@ public:
         allocated_bytes_(block_size),
         is_pre_allocated_ { false }
     {
-        LOG4CXX_DEBUG_LEVEL(
-            2, log4cxx::Logger::getLogger("FP.DataBlock"),
-            "Constructing DataBlock, allocating " << block_size << " bytes"
+        LOG4CXX_TRACE(
+            log4cxx::Logger::getLogger("FP.DataBlock"), "Constructing DataBlock, allocating " << block_size << " bytes"
         );
         // Create this DataBlock's unique index
-        index_ = DataBlock::get_static_index_count();
-        ++DataBlock::get_static_index_count();
+
         // Allocate the memory required for this data block
         int rc = posix_memalign(&block_ptr_, alignment, block_size);
         if (rc) {
@@ -56,7 +55,9 @@ public:
                 log4cxx::Logger::getLogger("FP.DataBlock"),
                 "Exhausted memory (" << rc << "): could not allocate " << block_size << " bytes"
             );
+            throw(std::runtime_error(std::string("DataBlock memory alloc failed (" + block_size) + " bytes)"));
         }
+        index_ = DataBlock::counter().fetch_add(1);
     }
 
     /** DataBlock constructor
@@ -65,11 +66,10 @@ public:
      */
     DataBlock(void* ptr, size_t block_size) noexcept :
         allocated_bytes_ { block_size },
-        index_ { get_static_index_count() },
         is_pre_allocated_ { true },
         block_ptr_ { ptr }
     {
-        ++DataBlock::get_static_index_count(); // increment the global index count
+        index_ = DataBlock::counter().fetch_add(1);
     }
 
     /** delete copy constructor! */
@@ -175,7 +175,7 @@ public:
     static int get_current_index_count() noexcept
     {
         /** Static counter for the unique index */
-        return get_static_index_count();
+        return counter().load();
     }
 
 private:
@@ -189,8 +189,8 @@ private:
      */
     void resize(size_t block_size)
     {
-        LOG4CXX_DEBUG_LEVEL(
-            2, log4cxx::Logger::getLogger("FP.DataBlock"),
+        LOG4CXX_TRACE(
+            log4cxx::Logger::getLogger("FP.DataBlock"),
             "Resizing DataBlock " << index_ << " to " << block_size << " bytes"
         );
         if (is_pre_allocated_) {
@@ -208,6 +208,7 @@ private:
                     log4cxx::Logger::getLogger("FP.DataBlock"),
                     "Exhausted memory (" << rc << "): could not reallocate " << block_size << " bytes"
                 );
+                throw(std::runtime_error(std::string("DataBlock memory resize failed (" + block_size) + " bytes)"));
             }
             // Record our new size
             allocated_bytes_ = block_size;
@@ -219,11 +220,11 @@ private:
      *
      * \return - int current index count
      */
-    static int& get_static_index_count() noexcept
+    static std::atomic<int>& counter() noexcept
     {
         /** Static counter for the unique index */
-        static int index_counter_ = 0;
-        return index_counter_;
+        static std::atomic<int> count_ = 0;
+        return count_;
     }
 
     /** Number of bytes allocated for this DataBlock */
@@ -241,4 +242,4 @@ private:
 
 } /* namespace FrameProcessor */
 
-#endif /* TOOLS_FILEWRITER_DATABLOCK_H_ */
+#endif /* DATABLOCK_H_ */
