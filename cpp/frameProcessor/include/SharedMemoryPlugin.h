@@ -50,16 +50,13 @@ private:
     boost::thread m_thread_;
     /** The shared memory controller object */
     boost::optional<SharedMemoryController> shmctrlr_handle_;
-
-    /** Pointer to logger */
-    LoggerPtr logger_;
     /** Number of frames received */
     size_t frames_recv_;
     void start_reactor();
     static void tick_timer()
     {
     }
-    void setupFrameReceiverInterface(const std::string&, const std::string&);
+    void setupFrameReceiverInterface(std::string&, std::string&);
 };
 }
 
