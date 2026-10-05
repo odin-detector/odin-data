@@ -14,25 +14,20 @@
 
 namespace FrameProcessor {
 
-WatchdogTimer::WatchdogTimer(const boost::function<void(const std::string&)>& timeout_callback) :
-    worker_thread_running_(false),
-    worker_thread_(boost::bind(&WatchdogTimer::run, this)),
-    timeout_callback_(timeout_callback),
+WatchdogTimer::WatchdogTimer(const std::function<void(const std::string&)>& timeout_callback) :
     timer_id_(0),
     is_valid_id_(false),
-    ticks_(0)
+    ticks_(0),
+    timeout_callback_(timeout_callback)
 {
-    this->logger_ = Logger::getLogger("FP.WatchdogTimer");
+    worker_thread_ = std::thread { [this]() { this->run(); } };
 
-    // Wait until worker thread is ready before returning
-    while (!worker_thread_running_) { }
-
-    LOG4CXX_TRACE(logger_, "WatchdogTimer constructor");
+    LOG4CXX_TRACE(Logger::getLogger("FP.WatchdogTimer"), "WatchdogTimer constructor");
 }
 
 WatchdogTimer::~WatchdogTimer()
 {
-    worker_thread_running_ = false;
+    worker_thread_running_.store(false);
     worker_thread_.join();
 }
 
@@ -53,7 +48,8 @@ void WatchdogTimer::start_timer(const std::string& function_name, unsigned int w
     // Register timer to call timeout callback in watchdog_timeout milliseconds once
     if (watchdog_timeout_ms > 0) {
         LOG4CXX_DEBUG_LEVEL(
-            1, logger_, "" << function_name << " | Registering " << watchdog_timeout_ms << "ms watchdog timer"
+            1, Logger::getLogger("FP.WatchdogTimer"),
+            "" << function_name << " | Registering " << watchdog_timeout_ms << "ms watchdog timer"
         );
         timer_id_ = reactor_.register_timer(
             watchdog_timeout_ms, 1,
@@ -81,13 +77,12 @@ unsigned int WatchdogTimer::finish_timer()
     struct timespec now;
     gettime(&now, true);
     double duration = elapsed_us(start_time_, now);
-
-    std::stringstream message;
-    message << function_name_ << " | Call took " << duration << "us";
     if (timeout_ > 0 && duration / 1000 > timeout_ * WARNING_DURATION_FRACTION) {
-        LOG4CXX_WARN(logger_, message.str());
+        LOG4CXX_WARN(Logger::getLogger("FP.WatchdogTimer"), function_name_ << " | Call took " << duration << "us");
     } else {
-        LOG4CXX_DEBUG_LEVEL(1, logger_, message.str());
+        LOG4CXX_DEBUG_LEVEL(
+            1, Logger::getLogger("FP.WatchdogTimer"), function_name_ << " | Call took " << duration << "us"
+        );
     }
 
     return duration;
@@ -102,11 +97,8 @@ void WatchdogTimer::run()
 {
     OdinData::configure_logging_mdc(OdinData::app_path.c_str());
 
-    // We are ready - Let the constructor return
-    worker_thread_running_ = true;
-
     // Register a repeating timer to keep the reactor alive and check for shutdown every millisecond
-    reactor_.register_timer(1, 0, boost::bind(&WatchdogTimer::heartbeat, this));
+    reactor_.register_timer(1, 0, [this]() { this->heartbeat(); });
     reactor_.run();
 }
 
@@ -125,15 +117,14 @@ void WatchdogTimer::call_timeout_callback(const std::string& function_name) cons
  */
 void WatchdogTimer::heartbeat()
 {
-    if (!worker_thread_running_) {
-        LOG4CXX_DEBUG_LEVEL(1, logger_, "Terminating watchdog reactor");
+    if (!worker_thread_running_.load(std::memory_order::memory_order_acquire)) {
+        LOG4CXX_DEBUG_LEVEL(1, Logger::getLogger("FP.WatchdogTimer"), "Terminating watchdog reactor");
         reactor_.stop();
-    } else if (ticks_ >= 1000) {
-        LOG4CXX_DEBUG_LEVEL(1, logger_, "Reactor running");
-        ticks_ = 0;
-    } else {
-        ticks_++;
     }
+    ++ticks_;
+    ticks_ = (ticks_ >= 1000) ? 0 : ticks_;
+    if (ticks_ == 0)
+        LOG4CXX_DEBUG_LEVEL(1, Logger::getLogger("FP.WatchdogTimer"), "Reactor running");
 }
 
 } /* namespace FrameProcessor */
