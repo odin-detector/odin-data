@@ -58,7 +58,6 @@ FrameProcessorController::FrameProcessorController(unsigned int num_io_threads) 
     shutdownFrameCount_(0),
     totalFrames_(0),
     runThread_(true),
-    threadRunning_(false),
     pluginShutdownSent_(false),
     shutdown_(false),
     ctrlChannelEndpoint_(""),
@@ -1049,9 +1048,6 @@ void FrameProcessorController::runIpcService(void)
 
     // Add the tick timer to the reactor
     int tick_timer_id = reactor_.register_timer(1000, 0, boost::bind(&FrameProcessorController::tickTimer, this));
-
-    // Set thread state to running, allows constructor to return
-    threadRunning_ = true;
 
     // Run the reactor event loop
     reactor_.run();

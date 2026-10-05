@@ -154,8 +154,6 @@ private:
     boost::mutex exitMutex_;
     /** Used to check for Ipc tick timer termination */
     bool runThread_;
-    /** Is the main thread running */
-    bool threadRunning_;
     /** Have we sent sent the shutdown command to the plugins */
     bool pluginShutdownSent_;
     /** Have we successfully shutdown */
