@@ -28,7 +28,7 @@ namespace FrameProcessor {
  * can be copied into the allocated block, and a pointer to the raw block is
  * available.
  * Data block memory allocated in this class should NOT be freed outside of the
- * block, when a data block is destroyed it frees memory it allocated memory.
+ * block, when a data block is destroyed it frees memory it allocated.
  */
 static constexpr int alignment = 64;
 class DataBlock {
@@ -95,6 +95,8 @@ public:
     {
         allocated_bytes_ = other.allocated_bytes_;
         index_ = other.index_;
+        if (!is_pre_allocated_)
+            free(block_ptr_);
         block_ptr_ = other.block_ptr_;
         is_pre_allocated_ = other.is_pre_allocated_;
         other.allocated_bytes_ = 0;

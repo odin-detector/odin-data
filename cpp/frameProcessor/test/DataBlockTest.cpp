@@ -123,6 +123,25 @@ BOOST_AUTO_TEST_CASE(DataBlockPreAllocatedMemory)
     FrameProcessor::DataBlock* dptr
         = new (reinterpret_cast<FrameProcessor::DataBlock*>(DataBlock_buf)) FrameProcessor::DataBlock(ptr, block_sz);
     BOOST_CHECK(dptr->get_writeable_data() == ptr);
+    free(ptr);
+}
+
+BOOST_AUTO_TEST_CASE(DataBlockMoveAssignment)
+{
+    unsigned char DataBlock_buf[sizeof(FrameProcessor::DataBlock)];
+    void* ptr;
+    const size_t block_sz = 256;
+    BOOST_CHECK(posix_memalign(&ptr, FrameProcessor::alignment, block_sz) == 0);
+    FrameProcessor::DataBlock* dptr
+        = new (reinterpret_cast<FrameProcessor::DataBlock*>(DataBlock_buf)) FrameProcessor::DataBlock(ptr, block_sz);
+    int index = dptr->get_index();
+    BOOST_CHECK(dptr->get_writeable_data() == ptr);
+
+    // exercise the Move assignment operator
+    *dptr = FrameProcessor::DataBlock { 512 };
+    BOOST_CHECK(dptr->get_writeable_data() != ptr);
+    BOOST_CHECK(dptr->get_index() == index + 1);
+    free(ptr);
 }
 
 BOOST_AUTO_TEST_SUITE_END();
