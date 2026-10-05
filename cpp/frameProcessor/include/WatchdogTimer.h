@@ -10,6 +10,7 @@
 
 #include <IpcReactor.h>
 
+#include <atomic>
 #include <gettime.h>
 #include <string>
 #include <thread>
