@@ -69,7 +69,7 @@ FrameProcessorController::FrameProcessorController(unsigned int num_io_threads) 
     frReadyEndpoint_(OdinData::Defaults::default_frame_ready_endpoint),
     frReleaseEndpoint_(OdinData::Defaults::default_frame_release_endpoint)
 {
-    ctrlThread_ = boost::thread(boost::bind(&FrameProcessorController::runIpcService, this));
+    ctrlThread_ = std::thread(boost::bind(&FrameProcessorController::runIpcService, this));
     OdinData::configure_logging_mdc(OdinData::app_path.c_str());
     LOG4CXX_DEBUG_LEVEL(1, logger_, "Constructing FrameProcessorController");
 
@@ -885,7 +885,7 @@ void FrameProcessorController::shutdown()
  */
 void FrameProcessorController::waitForShutdown()
 {
-    boost::unique_lock<boost::mutex> lock(exitMutex_);
+    std::unique_lock<std::mutex> lock(exitMutex_);
     exitCondition_.wait(lock);
 }
 
