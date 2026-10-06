@@ -1,0 +1,66 @@
+/*
+ * SharedMemoryPlugin.h
+ *
+ *  Created on: 08 Sep. 2026
+ *      Author: Famous Alele
+ */
+
+#ifndef SHAREDMEMORYPLUGIN_H_
+#define SHAREDMEMORYPLUGIN_H_
+#include <log4cxx/logger.h>
+
+using namespace log4cxx;
+
+#include "ClassLoader.h"
+#include "FrameProcessorPlugin.h"
+#include "IpcReactor.h"
+#include "SharedMemoryController.h"
+
+#include <thread>
+
+namespace FrameProcessor {
+class SharedMemoryPlugin : public FrameProcessorPlugin {
+public:
+    SharedMemoryPlugin();
+    ~SharedMemoryPlugin();
+    void process_frame(boost::shared_ptr<Frame> frame);
+    void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
+    void requestConfiguration(OdinData::IpcMessage& reply);
+    void status(OdinData::IpcMessage& reply);
+    bool reset_statistics()
+    {
+        frames_recv_ = 0;
+        return true;
+    }
+    int get_version_major() override;
+    int get_version_minor() override;
+    int get_version_patch() override;
+    std::string get_version_short() override;
+    std::string get_version_long() override;
+
+    const static std::string CONFIG_FR_RELEASE;
+    const static std::string CONFIG_FR_READY;
+    const static std::string STATUS_SHB_NAME;
+    const static std::string STATUS_SHB_CONFIGURED;
+    const static std::string STATUS_FR_RECV;
+
+private:
+    std::string frReleaseEndpoint_;
+    std::string frReadyEndpoint_;
+    /** IpcReactor object */
+    OdinData::IpcReactor reactor_;
+    /** IpcReactor thread */
+    std::thread m_thread_;
+    /** The shared memory controller object */
+    boost::optional<SharedMemoryController> shmctrlr_handle_;
+    /** Number of frames received */
+    size_t frames_recv_;
+    void start_reactor();
+    static void tick_timer()
+    {
+    }
+    void setupFrameReceiverInterface(std::string&, std::string&);
+};
+}
+
+#endif // end SHAREDMEMORYPLUGIN_H_
