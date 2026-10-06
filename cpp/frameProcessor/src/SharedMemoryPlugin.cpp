@@ -11,17 +11,18 @@ const std::string SharedMemoryPlugin::STATUS_SHB_NAME = "shared_buf_name";
 const std::string SharedMemoryPlugin::STATUS_SHB_CONFIGURED = "shared_buf_configured";
 const std::string SharedMemoryPlugin::STATUS_FR_RECV = "frames_recv";
 /**
- * The constructor sets up logging used within the class.
+ * The constructor
  */
 SharedMemoryPlugin::SharedMemoryPlugin() :
     frames_recv_ { 0 }
 {
     LOG4CXX_TRACE(Logger::getLogger("FP.SharedMemoryPlugin"), "SharedMemoryPlugin constructor.");
-    m_thread_ = boost::thread { boost::bind(&SharedMemoryPlugin::start_reactor, this) };
+    m_thread_ = std::thread { boost::bind(&SharedMemoryPlugin::start_reactor, this) };
     add_config_param_metadata(CONFIG_FR_RELEASE, PMDD::STRING_T, PMDA::READ_WRITE);
     add_config_param_metadata(CONFIG_FR_READY, PMDD::STRING_T, PMDA::READ_WRITE);
     add_status_param_metadata(STATUS_SHB_NAME, PMDD::STRING_T, PMDA::READ_ONLY);
     add_status_param_metadata(STATUS_SHB_CONFIGURED, PMDD::BOOL_T, PMDA::READ_ONLY);
+    add_status_param_metadata(STATUS_FR_RECV, PMDD::UINT_T, PMDA::READ_ONLY, 0);
 }
 
 SharedMemoryPlugin::~SharedMemoryPlugin()
@@ -30,6 +31,10 @@ SharedMemoryPlugin::~SharedMemoryPlugin()
     reactor_.stop();
     m_thread_.join();
 }
+
+/** Member function running in a seperate thread to register
+ * the timer functions and start the internal IpcReactor's run() method.
+ */
 
 void SharedMemoryPlugin::start_reactor()
 {
@@ -43,6 +48,10 @@ void SharedMemoryPlugin::process_frame(boost::shared_ptr<Frame> ptr)
     this->push(ptr);
 }
 
+/** Configuration the sharedMemoryPlugin and it's internal SharedMemoryCOntroller
+ *
+ * @param reply - Response IpcMessage.
+ */
 void SharedMemoryPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
 {
     if (config.has_param(SharedMemoryPlugin::CONFIG_FR_RELEASE)
@@ -106,6 +115,10 @@ void SharedMemoryPlugin::requestConfiguration(OdinData::IpcMessage& reply)
     reply.set_param(this->get_name() + '/' + SharedMemoryPlugin::CONFIG_FR_RELEASE, this->frReleaseEndpoint_);
 }
 
+/** Get the plugin's current status
+ *
+ * @param reply - Response IpcMessage.
+ */
 void SharedMemoryPlugin::status(OdinData::IpcMessage& reply)
 {
     if (shmctrlr_handle_) {

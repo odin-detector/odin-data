@@ -16,6 +16,8 @@ using namespace log4cxx;
 #include "IpcReactor.h"
 #include "SharedMemoryController.h"
 
+#include <thread>
+
 namespace FrameProcessor {
 class SharedMemoryPlugin : public FrameProcessorPlugin {
 public:
@@ -45,9 +47,10 @@ public:
 private:
     std::string frReleaseEndpoint_;
     std::string frReadyEndpoint_;
+    /** IpcReactor object */
     OdinData::IpcReactor reactor_;
     /** IpcReactor thread */
-    boost::thread m_thread_;
+    std::thread m_thread_;
     /** The shared memory controller object */
     boost::optional<SharedMemoryController> shmctrlr_handle_;
     /** Number of frames received */
