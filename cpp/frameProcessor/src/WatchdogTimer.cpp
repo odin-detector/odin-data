@@ -43,7 +43,6 @@ void WatchdogTimer::start_timer(const std::string& function_name, unsigned int w
 {
     gettime(&start_time_, true);
     timeout_ = watchdog_timeout_ms;
-    function_name_ = function_name;
 
     // Register timer to call timeout callback in watchdog_timeout milliseconds once
     if (watchdog_timeout_ms > 0) {
@@ -54,7 +53,7 @@ void WatchdogTimer::start_timer(const std::string& function_name, unsigned int w
         timer_id_ = reactor_.register_timer(
             watchdog_timeout_ms, 1,
             // Bind member function to this instance with function_name argument
-            boost::bind(&WatchdogTimer::call_timeout_callback, this, function_name)
+            [this, &function_name]() { this->call_timeout_callback(function_name); }
         );
         is_valid_id_ = true;
     }
@@ -107,9 +106,7 @@ void WatchdogTimer::run()
  */
 void WatchdogTimer::call_timeout_callback(const std::string& function_name) const
 {
-    std::stringstream error_message;
-    error_message << function_name << " | Watchdog timed out";
-    timeout_callback_(error_message.str());
+    timeout_callback_(function_name + " | Watchdog timed out");
 }
 
 /**
