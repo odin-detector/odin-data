@@ -207,7 +207,7 @@ public:
      * @param dataset_name - Dataset string to set
      */
     template <typename T, typename = typename std::enable_if<std::is_convertible<T, std::string>::value>::type>
-    void set_dataset_name(T&& dataset_name)
+    void set_dataset_name(T&& dataset_name) noexcept(std::is_rvalue_reference<T>::value)
     {
         this->dataset_name_ = std::move(dataset_name);
     }
@@ -248,7 +248,7 @@ public:
      * @param acquisition_ID - acquisition ID to set
      */
     template <typename T, typename = typename std::enable_if<std::is_convertible<T, std::string>::value>::type>
-    void set_acquisition_ID(T&& acquisition_ID)
+    void set_acquisition_ID(T&& acquisition_ID) noexcept(std::is_rvalue_reference<T>::value)
     {
         this->acquisition_ID_ = std::move(acquisition_ID);
     }
@@ -272,7 +272,7 @@ public:
     template <
         typename T,
         typename = typename std::enable_if<std::is_same<typename std::decay<T>::type, dimensions_t>::value>::type>
-    void set_dimensions(T&& dimensions)
+    void set_dimensions(T&& dimensions) noexcept(std::is_rvalue_reference<T>::value)
     {
         this->dimensions_ = std::move(dimensions);
     }
