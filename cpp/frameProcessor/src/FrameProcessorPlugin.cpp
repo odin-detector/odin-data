@@ -20,6 +20,8 @@ FrameProcessorPlugin::FrameProcessorPlugin() :
 {
     OdinData::configure_logging_mdc(OdinData::app_path.c_str());
     logger_ = log4cxx::Logger::getLogger("FP.FrameProcessorPlugin");
+    update_config_ts();
+    update_status_ts();
 }
 
 /**
@@ -468,6 +470,19 @@ void FrameProcessorPlugin::push(const std::string& plugin_name, boost::shared_pt
  */
 void FrameProcessorPlugin::process_end_of_acquisition()
 {
+}
+
+/** Method to inject End Of Frame sentinel
+ * down the pipeline. Typically, the FrameProcessorCOntroller
+ * sends this message to the SharedMemoryPlugin
+ */
+void FrameProcessorPlugin::inject_EOA()
+{
+    // Create the EOA frame object
+    boost::shared_ptr<FrameProcessor::EndOfAcquisitionFrame> eoa
+        = boost::make_shared<FrameProcessor::EndOfAcquisitionFrame>();
+    this->process_end_of_acquisition();
+    this->push(eoa);
 }
 
 } /* namespace FrameProcessor */

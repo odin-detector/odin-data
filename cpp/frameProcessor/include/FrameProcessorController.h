@@ -16,8 +16,6 @@
 #include "IpcChannel.h"
 #include "IpcReactor.h"
 #include "OdinDataDefaults.h"
-#include "SharedBufferManager.h"
-#include "SharedMemoryController.h"
 #include "logging.h"
 
 namespace FrameProcessor {
@@ -68,17 +66,9 @@ private:
     /** Configuration constant to set the debug level of the frame processor **/
     static const std::string CONFIG_DEBUG;
 
-    /** Configuration constant for name of shared memory storage **/
-    static const std::string CONFIG_FR_SHARED_MEMORY;
-    /** Configuration constant for connection string for frame release **/
-    static const std::string CONFIG_FR_RELEASE;
-    /** Configuration constant for connection string for frame ready **/
-    static const std::string CONFIG_FR_READY;
-    /** Configuration constant for executing setup of shared memory interface **/
-    static const std::string CONFIG_FR_SETUP;
-
-    /** current metadata hash-value **/
-    static const std::string METADATA_HASH;
+    /** key-strings for latest config and status timestamp **/
+    static const std::string CONFIG_TS_KEY;
+    static const std::string STATUS_TS_KEY;
 
     /** Configuration constant for control socket endpoint **/
     static const std::string CONFIG_CTRL_ENDPOINT;
@@ -121,8 +111,6 @@ private:
     /** Configuration constant for the meta TX channel high water mark **/
     static const int META_TX_HWM;
 
-    void setupFrameReceiverInterface(const std::string& frPublisherString, const std::string& frSubscriberString);
-    void closeFrameReceiverInterface();
     void setupControlInterface(const std::string& ctrlEndpointString);
     void closeControlInterface();
     void setupMetaRxInterface();
@@ -132,13 +120,14 @@ private:
     void runIpcService(void);
     void tickTimer(void);
     void callback(boost::shared_ptr<Frame> frame);
+    void inject_EOA();
 
     /** Pointer to the logging facility */
     log4cxx::LoggerPtr logger_;
-    /** Pointer to the shared memory controller instance for this process */
-    boost::shared_ptr<SharedMemoryController> sharedMemController_;
     /** Map of plugins loaded, indexed by plugin index */
     std::map<std::string, boost::shared_ptr<FrameProcessorPlugin>> plugins_;
+    /** Map of plugins loaded to boolean indicating how many ancestors are present */
+    std::unordered_map<std::string, int> ancestor_map_;
     /** Map of stored configuration objects */
     std::map<std::string, std::string> stored_configs_;
     /** Condition for exiting this file writing process */
@@ -165,8 +154,8 @@ private:
     boost::thread ctrlThread_;
     /** Store for any messages occurring during thread initialisation */
     std::string threadInitMsg_;
-    /** Pointer to the IpcReactor for incoming frame handling */
-    boost::shared_ptr<OdinData::IpcReactor> reactor_;
+    /** IpcReactor for incoming frame handling */
+    OdinData::IpcReactor reactor_;
     /** End point for control messages */
     std::string ctrlChannelEndpoint_;
     /** ZMQ context for IPC channels */

@@ -8,7 +8,6 @@ from odin_data.control.ipc_message import IpcMessage, IpcMessageException
 
 
 class IpcClient(object):
-
     ENDPOINT_TEMPLATE = "tcp://{IP}:{PORT}"
 
     MESSAGE_ID_MAX = 2**32
@@ -19,8 +18,7 @@ class IpcClient(object):
         self._ip_address = ip_address
         self._port = port
 
-        self.ctrl_endpoint = self.ENDPOINT_TEMPLATE.format(
-            IP=ip_address, PORT=port)
+        self.ctrl_endpoint = self.ENDPOINT_TEMPLATE.format(IP=ip_address, PORT=port)
         self.logger.debug("Connecting to client at %s", self.ctrl_endpoint)
         self.ctrl_channel = IpcChannel(IpcChannel.CHANNEL_TYPE_DEALER)
         self.ctrl_channel.connect(self.ctrl_endpoint)
@@ -44,7 +42,13 @@ class IpcClient(object):
                     reply = IpcMessage(from_str=self.ctrl_channel.recv())
                     id = reply.get_msg_id()
                     if not id == expected_id:
-                        self.logger.warn("Dropping reply message with id [" + str(id) + "] as was expecting [" + str(expected_id) + "]")
+                        self.logger.warning(
+                            "Dropping reply message with id ["
+                            + str(id)
+                            + "] as was expecting ["
+                            + str(expected_id)
+                            + "]"
+                        )
                         continue
                     if reply.is_valid() and reply.get_msg_type() == IpcMessage.ACK:
                         self.logger.debug("Request successful: %s", reply)
@@ -60,12 +64,12 @@ class IpcClient(object):
     def _raise_reply_error(msg, reply):
         if reply is not None:
             raise IpcMessageException(
-                "Request\n%s\nunsuccessful."
-                " Got invalid response: %s" % (msg, reply))
+                "Request\n%s\nunsuccessful. Got invalid response: %s" % (msg, reply)
+            )
         else:
             raise IpcMessageException(
-                "Request\n%s\nunsuccessful."
-                " Got no response." % msg)
+                "Request\n%s\nunsuccessful. Got no response." % msg
+            )
 
     def send_request(self, value, timeout=1000):
         msg = IpcMessage("cmd", value)
@@ -89,8 +93,7 @@ class IpcClient(object):
             if reply["params"]["error"] != valid_error:
                 self._raise_reply_error(msg, reply)
             else:
-                self.logger.debug("Got valid error for request %s: %s",
-                                  msg, reply)
+                self.logger.debug("Got valid error for request %s: %s", msg, reply)
         return success, reply
 
     def _read_message(self, timeout):

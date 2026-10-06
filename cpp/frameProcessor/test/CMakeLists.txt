@@ -18,6 +18,8 @@ function(add_unit_test _target)
     GapFillPlugin
     RawFileWriterPlugin
     ParameterPublishPlugin
+    SharedMemoryPlugin
+    ${COMMON_LIBRARY}
     ${Boost_LIBRARIES}
     ${LOG4CXX_LIBRARIES}
     ${ZEROMQ_LIBRARIES}
