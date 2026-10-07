@@ -20,6 +20,7 @@
 #include "logging.h"
 
 #include <condition_variable>
+#include <thread>
 
 namespace FrameProcessor {
 
@@ -154,20 +155,14 @@ private:
     std::mutex exitMutex_;
     /** Used to check for Ipc tick timer termination */
     bool runThread_;
-    /** Is the main thread running */
-    bool threadRunning_;
-    /** Did an error occur during the thread initialisation */
-    bool threadInitError_;
     /** Have we sent sent the shutdown command to the plugins */
     bool pluginShutdownSent_;
     /** Have we successfully shutdown */
     bool shutdown_;
     /** Main thread used for control message handling */
     std::thread ctrlThread_;
-    /** Store for any messages occurring during thread initialisation */
-    std::string threadInitMsg_;
-    /** Pointer to the IpcReactor for incoming frame handling */
-    std::shared_ptr<OdinData::IpcReactor> reactor_;
+    /** IpcReactor for incoming frame handling */
+    OdinData::IpcReactor reactor_;
     /** End point for control messages */
     std::string ctrlChannelEndpoint_;
     /** ZMQ context for IPC channels */

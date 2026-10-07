@@ -56,35 +56,23 @@ const int FrameProcessorController::META_TX_HWM = 10000;
  */
 FrameProcessorController::FrameProcessorController(unsigned int num_io_threads) :
     logger_(log4cxx::Logger::getLogger("FP.FrameProcessorController")),
+    shutdownFrameCount_(0),
+    totalFrames_(0),
     runThread_(true),
-    threadRunning_(false),
-    threadInitError_(false),
     pluginShutdownSent_(false),
     shutdown_(false),
-    ipc_context_(OdinData::IpcContext::Instance(num_io_threads)),
-    ctrlThread_(std::bind(&FrameProcessorController::runIpcService, this)),
     ctrlChannelEndpoint_(""),
+    ipc_context_(OdinData::IpcContext::Instance(num_io_threads)),
     ctrlChannel_(ZMQ_ROUTER),
     metaRxChannel_(ZMQ_PULL),
     metaTxChannelEndpoint_(""),
     metaTxChannel_(ZMQ_PUB),
     frReadyEndpoint_(OdinData::Defaults::default_frame_ready_endpoint),
-    frReleaseEndpoint_(OdinData::Defaults::default_frame_release_endpoint),
-    shutdownFrameCount_(0),
-    totalFrames_(0)
+    frReleaseEndpoint_(OdinData::Defaults::default_frame_release_endpoint)
 {
+    ctrlThread_ = std::thread(boost::bind(&FrameProcessorController::runIpcService, this));
     OdinData::configure_logging_mdc(OdinData::app_path.c_str());
     LOG4CXX_DEBUG_LEVEL(1, logger_, "Constructing FrameProcessorController");
-
-    // Wait for the thread service to initialise and be running properly, so that
-    // this constructor only returns once the object is fully initialised (RAII).
-    // Monitor the thread error flag and throw an exception if initialisation fails
-    while (!threadRunning_) {
-        if (threadInitError_) {
-            ctrlThread_.join();
-            throw std::runtime_error(threadInitMsg_);
-        }
-    }
 
     // The meta interface should only be setup once confirmation of the thread startup
     // has been recevied. The reactor is created within the thread startup method.
@@ -877,7 +865,7 @@ void FrameProcessorController::shutdown()
         // Stop worker thread (for IFrameCallback) and reactor
         LOG4CXX_DEBUG_LEVEL(1, logger_, "Stopping FrameProcessorController worker thread and IPCReactor");
         stop();
-        reactor_->stop();
+        reactor_.stop();
 
         // Close control IPC channel
         closeControlInterface();
@@ -991,7 +979,7 @@ void FrameProcessorController::closeControlInterface()
     try {
         LOG4CXX_DEBUG_LEVEL(1, logger_, "Closing control endpoint socket.");
         ctrlThread_.join();
-        reactor_->remove_channel(ctrlChannel_);
+        reactor_.remove_channel(ctrlChannel_);
         ctrlChannel_.close();
     } catch (zmq::error_t& e) {
         // TODO: What to do here, I think throw it up
@@ -1016,7 +1004,7 @@ void FrameProcessorController::closeMetaRxInterface()
 {
     try {
         LOG4CXX_DEBUG_LEVEL(1, logger_, "Closing meta RX endpoint.");
-        reactor_->remove_channel(metaRxChannel_);
+        reactor_.remove_channel(metaRxChannel_);
         metaRxChannel_.close();
     } catch (zmq::error_t& e) {
         throw std::runtime_error(e.what());
@@ -1058,17 +1046,11 @@ void FrameProcessorController::runIpcService(void)
 
     LOG4CXX_DEBUG_LEVEL(1, logger_, "Running IPC thread service");
 
-    // Create the reactor
-    reactor_ = std::make_shared<OdinData::IpcReactor>();
-
     // Add the tick timer to the reactor
-    int tick_timer_id = reactor_->register_timer(1000, 0, std::bind(&FrameProcessorController::tickTimer, this));
-
-    // Set thread state to running, allows constructor to return
-    threadRunning_ = true;
+    int tick_timer_id = reactor_.register_timer(1000, 0, boost::bind(&FrameProcessorController::tickTimer, this));
 
     // Run the reactor event loop
-    reactor_->run();
+    reactor_.run();
 
     // Cleanup - remove channels, sockets and timers from the reactor and close the receive socket
     LOG4CXX_DEBUG_LEVEL(1, logger_, "Terminating IPC thread service");
@@ -1082,7 +1064,7 @@ void FrameProcessorController::tickTimer(void)
 {
     if (!runThread_) {
         LOG4CXX_DEBUG_LEVEL(1, logger_, "IPC thread terminate detected in timer");
-        reactor_->stop();
+        reactor_.stop();
     }
 }
 

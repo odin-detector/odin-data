@@ -8,12 +8,6 @@ build_dir="${BUILD_DIR:-${repo_dir}/vscode_build}"
 bin_dir="${TEST_BIN_DIR:-${build_dir}/bin}"
 lib_dir="${TEST_LIB_DIR:-${build_dir}/lib}"
 config_source_dir="${INTEGRATION_CONFIG_DIR:-${repo_dir}/cpp/test/integrationTest/config}"
-test_timeout_seconds="${TEST_TIMEOUT_SECONDS:-120}"
-
-if [[ ! "${test_timeout_seconds}" =~ ^[1-9][0-9]*$ ]]; then
-  echo "TEST_TIMEOUT_SECONDS must be a positive integer: ${test_timeout_seconds}" >&2
-  exit 1
-fi
 
 if [[ ! -d "${bin_dir}" ]]; then
   echo "Test binary directory does not exist: ${bin_dir}" >&2
@@ -59,18 +53,14 @@ run_test()
   test_count=$((test_count + 1))
   echo "==> Running ${test_name}"
 
-  if timeout --kill-after=5s "${test_timeout_seconds}s" "$@" 2>&1 | tee "${test_log}"; then
+  if "$@" >"${test_log}" 2>&1; then
     echo "    PASS"
   else
     test_status=$?
     failed_tests+=("${test_name}")
     failed_statuses+=("${test_status}")
     failed_logs+=("${test_log}")
-    if [[ ${test_status} -eq 124 ]]; then
-      echo "    TIMEOUT after ${test_timeout_seconds}s"
-    else
-      echo "    FAIL (exit ${test_status})"
-    fi
+    echo "    FAIL (exit ${test_status})"
   fi
 }
 

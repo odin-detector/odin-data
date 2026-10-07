@@ -28,7 +28,7 @@ const std::string SharedMemoryController::SHARED_MEMORY_CONTROLLER_NAME = "share
  * \param[in] txEndPoint - string name of the publishing endpoint for frame release notifications.
  */
 SharedMemoryController::SharedMemoryController(
-    std::shared_ptr<OdinData::IpcReactor> reactor,
+    OdinData::IpcReactor& reactor,
     const std::string& rxEndPoint,
     const std::string& txEndPoint
 ) :
@@ -55,7 +55,7 @@ SharedMemoryController::SharedMemoryController(
     }
 
     // Add the Frame Ready channel to the reactor
-    reactor_->register_channel(rxChannel_, std::bind(&SharedMemoryController::handleRxChannel, this));
+    reactor_.register_channel(rxChannel_, boost::bind(&SharedMemoryController::handleRxChannel, this));
 
     // Now connect the frame release response channel
     try {
@@ -88,8 +88,7 @@ SharedMemoryController::~SharedMemoryController()
     }
 
     // Close the IPC Channels
-    reactor_->remove_channel(txChannel_);
-    reactor_->remove_channel(rxChannel_);
+    reactor_.remove_channel(rxChannel_);
     txChannel_.close();
     rxChannel_.close();
 }
