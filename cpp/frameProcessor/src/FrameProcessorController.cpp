@@ -956,7 +956,7 @@ void FrameProcessorController::runIpcService(void)
     LOG4CXX_DEBUG_LEVEL(1, logger_, "Running IPC thread service");
 
     // Add the tick timer to the reactor
-    int tick_timer_id = reactor_.register_timer(1000, 0, boost::bind(&FrameProcessorController::tickTimer, this));
+    reactor_.register_timer(1000, 0, boost::bind(&FrameProcessorController::tickTimer, this));
 
     // Set thread state to running, allows constructor to return
     threadRunning_ = true;
