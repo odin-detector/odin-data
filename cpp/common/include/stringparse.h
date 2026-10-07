@@ -26,7 +26,7 @@ static int extract_line_no(const std::string& input, const int position)
 
     size_t pos = input.find(line_char);
 
-    while (pos < position) {
+    while (pos < static_cast<size_t>(position)) {
         line_no++;
         pos = input.find(line_char, pos + line_char.size());
     }
