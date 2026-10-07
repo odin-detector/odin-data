@@ -11,6 +11,7 @@ add_compile_options(
   -Wall
   -Wextra
   -Wpedantic
+  -Werror=switch
   $<$<CXX_COMPILER_ID:GNU>:-Wno-class-memaccess>
 )
 

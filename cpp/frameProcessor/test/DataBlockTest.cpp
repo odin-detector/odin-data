@@ -9,11 +9,6 @@ BOOST_GLOBAL_FIXTURE(GlobalConfig);
 
 BOOST_AUTO_TEST_SUITE(DataBlockUnitTest);
 
-static bool not_critical(const std::invalid_argument& er)
-{
-    return true;
-}
-
 BOOST_AUTO_TEST_CASE(DataBlockTest)
 {
     char data1[1024];
