@@ -25,7 +25,7 @@ public:
     WatchdogTimer(const std::function<void(const std::string&)>& timeout_callback);
     ~WatchdogTimer();
 
-    void start_timer(const std::string& function_name, unsigned int watchdog_timeout_ms);
+    void start_timer(std::string&& function_name, unsigned int watchdog_timeout_ms);
     unsigned int finish_timer();
 
 private:

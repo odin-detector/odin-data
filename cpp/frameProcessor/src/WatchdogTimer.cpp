@@ -39,21 +39,22 @@ WatchdogTimer::~WatchdogTimer()
  * \param[in] function_name - Function name for log message
  * \param[in] watchdog_timeout_ms - Timeout for watchdog to log error message
  */
-void WatchdogTimer::start_timer(const std::string& function_name, unsigned int watchdog_timeout_ms)
+void WatchdogTimer::start_timer(std::string&& function_name, unsigned int watchdog_timeout_ms)
 {
     gettime(&start_time_, true);
     timeout_ = watchdog_timeout_ms;
+    this->function_name_ = std::move(function_name);
 
     // Register timer to call timeout callback in watchdog_timeout milliseconds once
     if (watchdog_timeout_ms > 0) {
         LOG4CXX_DEBUG_LEVEL(
             1, Logger::getLogger("FP.WatchdogTimer"),
-            "" << function_name << " | Registering " << watchdog_timeout_ms << "ms watchdog timer"
+            "" << this->function_name_ << " | Registering " << watchdog_timeout_ms << "ms watchdog timer"
         );
         timer_id_ = reactor_.register_timer(
             watchdog_timeout_ms, 1,
             // Bind member function to this instance with function_name argument
-            [this, &function_name]() { this->call_timeout_callback(function_name); }
+            [this]() { this->call_timeout_callback(this->function_name_); }
         );
         is_valid_id_ = true;
     }
