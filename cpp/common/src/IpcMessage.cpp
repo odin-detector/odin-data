@@ -650,7 +650,7 @@ boost::posix_time::ptime IpcMessage::valid_msg_timestamp(std::string msg_timesta
 std::string IpcMessage::valid_msg_timestamp(boost::posix_time::ptime msg_timestamp)
 {
     // Return message timestamp as string in ISO8601 extended format
-    return boost::posix_time::to_iso_extended_string(msg_timestamp_);
+    return boost::posix_time::to_iso_extended_string(msg_timestamp);
 }
 
 //! Indicates if the message has a params block.
