@@ -5,7 +5,7 @@
 
 #include "DataBlockPool.h"
 
-BOOST_GLOBAL_FIXTURE(GlobalConfig);
+BOOST_TEST_GLOBAL_FIXTURE(GlobalConfig);
 
 BOOST_AUTO_TEST_SUITE(DataBlockUnitTest);
 
@@ -13,13 +13,13 @@ BOOST_AUTO_TEST_CASE(DataBlockTest)
 {
     char data1[1024];
     char data2[2048];
-    boost::shared_ptr<FrameProcessor::DataBlock> block1;
-    boost::shared_ptr<FrameProcessor::DataBlock> block2;
+    std::shared_ptr<FrameProcessor::DataBlock> block1;
+    std::shared_ptr<FrameProcessor::DataBlock> block2;
     int initial_block_index_count = FrameProcessor::DataBlock::get_current_index_count();
-    BOOST_CHECK_NO_THROW(block1 = boost::shared_ptr<FrameProcessor::DataBlock>(new FrameProcessor::DataBlock(1024)));
+    BOOST_CHECK_NO_THROW(block1 = std::shared_ptr<FrameProcessor::DataBlock>(new FrameProcessor::DataBlock(1024)));
     BOOST_CHECK_EQUAL(block1->get_index(), initial_block_index_count);
     BOOST_CHECK_EQUAL(block1->get_size(), 1024);
-    BOOST_CHECK_NO_THROW(block2 = boost::shared_ptr<FrameProcessor::DataBlock>(new FrameProcessor::DataBlock(2048)));
+    BOOST_CHECK_NO_THROW(block2 = std::shared_ptr<FrameProcessor::DataBlock>(new FrameProcessor::DataBlock(2048)));
     BOOST_CHECK_EQUAL(block2->get_index(), initial_block_index_count + 1);
     BOOST_CHECK_EQUAL(block2->get_size(), 2048);
     memset(data1, 1, 1024);
@@ -39,8 +39,8 @@ BOOST_AUTO_TEST_CASE(DataBlockTest)
 
 BOOST_AUTO_TEST_CASE(DataBlockPoolTest)
 {
-    boost::shared_ptr<FrameProcessor::DataBlock> block1;
-    boost::shared_ptr<FrameProcessor::DataBlock> block2;
+    std::shared_ptr<FrameProcessor::DataBlock> block1;
+    std::shared_ptr<FrameProcessor::DataBlock> block2;
     // Allocate 100 blocks
     BOOST_CHECK_NO_THROW(FrameProcessor::DataBlockPool::allocate(100, 1024));
     // Check pool statistics

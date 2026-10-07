@@ -70,7 +70,7 @@ public:
 
     void status(OdinData::IpcMessage& status);
 
-    void process_frame(boost::shared_ptr<Frame> frame);
+    void process_frame(std::shared_ptr<Frame> frame);
 
     bool reset_statistics();
 
@@ -91,9 +91,9 @@ public:
 
     void configure_dataset(std::string dataset);
 
-    void* create_message(boost::shared_ptr<Frame> frame, size_t& nbytes);
+    void* create_message(std::shared_ptr<Frame> frame, size_t& nbytes);
 
-    void enqueue_frame(boost::shared_ptr<Frame> frame);
+    void enqueue_frame(std::shared_ptr<Frame> frame);
 
     int get_version_major();
 

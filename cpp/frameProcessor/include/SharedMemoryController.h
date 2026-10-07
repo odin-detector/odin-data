@@ -15,8 +15,6 @@
 using namespace log4cxx;
 using namespace log4cxx::helpers;
 
-#include "boost/date_time/posix_time/posix_time.hpp"
-
 #include "IFrameCallback.h"
 #include "IpcChannel.h"
 #include "IpcMessage.h"
@@ -41,7 +39,7 @@ public:
     virtual ~SharedMemoryController();
     void setSharedBufferManager(const std::string& shared_buffer_name);
     void requestSharedBufferConfig(const bool deferred = false);
-    void registerCallback(const std::string& name, boost::shared_ptr<IFrameCallback> cb);
+    void registerCallback(const std::string& name, std::shared_ptr<IFrameCallback> cb);
     void removeCallback(const std::string& name);
     void handleRxChannel();
     void status(OdinData::IpcMessage& status);
@@ -51,9 +49,9 @@ private:
     /** Pointer to logger */
     LoggerPtr logger_;
     /** Pointer to SharedBufferManager object */
-    boost::shared_ptr<OdinData::SharedBufferManager> sbm_;
+    std::shared_ptr<OdinData::SharedBufferManager> sbm_;
     /** Map of IFrameCallback pointers, indexed by name */
-    std::map<std::string, boost::shared_ptr<IFrameCallback>> callbacks_;
+    std::map<std::string, std::shared_ptr<IFrameCallback>> callbacks_;
     /** IpcReactor pointer, for managing IpcMessage objects */
     OdinData::IpcReactor& reactor_;
     /** IpcChannel for receiving notifications of new frames */

@@ -1,4 +1,5 @@
 #include <boost/foreach.hpp>
+#include <boost/optional/optional.hpp>
 #include <boost/program_options.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -67,7 +68,7 @@ public:
         const int ndims = H5Sget_simple_extent_ndims(space);
 
         hsize_t dims[ndims];
-        int ndms = H5Sget_simple_extent_dims(space, dims, NULL);
+        int ndms = H5Sget_simple_extent_dims(space, dims, nullptr);
 
         int num_pts = dims[0];
 
@@ -98,7 +99,7 @@ BOOST_AUTO_TEST_CASE(HDF5Frame_size)
     const int ndims = H5Sget_simple_extent_ndims(space);
 
     hsize_t dims[ndims];
-    int ndms = H5Sget_simple_extent_dims(space, dims, NULL);
+    int ndms = H5Sget_simple_extent_dims(space, dims, nullptr);
 
     int frames = dims[0];
 

@@ -2,8 +2,9 @@
 #include "PropertyTreeUtility.h"
 
 #include "zmq/zmq.hpp"
-#include <boost/filesystem.hpp>
+
 #include <boost/lexical_cast.hpp>
+#include <filesystem>
 #include <sys/wait.h>
 
 namespace FrameSimulatorTest {
@@ -37,7 +38,7 @@ ControlUtility::ControlUtility(
     process_path_ = ptree.get<std::string>(process_entry);
     PropertyTreeUtility::expandEnvVars(process_path_);
 
-    boost::filesystem::path path(process_path_);
+    std::filesystem::path path(process_path_);
 
     // Prepend list of process (command) arguments with (<process> (deduced from path) and) (optionally)
     // <positional_arg>
@@ -68,7 +69,7 @@ void ControlUtility::run_process(const bool& wait_child)
         );
         int status;
         if (wait_child) {
-            wait(NULL);
+            wait(nullptr);
         }
     }
 
@@ -78,7 +79,7 @@ void ControlUtility::run_process(const bool& wait_child)
         for (int s = 0; s < process_args_.size(); s++) {
             args.push_back((char*)process_args_.at(s).data());
         }
-        args.push_back(NULL);
+        args.push_back(nullptr);
 
         execv(process_path_.c_str(), args.data());
     }

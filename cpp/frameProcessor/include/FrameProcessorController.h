@@ -34,11 +34,10 @@ namespace FrameProcessor {
  *
  * The class uses an IpcReactor to manage connections and status updates.
  */
-class FrameProcessorController : public IFrameCallback,
-                                 public boost::enable_shared_from_this<FrameProcessorController> {
+class FrameProcessorController : public IFrameCallback, public std::enable_shared_from_this<FrameProcessorController> {
 public:
     FrameProcessorController(unsigned int num_io_threads = OdinData::Defaults::default_io_threads);
-    virtual ~FrameProcessorController();
+    ~FrameProcessorController() override;
     void handleCtrlChannel();
     void handleMetaRxChannel();
     void provideStatus(OdinData::IpcMessage& reply, bool metadata);
@@ -134,14 +133,14 @@ private:
     void closeMetaTxInterface();
     void runIpcService(void);
     void tickTimer(void);
-    void callback(boost::shared_ptr<Frame> frame);
+    void callback(std::shared_ptr<Frame> frame) override;
 
     /** Pointer to the logging facility */
     log4cxx::LoggerPtr logger_;
     /** Pointer to the shared memory controller instance for this process */
-    boost::shared_ptr<SharedMemoryController> sharedMemController_;
+    std::shared_ptr<SharedMemoryController> sharedMemController_;
     /** Map of plugins loaded, indexed by plugin index */
-    std::map<std::string, boost::shared_ptr<FrameProcessorPlugin>> plugins_;
+    std::map<std::string, std::shared_ptr<FrameProcessorPlugin>> plugins_;
     /** Map of stored configuration objects */
     std::map<std::string, std::string> stored_configs_;
     /** Condition for exiting this file writing process */

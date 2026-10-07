@@ -1,8 +1,8 @@
 #ifndef ODINDATA_LOGGING_H
 #define ODINDATA_LOGGING_H
 
+#include <cstring>
 #include <pwd.h>
-#include <string.h>
 #include <unistd.h>
 
 #include <log4cxx/basicconfigurator.h>
@@ -46,7 +46,7 @@ void configure_logging_mdc(const char* app_path)
     MDC::put("pid", ss.str());
 
     const char* app_name = strrchr(app_path, static_cast<int>('/'));
-    if (app_name != NULL) {
+    if (app_name != nullptr) {
         MDC::put("app", app_name + 1);
     } else {
         MDC::put("app", app_path);
