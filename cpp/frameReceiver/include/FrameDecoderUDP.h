@@ -33,9 +33,9 @@ public:
 
     virtual ~FrameDecoderUDP() = 0;
 
-    virtual const bool requires_header_peek(void) const = 0;
+    virtual bool requires_header_peek(void) const = 0;
 
-    virtual const size_t get_packet_header_size(void) const = 0;
+    virtual size_t get_packet_header_size(void) const = 0;
     virtual void* get_packet_header_buffer(void) = 0;
     virtual void process_packet_header(size_t bytes_received, int port, struct sockaddr_in* from_addr) = 0;
 
