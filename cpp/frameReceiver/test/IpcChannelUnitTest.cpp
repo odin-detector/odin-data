@@ -15,9 +15,9 @@
 
 struct TestFixture {
     TestFixture() :
+        dealer_channel_id("dealer_chan"),
         send_channel(ZMQ_PAIR),
         recv_channel(ZMQ_PAIR),
-        dealer_channel_id("dealer_chan"),
         dealer_channel(ZMQ_DEALER, dealer_channel_id),
         router_channel(ZMQ_ROUTER)
 

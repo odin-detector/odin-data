@@ -11,23 +11,23 @@ FrameMetaData::FrameMetaData(
     const CompressionType& compression_type
 ) :
     frame_number_(frame_number),
+    logger(log4cxx::Logger::getLogger("FP.FrameMetaData")),
     dataset_name_(dataset_name),
     data_type_(data_type),
     acquisition_ID_(acquisition_ID),
     dimensions_(dimensions),
     compression_type_(compression_type),
-    frame_offset_(0),
-    logger(log4cxx::Logger::getLogger("FP.FrameMetaData"))
+    frame_offset_(0)
 {
 }
 
 FrameMetaData::FrameMetaData() :
     frame_number_(-1),
+    logger(log4cxx::Logger::getLogger("FP.FrameMetaData")),
     dataset_name_(""),
     data_type_(raw_unknown),
     compression_type_(unknown_compression),
-    frame_offset_(0),
-    logger(log4cxx::Logger::getLogger("FP.FrameMetaData"))
+    frame_offset_(0)
 {
 }
 

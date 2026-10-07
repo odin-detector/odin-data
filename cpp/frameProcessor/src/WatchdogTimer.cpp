@@ -15,12 +15,12 @@
 namespace FrameProcessor {
 
 WatchdogTimer::WatchdogTimer(const boost::function<void(const std::string&)>& timeout_callback) :
-    worker_thread_running_(false),
     worker_thread_(boost::bind(&WatchdogTimer::run, this)),
-    timeout_callback_(timeout_callback),
+    worker_thread_running_(false),
     timer_id_(0),
     is_valid_id_(false),
-    ticks_(0)
+    ticks_(0),
+    timeout_callback_(timeout_callback)
 {
     this->logger_ = Logger::getLogger("FP.WatchdogTimer");
 

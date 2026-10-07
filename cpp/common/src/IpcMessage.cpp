@@ -24,8 +24,8 @@ IpcMessage::IpcMessage(MsgType msg_type, MsgVal msg_val, bool strict_validation)
     strict_validation_(strict_validation),
     msg_type_(msg_type),
     msg_val_(msg_val),
-    msg_id_(0),
-    msg_timestamp_(boost::posix_time::microsec_clock::local_time())
+    msg_timestamp_(boost::posix_time::microsec_clock::local_time()),
+    msg_id_(0)
 {
     // Intialise empty JSON document
     doc_.SetObject();
@@ -113,8 +113,8 @@ IpcMessage::IpcMessage(const rapidjson::Value& value, MsgType msg_type, MsgVal m
     strict_validation_(strict_validation),
     msg_type_(msg_type),
     msg_val_(msg_val),
-    msg_id_(0),
-    msg_timestamp_(boost::posix_time::microsec_clock::local_time())
+    msg_timestamp_(boost::posix_time::microsec_clock::local_time()),
+    msg_id_(0)
 {
     // Intialise empty JSON document
     doc_.SetObject();

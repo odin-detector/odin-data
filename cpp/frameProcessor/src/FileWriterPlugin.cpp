@@ -80,16 +80,16 @@ FileWriterPlugin::FileWriterPlugin() :
     concurrent_rank_(0),
     frames_per_block_(1),
     blocks_per_file_(0),
-    first_file_index_(0),
-    use_file_numbering_(true),
-    file_postfix_(""),
-    file_extension_("h5"),
     use_earliest_hdf5_(false),
     alignment_threshold_(1),
     alignment_value_(1),
     timeout_period_(0),
     timeout_thread_running_(true),
-    timeout_thread_(boost::bind(&FileWriterPlugin::run_close_file_timeout, this))
+    timeout_thread_(boost::bind(&FileWriterPlugin::run_close_file_timeout, this)),
+    first_file_index_(0),
+    use_file_numbering_(true),
+    file_postfix_(""),
+    file_extension_("h5")
 {
     std::string prefix = FileWriterPlugin::CONFIG_PROCESS + '/';
     add_config_param_metadata(
