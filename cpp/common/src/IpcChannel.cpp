@@ -355,7 +355,7 @@ const std::string IpcChannel::recv(std::string* identity_str)
 //! \param[out] identity_str - pointer to string to receive identity on ROUTER sockets
 //! \return size of the received message
 //!
-const std::size_t IpcChannel::recv_raw(void* msg_buf, std::string* identity_str)
+std::size_t IpcChannel::recv_raw(void* msg_buf, std::string* identity_str)
 {
 
     // For ROUTER channels, receive the required identity message part first and copy

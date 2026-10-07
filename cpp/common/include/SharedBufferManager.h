@@ -46,9 +46,9 @@ public:
 
     ~SharedBufferManager();
 
-    const size_t get_manager_id(void) const;
-    const size_t get_num_buffers(void) const;
-    const size_t get_buffer_size(void) const;
+    size_t get_manager_id(void) const;
+    size_t get_num_buffers(void) const;
+    size_t get_buffer_size(void) const;
 
     void* get_buffer_address(const unsigned int buffer) const;
 

@@ -42,7 +42,7 @@ typedef struct {
     uint8_t packet_state[max_packets];
 } FrameHeader;
 
-inline const std::size_t max_frame_size(void)
+inline std::size_t max_frame_size(void)
 {
     std::size_t max_frame_size = sizeof(FrameHeader) + (max_packet_size * max_packets);
     return max_frame_size;
