@@ -64,10 +64,10 @@ BOOST_AUTO_TEST_CASE(FrameMetaDataSetGetParam)
     BOOST_CHECK(frame_md.get_dataset_name() == "New_Dataset");
     BOOST_REQUIRE_NO_THROW(frame_md.set_acquisition_ID("Acq_2"));
     BOOST_CHECK(frame_md.get_acquisition_ID() == "Acq_2");
-    frame_md.set_data_type(FP::DataType::raw_8bit);
-    BOOST_CHECK(frame_md.get_data_type() == FP::DataType::raw_8bit);
     BOOST_REQUIRE_NO_THROW(frame_md.set_dimensions(std::vector<::dimsize_t> { 6, 7, 8 }));
     BOOST_CHECK((frame_md.get_dimensions() == std::vector<::dimsize_t> { 6, 7, 8 }));
+    frame_md.set_data_type(FP::DataType::raw_8bit);
+    BOOST_CHECK(frame_md.get_data_type() == FP::DataType::raw_8bit);
     frame_md.set_frame_number(789);
     BOOST_CHECK(frame_md.get_frame_number() == 789);
     frame_md.set_frame_offset(32);
@@ -87,8 +87,9 @@ BOOST_AUTO_TEST_CASE(FrameMetaDataTestParamType)
     using FPFMD = FP::FrameMetaData;
     FPFMD frame_md { 123, "Test_Ds", FP::DataType::raw_64bit, "Acq_1", { 3, 4, 5 } };
     frame_md.set_parameter("param2", 3.142f);
-    BOOST_CHECK(frame_md.is_type<uint64_t>("param2") == false);
-    BOOST_CHECK(frame_md.is_type<float>("param2") == true);
+    BOOST_CHECK(frame_md.is_type<uint64_t>("param2") == false); // wrong parameer type
+    BOOST_CHECK(frame_md.is_type<float>("param3") == false); // non-existing parameter will return false
+    BOOST_CHECK(frame_md.is_type<float>("param2") == true); // correct parameter and correct type
 }
 
 BOOST_AUTO_TEST_CASE(FrameMetaDataTestHasParam)
@@ -97,9 +98,8 @@ BOOST_AUTO_TEST_CASE(FrameMetaDataTestHasParam)
     using FPFMD = FP::FrameMetaData;
     FPFMD frame_md { 123, "Test_Ds", FP::DataType::raw_64bit, "Acq_1", { 3, 4, 5 } };
     frame_md.set_parameter("param3", (unsigned short)47);
-    BOOST_CHECK(frame_md.has_parameter("param2") == false);
-    BOOST_CHECK(frame_md.is_type<float>("param3") == false);
-    BOOST_CHECK(frame_md.is_type<unsigned short>("param3") == true);
+    BOOST_CHECK(frame_md.has_parameter("param2") == false); // non-existing parameter will be false
+    BOOST_CHECK(frame_md.has_parameter("param3") == true); // existing parameter will be true
 }
 
 BOOST_AUTO_TEST_SUITE_END(); // FrameMetaDataUnitTest
