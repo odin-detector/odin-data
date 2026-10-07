@@ -146,7 +146,6 @@ void FrameReceiverUDPRxThread::handle_receive_socket(int recv_socket, int recv_p
                                  "payload buffer address "
                               << frame_decoder_->get_next_payload_buffer()
     );
-
-    FrameDecoder::FrameReceiveState frame_receive_state
-        = frame_decoder_->process_packet(bytes_received, recv_port, &from_addr);
+    
+    frame_decoder_->process_packet(bytes_received, recv_port, &from_addr);
 }
