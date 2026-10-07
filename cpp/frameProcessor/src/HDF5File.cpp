@@ -104,7 +104,7 @@ void HDF5File::handle_h5_error(
     throw std::runtime_error(error.str());
 }
 
-void HDF5File::hdf_error_handler(unsigned n, const H5E_error2_t* err_desc)
+void HDF5File::hdf_error_handler(unsigned /* n */, const H5E_error2_t* err_desc)
 {
     hdf5_error_flag_ = true;
     hdf5_errors_.push_back(*err_desc);

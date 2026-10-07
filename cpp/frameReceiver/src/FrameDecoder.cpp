@@ -23,7 +23,7 @@ FrameDecoder::FrameDecoder() :
     frames_dropped_(0) { };
 
 //! This overload is scheduled for deletion; logger is unused.
-void FrameDecoder::init(LoggerPtr& logger, OdinData::IpcMessage& config_msg)
+void FrameDecoder::init(LoggerPtr& /* logger */, OdinData::IpcMessage& config_msg)
 {
     init(config_msg);
 }

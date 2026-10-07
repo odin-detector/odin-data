@@ -43,7 +43,7 @@ private:
     OdinData::IpcChannel metaRxChannel_;
 };
 
-void dummy_callback(const std::string& msg)
+void dummy_callback(const std::string& /* msg */)
 {
 }
 

@@ -272,7 +272,7 @@ void FrameReceiverApp::stop(void)
 
 //! Interrupt signal handler
 
-void intHandler(int sig)
+void intHandler(int)
 {
     FrameReceiver::FrameReceiverApp::stop();
 }
