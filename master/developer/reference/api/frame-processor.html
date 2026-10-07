@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>FrameProcessor API Reference &#8212; odin-data 0.1.dev1+g588f73132 documentation</title>
+    <title>FrameProcessor API Reference &#8212; odin-data 0.1.dev1+ge14a94ea9 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
-    <script src="../../../_static/documentation_options.js?v=e55ac9ee"></script>
+    <script src="../../../_static/documentation_options.js?v=cb78f6cb"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -819,7 +819,7 @@
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor24FrameProcessorController14exitCondition_E">
-<span id="_CPPv3N14FrameProcessor24FrameProcessorController14exitCondition_E"></span><span id="_CPPv2N14FrameProcessor24FrameProcessorController14exitCondition_E"></span><span id="FrameProcessor::FrameProcessorController::exitCondition___boost::condition_variable"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorController_1a69e8fb40837e5237200a207ae7e1030a"></span><span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">condition_variable</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">exitCondition_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor24FrameProcessorController14exitCondition_E" title="Link to this definition">#</a><br /></dt>
+<span id="_CPPv3N14FrameProcessor24FrameProcessorController14exitCondition_E"></span><span id="_CPPv2N14FrameProcessor24FrameProcessorController14exitCondition_E"></span><span id="FrameProcessor::FrameProcessorController::exitCondition___std::condition_variable"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorController_1afa905f7f625fa71dbb1111d5db04d0a3"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">condition_variable</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">exitCondition_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor24FrameProcessorController14exitCondition_E" title="Link to this definition">#</a><br /></dt>
 <dd><p>Condition for exiting this file writing process </p>
 </dd></dl>
 
@@ -843,7 +843,7 @@
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor24FrameProcessorController10exitMutex_E">
-<span id="_CPPv3N14FrameProcessor24FrameProcessorController10exitMutex_E"></span><span id="_CPPv2N14FrameProcessor24FrameProcessorController10exitMutex_E"></span><span id="FrameProcessor::FrameProcessorController::exitMutex___boost::mutex"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorController_1a1c7db2b5b8915cfa26337201eedf5934"></span><span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">mutex</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">exitMutex_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor24FrameProcessorController10exitMutex_E" title="Link to this definition">#</a><br /></dt>
+<span id="_CPPv3N14FrameProcessor24FrameProcessorController10exitMutex_E"></span><span id="_CPPv2N14FrameProcessor24FrameProcessorController10exitMutex_E"></span><span id="FrameProcessor::FrameProcessorController::exitMutex___std::mutex"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorController_1af28f9f60040ab85e8a2e00a88c44af31"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">mutex</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">exitMutex_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor24FrameProcessorController10exitMutex_E" title="Link to this definition">#</a><br /></dt>
 <dd><p>Mutex used for locking the exitCondition </p>
 </dd></dl>
 
@@ -851,18 +851,6 @@
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor24FrameProcessorController10runThread_E">
 <span id="_CPPv3N14FrameProcessor24FrameProcessorController10runThread_E"></span><span id="_CPPv2N14FrameProcessor24FrameProcessorController10runThread_E"></span><span id="FrameProcessor::FrameProcessorController::runThread___b"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorController_1ac9159a54fa59771a2fa2e7e426055fae"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">runThread_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor24FrameProcessorController10runThread_E" title="Link to this definition">#</a><br /></dt>
 <dd><p>Used to check for Ipc tick timer termination </p>
-</dd></dl>
-
-<dl class="cpp var">
-<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor24FrameProcessorController14threadRunning_E">
-<span id="_CPPv3N14FrameProcessor24FrameProcessorController14threadRunning_E"></span><span id="_CPPv2N14FrameProcessor24FrameProcessorController14threadRunning_E"></span><span id="FrameProcessor::FrameProcessorController::threadRunning___b"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorController_1ae21b078a3ed8fa61fa498ae3eab247f5"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">threadRunning_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor24FrameProcessorController14threadRunning_E" title="Link to this definition">#</a><br /></dt>
-<dd><p>Is the main thread running </p>
-</dd></dl>
-
-<dl class="cpp var">
-<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor24FrameProcessorController16threadInitError_E">
-<span id="_CPPv3N14FrameProcessor24FrameProcessorController16threadInitError_E"></span><span id="_CPPv2N14FrameProcessor24FrameProcessorController16threadInitError_E"></span><span id="FrameProcessor::FrameProcessorController::threadInitError___b"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorController_1aa0f73da26bf32b6c515874c2b9f3fde8"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">threadInitError_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor24FrameProcessorController16threadInitError_E" title="Link to this definition">#</a><br /></dt>
-<dd><p>Did an error occur during the thread initialisation </p>
 </dd></dl>
 
 <dl class="cpp var">
@@ -879,14 +867,8 @@
 
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor24FrameProcessorController11ctrlThread_E">
-<span id="_CPPv3N14FrameProcessor24FrameProcessorController11ctrlThread_E"></span><span id="_CPPv2N14FrameProcessor24FrameProcessorController11ctrlThread_E"></span><span id="FrameProcessor::FrameProcessorController::ctrlThread___boost::thread"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorController_1a8ed1c407dbeedfc0d1b8de4772e0975c"></span><span class="n"><span class="pre">boost</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">thread</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ctrlThread_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor24FrameProcessorController11ctrlThread_E" title="Link to this definition">#</a><br /></dt>
+<span id="_CPPv3N14FrameProcessor24FrameProcessorController11ctrlThread_E"></span><span id="_CPPv2N14FrameProcessor24FrameProcessorController11ctrlThread_E"></span><span id="FrameProcessor::FrameProcessorController::ctrlThread___std::thread"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorController_1a13353e39fec87734afc5041ef9213f40"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">thread</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ctrlThread_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor24FrameProcessorController11ctrlThread_E" title="Link to this definition">#</a><br /></dt>
 <dd><p>Main thread used for control message handling </p>
-</dd></dl>
-
-<dl class="cpp var">
-<dt class="sig sig-object cpp" id="_CPPv4N14FrameProcessor24FrameProcessorController14threadInitMsg_E">
-<span id="_CPPv3N14FrameProcessor24FrameProcessorController14threadInitMsg_E"></span><span id="_CPPv2N14FrameProcessor24FrameProcessorController14threadInitMsg_E"></span><span id="FrameProcessor::FrameProcessorController::threadInitMsg___ss"></span><span class="target" id="classFrameProcessor_1_1FrameProcessorController_1a58c0fa499d62ab444deb1d7739048dfa"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">threadInitMsg_</span></span></span><a class="headerlink" href="#_CPPv4N14FrameProcessor24FrameProcessorController14threadInitMsg_E" title="Link to this definition">#</a><br /></dt>
-<dd><p>Store for any messages occurring during thread initialisation </p>
 </dd></dl>
 
 <dl class="cpp var">
@@ -6878,12 +6860,9 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor24FrameProcessorController12masterFrame_E"><code class="docutils literal notranslate"><span class="pre">masterFrame_</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor24FrameProcessorController10exitMutex_E"><code class="docutils literal notranslate"><span class="pre">exitMutex_</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor24FrameProcessorController10runThread_E"><code class="docutils literal notranslate"><span class="pre">runThread_</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor24FrameProcessorController14threadRunning_E"><code class="docutils literal notranslate"><span class="pre">threadRunning_</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor24FrameProcessorController16threadInitError_E"><code class="docutils literal notranslate"><span class="pre">threadInitError_</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor24FrameProcessorController19pluginShutdownSent_E"><code class="docutils literal notranslate"><span class="pre">pluginShutdownSent_</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor24FrameProcessorController9shutdown_E"><code class="docutils literal notranslate"><span class="pre">shutdown_</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor24FrameProcessorController11ctrlThread_E"><code class="docutils literal notranslate"><span class="pre">ctrlThread_</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor24FrameProcessorController14threadInitMsg_E"><code class="docutils literal notranslate"><span class="pre">threadInitMsg_</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor24FrameProcessorController8reactor_E"><code class="docutils literal notranslate"><span class="pre">reactor_</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor24FrameProcessorController20ctrlChannelEndpoint_E"><code class="docutils literal notranslate"><span class="pre">ctrlChannelEndpoint_</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#_CPPv4N14FrameProcessor24FrameProcessorController12ipc_context_E"><code class="docutils literal notranslate"><span class="pre">ipc_context_</span></code></a></li>
