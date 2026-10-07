@@ -115,36 +115,25 @@ public:
      */
     template <
         typename T,
-        typename = typename std::enable_if<std::is_unsigned<T>::value || std::is_same<T, float>::value>::type>
-    void set_parameter(const std::string& parameter_name, T value) noexcept
+        typename STR,
+        typename = typename std::enable_if<
+            (std::is_unsigned<T>::value || std::is_same<T, float>::value)
+            && std::is_convertible<STR, std::string>::value>::type>
+    void set_parameter(STR&& parameter_name, T value) noexcept(
+        std::is_same<typename std::decay<T>::type, std::string>::value && std::is_rvalue_reference<T>::value
+    )
     {
         parameters_[parameter_name] = value;
     }
 
-    template <
-        typename T,
-        typename = typename std::enable_if<std::is_unsigned<T>::value || std::is_same<T, float>::value>::type>
-    void set_parameter(std::string&& parameter_name, T value) noexcept
-    {
-        parameters_[std::move(parameter_name)] = value;
-    }
-
     /**
-     * Check if the assumed type of the parameter THROWS
-     *
-     * @attention This method assumes 'index' is present in the object
-     *            It may THROW an std::out_of_range exception if index
-     *            has not been validated to be present in the object!
-     *            validate the parameter - 'index' is present with:
-     *
-     *                      bool has_parameter(const std::string& index) const
-     *
+     * Check if the assumed type of the parameter is valid
      * @param index - the parameter whose's stored type is
      *                to be validated!
      * @tparam T - the assumed type of index.
      * @return bool
      *            true - if the type T matches stored type
-     *            false - if the type T doesn't match stored type
+     *            false - if the type T doesn't match stored type OR if index is not present
      *
      */
     template <
