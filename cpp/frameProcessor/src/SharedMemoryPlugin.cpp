@@ -52,7 +52,7 @@ void SharedMemoryPlugin::process_frame(boost::shared_ptr<Frame> ptr)
  *
  * @param reply - Response IpcMessage.
  */
-void SharedMemoryPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
+void SharedMemoryPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& /*reply*/)
 {
     if (config.has_param(SharedMemoryPlugin::CONFIG_FR_RELEASE)
         && config.has_param(SharedMemoryPlugin::CONFIG_FR_READY)) {
