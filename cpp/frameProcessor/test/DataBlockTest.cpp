@@ -9,6 +9,11 @@ BOOST_GLOBAL_FIXTURE(GlobalConfig);
 
 BOOST_AUTO_TEST_SUITE(DataBlockUnitTest);
 
+static bool not_critical(const std::invalid_argument& er)
+{
+    return true;
+}
+
 BOOST_AUTO_TEST_CASE(DataBlockTest)
 {
     char data1[1024];
@@ -107,6 +112,36 @@ BOOST_AUTO_TEST_CASE(DataBlockFrameTest)
     const unsigned short* img_copy = static_cast<const unsigned short*>(frame.get_data_ptr());
     BOOST_CHECK_EQUAL(img_copy[0], img[0]);
     BOOST_CHECK_EQUAL(img_copy[11], img[11]);
+}
+
+BOOST_AUTO_TEST_CASE(DataBlockPreAllocatedMemory)
+{
+    unsigned char DataBlock_buf[sizeof(FrameProcessor::DataBlock)];
+    void* ptr;
+    const size_t block_sz = 128;
+    BOOST_CHECK(posix_memalign(&ptr, FrameProcessor::alignment, block_sz) == 0);
+    FrameProcessor::DataBlock* dptr
+        = new (reinterpret_cast<FrameProcessor::DataBlock*>(DataBlock_buf)) FrameProcessor::DataBlock(ptr, block_sz);
+    BOOST_CHECK(dptr->get_writeable_data() == ptr);
+    free(ptr);
+}
+
+BOOST_AUTO_TEST_CASE(DataBlockMoveAssignment)
+{
+    unsigned char DataBlock_buf[sizeof(FrameProcessor::DataBlock)];
+    void* ptr;
+    const size_t block_sz = 256;
+    BOOST_CHECK(posix_memalign(&ptr, FrameProcessor::alignment, block_sz) == 0);
+    FrameProcessor::DataBlock* dptr
+        = new (reinterpret_cast<FrameProcessor::DataBlock*>(DataBlock_buf)) FrameProcessor::DataBlock(ptr, block_sz);
+    int index = dptr->get_index();
+    BOOST_CHECK(dptr->get_writeable_data() == ptr);
+
+    // exercise the Move assignment operator
+    *dptr = FrameProcessor::DataBlock { 512 };
+    BOOST_CHECK(dptr->get_writeable_data() != ptr);
+    BOOST_CHECK(dptr->get_index() == index + 1);
+    free(ptr);
 }
 
 BOOST_AUTO_TEST_SUITE_END();
