@@ -197,7 +197,7 @@ std::pair<boost::shared_ptr<Frame>, bool> BloscPlugin::compress_frame(const boos
                     << src_frame->get_meta_data().get_acquisition_ID() << "\""
             );
         }
-    } catch (std::bad_alloc) {
+    } catch (std::bad_alloc&) {
         LOG4CXX_ERROR(logger_, "Failed to allocate memory for compressed frame");
     }
     return { std::move(dest_frame), comp_res };
@@ -251,7 +251,7 @@ std::pair<boost::shared_ptr<Frame>, bool> BloscPlugin::decompress_frame(const bo
                     << " compressed bytes=" << src_frame->get_data_size() << " destsize=" << dest_size
             );
         }
-    } catch (std::bad_alloc) {
+    } catch (std::bad_alloc&) {
         LOG4CXX_ERROR(logger_, "Failed to allocate memory for decompressed frame");
     }
     return { std::move(dest_frame), decomp_res };
