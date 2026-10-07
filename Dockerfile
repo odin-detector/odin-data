@@ -57,7 +57,7 @@ COPY . .
 
 # C++
 RUN mkdir -p build && cd build && \
-    cmake -DCMAKE_INSTALL_PREFIX=/odin ../cpp && \
+    cmake -DCMAKE_INSTALL_PREFIX=/odin -DCMAKE_BUILD_TYPE=RelWithDebInfo ../cpp && \
     make -j8 VERBOSE=1 && \
     make install
 
