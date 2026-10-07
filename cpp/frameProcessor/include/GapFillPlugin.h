@@ -51,8 +51,8 @@ private:
     /** Pointer to logger */
     LoggerPtr logger_;
 
-    std::vector<int> grid_;
-    std::vector<int> chip_;
+    std::vector<uint32_t> grid_;
+    std::vector<uint32_t> chip_;
     std::vector<int> gaps_x_;
     std::vector<int> gaps_y_;
     std::mutex mutex_;
