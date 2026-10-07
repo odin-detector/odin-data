@@ -903,7 +903,7 @@ void FrameProcessorController::waitForShutdown()
 
 /** Set up the frame receiver interface.
  *
- * This method creates new SharedMemoryController and SharedMemoryParser objects,
+ * This method creates a new SharedMemoryController object,
  * which manage the receipt of frame ready notifications and construction of
  * Frame objects from shared memory.
  * Pointers to the two objects are kept by this class.

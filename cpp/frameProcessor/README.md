@@ -28,9 +28,7 @@ The following classes are used by the FrameProcessor, an a brief description is 
 - Frame - A lightweight object that surrounds the data.  Contains a DataBlock retrieved from the pool.  This ojbect can be created and destroyed, as it doesn't allocate memory for the data.
 - DataBlock - Allocated memory block used to avoid reallocating memory for each new frame.
 - DataBlockPool - Indexed pools of DataBlocks, manages memory.
-- SharedMemoryController - Controls the SharedMemoryParser class, and pushes frames to registered callback classes.
-- SharedMemoryParser - Contains specific information regarding the setup of the shared memory buffer.  Copies data from shared memory into Frames.
-
+- SharedMemoryController - Pushes frames to registered callback classes.
 
 Below is a class diagram for the FrameProcessor.
 
@@ -63,7 +61,7 @@ The fr_setup parameter must contain the three entries:
 - fr\_ready\_cnxn : The ZeroMQ endpoint for receiving notification of ready shared memory buffers.
 - fr\_shared\_mem : The name of the shared memory buffer allocation (allocated by the FrameReceiver).
 
-When the FrameProcessor receives the message above, the FileWriterController class creates an instance of the SharedMemoryController and SharedMemoryParser classes.  The SharedMemoryParser take the name of the shared memory buffer as a parameter and opens the buffer ready for use within the application.  The SharedMemoryController sets up the two ZeroMQ IPC channels, registering them with the IPC reactor, and keeps a pointer to the SharedMemoryParser.  The FrameProcessor is now ready to accept incoming frames from the FrameReceiver (or any other client that conforms to the Buffer Transfer API described below).
+When the FrameProcessor receives the message above, the FileWriterController class creates an instance of the SharedMemoryController. The SharedMemoryController sets up the two ZeroMQ IPC channels, registering them with the IPC reactor.  The FrameProcessor is now ready to accept incoming frames from the FrameReceiver (or any other client that conforms to the Buffer Transfer API described below).
 
 ### Frame Processing
 
