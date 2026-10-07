@@ -55,7 +55,7 @@ private:
     size_t frames_sent_;
     size_t read_so_far_;
     int current_frame_number_;
-    int current_frame_buffer_id_;
+    uint32_t current_frame_buffer_id_;
     size_t buffer_size_;
     size_t header_size_;
     size_t frame_size_;
