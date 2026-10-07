@@ -5,8 +5,8 @@
 
 int main()
 {
-    hsize_t CHUNK_NX = 704;
-    hsize_t CHUNK_NY = 1484;
+    constexpr hsize_t CHUNK_NX = 704;
+    constexpr hsize_t CHUNK_NY = 1484;
     size_t buf_size = CHUNK_NX * CHUNK_NY * sizeof(int16_t);
     int16_t data_buf[CHUNK_NY][CHUNK_NX];
     int16_t one_buf[CHUNK_NY][CHUNK_NX];
