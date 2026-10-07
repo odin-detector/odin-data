@@ -482,7 +482,7 @@ void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
         if (iter->second.frame_dimensions.size() > 0) {
             std::string dimParamName
                 = get_name() + "/dataset/" + iter->first + '/' + FileWriterPlugin::CONFIG_DATASET_DIMS + "[]";
-            for (int index = 0; index < iter->second.frame_dimensions.size(); index++) {
+            for (uint32_t index = 0; index < iter->second.frame_dimensions.size(); index++) {
                 reply.set_param(dimParamName, (int)iter->second.frame_dimensions[index]);
             }
         }
@@ -490,7 +490,7 @@ void FileWriterPlugin::requestConfiguration(OdinData::IpcMessage& reply)
         if (iter->second.chunks.size() > 0) {
             std::string chunkParamName
                 = get_name() + "/dataset/" + iter->first + '/' + FileWriterPlugin::CONFIG_DATASET_CHUNKS + "[]";
-            for (int index = 0; index < iter->second.chunks.size(); index++) {
+            for (uint32_t index = 0; index < iter->second.chunks.size(); index++) {
                 reply.set_param(chunkParamName, (int)iter->second.chunks[index]);
             }
         }
@@ -755,7 +755,7 @@ void FileWriterPlugin::configure_dataset(
         // Set first chunk dimension (n dimension) to a single frame or item
         chunks[0] = 1;
         // Set the remaining chunk dimensions to the same as the dataset dimensions
-        for (int index = 0; index < dset.frame_dimensions.size(); index++) {
+        for (uint32_t index = 0; index < dset.frame_dimensions.size(); index++) {
             chunks[index + 1] = dset.frame_dimensions[index];
         }
         dset.chunks = chunks;
