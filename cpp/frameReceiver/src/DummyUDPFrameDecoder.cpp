@@ -88,9 +88,9 @@ void DummyUDPFrameDecoder::init(LoggerPtr& logger, OdinData::IpcMessage& config_
 {
 
     // Pass the configuration message to the base class decoder
-    FrameDecoderUDP::init(logger_, config_msg);
+    FrameDecoderUDP::init(logger, config_msg);
 
-    LOG4CXX_DEBUG_LEVEL(2, logger_, "Got decoder config message: " << config_msg.encode());
+    LOG4CXX_DEBUG_LEVEL(2, logger, "Got decoder config message: " << config_msg.encode());
 
     // Determine the number of UDP packets per frame if present in the config message, checking that
     // it doesn't exceed the maximum permitted
