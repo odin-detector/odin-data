@@ -192,7 +192,7 @@ size_t DummyUDPFrameDecoder::get_packet_header_size(void) const
 //!
 void* DummyUDPFrameDecoder::get_packet_header_buffer(void)
 {
-    return current_packet_header_.get();
+    return reinterpret_cast<void*>(current_packet_header_.get());
 }
 
 //! Process an incoming packet header.
@@ -220,7 +220,7 @@ void DummyUDPFrameDecoder::
 
         if (frame_buffer_map_.count(current_frame_seen_) == 0) {
             if (empty_buffer_queue_.empty()) {
-                current_frame_buffer_ = dropped_frame_buffer_.get();
+                current_frame_buffer_ = reinterpret_cast<void*>(dropped_frame_buffer_.get());
 
                 if (!dropping_frame_data_) {
                     LOG4CXX_ERROR(
