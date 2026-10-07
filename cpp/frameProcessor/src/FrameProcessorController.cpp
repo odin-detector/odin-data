@@ -55,35 +55,23 @@ const int FrameProcessorController::META_TX_HWM = 10000;
  */
 FrameProcessorController::FrameProcessorController(unsigned int num_io_threads) :
     logger_(log4cxx::Logger::getLogger("FP.FrameProcessorController")),
+    shutdownFrameCount_(0),
+    totalFrames_(0),
     runThread_(true),
-    threadRunning_(false),
-    threadInitError_(false),
     pluginShutdownSent_(false),
     shutdown_(false),
-    ipc_context_(OdinData::IpcContext::Instance(num_io_threads)),
-    ctrlThread_(boost::bind(&FrameProcessorController::runIpcService, this)),
     ctrlChannelEndpoint_(""),
+    ipc_context_(OdinData::IpcContext::Instance(num_io_threads)),
     ctrlChannel_(ZMQ_ROUTER),
     metaRxChannel_(ZMQ_PULL),
     metaTxChannelEndpoint_(""),
     metaTxChannel_(ZMQ_PUB),
     frReadyEndpoint_(OdinData::Defaults::default_frame_ready_endpoint),
-    frReleaseEndpoint_(OdinData::Defaults::default_frame_release_endpoint),
-    shutdownFrameCount_(0),
-    totalFrames_(0)
+    frReleaseEndpoint_(OdinData::Defaults::default_frame_release_endpoint)
 {
+    ctrlThread_ = std::thread(boost::bind(&FrameProcessorController::runIpcService, this));
     OdinData::configure_logging_mdc(OdinData::app_path.c_str());
     LOG4CXX_DEBUG_LEVEL(1, logger_, "Constructing FrameProcessorController");
-
-    // Wait for the thread service to initialise and be running properly, so that
-    // this constructor only returns once the object is fully initialised (RAII).
-    // Monitor the thread error flag and throw an exception if initialisation fails
-    while (!threadRunning_) {
-        if (threadInitError_) {
-            ctrlThread_.join();
-            throw std::runtime_error(threadInitMsg_);
-        }
-    }
 
     // The meta interface should only be setup once confirmation of the thread startup
     // has been recevied. The reactor is created within the thread startup method.
@@ -897,7 +885,7 @@ void FrameProcessorController::shutdown()
  */
 void FrameProcessorController::waitForShutdown()
 {
-    boost::unique_lock<boost::mutex> lock(exitMutex_);
+    std::unique_lock<std::mutex> lock(exitMutex_);
     exitCondition_.wait(lock);
 }
 
@@ -1060,9 +1048,6 @@ void FrameProcessorController::runIpcService(void)
 
     // Add the tick timer to the reactor
     int tick_timer_id = reactor_.register_timer(1000, 0, boost::bind(&FrameProcessorController::tickTimer, this));
-
-    // Set thread state to running, allows constructor to return
-    threadRunning_ = true;
 
     // Run the reactor event loop
     reactor_.run();

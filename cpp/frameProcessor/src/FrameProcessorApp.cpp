@@ -165,7 +165,7 @@ int FrameProcessorApp::run(void)
     LOG4CXX_INFO(logger_, "frameProcessor version " << ODIN_DATA_VERSION_STR << " starting up");
 
     // Instantiate a controller
-    controller_ = boost::shared_ptr<FrameProcessorController>(new FrameProcessorController(io_threads_));
+    controller_ = boost::make_shared<FrameProcessorController>(io_threads_);
 
     try {
 
