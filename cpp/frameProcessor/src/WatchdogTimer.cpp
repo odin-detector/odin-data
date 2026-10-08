@@ -39,7 +39,7 @@ WatchdogTimer::~WatchdogTimer()
  * \param[in] function_name - Function name for log message
  * \param[in] watchdog_timeout_ms - Timeout for watchdog to log error message
  */
-void WatchdogTimer::start_timer(std::string&& function_name, unsigned int watchdog_timeout_ms)
+void WatchdogTimer::start_timer(std::string function_name, unsigned int watchdog_timeout_ms)
 {
     gettime(&start_time_, true);
     timeout_ = watchdog_timeout_ms;
