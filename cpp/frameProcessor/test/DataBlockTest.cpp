@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE(DataBlockFrameTest)
 BOOST_AUTO_TEST_CASE(DataBlockPreAllocatedMemory)
 {
     unsigned char DataBlock_buf[sizeof(FrameProcessor::DataBlock)];
-    void* ptr;
+    void* ptr = nullptr;
     const size_t block_sz = 128;
     BOOST_CHECK(posix_memalign(&ptr, FrameProcessor::alignment, block_sz) == 0);
     FrameProcessor::DataBlock* dptr
@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE(DataBlockPreAllocatedMemory)
 BOOST_AUTO_TEST_CASE(DataBlockMoveAssignment)
 {
     unsigned char DataBlock_buf[sizeof(FrameProcessor::DataBlock)];
-    void* ptr;
+    void* ptr = nullptr;
     const size_t block_sz = 256;
     BOOST_CHECK(posix_memalign(&ptr, FrameProcessor::alignment, block_sz) == 0);
     FrameProcessor::DataBlock* dptr
