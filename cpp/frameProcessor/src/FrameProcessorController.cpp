@@ -175,6 +175,10 @@ void FrameProcessorController::handleCtrlChannel()
                 LOG4CXX_DEBUG_LEVEL(3, logger_, "Control thread reply message (shutdown): " << replyMsg.encode());
                 break;
             }
+            default:
+                LOG4CXX_ERROR(logger_, "Control thread got unexpected message: " << ctrlMsgEncoded);
+                replyMsg.set_param("error", "Invalid control message: " + ctrlMsgEncoded);
+                replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeNack);
             };
         } else {
             LOG4CXX_ERROR(logger_, "Control thread got unexpected message: " << ctrlMsgEncoded);
