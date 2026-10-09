@@ -8,10 +8,10 @@
 
 #include <map>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include <boost/shared_ptr.hpp>
-#include <boost/thread.hpp>
 
 #include <log4cxx/logger.h>
 using namespace log4cxx;
@@ -215,7 +215,7 @@ private:
     /** Close file timeout thread running */
     bool timeout_thread_running_;
     /** The close file timeout thread */
-    boost::thread timeout_thread_;
+    std::thread timeout_thread_;
     /** Starting file index (default to 0 index based numbering) */
     uint32_t first_file_index_;
     /** Do we use file numbers in the file name construction.  Defaults to true */

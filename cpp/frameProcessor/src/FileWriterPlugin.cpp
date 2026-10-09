@@ -85,7 +85,6 @@ FileWriterPlugin::FileWriterPlugin() :
     alignment_value_(1),
     timeout_period_(0),
     timeout_thread_running_(true),
-    timeout_thread_(boost::bind(&FileWriterPlugin::run_close_file_timeout, this)),
     first_file_index_(0),
     use_file_numbering_(true),
     file_postfix_(""),
@@ -177,6 +176,7 @@ FileWriterPlugin::FileWriterPlugin() :
     hdf5_error_definition_.write_duration = 0;
     hdf5_error_definition_.flush_duration = 0;
     hdf5_error_definition_.close_duration = 0;
+    timeout_thread_ = std::thread { [this]() { this->run_close_file_timeout(); } };
     hdf5_error_definition_.callback = boost::bind(&FileWriterPlugin::set_warning, this, _1);
 }
 
