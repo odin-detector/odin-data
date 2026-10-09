@@ -115,15 +115,16 @@ void FrameReceiverUDPRxThread::handle_receive_socket(int recv_socket, int recv_p
         size_t header_size = frame_decoder_->get_packet_header_size();
         void* header_buffer = frame_decoder_->get_packet_header_buffer();
         socklen_t from_len = sizeof(from_addr);
-        size_t bytes_received
-            // BUG??: recvfrom is ssize_t but bytes_recieved is size_t
+        ssize_t bytes_received
             = recvfrom(recv_socket, header_buffer, header_size, MSG_PEEK, (struct sockaddr*)&from_addr, &from_len);
         LOG4CXX_DEBUG_LEVEL(3, logger_, "RX thread received " << bytes_received << " header bytes on recv socket");
-        frame_decoder_->process_packet_header(bytes_received, recv_port, &from_addr);
 
-        io_vec[iovec_entry].iov_base = frame_decoder_->get_packet_header_buffer();
-        io_vec[iovec_entry].iov_len = frame_decoder_->get_packet_header_size();
-        iovec_entry++;
+        if (bytes_received >= 0) {
+            frame_decoder_->process_packet_header(bytes_received, recv_port, &from_addr);
+            io_vec[iovec_entry].iov_base = frame_decoder_->get_packet_header_buffer();
+            io_vec[iovec_entry].iov_len = frame_decoder_->get_packet_header_size();
+            iovec_entry++;
+        }
     }
 
     io_vec[iovec_entry].iov_base = frame_decoder_->get_next_payload_buffer();
@@ -137,7 +138,7 @@ void FrameReceiverUDPRxThread::handle_receive_socket(int recv_socket, int recv_p
     msg_hdr.msg_iov = io_vec;
     msg_hdr.msg_iovlen = iovec_entry;
 
-    size_t bytes_received = recvmsg(recv_socket, &msg_hdr, 0);
+    ssize_t bytes_received = recvmsg(recv_socket, &msg_hdr, 0);
     LOG4CXX_DEBUG_LEVEL(
         3, logger_,
         "RX thread received " << bytes_received
@@ -146,5 +147,7 @@ void FrameReceiverUDPRxThread::handle_receive_socket(int recv_socket, int recv_p
                               << frame_decoder_->get_next_payload_buffer()
     );
 
-    frame_decoder_->process_packet(bytes_received, recv_port, &from_addr);
+    if (bytes_received >= 0) {
+        frame_decoder_->process_packet(bytes_received, recv_port, &from_addr);
+    }
 }
