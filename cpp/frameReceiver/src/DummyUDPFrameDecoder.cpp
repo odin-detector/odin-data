@@ -118,7 +118,7 @@ void DummyUDPFrameDecoder::init(LoggerPtr& logger, OdinData::IpcMessage& config_
     }
 
     LOG4CXX_DEBUG_LEVEL(
-        3, logger_,
+        3, logger,
         "DummyUDPFrameDecoder initialised with " << udp_packets_per_frame_ << " UDP packets per frame, packet size "
                                                  << udp_packet_size_
     );
