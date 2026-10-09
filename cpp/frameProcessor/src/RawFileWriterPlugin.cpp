@@ -68,7 +68,7 @@ void RawFileWriterPlugin::process_frame(boost::shared_ptr<Frame> frame)
  * @param config
  * @param reply
  */
-void RawFileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
+void RawFileWriterPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& /* reply */)
 {
     // Protect this method
     std::lock_guard<std::mutex> lock { mutex_ };

@@ -148,7 +148,7 @@ void LiveViewPlugin::process_frame(boost::shared_ptr<Frame> frame)
  * \param[in] config - IpcMessage containing configuration data.
  * \param[out] reply - Response IpcMessage.
  */
-void LiveViewPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
+void LiveViewPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& /* reply */)
 {
     try {
         std::lock_guard<std::mutex> guard { mutex_ };

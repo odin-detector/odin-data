@@ -82,7 +82,7 @@ void ParameterAdjustmentPlugin::process_frame(boost::shared_ptr<Frame> frame)
  * \param[in] config - IpcMessage containing configuration data.
  * \param[out] reply - Response IpcMessage.
  */
-void ParameterAdjustmentPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
+void ParameterAdjustmentPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& /* reply */)
 {
     try {
         std::lock_guard<std::mutex> guard { mutex_ };

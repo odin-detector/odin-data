@@ -59,7 +59,7 @@ void print_stack_trace(FILE* out = stderr, unsigned int max_frames = 63)
  * @param si struct with signal information
  * @param unused
  */
-void abort_handler(int signum, siginfo_t* si, void* unused)
+void abort_handler(int signum, siginfo_t*, void*)
 {
     // Associate each signal with a signal name string.
     const char* name = NULL;
