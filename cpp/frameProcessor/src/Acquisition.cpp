@@ -112,7 +112,7 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame, HD
 
             size_t frame_offset_in_file = this->get_frame_offset_in_file(frame_offset);
 
-            int dataset_max_offset = file->get_dataset_max_size(frame_dataset_name) - 1;
+            size_t dataset_max_offset = file->get_dataset_max_size(frame_dataset_name) - 1;
             if (dataset_max_offset && frame_offset_in_file > dataset_max_offset) {
                 last_error_ = "Frame offset exceeds dimensions of static dataset";
                 return status_invalid;
@@ -248,7 +248,7 @@ void Acquisition::create_file(size_t file_number, HDF5CallDurations_t& call_dura
         if (dset_def.create_low_high_indexes && frames_per_block_ > 1) {
             low_index = file_number * frames_per_block_ + 1;
             high_index = low_index + frames_per_block_ - 1;
-            if (blocks_per_file_ == 0 || high_index > total_frames_) {
+            if (blocks_per_file_ == 0 || static_cast<size_t>(high_index) > total_frames_) {
                 high_index = total_frames_;
             }
         }
@@ -258,7 +258,7 @@ void Acquisition::create_file(size_t file_number, HDF5CallDurations_t& call_dura
         int wrap = (file_number / concurrent_processes_) + 1;
         int frames_per_file = blocks_per_file_ * frames_per_block_ * dset_def.chunks[0];
         if (frames_per_file > 1) {
-            if (wrap * frames_per_file > frames_to_write_) {
+            if (wrap * frames_per_file > static_cast<long int>(frames_to_write_)) {
                 // This is the final file creation which may contain less than a full block of frames
                 dset_def.num_frames = frames_to_write_ % frames_per_file;
             } else {
