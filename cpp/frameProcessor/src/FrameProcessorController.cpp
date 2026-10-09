@@ -176,9 +176,9 @@ void FrameProcessorController::handleCtrlChannel()
                 break;
             }
             default:
-                throw std::runtime_error(
-                    "Unhandled IpcMessage value: " + std::to_string(mval) + " . in FrameProcessorController.cpp#183"
-                );
+                LOG4CXX_ERROR(logger_, "Control thread got unexpected message: " << ctrlMsgEncoded);
+                replyMsg.set_param("error", "Invalid control message: " + ctrlMsgEncoded);
+                replyMsg.set_msg_type(OdinData::IpcMessage::MsgTypeNack);
             };
         } else {
             LOG4CXX_ERROR(logger_, "Control thread got unexpected message: " << ctrlMsgEncoded);
