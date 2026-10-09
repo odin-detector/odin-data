@@ -138,8 +138,8 @@ BOOST_AUTO_TEST_CASE(GapFillPlugin_process_frame)
     BOOST_CHECK_EQUAL(gap_frame->get_meta_data().get_dimensions()[0], 9);
     BOOST_CHECK_EQUAL(gap_frame->get_meta_data().get_dimensions()[1], 13);
     int index = 0;
-    for (int y = 0; y < gap_frame->get_meta_data().get_dimensions()[0]; y++) {
-        for (int x = 0; x < gap_frame->get_meta_data().get_dimensions()[1]; x++) {
+    for (uint32_t y = 0; y < gap_frame->get_meta_data().get_dimensions()[0]; y++) {
+        for (uint32_t x = 0; x < gap_frame->get_meta_data().get_dimensions()[1]; x++) {
             BOOST_CHECK_EQUAL(ptr[index], gap_img[index]);
             index++;
         }
@@ -172,8 +172,8 @@ BOOST_AUTO_TEST_CASE(GapFillPlugin_process_frame)
     BOOST_CHECK_EQUAL(gap_frame_2->get_meta_data().get_dimensions()[0], 7);
     BOOST_CHECK_EQUAL(gap_frame_2->get_meta_data().get_dimensions()[1], 7);
     index = 0;
-    for (int y = 0; y < gap_frame_2->get_meta_data().get_dimensions()[0]; y++) {
-        for (int x = 0; x < gap_frame_2->get_meta_data().get_dimensions()[1]; x++) {
+    for (uint32_t y = 0; y < gap_frame_2->get_meta_data().get_dimensions()[0]; y++) {
+        for (uint32_t x = 0; x < gap_frame_2->get_meta_data().get_dimensions()[1]; x++) {
             BOOST_CHECK_EQUAL(ptr[index], gap_img_2[index]);
             index++;
         }
