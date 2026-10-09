@@ -84,9 +84,9 @@ public:
     }
 
 private:
-    const boost::optional<T> defaultval;
     const std::string argstring;
     const std::string description;
+    const boost::optional<T> defaultval;
 };
 
 }

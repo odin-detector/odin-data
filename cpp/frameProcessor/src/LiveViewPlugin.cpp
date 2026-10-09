@@ -28,9 +28,9 @@ const std::string LiveViewPlugin::CONFIG_TAGGED_FILTER_NAME = "filter_tagged";
  * Constructor for this class. Sets up ZMQ pub socket and other default values for the config
  */
 LiveViewPlugin::LiveViewPlugin() :
+    time_last_frame_(boost::posix_time::min_date_time),
     publish_socket_(ZMQ_PUB),
-    is_bound_(false),
-    time_last_frame_(boost::posix_time::min_date_time)
+    is_bound_(false)
 {
     logger_ = Logger::getLogger("FP.LiveViewPlugin");
     LOG4CXX_INFO(logger_, "LiveViewPlugin version " << this->get_version_long() << " loaded");

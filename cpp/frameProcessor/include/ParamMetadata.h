@@ -140,8 +140,8 @@ struct ParamMetadata {
     friend class FrameProcessorPlugin;
 
 private:
-    AccessMode access_mode_;
     Datatype type_;
+    AccessMode access_mode_;
     std::vector<allowed_values_t> allowed_values_;
     int32_t min_;
     int32_t max_;

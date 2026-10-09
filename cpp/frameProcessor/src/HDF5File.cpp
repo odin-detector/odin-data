@@ -28,11 +28,11 @@ herr_t hdf5_error_cb(unsigned n, const H5E_error2_t* err_desc, void* client_data
 
 HDF5File::HDF5File(const HDF5ErrorDefinition_t& hdf5_error_definition) :
     hdf5_file_id_(-1),
-    param_memspace_(-1),
     hdf5_error_flag_(false),
     file_index_(0),
     use_earliest_version_(false),
     unlimited_(false),
+    param_memspace_(-1),
     watchdog_timer_(hdf5_error_definition.callback),
     hdf5_error_definition_(hdf5_error_definition)
 {
