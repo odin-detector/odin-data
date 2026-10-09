@@ -169,7 +169,7 @@ protected:
     //! \param param - reference to the parameter to retrieve
     //! \param value_obj - reference to a RapidJSON value object to be set with the value
 
-    template <typename T> const void param_get(T& param, rapidjson::Value& value_obj)
+    template <typename T> void param_get(T& param, rapidjson::Value& value_obj)
     {
         get_value<T>(param, value_obj);
     }
