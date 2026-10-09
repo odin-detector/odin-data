@@ -45,7 +45,6 @@ BOOST_FIXTURE_TEST_SUITE(SharedMemoryPluginUnitTest, SharedMemoryPluginTestFixtu
 
 BOOST_AUTO_TEST_CASE(SharedMemoryPlugin_version_and_status)
 {
-    using SHM = SharedMemoryPluginTestFixture;
     OdinData::IpcMessage status_reply;
 
     BOOST_CHECK_EQUAL(shm_plugin.get_version_major(), ODIN_DATA_VERSION_MAJOR);
@@ -66,7 +65,6 @@ BOOST_AUTO_TEST_CASE(SharedMemoryPlugin_version_and_status)
 
 BOOST_AUTO_TEST_CASE(SharedMemoryPlugin_requestconfiguration)
 {
-    using SHM = SharedMemoryPluginTestFixture;
     OdinData::IpcMessage config_reply;
 
     BOOST_REQUIRE_NO_THROW(shm_plugin.requestConfiguration(config_reply));
@@ -86,7 +84,6 @@ BOOST_AUTO_TEST_CASE(SharedMemoryPlugin_requestconfiguration)
 
 BOOST_AUTO_TEST_CASE(SharedMemoryPlugin_full_shm_test)
 {
-    using SHM = SharedMemoryPluginTestFixture;
     boost::shared_ptr<SharedMemoryPluginTestCallback> cb = boost::make_shared<SharedMemoryPluginTestCallback>();
     // cb->start();
     OdinData::IpcMessage cfg;

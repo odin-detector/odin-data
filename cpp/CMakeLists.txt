@@ -11,6 +11,9 @@ add_compile_options(
   -Wall
   -Wextra
   -Wpedantic
+  -Wuninitialized
+  -Wmaybe-uninitialized
+  -Werror
   $<$<CXX_COMPILER_ID:GNU>:-Wno-class-memaccess>
 )
 

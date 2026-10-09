@@ -31,7 +31,6 @@ DummyTCPFrameDecoder::DummyTCPFrameDecoder() :
     LOG4CXX_INFO(logger_, "DummyTCPFrameDecoder version " << this->get_version_long() << " loaded");
     // buffer can fit 5 frames by default
     buffer_size_ = num_buffers_ * frame_size_;
-    frame_buffer_.reset(new char[buffer_size_]);
 }
 
 //! Destructor for DummyTCPFrameDecoder

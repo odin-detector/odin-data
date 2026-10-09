@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE(SharedWithChildProcessTest)
     size_t manager_id = shared_buffer_manager.get_manager_id();
 
     // Initialise the contents of first buffer to incrementing byte values
-    char* buf_address = reinterpret_cast<char*>(shared_buffer_manager.get_buffer_address(0));
+    unsigned char* buf_address = reinterpret_cast<unsigned char*>(shared_buffer_manager.get_buffer_address(0));
     size_t buffer_size = shared_buffer_manager.get_buffer_size();
     for (uint32_t i = 0; i < buffer_size; i++) {
         buf_address[i] = i % 256;
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE(SharedWithChildProcessTest)
         // Check the first buffer has been initialised with incrementing byte values
         int buffer_values_mismatched = 0;
         for (uint32_t i = 0; i < child_buffer_size; i++) {
-            if (buf_address[i] != i % 256) {
+            if (buf_address[i] != static_cast<unsigned char>(i % 256)) {
                 buffer_values_mismatched++;
             }
         }

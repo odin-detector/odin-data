@@ -9,11 +9,6 @@ BOOST_GLOBAL_FIXTURE(GlobalConfig);
 
 BOOST_AUTO_TEST_SUITE(DataBlockUnitTest);
 
-static bool not_critical(const std::invalid_argument& er)
-{
-    return true;
-}
-
 BOOST_AUTO_TEST_CASE(DataBlockTest)
 {
     char data1[1024];
@@ -117,7 +112,7 @@ BOOST_AUTO_TEST_CASE(DataBlockFrameTest)
 BOOST_AUTO_TEST_CASE(DataBlockPreAllocatedMemory)
 {
     unsigned char DataBlock_buf[sizeof(FrameProcessor::DataBlock)];
-    void* ptr;
+    void* ptr = nullptr;
     const size_t block_sz = 128;
     BOOST_CHECK(posix_memalign(&ptr, FrameProcessor::alignment, block_sz) == 0);
     FrameProcessor::DataBlock* dptr
@@ -129,7 +124,7 @@ BOOST_AUTO_TEST_CASE(DataBlockPreAllocatedMemory)
 BOOST_AUTO_TEST_CASE(DataBlockMoveAssignment)
 {
     unsigned char DataBlock_buf[sizeof(FrameProcessor::DataBlock)];
-    void* ptr;
+    void* ptr = nullptr;
     const size_t block_sz = 256;
     BOOST_CHECK(posix_memalign(&ptr, FrameProcessor::alignment, block_sz) == 0);
     FrameProcessor::DataBlock* dptr
