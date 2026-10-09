@@ -115,12 +115,12 @@ void FrameReceiverUDPRxThread::handle_receive_socket(int recv_socket, int recv_p
         size_t header_size = frame_decoder_->get_packet_header_size();
         void* header_buffer = frame_decoder_->get_packet_header_buffer();
         socklen_t from_len = sizeof(from_addr);
-        size_t bytes_received
+        ssize_t bytes_received
             = recvfrom(recv_socket, header_buffer, header_size, MSG_PEEK, (struct sockaddr*)&from_addr, &from_len);
         LOG4CXX_DEBUG_LEVEL(3, logger_, "RX thread received " << bytes_received << " header bytes on recv socket");
 
         if (bytes_received >= 0) {
-            frame_decoder_->process_packet_header(bytes_received, recv_port, &from_addr);
+            frame_decoder_->process_packet_header(static_cast<size_t>(bytes_received), recv_port, &from_addr);
             io_vec[iovec_entry].iov_base = frame_decoder_->get_packet_header_buffer();
             io_vec[iovec_entry].iov_len = frame_decoder_->get_packet_header_size();
             iovec_entry++;
@@ -146,6 +146,7 @@ void FrameReceiverUDPRxThread::handle_receive_socket(int recv_socket, int recv_p
                                  "payload buffer address "
                               << frame_decoder_->get_next_payload_buffer()
     );
-    
-    frame_decoder_->process_packet(bytes_received, recv_port, &from_addr);
+    if (bytes_received >= 0) {
+        frame_decoder_->process_packet(static_cast<size_t>(bytes_received), recv_port, &from_addr);
+    }
 }
