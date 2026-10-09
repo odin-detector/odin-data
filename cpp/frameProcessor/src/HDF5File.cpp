@@ -463,7 +463,7 @@ void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index
     /* Enable chunking  */
     std::stringstream ss;
     ss << "Chunking = " << chunk_dims[0];
-    for (int index = 1; index < chunk_dims.size(); index++) {
+    for (uint32_t index = 1; index < chunk_dims.size(); index++) {
         ss << "," << chunk_dims[index];
     }
     LOG4CXX_DEBUG_LEVEL(1, logger_, ss.str());
