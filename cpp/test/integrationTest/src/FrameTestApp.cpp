@@ -42,16 +42,6 @@ void cleanup_tempfs(LoggerPtr logger)
     boost::filesystem::remove_all("/tmp/test_1_000001.h5", ec);
 }
 
-/** Check that str contains suffix
- * /param[in] str - string to test
- * /param[in] suffix - test suffix
- * /return true if suffix found; else false
- */
-static bool has_suffix(const std::string& str, const std::string& suffix)
-{
-    return str.size() >= suffix.size() && str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
-}
-
 /** Parse command line arguments
  * /param[in] argc - argument count; number of arguments to parse
  * /param[in] argv - one-dimensional string array of command line arguments

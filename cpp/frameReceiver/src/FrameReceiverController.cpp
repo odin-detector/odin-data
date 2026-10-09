@@ -189,7 +189,6 @@ void FrameReceiverController::configure_ipc_channels(OdinData::IpcMessage& confi
     static bool ctrl_channel_configured = false;
     static bool rx_channel_configured = false;
     static bool ready_channel_configured = false;
-    static bool release_channel_configured = false;
 
     // Clear the IPC config status until successful completion
     ipc_configured_ = false;
@@ -237,7 +236,6 @@ void FrameReceiverController::configure_ipc_channels(OdinData::IpcMessage& confi
             this->unbind_channel(&frame_release_channel_, config_.frame_release_endpoint_, false);
             this->setup_frame_release_channel(frame_release_endpoint);
             config_.frame_release_endpoint_ = frame_release_endpoint;
-            release_channel_configured = true;
         }
     }
 
@@ -703,7 +701,6 @@ void FrameReceiverController::handle_ctrl_channel(void)
 
     // Construct a default reply
     IpcMessage ctrl_reply;
-    IpcMessage::MsgVal ctrl_reply_val = IpcMessage::MsgValIllegal;
 
     bool request_ok = true;
     std::ostringstream error_ss;
