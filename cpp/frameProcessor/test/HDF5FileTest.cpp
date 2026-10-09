@@ -240,7 +240,7 @@ BOOST_AUTO_TEST_CASE(FileWriterPluginWriteParamWrongTypeTest)
         uint64_t val = 123;
         (*it)->meta_data().set_parameter("p1", val);
         BOOST_TEST_MESSAGE("Writing frame: " << (*it)->get_frame_number());
-        BOOST_CHECK_THROW(hdf5f.write_parameter(*(*it), param_dset_def, (*it)->get_frame_number()), std::runtime_error);
+        BOOST_REQUIRE_THROW(hdf5f.write_parameter(*(*it), param_dset_def, (*it)->get_frame_number()), boost::bad_get);
     }
     BOOST_REQUIRE_NO_THROW(hdf5f.close_file());
 }
@@ -270,7 +270,7 @@ BOOST_AUTO_TEST_CASE(FileWriterPluginWriteParamNoParamTest)
         uint64_t val = 123;
         (*it)->meta_data().set_parameter("p2", val);
         BOOST_TEST_MESSAGE("Writing frame: " << (*it)->get_frame_number());
-        BOOST_CHECK_THROW(hdf5f.write_parameter(*(*it), param_dset_def, (*it)->get_frame_number()), std::runtime_error);
+        BOOST_CHECK_NO_THROW(hdf5f.write_parameter(*(*it), param_dset_def, (*it)->get_frame_number()));
     }
     BOOST_REQUIRE_NO_THROW(hdf5f.close_file());
 }
