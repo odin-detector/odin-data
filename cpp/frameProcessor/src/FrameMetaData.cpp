@@ -31,19 +31,6 @@ FrameMetaData::FrameMetaData() :
 {
 }
 
-FrameMetaData::FrameMetaData(const FrameMetaData& frame)
-{
-    frame_number_ = frame.frame_number_;
-    dataset_name_ = frame.dataset_name_;
-    data_type_ = frame.data_type_;
-    acquisition_ID_ = frame.acquisition_ID_;
-    dimensions_ = frame.dimensions_;
-    compression_type_ = frame.compression_type_;
-    parameters_ = frame.parameters_;
-    frame_offset_ = frame.frame_offset_;
-    logger = frame.logger;
-}
-
 /** Get frame parameters
  * @return std::map <std::string, boost::any>  map
  */
