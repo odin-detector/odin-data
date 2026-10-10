@@ -33,13 +33,10 @@ class alignas(alignment) UDataBlockPool {
 
 public:
     static constexpr size_t ELEMS_PER_POOL = 64;
-    ~UDataBlockPool();
+    ~UDataBlockPool() = default;
 
-    static std::pair<void*, UDataBlockPool*> take(size_t block_size);
-    void release(void* block);
-    static size_t get_used_blocks(size_t block_size);
-    static size_t get_total_blocks(size_t block_size);
-    static size_t get_memory_allocated(size_t block_size);
+    static void* take(size_t block_size);
+    static void release(void* block);
     static void tearDownClass();
 
 private:
@@ -53,14 +50,29 @@ private:
      */
     size_t instance_get_free_blocks() const
     {
-        sizeof(UDataBlockPool);
         return free_list_.size();
     }
     void internal_allocate(size_t block_count, size_t block_size);
     void* internal_take(size_t block_size);
-    size_t internal_get_used_blocks();
-    size_t internal_get_total_blocks();
-    size_t internal_get_memory_allocated();
+    void internal_release(void* block);
+    /**
+     * Returns the number of in-use DataBlocks present in the UDataBlockPool.
+     *
+     * \return - Number of in-use DataBlocks.
+     */
+    size_t internal_get_used_blocks()
+    {
+        return used_map_.size();
+    }
+    /**
+     * Returns the total number of DataBlocks present in the UDataBlockPool.
+     *
+     * \return - Total number of DataBlocks.
+     */
+    size_t internal_get_total_blocks()
+    {
+        return ELEMS_PER_POOL;
+    }
 
     /** Mutex used to make this class thread safe */
     std::mutex mutex_;
@@ -74,7 +86,7 @@ private:
     /** Total number of bytes allocated (sum of all DataBlocks) */
     size_t memory_allocated_;
     /** Offset size for block alignment */
-    unsigned int alignment_offset_;
+    size_t alignment_offset_;
     /** DataBlock header object holding pointer to the allocated contiguous block*/
     alignas(void*) void* allocated_block_;
 
@@ -82,6 +94,8 @@ private:
     static std::mutex sta_mutex_;
     /** Static map of all UDataBlockPool objects, indexed by their sizes */
     static std::unordered_multimap<size_t, UDataBlockPool*> instance_map_;
+    /** Vector for mapping poiners to their allocators */
+    static std::vector<std::pair<void*, UDataBlockPool*>> address_mapper_;
 };
 
 } /* namespace FrameProcessor */
