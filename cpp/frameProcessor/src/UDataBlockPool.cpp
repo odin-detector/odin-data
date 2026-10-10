@@ -43,7 +43,15 @@ std::mutex UDataBlockPool::sta_mutex_;
 void* UDataBlockPool::take(size_t block_size)
 {
     // handle nullptr case!
-    return UDataBlockPool::instance(block_size)->internal_take(block_size);
+    void* ptr = nullptr;
+    /**
+     * internal_take() may return a nullptr. the call from instance() to internal_take()
+     * is NOT atomic!
+     */
+    while (!ptr) {
+        ptr = UDataBlockPool::instance(block_size)->internal_take(block_size);
+    }
+    return ptr;
 }
 
 /**
