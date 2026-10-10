@@ -50,9 +50,9 @@ private:
      */
     size_t instance_get_free_blocks() const
     {
+        std::lock_guard<std::mutex> lock(mutex_);
         return free_list_.size();
     }
-    void internal_allocate(size_t block_count, size_t block_size);
     void* internal_take(size_t block_size);
     void internal_release(void* block);
     /**
@@ -62,6 +62,7 @@ private:
      */
     size_t internal_get_used_blocks()
     {
+        std::lock_guard<std::mutex> lock(mutex_);
         return used_map_.size();
     }
     /**
@@ -75,7 +76,7 @@ private:
     }
 
     /** Mutex used to make this class thread safe */
-    std::mutex mutex_;
+    mutable std::mutex mutex_;
     // std::atomic<bool> bool_at_;
     /** List of currently available DataBlock objects */
     boost::circular_buffer<void*> free_list_;
