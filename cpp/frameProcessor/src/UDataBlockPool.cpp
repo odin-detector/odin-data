@@ -5,8 +5,18 @@
  *      Author: Famous Alele
  */
 
+/**
+ * Some Notes:
+ * UDataBlockPool::instance(block_size)->UDataBlockPool_Method();
+ *                                      ^
+ *                                      |
+ * -------------------------------------|
+ * This is not an atomic operation, an atomic test is necessary and the process returns
+ * if it fails!
+ */
+#include "UDataBlockPool.h"
 #include "DebugLevelLogger.h"
-#include <UDataBlockPool.h>
+#include <algorithm>
 
 namespace FrameProcessor {
 
@@ -20,11 +30,8 @@ static constexpr size_t calc_alignment_offset(const size_t block_size)
  * Container of UDataBlockPool instances which can be indexed by name
  */
 std::unordered_multimap<size_t, UDataBlockPool*> UDataBlockPool::instance_map_;
+std::vector<std::pair<void*, UDataBlockPool*>> UDataBlockPool::address_mapper_;
 std::mutex UDataBlockPool::sta_mutex_;
-
-UDataBlockPool::~UDataBlockPool()
-{
-}
 
 /**
  * Static method to take a DataBlock from the UDataBlockPool specified by the
@@ -33,11 +40,10 @@ UDataBlockPool::~UDataBlockPool()
  * \param[in] block_size - Size of the DataBlock required in bytes.
  * \return - DataBlock from the available pool, and the UDataBlockPool instance that allocated it.
  */
-std::pair<void*, UDataBlockPool*> UDataBlockPool::take(size_t block_size)
+void* UDataBlockPool::take(size_t block_size)
 {
-    auto instance = UDataBlockPool::instance(block_size);
-    auto data_blk = instance->internal_take(block_size);
-    return { data_blk, instance };
+    // handle nullptr case!
+    return UDataBlockPool::instance(block_size)->internal_take(block_size);
 }
 
 /**
@@ -50,53 +56,27 @@ std::pair<void*, UDataBlockPool*> UDataBlockPool::take(size_t block_size)
 void UDataBlockPool::release(void* block)
 {
     // Protect this method
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::unique_lock<std::mutex> lock(sta_mutex_);
 
     LOG4CXX_DEBUG_LEVEL(
         2, log4cxx::Logger::getLogger("FP.UDataBlockPool"), "Releasing DataBlock [addr=" << block << "]"
     );
 
+    UDataBlockPool* pool
+        = upper_bound(address_mapper_.cbegin(), address_mapper_.cend(), block, [](void* block, auto& item) {
+              return block < item.first;
+          })->second;
+    lock.unlock();
+    pool->internal_release(block);
+}
+
+void UDataBlockPool::internal_release(void* block)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
     if (used_map_.count(block) > 0) {
         used_map_.erase(block);
         free_list_.push_front(block);
     }
-}
-
-/**
- * Static method that returns the number of in-use DataBlocks present in
- * the UDataBlockPool specified by the block_size parameter.
- *
- * \param[in] block_size - Index of UDataBlockPool to get the in-use count from.
- * \return - Number of in-use DataBlocks.
- */
-size_t UDataBlockPool::get_used_blocks(size_t block_size)
-{
-    return UDataBlockPool::instance(block_size)->internal_get_used_blocks();
-}
-
-/**
- * Static method that returns the total number of DataBlocks present in
- * the UDataBlockPool specified by the block_size parameter.
- *
- * \param[in] block_size - Index of UDataBlockPool to get the total count from.
- * \return - Total number of DataBlocks.
- */
-size_t UDataBlockPool::get_total_blocks(size_t block_size)
-{
-    return UDataBlockPool::instance(block_size)->internal_get_total_blocks();
-}
-
-/**
- * Static method that returns the total number of bytes that have been
- * allocated by the UDataBlockPool specified by the index parameter.
- *
- * \param[in] index - Index of UDataBlockPool to get the total bytes allocated from.
- * \return - Total number of allocated bytes.
- */
-size_t UDataBlockPool::get_memory_allocated(size_t block_size)
-{
-    auto instance = UDataBlockPool::instance(block_size);
-    return instance->internal_get_memory_allocated();
 }
 
 /**
@@ -128,11 +108,17 @@ UDataBlockPool* UDataBlockPool::instance(size_t block_size)
         &pre_allocated_pool_ptr, alignment, sizeof(UDataBlockPool) + ((block_size + alignment_offset) * ELEMS_PER_POOL)
     );
     if (!status) {
+        void* last_memory_addr = reinterpret_cast<uint8_t*>(pre_allocated_pool_ptr)
+            + (sizeof(UDataBlockPool) + ((block_size + alignment_offset) * ELEMS_PER_POOL));
         new (reinterpret_cast<UDataBlockPool*>(pre_allocated_pool_ptr)) UDataBlockPool(
             reinterpret_cast<uint8_t*>(pre_allocated_pool_ptr) + sizeof(UDataBlockPool), block_size, alignment_offset
         );
         sta_mutex_.lock();
         UDataBlockPool::instance_map_.emplace(block_size, reinterpret_cast<UDataBlockPool*>(pre_allocated_pool_ptr));
+        UDataBlockPool::address_mapper_.push_back(
+            std::pair { last_memory_addr, reinterpret_cast<UDataBlockPool*>(pre_allocated_pool_ptr) }
+        );
+        std::sort(address_mapper_.begin(), address_mapper_.end(), [](auto& a, auto& b) { return a.first < b.first; });
         sta_mutex_.unlock();
     } else {
         throw std::runtime_error("Failed to allocate Pool Memory");
@@ -202,6 +188,8 @@ void* UDataBlockPool::internal_take(size_t block_size)
     LOG4CXX_DEBUG_LEVEL(
         2, log4cxx::Logger::getLogger("FP.UDataBlockPool"), "Requesting DataBlock of " << block_size << " bytes"
     );
+    if (free_list_.empty())
+        return nullptr;
     void* block = free_list_.front();
     free_list_.pop_front();
     used_map_.insert(block);
@@ -209,36 +197,6 @@ void* UDataBlockPool::internal_take(size_t block_size)
         2, log4cxx::Logger::getLogger("FP.UDataBlockPool"), "Providing DataBlock [addr=" << block << "]"
     );
     return block;
-}
-
-/**
- * Returns the number of in-use DataBlocks present in the UDataBlockPool.
- *
- * \return - Number of in-use DataBlocks.
- */
-size_t UDataBlockPool::internal_get_used_blocks()
-{
-    return used_map_.size();
-}
-
-/**
- * Returns the total number of DataBlocks present in the UDataBlockPool.
- *
- * \return - Total number of DataBlocks.
- */
-size_t UDataBlockPool::internal_get_total_blocks()
-{
-    return ELEMS_PER_POOL;
-}
-
-/**
- * Returns the number of bytes allocated by the UDataBlockPool.
- *
- * \return - Number of allocated bytes.
- */
-size_t UDataBlockPool::internal_get_memory_allocated()
-{
-    return memory_allocated_;
 }
 
 /**
