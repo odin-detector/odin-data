@@ -29,7 +29,7 @@ namespace FrameProcessor {
  * contains details of how many blocks are available, in use and the total
  * memory used.
  */
-class UDataBlockPool {
+class alignas(alignment) UDataBlockPool {
 
 public:
     static constexpr size_t ELEMS_PER_POOL = 64;
@@ -45,7 +45,7 @@ public:
 private:
     static UDataBlockPool* instance(size_t block_size);
     UDataBlockPool(const size_t block_size);
-    UDataBlockPool(void* allocated_block_, const size_t block_size);
+    UDataBlockPool(void* allocated_block_, const size_t block_size, const size_t alignment_offset = 0);
     /**
      * Returns the number of free DataBlocks present in the UDataBlockPool.
      *
@@ -64,6 +64,7 @@ private:
 
     /** Mutex used to make this class thread safe */
     std::mutex mutex_;
+    // std::atomic<bool> bool_at_;
     /** List of currently available DataBlock objects */
     boost::circular_buffer<void*> free_list_;
     // unsigned char free_list_mem_[(sizeof(DataBlock*) * ELEMS_PER_POOL)];
@@ -72,8 +73,11 @@ private:
     // unsigned char used_map_mem_[((sizeof(std::pair<int, DataBlock*>) * ELEMS_PER_POOL)) + 32];
     /** Total number of bytes allocated (sum of all DataBlocks) */
     size_t memory_allocated_;
+    /** Offset size for block alignment */
+    unsigned int alignment_offset_;
     /** DataBlock header object holding pointer to the allocated contiguous block*/
-    alignas(8) DataBlock allocated_block_;
+    alignas(void*) void* allocated_block_;
+
     // mutex for the static map of pools
     static std::mutex sta_mutex_;
     /** Static map of all UDataBlockPool objects, indexed by their sizes */

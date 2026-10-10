@@ -10,6 +10,12 @@
 
 namespace FrameProcessor {
 
+static constexpr size_t calc_alignment_offset(const size_t block_size)
+{
+    auto val = (block_size <= alignment) ? (alignment - block_size) : (alignment - (block_size % alignment));
+    return val;
+}
+
 /**
  * Container of UDataBlockPool instances which can be indexed by name
  */
@@ -114,20 +120,24 @@ UDataBlockPool* UDataBlockPool::instance(size_t block_size)
     }
     sta_mutex_.unlock();
 
-    // Allocate new block
-    void* pre_allocated_pool_;
-    int status
-        = posix_memalign(&pre_allocated_pool_, alignment, sizeof(UDataBlockPool) + (block_size * ELEMS_PER_POOL));
-    if (status) {
-        new (reinterpret_cast<UDataBlockPool*>(pre_allocated_pool_))
-            UDataBlockPool(reinterpret_cast<char*>(pre_allocated_pool_) + sizeof(UDataBlockPool), block_size);
+    // Allocate new UDataBlockPool
+    void* pre_allocated_pool_ptr = nullptr;
+    const size_t alignment_offset = calc_alignment_offset(block_size);
+
+    int status = posix_memalign(
+        &pre_allocated_pool_ptr, alignment, sizeof(UDataBlockPool) + ((block_size + alignment_offset) * ELEMS_PER_POOL)
+    );
+    if (!status) {
+        new (reinterpret_cast<UDataBlockPool*>(pre_allocated_pool_ptr)) UDataBlockPool(
+            reinterpret_cast<uint8_t*>(pre_allocated_pool_ptr) + sizeof(UDataBlockPool), block_size, alignment_offset
+        );
         sta_mutex_.lock();
-        UDataBlockPool::instance_map_.emplace(block_size, reinterpret_cast<UDataBlockPool*>(pre_allocated_pool_));
+        UDataBlockPool::instance_map_.emplace(block_size, reinterpret_cast<UDataBlockPool*>(pre_allocated_pool_ptr));
         sta_mutex_.unlock();
     } else {
         throw std::runtime_error("Failed to allocate Pool Memory");
     }
-    return reinterpret_cast<UDataBlockPool*>(pre_allocated_pool_);
+    return reinterpret_cast<UDataBlockPool*>(pre_allocated_pool_ptr);
 }
 
 /**
@@ -136,17 +146,23 @@ UDataBlockPool* UDataBlockPool::instance(size_t block_size)
  * methods.
  */
 UDataBlockPool::UDataBlockPool(const size_t block_size) :
-    free_list_(ELEMS_PER_POOL),
-    memory_allocated_ { block_size * ELEMS_PER_POOL },
-    allocated_block_ { memory_allocated_ }
+    free_list_(ELEMS_PER_POOL)
 {
     used_map_.reserve(ELEMS_PER_POOL);
-    unsigned char* ptr = reinterpret_cast<unsigned char*>(allocated_block_.get_writeable_data());
-
-    // initialize the free_list_ pool
-    for (int i = 0; i < ELEMS_PER_POOL; ++i) {
-        free_list_[i] = ptr;
-        ptr = ptr + block_size;
+    const size_t alignment_offset = calc_alignment_offset(block_size);
+    void* pre_allocated_pool_ptr = nullptr;
+    int status = posix_memalign(&pre_allocated_pool_ptr, alignment, (block_size + alignment_offset) * ELEMS_PER_POOL);
+    if (!status) {
+        alignment_offset_ = alignment_offset;
+        memory_allocated_ = (block_size + alignment_offset_) * ELEMS_PER_POOL;
+        unsigned char* ptr = reinterpret_cast<unsigned char*>(allocated_block_);
+        // initialize the free_list_ pool
+        for (int i = 0; i < ELEMS_PER_POOL; ++i) {
+            free_list_.push_back(ptr);
+            ptr += (block_size + alignment_offset_);
+        }
+    } else {
+        throw std::runtime_error("Failed to allocate Pool Memory");
     }
 }
 
@@ -155,22 +171,20 @@ UDataBlockPool::UDataBlockPool(const size_t block_size) :
  * these pool objects can only be constructed from the static
  * methods. This constructor take pre-allocated memory
  */
-UDataBlockPool::UDataBlockPool(void* allocated_block_ptr_, const size_t block_size) :
+UDataBlockPool::UDataBlockPool(void* allocated_block_ptr, const size_t block_size, const size_t alignment_offset) :
     free_list_(ELEMS_PER_POOL),
-    memory_allocated_ { block_size * ELEMS_PER_POOL },
-    allocated_block_ { nullptr, 0 }
+    memory_allocated_ { (block_size + alignment_offset) * ELEMS_PER_POOL },
+    alignment_offset_ { alignment_offset },
+    allocated_block_ { allocated_block_ptr }
 {
     used_map_.reserve(ELEMS_PER_POOL);
 
-    // Construct the DataBlock Header object with the pre-allocated memory provided using placement new
-    DataBlock* d_ptr = new (&allocated_block_) DataBlock(allocated_block_ptr_, memory_allocated_);
-
-    unsigned char* ptr = reinterpret_cast<unsigned char*>(allocated_block_ptr_);
+    unsigned char* ptr = reinterpret_cast<unsigned char*>(allocated_block_);
 
     // initialize the free_list_ pool with blocks of size block_size
-    for (int i = 0; i < ELEMS_PER_POOL; ++i) {
-        free_list_[i] = ptr;
-        ptr = ptr + block_size;
+    for (size_t i = 0; i < ELEMS_PER_POOL; ++i) {
+        free_list_.push_back(ptr);
+        ptr += (block_size + alignment_offset_);
     }
 }
 
