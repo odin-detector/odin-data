@@ -30,7 +30,8 @@ public:
 
     FrameMetaData();
 
-    FrameMetaData(const FrameMetaData& frame);
+    FrameMetaData(const FrameMetaData& frame) = default;
+    FrameMetaData& operator=(const FrameMetaData&) = default;
 
     /** Return frame parameters */
     const std::map<std::string, boost::any>& get_parameters() const;
