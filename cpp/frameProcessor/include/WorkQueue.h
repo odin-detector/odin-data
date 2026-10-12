@@ -8,13 +8,13 @@
 #ifndef TOOLS_FILEWRITER_WORKQUEUE_H_
 #define TOOLS_FILEWRITER_WORKQUEUE_H_
 
+#include <boost/circular_buffer.hpp>
 #include <cstddef>
-#include <list>
+#include <type_traits>
 
 namespace FrameProcessor {
 
 /** Maximum queue size - to prevent unlimited use of memory **/
-const int max_queue_size = 8;
 
 /** Thread safe producer consumer work queue.
  *
@@ -25,32 +25,45 @@ const int max_queue_size = 8;
  * Frame objects, and not the Frame objects themselves.
  */
 template <typename T> class WorkQueue {
+    static constexpr typename boost::circular_buffer<T>::size_type max_queue_size = 8;
     /** Queue (list) of worker items queued for processing */
-    std::list<T> m_queue;
+    boost::circular_buffer<T> m_queue;
     /** Mutex for locking the queue */
     pthread_mutex_t m_mutex;
-    /** Condition for waking up blocked threads when a new item is added to the queue */
-    pthread_cond_t m_condv;
+    /** Condition variable for waking up blocked consumer threads when a new item is added to the previously empty queue
+     */
+    pthread_cond_t m_prod_condv;
+    /** Condition variable for waking up blocked producer threads when an item is removed from the previously full queue
+     */
+    pthread_cond_t m_cons_condv;
 
 public:
     /** Constructor.
      *
      * The constructor initialises the mutex and condition required for the class.
      */
-    WorkQueue()
+    WorkQueue() :
+        m_queue(max_queue_size)
     {
         pthread_mutex_init(&m_mutex, NULL);
-        pthread_cond_init(&m_condv, NULL);
+        pthread_cond_init(&m_prod_condv, NULL);
+        pthread_cond_init(&m_cons_condv, NULL);
     }
+
+    /**
+     * Delete copy assignment operator
+     */
+    WorkQueue& operator=(const WorkQueue&) = delete;
 
     /** Destructor.
      *
      * The destructor frees resources (mutex and condition).
      */
-    virtual ~WorkQueue()
+    ~WorkQueue()
     {
         pthread_mutex_destroy(&m_mutex);
-        pthread_cond_destroy(&m_condv);
+        pthread_cond_destroy(&m_prod_condv);
+        pthread_cond_destroy(&m_cons_condv);
     }
 
     /** Add an item to the queue.
@@ -65,11 +78,13 @@ public:
         pthread_mutex_lock(&m_mutex);
         if (!ignore_max_limit) {
             while (m_queue.size() >= max_queue_size) {
-                pthread_cond_wait(&m_condv, &m_mutex);
+                pthread_cond_wait(&m_cons_condv, &m_mutex);
             }
         }
-        m_queue.push_back(item);
-        pthread_cond_signal(&m_condv);
+        bool is_empty = m_queue.empty();
+        m_queue.push_back(std::move(item));
+        if (is_empty)
+            pthread_cond_signal(&m_prod_condv);
         pthread_mutex_unlock(&m_mutex);
     }
 
@@ -83,15 +98,32 @@ public:
      */
     T remove()
     {
+        static_assert(std::is_nothrow_copy_constructible<T>::value && std::is_nothrow_move_constructible<T>::value);
         pthread_mutex_lock(&m_mutex);
-        while (m_queue.size() == 0) {
-            pthread_cond_wait(&m_condv, &m_mutex);
+        while (m_queue.empty()) {
+            pthread_cond_wait(&m_prod_condv, &m_mutex);
         }
+        bool is_full = m_queue.size() == max_queue_size;
         T item = m_queue.front();
         m_queue.pop_front();
-        pthread_cond_signal(&m_condv);
+        if (is_full)
+            pthread_cond_signal(&m_cons_condv);
         pthread_mutex_unlock(&m_mutex);
         return item;
+    }
+
+    void remove(T& src)
+    {
+        pthread_mutex_lock(&m_mutex);
+        while (m_queue.size() == 0) {
+            pthread_cond_wait(&m_prod_condv, &m_mutex);
+        }
+        bool is_full = m_queue.size() == max_queue_size;
+        src = m_queue.front();
+        m_queue.pop_front();
+        if (is_full)
+            pthread_cond_signal(&m_cons_condv);
+        pthread_mutex_unlock(&m_mutex);
     }
 
     /** Return the size of the queue.
@@ -104,6 +136,14 @@ public:
         int size = m_queue.size();
         pthread_mutex_unlock(&m_mutex);
         return size;
+    }
+
+    /**
+     * Return the max Queue size
+     */
+    constexpr typename boost::circular_buffer<T>::size_type max_size()
+    {
+        return max_queue_size;
     }
 };
 
