@@ -10,8 +10,8 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <ctime>
 #include <exception>
-#include <time.h>
 
 #include "IpcMessage.h"
 #include "gettime.h"

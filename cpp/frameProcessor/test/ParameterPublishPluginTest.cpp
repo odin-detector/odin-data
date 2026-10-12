@@ -29,7 +29,7 @@ public:
         for (size_t i = 0; i < parameters.size(); ++i) {
             frame_meta.set_parameter<uint64_t>(parameters[i].param, parameters[i].val);
         }
-        frame = boost::make_shared<FrameProcessor::DataBlockFrame>(frame_meta, static_cast<void*>(img), 24);
+        frame = std::make_shared<FrameProcessor::DataBlockFrame>(frame_meta, static_cast<void*>(img), 24);
         set_debug_level(3);
         plugin.set_name("paramPubPlugin");
     }
@@ -41,7 +41,7 @@ public:
     };
     const std::array<param_pair, 4> parameters;
     unsigned short img[12];
-    boost::shared_ptr<FrameProcessor::Frame> frame;
+    std::shared_ptr<FrameProcessor::Frame> frame;
     FrameProcessor::ParameterPublishPlugin plugin;
 };
 

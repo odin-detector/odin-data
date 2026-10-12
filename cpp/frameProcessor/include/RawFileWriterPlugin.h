@@ -10,20 +10,20 @@
 #include <log4cxx/logger.h>
 using namespace log4cxx;
 
-#include <boost/filesystem.hpp> // boost::filesystem::path
-
 #include "ClassLoader.h"
 #include "FrameProcessorPlugin.h"
+
+#include <filesystem>
 
 namespace FrameProcessor {
 
 class RawFileWriterPlugin : public FrameProcessorPlugin {
 public:
     RawFileWriterPlugin();
-    void process_frame(boost::shared_ptr<Frame> frame);
-    void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
-    void requestConfiguration(OdinData::IpcMessage& reply);
-    void status(OdinData::IpcMessage& reply);
+    void process_frame(std::shared_ptr<Frame> frame) override;
+    void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply) override;
+    void requestConfiguration(OdinData::IpcMessage& reply) override;
+    void status(OdinData::IpcMessage& reply) override;
     int get_version_major() override;
     int get_version_minor() override;
     int get_version_patch() override;
@@ -43,7 +43,7 @@ private:
     bool enabled_;
     /** Root path to write files to - files will be created in this directory or a nested directory, depending on Frame
      * properties */
-    boost::filesystem::path file_path_;
+    std::filesystem::path file_path_;
     /** Number of dropped frames */
     std::size_t dropped_frames_;
 };

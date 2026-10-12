@@ -5,7 +5,7 @@
 
 #include "OffsetAdjustmentPlugin.h"
 
-BOOST_GLOBAL_FIXTURE(GlobalConfig);
+BOOST_TEST_GLOBAL_FIXTURE(GlobalConfig);
 
 BOOST_FIXTURE_TEST_SUITE(OffsetAdjustmentPluginUnitTest, FileWriterPluginTestFixture);
 
@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_CASE(AdjustOffset)
     );
     char dummy_data[2] = { 0, 0 };
 
-    boost::shared_ptr<FrameProcessor::DataBlockFrame> frame(
+    std::shared_ptr<FrameProcessor::DataBlockFrame> frame(
         new FrameProcessor::DataBlockFrame(frame_meta, static_cast<void*>(dummy_data), 2)
     );
     uint64_t offset = 0;

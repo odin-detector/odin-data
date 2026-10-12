@@ -8,9 +8,6 @@
 #ifndef FRAMERECEIVERZMQRXTHREAD_H_
 #define FRAMERECEIVERZMQRXTHREAD_H_
 
-#include <boost/asio.hpp>
-#include <boost/thread.hpp>
-
 #include <log4cxx/logger.h>
 using namespace log4cxx;
 using namespace log4cxx::helpers;
@@ -36,11 +33,11 @@ public:
         FrameDecoderPtr frame_decoder,
         unsigned int tick_period_ms = 100
     );
-    virtual ~FrameReceiverZMQRxThread();
+    ~FrameReceiverZMQRxThread() override;
 
 private:
-    void run_specific_service(void);
-    void cleanup_specific_service(void);
+    void run_specific_service(void) override;
+    void cleanup_specific_service(void) override;
 
     void handle_receive_socket();
 

@@ -21,10 +21,10 @@ public:
     ~EndOfAcquisitionFrame();
 
     /** Return a null pointer (no raw data) */
-    virtual void* get_data_ptr() const;
+    void* get_data_ptr() const override;
 
     /** Return confirmation that this is an "end of acquisition" frame*/
-    virtual bool get_end_of_acquisition() const;
+    bool get_end_of_acquisition() const override;
 };
 
 }

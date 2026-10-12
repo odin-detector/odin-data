@@ -34,7 +34,7 @@ ParameterAdjustmentPlugin::~ParameterAdjustmentPlugin()
  *
  * \param[in] frame - Pointer to a Frame object.
  */
-void ParameterAdjustmentPlugin::process_frame(boost::shared_ptr<Frame> frame)
+void ParameterAdjustmentPlugin::process_frame(std::shared_ptr<Frame> frame)
 {
     std::lock_guard<std::mutex> guard { mutex_ };
     // Apply any parameter adjustments

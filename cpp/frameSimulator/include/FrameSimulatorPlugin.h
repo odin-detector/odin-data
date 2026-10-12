@@ -8,7 +8,6 @@
 using namespace log4cxx;
 using namespace log4cxx::helpers;
 
-#include <boost/optional.hpp>
 #include <boost/program_options.hpp>
 #include <string>
 #include <vector>
@@ -43,9 +42,9 @@ public:
 
 protected:
     // Number of frames to replay; if simulator plugin has insufficient frames defined, available frames are cycled
-    boost::optional<int> replay_numframes_;
+    std::optional<int> replay_numframes_;
     // Time (in s) between frames during replay
-    boost::optional<float> frame_gap_secs_;
+    std::optional<float> frame_gap_secs_;
 
 private:
     /** Pointer to logger **/

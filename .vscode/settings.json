@@ -15,4 +15,9 @@
     },
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
+    "files.associations": {
+        ".C": "cpp",
+        "type_traits": "cpp",
+        "optional": "cpp"
+    },
 }

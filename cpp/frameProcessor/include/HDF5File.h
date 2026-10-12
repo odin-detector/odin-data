@@ -12,9 +12,6 @@
 #include <string>
 #include <vector>
 
-#include <boost/shared_ptr.hpp>
-#include <boost/thread.hpp>
-
 #include <log4cxx/logger.h>
 using namespace log4cxx;
 
@@ -52,7 +49,7 @@ struct HDF5ErrorDefinition_t {
     unsigned int write_duration;
     unsigned int flush_duration;
     unsigned int close_duration;
-    boost::function<void(const std::string&)> callback;
+    std::function<void(const std::string&)> callback;
 };
 
 class HDF5File {

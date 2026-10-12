@@ -31,17 +31,17 @@ static const std::string PARAMETER_ADJUSTMENT_CONFIG = "adjustment";
 class ParameterAdjustmentPlugin : public FrameProcessorPlugin {
 public:
     ParameterAdjustmentPlugin();
-    virtual ~ParameterAdjustmentPlugin();
-    void process_frame(boost::shared_ptr<Frame> frame);
-    void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply);
-    int get_version_major();
-    int get_version_minor();
-    int get_version_patch();
-    std::string get_version_short();
-    std::string get_version_long();
+    ~ParameterAdjustmentPlugin() override;
+    void process_frame(std::shared_ptr<Frame> frame) override;
+    void configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply) override;
+    int get_version_major() override;
+    int get_version_minor() override;
+    int get_version_patch() override;
+    std::string get_version_short() override;
+    std::string get_version_long() override;
 
 private:
-    void requestConfiguration(OdinData::IpcMessage& reply);
+    void requestConfiguration(OdinData::IpcMessage& reply) override;
 
     /** Pointer to logger */
     LoggerPtr logger_;

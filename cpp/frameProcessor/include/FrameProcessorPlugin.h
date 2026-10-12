@@ -8,7 +8,6 @@
 #ifndef TOOLS_FILEWRITER_FrameProcessorPlugin_H_
 #define TOOLS_FILEWRITER_FrameProcessorPlugin_H_
 
-#include <boost/thread.hpp>
 #include <unordered_map>
 
 #include "CallDuration.h"
@@ -34,7 +33,7 @@ namespace FrameProcessor {
 class FrameProcessorPlugin : public IFrameCallback, public OdinData::IVersionedObject, public MetaMessagePublisher {
 public:
     FrameProcessorPlugin();
-    virtual ~FrameProcessorPlugin();
+    ~FrameProcessorPlugin() override;
     void set_name(const std::string& name);
     std::string get_name() const;
     void set_error(const std::string& msg);
@@ -69,7 +68,7 @@ public:
     void add_performance_stats(OdinData::IpcMessage& status);
     void reset_performance_stats();
     void version(OdinData::IpcMessage& status);
-    void register_callback(const std::string& name, boost::shared_ptr<IFrameCallback> cb, bool blocking = false);
+    void register_callback(const std::string& name, std::shared_ptr<IFrameCallback> cb, bool blocking = false);
     void remove_callback(const std::string& name);
     void remove_all_callbacks();
     void notify_end_of_acquisition();
@@ -98,8 +97,8 @@ protected:
         auto val = std::chrono::duration_cast<std::chrono::microseconds>(time_stamp_ms.time_since_epoch());
         this->status_ts_ = val.count();
     }
-    void push(boost::shared_ptr<Frame> frame);
-    void push(const std::string& plugin_name, boost::shared_ptr<Frame> frame);
+    void push(std::shared_ptr<Frame> frame);
+    void push(const std::string& plugin_name, std::shared_ptr<Frame> frame);
 
     using ParameterMetadataMap_t = std::unordered_map<std::string, ParamMetadata>;
     using All_val_vec_t = std::vector<ParamMetadata::allowed_values_t>;
@@ -227,12 +226,12 @@ private:
         auto itr = metadata.second.allowed_values_.begin();
         auto end = metadata.second.allowed_values_.end();
         for (; itr != end; ++itr) {
-            switch (itr->which()) {
+            switch (itr->index()) {
             case 1:
-                message.set_param(param_prefix, boost::get<std::string>(*itr));
+                message.set_param(param_prefix, std::get<std::string>(*itr));
                 break;
             case 2:
-                message.set_param(param_prefix, boost::get<int>(*itr));
+                message.set_param(param_prefix, std::get<int>(*itr));
                 break;
             default:
                 return;
@@ -240,7 +239,7 @@ private:
         }
     }
 
-    void callback(boost::shared_ptr<Frame> frame);
+    void callback(std::shared_ptr<Frame> frame) override;
 
     /**
      * This is called by the callback method when any new frames have
@@ -248,21 +247,21 @@ private:
      *
      * \param[in] frame - Pointer to the frame.
      */
-    virtual void process_frame(boost::shared_ptr<Frame> frame) = 0;
+    virtual void process_frame(std::shared_ptr<Frame> frame) = 0;
     virtual void process_end_of_acquisition();
 
     /** Name of this plugin */
     std::string name_;
     /** Map of registered plugins for callbacks, indexed by name */
-    std::map<std::string, boost::shared_ptr<IFrameCallback>> callbacks_;
+    std::map<std::string, std::shared_ptr<IFrameCallback>> callbacks_;
     /** Map of registered plugins for blocking callbacks, indexed by name */
-    std::map<std::string, boost::shared_ptr<IFrameCallback>> blocking_callbacks_;
+    std::map<std::string, std::shared_ptr<IFrameCallback>> blocking_callbacks_;
     /** Error message array */
     std::vector<std::string> error_messages_;
     /** Warning message array */
     std::vector<std::string> warning_messages_;
     /** Mutex to make accessing error_messages_ threadsafe */
-    boost::mutex mutex_;
+    std::mutex mutex_;
     /** process_frame performance stats */
     CallDuration process_duration_;
     /** time-stamp to represent the version of config structure */

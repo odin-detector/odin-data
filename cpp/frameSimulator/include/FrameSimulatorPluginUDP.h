@@ -9,8 +9,6 @@
 using namespace log4cxx;
 using namespace log4cxx::helpers;
 
-#include <boost/shared_ptr.hpp>
-
 #include "FrameSimulatorPlugin.h"
 #include "Packet.h"
 #include "UDPFrame.h"
@@ -36,16 +34,16 @@ class FrameSimulatorPluginUDP : public FrameSimulatorPlugin {
 
 public:
     FrameSimulatorPluginUDP();
-    ~FrameSimulatorPluginUDP();
+    ~FrameSimulatorPluginUDP() override;
 
-    virtual void populate_options(po::options_description& config);
+    void populate_options(po::options_description& config) override;
 
-    virtual bool setup(const po::variables_map& vm);
-    virtual void simulate();
+    bool setup(const po::variables_map& vm) override;
+    void simulate() override;
 
 protected:
     static void pkt_callback(u_char* user, const pcap_pkthdr* hdr, const u_char* buffer);
-    int send_packet(const boost::shared_ptr<Packet>& packet, const int& frame) const;
+    int send_packet(const std::shared_ptr<Packet>& packet, const int& frame) const;
 
     /** Extract frames from pcap read data **/
     virtual void extract_frames(const u_char* data, const int& size) = 0;
@@ -60,11 +58,11 @@ protected:
     void replay_frames();
 
     // Packet gap: pause between packet_gap packets; must be >0
-    boost::optional<int> packet_gap_;
+    std::optional<int> packet_gap_;
     // proportion in [0.0,1.0] of packets to randomly drop
-    boost::optional<float> drop_frac_;
+    std::optional<float> drop_frac_;
     // List of packets to drop, these are simple ints held as strings. 0=first packet etc.
-    boost::optional<std::vector<std::string>> drop_packets_;
+    std::optional<std::vector<std::string>> drop_packets_;
 
     /** Frames **/
     UDPFrames frames_;

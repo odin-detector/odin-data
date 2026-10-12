@@ -130,8 +130,8 @@ int IpcReactorTimer::last_timer_id_ = 0;
 
 IpcReactor::IpcReactor() :
     terminate_reactor_(false),
-    pollitems_(0),
-    callbacks_(0),
+    pollitems_(nullptr),
+    callbacks_(nullptr),
     pollsize_(0),
     needs_rebuild_(true)
 {
@@ -208,10 +208,10 @@ void IpcReactor::remove_socket(int socket_fd)
 int IpcReactor::register_timer(size_t delay_ms, size_t times, TimerCallback callback)
 {
     // Take lock while modifying timers_
-    boost::lock_guard<boost::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
 
     // Create a smart pointer to a new timer object
-    boost::shared_ptr<IpcReactorTimer> timer(new IpcReactorTimer(delay_ms, times, callback));
+    std::shared_ptr<IpcReactorTimer> timer(new IpcReactorTimer(delay_ms, times, callback));
 
     // Add the timer to the timer map
     timers_[timer->get_id()] = timer;
@@ -228,7 +228,7 @@ int IpcReactor::register_timer(size_t delay_ms, size_t times, TimerCallback call
 void IpcReactor::remove_timer(int timer_id)
 {
     // Take lock while modifying timers_
-    boost::lock_guard<boost::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     timers_.erase(timer_id);
 }
 
@@ -244,7 +244,7 @@ void IpcReactor::remove_timer(int timer_id)
 int IpcReactor::run(void)
 {
     int rc = 0;
-    boost::unique_lock<boost::mutex> lock(mutex_, boost::defer_lock);
+    std::unique_lock<std::mutex> lock(mutex_, std::defer_lock);
 
     // Loop until the terminate flag is set
     while (!terminate_reactor_) {
@@ -338,13 +338,13 @@ void IpcReactor::rebuild_pollitems(void)
     // If the existing pollitems array is valid, delete it
     if (pollitems_) {
         delete[] pollitems_;
-        pollitems_ = 0;
+        pollitems_ = nullptr;
     }
 
     // If the existing callback array is valid, delete it
     if (callbacks_) {
         delete[] callbacks_;
-        callbacks_ = 0;
+        callbacks_ = nullptr;
     }
 
     // Set the number of items to poll to the number of channels registered
@@ -369,7 +369,7 @@ void IpcReactor::rebuild_pollitems(void)
         }
 
         for (SocketMap::iterator it = sockets_.begin(); it != sockets_.end(); ++item, ++it) {
-            zmq::pollitem_t pollitem = { 0, it->first, ZMQ_POLLIN, 0 };
+            zmq::pollitem_t pollitem = { nullptr, it->first, ZMQ_POLLIN, 0 };
             pollitems_[item] = pollitem;
             callbacks_[item] = it->second;
         }
@@ -387,7 +387,7 @@ void IpcReactor::rebuild_pollitems(void)
 long IpcReactor::calculate_timeout(void)
 {
     // Take lock while accessing timers_
-    boost::lock_guard<boost::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
 
     // Calculate shortest timeout up to one hour (!!), looping through
     // current timers to see which fires first

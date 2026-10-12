@@ -39,7 +39,7 @@ EndOfAcquisitionFrame::~EndOfAcquisitionFrame()
  */
 void* EndOfAcquisitionFrame::get_data_ptr() const
 {
-    return NULL;
+    return nullptr;
 }
 
 /** Return true to signify that this frame

@@ -15,9 +15,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <boost/function.hpp>
-#include <boost/shared_ptr.hpp>
-
 #include <log4cxx/logger.h>
 using namespace log4cxx;
 using namespace log4cxx::helpers;
@@ -31,7 +28,7 @@ public:
     FrameDecoderZMQ() :
         FrameDecoder() { };
 
-    virtual ~FrameDecoderZMQ() = 0;
+    ~FrameDecoderZMQ() override = 0;
 
     virtual void* get_next_message_buffer(void) = 0;
     virtual FrameReceiveState process_message(size_t bytes_received) = 0;
@@ -40,7 +37,7 @@ public:
 
 inline FrameDecoderZMQ::~FrameDecoderZMQ() { };
 
-typedef boost::shared_ptr<FrameDecoderZMQ> FrameDecoderZMQPtr;
+typedef std::shared_ptr<FrameDecoderZMQ> FrameDecoderZMQPtr;
 
 } // namespace FrameReceiver
 #endif /* INCLUDE_FRAMEDECODER_ZMQ_H_ */
