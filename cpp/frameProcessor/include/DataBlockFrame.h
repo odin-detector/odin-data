@@ -21,7 +21,7 @@ public:
         const FrameMetaData& meta_data,
         const void* data_src,
         size_t block_size,
-        const int& image_offset = 0
+        const int image_offset = 0
     ) :
         Frame(meta_data, block_size, image_offset),
         is_preallocated_ { false },
@@ -38,7 +38,7 @@ public:
      * @param block_size - size of data in bytes
      * @param image_offset - between start of data memory and image
      */
-    DataBlockFrame(const FrameMetaData& meta_data, size_t block_size, const int& image_offset = 0) :
+    DataBlockFrame(const FrameMetaData& meta_data, size_t block_size, const int image_offset = 0) :
         Frame(meta_data, block_size, image_offset),
         is_preallocated_ { false },
         data_block_ { nullptr, 0 }
@@ -50,12 +50,12 @@ public:
 
     /** DataBlockFrame constructor
      *
-     * @param meta_data - frame FrameMetaData
      * @param block_ptr - address of preallocated block memory for the DataBlock
      * @param block_size - size of data in bytes of the preallocated block memory
+     * @param meta_data - frame's FrameMetaData
      * @param image_offset - between start of data memory and image
      */
-    DataBlockFrame(const FrameMetaData& meta_data, void* block_ptr, size_t block_size, const int& image_offset = 0) :
+    DataBlockFrame(void* block_ptr, size_t block_size, const FrameMetaData& meta_data, const int image_offset = 0) :
         Frame(meta_data, block_size, image_offset),
         is_preallocated_ { true },
         data_block_ { block_ptr, block_size }
@@ -74,10 +74,13 @@ public:
     /** Move assignment operator*/
     DataBlockFrame& operator=(DataBlockFrame&& frame)
     {
-        if (!is_preallocated_ & (data_block_.get_writeable_data() != nullptr)) {
-            UDataBlockPool::release(data_block_.get_writeable_data());
+        if (this != &frame) {
+            Frame::operator=(std::move(frame));
+            if (!is_preallocated_ & (data_block_.get_writeable_data() != nullptr)) {
+                UDataBlockPool::release(data_block_.get_writeable_data());
+            }
+            data_block_ = std::move(frame.data_block_);
         }
-        data_block_ = std::move(frame.data_block_);
         return *this;
     }
 
