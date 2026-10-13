@@ -31,7 +31,7 @@ void print_stack_trace(FILE* out = stderr, unsigned int max_frames = 63)
     // Print a header
     fprintf(out, "stack trace:\n");
 
-    // Keep this storage fixed-size: the handler must not allocate memory.
+    // Declare a fixed-size storage array for stack trace address data: the handler must not allocate memory on the heap
     constexpr unsigned int max_supported_frames = 63;
     const unsigned int frame_limit = max_frames < max_supported_frames ? max_frames : max_supported_frames;
     void* addrlist[max_supported_frames + 1];
