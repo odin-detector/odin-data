@@ -6,14 +6,19 @@ namespace FrameProcessor {
     template <typename DataType>
     struct PoolAllocator {
         using value_type = DataType;
-        PoolAllocator() = default;
+        constexpr PoolAllocator() noexcept {};
         ~PoolAllocator() = default;
+
+        template <typename U>
+        struct rebind {
+            using other = PoolAllocator<U>;
+        };
 
         template<typename U>
         constexpr PoolAllocator(const PoolAllocator<U>&) noexcept {}
 
         DataType* allocate(size_t n) {
-            return reinterpret_cast<DataType>(UDataBlockPool::take(n));
+            return reinterpret_cast<DataType*>(UDataBlockPool::take(n*sizeof(DataType)));
         }
 
         void deallocate(DataType* p, std::size_t) noexcept {
