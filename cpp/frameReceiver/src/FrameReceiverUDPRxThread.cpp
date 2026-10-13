@@ -120,7 +120,7 @@ void FrameReceiverUDPRxThread::handle_receive_socket(int recv_socket, int recv_p
         LOG4CXX_DEBUG_LEVEL(3, logger_, "RX thread received " << bytes_received << " header bytes on recv socket");
 
         if (bytes_received >= 0) {
-            frame_decoder_->process_packet_header(bytes_received, recv_port, &from_addr);
+            frame_decoder_->process_packet_header(static_cast<size_t>(bytes_received), recv_port, &from_addr);
             io_vec[iovec_entry].iov_base = frame_decoder_->get_packet_header_buffer();
             io_vec[iovec_entry].iov_len = frame_decoder_->get_packet_header_size();
             iovec_entry++;
@@ -146,8 +146,7 @@ void FrameReceiverUDPRxThread::handle_receive_socket(int recv_socket, int recv_p
                                  "payload buffer address "
                               << frame_decoder_->get_next_payload_buffer()
     );
-
     if (bytes_received >= 0) {
-        frame_decoder_->process_packet(bytes_received, recv_port, &from_addr);
+        frame_decoder_->process_packet(static_cast<size_t>(bytes_received), recv_port, &from_addr);
     }
 }
