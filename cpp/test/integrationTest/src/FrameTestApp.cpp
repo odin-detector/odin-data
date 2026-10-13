@@ -146,12 +146,12 @@ int main(int argc, char* argv[])
             sleep(sleeptime);
         }
 
-        for (int i = 0; i < processes.size(); i++) {
+        for (uint32_t i = 0; i < processes.size(); i++) {
             processes[i]->end();
         }
         cleanup_tempfs(logger);
 
-        for (int j = 0; j < utilities.size(); j++) {
+        for (uint32_t j = 0; j < utilities.size(); j++) {
             int status = utilities[j]->exit_status();
             if (status != 0)
                 return status;

@@ -291,7 +291,7 @@ void DummyUDPProcessPlugin::process_lost_packets(boost::shared_ptr<Frame>& frame
         char* payload_ptr = static_cast<char*>(frame->get_data_ptr()) + sizeof(DummyUDP::FrameHeader);
 
         // Loop over all packets in frame
-        for (int packet_idx = 0; packet_idx < hdr_ptr->total_packets_expected; packet_idx++) {
+        for (uint32_t packet_idx = 0; packet_idx < hdr_ptr->total_packets_expected; packet_idx++) {
             // If header reports packet missing, zero out the packet
             if (hdr_ptr->packet_state[packet_idx] == 0) {
                 LOG4CXX_DEBUG(logger_, "Missing packet number " << packet_idx);

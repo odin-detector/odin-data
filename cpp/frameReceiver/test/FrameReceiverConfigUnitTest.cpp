@@ -28,7 +28,7 @@ public:
         std::vector<uint16_t> port_list;
         mConfig.tokenize_port_list(port_list, FrameReceiver::Defaults::default_rx_port_list);
         BOOST_CHECK_EQUAL(mConfig.rx_ports_.size(), port_list.size());
-        for (int i = 0; i < mConfig.rx_ports_.size(); i++) {
+        for (uint32_t i = 0; i < mConfig.rx_ports_.size(); i++) {
             BOOST_CHECK_EQUAL(mConfig.rx_ports_[i], port_list[i]);
         }
         BOOST_CHECK_EQUAL(mConfig.rx_address_, FrameReceiver::Defaults::default_rx_address);
