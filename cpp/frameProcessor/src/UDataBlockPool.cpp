@@ -64,7 +64,7 @@ void* UDataBlockPool::take(size_t block_size)
 void UDataBlockPool::release(void* block)
 {
     // Protect this method
-    std::unique_lock<std::mutex> lock(sta_mutex_);
+    sta_mutex_.lock();
 
     LOG4CXX_DEBUG_LEVEL(
         2, log4cxx::Logger::getLogger("FP.UDataBlockPool"), "Releasing DataBlock [addr=" << block << "]"
@@ -74,7 +74,7 @@ void UDataBlockPool::release(void* block)
         = upper_bound(address_mapper_.cbegin(), address_mapper_.cend(), block, [](void* block, auto& item) {
               return block < item.first;
           })->second;
-    lock.unlock();
+    sta_mutex_.unlock();
     pool->internal_release(block);
 }
 
