@@ -14,7 +14,6 @@ add_compile_options(
   -Wuninitialized
   -Wmaybe-uninitialized
   -Werror
-  $<$<CXX_COMPILER_ID:GNU>:-Wno-class-memaccess>
 )
 
 # Set output directories
