@@ -153,9 +153,10 @@ std::pair<boost::shared_ptr<Frame>, bool> BloscPlugin::compress_frame(const boos
     size_t dest_data_size = uncompressed_size + BLOSC_MAX_OVERHEAD;
     boost::shared_ptr<DataBlockFrame> dest_frame;
     try {
-
         PoolAllocator<DataBlockFrame> allocator;
-        dest_frame = boost::allocate_shared<DataBlockFrame>(allocator, src_frame->get_meta_data(), dest_data_size, 0);
+        dest_frame = boost::allocate_shared<DataBlockFrame>(
+            allocator, src_frame->get_meta_data_copy(), dest_data_size, src_frame->get_meta_data().get_frame_offset()
+        );
         dest_frame->meta_data().set_compression_type(blosc);
         LOG4CXX_DEBUG_LEVEL(
             2, logger_,
@@ -222,7 +223,10 @@ std::pair<boost::shared_ptr<Frame>, bool> BloscPlugin::decompress_frame(const bo
     bool decomp_res = false;
     boost::shared_ptr<Frame> dest_frame;
     try {
-        dest_frame = boost::make_shared<DataBlockFrame>(src_frame->get_meta_data(), dest_size);
+        PoolAllocator<DataBlockFrame> allocator;
+        dest_frame = boost::allocate_shared<DataBlockFrame>(
+            allocator, src_frame->get_meta_data_copy(), dest_size, src_frame->get_meta_data().get_frame_offset()
+        );
 
         LOG4CXX_DEBUG_LEVEL(
             2, logger_,
