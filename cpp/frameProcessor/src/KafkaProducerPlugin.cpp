@@ -25,7 +25,8 @@ namespace FrameProcessor {
  * \param[in] kafka_message - Pointer to the message structure of the message being reported
  * \param[in] opaque - Opaque pointer (not used)
  */
-static void kafka_message_callback(rd_kafka_t* kafka_producer, const rd_kafka_message_t* kafka_message, void* opaque)
+static void
+kafka_message_callback(rd_kafka_t* /*kafka_producer*/, const rd_kafka_message_t* kafka_message, void* /*opaque*/)
 {
     KafkaProducerPlugin* kafka_producer_plugin = static_cast<KafkaProducerPlugin*>(kafka_message->_private);
     if (kafka_message->err) {
@@ -88,7 +89,7 @@ KafkaProducerPlugin::~KafkaProducerPlugin()
  * \param[in] config - IpcMessage containing configuration data.
  * \param[out] reply - Response IpcMessage.
  */
-void KafkaProducerPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& reply)
+void KafkaProducerPlugin::configure(OdinData::IpcMessage& config, OdinData::IpcMessage& /*reply*/)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     if (config.has_param(CONFIG_SERVERS)) {
@@ -316,7 +317,6 @@ void* KafkaProducerPlugin::create_message(boost::shared_ptr<Frame> frame, size_t
         writer.StartObject();
         for (std::map<std::string, boost::any>::const_iterator it = parameters.begin(); it != parameters.end(); it++) {
             writer.String(it->first.c_str());
-            const std::type_info& ti = it->second.type();
             if (it->second.type() == typeid(unsigned long)) {
                 writer.Uint64(frame->get_meta_data().get_parameter<unsigned long>(it->first));
             } else if (it->second.type() == typeid(float)) {

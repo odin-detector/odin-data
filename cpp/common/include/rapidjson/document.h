@@ -52,6 +52,10 @@ RAPIDJSON_DIAG_OFF(terminate) // ignore throwing RAPIDJSON_ASSERT in RAPIDJSON_N
 #include <utility> // std::move
 #endif
 
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 8
+RAPIDJSON_DIAG_OFF(class-memaccess)
+#endif
+
 RAPIDJSON_NAMESPACE_BEGIN
 
 // Forward declaration.

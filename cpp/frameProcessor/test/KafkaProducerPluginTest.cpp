@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE(KafkaProducerPluginCheckMessageHeader)
     BOOST_CHECK(document[MSG_HEADER_DATA_TYPE_KEY].GetInt() == FrameProcessor::raw_16bit);
     BOOST_CHECK(document[MSG_HEADER_FRAME_SIZE_KEY].GetInt() == sizeof(test_data));
     rapidjson::Value& json_dims = document[MSG_HEADER_FRAME_DIMENSIONS_KEY];
-    for (int i = 0; i < test_dims.size(); i++) {
+    for (size_t i = 0; i < test_dims.size(); i++) {
         BOOST_CHECK(test_dims[i] == json_dims[i].GetUint());
     }
     BOOST_CHECK_EQUAL(document[MSG_HEADER_FRAME_PARAMETERS_KEY][TEST_PARAM1_NAME].GetUint64(), TEST_PARAM1_VALUE);
