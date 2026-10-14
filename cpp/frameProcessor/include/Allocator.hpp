@@ -1,5 +1,4 @@
 #include "UDataBlockPool.h"
-#include <type_traits>
 
 
 namespace FrameProcessor {
