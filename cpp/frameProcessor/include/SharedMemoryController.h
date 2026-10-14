@@ -37,11 +37,7 @@ namespace FrameProcessor {
  */
 class SharedMemoryController {
 public:
-    SharedMemoryController(
-        boost::shared_ptr<OdinData::IpcReactor> reactor,
-        const std::string& rxEndPoint,
-        const std::string& txEndPoint
-    );
+    SharedMemoryController(OdinData::IpcReactor& reactor, const std::string& rxEndPoint, const std::string& txEndPoint);
     virtual ~SharedMemoryController();
     void setSharedBufferManager(const std::string& shared_buffer_name);
     void requestSharedBufferConfig(const bool deferred = false);
@@ -59,7 +55,7 @@ private:
     /** Map of IFrameCallback pointers, indexed by name */
     std::map<std::string, boost::shared_ptr<IFrameCallback>> callbacks_;
     /** IpcReactor pointer, for managing IpcMessage objects */
-    boost::shared_ptr<OdinData::IpcReactor> reactor_;
+    OdinData::IpcReactor& reactor_;
     /** IpcChannel for receiving notifications of new frames */
     OdinData::IpcChannel rxChannel_;
     /** IpcChannel for sending notifications of frame release */

@@ -8,13 +8,12 @@
 #ifndef FRAMEPROCESSOR_SRC_WATCHDOGTIMER_H_
 #define FRAMEPROCESSOR_SRC_WATCHDOGTIMER_H_
 
-#include <string>
-
-#include <boost/shared_ptr.hpp>
-#include <boost/thread.hpp>
-
 #include <IpcReactor.h>
+
+#include <atomic>
 #include <gettime.h>
+#include <string>
+#include <thread>
 
 #include <log4cxx/logger.h>
 using namespace log4cxx;
@@ -23,10 +22,10 @@ namespace FrameProcessor {
 
 class WatchdogTimer {
 public:
-    WatchdogTimer(const boost::function<void(const std::string&)>& timeout_callback);
+    WatchdogTimer(const std::function<void(const std::string&)>& timeout_callback);
     ~WatchdogTimer();
 
-    void start_timer(const std::string& function_name, unsigned int watchdog_timeout_ms);
+    void start_timer(std::string function_name, unsigned int watchdog_timeout_ms);
     unsigned int finish_timer();
 
 private:
@@ -34,14 +33,12 @@ private:
     void call_timeout_callback(const std::string& function_name) const;
     void heartbeat();
 
-    /** Logger for logging */
-    LoggerPtr logger_;
     /* Store for start time of watchdog */
     struct timespec start_time_;
     /* Timer watchdog thread */
-    boost::thread worker_thread_;
-    /** Flag to control start up timings of main thread and worker thread */
-    volatile bool worker_thread_running_;
+    std::thread worker_thread_;
+    /**indicator to stop worker thread */
+    std::atomic<bool> worker_thread_running_;
     /** IpcReactor to use as a simple timer controller */
     OdinData::IpcReactor reactor_;
     /** Timeout of current timer in milliseconds */
@@ -55,7 +52,7 @@ private:
     /** Counter to monitor number of ticks that have passed */
     int ticks_;
     /** Callback function to call when the timer expires */
-    const boost::function<void(const std::string&)>& timeout_callback_;
+    const std::function<void(const std::string&)>& timeout_callback_;
 };
 
 } /* namespace FrameProcessor */

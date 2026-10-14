@@ -28,7 +28,7 @@ const std::string SharedMemoryController::SHARED_MEMORY_CONTROLLER_NAME = "share
  * \param[in] txEndPoint - string name of the publishing endpoint for frame release notifications.
  */
 SharedMemoryController::SharedMemoryController(
-    boost::shared_ptr<OdinData::IpcReactor> reactor,
+    OdinData::IpcReactor& reactor,
     const std::string& rxEndPoint,
     const std::string& txEndPoint
 ) :
@@ -55,7 +55,7 @@ SharedMemoryController::SharedMemoryController(
     }
 
     // Add the Frame Ready channel to the reactor
-    reactor_->register_channel(rxChannel_, boost::bind(&SharedMemoryController::handleRxChannel, this));
+    reactor_.register_channel(rxChannel_, boost::bind(&SharedMemoryController::handleRxChannel, this));
 
     // Now connect the frame release response channel
     try {
@@ -88,8 +88,7 @@ SharedMemoryController::~SharedMemoryController()
     }
 
     // Close the IPC Channels
-    reactor_->remove_channel(txChannel_);
-    reactor_->remove_channel(rxChannel_);
+    reactor_.remove_channel(rxChannel_);
     txChannel_.close();
     rxChannel_.close();
 }
@@ -132,7 +131,7 @@ void SharedMemoryController::requestSharedBufferConfig(const bool deferred)
 {
     if (deferred) {
         LOG4CXX_DEBUG_LEVEL(1, logger_, "Registering timer for deferred shared buffer configuration request");
-        reactor_->register_timer(1000, 1, boost::bind(&SharedMemoryController::requestSharedBufferConfig, this, false));
+        reactor_.register_timer(1000, 1, boost::bind(&SharedMemoryController::requestSharedBufferConfig, this, false));
         sharedBufferConfigRequestDeferred_ = true;
     } else {
         // If this is being called by a deferred request timer but the shared buffer has been configured in the
