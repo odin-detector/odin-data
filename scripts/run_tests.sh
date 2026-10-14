@@ -10,6 +10,8 @@ lib_dir="${TEST_LIB_DIR:-${build_dir}/lib}"
 config_source_dir="${INTEGRATION_CONFIG_DIR:-${repo_dir}/cpp/test/integrationTest/config}"
 test_timeout_seconds="${TEST_TIMEOUT_SECONDS:-120}"
 
+EXIT_TIMEOUT=124
+
 if [[ ! "${test_timeout_seconds}" =~ ^[1-9][0-9]*$ ]]; then
   echo "TEST_TIMEOUT_SECONDS must be a positive integer: ${test_timeout_seconds}" >&2
   exit 1
@@ -66,7 +68,7 @@ run_test()
     failed_tests+=("${test_name}")
     failed_statuses+=("${test_status}")
     failed_logs+=("${test_log}")
-    if [[ ${test_status} -eq 124 ]]; then
+    if [[ ${test_status} -eq ${EXIT_TIMEOUT} ]]; then
       echo "    TIMEOUT after ${test_timeout_seconds}s"
     else
       echo "    FAIL (exit ${test_status})"
