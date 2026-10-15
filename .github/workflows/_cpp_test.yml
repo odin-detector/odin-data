@@ -31,14 +31,9 @@ jobs:
         run: |
           echo "INSTALL_PREFIX is ${INSTALL_PREFIX}"
           # Release build currently fails on Uuntu 22.04
-          if [[ "${{ inputs.os }}" == "ubuntu-22.04" ]]; then
-              export BUILD_ARGS="-DCMAKE_BUILD_TYPE=Debug"
-          else
-              export BUILD_ARGS="-DCMAKE_BUILD_TYPE=Release"
-          fi
           mkdir -p $INSTALL_PREFIX
           mkdir build && cd build
-          cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX ${BUILD_ARGS} ../cpp
+          cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX -DCMAKE_BUILD_TYPE=RelWithDebInfo ../cpp
           make -j8 VERBOSE=1 && make install VERBOSE=1
           ls -la $INSTALL_PREFIX
       - name: Run frame receiver unit tests
