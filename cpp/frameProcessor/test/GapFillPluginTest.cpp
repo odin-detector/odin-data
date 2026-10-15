@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE(GapFillPlugin_process_frame)
             0, 0, 9, 0, 0, 10, 0, 0, 0, 11, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
     // Verify the resultant frame has the correct dimensions and the gaps have been inserted correctly
-    unsigned short* ptr;
+    unsigned short* ptr = nullptr;
     BOOST_REQUIRE_NO_THROW(ptr = (unsigned short*)gap_frame->get_image_ptr());
     BOOST_CHECK_EQUAL(gap_frame->get_meta_data().get_dimensions()[0], 9);
     BOOST_CHECK_EQUAL(gap_frame->get_meta_data().get_dimensions()[1], 13);

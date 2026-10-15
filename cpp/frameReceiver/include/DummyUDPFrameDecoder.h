@@ -76,8 +76,8 @@ private:
     std::size_t udp_packet_size_;
     unsigned int status_get_count_;
 
-    boost::shared_ptr<void> current_packet_header_;
-    boost::shared_ptr<void> dropped_frame_buffer_;
+    boost::shared_ptr<uint8_t[]> current_packet_header_;
+    boost::shared_ptr<uint8_t[]> dropped_frame_buffer_;
 
     uint32_t current_frame_seen_;
     int current_frame_buffer_id_;

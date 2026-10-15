@@ -118,12 +118,12 @@ private:
     std::string topic_name_;
     /** Kafka brokers to connect to */
     std::string servers_;
-    /** Partition number */
-    int32_t partition_;
     /** Pointer to a Kafka producer handler */
     rd_kafka_t* kafka_producer_;
     /** Pointer to a Kafka topic handler */
     rd_kafka_topic_t* kafka_topic_;
+    /** Partition number */
+    int32_t partition_;
     /** Number of sent frames */
     uint32_t frames_sent_;
     /** Number of lost frames */
