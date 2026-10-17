@@ -317,7 +317,6 @@ void* KafkaProducerPlugin::create_message(boost::shared_ptr<Frame> frame, size_t
         writer.StartObject();
         for (const auto& it : parameters) {
             writer.String(it.first.c_str());
-            const std::type_info& ti = it.second.type();
             switch (it.second.which()) {
             case 1:
                 writer.Uint(frame->get_meta_data().get_parameter<uint8_t>(it.first));
