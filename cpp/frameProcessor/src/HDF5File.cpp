@@ -329,29 +329,24 @@ void HDF5File::write_parameter(const Frame& frame, DatasetDefinition dataset_def
         switch (dataset_definition.data_type) {
         case raw_8bit:
             val64.n8 = frame.get_meta_data().get_parameter<uint8_t>(dataset_definition.name);
-            data_ptr = reinterpret_cast<void*>(&val64);
             break;
         case raw_16bit:
             val64.n16 = frame.get_meta_data().get_parameter<uint16_t>(dataset_definition.name);
-            data_ptr = reinterpret_cast<void*>(&val64);
             break;
         case raw_32bit:
             val64.n32 = frame.get_meta_data().get_parameter<uint32_t>(dataset_definition.name);
-            data_ptr = reinterpret_cast<void*>(&val64);
             break;
         case raw_64bit:
             val64.n64 = frame.get_meta_data().get_parameter<uint64_t>(dataset_definition.name);
-            data_ptr = reinterpret_cast<void*>(&val64);
             break;
         case raw_float:
             val64.f32 = frame.get_meta_data().get_parameter<float>(dataset_definition.name);
-            data_ptr = reinterpret_cast<void*>(&val64);
             break;
         default:
             val64.n16 = frame.get_meta_data().get_parameter<uint16_t>(dataset_definition.name);
-            data_ptr = reinterpret_cast<void*>(&val64);
             break;
         }
+        data_ptr = reinterpret_cast<void*>(&val64);
 
         if (unlimited_) {
             this->extend_dataset(dset, frame_offset + 1);
@@ -654,6 +649,7 @@ hid_t HDF5File::datatype_to_hdf_type(DataType data_type)
 {
     constexpr uint32_t ARR_SZ = 6;
     static_assert(ARR_SZ == FINAL_DATATYPE);
+    data_type = ((data_type >= FINAL_DATATYPE) | (data_type < raw_unknown)) ? raw_16bit : data_type;
     std::array<hid_t, ARR_SZ> type_arr;
     type_arr[raw_unknown] = H5T_NATIVE_UINT16;
     type_arr[raw_8bit] = H5T_NATIVE_UINT8;
