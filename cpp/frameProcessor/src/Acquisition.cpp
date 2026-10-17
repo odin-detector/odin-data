@@ -126,11 +126,10 @@ ProcessFrameStatus Acquisition::process_frame(boost::shared_ptr<Frame> frame, HD
             file->write_frame(*frame, frame_offset_in_file, outer_chunk_dimension, call_durations);
 
             // Loops over all parameters, checking if there is a matching dataset and write to it if so
-            const std::map<std::string, boost::any>& frame_parameters = frame->get_meta_data().get_parameters();
+            auto& frame_parameters = frame->get_meta_data().get_parameters();
             std::map<std::string, boost::any>::const_iterator param_iter;
-            for (param_iter = frame_parameters.begin(); param_iter != frame_parameters.end(); ++param_iter) {
-                std::map<std::string, DatasetDefinition>::iterator dset_iter;
-                dset_iter = dataset_defs_.find(param_iter->first);
+            for (const auto& param_iter : frame_parameters) {
+                auto dset_iter = dataset_defs_.find(param_iter.first);
                 if (dset_iter != dataset_defs_.end()) {
                     file->write_parameter(*frame, dset_iter->second, frame_offset_in_file);
                 }

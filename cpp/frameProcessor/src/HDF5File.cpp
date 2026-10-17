@@ -311,75 +311,75 @@ void HDF5File::write_frame(
  */
 void HDF5File::write_parameter(const Frame& frame, DatasetDefinition dataset_definition, hsize_t frame_offset)
 {
+    union VAL {
+        std::uint8_t n8; // occupies 1 byte
+        std::uint16_t n16; // occupies 2 bytes
+        std::uint32_t n32; // occupies 4 bytes
+        std::uint64_t n64; // occupies 8 bytes
+        float f32; // occupies 4 bytes
+    }; // this class occupies 64 bits in total
     // Protect this method
     std::lock_guard<std::mutex> lock { mutex_ };
-
-    void* data_ptr;
-    uint8_t u8value = 0;
-    uint16_t u16value = 0;
-    uint32_t u32value = 0;
-    uint64_t u64value = 0;
-    float f32value = 0;
-
-    // Get the correct value and size from the parameter given its type
-    switch (dataset_definition.data_type) {
-    case raw_8bit:
-        u8value = frame.get_meta_data().get_parameter<uint8_t>(dataset_definition.name);
-        data_ptr = &u8value;
-        break;
-    case raw_16bit:
-        u16value = frame.get_meta_data().get_parameter<uint16_t>(dataset_definition.name);
-        data_ptr = &u16value;
-        break;
-    case raw_32bit:
-        u32value = frame.get_meta_data().get_parameter<uint32_t>(dataset_definition.name);
-        data_ptr = &u32value;
-        break;
-    case raw_64bit:
-        u64value = frame.get_meta_data().get_parameter<uint64_t>(dataset_definition.name);
-        data_ptr = &u64value;
-        break;
-    case raw_float:
-        f32value = frame.get_meta_data().get_parameter<float>(dataset_definition.name);
-        data_ptr = &f32value;
-        break;
-    default:
-        u16value = frame.get_meta_data().get_parameter<uint16_t>(dataset_definition.name);
-        data_ptr = &u16value;
-        break;
-    }
-
     HDF5Dataset_t& dset = this->get_hdf5_dataset(dataset_definition.name);
+    void* data_ptr = nullptr;
+    VAL val64;
+    // Get the correct value and size from the parameter given its type
+    if (frame.get_meta_data().has_parameter(dataset_definition.name)) {
 
-    if (unlimited_) {
-        this->extend_dataset(dset, frame_offset + 1);
+        switch (dataset_definition.data_type) {
+        case raw_8bit:
+            val64.n8 = frame.get_meta_data().get_parameter<uint8_t>(dataset_definition.name);
+            break;
+        case raw_16bit:
+            val64.n16 = frame.get_meta_data().get_parameter<uint16_t>(dataset_definition.name);
+            break;
+        case raw_32bit:
+            val64.n32 = frame.get_meta_data().get_parameter<uint32_t>(dataset_definition.name);
+            break;
+        case raw_64bit:
+            val64.n64 = frame.get_meta_data().get_parameter<uint64_t>(dataset_definition.name);
+            break;
+        case raw_float:
+            val64.f32 = frame.get_meta_data().get_parameter<float>(dataset_definition.name);
+            break;
+        default:
+            val64.n16 = frame.get_meta_data().get_parameter<uint16_t>(dataset_definition.name);
+            break;
+        }
+        data_ptr = reinterpret_cast<void*>(&val64);
+
+        if (unlimited_) {
+            this->extend_dataset(dset, frame_offset + 1);
+        }
+
+        LOG4CXX_TRACE(logger_, "Writing parameter [" << dataset_definition.name << "] at offset = " << frame_offset);
+
+        // Set the offset
+        std::vector<hsize_t> offset(dset.dataset_dimensions.size());
+        offset[0] = frame_offset;
+
+        // Create the hdf5 variables for writing
+        hid_t dtype = datatype_to_hdf_type(dataset_definition.data_type);
+        hsize_t elementSize[1] = { 1 };
+        hid_t fspace = H5Dget_space(dset.dataset_id);
+        ensure_h5_result(fspace, "Failed to get parameter dataset dataspace");
+
+        // Select the hyperslab
+        ensure_h5_result(
+            H5Sselect_hyperslab(fspace, H5S_SELECT_SET, &offset.front(), NULL, elementSize, NULL),
+            "H5Sselect_hyperslab failed"
+        );
+
+        // Write the value to the dataset
+        watchdog_timer_.start_timer("H5Dwrite", hdf5_error_definition_.write_duration);
+        hid_t status = H5Dwrite(dset.dataset_id, dtype, param_memspace_, fspace, H5P_DEFAULT, data_ptr);
+        watchdog_timer_.finish_timer();
+        ensure_h5_result(status, "H5Dwrite failed");
+
+        ensure_h5_result(H5Sclose(fspace), "H5Sclose failed");
+    } else {
+        LOG4CXX_ERROR(logger_, "Missing parameter: " << dataset_definition.name);
     }
-
-    LOG4CXX_TRACE(logger_, "Writing parameter [" << dataset_definition.name << "] at offset = " << frame_offset);
-
-    // Set the offset
-    std::vector<hsize_t> offset(dset.dataset_dimensions.size());
-    offset[0] = frame_offset;
-
-    // Create the hdf5 variables for writing
-    hid_t dtype = datatype_to_hdf_type(dataset_definition.data_type);
-    hsize_t elementSize[1] = { 1 };
-    hid_t fspace = H5Dget_space(dset.dataset_id);
-    ensure_h5_result(fspace, "Failed to get parameter dataset dataspace");
-
-    // Select the hyperslab
-    ensure_h5_result(
-        H5Sselect_hyperslab(fspace, H5S_SELECT_SET, &offset.front(), NULL, elementSize, NULL),
-        "H5Sselect_hyperslab failed"
-    );
-
-    // Write the value to the dataset
-    watchdog_timer_.start_timer("H5Dwrite", hdf5_error_definition_.write_duration);
-    hid_t status = H5Dwrite(dset.dataset_id, dtype, param_memspace_, fspace, H5P_DEFAULT, data_ptr);
-    watchdog_timer_.finish_timer();
-    ensure_h5_result(status, "H5Dwrite failed");
-
-    ensure_h5_result(H5Sclose(fspace), "H5Sclose failed");
 
     // Flush if necessary and update the time it was last flushed
 #if H5_VERSION_GE(1, 9, 178)
@@ -645,35 +645,19 @@ size_t HDF5File::get_dataset_max_size(const std::string& dset_name)
  * \param[in] data_type - The DataType type to convert.
  * \return - the equivalent HDF5 type.
  */
-hid_t HDF5File::datatype_to_hdf_type(DataType data_type) const
+hid_t HDF5File::datatype_to_hdf_type(DataType data_type)
 {
-    hid_t dtype = 0;
-    switch (data_type) {
-    case raw_64bit:
-        LOG4CXX_DEBUG_LEVEL(2, logger_, "Data type: UINT64");
-        dtype = H5T_NATIVE_UINT64;
-        break;
-    case raw_32bit:
-        LOG4CXX_DEBUG_LEVEL(2, logger_, "Data type: UINT32");
-        dtype = H5T_NATIVE_UINT32;
-        break;
-    case raw_16bit:
-        LOG4CXX_DEBUG_LEVEL(2, logger_, "Data type: UINT16");
-        dtype = H5T_NATIVE_UINT16;
-        break;
-    case raw_8bit:
-        LOG4CXX_DEBUG_LEVEL(2, logger_, "Data type: UINT8");
-        dtype = H5T_NATIVE_UINT8;
-        break;
-    case raw_float:
-        LOG4CXX_DEBUG_LEVEL(2, logger_, "Data type: FLOAT");
-        dtype = H5T_NATIVE_FLOAT;
-        break;
-    default:
-        LOG4CXX_DEBUG_LEVEL(2, logger_, "Data type: UINT16");
-        dtype = H5T_NATIVE_UINT16;
-    }
-    return dtype;
+    constexpr uint32_t ARR_SZ = 6;
+    static_assert(ARR_SZ == FINAL_DATATYPE);
+    data_type = ((data_type >= FINAL_DATATYPE) | (data_type < raw_unknown)) ? raw_16bit : data_type;
+    std::array<hid_t, ARR_SZ> type_arr;
+    type_arr[raw_unknown] = H5T_NATIVE_UINT16;
+    type_arr[raw_8bit] = H5T_NATIVE_UINT8;
+    type_arr[raw_16bit] = H5T_NATIVE_UINT16;
+    type_arr[raw_32bit] = H5T_NATIVE_UINT32;
+    type_arr[raw_64bit] = H5T_NATIVE_UINT64;
+    type_arr[raw_float] = H5T_NATIVE_FLOAT;
+    return type_arr[data_type];
 }
 
 /**
