@@ -35,12 +35,12 @@ private:
     ConsoleAppender* consoleAppender;
 };
 
-static bool is_not_critical1(const std::out_of_range& er)
+static bool is_not_critical1(const std::out_of_range& /*er*/)
 {
     return true;
 }
 
-static bool is_not_critical2(const boost::bad_get& er)
+static bool is_not_critical2(const boost::bad_get& /*er*/)
 {
     return true;
 }

@@ -311,38 +311,44 @@ void HDF5File::write_frame(
  */
 void HDF5File::write_parameter(const Frame& frame, DatasetDefinition dataset_definition, hsize_t frame_offset)
 {
+    union VAL {
+        std::uint8_t n8; // occupies 1 byte
+        std::uint16_t n16; // occupies 2 bytes
+        std::uint32_t n32; // occupies 4 bytes
+        std::uint64_t n64; // occupies 8 bytes
+        float f32; // occupies 4 bytes
+    }; // this class occupies 64 bits in total
     // Protect this method
     std::lock_guard<std::mutex> lock { mutex_ };
     HDF5Dataset_t& dset = this->get_hdf5_dataset(dataset_definition.name);
-    void* data_ptr;
-    uint64_t val64;
-    float val_f;
+    void* data_ptr = nullptr;
+    VAL val64;
     // Get the correct value and size from the parameter given its type
     if (frame.get_meta_data().has_parameter(dataset_definition.name)) {
 
         switch (dataset_definition.data_type) {
         case raw_8bit:
-            val64 = frame.get_meta_data().get_parameter<uint8_t>(dataset_definition.name);
+            val64.n8 = frame.get_meta_data().get_parameter<uint8_t>(dataset_definition.name);
             data_ptr = reinterpret_cast<void*>(&val64);
             break;
         case raw_16bit:
-            val64 = frame.get_meta_data().get_parameter<uint16_t>(dataset_definition.name);
+            val64.n16 = frame.get_meta_data().get_parameter<uint16_t>(dataset_definition.name);
             data_ptr = reinterpret_cast<void*>(&val64);
             break;
         case raw_32bit:
-            val64 = frame.get_meta_data().get_parameter<uint32_t>(dataset_definition.name);
+            val64.n32 = frame.get_meta_data().get_parameter<uint32_t>(dataset_definition.name);
             data_ptr = reinterpret_cast<void*>(&val64);
             break;
         case raw_64bit:
-            val64 = frame.get_meta_data().get_parameter<uint64_t>(dataset_definition.name);
+            val64.n64 = frame.get_meta_data().get_parameter<uint64_t>(dataset_definition.name);
             data_ptr = reinterpret_cast<void*>(&val64);
             break;
         case raw_float:
-            val_f = frame.get_meta_data().get_parameter<float>(dataset_definition.name);
+            val64.f32 = frame.get_meta_data().get_parameter<float>(dataset_definition.name);
             data_ptr = reinterpret_cast<void*>(&val64);
             break;
         default:
-            val64 = frame.get_meta_data().get_parameter<uint16_t>(dataset_definition.name);
+            val64.n16 = frame.get_meta_data().get_parameter<uint16_t>(dataset_definition.name);
             data_ptr = reinterpret_cast<void*>(&val64);
             break;
         }
@@ -644,35 +650,18 @@ size_t HDF5File::get_dataset_max_size(const std::string& dset_name)
  * \param[in] data_type - The DataType type to convert.
  * \return - the equivalent HDF5 type.
  */
-hid_t HDF5File::datatype_to_hdf_type(DataType data_type) const
+hid_t HDF5File::datatype_to_hdf_type(DataType data_type)
 {
-    hid_t dtype = 0;
-    switch (data_type) {
-    case raw_64bit:
-        LOG4CXX_DEBUG_LEVEL(2, logger_, "Data type: UINT64");
-        dtype = H5T_NATIVE_UINT64;
-        break;
-    case raw_32bit:
-        LOG4CXX_DEBUG_LEVEL(2, logger_, "Data type: UINT32");
-        dtype = H5T_NATIVE_UINT32;
-        break;
-    case raw_16bit:
-        LOG4CXX_DEBUG_LEVEL(2, logger_, "Data type: UINT16");
-        dtype = H5T_NATIVE_UINT16;
-        break;
-    case raw_8bit:
-        LOG4CXX_DEBUG_LEVEL(2, logger_, "Data type: UINT8");
-        dtype = H5T_NATIVE_UINT8;
-        break;
-    case raw_float:
-        LOG4CXX_DEBUG_LEVEL(2, logger_, "Data type: FLOAT");
-        dtype = H5T_NATIVE_FLOAT;
-        break;
-    default:
-        LOG4CXX_DEBUG_LEVEL(2, logger_, "Data type: UINT16");
-        dtype = H5T_NATIVE_UINT16;
-    }
-    return dtype;
+    constexpr uint32_t ARR_SZ = 6;
+    static_assert(ARR_SZ == FINAL_DATATYPE);
+    std::array<hid_t, ARR_SZ> type_arr;
+    type_arr[raw_unknown] = H5T_NATIVE_UINT16;
+    type_arr[raw_8bit] = H5T_NATIVE_UINT8;
+    type_arr[raw_16bit] = H5T_NATIVE_UINT16;
+    type_arr[raw_32bit] = H5T_NATIVE_UINT32;
+    type_arr[raw_64bit] = H5T_NATIVE_UINT64;
+    type_arr[raw_float] = H5T_NATIVE_FLOAT;
+    return type_arr[data_type];
 }
 
 /**
