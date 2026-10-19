@@ -86,6 +86,11 @@ inline static DataType get_type_from_string(const std::string& str)
 inline static size_t get_size_from_enum(DataType type)
 {
     type = ((type < 0) | (type >= FINAL_DATATYPE)) ? raw_unknown : type;
+    if (type == raw_unknown) {
+        char msg[64];
+        snprintf(msg, sizeof(msg), "%s%d", "Unable to determine data type size: ", type);
+        throw std::runtime_error(msg);
+    }
     uint16_t data_sizes[FINAL_COMPRESSIONTYPE];
     data_sizes[raw_unknown] = 256; // this disables shuffle for blosc
     data_sizes[raw_8bit] = sizeof(uint8_t);
