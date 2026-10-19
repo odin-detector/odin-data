@@ -22,7 +22,11 @@ enum DataType {
     raw_16bit,
     raw_32bit,
     raw_64bit,
-    raw_float
+    raw_float,
+
+    // Add no types byond this sentinel type and
+    // NEVER use this type as a valid data type
+    FINAL_DATATYPE
 };
 /**
  * Enumeration to store the compression type of the incoming image
@@ -32,7 +36,11 @@ enum CompressionType {
     no_compression,
     lz4,
     bslz4,
-    blosc
+    blosc,
+
+    // Add no types byond this sentinel type and
+    // NEVER use this type as a valid data type
+    FINAL_COMPRESSIONTYPE
 };
 /**
  * Enumeration to store the compression type of the incoming image
@@ -53,7 +61,7 @@ const std::string COMPRESS_TYPES[] = { "unknown", "none", "LZ4", "BSLZ4", "blosc
  * @param str data type as string
  * @return DataType data type
  */
-static DataType get_type_from_string(const std::string& str)
+inline static DataType get_type_from_string(const std::string& str)
 {
     if (str == "unknown")
         return raw_unknown;
@@ -75,23 +83,17 @@ static DataType get_type_from_string(const std::string& str)
  * \param[in] type - enum value
  * \return size_t data type size
  */
-static size_t get_size_from_enum(DataType type)
+inline static size_t get_size_from_enum(DataType type)
 {
-    if (type == raw_8bit)
-        return sizeof(uint8_t); // 1 byte
-    else if (type == raw_16bit)
-        return sizeof(uint16_t); // 2 bytes
-    else if (type == raw_32bit)
-        return sizeof(uint32_t); // 4 bytes
-    else if (type == raw_64bit)
-        return sizeof(uint64_t); // 8 bytes
-    else if (type == raw_float)
-        return sizeof(float);
-    else {
-        std::stringstream msg;
-        msg << "Unable to determine data type size " << type;
-        throw std::runtime_error(msg.str());
-    }
+    type = ((type < 0) | (type >= FINAL_DATATYPE)) ? raw_unknown : type;
+    uint16_t data_sizes[FINAL_COMPRESSIONTYPE];
+    data_sizes[raw_unknown] = 256; // this disables shuffle for blosc
+    data_sizes[raw_8bit] = sizeof(uint8_t);
+    data_sizes[raw_16bit] = sizeof(uint16_t);
+    data_sizes[raw_32bit] = sizeof(uint32_t);
+    data_sizes[raw_64bit] = sizeof(uint64_t);
+    data_sizes[raw_float] = sizeof(float);
+    return data_sizes[type];
 }
 
 /**
@@ -103,13 +105,10 @@ static size_t get_size_from_enum(DataType type)
  * \param[in] type - enum value
  * \return string value representing data type, or "unknown" if an unrecognised enum value
  */
-static std::string get_type_from_enum(DataType type)
+inline static std::string get_type_from_enum(DataType type) noexcept
 {
-    if (type >= 0 && type < sizeof(DATA_TYPES) / sizeof(DATA_TYPES[0])) {
-        return DATA_TYPES[type];
-    } else {
-        return "unknown";
-    }
+    type = ((type < 0) | (type >= FINAL_DATATYPE)) ? raw_unknown : type;
+    return DATA_TYPES[type];
 }
 
 /**
@@ -117,7 +116,7 @@ static std::string get_type_from_enum(DataType type)
  * @param str compression type as string
  * @return CompressionType compression type
  */
-static CompressionType get_compression_from_string(const std::string& str)
+inline static CompressionType get_compression_from_string(const std::string& str)
 {
     if (str == "unknown")
         return unknown_compression;
@@ -138,13 +137,10 @@ static CompressionType get_compression_from_string(const std::string& str)
  * \param[in] compress - enum value
  * \return the string value representing the compression. Assumed none if the enum value is unrecognised.
  */
-static std::string get_compress_from_enum(CompressionType compress)
+inline static std::string get_compress_from_enum(CompressionType compress)
 {
-    if (compress >= 0 && compress < sizeof(COMPRESS_TYPES) / sizeof(COMPRESS_TYPES[0])) {
-        return COMPRESS_TYPES[compress];
-    } else {
-        return COMPRESS_TYPES[0];
-    }
+    compress = ((compress < 0) | (compress >= FINAL_COMPRESSIONTYPE)) ? unknown_compression : compress;
+    return COMPRESS_TYPES[compress];
 }
 /**
  * Defines a dataset to be saved in HDF5 format.
