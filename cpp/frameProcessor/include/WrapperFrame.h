@@ -1,3 +1,9 @@
+/*
+ * WrapperFrame.h
+ *
+ *  Created on: 19 Oct 2026
+ *      Author: Famous Alele
+ */
 #ifndef WRAPPER_FRAME_H
 #define WRAPPER_FRAME_H
 
@@ -16,14 +22,11 @@ namespace FrameProcessor {
  * distinct `Frame` for each image without copying the data by setting the offset to each
  * image in the underlying `Frame` data.
  *
- * Some attributes are re-implmented as a view onto the `Frame` - e.g. the
- * data pointer and frame number - while others are distinct - e.g. the data offset and
- * meta data. The meta data is initially copied from the `Frame` and can then be updated.
+ * Some attributes are deleted to ensure this class is read-only.
+ * The meta data is initially copied from the `Frame` and can then be updated.
  *
  * \param[in] frame - Shared pointer to the underlying `Frame`
- * \param[in] image_offset - Offset from underlying `Frame` data pointer to image data
- * \param[in] image_ptr    - Memory address of the underlying Frame's data pointer
- * \param[in] image_size   - Size of the underlying `Frame`
+ * \param[in] meta_data - Metadata for this wrapper frame
  * \param[in] image_offset - Offset from underlying `Frame` data pointer to image data
  */
 class WrapperFrame : public Frame {
