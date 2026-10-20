@@ -51,7 +51,6 @@ public:
 
     // delete base class setter methods
     void set_data_size(size_t) = delete;
-    void set_frame_number() const = delete;
     void set_meta_data(const FrameMetaData&) = delete;
     void set_image_size(const int&) = delete;
     void set_image_offset(const int&) = delete;
