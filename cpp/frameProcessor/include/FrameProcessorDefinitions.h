@@ -85,10 +85,11 @@ inline static DataType get_type_from_string(const std::string& str)
  */
 inline static size_t get_size_from_enum(DataType type)
 {
+    int given = type;
     type = ((type < 0) | (type >= FINAL_DATATYPE)) ? raw_unknown : type;
     if (type == raw_unknown) {
-        char msg[43];
-        snprintf(msg, sizeof(msg), "%s", "Unable to determine the size of data type");
+        char msg[64];
+        snprintf(msg, sizeof(msg), "%s%d", "Unable to determine the size of data type", given);
         throw std::runtime_error(msg);
     }
     uint16_t data_sizes[FINAL_DATATYPE];
