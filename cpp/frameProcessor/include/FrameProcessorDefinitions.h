@@ -24,7 +24,7 @@ enum DataType {
     raw_64bit,
     raw_float,
 
-    // Add no types byond this sentinel type and
+    // Add no types beyond this sentinel type and
     // NEVER use this type as a valid data type
     FINAL_DATATYPE
 };
@@ -38,8 +38,8 @@ enum CompressionType {
     bslz4,
     blosc,
 
-    // Add no types byond this sentinel type and
-    // NEVER use this type as a valid data type
+    // Add no types beyond this sentinel type and
+    // NEVER use this type as a valid compression type
     FINAL_COMPRESSIONTYPE
 };
 /**
@@ -87,11 +87,11 @@ inline static size_t get_size_from_enum(DataType type)
 {
     type = ((type < 0) | (type >= FINAL_DATATYPE)) ? raw_unknown : type;
     if (type == raw_unknown) {
-        char msg[64];
-        snprintf(msg, sizeof(msg), "%s%d", "Unable to determine data type size: ", type);
+        char msg[43];
+        snprintf(msg, sizeof(msg), "%s", "Unable to determine the size of data type");
         throw std::runtime_error(msg);
     }
-    uint16_t data_sizes[FINAL_COMPRESSIONTYPE];
+    uint16_t data_sizes[FINAL_DATATYPE];
     data_sizes[raw_unknown] = 256; // this disables shuffle for blosc
     data_sizes[raw_8bit] = sizeof(uint8_t);
     data_sizes[raw_16bit] = sizeof(uint16_t);

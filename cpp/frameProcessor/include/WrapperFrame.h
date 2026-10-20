@@ -49,7 +49,7 @@ public:
         return wrapped_frame_->get_data_ptr();
     }
 
-    // delete base class seter methods
+    // delete base class setter methods
     void set_data_size(size_t) = delete;
     void set_frame_number() const = delete;
     void set_meta_data(const FrameMetaData&) = delete;
