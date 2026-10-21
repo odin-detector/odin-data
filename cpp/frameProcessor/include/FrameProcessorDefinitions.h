@@ -89,7 +89,7 @@ inline static size_t get_size_from_enum(DataType type)
     type = ((type < 0) | (type >= FINAL_DATATYPE)) ? raw_unknown : type;
     if (type == raw_unknown) {
         char msg[64];
-        snprintf(msg, sizeof(msg), "%s%d", "Unable to determine the size of data type", given);
+        snprintf(msg, sizeof(msg), "Unable to determine the size of data type %d", given);
         throw std::runtime_error(msg);
     }
     uint16_t data_sizes[FINAL_DATATYPE];
