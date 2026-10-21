@@ -336,7 +336,7 @@ void* KafkaProducerPlugin::create_message(boost::shared_ptr<Frame> frame, size_t
             {
                 writer_.Uint64(val);
             }
-            void operator()(float_t val) const
+            void operator()(float val) const
             {
                 writer_.Double(val);
             }
