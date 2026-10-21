@@ -315,27 +315,40 @@ void* KafkaProducerPlugin::create_message(boost::shared_ptr<Frame> frame, size_t
         auto& parameters = frame->get_meta_data().get_parameters();
         writer.String(MSG_HEADER_FRAME_PARAMETERS_KEY);
         writer.StartObject();
+        struct VariantVisitor : public boost::static_visitor<void> {
+            VariantVisitor(rapidjson::Writer<rapidjson::StringBuffer>& writer) :
+                writer_ { writer }
+            {
+            }
+            void operator()(uint8_t val) const
+            {
+                writer_.Uint(val);
+            }
+            void operator()(uint16_t val) const
+            {
+                writer_.Uint(val);
+            }
+            void operator()(uint32_t val) const
+            {
+                writer_.Uint(val);
+            }
+            void operator()(uint64_t val) const
+            {
+                writer_.Uint64(val);
+            }
+            void operator()(float_t val) const
+            {
+                writer_.Double(val);
+            }
+            void operator()(boost::blank) const
+            {
+                writer_.Null();
+            }
+            rapidjson::Writer<rapidjson::StringBuffer>& writer_;
+        };
         for (const auto& it : parameters) {
             writer.String(it.first.c_str());
-            switch (it.second.which()) {
-            case 1:
-                writer.Uint(frame->get_meta_data().get_parameter<uint8_t>(it.first));
-                break;
-            case 2:
-                writer.Uint(frame->get_meta_data().get_parameter<uint16_t>(it.first));
-                break;
-            case 3:
-                writer.Uint(frame->get_meta_data().get_parameter<uint32_t>(it.first));
-                break;
-            case 4:
-                writer.Uint64(frame->get_meta_data().get_parameter<uint64_t>(it.first));
-                break;
-            case 5:
-                writer.Double(frame->get_meta_data().get_parameter<float>(it.first));
-                break;
-            default:
-                writer.Null();
-            }
+            boost::apply_visitor(VariantVisitor(writer), it.second);
         }
         writer.EndObject();
     }

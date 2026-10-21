@@ -657,6 +657,7 @@ hid_t HDF5File::datatype_to_hdf_type(DataType data_type)
     type_arr[raw_32bit] = H5T_NATIVE_UINT32;
     type_arr[raw_64bit] = H5T_NATIVE_UINT64;
     type_arr[raw_float] = H5T_NATIVE_FLOAT;
+    LOG4CXX_DEBUG_LEVEL(2, Logger::getLogger("FP.HDF5File"), "Data type: " << DATA_TYPES[data_type]);
     return type_arr[data_type];
 }
 

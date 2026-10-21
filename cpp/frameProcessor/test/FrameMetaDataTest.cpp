@@ -46,7 +46,7 @@ static bool is_not_critical2(const boost::bad_get& /*er*/)
 }
 
 BOOST_GLOBAL_FIXTURE(LocalConfig);
-BOOST_AUTO_TEST_SUITE(FrameMeaDataUnitTest);
+BOOST_AUTO_TEST_SUITE(FrameMetaDataUnitTest);
 
 BOOST_AUTO_TEST_CASE(FrameMetaDataSetGetParam)
 {
