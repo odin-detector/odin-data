@@ -18,15 +18,15 @@ namespace FrameProcessor {
 
 /** A read-only view of the underlying memory of a `Frame`
  *
- * When `Frame` data contains multiple images, a `WrapperFrame` can be used to publish a
+ * When `Frame` contains multiple images, a `WrappedFrame` can be used to publish a
  * distinct `Frame` for each image without copying the data by setting the offset to each
  * image in the underlying `Frame` data.
  *
- * Some attributes are deleted to ensure this class is read-only.
+ * Some base class attributes are deleted to ensure this class is read-only.
  * The meta data is initially copied from the `Frame` and can then be updated.
  *
  * \param[in] frame - Shared pointer to the underlying original `Frame`
- * \param[in] meta_data - Metadata for this wrapper frame
+ * \param[in] meta_data - Metadata for this WrappedFrame
  * \param[in] image_offset - Offset from underlying `Frame` data pointer to image data
  */
 class WrappedFrame : public Frame {
@@ -43,7 +43,7 @@ public:
     {
     }
 
-    // Base class virtual methods
+    // Base class pure virtual method implementation
     void* get_data_ptr() const
     {
         return original_frame_->get_data_ptr();
@@ -57,7 +57,7 @@ public:
     void set_outer_chunk_size(const int&) = delete;
 
 private:
-    /** Underlying Frame's memory address */
+    /** Original Frame's memory address */
     const boost::shared_ptr<Frame> original_frame_;
 };
 
