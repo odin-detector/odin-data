@@ -11,8 +11,6 @@
 #define TEST_PARAM1_VALUE (0xabcde12345678912)
 #define TEST_PARAM2_NAME "PARAM2"
 #define TEST_PARAM2_VALUE (3.14159265)
-#define TEST_PARAM3_NAME "PARAM3"
-#define TEST_PARAM3_VALUE ('c')
 #define TOLERANCE (0.0001)
 
 class KafkaProducerPluginTestFixture {
@@ -35,8 +33,6 @@ public:
         );
         frame->meta_data().set_parameter<uint64_t>(TEST_PARAM1_NAME, TEST_PARAM1_VALUE);
         frame->meta_data().set_parameter<float>(TEST_PARAM2_NAME, TEST_PARAM2_VALUE);
-        // test for an unsupported type
-        frame->meta_data().set_parameter<char>(TEST_PARAM3_NAME, TEST_PARAM3_VALUE);
     }
 
     ~KafkaProducerPluginTestFixture()
@@ -105,8 +101,6 @@ BOOST_AUTO_TEST_CASE(KafkaProducerPluginCheckMessageHeader)
     BOOST_CHECK_CLOSE(
         document[MSG_HEADER_FRAME_PARAMETERS_KEY][TEST_PARAM2_NAME].GetDouble(), TEST_PARAM2_VALUE, TOLERANCE
     );
-    // an unsupported type has null as value
-    BOOST_CHECK(document[MSG_HEADER_FRAME_PARAMETERS_KEY][TEST_PARAM3_NAME].IsNull());
     free(data);
 }
 

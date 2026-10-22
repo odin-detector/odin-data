@@ -22,7 +22,10 @@ enum DataType {
     raw_16bit,
     raw_32bit,
     raw_64bit,
-    raw_float
+    raw_float,
+
+    // never used as a type and nothing placed after this enum!
+    FINAL_DATATYPE
 };
 /**
  * Enumeration to store the compression type of the incoming image

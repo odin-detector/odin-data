@@ -312,18 +312,43 @@ void* KafkaProducerPlugin::create_message(boost::shared_ptr<Frame> frame, size_t
     }
     writer.EndArray();
     if (this->include_parameters_) {
-        const std::map<std::string, boost::any>& parameters = frame->get_meta_data().get_parameters();
+        auto& parameters = frame->get_meta_data().get_parameters();
         writer.String(MSG_HEADER_FRAME_PARAMETERS_KEY);
         writer.StartObject();
-        for (std::map<std::string, boost::any>::const_iterator it = parameters.begin(); it != parameters.end(); it++) {
-            writer.String(it->first.c_str());
-            if (it->second.type() == typeid(unsigned long)) {
-                writer.Uint64(frame->get_meta_data().get_parameter<unsigned long>(it->first));
-            } else if (it->second.type() == typeid(float)) {
-                writer.Double(frame->get_meta_data().get_parameter<float>(it->first));
-            } else {
-                writer.Null();
+        struct VariantVisitor : public boost::static_visitor<void> {
+            VariantVisitor(rapidjson::Writer<rapidjson::StringBuffer>& writer) :
+                writer_ { writer }
+            {
             }
+            void operator()(uint8_t val) const
+            {
+                writer_.Uint(val);
+            }
+            void operator()(uint16_t val) const
+            {
+                writer_.Uint(val);
+            }
+            void operator()(uint32_t val) const
+            {
+                writer_.Uint(val);
+            }
+            void operator()(uint64_t val) const
+            {
+                writer_.Uint64(val);
+            }
+            void operator()(float val) const
+            {
+                writer_.Double(val);
+            }
+            void operator()(boost::blank) const
+            {
+                writer_.Null();
+            }
+            rapidjson::Writer<rapidjson::StringBuffer>& writer_;
+        };
+        for (const auto& it : parameters) {
+            writer.String(it.first.c_str());
+            boost::apply_visitor(VariantVisitor(writer), it.second);
         }
         writer.EndObject();
     }
