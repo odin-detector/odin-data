@@ -25,6 +25,6 @@ SET(HEADERS DataBlock.h
             ParamMetadata.h
             RawFileWriterPlugin.h
             ParameterPublishPlugin.h
-            WrapperFrame.h)
+            WrappedFrame.h)
 
 INSTALL(FILES ${HEADERS} DESTINATION include/frameProcessor)
