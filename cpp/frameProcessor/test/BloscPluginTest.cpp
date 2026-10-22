@@ -1,10 +1,10 @@
 #define BOOST_TEST_MODULE "BloscPluginTests"
 #define BOOST_TEST_MAIN
 
-#include <blosc.h>
-
 #include "BloscPlugin.h"
+#include "Allocator.hpp"
 #include "Fixtures.h"
+#include <blosc.h>
 
 BOOST_GLOBAL_FIXTURE(GlobalConfig);
 
@@ -15,9 +15,10 @@ public:
         set_debug_level(3);
         std::array<int, 64000> vec {}; // 256kb data size
         vec.fill(2398); // fill with random value
-
+        FrameProcessor::PoolAllocator<FrameProcessor::DataBlockFrame> allocator;
         blosc_plugin.set_name("BloscPluginTest");
-        frame = boost::make_shared<FrameProcessor::DataBlockFrame>(
+        frame = boost::allocate_shared<FrameProcessor::DataBlockFrame>(
+            allocator,
             FrameProcessor::FrameMetaData { 7,
                                             "data",
                                             FrameProcessor::raw_32bit,
@@ -100,7 +101,7 @@ BOOST_AUTO_TEST_CASE(BloscPlugin_off)
     OdinData::IpcMessage reply;
     setup_blosc_config(cfg_, reply);
 
-    // reset the compression mode as "off" - no compression should occur and the source frame should be pushed on queue
+    // reset the compression mode as "off" - no compression should occur and the source frame should be pushed on
     BOOST_CHECK_NO_THROW(
         cfg_.set_param(FrameProcessor::BloscPlugin::CONFIG_BLOSC_MODE, std::string(FPB::BLOSC_OFF_MODE_STR))
     );
