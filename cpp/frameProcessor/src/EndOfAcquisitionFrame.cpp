@@ -5,7 +5,7 @@ namespace FrameProcessor {
 /** EndOfAcquisitionFrame constructor
  */
 EndOfAcquisitionFrame::EndOfAcquisitionFrame() :
-    Frame(meta_data_, 0)
+    Frame(meta_data_, 0, true)
 {
 }
 
@@ -40,15 +40,6 @@ EndOfAcquisitionFrame::~EndOfAcquisitionFrame()
 void* EndOfAcquisitionFrame::get_data_ptr() const
 {
     return NULL;
-}
-
-/** Return true to signify that this frame
- * is an "end of acquisition" frame.
- * @ return end of acquisition
- */
-bool EndOfAcquisitionFrame::get_end_of_acquisition() const
-{
-    return true;
 }
 
 }

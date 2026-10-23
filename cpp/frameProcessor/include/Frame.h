@@ -16,20 +16,22 @@ class Frame {
 
 public:
     /** Base constructor */
-    Frame(const FrameMetaData& meta_data, const size_t data_size) :
+    Frame(const FrameMetaData& meta_data, const size_t data_size, bool is_acq_end = false) :
         meta_data_(meta_data),
         data_size_(data_size),
         image_size_(data_size - meta_data_.frame_offset_),
-        outer_chunk_size_(1)
+        outer_chunk_size_(1),
+        is_end_of_acq_{is_acq_end}
     {
     }
 
     /** Base constructor */
-    Frame(FrameMetaData&& meta_data, const size_t data_size) :
+    Frame(FrameMetaData&& meta_data, const size_t data_size, bool is_acq_end = false) :
         meta_data_(std::move(meta_data)),
         data_size_(data_size),
         image_size_(data_size - meta_data_.frame_offset_),
-        outer_chunk_size_(1)
+        outer_chunk_size_(1),
+        is_end_of_acq_{is_acq_end}
     {
     }
 
@@ -75,10 +77,11 @@ public:
 
     /** Return the data size
      *  @return bool - default behaviour is false, can be overriden
+     *                 by settting it to true in a child class
      */
-    virtual bool get_end_of_acquisition() const
+    bool get_end_of_acquisition() const
     {
-        return false;
+        return is_end_of_acq_;
     }
 
     /** Return the data size
@@ -193,6 +196,9 @@ protected:
 
     /** Outer chunk size of this frame (number of images in this chunk) */
     int outer_chunk_size_;
+
+    /** Boolean indicating if the frame is an end of acquisiition or not */
+    bool is_end_of_acq_;
 };
 
 }
