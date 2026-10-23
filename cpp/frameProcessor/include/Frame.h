@@ -135,12 +135,18 @@ public:
         return meta_data_;
     }
 
-    /** Set MetaData
-     * @param FrameMetaData meta_data - new meta data
+    /** Set acquisition ID
+     * @tparam T - FrameMetaData type
+     * @param metadata - metadata object to set
      */
-    void set_meta_data(const FrameMetaData& meta_data)
+    template <
+        typename T,
+        typename = typename std::enable_if<std::is_same<typename std::decay<T>::type, FrameMetaData>::value>::type>
+    void set_meta_data(T&& metadata) noexcept(
+        std::is_same<typename std::decay<T>::type, FrameMetaData>::value && std::is_rvalue_reference<T>::value
+    )
     {
-        meta_data_ = meta_data;
+        meta_data_ = std::move(metadata);
     }
 
     /** Return the image size
