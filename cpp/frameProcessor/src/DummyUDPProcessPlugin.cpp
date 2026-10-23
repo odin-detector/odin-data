@@ -230,6 +230,7 @@ void DummyUDPProcessPlugin::process_frame(boost::shared_ptr<Frame> frame)
     dims[1] = image_width_;
     frame_meta.set_dimensions(dims);
     frame_meta.set_compression_type(no_compression);
+    frame_meta.set_frame_offset(sizeof(DummyUDP::FrameHeader));
 
     // Calculate output image size
     const std::size_t output_image_size = image_width_ * image_height_ * sizeof(uint16_t);
@@ -258,9 +259,6 @@ void DummyUDPProcessPlugin::process_frame(boost::shared_ptr<Frame> frame)
 
         // Set metadata on existing frame
         frame->set_meta_data(frame_meta);
-
-        // Set iamge offset on exisitng frame
-        frame->set_image_offset(sizeof(DummyUDP::FrameHeader));
 
         // Set output image size on existing frame
         frame->set_image_size(output_image_size);

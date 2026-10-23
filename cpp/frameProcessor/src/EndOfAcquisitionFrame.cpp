@@ -5,7 +5,7 @@ namespace FrameProcessor {
 /** EndOfAcquisitionFrame constructor
  */
 EndOfAcquisitionFrame::EndOfAcquisitionFrame() :
-    Frame(meta_data_, 0, 0)
+    Frame(meta_data_, 0)
 {
 }
 

@@ -16,68 +16,166 @@ class Frame {
 
 public:
     /** Base constructor */
-    Frame(const FrameMetaData& meta_data, const size_t& data_size, const int& image_offset = 0);
-    /** Shallow-copy copy */
-    Frame(const Frame& frame);
+    Frame(const FrameMetaData& meta_data, const size_t data_size) :
+        meta_data_(meta_data),
+        data_size_(data_size),
+        image_size_(data_size - meta_data_.frame_offset_),
+        outer_chunk_size_(1)
+    {
+    }
 
-    /** Deep-copy assignment */
-    Frame& operator=(const Frame& frame);
+    /** Base constructor */
+    Frame(FrameMetaData&& meta_data, const size_t data_size) :
+        meta_data_(std::move(meta_data)),
+        data_size_(data_size),
+        image_size_(data_size - meta_data_.frame_offset_),
+        outer_chunk_size_(1)
+    {
+    }
 
-    /** Return if frame is valid */
-    bool is_valid() const;
+    /** Copy constructor
+     * @param frame - source frame
+     */
+    Frame(const Frame& frame) = default;
+
+    /** Move constructor
+     * @param frame - source frame
+     */
+    Frame(Frame&& frame) = default;
+
+    /** Copy assignment operator
+     * @param frame - source frame
+     * @return this object
+     */
+    Frame& operator=(const Frame& frame) = default;
+
+    /** Move Assignment operator
+     * @param frame - source frame
+     * @return this object
+     */
+    Frame& operator=(Frame&& frame) = default;
+
+    /** Return if frame is valid
+     * @return bool - frame is valid
+     */
+    bool is_valid() const
+    {
+        bool b_array[2] = { true, false };
+        return b_array[(meta_data_.data_type_ == raw_unknown) | (meta_data_.compression_type_ == unknown_compression)];
+    }
 
     /** Return a void pointer to the raw data */
     virtual void* get_data_ptr() const = 0;
 
     /** Return a void pointer to the image data */
-    virtual void* get_image_ptr() const;
+    virtual void* get_image_ptr() const
+    {
+        return reinterpret_cast<void*>(reinterpret_cast<char*>(this->get_data_ptr()) + meta_data_.frame_offset_);
+    }
 
-    /** Return if this frame object is an "end of acquisition" frame*/
-    virtual bool get_end_of_acquisition() const;
+    /** Return the data size
+     *  @return bool - default behaviour is false, can be overriden
+     */
+    virtual bool get_end_of_acquisition() const
+    {
+        return false;
+    }
 
-    /** Return the data size */
-    size_t get_data_size() const;
+    /** Return the data size
+     *  @return data_size_
+     */
+    size_t get_data_size() const
+    {
+        return data_size_;
+    }
 
-    /** Update the data size */
-    void set_data_size(size_t size);
+    /** Update the data size
+     * @param size new data size
+     */
+    void set_data_size(size_t size)
+    {
+        if (size < this->data_size_) {
+            LOG4CXX_DEBUG(log4cxx::Logger::getLogger("FP.Frame"), "Updating size of frame data");
+            data_size_ = size;
+        }
+        LOG4CXX_DEBUG(
+            log4cxx::Logger::getLogger("FP.Frame"), "Can't set frame data size to be bigger than allocated memory size."
+        );
+    }
 
-    /** Return the frame number */
-    long long get_frame_number() const;
+    /** Return the frame number
+     *  @return frame frame number
+     */
+    long long get_frame_number() const
+    {
+        return this->meta_data_.frame_number_;
+    }
 
     /** Set the frame number */
-    void set_frame_number(long long frame_number);
+    void set_frame_number(long long frame_number)
+    {
+        this->meta_data_.frame_number_ = frame_number;
+    }
 
-    /** Return a reference to the MetaData */
-    FrameMetaData& meta_data();
+    /** @return a reference to the MetaData */
+    FrameMetaData& meta_data()
+    {
+        return this->meta_data_;
+    }
 
-    /** Return the MetaData */
-    const FrameMetaData& get_meta_data() const;
+    /** @return a MetaData const reference */
+    const FrameMetaData& get_meta_data() const
+    {
+        return meta_data_;
+    }
 
-    /** Return deep copy of the MetaData */
-    FrameMetaData get_meta_data_copy() const;
+    /** @return a copy of the MetaData */
+    FrameMetaData get_meta_data_copy() const
+    {
+        return meta_data_;
+    }
 
-    /** Set MetaData */
-    void set_meta_data(const FrameMetaData& meta_data);
+    /** Set MetaData
+     * @param FrameMetaData meta_data - new meta data
+     */
+    void set_meta_data(const FrameMetaData& meta_data)
+    {
+        meta_data_ = meta_data;
+    }
 
-    /** Return the image size */
-    int get_image_size() const;
+    /** Return the image size
+     * @return size of data minus offset (header size)
+     */
+    int get_image_size() const
+    {
+        return image_size_;
+    }
 
-    /** Set the image size */
-    void set_image_size(const int& size);
+    /** Set the image size
+     * @param size the image size
+     */
+    void set_image_size(const int size)
+    {
+        image_size_ = size;
+    }
 
-    /** Set the image offset */
-    void set_image_offset(const int& offset);
+    /** Set the outer chunk size of the frame (number of trigger acqs in chunk)
+     * @param size - outer_chunk_size
+     */
+    void set_outer_chunk_size(const int size)
+    {
+        outer_chunk_size_ = size;
+    }
 
-    /** Set the outer chunk size */
-    void set_outer_chunk_size(const int& size);
-
-    /** Set the outer chunk size */
-    int get_outer_chunk_size() const;
+    /** Get the outer chunk size of the frame (number of trigger acqs in chunk)
+     * @return outer_chunk_size
+     */
+    int get_outer_chunk_size() const
+    {
+        return outer_chunk_size_;
+    }
 
 protected:
-    /** Pointer to logger */
-    log4cxx::LoggerPtr logger_;
-
     /** Frame MetaData */
     FrameMetaData meta_data_;
 
@@ -86,9 +184,6 @@ protected:
 
     /** Size of the image **/
     int image_size_;
-
-    /** Offset from frame memory start to image data */
-    int image_offset_;
 
     /** Outer chunk size of this frame (number of images in this chunk) */
     int outer_chunk_size_;
