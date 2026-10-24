@@ -16,22 +16,22 @@ class Frame {
 
 public:
     /** Base constructor */
-    Frame(const FrameMetaData& meta_data, const size_t data_size, bool is_acq_end = false) :
+    Frame(const FrameMetaData& meta_data, const uint64_t data_size, bool is_acq_end = false) :
         meta_data_(meta_data),
         data_size_(data_size),
         image_size_(data_size - meta_data_.frame_offset_),
         outer_chunk_size_(1),
-        is_end_of_acq_{is_acq_end}
+        is_end_of_acq_ { is_acq_end }
     {
     }
 
     /** Base constructor */
-    Frame(FrameMetaData&& meta_data, const size_t data_size, bool is_acq_end = false) :
+    Frame(FrameMetaData&& meta_data, const uint64_t data_size, bool is_acq_end = false) :
         meta_data_(std::move(meta_data)),
         data_size_(data_size),
         image_size_(data_size - meta_data_.frame_offset_),
         outer_chunk_size_(1),
-        is_end_of_acq_{is_acq_end}
+        is_end_of_acq_ { is_acq_end }
     {
     }
 
@@ -155,7 +155,7 @@ public:
     /** Return the image size
      * @return size of data minus offset (header size)
      */
-    int get_image_size() const
+    uint64_t get_image_size() const
     {
         return image_size_;
     }
@@ -163,9 +163,18 @@ public:
     /** Set the image size
      * @param size the image size
      */
-    void set_image_size(const int size)
+    void set_image_size(const size_t size)
     {
         image_size_ = size;
+    }
+
+    /** Set the image offset
+     * @param offset - new offset
+     */
+    void set_image_offset(const int64_t offset)
+    {
+        meta_data_.frame_offset_ = offset; // update the metadata's offset value
+        this->image_size_ = this->data_size_ - offset; // set the data size
     }
 
     /** Set the outer chunk size of the frame (number of trigger acqs in chunk)
@@ -189,10 +198,10 @@ protected:
     FrameMetaData meta_data_;
 
     /** Shared memory size **/
-    size_t data_size_;
+    uint64_t data_size_;
 
     /** Size of the image **/
-    int image_size_;
+    uint64_t image_size_;
 
     /** Outer chunk size of this frame (number of images in this chunk) */
     int outer_chunk_size_;
