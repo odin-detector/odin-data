@@ -12,15 +12,10 @@ class DataBlockFrame : public Frame {
 
 public:
     /** Construct a DataBlockFrame */
-    DataBlockFrame(
-        const FrameMetaData& meta_data,
-        const void* data_src,
-        size_t block_size,
-        const int& image_offset = 0
-    );
+    DataBlockFrame(const FrameMetaData& meta_data, const void* data_src, size_t block_size);
 
     /** Construct a DataBlockFrame */
-    DataBlockFrame(const FrameMetaData& meta_data, size_t block_size, const int& image_offset = 0);
+    DataBlockFrame(const FrameMetaData& meta_data, size_t block_size);
 
     /** Shallow-copy copy */
     DataBlockFrame(const DataBlockFrame& frame);
