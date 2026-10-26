@@ -81,9 +81,13 @@ void UDataBlockPool::release(void* block)
 void UDataBlockPool::internal_release(void* block)
 {
     std::lock_guard<std::mutex> lock(mutex_);
-    if (used_map_.count(block) > 0) {
-        used_map_.erase(block);
-        free_list_.push_front(block);
+    for (size_t i = 0; i < used_list_.size(); ++i) {
+        if (used_list_[i] == block) {
+            free_list_.push_front(block);
+            std::swap(used_list_.front(), used_list_[i]);
+            used_list_.pop_front();
+            break;
+        }
     }
 }
 
@@ -140,20 +144,21 @@ UDataBlockPool* UDataBlockPool::instance(size_t block_size)
  * methods.
  */
 UDataBlockPool::UDataBlockPool(const size_t block_size) :
-    free_list_(ELEMS_PER_POOL)
+    free_list_alloc_(reinterpret_cast<void**>(free_list_mem_), sizeof(free_list_mem_)),
+    used_list_alloc_(reinterpret_cast<void**>(used_list_mem_), sizeof(used_list_mem_)),
+    free_list_(ELEMS_PER_POOL, free_list_alloc_),
+    used_list_(ELEMS_PER_POOL, used_list_alloc_)
 {
-    used_map_.reserve(ELEMS_PER_POOL);
     const size_t alignment_offset = calc_alignment_offset(block_size);
     void* pre_allocated_pool_ptr = nullptr;
     int status = posix_memalign(&pre_allocated_pool_ptr, alignment, (block_size + alignment_offset) * ELEMS_PER_POOL);
     if (!status) {
-        alignment_offset_ = alignment_offset;
-        memory_allocated_ = (block_size + alignment_offset_) * ELEMS_PER_POOL;
+        memory_allocated_ = (block_size + alignment_offset) * ELEMS_PER_POOL;
         unsigned char* ptr = reinterpret_cast<unsigned char*>(allocated_block_);
         // initialize the free_list_ pool
-        for (int i = 0; i < ELEMS_PER_POOL; ++i) {
+        for (size_t i = 0; i < ELEMS_PER_POOL; ++i) {
             free_list_.push_back(ptr);
-            ptr += (block_size + alignment_offset_);
+            ptr += (block_size + alignment_offset);
         }
     } else {
         throw std::runtime_error("Failed to allocate Pool Memory");
@@ -166,19 +171,19 @@ UDataBlockPool::UDataBlockPool(const size_t block_size) :
  * methods. This constructor take pre-allocated memory
  */
 UDataBlockPool::UDataBlockPool(void* allocated_block_ptr, const size_t block_size, const size_t alignment_offset) :
-    free_list_(ELEMS_PER_POOL),
+    free_list_alloc_(reinterpret_cast<void**>(free_list_mem_), sizeof(free_list_mem_)),
+    used_list_alloc_(reinterpret_cast<void**>(used_list_mem_), sizeof(used_list_mem_)),
+    free_list_(ELEMS_PER_POOL, free_list_alloc_),
+    used_list_(ELEMS_PER_POOL, used_list_alloc_),
     memory_allocated_ { (block_size + alignment_offset) * ELEMS_PER_POOL },
-    alignment_offset_ { alignment_offset },
     allocated_block_ { allocated_block_ptr }
 {
-    used_map_.reserve(ELEMS_PER_POOL);
-
     unsigned char* ptr = reinterpret_cast<unsigned char*>(allocated_block_);
 
     // initialize the free_list_ pool with blocks of size block_size
     for (size_t i = 0; i < ELEMS_PER_POOL; ++i) {
         free_list_.push_back(ptr);
-        ptr += (block_size + alignment_offset_);
+        ptr += (block_size + alignment_offset);
     }
 }
 
@@ -200,7 +205,7 @@ void* UDataBlockPool::internal_take(size_t block_size)
         return nullptr;
     void* block = free_list_.front();
     free_list_.pop_front();
-    used_map_.insert(block);
+    used_list_.push_back(block);
     LOG4CXX_DEBUG_LEVEL(
         2, log4cxx::Logger::getLogger("FP.UDataBlockPool"), "Providing DataBlock [addr=" << block << "]"
     );

@@ -12,7 +12,6 @@
 #include <unordered_map>
 
 #include <boost/circular_buffer.hpp>
-#include <boost/unordered/unordered_flat_set.hpp>
 
 #include "DataBlock.h"
 
@@ -34,7 +33,10 @@ class alignas(alignment) UDataBlockPool {
 public:
     static constexpr size_t ELEMS_PER_POOL = 64;
     ~UDataBlockPool() = default;
-
+    UDataBlockPool(UDataBlockPool&&) = delete;
+    UDataBlockPool& operator=(UDataBlockPool&&) = delete;
+    UDataBlockPool(const volatile UDataBlockPool&) = delete;
+    UDataBlockPool& operator=(const volatile UDataBlockPool&) = delete;
     static void* take(size_t block_size);
     static void release(void* block);
     static void tearDownClass();
@@ -63,7 +65,7 @@ private:
     size_t internal_get_used_blocks()
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        return used_map_.size();
+        return used_list_.size();
     }
     /**
      * Returns the total number of DataBlocks present in the UDataBlockPool.
@@ -74,20 +76,58 @@ private:
     {
         return ELEMS_PER_POOL;
     }
+    template <typename T> class PreAllocatedAllocator {
+    public:
+        using value_type = T;
+
+        PreAllocatedAllocator(T* custom_storage, size_t capacity) :
+            storage_(custom_storage),
+            capacity_(capacity)
+        {
+        }
+
+        template <typename U>
+        PreAllocatedAllocator(const PreAllocatedAllocator<U>& other) noexcept :
+            storage_(reinterpret_cast<T*>(other.storage_)),
+            capacity_(other.capacity_)
+        {
+        }
+
+        T* allocate(std::size_t n)
+        {
+            if (n > capacity_) {
+                throw std::bad_alloc();
+            }
+            return storage_;
+        }
+
+        void deallocate(T* /*p*/, std::size_t /*n*/) noexcept
+        {
+            // Do nothing: memory lifecycle is managed externally
+        }
+
+        template <typename U> struct rebind {
+            using other = PreAllocatedAllocator<U>;
+        };
+
+        T* storage_;
+        std::size_t capacity_;
+    };
 
     /** Mutex used to make this class thread safe */
     mutable std::mutex mutex_;
     // std::atomic<bool> bool_at_;
+    PreAllocatedAllocator<void*> free_list_alloc_;
+    PreAllocatedAllocator<void*> used_list_alloc_;
     /** List of currently available DataBlock objects */
-    boost::circular_buffer<void*> free_list_;
-    // unsigned char free_list_mem_[(sizeof(DataBlock*) * ELEMS_PER_POOL)];
-    /** Map of currently used DataBlock objects, indexed by their unique IDs */
-    boost::unordered::unordered_flat_set<void*> used_map_;
-    // unsigned char used_map_mem_[((sizeof(std::pair<int, DataBlock*>) * ELEMS_PER_POOL)) + 32];
+    boost::circular_buffer<void*, PreAllocatedAllocator<void*>> free_list_;
+    /** List of currently in-use DataBlock objects */
+    boost::circular_buffer<void*, PreAllocatedAllocator<void*>> used_list_;
+    /** pre-allocated memory for the circular buffers */
+    alignas(alignment) unsigned char free_list_mem_[(sizeof(void*) * ELEMS_PER_POOL)];
+    alignas(alignment) unsigned char used_list_mem_[(sizeof(void*) * ELEMS_PER_POOL)];
     /** Total number of bytes allocated (sum of all DataBlocks) */
     size_t memory_allocated_;
-    /** Offset size for block alignment */
-    size_t alignment_offset_;
     /** DataBlock header object holding pointer to the allocated contiguous block*/
     alignas(void*) void* allocated_block_;
 
