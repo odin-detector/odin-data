@@ -32,7 +32,12 @@ class alignas(alignment) UDataBlockPool {
 
 public:
     static constexpr size_t ELEMS_PER_POOL = 64;
-    ~UDataBlockPool() = default;
+    ~UDataBlockPool()
+    {
+        if (is_pre_allocated_ & (allocated_block_ != nullptr))
+            free(allocated_block_);
+        allocated_block_ = nullptr;
+    }
     UDataBlockPool(UDataBlockPool&&) = delete;
     UDataBlockPool& operator=(UDataBlockPool&&) = delete;
     UDataBlockPool(const volatile UDataBlockPool&) = delete;
@@ -128,6 +133,8 @@ private:
     alignas(alignment) unsigned char used_list_mem_[(sizeof(void*) * ELEMS_PER_POOL)];
     /** Total number of bytes allocated (sum of all DataBlocks) */
     size_t memory_allocated_;
+    /** Is pre-allocated  flag */
+    bool is_pre_allocated_;
     /** DataBlock header object holding pointer to the allocated contiguous block*/
     alignas(void*) void* allocated_block_;
 

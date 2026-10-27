@@ -147,7 +147,8 @@ UDataBlockPool::UDataBlockPool(const size_t block_size) :
     free_list_alloc_(reinterpret_cast<void**>(free_list_mem_), sizeof(free_list_mem_)),
     used_list_alloc_(reinterpret_cast<void**>(used_list_mem_), sizeof(used_list_mem_)),
     free_list_(ELEMS_PER_POOL, free_list_alloc_),
-    used_list_(ELEMS_PER_POOL, used_list_alloc_)
+    used_list_(ELEMS_PER_POOL, used_list_alloc_),
+    is_pre_allocated_ { false }
 {
     const size_t alignment_offset = calc_alignment_offset(block_size);
     void* pre_allocated_pool_ptr = nullptr;
@@ -176,6 +177,7 @@ UDataBlockPool::UDataBlockPool(void* allocated_block_ptr, const size_t block_siz
     free_list_(ELEMS_PER_POOL, free_list_alloc_),
     used_list_(ELEMS_PER_POOL, used_list_alloc_),
     memory_allocated_ { (block_size + alignment_offset) * ELEMS_PER_POOL },
+    is_pre_allocated_ { true },
     allocated_block_ { allocated_block_ptr }
 {
     unsigned char* ptr = reinterpret_cast<unsigned char*>(allocated_block_);
