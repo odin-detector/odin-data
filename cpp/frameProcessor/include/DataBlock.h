@@ -93,15 +93,17 @@ public:
     /** move assignment operator */
     DataBlock& operator=(DataBlock&& other) noexcept
     {
-        allocated_bytes_ = other.allocated_bytes_;
-        index_ = other.index_;
-        if (!is_pre_allocated_)
-            free(block_ptr_);
-        block_ptr_ = other.block_ptr_;
-        is_pre_allocated_ = other.is_pre_allocated_;
-        other.allocated_bytes_ = 0;
-        other.index_ = -1;
-        other.block_ptr_ = nullptr;
+        if (this != &other) {
+            allocated_bytes_ = other.allocated_bytes_;
+            index_ = other.index_;
+            if (!is_pre_allocated_)
+                free(block_ptr_);
+            block_ptr_ = other.block_ptr_;
+            is_pre_allocated_ = other.is_pre_allocated_;
+            other.allocated_bytes_ = 0;
+            other.index_ = -1;
+            other.block_ptr_ = nullptr;
+        }
         return *this;
     }
 
@@ -146,7 +148,8 @@ public:
             );
             block_size = allocated_bytes_;
         }
-        memcpy(block_ptr_, data_src, block_size <= allocated_bytes_ ? block_size : allocated_bytes_);
+        if (block_ptr_ != data_src)
+            memcpy(block_ptr_, data_src, block_size <= allocated_bytes_ ? block_size : allocated_bytes_);
     }
 
     /**
