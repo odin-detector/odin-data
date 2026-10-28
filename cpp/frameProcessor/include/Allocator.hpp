@@ -4,7 +4,7 @@ namespace FrameProcessor {
     template <typename DataType>
     struct PoolAllocator {
         using value_type = DataType;
-        constexpr PoolAllocator(size_t m_size = 0) noexcept: bl_sz_{m_size} {};
+        constexpr PoolAllocator(const size_t m_size = 0) noexcept: bl_sz_{m_size} {};
         ~PoolAllocator() = default;
 
         template <typename U>
@@ -30,6 +30,7 @@ namespace FrameProcessor {
 
         template<typename... Args>
         void construct(DataBlockFrame* p, Args&&... args) {
+            assert(bl_sz_ != 0);
             new(p) DataBlockFrame(reinterpret_cast<char*>(p)+sizeof(DataBlockFrame), std::forward<Args>(args)...);
         }
 
