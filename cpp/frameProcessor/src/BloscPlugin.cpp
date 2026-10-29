@@ -6,7 +6,6 @@
  */
 #include "BloscPlugin.h"
 #include "Allocator.hpp"
-#include "DataBlockFrame.h"
 #include "DebugLevelLogger.h"
 #include "version.h"
 

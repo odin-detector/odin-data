@@ -1,5 +1,5 @@
-#ifndef FRAMEPROCESSOR_DATABLOCKFRAME_H
-#define FRAMEPROCESSOR_DATABLOCKFRAME_H
+#ifndef DATABLOCKFRAME_H
+#define DATABLOCKFRAME_H
 
 #include "DataBlock.h"
 #include "Frame.h"
@@ -86,6 +86,7 @@ public:
                 UDataBlockPool::release(data_block_.get_writeable_data());
             }
             data_block_ = std::move(frame.data_block_);
+            is_preallocated_ = frame.is_preallocated_;
         }
         return *this;
     }
@@ -113,4 +114,4 @@ private:
 
 }
 
-#endif // FRAMEPROCESSOR_DATABLOCKFRAME_H
+#endif // DATABLOCKFRAME_H

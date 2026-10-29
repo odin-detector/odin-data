@@ -30,7 +30,7 @@ namespace FrameProcessor {
 
         template<typename... Args>
         void construct(DataBlockFrame* p, Args&&... args) {
-            assert(bl_sz_ != 0);
+            assert(bl_sz_ != 0 && "Block size of DataBlockFrame's pre-allocated memory must NOT be 0!");
             new(p) DataBlockFrame(reinterpret_cast<char*>(p)+sizeof(DataBlockFrame), std::forward<Args>(args)...);
         }
 
@@ -43,7 +43,10 @@ namespace FrameProcessor {
         void destroy(U* p) noexcept {
             p->~U();
         }
-        size_t bl_sz_;
+        template <typename K>
+        friend class PoolAllocator;
+        private:
+            size_t bl_sz_;
     };
     template <class T, class U>
     bool operator==(const PoolAllocator<T>&, const PoolAllocator<U>&) { return true; }
