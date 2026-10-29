@@ -15,17 +15,12 @@ public:
         set_debug_level(3);
         std::array<int, 64000> vec {}; // 256kb data size
         vec.fill(2398); // fill with random value
-        FrameProcessor::PoolAllocator<FrameProcessor::DataBlockFrame> allocator;
+        FrameProcessor::PoolAllocator<FrameProcessor::DataBlockFrame> allocator { sizeof(vec[0]) * vec.size() };
         blosc_plugin.set_name("BloscPluginTest");
         frame = boost::allocate_shared<FrameProcessor::DataBlockFrame>(
-            allocator,
-            FrameProcessor::FrameMetaData { 7,
-                                            "data",
-                                            FrameProcessor::raw_32bit,
-                                            "scan1",
-                                            { vec.size() / 20, 20 },
-                                            FrameProcessor::no_compression },
-            static_cast<void*>(vec.data()), sizeof(vec[0]) * vec.size()
+            allocator, reinterpret_cast<void*>(vec.data()), sizeof(vec[0]) * vec.size(),
+            FrameProcessor::FrameMetaData {
+                7, "data", FrameProcessor::raw_32bit, "scan1", { vec.size() / 20, 20 }, FrameProcessor::no_compression }
         );
     }
     void setup_blosc_config(OdinData::IpcMessage& cfg_, OdinData::IpcMessage& reply)

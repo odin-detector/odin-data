@@ -34,6 +34,12 @@ namespace FrameProcessor {
             new(p) DataBlockFrame(reinterpret_cast<char*>(p)+sizeof(DataBlockFrame), std::forward<Args>(args)...);
         }
 
+        template<typename... Args>
+        void construct(DataBlockFrame* p, const void* src, Args&&... args) {
+            assert(bl_sz_ != 0 && "Block size of DataBlockFrame's pre-allocated memory must NOT be 0!");
+            new(p) DataBlockFrame(reinterpret_cast<char*>(p)+sizeof(DataBlockFrame), src, std::forward<Args>(args)...);
+        }
+
         template<typename MD, typename = typename std::enable_if<std::is_same<typename std::decay<MD>::type, FrameMetaData>::value>::type, typename... Args>
         void construct(DataBlockFrame* p, MD&& metadata, Args&&... args) {
             new(p) DataBlockFrame(std::forward<MD>(metadata), std::forward<Args>(args)...);
