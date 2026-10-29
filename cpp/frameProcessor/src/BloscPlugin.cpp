@@ -4,12 +4,14 @@
  *  Created on: 22 Jan 2018
  *      Author: Ulrik Pedersen
  */
-#include <BloscPlugin.h>
-#include <DataBlockFrame.h>
-#include <DebugLevelLogger.h>
+#include "BloscPlugin.h"
+#include "Allocator.hpp"
+#include "DebugLevelLogger.h"
+#include "version.h"
+
 #include <blosc.h>
+
 #include <cstdlib>
-#include <version.h>
 
 #include <boost/make_shared.hpp>
 #include <boost/static_assert.hpp>
@@ -144,14 +146,16 @@ BloscPlugin::~BloscPlugin()
 std::pair<boost::shared_ptr<Frame>, bool> BloscPlugin::compress_frame(const boost::shared_ptr<Frame>& src_frame)
 {
     bool comp_res = false;
-
     const void* src_data_ptr = static_cast<const void*>(static_cast<const char*>(src_frame->get_image_ptr()));
     size_t type_size = get_size_from_enum(src_frame->get_meta_data().get_data_type());
     int uncompressed_size = src_frame->get_image_size();
     size_t dest_data_size = uncompressed_size + BLOSC_MAX_OVERHEAD;
-    boost::shared_ptr<Frame> dest_frame;
+    boost::shared_ptr<DataBlockFrame> dest_frame;
     try {
-        dest_frame = boost::make_shared<DataBlockFrame>(src_frame->get_meta_data(), dest_data_size);
+        PoolAllocator<DataBlockFrame> allocator { dest_data_size };
+        dest_frame = boost::allocate_shared<DataBlockFrame>(
+            allocator, dest_data_size, src_frame->get_meta_data_copy(), src_frame->get_meta_data().get_frame_offset()
+        );
         dest_frame->meta_data().set_compression_type(blosc);
         LOG4CXX_DEBUG_LEVEL(
             2, logger_,
@@ -218,7 +222,10 @@ std::pair<boost::shared_ptr<Frame>, bool> BloscPlugin::decompress_frame(const bo
     bool decomp_res = false;
     boost::shared_ptr<Frame> dest_frame;
     try {
-        dest_frame = boost::make_shared<DataBlockFrame>(src_frame->get_meta_data(), dest_size);
+        PoolAllocator<DataBlockFrame> allocator { dest_size };
+        dest_frame = boost::allocate_shared<DataBlockFrame>(
+            allocator, dest_size, src_frame->get_meta_data_copy(), src_frame->get_meta_data().get_frame_offset()
+        );
 
         LOG4CXX_DEBUG_LEVEL(
             2, logger_,
