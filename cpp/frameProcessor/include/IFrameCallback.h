@@ -87,7 +87,7 @@ private:
     void workerTask()
     {
         // Check the queue for messages
-        while (run_.load(std::memory_order::memory_order_relaxed)) {
+        while (run_.load(std::memory_order::memory_order_acquire)) {
             boost::shared_ptr<Frame> msg = queue_.remove();
             if (msg) {
                 // Once we have a message, call the callback
