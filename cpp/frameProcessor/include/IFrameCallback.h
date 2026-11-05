@@ -5,18 +5,12 @@
  *      Author: gnx91527
  */
 
-#ifndef TOOLS_FILEWRITER_IFRAMECALLBACK_H_
-#define TOOLS_FILEWRITER_IFRAMECALLBACK_H_
+#ifndef IFRAMECALLBACK_H_
+#define IFRAMECALLBACK_H_
 
+#include <atomic>
 #include <boost/shared_ptr.hpp>
-#include <boost/thread.hpp>
-
-#include <log4cxx/basicconfigurator.h>
-#include <log4cxx/helpers/exception.h>
-#include <log4cxx/logger.h>
-#include <log4cxx/propertyconfigurator.h>
-using namespace log4cxx;
-using namespace log4cxx::helpers;
+#include <thread>
 
 #include "Frame.h"
 #include "WorkQueue.h"
@@ -31,14 +25,40 @@ namespace FrameProcessor {
  */
 class IFrameCallback {
 public:
-    IFrameCallback();
-    virtual ~IFrameCallback();
-    boost::shared_ptr<WorkQueue<boost::shared_ptr<Frame>>> getWorkQueue();
-    void start();
-    void stop();
-    bool isWorking() const;
-    void confirmRegistration(const std::string& name);
-    void confirmRemoval(const std::string& name);
+    /** Construct a new IFrameCallback object */
+    IFrameCallback() = default;
+    ~IFrameCallback() = default;
+    WorkQueue<boost::shared_ptr<Frame>>& getWorkQueue()
+    {
+        return queue_;
+    }
+    /** Start the worker thread.
+     *
+     * Check to ensure this object is not already working. If it isn't then
+     * create the new worker thread, binding the workerTask method to the thread execution.
+     */
+    void start()
+    {
+        // Set the run condition to true
+        run_.store(true, std::memory_order::memory_order_release);
+        // Now start the worker thread to monitor the queue
+        thread_ = std::thread(&IFrameCallback::workerTask, this);
+    }
+    /** Stop the worker thread.
+     * Check this object is working. Set the run_ flag to false and then
+     * send an empty Frame pointer to the WorkerQueue object that will result
+     * in the thread terminating gracefully. The thread calling stop()
+     * will then BLOCK on thread::join() until the Worker thread exists gracefully.
+     */
+    void stop()
+    {
+        // Set the run condition flag to false
+        run_.store(false);
+        // Now notify the work queue we have finished by adding a nullptr
+        boost::shared_ptr<Frame> nullMsg;
+        queue_.add(nullMsg);
+        thread_.join();
+    }
 
     /** Callback for when ever a new Frame is available.
      *
@@ -50,22 +70,33 @@ public:
     virtual void callback(boost::shared_ptr<Frame> frame) = 0;
 
 private:
-    /** Pointer to logger */
-    LoggerPtr logger_;
-    /** Pointer to worker queue thread */
-    boost::thread* thread_;
     /** Pointer to WorkQueue for Frame object pointers */
-    boost::shared_ptr<WorkQueue<boost::shared_ptr<Frame>>> queue_;
+    WorkQueue<boost::shared_ptr<Frame>> queue_;
     /** IFrameCallback run flag */
-    bool run_;
-    /** Is this IFrameCallback working */
-    bool working_;
-    /** Map of confirmed registrations to this worker queue */
-    std::map<std::string, std::string> registrations_;
-
-    void workerTask();
+    std::atomic<bool> run_;
+    /** Pointer to worker queue thread */
+    std::thread thread_;
+    /** Main thread of execution for this class.
+     *
+     * The thread executes in a continuous loop until the run_ flag is set to false.
+     * The thread blocks on the remove call of the WorkQueue, waiting until a new Frame
+     * is available. As soon as a Frame becomes available the remove call returns and this
+     * method calls the callback method (which is pure virtual and must be implemented by
+     * a subclass).
+     */
+    void workerTask()
+    {
+        // Check the queue for messages
+        while (run_.load(std::memory_order::memory_order_relaxed)) {
+            boost::shared_ptr<Frame> msg = queue_.remove();
+            if (msg) {
+                // Once we have a message, call the callback
+                this->callback(msg);
+            }
+        }
+    }
 };
 
 } /* namespace FrameProcessor */
 
-#endif /* TOOLS_FILEWRITER_IFRAMECALLBACK_H_ */
+#endif /* IFRAMECALLBACK_H_ */

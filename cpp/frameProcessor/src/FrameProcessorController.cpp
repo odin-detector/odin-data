@@ -826,12 +826,6 @@ void FrameProcessorController::shutdown()
         // Worker thread callback will block caller until pluginShutdownSent_ is set
         pluginShutdownSent_ = true;
         LOG4CXX_DEBUG_LEVEL(1, logger_, "Plugin shutdown sent. Removing plugins once stopped.");
-        // Wait until each plugin has stopped and erase it from our map
-        for (it = plugins_.begin(); it != plugins_.end(); it++) {
-            LOG4CXX_DEBUG_LEVEL(1, logger_, "Removing " << it->first);
-            while (it->second->isWorking())
-                ;
-        }
         plugins_.clear();
 
         // Stop worker thread (for IFrameCallback) and reactor
