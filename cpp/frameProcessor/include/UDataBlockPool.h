@@ -121,16 +121,16 @@ private:
 
     /** Mutex used to make this class thread safe */
     mutable std::mutex mutex_;
-    // std::atomic<bool> bool_at_;
+    /** pre-allocated memory for the circular buffers */
+    alignas(alignment) unsigned char free_list_mem_[(sizeof(void*) * ELEMS_PER_POOL)];
+    alignas(alignment) unsigned char used_list_mem_[(sizeof(void*) * ELEMS_PER_POOL)];
     PreAllocatedAllocator<void*> free_list_alloc_;
     PreAllocatedAllocator<void*> used_list_alloc_;
     /** List of currently available DataBlock objects */
     boost::circular_buffer<void*, PreAllocatedAllocator<void*>> free_list_;
     /** List of currently in-use DataBlock objects */
     boost::circular_buffer<void*, PreAllocatedAllocator<void*>> used_list_;
-    /** pre-allocated memory for the circular buffers */
-    alignas(alignment) unsigned char free_list_mem_[(sizeof(void*) * ELEMS_PER_POOL)];
-    alignas(alignment) unsigned char used_list_mem_[(sizeof(void*) * ELEMS_PER_POOL)];
+
     /** Total number of bytes allocated (sum of all DataBlocks) */
     size_t memory_allocated_;
     /** Is pre-allocated  flag */
