@@ -30,7 +30,7 @@ static constexpr size_t calc_alignment_offset(const size_t block_size)
  * Container of UDataBlockPool instances which can be indexed by name
  */
 std::unordered_multimap<size_t, UDataBlockPool*> UDataBlockPool::instance_map_;
-std::vector<std::pair<void*, UDataBlockPool*>> UDataBlockPool::address_mapper_;
+UDataBlockPool::Pointer2AllocatorMapper UDataBlockPool::address_mapper;
 std::mutex UDataBlockPool::sta_mutex_;
 
 /**
@@ -70,10 +70,13 @@ void UDataBlockPool::release(void* block)
         2, log4cxx::Logger::getLogger("FP.UDataBlockPool"), "Releasing DataBlock [addr=" << block << "]"
     );
 
-    UDataBlockPool* pool
-        = upper_bound(address_mapper_.cbegin(), address_mapper_.cend(), block, [](void* block, auto& item) {
-              return block < item.first;
-          })->second;
+    // SIMD possible
+    auto itr = std::upper_bound(
+        address_mapper.last_pointers_.cbegin(), address_mapper.last_pointers_.cend(), block,
+        [](void* block, auto item) { return block <= item; }
+    );
+    int index = itr - address_mapper.last_pointers_.begin();
+    auto pool = address_mapper.allocators_pointers_[index];
     sta_mutex_.unlock();
     pool->internal_release(block);
 }
@@ -81,6 +84,7 @@ void UDataBlockPool::release(void* block)
 void UDataBlockPool::internal_release(void* block)
 {
     std::lock_guard<std::mutex> lock(mutex_);
+    // SIMD possible
     for (size_t i = 0; i < used_list_.size(); ++i) {
         if (used_list_[i] == block) {
             free_list_.push_front(block);
@@ -127,10 +131,10 @@ UDataBlockPool* UDataBlockPool::instance(size_t block_size)
         );
         sta_mutex_.lock();
         UDataBlockPool::instance_map_.emplace(block_size, reinterpret_cast<UDataBlockPool*>(pre_allocated_pool_ptr));
-        UDataBlockPool::address_mapper_.push_back(
-            std::pair { last_memory_addr, reinterpret_cast<UDataBlockPool*>(pre_allocated_pool_ptr) }
-        );
-        std::sort(address_mapper_.begin(), address_mapper_.end(), [](auto& a, auto& b) { return a.first < b.first; });
+        address_mapper.allocators_pointers_.push_back(reinterpret_cast<UDataBlockPool*>(pre_allocated_pool_ptr));
+        address_mapper.last_pointers_.push_back(last_memory_addr);
+        std::sort(address_mapper.allocators_pointers_.begin(), address_mapper.allocators_pointers_.end());
+        std::sort(address_mapper.last_pointers_.begin(), address_mapper.last_pointers_.end());
         sta_mutex_.unlock();
     } else {
         throw std::runtime_error("Failed to allocate Pool Memory");

@@ -142,7 +142,18 @@ private:
     static std::mutex sta_mutex_;
     /** Static map of all UDataBlockPool objects, indexed by their sizes */
     static std::unordered_multimap<size_t, UDataBlockPool*> instance_map_;
-    /** Vector for mapping poiners to their allocators */
+
+    struct Pointer2AllocatorMapper {
+        std::vector<UDataBlockPool*> allocators_pointers_;
+        std::vector<void*> last_pointers_;
+        Pointer2AllocatorMapper()
+        {
+            allocators_pointers_.reserve(alignment);
+            last_pointers_.reserve(alignment);
+        }
+    };
+    static Pointer2AllocatorMapper address_mapper;
+    /** Vector for mapping pointers to their allocators */
     static std::vector<std::pair<void*, UDataBlockPool*>> address_mapper_;
 };
 
