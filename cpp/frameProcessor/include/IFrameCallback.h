@@ -65,7 +65,7 @@ public:
      * Pure virtual method, must be implemented by subclass. This will be called
      * whenever a new Frame is placed onto the WorkQueue.
      *
-     * \param[in] frame - pointer to Frame object ready for processing by the IFrameCallback subclass.
+     * @param[in] frame - pointer to Frame object ready for processing by the IFrameCallback subclass.
      */
     virtual void callback(boost::shared_ptr<Frame> frame) = 0;
 
