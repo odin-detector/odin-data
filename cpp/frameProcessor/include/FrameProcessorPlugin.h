@@ -22,6 +22,13 @@
 #include "MetaMessagePublisher.h"
 #include "ParamMetadata.h"
 
+#include <log4cxx/basicconfigurator.h>
+#include <log4cxx/helpers/exception.h>
+#include <log4cxx/logger.h>
+#include <log4cxx/propertyconfigurator.h>
+using namespace log4cxx;
+using namespace log4cxx::helpers;
+
 namespace FrameProcessor {
 
 /** Abstract plugin class, providing the IFrameCallback interface.

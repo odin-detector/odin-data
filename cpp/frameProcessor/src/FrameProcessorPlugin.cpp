@@ -285,8 +285,6 @@ void FrameProcessorPlugin::register_callback(
             LOG4CXX_DEBUG_LEVEL(1, logger_, "Registering blocking callback " << name << " with " << name_);
             // Record the callback pointer
             blocking_callbacks_[name] = cb;
-            // Confirm registration
-            cb->confirmRegistration(name_);
         }
     } else {
         if (blocking_callbacks_.count(name) != 0) {
@@ -301,8 +299,6 @@ void FrameProcessorPlugin::register_callback(
             LOG4CXX_DEBUG_LEVEL(1, logger_, "Registering non-blocking callback " << name << " with " << name_);
             // Record the callback pointer
             callbacks_[name] = cb;
-            // Confirm registration
-            cb->confirmRegistration(name_);
         }
     }
 }
@@ -320,15 +316,11 @@ void FrameProcessorPlugin::remove_callback(const std::string& name)
         cb = callbacks_[name];
         // Remove the callback from the map
         callbacks_.erase(name);
-        // Confirm removal
-        cb->confirmRemoval(name_);
     } else if (blocking_callbacks_.count(name) > 0) {
         // Get the pointer
         cb = blocking_callbacks_[name];
         // Remove the callback from the map
         blocking_callbacks_.erase(name);
-        // Confirm removal
-        cb->confirmRemoval(name_);
     }
 }
 
@@ -337,18 +329,6 @@ void FrameProcessorPlugin::remove_callback(const std::string& name)
  */
 void FrameProcessorPlugin::remove_all_callbacks()
 {
-    // Loop over blocking callbacks, removing each one
-    std::map<std::string, boost::shared_ptr<IFrameCallback>>::iterator bcbIter;
-    for (bcbIter = blocking_callbacks_.begin(); bcbIter != blocking_callbacks_.end(); ++bcbIter) {
-        LOG4CXX_DEBUG_LEVEL(1, logger_, "Removing callback " << bcbIter->first << " from " << name_);
-        bcbIter->second->confirmRemoval(name_);
-    }
-    // Loop over non-blocking callbacks, removing each one
-    std::map<std::string, boost::shared_ptr<IFrameCallback>>::iterator cbIter;
-    for (cbIter = callbacks_.begin(); cbIter != callbacks_.end(); ++cbIter) {
-        LOG4CXX_DEBUG_LEVEL(1, logger_, "Removing callback " << cbIter->first << " from " << name_);
-        cbIter->second->confirmRemoval(name_);
-    }
     // Now empty the two callback stores
     callbacks_.clear();
     blocking_callbacks_.clear();
@@ -425,7 +405,7 @@ void FrameProcessorPlugin::push(boost::shared_ptr<Frame> frame)
     // Loop over non-blocking callbacks, placing frame onto each queue
     std::map<std::string, boost::shared_ptr<IFrameCallback>>::iterator cbIter;
     for (cbIter = callbacks_.begin(); cbIter != callbacks_.end(); ++cbIter) {
-        cbIter->second->getWorkQueue()->add(frame);
+        cbIter->second->getWorkQueue().add(frame);
     }
 }
 
@@ -458,7 +438,7 @@ void FrameProcessorPlugin::push(const std::string& plugin_name, boost::shared_pt
         blocking_callbacks_[plugin_name]->callback(frame);
     }
     if (callbacks_.find(plugin_name) != callbacks_.end()) {
-        callbacks_[plugin_name]->getWorkQueue()->add(frame);
+        callbacks_[plugin_name]->getWorkQueue().add(frame);
     }
 }
 
