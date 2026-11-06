@@ -57,7 +57,7 @@ public:
             );
             throw(std::runtime_error(std::string("DataBlock memory alloc failed (" + block_size) + " bytes)"));
         }
-        index_ = DataBlock::counter().fetch_add(1, std::memory_order::memory_order_acq_rel);
+        index_ = DataBlock::counter().fetch_add(1, std::memory_order::memory_order_relaxed);
     }
 
     /** DataBlock constructor
@@ -69,7 +69,7 @@ public:
         is_pre_allocated_ { true },
         block_ptr_ { ptr }
     {
-        index_ = DataBlock::counter().fetch_add(1, std::memory_order::memory_order_acq_rel);
+        index_ = DataBlock::counter().fetch_add(1, std::memory_order::memory_order_relaxed);
     }
 
     /** delete copy constructor! */
@@ -180,7 +180,7 @@ public:
     static int get_current_index_count() noexcept
     {
         /** Static counter for the unique index */
-        return counter().load(std::memory_order::memory_order_acquire);
+        return counter().load(std::memory_order::memory_order_relaxed);
     }
 
 private:
