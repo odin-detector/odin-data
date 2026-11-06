@@ -40,7 +40,9 @@ public:
     void start()
     {
         // Set the run condition to true
-        run_.store(true, std::memory_order::memory_order_release);
+        // the memory order is relaed BECAUSE the thread has not started
+        // POSIX guarantees that the value in run_ will be visible before the thread reads it!
+        run_.store(true, std::memory_order::memory_order_relaxed);
         // Now start the worker thread to monitor the queue
         thread_ = std::thread(&IFrameCallback::workerTask, this);
     }
@@ -53,7 +55,7 @@ public:
     void stop()
     {
         // Set the run condition flag to false
-        run_.store(false);
+        run_.store(false, std::memory_order::memory_order_relaxed);
         // Now notify the work queue we have finished by adding a nullptr
         boost::shared_ptr<Frame> nullMsg;
         queue_.add(nullMsg);
@@ -87,7 +89,7 @@ private:
     void workerTask()
     {
         // Check the queue for messages
-        while (run_.load(std::memory_order::memory_order_acquire)) {
+        while (run_.load(std::memory_order::memory_order_relaxed)) {
             boost::shared_ptr<Frame> msg = queue_.remove();
             if (msg) {
                 // Once we have a message, call the callback
