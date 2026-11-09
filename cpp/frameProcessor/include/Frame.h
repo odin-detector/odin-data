@@ -62,8 +62,7 @@ public:
      */
     bool is_valid() const
     {
-        bool b_array[2] = { true, false };
-        return b_array[(meta_data_.data_type_ == raw_unknown) | (meta_data_.compression_type_ == unknown_compression)];
+        return (meta_data_.data_type_ != raw_unknown) & (meta_data_.compression_type_ != unknown_compression);
     }
 
     /** Return a void pointer to the raw data */
