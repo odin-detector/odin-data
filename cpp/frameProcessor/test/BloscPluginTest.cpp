@@ -46,9 +46,11 @@ public:
         );
         BOOST_REQUIRE_NO_THROW(blosc_plugin.configure(cfg_, reply));
         // register the frame to itself so we can get the
-        BOOST_REQUIRE_NO_THROW(blosc_plugin.register_callback(
+        BOOST_REQUIRE_NO_THROW(blosc_plugin.register_callback<FrameProcessor::FrameProcessorPlugin>(
             blosc_plugin.get_name(),
-            boost::shared_ptr<FrameProcessor::IFrameCallback>(&blosc_plugin, [](FrameProcessor::IFrameCallback*) { })
+            boost::shared_ptr<FrameProcessor::IFrameCallback<FrameProcessor::FrameProcessorPlugin>>(
+                &blosc_plugin, [](FrameProcessor::IFrameCallback<FrameProcessor::FrameProcessorPlugin>*) { }
+            )
         ));
     }
     ~BloscPluginTestFixture() = default;

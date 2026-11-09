@@ -6,9 +6,7 @@
  */
 
 #include "FrameProcessorPlugin.h"
-#include "DebugLevelLogger.h"
 #include "gettime.h"
-#include "logging.h"
 
 namespace FrameProcessor {
 
@@ -256,69 +254,16 @@ void FrameProcessorPlugin::version(OdinData::IpcMessage& status)
 }
 
 /**
- * Registers another plugin for frame callbacks from this plugin.
- *
- * The callback interface (which will be another plugin) is stored in
- * our map, indexed by name. If the callback already exists within our
- * map then this is a no-op.
- *
- * \param[in] name - Index of the callback (plugin index).
- * \param[in] cb - Pointer to an IFrameCallback interface (plugin).
- * \param[in] blocking - Whether call should block.
- */
-void FrameProcessorPlugin::register_callback(
-    const std::string& name,
-    boost::shared_ptr<IFrameCallback> cb,
-    bool blocking
-)
-{
-    if (blocking) {
-        if (callbacks_.count(name) != 0) {
-            LOG4CXX_WARN(
-                logger_,
-                "Non-blocking callback " << name << " already registered with " << name_
-                                         << ". Must be removed before adding blocking callback"
-            );
-        }
-        // Check if we own the callback already
-        else if (blocking_callbacks_.count(name) == 0) {
-            LOG4CXX_DEBUG_LEVEL(1, logger_, "Registering blocking callback " << name << " with " << name_);
-            // Record the callback pointer
-            blocking_callbacks_[name] = cb;
-        }
-    } else {
-        if (blocking_callbacks_.count(name) != 0) {
-            LOG4CXX_WARN(
-                logger_,
-                "Blocking callback " << name << " already registered with " << name_
-                                     << ". Must be removed before adding non-blocking callback"
-            );
-        }
-        // Check if we own the callback already
-        else if (callbacks_.count(name) == 0) {
-            LOG4CXX_DEBUG_LEVEL(1, logger_, "Registering non-blocking callback " << name << " with " << name_);
-            // Record the callback pointer
-            callbacks_[name] = cb;
-        }
-    }
-}
-
-/**
  * Remove a plugin from our callback map.
  *
  * \param[in] name - Index of the callback (plugin index) to remove.
  */
 void FrameProcessorPlugin::remove_callback(const std::string& name)
 {
-    boost::shared_ptr<IFrameCallback> cb;
     if (callbacks_.count(name) > 0) {
-        // Get the pointer
-        cb = callbacks_[name];
         // Remove the callback from the map
         callbacks_.erase(name);
     } else if (blocking_callbacks_.count(name) > 0) {
-        // Get the pointer
-        cb = blocking_callbacks_[name];
         // Remove the callback from the map
         blocking_callbacks_.erase(name);
     }
@@ -398,14 +343,12 @@ void FrameProcessorPlugin::push(boost::shared_ptr<Frame> frame)
     err_frame && (err_frame = false);
 
     // Loop over blocking callbacks, calling each function and waiting for return
-    std::map<std::string, boost::shared_ptr<IFrameCallback>>::iterator bcbIter;
-    for (bcbIter = blocking_callbacks_.begin(); bcbIter != blocking_callbacks_.end(); ++bcbIter) {
-        bcbIter->second->callback(frame);
+    for (auto bcbIter = blocking_callbacks_.begin(); bcbIter != blocking_callbacks_.end(); ++bcbIter) {
+        bcbIter->second(frame);
     }
     // Loop over non-blocking callbacks, placing frame onto each queue
-    std::map<std::string, boost::shared_ptr<IFrameCallback>>::iterator cbIter;
-    for (cbIter = callbacks_.begin(); cbIter != callbacks_.end(); ++cbIter) {
-        cbIter->second->getWorkQueue().add(frame);
+    for (auto cbIter = callbacks_.begin(); cbIter != callbacks_.end(); ++cbIter) {
+        cbIter->second.get().add(frame);
     }
 }
 
@@ -435,10 +378,11 @@ void FrameProcessorPlugin::push(const std::string& plugin_name, boost::shared_pt
     }
     err_frame && (err_frame = false);
     if (blocking_callbacks_.find(plugin_name) != blocking_callbacks_.end()) {
-        blocking_callbacks_[plugin_name]->callback(frame);
+        blocking_callbacks_[plugin_name](frame);
     }
     if (callbacks_.find(plugin_name) != callbacks_.end()) {
-        callbacks_[plugin_name]->getWorkQueue().add(frame);
+        // callbacks_[plugin_name].get().add(frame);
+        callbacks_.at(plugin_name).get().add(frame);
     }
 }
 
