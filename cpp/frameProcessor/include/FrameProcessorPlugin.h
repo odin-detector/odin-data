@@ -22,6 +22,9 @@
 #include "MetaMessagePublisher.h"
 #include "ParamMetadata.h"
 
+#include "DebugLevelLogger.h"
+#include "logging.h"
+
 #include <log4cxx/basicconfigurator.h>
 #include <log4cxx/helpers/exception.h>
 #include <log4cxx/logger.h>
@@ -38,7 +41,9 @@ namespace FrameProcessor {
  * Frame objects between plugins. It also provides methods for configuring
  * plugins and for retrieving status from plugins.
  */
-class FrameProcessorPlugin : public IFrameCallback, public OdinData::IVersionedObject, public MetaMessagePublisher {
+class FrameProcessorPlugin : public IFrameCallback<FrameProcessorPlugin>,
+                             public OdinData::IVersionedObject,
+                             public MetaMessagePublisher {
 public:
     FrameProcessorPlugin();
     virtual ~FrameProcessorPlugin();
@@ -77,10 +82,58 @@ public:
     void add_performance_stats(OdinData::IpcMessage& status);
     void reset_performance_stats();
     void version(OdinData::IpcMessage& status);
-    void register_callback(const std::string& name, boost::shared_ptr<IFrameCallback> cb, bool blocking = false);
+    /**
+     * Registers another plugin for frame callbacks from this plugin.
+     *
+     * The callback interface (which will be another plugin) is stored in
+     * our map, indexed by name. If the callback already exists within our
+     * map then this is a no-op.
+     *
+     * @param[in] name - Index of the callback (plugin index).
+     * @param[in] cb - Pointer to an IFrameCallback interface (plugin).
+     * @param[in] blocking - Whether call should block.
+     */
+    template <typename CallBackDerivedClass>
+    void register_callback(
+        const std::string& name,
+        boost::shared_ptr<IFrameCallback<CallBackDerivedClass>> cb,
+        bool blocking = false
+    )
+    {
+        if (blocking) {
+            if (callbacks_.count(name) != 0) {
+                LOG4CXX_WARN(
+                    logger_,
+                    "Non-blocking callback " << name << " already registered with " << name_
+                                             << ". Must be removed before adding blocking callback"
+                );
+            }
+            // Check if we own the callback already
+            else if (blocking_callbacks_.count(name) == 0) {
+                LOG4CXX_DEBUG_LEVEL(1, logger_, "Registering blocking callback " << name << " with " << name_);
+                // Record the callback pointer
+                blocking_callbacks_[name] = cb->callback_func();
+            }
+        } else {
+            if (blocking_callbacks_.count(name) != 0) {
+                LOG4CXX_WARN(
+                    logger_,
+                    "Blocking callback " << name << " already registered with " << name_
+                                         << ". Must be removed before adding non-blocking callback"
+                );
+            }
+            // Check if we own the callback already
+            else if (callbacks_.count(name) == 0) {
+                LOG4CXX_DEBUG_LEVEL(1, logger_, "Registering non-blocking callback " << name << " with " << name_);
+                // Record the callback pointer
+                callbacks_.emplace(name, std::ref(cb->getWorkQueue()));
+            }
+        }
+    }
     void remove_callback(const std::string& name);
     void remove_all_callbacks();
     void notify_end_of_acquisition();
+    void callback(boost::shared_ptr<Frame> frame);
     /** return the latest ts of config/status metadata for this plugin instance */
     __attribute__((always_inline)) int64_t get_config_ts() const
     {
@@ -119,7 +172,7 @@ protected:
     template <typename TYPE> using is_all_vals_vec = std::is_same<typename std::decay<TYPE>::type, All_val_vec_t>;
     template <typename TYPE> using is_datatype = std::is_same<typename std::decay<TYPE>::type, ParamMetadata::Datatype>;
     template <typename TYPE>
-    using is_str_conv = std::is_convertible<TYPE, std::string>; // can convert TYPE o std::string
+    using is_str_conv = std::is_convertible<TYPE, std::string>; // can convert TYPE to std::string
     template <typename DataType_, typename Allowed_>
     using enableif_t = typename std::enable_if<
         (is_str_conv<DataType_>::value || is_datatype<DataType_>::value) && is_all_vals_vec<Allowed_>::value>::type;
@@ -129,13 +182,13 @@ protected:
 
     /**
      * Helper functions construct the hash_map's elements in-place
-     * \param[in] param: key for the ParamMetadata value-object. it is moved to trigger the move-semantics
+     * @param[in] param: key for the ParamMetadata value-object. it is moved to trigger the move-semantics
      *                                    of the key-element in the pair
-     * \param[in] access_mode, min, max: arguments for ParamMetadata's constructor. They are not moved
+     * @param[in] access_mode, min, max: arguments for ParamMetadata's constructor. They are not moved
      *                                    since the constructor of ParamMetadata accepts lvalues as references.
-     * \param[in] type:           For this argument, the template function ONLY allows std::string
+     * @param[in] type:           For this argument, the template function ONLY allows std::string
      *                                    convertible types OR ParamMetadata::Datatype enum values to be passed im!
-     * \param[in] allowed_values: For this argument, the template function ONLY allows
+     * @param[in] allowed_values: For this argument, the template function ONLY allows
      *                                    std::vector<ParamMetadata::allowed_values_t> types to be passed in!
      *
      * Illustrative Usecase in YourPlugin.
@@ -229,7 +282,6 @@ private:
         if (metadata.second.max_ != ParamMetadata::MAX_UNSET) {
             message.set_param(param_prefix + "max", metadata.second.max_);
         }
-
         param_prefix += "allowed_values[]";
 
         auto itr = metadata.second.allowed_values_.begin();
@@ -248,8 +300,6 @@ private:
         }
     }
 
-    void callback(boost::shared_ptr<Frame> frame);
-
     /**
      * This is called by the callback method when any new frames have
      * arrived and must be overridden by child classes.
@@ -262,9 +312,9 @@ private:
     /** Name of this plugin */
     std::string name_;
     /** Map of registered plugins for callbacks, indexed by name */
-    std::map<std::string, boost::shared_ptr<IFrameCallback>> callbacks_;
+    std::map<std::string, std::reference_wrapper<WorkQueue<boost::shared_ptr<Frame>>>> callbacks_;
     /** Map of registered plugins for blocking callbacks, indexed by name */
-    std::map<std::string, boost::shared_ptr<IFrameCallback>> blocking_callbacks_;
+    std::map<std::string, std::function<void(boost::shared_ptr<Frame>)>> blocking_callbacks_;
     /** Error message array */
     std::vector<std::string> error_messages_;
     /** Warning message array */

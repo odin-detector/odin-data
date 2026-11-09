@@ -30,7 +30,7 @@ namespace FrameProcessor {
  *
  * The class uses an IpcReactor to manage connections and status updates.
  */
-class FrameProcessorController : public IFrameCallback,
+class FrameProcessorController : public IFrameCallback<FrameProcessorController>,
                                  public boost::enable_shared_from_this<FrameProcessorController> {
 public:
     FrameProcessorController(unsigned int num_io_threads = OdinData::Defaults::default_io_threads);
@@ -50,6 +50,7 @@ public:
     void disconnectPlugin(const std::string& index, const std::string& disconnectFrom);
     void disconnectAllPlugins();
     void run();
+    void callback(boost::shared_ptr<Frame> frame);
     void waitForShutdown();
     void shutdown();
 
@@ -119,7 +120,6 @@ private:
     void closeMetaTxInterface();
     void runIpcService(void);
     void tickTimer(void);
-    void callback(boost::shared_ptr<Frame> frame);
     void inject_EOA();
 
     /** Pointer to the logging facility */
