@@ -180,7 +180,7 @@ public:
     static int get_current_index_count() noexcept
     {
         /** Static counter for the unique index */
-        return counter().load(std::memory_order::memory_order_relaxed);
+        return counter().load(std::memory_order::memory_order_acquire);
     }
 
 private:
