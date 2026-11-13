@@ -95,9 +95,8 @@ public:
 
         // need to make sure the recv socket has finished connecting
         uint32_t attempts_left = 10;
-        while (!recv_socket.poll(100) && attempts_left > 0
-        ) // to avoid issue with slow subscribers, keep sending the frame until the subscriber has received it
-        {
+        // to avoid issue with slow subscribers, keep sending the frame until the subscriber has received it
+        while (!recv_socket.poll(100) && attempts_left > 0) {
             // send the frame to the plugin
             plugin.process_frame(frame);
             attempts_left--;
@@ -187,9 +186,8 @@ BOOST_AUTO_TEST_CASE(LiveViewBasicSendTest)
     // test we can output frame
 
     uint32_t attempts_left = 10;
-    while (!recv_socket.poll(100) && attempts_left > 0
-    ) // to avoid issue with slow subscribers, keep sending the frame until the subscriber has received it
-    {
+    // to avoid issue with slow subscribers, keep sending the frame until the subscriber has received it
+    while (!recv_socket.poll(100) && attempts_left > 0) {
         // send the frame to the plugin
         BOOST_REQUIRE_NO_THROW(plugin.process_frame(frame));
         attempts_left--;
@@ -239,8 +237,8 @@ BOOST_AUTO_TEST_CASE(LiveViewDownscaleTest)
     while (recv_socket.poll(10)) {
         std::string tmp_string = recv_socket.recv();
         BOOST_REQUIRE_NO_THROW(processed_frames.push_back(tmp_string));
-        BOOST_REQUIRE_NO_THROW(recv_socket.recv_raw(pbuf)
-        ); // we dont need the data for this test but still need to read from the socket to clear it
+        // we dont need the data for this test but still need to read from the socket to clear it
+        BOOST_REQUIRE_NO_THROW(recv_socket.recv_raw(pbuf));
     }
     BOOST_CHECK_EQUAL(processed_frames.size(), 5);
 }
@@ -254,8 +252,8 @@ BOOST_AUTO_TEST_CASE(LiveViewDatasetFilterTest)
     BOOST_CHECK_NO_THROW(cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_FRAME_FREQ, 1));
     BOOST_CHECK_NO_THROW(cfg.set_param(FrameProcessor::LiveViewPlugin::CONFIG_DATASET_NAME, std::string("data")));
 
-    BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply)
-    ); // configure the plugin to push any frame with the "data" dataset to the live view socket
+    // configure the plugin to push any frame with the "data" dataset to the live view socket
+    BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
 
     while (recv_socket.poll(10)) {
         BOOST_CHECK_NO_THROW(recv_socket.recv()); // clear any extra data from the above while loop
@@ -270,8 +268,8 @@ BOOST_AUTO_TEST_CASE(LiveViewDatasetFilterTest)
         std::string tmp_string = recv_socket.recv();
         BOOST_TEST_MESSAGE("Received Header: " << tmp_string);
         BOOST_CHECK_NO_THROW(dataset_processed_frames.push_back(tmp_string));
-        BOOST_CHECK_NO_THROW(recv_socket.recv_raw(pbuf)
-        ); // we dont need the data for this test but still need to read from the socket to clear it from the queue
+        // we dont need the data for this test but still need to read from the socket to clear it from the queue
+        BOOST_CHECK_NO_THROW(recv_socket.recv_raw(pbuf));
     }
     for (int i = 0; i < dataset_processed_frames.size(); i++) {
         BOOST_REQUIRE_NO_THROW(doc.Parse(dataset_processed_frames[i].c_str()));
@@ -328,8 +326,8 @@ BOOST_AUTO_TEST_CASE(LiveViewTagFilterTest)
     );
     BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
 
-    BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply)
-    ); // configure the plugin to push any frame with the "data" dataset to the live view socket
+    // configure the plugin to push any frame with the "data" dataset to the live view socket
+    BOOST_CHECK_NO_THROW(plugin.configure(cfg, reply));
 
     while (recv_socket.poll(10)) {
         recv_socket.recv(); // clear any extra data from the above while loop
@@ -344,8 +342,8 @@ BOOST_AUTO_TEST_CASE(LiveViewTagFilterTest)
         std::string tmp_string = recv_socket.recv();
         BOOST_TEST_MESSAGE("Received Header: " << tmp_string);
         tagged_processed_frames.push_back(std::move(tmp_string));
-        BOOST_CHECK_NO_THROW(recv_socket.recv_raw(pbuf)
-        ); // we dont need the data for this test but still need to read from the socket to clear it from the queue
+        // we dont need the data for this test but still need to read from the socket to clear it from the queue
+        BOOST_CHECK_NO_THROW(recv_socket.recv_raw(pbuf));
     }
     for (int i = 0; i < tagged_processed_frames.size(); i++) {
         BOOST_CHECK_NO_THROW(doc.Parse(tagged_processed_frames[i].c_str()));

@@ -106,9 +106,9 @@ void DummyUDPFrameDecoder::init(LoggerPtr& logger, OdinData::IpcMessage& config_
 
     // Determine the UDP packet size to use if present in the config message, chacking that it
     // doesn't exceed the maximum permitted
-    udp_packet_size_
-        = static_cast<std::size_t>(config_msg.get_param<unsigned int>(CONFIG_DECODER_UDP_PACKET_SIZE, udp_packet_size_)
-        );
+    udp_packet_size_ = static_cast<std::size_t>(
+        config_msg.get_param<unsigned int>(CONFIG_DECODER_UDP_PACKET_SIZE, udp_packet_size_)
+    );
 
     if (udp_packet_size_ > DummyUDP::max_packet_size) {
         std::stringstream sstr;
