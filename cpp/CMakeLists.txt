@@ -88,9 +88,9 @@ IF("${isSystemDir}" STREQUAL "-1")
 ENDIF("${isSystemDir}" STREQUAL "-1")
 
 # Find and add external packages required for application and test
-find_package( Boost 1.41.0
+find_package( Boost 1.41.0 CONFIG
 	      REQUIRED
-	      COMPONENTS program_options system filesystem unit_test_framework date_time thread regex)
+	      COMPONENTS program_options filesystem unit_test_framework date_time thread regex)
 find_package(LOG4CXX 0.10.0 REQUIRED)
 find_package(ZEROMQ 4.1.4 REQUIRED)
 find_package(PCAP 1.4.0 REQUIRED)
