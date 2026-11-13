@@ -432,7 +432,7 @@ void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index
     hid_t dtype = datatype_to_hdf_type(definition.data_type);
     size_t pixel_type_size = H5Tget_size(dtype);
 
-    std::vector<hsize_t> frame_dims = definition.frame_dimensions;
+    std::vector<hsize_t> frame_dims(definition.frame_dimensions.begin(), definition.frame_dimensions.end());
     unsigned int frame_num_pixels = 1;
     std::vector<hsize_t>::iterator it;
     for (it = frame_dims.begin(); it != frame_dims.end(); ++it) {
@@ -447,7 +447,7 @@ void HDF5File::create_dataset(const DatasetDefinition& definition, int low_index
     if (definition.chunks.size() != dset_dims.size()) {
         throw std::runtime_error("Dataset chunk size not defined correctly");
     }
-    std::vector<hsize_t> chunk_dims = definition.chunks;
+    std::vector<hsize_t> chunk_dims(definition.chunks.begin(), definition.chunks.end());
 
     if (unlimited_) {
         std::vector<hsize_t> max_dims = dset_dims;
