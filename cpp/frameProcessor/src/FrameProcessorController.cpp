@@ -728,7 +728,7 @@ void FrameProcessorController::loadPlugin(const std::string& index, const std::s
 
             // Register callback with self for FileWriterPlugin
             if (name == "FileWriterPlugin") {
-                plugin->register_callback("controller", this->shared_from_this(), true);
+                plugin->register_callback<FrameProcessorController>("controller", this->shared_from_this(), true);
             }
             LOG4CXX_INFO(logger_, "Class " << name << " loaded as index = " << index);
 
@@ -758,7 +758,7 @@ void FrameProcessorController::connectPlugin(const std::string& index, const std
 {
     // Check that the plugin is loaded
     if ((plugins_.count(index) > 0) & (plugins_.count(connectTo) > 0)) {
-        plugins_[connectTo]->register_callback(index, plugins_[index]);
+        plugins_[connectTo]->register_callback<FrameProcessorPlugin>(index, plugins_[index]);
         ++ancestor_map_[index]; // plugin index has an ancestor
     } else {
         LOG4CXX_ERROR(logger_, "Cannot connect plugin with index = " << index << ", plugin isn't loaded");

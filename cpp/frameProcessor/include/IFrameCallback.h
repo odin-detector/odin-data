@@ -10,6 +10,7 @@
 
 #include <atomic>
 #include <boost/shared_ptr.hpp>
+#include <functional>
 #include <thread>
 
 #include "Frame.h"
@@ -23,7 +24,7 @@ namespace FrameProcessor {
  * for Frame object pointers that allow plugin chains to be created which can
  * each process the Frame object within their own thread.
  */
-class IFrameCallback {
+template <typename SubClass> class IFrameCallback {
 public:
     /** Construct a new IFrameCallback object */
     IFrameCallback() = default;
@@ -44,7 +45,7 @@ public:
         // POSIX guarantees that the value in run_ will be visible before the thread reads it!
         run_.store(true, std::memory_order::memory_order_relaxed);
         // Now start the worker thread to monitor the queue
-        thread_ = std::thread(&IFrameCallback::workerTask, this);
+        thread_ = std::thread(&IFrameCallback<SubClass>::workerTask, this);
     }
     /** Stop the worker thread.
      * Check this object is working. Set the run_ flag to false and then
@@ -62,14 +63,18 @@ public:
         thread_.join();
     }
 
-    /** Callback for when ever a new Frame is available.
+    /** Returns a callback method for it's derived class type.
      *
-     * Pure virtual method, must be implemented by subclass. This will be called
-     * whenever a new Frame is placed onto the WorkQueue.
+     * This will be called when registering a callback method.
      *
-     * @param[in] frame - pointer to Frame object ready for processing by the IFrameCallback subclass.
+     * @return std::function<void(boost::shared_ptr<Frame>> objecrt to be registered!
      */
-    virtual void callback(boost::shared_ptr<Frame> frame) = 0;
+    std::function<void(boost::shared_ptr<Frame>)> callback_func()
+    {
+        return [derived_ptr = static_cast<SubClass*>(this)](boost::shared_ptr<Frame> frame) {
+            derived_ptr->callback(frame);
+        };
+    }
 
 private:
     /** Pointer to WorkQueue for Frame object pointers */
@@ -93,7 +98,7 @@ private:
             boost::shared_ptr<Frame> msg = queue_.remove();
             if (msg) {
                 // Once we have a message, call the callback
-                this->callback(msg);
+                (static_cast<SubClass*>(this))->callback(msg);
             }
         }
     }
