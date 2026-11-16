@@ -137,16 +137,18 @@ public:
         return meta_data_;
     }
 
-    /** Set acquisition ID
-     * @tparam T - FrameMetaData type
-     * @param metadata - metadata object to set
+    /** Set Metadata
+     * @param[in] metadata - FrameMetaData object to be copied into member data
      */
-    template <
-        typename T,
-        typename = typename std::enable_if<std::is_same<typename std::decay<T>::type, FrameMetaData>::value>::type>
-    void set_meta_data(T&& metadata) noexcept(
-        std::is_same<typename std::decay<T>::type, FrameMetaData>::value && std::is_rvalue_reference<T>::value
-    )
+    void set_meta_data(const FrameMetaData& metadata)
+    {
+        meta_data_ = metadata;
+    }
+
+    /** Set Metadata
+     * @param[in] metadata - FrameMetaData object to be moved into member data
+     */
+    void set_meta_data(FrameMetaData&& metadata)
     {
         meta_data_ = std::move(metadata);
     }
