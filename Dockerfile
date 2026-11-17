@@ -1,5 +1,5 @@
 # Shared setup stage ###########################################################
-FROM ubuntu:24.04 AS common
+FROM ubuntu:26.04 AS common
 
 ENV PATH=/odin/bin:/odin/scripts:/venv/bin:$PATH
 
@@ -29,7 +29,7 @@ RUN add-apt-repository -y ppa:deadsnakes/ppa && \
     # python
     python3.11-dev python3.11-venv \
     # clang tools
-    clang-format-20 clang-tidy-20 \
+    clang-format-21 clang-tidy-21 \
     # debugging
     gdb valgrind && \
     # tidy up
