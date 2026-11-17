@@ -17,8 +17,7 @@ public:
         void* data_src,
         size_t nbytes,
         uint64_t bufferID,
-        OdinData::IpcChannel* relCh,
-        const int& image_offset = 0
+        OdinData::IpcChannel* relCh
     );
 
     /** Shallow-copy copy */

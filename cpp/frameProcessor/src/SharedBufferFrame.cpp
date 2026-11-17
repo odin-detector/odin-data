@@ -9,10 +9,9 @@ SharedBufferFrame::SharedBufferFrame(
     void* data_src,
     size_t nbytes,
     uint64_t bufferID,
-    OdinData::IpcChannel* relCh,
-    const int& image_offset
+    OdinData::IpcChannel* relCh
 ) :
-    Frame(meta_data, nbytes, image_offset)
+    Frame(meta_data, nbytes)
 {
     data_ptr_ = data_src;
     shared_id_ = bufferID;
