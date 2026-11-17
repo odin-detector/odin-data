@@ -54,8 +54,8 @@ if [ ${#pathlist[@]} -eq 0 ]; then
 fi
 
 # We need clang-format at least this version
-required=20
-bin_names=("clang-format" "clang-format-20")
+required=21
+bin_names=("clang-format" "clang-format-21")
 clang_format="notset"
 for bin in ${bin_names[@]}; do
     if which $bin &> /dev/null; then
