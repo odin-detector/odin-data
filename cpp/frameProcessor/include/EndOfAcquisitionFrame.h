@@ -9,19 +9,16 @@ class EndOfAcquisitionFrame : public Frame {
 
 public:
     /** Construct an End Of AcquisitionFrame */
-    EndOfAcquisitionFrame();
-
-    /** Shallow-copy copy */
-    EndOfAcquisitionFrame(const EndOfAcquisitionFrame& frame);
-
-    /** Deep-copy assignment */
-    EndOfAcquisitionFrame& operator=(EndOfAcquisitionFrame& frame);
-
-    /** Destructor */
-    ~EndOfAcquisitionFrame();
+    EndOfAcquisitionFrame() :
+        Frame(FrameMetaData { 0, "", raw_unknown, "", std::vector<unsigned long long> {} }, 0, true)
+    {
+    }
 
     /** Return a null pointer (no raw data) */
-    virtual void* get_data_ptr() const;
+    virtual void* get_data_ptr() const
+    {
+        return NULL;
+    }
 };
 
 }

@@ -115,7 +115,7 @@ void WatchdogTimer::call_timeout_callback(const std::string& function_name) cons
  */
 void WatchdogTimer::heartbeat()
 {
-    if (!worker_thread_running_.load(std::memory_order::memory_order_acquire)) {
+    if (!worker_thread_running_.load(std::memory_order_acquire)) {
         LOG4CXX_DEBUG_LEVEL(1, Logger::getLogger("FP.WatchdogTimer"), "Terminating watchdog reactor");
         reactor_.stop();
     }
