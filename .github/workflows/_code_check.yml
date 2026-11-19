@@ -19,7 +19,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt -y update
-          sudo apt install clang-format-20 clang-tidy-20
+          sudo apt install clang-format-21 clang-tidy-21
       - name: Check code formatting
         run: |
           scripts/format_source.sh cpp --dry-run --Werror
