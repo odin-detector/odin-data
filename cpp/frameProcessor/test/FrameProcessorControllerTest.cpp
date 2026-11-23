@@ -291,8 +291,6 @@ BOOST_AUTO_TEST_CASE(DefaultConfigurationAndVersionAreReported)
 
     BOOST_CHECK_EQUAL(config_reply.get_param<std::string>("ctrl_endpoint"), "");
     BOOST_CHECK_EQUAL(config_reply.get_param<std::string>("meta_endpoint"), "");
-    BOOST_CHECK_EQUAL(config_reply.get_param<std::string>("fr_setup/fr_ready_cnxn"), "tcp://127.0.0.1:5001");
-    BOOST_CHECK_EQUAL(config_reply.get_param<std::string>("fr_setup/fr_release_cnxn"), "tcp://127.0.0.1:5002");
     BOOST_CHECK_EQUAL(config_reply.get_param<int64_t>("config_ts"), -1);
 
     OdinData::IpcMessage version_reply;
@@ -420,38 +418,33 @@ BOOST_AUTO_TEST_CASE(PluginConnectionsAndDisconnectionsUseConfigurationInterface
     BOOST_CHECK_EQUAL(sink->frames(), 1);
 }
 
-BOOST_AUTO_TEST_CASE(FrameReceiverEndpointsConnectionsAndEoaInjectionAreConfigured)
+BOOST_AUTO_TEST_CASE(EoaInjectionTargetsOnlyRootPlugins)
 {
+    load_plugin("source");
     load_plugin("sink");
-    BOOST_REQUIRE_EQUAL(ControllerTestPlugin::created.size(), 1);
-    ControllerTestPlugin* sink = ControllerTestPlugin::created[0];
+    BOOST_REQUIRE_EQUAL(ControllerTestPlugin::created.size(), 2);
+    ControllerTestPlugin* source = ControllerTestPlugin::created[0];
+    ControllerTestPlugin* sink = ControllerTestPlugin::created[1];
 
-    const std::string release_endpoint = unique_endpoint("release");
-    const std::string ready_endpoint = unique_endpoint("ready");
-    OdinData::IpcMessage frame_receiver;
-    frame_receiver.set_param("fr_setup/fr_release_cnxn", release_endpoint);
-    frame_receiver.set_param("fr_setup/fr_ready_cnxn", ready_endpoint);
-    configure(frame_receiver);
-
-    OdinData::IpcMessage config_reply;
-    controller->requestConfiguration(config_reply, false);
-    BOOST_CHECK_EQUAL(config_reply.get_param<std::string>("fr_setup/fr_release_cnxn"), release_endpoint);
-    BOOST_CHECK_EQUAL(config_reply.get_param<std::string>("fr_setup/fr_ready_cnxn"), ready_endpoint);
-
-    OdinData::IpcMessage status_reply;
-    controller->provideStatus(status_reply, false);
-    BOOST_CHECK(!status_reply.get_param<bool>("shared_memory/configured"));
-
-    connect_plugin("sink", "frame_receiver");
+    // With sink connected to source, only source is a root plugin. The sink
+    // receives the EOA once, through the plugin chain.
+    connect_plugin("sink", "source");
     OdinData::IpcMessage inject;
     inject.set_param("inject_eoa", true);
     configure(inject);
-    BOOST_REQUIRE(wait_until([sink] { return sink->eoa() == 1; }));
-
-    disconnect_plugin("sink", "frame_receiver");
-    configure(inject);
+    BOOST_REQUIRE(wait_until([source, sink] { return source->eoa() == 1 && sink->eoa() == 1; }));
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    BOOST_CHECK_EQUAL(source->eoa(), 1);
     BOOST_CHECK_EQUAL(sink->eoa(), 1);
+
+    // After the disconnect, both plugins are root plugins and each receives
+    // the EOA directly.
+    disconnect_plugin("sink", "source");
+    configure(inject);
+    BOOST_REQUIRE(wait_until([source, sink] { return source->eoa() == 2 && sink->eoa() == 2; }));
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    BOOST_CHECK_EQUAL(source->eoa(), 2);
+    BOOST_CHECK_EQUAL(sink->eoa(), 2);
 }
 
 BOOST_AUTO_TEST_CASE(StoredConfigurationFrameLimitAndDebugLevelBranchesAreConfigured)

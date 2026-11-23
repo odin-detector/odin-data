@@ -66,7 +66,6 @@ add_unit_test(FileWriterPlugin)
 add_unit_test(FrameMetaData)
 add_unit_test(FrameProcessorController
   ../src/FrameProcessorController.cpp
-  ../src/SharedMemoryController.cpp
 )
 add_unit_test(GapFillPlugin)
 add_unit_test(HDF5File)
