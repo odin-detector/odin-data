@@ -5,7 +5,7 @@
 function(add_unit_test _target)
   set(_source ${_target}Test.cpp)
   set(_target "unit_fp_${_target}")
-  add_executable(${_target} ${_source})
+  add_executable(${_target} ${_source} ${ARGN})
 
   target_link_libraries(${_target}
     ${LIB_PROCESSOR}
@@ -64,6 +64,9 @@ add_unit_test(DataBlock)
 add_unit_test(DummyUDPProcessPlugin)
 add_unit_test(FileWriterPlugin)
 add_unit_test(FrameMetaData)
+add_unit_test(FrameProcessorController
+  ../src/FrameProcessorController.cpp
+)
 add_unit_test(GapFillPlugin)
 add_unit_test(HDF5File)
 add_unit_test(LiveViewPlugin)
