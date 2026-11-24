@@ -164,9 +164,9 @@ void SharedMemoryController::handleRxChannel()
                     );
 
                     boost::shared_ptr<SharedBufferFrame> frame;
-                    frame = boost::shared_ptr<SharedBufferFrame>(new SharedBufferFrame(
+                    frame = boost::make_shared<SharedBufferFrame>(
                         frame_meta, sbm_->get_buffer_address(bufferID), sbm_->get_buffer_size(), bufferID, &txChannel_
-                    ));
+                    );
 
                     // call some registerd function here // NOTE FAMOUS
                     if (!callback_.empty())
