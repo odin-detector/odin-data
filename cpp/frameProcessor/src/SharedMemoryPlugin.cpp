@@ -90,8 +90,9 @@ void SharedMemoryPlugin::setupFrameReceiverInterface(std::string& frReleaseStrin
             }
             // Create the new shared memory controller and give it the parser and publisher
             shmctrlr_handle_.emplace(reactor_, frReadyString, frReleaseString);
-            shmctrlr_handle_->inject_process_frame_cb(
-                [this](boost::shared_ptr<Frame> frame) {this->process_frame(frame);});
+            shmctrlr_handle_->inject_process_frame_cb([this](boost::shared_ptr<Frame> frame) {
+                this->process_frame(frame);
+            });
             frReadyEndpoint_ = std::move(frReadyString);
             frReleaseEndpoint_ = std::move(frReleaseString);
         } catch (const boost::interprocess::interprocess_exception& e) {

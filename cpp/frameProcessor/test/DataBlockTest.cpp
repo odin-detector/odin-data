@@ -1,9 +1,9 @@
 #define BOOST_TEST_MODULE "DataBlockTests"
 #define BOOST_TEST_MAIN
 
-#include "Fixtures.h"
-#include "EndOfAcquisitionFrame.h"
 #include "DataBlockPool.h"
+#include "EndOfAcquisitionFrame.h"
+#include "Fixtures.h"
 
 BOOST_GLOBAL_FIXTURE(GlobalConfig);
 
