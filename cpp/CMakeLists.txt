@@ -14,6 +14,8 @@ add_compile_options(
   -Wuninitialized
   -Wmaybe-uninitialized
   -Werror
+  -O2
+  -g
 )
 
 # Set output directories
