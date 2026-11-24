@@ -17,7 +17,7 @@ SharedMemoryPlugin::SharedMemoryPlugin() :
     frames_recv_ { 0 }
 {
     LOG4CXX_TRACE(Logger::getLogger("FP.SharedMemoryPlugin"), "SharedMemoryPlugin constructor.");
-    m_thread_ = std::thread { boost::bind(&SharedMemoryPlugin::start_reactor, this) };
+    m_thread_ = std::thread { [this]() { this->start_reactor(); } };
     add_config_param_metadata(CONFIG_FR_RELEASE, PMDD::STRING_T, PMDA::READ_WRITE);
     add_config_param_metadata(CONFIG_FR_READY, PMDD::STRING_T, PMDA::READ_WRITE);
     add_status_param_metadata(STATUS_SHB_NAME, PMDD::STRING_T, PMDA::READ_ONLY);
