@@ -39,14 +39,11 @@ public:
     {
     }
 
-    /** copy assignment operator */
-    SharedBufferFrame& operator=(const SharedBufferFrame& frame)
-    {
-        Frame::operator=(frame), data_ptr_ = frame.data_ptr_;
-        shared_id_ = frame.shared_id_;
-        shared_channel_ = frame.shared_channel_;
-        return *this;
-    }
+    /** Delete copy assignment operator
+     * In the instance this object has a valid data_ptr_ We don't want to
+     * leak memory or resources.
+     */
+    SharedBufferFrame& operator=(const SharedBufferFrame& frame) = delete;
 
     /** move constructor */
     SharedBufferFrame(SharedBufferFrame&& frame) noexcept :
@@ -57,19 +54,11 @@ public:
     {
     }
 
-    /** move assignment operator */
-    SharedBufferFrame& operator=(SharedBufferFrame&& frame) noexcept
-    {
-        if (this != &frame) {
-            Frame::operator=(std::move(frame));
-            data_ptr_ = frame.data_ptr_;
-            shared_id_ = frame.shared_id_;
-            shared_channel_ = frame.shared_channel_;
-            frame.data_ptr_ = nullptr;
-            frame.shared_id_ = 0;
-        }
-        return *this;
-    }
+    /** Delete move assignment operator
+     * In the instance this object has a valid data_ptr_ We don't want to
+     * leak memory or resources.
+     */
+    SharedBufferFrame& operator=(SharedBufferFrame&& frame) = delete;
 
     /** Destructor */
     ~SharedBufferFrame()
