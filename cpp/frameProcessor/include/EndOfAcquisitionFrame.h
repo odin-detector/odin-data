@@ -9,9 +9,16 @@ class EndOfAcquisitionFrame : public Frame {
 
 public:
     /** Construct an End Of AcquisitionFrame
-     * Default and ONLY construcor for the EndofAcqusitionFrame class
-     * The default arguments for it's parent Frame class are:
+     * Default and ONLY constructor for the EndofAcqusitionFrame class
+     * The default arguments for its parent Frame class are:
      *      @param[in] FrameMetadata invalid metadata object
+     *          the default arguments for this argument are:
+     *              @param[in] frame_number -1 an invalid number
+     *              @param[in] dataset_name "" empty
+     *              @param[in] DataType is unknown
+     *              @param[in] acquisition_ID "" empty
+     *              @param[in] dimensions {} empty
+     *              @param[in] compression_type is unknown
      *      @param[in] data_size 0 as it has no data
      *      @param[in] is_end_acq TRUE as this is an "End of Acquisition" frame class.
      */

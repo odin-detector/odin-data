@@ -159,13 +159,11 @@ void SharedMemoryController::handleRxChannel()
                     // Create a frame object and copy in the raw frame data
                     int frame_number = rxMsg.get_param<int>("frame", 0);
 
-                    FrameProcessor::FrameMetaData frame_meta(
-                        frame_number, "raw", FrameProcessor::raw_64bit, "", std::vector<unsigned long long>()
-                    );
-
                     boost::shared_ptr<SharedBufferFrame> frame;
                     frame = boost::make_shared<SharedBufferFrame>(
-                        frame_meta, sbm_->get_buffer_address(bufferID), sbm_->get_buffer_size(), bufferID, &txChannel_
+                        FrameMetaData { frame_number, "raw", FrameProcessor::raw_64bit, "",
+                                        std::vector<unsigned long long>() },
+                        sbm_->get_buffer_address(bufferID), sbm_->get_buffer_size(), bufferID, txChannel_
                     );
 
                     // call some registerd function here // NOTE FAMOUS
