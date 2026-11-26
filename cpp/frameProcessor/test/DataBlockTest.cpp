@@ -143,6 +143,11 @@ BOOST_AUTO_TEST_CASE(EndOfAcquisitionFrameTest)
 {
     FrameProcessor::EndOfAcquisitionFrame eof_frame;
     BOOST_CHECK(eof_frame.is_valid() == false);
+    BOOST_CHECK(eof_frame.get_data_ptr() == nullptr);
+    BOOST_CHECK(eof_frame.get_end_of_acquisition() == true);
+    BOOST_CHECK(eof_frame.get_frame_number() == -1);
+    BOOST_CHECK(eof_frame.get_data_size() == 0);
+    BOOST_CHECK(eof_frame.get_image_size() == 0);
 }
 
 BOOST_AUTO_TEST_SUITE_END();

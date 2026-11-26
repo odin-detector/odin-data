@@ -69,7 +69,7 @@ public:
     virtual void* get_data_ptr() const = 0;
 
     /** Return a void pointer to the image data */
-    virtual void* get_image_ptr() const
+    void* get_image_ptr() const
     {
         return reinterpret_cast<void*>(reinterpret_cast<char*>(this->get_data_ptr()) + meta_data_.frame_offset_);
     }
