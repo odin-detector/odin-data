@@ -4,8 +4,7 @@ ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK)
 include_directories(${FRAMEPROCESSOR_DIR}/include ${HDF5_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${LOG4CXX_INCLUDE_DIRS}/.. ${ZEROMQ_INCLUDE_DIRS})
 add_definitions(${HDF5_DEFINITIONS})
 
-file(GLOB LIB_SOURCES DataBlock.cpp
-                      DataBlockPool.cpp
+file(GLOB LIB_SOURCES DataBlockPool.cpp
                       EndOfAcquisitionFrame.cpp
                       FrameProcessorPlugin.cpp
                       FrameMetaData.cpp
@@ -14,7 +13,6 @@ file(GLOB LIB_SOURCES DataBlock.cpp
                       DataBlockFrame.cpp
                       MetaMessage.cpp
                       MetaMessagePublisher.cpp
-                      IFrameCallback.cpp
                       CallDuration.cpp
                       WatchdogTimer.cpp )
 
