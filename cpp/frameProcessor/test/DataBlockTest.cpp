@@ -1,9 +1,9 @@
 #define BOOST_TEST_MODULE "DataBlockTests"
 #define BOOST_TEST_MAIN
 
-#include "Fixtures.h"
-
 #include "DataBlockPool.h"
+#include "EndOfAcquisitionFrame.h"
+#include "Fixtures.h"
 
 BOOST_GLOBAL_FIXTURE(GlobalConfig);
 
@@ -137,6 +137,17 @@ BOOST_AUTO_TEST_CASE(DataBlockMoveAssignment)
     BOOST_CHECK(dptr->get_writeable_data() != ptr);
     BOOST_CHECK(dptr->get_index() == index + 1);
     free(ptr);
+}
+
+BOOST_AUTO_TEST_CASE(EndOfAcquisitionFrameTest)
+{
+    FrameProcessor::EndOfAcquisitionFrame eof_frame;
+    BOOST_CHECK(eof_frame.is_valid() == false);
+    BOOST_CHECK(eof_frame.get_data_ptr() == nullptr);
+    BOOST_CHECK(eof_frame.get_end_of_acquisition() == true);
+    BOOST_CHECK(eof_frame.get_frame_number() == -1);
+    BOOST_CHECK(eof_frame.get_data_size() == 0);
+    BOOST_CHECK(eof_frame.get_image_size() == 0);
 }
 
 BOOST_AUTO_TEST_SUITE_END();

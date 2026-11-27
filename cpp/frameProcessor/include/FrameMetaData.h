@@ -17,6 +17,7 @@ typedef std::vector<dimsize_t> dimensions_t;
 namespace FrameProcessor {
 
 class FrameMetaData {
+    friend class Frame;
     using pType_t = boost::variant<boost::blank, uint8_t, uint16_t, uint32_t, uint64_t, float>;
 
 public:

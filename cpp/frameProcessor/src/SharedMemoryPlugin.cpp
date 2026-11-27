@@ -17,12 +17,12 @@ SharedMemoryPlugin::SharedMemoryPlugin() :
     frames_recv_ { 0 }
 {
     LOG4CXX_TRACE(Logger::getLogger("FP.SharedMemoryPlugin"), "SharedMemoryPlugin constructor.");
-    m_thread_ = std::thread { boost::bind(&SharedMemoryPlugin::start_reactor, this) };
     add_config_param_metadata(CONFIG_FR_RELEASE, PMDD::STRING_T, PMDA::READ_WRITE);
     add_config_param_metadata(CONFIG_FR_READY, PMDD::STRING_T, PMDA::READ_WRITE);
     add_status_param_metadata(STATUS_SHB_NAME, PMDD::STRING_T, PMDA::READ_ONLY);
     add_status_param_metadata(STATUS_SHB_CONFIGURED, PMDD::BOOL_T, PMDA::READ_ONLY);
     add_status_param_metadata(STATUS_FR_RECV, PMDD::UINT_T, PMDA::READ_ONLY, 0);
+    m_thread_ = std::thread { [this]() { this->start_reactor(); } };
 }
 
 SharedMemoryPlugin::~SharedMemoryPlugin()
@@ -90,9 +90,9 @@ void SharedMemoryPlugin::setupFrameReceiverInterface(std::string& frReleaseStrin
             }
             // Create the new shared memory controller and give it the parser and publisher
             shmctrlr_handle_.emplace(reactor_, frReadyString, frReleaseString);
-            shmctrlr_handle_->inject_process_frame_cb(
-                boost::bind(&SharedMemoryPlugin::process_frame, this, boost::placeholders::_1)
-            );
+            shmctrlr_handle_->inject_process_frame_cb([this](boost::shared_ptr<Frame> frame) {
+                this->process_frame(frame);
+            });
             frReadyEndpoint_ = std::move(frReadyString);
             frReleaseEndpoint_ = std::move(frReleaseString);
         } catch (const boost::interprocess::interprocess_exception& e) {

@@ -49,7 +49,7 @@ SharedMemoryController::SharedMemoryController(
     }
 
     // Add the Frame Ready channel to the reactor
-    reactor_.register_channel(rxChannel_, boost::bind(&SharedMemoryController::handleRxChannel, this));
+    reactor_.register_channel(rxChannel_, [this]() { this->handleRxChannel(); });
 
     // Now connect the frame release response channel
     try {
@@ -108,7 +108,7 @@ void SharedMemoryController::requestSharedBufferConfig(const bool deferred)
 {
     if (deferred) {
         LOG4CXX_DEBUG_LEVEL(1, logger_, "Registering timer for deferred shared buffer configuration request");
-        reactor_.register_timer(1000, 1, boost::bind(&SharedMemoryController::requestSharedBufferConfig, this, false));
+        reactor_.register_timer(1000, 1, [this]() { this->requestSharedBufferConfig(false); });
         sharedBufferConfigRequestDeferred_ = true;
     } else {
         // If this is being called by a deferred request timer but the shared buffer has been configured in the
@@ -159,14 +159,12 @@ void SharedMemoryController::handleRxChannel()
                     // Create a frame object and copy in the raw frame data
                     int frame_number = rxMsg.get_param<int>("frame", 0);
 
-                    FrameProcessor::FrameMetaData frame_meta(
-                        frame_number, "raw", FrameProcessor::raw_64bit, "", std::vector<unsigned long long>()
-                    );
-
                     boost::shared_ptr<SharedBufferFrame> frame;
-                    frame = boost::shared_ptr<SharedBufferFrame>(new SharedBufferFrame(
-                        frame_meta, sbm_->get_buffer_address(bufferID), sbm_->get_buffer_size(), bufferID, &txChannel_
-                    ));
+                    frame = boost::make_shared<SharedBufferFrame>(
+                        FrameMetaData { frame_number, "raw", FrameProcessor::raw_64bit, "",
+                                        std::vector<unsigned long long>() },
+                        sbm_->get_buffer_address(bufferID), sbm_->get_buffer_size(), bufferID, txChannel_
+                    );
 
                     // call some registerd function here // NOTE FAMOUS
                     if (!callback_.empty())
