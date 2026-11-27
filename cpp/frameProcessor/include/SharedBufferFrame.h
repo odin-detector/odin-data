@@ -30,14 +30,9 @@ public:
     {
     }
 
-    /** copy constructor */
-    SharedBufferFrame(const SharedBufferFrame& frame) :
-        Frame(frame),
-        data_ptr_ { frame.data_ptr_ },
-        shared_id_ { frame.shared_id_ },
-        shared_channel_ { frame.shared_channel_ }
-    {
-    }
+    /** Delete copy constructor - no copy semantics!
+     */
+    SharedBufferFrame(const SharedBufferFrame& frame) = delete;
 
     /** Delete copy assignment operator
      * In the instance this object has a valid data_ptr_ We don't want to
@@ -63,6 +58,8 @@ public:
     /** Destructor */
     ~SharedBufferFrame()
     {
+        if (data_ptr_ == nullptr)
+            return;
         OdinData::IpcMessage txMsg(OdinData::IpcMessage::MsgTypeNotify, OdinData::IpcMessage::MsgValNotifyFrameRelease);
         txMsg.set_param("frame", static_cast<uint64_t>(meta_data_.get_frame_number()));
         txMsg.set_param("buffer_id", shared_id_);
