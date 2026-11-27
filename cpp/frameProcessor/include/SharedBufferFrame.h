@@ -47,6 +47,7 @@ public:
         shared_id_ { frame.shared_id_ },
         shared_channel_ { frame.shared_channel_ }
     {
+        frame.data_ptr_ = nullptr;
     }
 
     /** Delete move assignment operator
