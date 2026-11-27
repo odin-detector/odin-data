@@ -40,9 +40,9 @@ public:
     void start()
     {
         // Set the run condition to true
-        // the memory order is relaed BECAUSE the thread has not started
+        // the memory order is relaxed BECAUSE the thread has not started
         // POSIX guarantees that the value in run_ will be visible before the thread reads it!
-        run_.store(true, std::memory_order::memory_order_relaxed);
+        run_.store(true, std::memory_order_relaxed);
         // Now start the worker thread to monitor the queue
         thread_ = std::thread(&IFrameCallback::workerTask, this);
     }
@@ -55,7 +55,7 @@ public:
     void stop()
     {
         // Set the run condition flag to false
-        run_.store(false, std::memory_order::memory_order_relaxed);
+        run_.store(false, std::memory_order_relaxed);
         // Now notify the work queue we have finished by adding a nullptr
         boost::shared_ptr<Frame> nullMsg;
         queue_.add(nullMsg);
@@ -72,11 +72,11 @@ public:
     virtual void callback(boost::shared_ptr<Frame> frame) = 0;
 
 private:
-    /** Pointer to WorkQueue for Frame object pointers */
+    /** WorkQueue for Frame object pointers */
     WorkQueue<boost::shared_ptr<Frame>> queue_;
     /** IFrameCallback run flag */
     std::atomic<bool> run_;
-    /** Pointer to worker queue thread */
+    /** Worker queue thread */
     std::thread thread_;
     /** Main thread of execution for this class.
      *
