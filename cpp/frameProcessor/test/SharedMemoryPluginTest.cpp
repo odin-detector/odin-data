@@ -27,7 +27,7 @@ public:
     FrameProcessor::SharedMemoryPlugin shm_plugin;
 };
 
-class SharedMemoryPluginTestCallback : public FrameProcessor::IFrameCallback {
+class SharedMemoryPluginTestCallback : public FrameProcessor::IFrameCallback<SharedMemoryPluginTestCallback> {
 public:
     SharedMemoryPluginTestCallback()
     {
@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE(SharedMemoryPlugin_full_shm_test)
     BOOST_CHECK_EQUAL(stat("/dev/shm/test_buffer", &buffer), 0);
 
     // Register a callback with the shared memory plugin
-    shm_plugin.register_callback("temp_index", cb, true);
+    shm_plugin.register_callback<SharedMemoryPluginTestCallback>("temp_index", cb, true);
 
     // Create the two IPC channels required for ready and release
     OdinData::IpcChannel ready(ZMQ_PUB);
